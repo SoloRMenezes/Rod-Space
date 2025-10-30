@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Rod Space — Where creativity meets code</title>
   <meta name="description" content="Rod Space: Rodrigo's hub for games, school projects, and personal experiments on the web." />
-  <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css" />
 </head>
-
 <body>
   <header class="site-header">
     <a href="#" class="brand">
@@ -19,29 +18,21 @@
   </header>
 
   <main id="home">
-    <!-- Hero Section -->
     <section class="hero">
       <div class="hero-inner">
-        <h1>
-          <span class="fade">Welcome to</span>
-          <span class="gradient-text">Rod Space</span>
-        </h1>
+        <h1><span class="fade">Welcome to</span> <span class="gradient-text">Rod Space</span></h1>
       </div>
       <div class="hero-bg" aria-hidden="true"></div>
     </section>
 
-    <!-- About Section -->
     <section id="about" class="about" style="text-align: center;">
       <div class="container">
         <h2>About Me</h2>
-        <p>
-          Hi, I'm <strong>Rodrigo</strong> — a 16-year-old student who loves building websites and small games for school and fun. 
-          I enjoy experimenting with code, design, and interactive ideas that make people smile.
-        </p>
+        <p>Hi, I'm <strong>Rodrigo</strong> — a 16-year-old student who loves building websites and small games for school and fun. 
+        I enjoy experimenting with code, design, and interactive ideas that make people smile.</p>
       </div>
     </section>
 
-    <!-- Projects Section -->
     <section id="projects" class="projects" style="text-align: center;">
       <div class="container">
         <div class="section-head">
@@ -62,44 +53,37 @@
             </div>
           </article>
 
-          <!-- DreamGrounds -->
+          <!-- Dream Grounds -->
           <article class="card" data-tags="personal">
             <div class="card-top">
               <div class="icon">🌌</div>
-              <h3>DreamGrounds</h3>
-              <p>Where Personalisation Meets Dreams — a concept site blending creativity and imagination.</p>
+              <h3>Dream Grounds</h3>
+              <p>Where Personalisation Meets Dreams — a futuristic concept blending creativity and imagination.</p>
             </div>
             <div class="card-actions">
-              <a href="#" class="btn small primary" aria-label="Open DreamGrounds">Explore</a>
-              <span class="pill">Personal</span>
+              <a href="dream-grounds.html" class="btn small primary" aria-label="Open Dream Grounds">Visit</a>
+              <span class="pill">Concept</span>
             </div>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- Contact Section -->
     <section id="contact" class="contact" style="text-align: center;">
       <div class="container">
         <h2>Contact</h2>
         <p>Want to collaborate or share feedback? Reach me at:</p>
-        <p>
-          <a class="contact-item" href="mailto:rodrigoazancotmenezes@gmail.com">
-            ✉️ rodrigoazancotmenezes@gmail.com
-          </a>
-        </p>
+        <p><a class="contact-item" href="mailto:rodrigoazancotmenezes@gmail.com">✉️ rodrigoazancotmenezes@gmail.com</a></p>
       </div>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer class="site-footer">
     <div class="container footer-inner">
       <span>© <span id="year"></span> Rod Space. All rights reserved.</span>
     </div>
   </footer>
 
-  <!-- JS for Year -->
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
