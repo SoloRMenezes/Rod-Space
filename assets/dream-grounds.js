@@ -21,3 +21,17 @@ cards.forEach(card => {
     }
   });
 });
+// === Expandable Cards & Tiles ===
+function enableExpandable(selector) {
+  const elements = document.querySelectorAll(selector);
+  elements.forEach(el => {
+    el.addEventListener('click', () => {
+      const isOpen = el.classList.contains('expanded');
+      elements.forEach(e => e.classList.remove('expanded'));
+      if (!isOpen) el.classList.add('expanded');
+    });
+  });
+}
+
+enableExpandable('.cards-3.expandable .card');
+enableExpandable('.cards-grid.expandable .tile');
