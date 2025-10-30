@@ -1,202 +1,286 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dream Grounds — Your Dream, Your Theme</title>
+  <meta name="description" content="Dream Grounds: personalized sleep experiences with authentic dream cartridges." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/dream-grounds.css" />
 </head>
 <body>
   <header class="dg-header">
-    <a href="../index.html" class="brand">Rod Space</a>
-    <h1 class="title">Dream Grounds</h1>
+    <a class="brand" href="index.html">← Rod Space</a>
+    <span class="title">Dream Grounds</span>
   </header>
 
   <main>
+    <!-- HERO -->
     <section class="hero reveal">
       <h1>Dream Grounds</h1>
       <p class="subtitle">Your Dream, Your Theme</p>
       <p class="lede">
-        Explore the future of personalized dream experiences through seamless
-        biometric synchronization and genuine dream imprints captured from
-        real people.
+        Explore the future of personalized sleep experiences through wireless technology that gently
+        influences your dreams with authentic dream imprints from real people.
       </p>
     </section>
 
-    <!-- ====== DREAM DEVICES ====== -->
-    <section class="cards-3 expandable reveal">
-      <article class="card" data-id="band">
-        <img src="assets/icons/dream-band.svg" class="icon" alt="">
+    <!-- PRODUCT TRIO -->
+    <section class="cards-3 reveal">
+      <article class="card">
+        <div class="icon icon-band" aria-hidden="true"></div>
         <h3>Dream Band</h3>
         <p>Advanced neural headband that monitors sleep phases and provides gentle haptic feedback for dream synchronization.</p>
-        <div class="details">
-          <ul>
-            <li>Low-level EEG sensors for sleep tracking</li>
-            <li>Soft adaptive stretch material</li>
-            <li>Bluetooth sync with Dream Hub</li>
-            <li>Gentle haptic cues</li>
-            <li>10-hour battery life</li>
-            <li>Wireless charging compatible</li>
-          </ul>
-        </div>
       </article>
-
-      <article class="card" data-id="bracelet">
-        <img src="assets/icons/dream-bracelet.svg" class="icon" alt="">
+      <article class="card">
+        <div class="icon icon-bracelet" aria-hidden="true"></div>
         <h3>Dream Bracelet</h3>
-        <p>Biometric bracelet that tracks vital signs and confirms REM detection for optimal dream timing.</p>
-        <div class="details">
-          <ul>
-            <li>Heart rate and temperature tracking</li>
-            <li>REM confirmation sensors</li>
-            <li>Silent wake vibration</li>
-            <li>Offline local data</li>
-            <li>Sleep-safe magnetic clasp</li>
-          </ul>
-        </div>
+        <p>Biometric monitoring bracelet that tracks vital signs and confirms REM detection for optimal dream timing.</p>
       </article>
-
-      <article class="card" data-id="hub">
-        <img src="assets/icons/dream-hub.svg" class="icon" alt="">
+      <article class="card">
+        <div class="icon icon-hub" aria-hidden="true"></div>
         <h3>Dream Hub</h3>
-        <p>Central control unit that orchestrates the entire dream experience and stores up to four authentic cartridges.</p>
-        <div class="details">
-          <ul>
-            <li>Supports 4 cartridges</li>
-            <li>Touch interface</li>
-            <li>Automatic REM detection</li>
-            <li>Offline data storage — full privacy</li>
-          </ul>
-        </div>
+        <p>Central control unit that orchestrates the entire dream experience, storing up to four authentic dream cartridges.</p>
       </article>
     </section>
 
-    <!-- ====== DREAM CARTRIDGES ====== -->
+    <!-- CARTRIDGES -->
     <section class="section-heading reveal">
       <h2>Dream Cartridges</h2>
-      <p class="small">Each cartridge preserves real dream experiences recorded during REM cycles.</p>
+      <p class="lede small">Real dream imprints from actual users during REM sleep — share, preserve, replay, and continue authentic experiences.</p>
     </section>
 
-    <section class="cards-grid expandable reveal">
-      <div class="tile" data-id="auth">
-        <img src="assets/icons/authentic.svg" class="tile-icon" alt="">
+    <section class="cards-grid reveal" id="cartridgeGrid">
+      <!-- row 1 -->
+      <article class="tile" data-detail="auth">
+        <div class="tile-icon cart-auth"></div>
         <h4>Authentic Dream Storage</h4>
-        <p>Real dream imprints from actual users during REM sleep.</p>
-        <div class="details">
-          <p>Each cartridge preserves an emotional signature with full sensory fidelity, stored entirely offline for privacy.</p>
-        </div>
-      </div>
-
-      <div class="tile" data-id="record">
-        <img src="assets/icons/record.svg" class="tile-icon" alt="">
+        <p class="muted">Real dream imprints from REM sleep.</p>
+      </article>
+      <article class="tile" data-detail="personal">
+        <div class="tile-icon cart-personal"></div>
         <h4>Personal Recording</h4>
-        <p>Create your own dream cartridges during sleep.</p>
-        <div class="details">
-          <p>Record neural patterns and emotional signals directly into local cartridges — no cloud upload required.</p>
-        </div>
-      </div>
-
-      <div class="tile" data-id="trade">
-        <img src="assets/icons/trade.svg" class="tile-icon" alt="">
+        <p class="muted">Create your own cartridges.</p>
+      </article>
+      <article class="tile" data-detail="trade">
+        <div class="tile-icon cart-trade"></div>
         <h4>Dream Trading</h4>
-        <p>Exchange cartridges with friends and family.</p>
-        <div class="details">
-          <p>Swap dreams securely through encrypted cartridge transfers between trusted Dream Hubs.</p>
-        </div>
-      </div>
-
-      <div class="tile" data-id="memory">
-        <img src="assets/icons/memory.svg" class="tile-icon" alt="">
+        <p class="muted">Exchange with friends & family.</p>
+      </article>
+      <article class="tile" data-detail="memory">
+        <div class="tile-icon cart-memory"></div>
         <h4>Memory Preservation</h4>
-        <p>Archive special dreams as lasting keepsakes.</p>
-        <div class="details">
-          <p>Keep meaningful or emotionally rich dreams permanently recorded for reflection and memory.</p>
-        </div>
+        <p class="muted">Archive special dreams as keepsakes.</p>
+      </article>
+
+      <!-- CENTER DETAIL (in-grid, inserted after clicked tile) -->
+      <div class="tile-detail" id="tileDetail">
+        <h5>Title</h5>
+        <p class="txt">Detail</p>
       </div>
 
-      <div class="tile" data-id="replay">
-        <img src="assets/icons/replay.svg" class="tile-icon" alt="">
+      <!-- row 2 -->
+      <article class="tile" data-detail="replay">
+        <div class="tile-icon cart-replay"></div>
         <h4>Replay Mode</h4>
-        <p>Relive your favorite dreams exactly as they happened.</p>
-        <div class="details">
-          <p>Replay experiences with identical sensations and visuals, ensuring perfect recall fidelity.</p>
-        </div>
-      </div>
-
-      <div class="tile" data-id="continue">
-        <img src="assets/icons/continue.svg" class="tile-icon" alt="">
+        <p class="muted">Relive your favorite dreams.</p>
+      </article>
+      <article class="tile" data-detail="cont">
+        <div class="tile-icon cart-continue"></div>
         <h4>Continue Mode</h4>
-        <p>Pick up unfinished dreams right where you left off.</p>
-        <div class="details">
-          <p>Resume previously interrupted dream narratives and continue exploring seamlessly.</p>
-        </div>
-      </div>
-
-      <div class="tile" data-id="lucid">
-        <img src="assets/icons/lucid.svg" class="tile-icon" alt="">
+        <p class="muted">Pick up unfinished dreams.</p>
+      </article>
+      <article class="tile" data-detail="lucid">
+        <div class="tile-icon cart-lucid"></div>
         <h4>Lucid Switch</h4>
-        <p>Gain control when dreams turn unpleasant.</p>
-        <div class="details">
-          <p>Detects stress signals and enables awareness for peaceful redirection or full control.</p>
-        </div>
-      </div>
-
-      <div class="tile" data-id="shared">
-        <img src="assets/icons/shared.svg" class="tile-icon" alt="">
+        <p class="muted">Gain control when dreams turn unpleasant.</p>
+      </article>
+      <article class="tile" data-detail="shared">
+        <div class="tile-icon cart-shared"></div>
         <h4>Shared Dreams</h4>
-        <p>Experience dreams together with friends and family.</p>
-        <div class="details">
-          <p>Synchronize multiple Dream Hubs for collaborative dreamscapes.</p>
-        </div>
-      </div>
-
-      <div class="tile" data-id="privacy">
-        <img src="assets/icons/privacy.svg" class="tile-icon" alt="">
+        <p class="muted">Dream together in real-time.</p>
+      </article>
+      <article class="tile" data-detail="privacy">
+        <div class="tile-icon cart-privacy"></div>
         <h4>Complete Privacy</h4>
-        <p>All dreams stay local — no cloud, no internet required.</p>
-        <div class="details">
-          <p>Your dreams are yours alone — encrypted and stored locally within your Dream Hub.</p>
-        </div>
-      </div>
+        <p class="muted">All dreams stay local — no cloud.</p>
+      </article>
     </section>
 
-    <!-- ====== PRICING ====== -->
-    <section class="pricing reveal">
+    <!-- PRICING -->
+    <section class="section-heading reveal">
       <h2>Begin Your Dream Journey</h2>
-      <div class="pricing-grid">
-        <div class="price-card">
-          <h3>Basic Kit</h3>
-          <p class="price">$299.89</p>
-          <ul>
-            <li>Dream Band</li>
-            <li>Dream Bracelet</li>
-            <li>Dream Hub</li>
-            <li>1 Authentic Cartridge</li>
-          </ul>
-          <button class="btn primary" id="orderBtn">Begin Journey</button>
-        </div>
-      </div>
     </section>
 
-    <!-- Modal -->
-    <dialog id="orderModal">
-      <div class="modal">
-        <button class="close" id="closeModal">&times;</button>
-        <h3>Complete Your Order</h3>
-        <form>
-          <label>Name<input type="text" placeholder="Full name" required></label>
-          <label>Email<input type="email" placeholder="you@example.com" required></label>
-          <label>Card<input type="text" placeholder="**** **** **** 1234" required></label>
-          <button type="submit" class="btn primary wide">Complete Order</button>
-        </form>
-      </div>
-    </dialog>
+    <section class="pricing reveal">
+      <article class="price-card">
+        <h5>Basic Kit</h5>
+        <div class="price">$299.89</div>
+        <ul>
+          <li>Dream Band (Neural Headband)</li>
+          <li>Dream Bracelet (Biometric Monitor)</li>
+          <li>Dream Hub (Central Control Unit)</li>
+          <li>4 Blank Dream Cartridges</li>
+          <li>Quick Start Guide</li>
+        </ul>
+        <button class="btn ghost" data-open-checkout="Basic Kit">$299.89 — Choose</button>
+      </article>
+
+      <article class="price-card featured">
+        <h5>Complete Kit - Best Price</h5>
+        <div class="price">$350.00</div>
+        <ul>
+          <li>Dream Band + Bracelet + Hub</li>
+          <li>10 Blank Dream Cartridges</li>
+          <li>Storage Case (50-cartridge capacity)</li>
+          <li>Quick Start Guide</li>
+        </ul>
+        <button class="btn primary" data-open-checkout="Complete Kit">$350.00 — Choose</button>
+      </article>
+
+      <article class="price-card">
+        <h5>Extra Cartridges</h5>
+        <div class="price">$29.89</div>
+        <ul>
+          <li>Pack of 4 blank cartridges</li>
+          <li>Cartridge care instructions</li>
+        </ul>
+        <button class="btn ghost" data-open-checkout="Extra Cartridges">$29.89 — Choose</button>
+      </article>
+    </section>
+
+    <section class="storage-row reveal">
+      <article class="price-card">
+        <h5>Storage Case</h5>
+        <div class="price">$29.89</div>
+        <ul>
+          <li>Storage Case (50–cartridge capacity)</li>
+          <li>Protective foam inserts</li>
+          <li>Cartridge labeling system</li>
+        </ul>
+        <button class="btn ghost" data-open-checkout="Storage Case">$29.89 — Choose</button>
+      </article>
+    </section>
+
+    <div class="center reveal">
+      <button class="btn cta" data-open-checkout="Complete Kit">Begin Dreaming</button>
+      <p class="tiny muted">Free shipping worldwide • 30-day money-back guarantee</p>
+    </div>
+
+    <!-- TESTIMONIALS -->
+    <section class="section-heading reveal">
+      <h2>What Users Are Saying</h2>
+    </section>
+
+    <section class="testimonials reveal">
+      <article class="t-card">
+        <div class="avatar" data-initials="SM">SM</div>
+        <h6>Sarah Mitchell</h6>
+        <span class="role">Sleep Researcher, Stanford University</span>
+        <div class="stars">★★★★★</div>
+        <p>"Dream Grounds represents a fascinating intersection of neuroscience and human connection…"</p>
+      </article>
+
+      <article class="t-card">
+        <div class="avatar">JC</div>
+        <h6>James Chen</h6>
+        <span class="role">UX Designer & Early Adopter</span>
+        <div class="stars">★★★★★</div>
+        <p>"The design philosophy is brilliant — no artificial dreams, just authentic human experiences…"</p>
+      </article>
+
+      <article class="t-card">
+        <div class="avatar">AR</div>
+        <h6>Dr. Amelia Rodriguez</h6>
+        <span class="role">Neurotechnology Specialist</span>
+        <div class="stars">★★★★★</div>
+        <p>"What sets Dream Grounds apart is its commitment to privacy and authenticity…"</p>
+      </article>
+
+      <article class="t-card">
+        <div class="avatar">MK</div>
+        <h6>Marcus Kim</h6>
+        <span class="role">Technology Journalist</span>
+        <div class="stars">★★★★★</div>
+        <p>"Dream Grounds challenges our assumptions about technology and intimacy…"</p>
+      </article>
+
+      <article class="t-card">
+        <div class="avatar">LT</div>
+        <h6>Luna Thompson</h6>
+        <span class="role">Digital Artist & Beta Tester</span>
+        <div class="stars">★★★★★</div>
+        <p>"The aesthetic is perfect — minimal, calming, and sophisticated…"</p>
+      </article>
+
+      <article class="t-card">
+        <div class="avatar">DW</div>
+        <h6>Dr. David Walsh</h6>
+        <span class="role">Sleep Medicine Physician</span>
+        <div class="stars">★★★★★</div>
+        <p>"From a medical perspective, Dream Grounds represents thoughtful innovation…"</p>
+      </article>
+    </section>
+
+    <!-- CLOSER -->
+    <section class="closer reveal">
+      <blockquote>
+        "Dream Grounds isn’t just a sleep-tracking idea — it’s a metaphor for curiosity.
+        It suggests that the act of dreaming, whether asleep or awake, is something we can design, interpret, and explore together."
+      </blockquote>
+      <p class="note"><strong>Note:</strong> Dream Grounds is a speculative design concept created for educational purposes. This fictional prototype explores the intersection of neuroscience, technology, and human connection.</p>
+    </section>
   </main>
 
+  <!-- CHECKOUT MODAL -->
+  <dialog id="checkout">
+    <form method="dialog" class="modal">
+      <button class="close" aria-label="Close">✕</button>
+      <h3>Complete Your Order</h3>
+
+      <div class="row">
+        <label>First Name <input required placeholder="First Name"></label>
+        <label>Last Name <input required placeholder="Last Name"></label>
+      </div>
+      <label>Phone <input placeholder="+1 555-123-4567"></label>
+      <label>Email Address <input type="email" required placeholder="you@example.com"></label>
+      <label>Street Address <input placeholder="123 Dream Ave"></label>
+      <div class="row">
+        <label>City <input></label>
+        <label>ZIP/Postal Code <input></label>
+      </div>
+      <div class="row">
+        <label>Country <input></label>
+        <label>State/Province (if applicable) <input></label>
+      </div>
+
+      <hr>
+
+      <div class="row">
+        <label>Card Number <input inputmode="numeric" placeholder="•••• •••• •••• ••••"></label>
+        <label>MM/YY <input placeholder="MM/YY"></label>
+        <label>CVV <input placeholder="CVV"></label>
+      </div>
+      <label>Cardholder Name <input placeholder="Name on card"></label>
+
+      <div class="summary">
+        <div><span id="chosenPlan">Dream Grounds Complete Kit</span><span>$299.89</span></div>
+        <div><span>Shipping</span><span>Free</span></div>
+        <div class="total"><span>Total</span><span id="totalPrice">$299.89</span></div>
+      </div>
+
+      <button class="btn primary wide">Complete Order</button>
+      <p class="disclaimer">This is a demonstration only. You will not be charged and will not receive any products.</p>
+    </form>
+  </dialog>
+
   <footer class="dg-footer">
-    <p>&copy; 2025 Dream Grounds by Rodrigo Menezes</p>
+    <span>© <span id="year"></span> Dream Grounds (concept).</span>
   </footer>
 
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
   <script src="assets/dream-grounds.js"></script>
 </body>
 </html>
