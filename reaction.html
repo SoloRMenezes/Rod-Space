@@ -1,151 +1,620 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reaction Game — Rod Space</title>
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: radial-gradient(circle at center, #1a1a1a, #000);
-      font-family: 'Inter', system-ui, sans-serif;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Game (Fixed)</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
 
-    h1 {
-      font-weight: 700;
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #00c4cc;
-      text-shadow: 0 0 10px #7d2ae8;
-    }
+        html { height: 100%; }
 
-    #gameArea {
-      position: relative;
-      width: 600px;
-      height: 400px;
-      background: #111;
-      border: 2px solid #444;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 25px rgba(125, 42, 232, 0.5);
-    }
+        .game-container { text-align: center; padding: 20px; }
 
-    .target {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #00c4cc, #7d2ae8);
-      border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(125, 42, 232, 0.8);
-      transition: transform 0.2s ease;
-    }
-    .target:hover {
-      transform: scale(1.15);
-    }
+        .game-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
 
-    #startBtn {
-      background: linear-gradient(90deg, #00c4cc, #7d2ae8);
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 30px;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 1.5rem;
-      transition: opacity 0.3s ease;
-    }
-    #startBtn:hover {
-      opacity: 0.85;
-    }
+        .game-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+        }
 
-    #stats {
-      margin-top: 1rem;
-      font-size: 1rem;
-      color: #ccc;
-    }
+        .stat {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
 
-    .back {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      text-decoration: none;
-      color: #888;
-      background: rgba(255,255,255,0.05);
-      padding: 8px 14px;
-      border-radius: 20px;
-      transition: background 0.3s;
-    }
-    .back:hover {
-      background: rgba(255,255,255,0.15);
-      color: white;
-    }
-  </style>
+        .game-circle {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+            border-radius: 50%;
+            background: #ff4757;
+            border: 5px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .game-circle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 180px;
+            height: 180px;
+            background: #667eea;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid white;
+            z-index: 10;
+        }
+
+        .green-section {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+        }
+
+        .white-bar {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 150px;
+            background: white;
+            transform-origin: 50% 100%;
+            transform: translate(-50%, -100%) rotate(0deg);
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            z-index: 15;
+        }
+
+        .center-cover {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 186px;
+            height: 186px;
+            background: #667eea;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid white;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .center-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .instructions {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+            margin: 0 auto 20px;
+        }
+
+        .start-screen,
+        .game-over,
+        .new-high-score {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            padding: 20px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 100;
+            text-align: center;
+        }
+
+        .start-screen h2 { color: #667eea; margin-bottom: 20px; font-size: 2rem; }
+
+        .start-instructions { margin: 15px 0; line-height: 1.6; }
+
+        .key-instruction {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+
+        .game-over h2 { color: #ff4757; margin-bottom: 15px; font-size: 2rem; }
+
+        .leaderboard { margin: 15px 0; text-align: left; }
+
+        .leaderboard h3 { color: #667eea; margin-bottom: 10px; text-align: center; font-size: 1.3rem; }
+
+        .leaderboard-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            margin: 3px 0;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .leaderboard-entry.current-score {
+            background: rgba(46, 213, 115, 0.2);
+            border: 2px solid #2ed573;
+            font-weight: bold;
+        }
+
+        .leaderboard-rank { font-weight: bold; color: #667eea; min-width: 25px; }
+        .leaderboard-name { flex: 1; text-align: left; margin-left: 10px; }
+        .leaderboard-score { font-weight: bold; color: #ff4757; min-width: 35px; }
+        .leaderboard-time { font-size: 0.8rem; color: #667eea; min-width: 45px; }
+
+        .new-high-score { background: rgba(46, 213, 115, 0.95); border: 2px solid #2ed573; }
+        .new-high-score h2 { color: #2ed573; margin-bottom: 15px; font-size: 2rem; }
+
+        .name-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #2ed573;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .name-input:focus { outline: none; box-shadow: 0 0 10px rgba(46, 213, 115, 0.5); }
+
+        .save-button {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: background 0.3s ease;
+        }
+        .save-button:hover { background: #27ae60; }
+
+        .skip-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 18px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        .skip-button:hover { background: rgba(255,255,255,0.3); }
+
+        .pulse { animation: pulse 0.3s ease-in-out; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .success-flash { animation: successFlash 0.25s ease-in-out; }
+        @keyframes successFlash {
+            0% { background: #ff4757; }
+            50% { background: #2ed573; }
+            100% { background: #ff4757; }
+        }
+
+        .lives {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .life {
+            width: 20px;
+            height: 20px;
+            background: #ff4757;
+            border-radius: 50%;
+            border: 2px solid white;
+            transition: all 0.3s ease;
+        }
+
+        .life.lost {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .toast {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            z-index: 200;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-  <a class="back" href="index.html">← Back</a>
-  <h1>Reaction Game</h1>
-  <div id="gameArea"></div>
-  <button id="startBtn">Start</button>
-  <div id="stats"></div>
+    <div class="game-container">
+        <h1 class="game-title">⚡ Reaction Game ⚡</h1>
+        
+        <div class="game-stats">
+            <div class="stat">Time: <span id="timer">0.0s</span></div>
+            <!-- <div class="stat">Speed: <span id="speed">2</span></div> -->
+        </div>
 
-  <script>
-    const gameArea = document.getElementById("gameArea");
-    const startBtn = document.getElementById("startBtn");
-    const stats = document.getElementById("stats");
+        <div class="lives" id="lives">
+            <div class="life"></div>
+            <div class="life"></div>
+            <div class="life"></div>
+        </div>
 
-    let score = 0;
-    let gameActive = false;
-    let lastTime = 0;
-    let totalReaction = 0;
+        <div class="game-circle" id="gameCircle">
+            <div class="green-section" id="greenSection"></div>
+            <div class="white-bar" id="whiteBar"></div>
+            <div class="center-cover">
+                <div class="center-score" id="score">0</div>
+            </div>
+            <div id="toast" class="toast">Perfect!</div>
+        </div>
 
-    function randomPos(max) {
-      return Math.floor(Math.random() * (max - 60));
-    }
+        <div class="start-screen" id="startScreen" style="display:block;">
+            <h2>⚡ Reaction Game ⚡</h2>
+            <div class="start-instructions">
+                <p>Press <strong>SPACEBAR</strong> when the white bar is in the green section!</p>
+                <p>You have 3 lives. The target gets smaller and faster as you score!</p>
+                <p><strong>Press ENTER to start</strong></p>
+            </div>
+        </div>
 
-    function spawnTarget() {
-      const target = document.createElement("div");
-      target.classList.add("target");
-      target.style.left = randomPos(540) + "px";
-      target.style.top = randomPos(340) + "px";
-      gameArea.appendChild(target);
-      const appearTime = performance.now();
+        <div class="new-high-score" id="newHighScore">
+            <h2>🎉 Game Complete! 🎉</h2>
+            <p>Score: <span id="newHighScoreValue">0</span></p>
+            <input type="text" class="name-input" id="nameInput" placeholder="Enter initials (1-4 chars)" maxlength="4">
+            <div>
+                <button class="save-button" id="saveButton">Save Score</button>
+                <button class="skip-button" id="skipButton">Skip</button>
+            </div>
+        </div>
 
-      target.onclick = () => {
-        const reaction = performance.now() - appearTime;
-        totalReaction += reaction;
-        score++;
-        stats.textContent = `Hits: ${score} | Avg Reaction: ${(totalReaction / score).toFixed(0)} ms`;
-        target.remove();
-        if (gameActive) setTimeout(spawnTarget, 600);
-      };
+        <div class="game-over" id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <div class="leaderboard" id="leaderboard">
+                <h3>🏆 Top 10 Scores 🏆</h3>
+                <div id="leaderboardList"></div>
+            </div>
+            <p>Press <strong>ENTER</strong> to play again</p>
+        </div>
+    </div>
 
-      setTimeout(() => {
-        if (target.parentElement) {
-          target.remove();
-          if (gameActive) setTimeout(spawnTarget, 800);
+    <script>
+        class ReactionGame {
+            constructor() {
+                this.score = 0;
+                this.lives = 3;
+                this.startTime = 0;
+                this.currentTime = 0;
+                this.greenSectionSize = 180; // degrees (start large)
+                this.rotationSpeed = 2; // degrees per frame (positive = CW, negative = CCW)
+                this.currentRotation = 0; // degrees
+                this.greenSectionStart = 0; // degrees [0,360)
+                this.isGameRunning = false;
+                this.animationId = null;
+                
+                this.elements = {
+                    gameCircle: document.getElementById('gameCircle'),
+                    greenSection: document.getElementById('greenSection'),
+                    whiteBar: document.getElementById('whiteBar'),
+                    score: document.getElementById('score'),
+                    timer: document.getElementById('timer'),
+                    lives: document.getElementById('lives'),
+                    gameOver: document.getElementById('gameOver'),
+                    finalScore: document.getElementById('finalScore'),
+                    startScreen: document.getElementById('startScreen'),
+                    newHighScore: document.getElementById('newHighScore'),
+                    newHighScoreValue: document.getElementById('newHighScoreValue'),
+                    nameInput: document.getElementById('nameInput'),
+                    saveButton: document.getElementById('saveButton'),
+                    skipButton: document.getElementById('skipButton'),
+                    leaderboardList: document.getElementById('leaderboardList'),
+                    toast: document.getElementById('toast'),
+                };
+
+                this.leaderboard = this.loadLeaderboard();
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.resetGame();
+                this.showStartScreen();
+            }
+
+            setupEventListeners() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        if (this.isGameRunning) {
+                            this.handleSpacePress();
+                        }
+                    } else if (e.code === 'Enter') {
+                        e.preventDefault();
+                        if (!this.isGameRunning) {
+                            if (this.elements.newHighScore.style.display === 'block') {
+                                this.saveHighScore();
+                            } else {
+                                this.hideAllScreens();
+                                this.resetGame();
+                                this.startGame();
+                            }
+                        }
+                    } else if (e.code === 'Backslash') {
+                        e.preventDefault();
+                        this.quickRestart();
+                    }
+                });
+
+                this.elements.saveButton.addEventListener('click', () => this.saveHighScore());
+                this.elements.skipButton.addEventListener('click', () => this.skipHighScore());
+                this.elements.nameInput.addEventListener('keydown', (e) => {
+                    if (e.code === 'Enter') {
+                        e.preventDefault();
+                        this.saveHighScore();
+                    }
+                });
+            }
+
+            resetGame() {
+                this.score = 0;
+                this.lives = 3;
+                this.startTime = 0;
+                this.currentTime = 0;
+                this.greenSectionSize = 180; // Start with half the circle
+                this.rotationSpeed = 2;
+                this.currentRotation = 0;
+                this.isGameRunning = false;
+                if (this.animationId) cancelAnimationFrame(this.animationId);
+                this.generateNewGreenSection();
+                this.updateDisplay();
+            }
+
+            startGame() {
+                this.isGameRunning = true;
+                this.startTime = Date.now();
+                this.gameLoop();
+            }
+
+            gameLoop() {
+                if (!this.isGameRunning) return;
+                this.currentTime = (Date.now() - this.startTime) / 1000;
+                this.currentRotation = (this.currentRotation + this.rotationSpeed) % 360;
+                if (this.currentRotation < 0) this.currentRotation += 360;
+
+                this.elements.whiteBar.style.transform = 
+                    `translate(-50%, -100%) rotate(${this.currentRotation}deg)`;
+
+                this.updateDisplay();
+                this.animationId = requestAnimationFrame(() => this.gameLoop());
+            }
+
+            // Direction-agnostic membership: compute angle from arc start to bar; inside if <= size
+            isBarInGreen(tolerance = 0) {
+                const barAngle = this.currentRotation; // normalized [0,360)
+                const delta = ( (barAngle - this.greenSectionStart + 360) % 360 );
+                return delta <= (this.greenSectionSize + 0);
+            }
+
+            handleSpacePress() {
+                if (this.isBarInGreen()) {
+                    this.handleSuccess();
+                } else {
+                    this.handleMiss();
+                }
+            }
+
+            handleSuccess() {
+                this.score++;
+                // Shrink target and increase speed; cap bounds
+                this.greenSectionSize = Math.max(15, this.greenSectionSize * 0.9);
+                const newSpeedMag = Math.min(8, Math.abs(this.rotationSpeed) + 0.3);
+                this.rotationSpeed = Math.sign(this.rotationSpeed || 1) * newSpeedMag; // keep same direction
+
+                // Visual feedback
+                // this.elements.gameCircle.classList.add('success-flash');
+                // setTimeout(() => this.elements.gameCircle.classList.remove('success-flash'), 250);
+
+                // "Perfect!" toast if very close to center of arc (within 1% of target size)
+                const perfectWindow = Math.max(0.5, this.greenSectionSize * 0.01);
+                const mid = (this.greenSectionStart + this.greenSectionSize / 2) % 360;
+                const dist = Math.min( ( (this.currentRotation - mid + 360) % 360 ),
+                                       ( (mid - this.currentRotation + 360) % 360 ) );
+                if (dist <= perfectWindow) {
+                    this.showToast("Perfect!");
+                }
+
+                this.generateNewGreenSection();
+                this.updateDisplay();
+            }
+
+            handleMiss() {
+                this.lives--;
+                setTimeout(() => this.elements.gameCircle.classList.remove('pulse'), 300);
+                this.updateDisplay();
+                if (this.lives <= 0) this.endGame();
+            }
+
+            generateNewGreenSection() {
+                this.greenSectionStart = Math.random() * 360;
+                const start = this.greenSectionStart;
+                const size = this.greenSectionSize;
+                const gradient = `conic-gradient(from 0deg, 
+                    transparent 0deg, 
+                    transparent ${start}deg, 
+                    #2ed573 ${start}deg, 
+                    #2ed573 ${start + size}deg, 
+                    transparent ${start + size}deg, 
+                    transparent 360deg)`;
+                this.elements.greenSection.style.background = gradient;
+            }
+
+            updateDisplay() {
+                this.elements.score.textContent = this.score;
+                this.elements.timer.textContent = `${this.currentTime.toFixed(1)}s`;
+                
+                const lifeElements = this.elements.lives.children;
+                for (let i = 0; i < lifeElements.length; i++) {
+                    lifeElements[i].classList.toggle('lost', i >= this.lives);
+                }
+            }
+
+            showToast(text) {
+                this.elements.toast.textContent = text;
+                this.elements.toast.style.display = 'block';
+                clearTimeout(this.toastTimeout);
+                this.toastTimeout = setTimeout(() => {
+                    this.elements.toast.style.display = 'none';
+                }, 600);
+            }
+
+            loadLeaderboard() {
+                const saved = localStorage.getItem('reactionGameLeaderboard');
+                if (saved) {
+                    try { return JSON.parse(saved); } catch { return []; }
+                }
+                return [];
+            }
+
+            saveLeaderboard() {
+                localStorage.setItem('reactionGameLeaderboard', JSON.stringify(this.leaderboard));
+            }
+
+            addToLeaderboard(score, name, time) {
+                if (name) {
+                    this.leaderboard.push({ score, name, time });
+                    this.leaderboard.sort((a, b) => {
+                        if (b.score !== a.score) return b.score - a.score;
+                        return a.time - b.time; // lower time wins ties
+                    });
+                    this.leaderboard = this.leaderboard.slice(0, 10);
+                    this.saveLeaderboard();
+                }
+            }
+
+            shouldShowScoreEntry(score) {
+                if (this.leaderboard.length < 10) return true;
+                const lowestScore = this.leaderboard[this.leaderboard.length - 1].score;
+                return score > lowestScore;
+            }
+
+            displayLeaderboard(currentScore, currentTime) {
+                let html = '';
+                for (let i = 0; i < this.leaderboard.length; i++) {
+                    const entry = this.leaderboard[i];
+                    const isCurrentScore = entry.score === currentScore && Math.abs(entry.time - currentTime) < 0.1 && i < 10;
+                    const timeDisplay = entry.time ? `${entry.time.toFixed(1)}s` : '--';
+                    html += `
+                        <div class="leaderboard-entry ${isCurrentScore ? 'current-score' : ''}">
+                            <span class="leaderboard-rank">${i + 1}.</span>
+                            <span class="leaderboard-name">${entry.name}</span>
+                            <span class="leaderboard-score">${entry.score}</span>
+                            <span class="leaderboard-time">${timeDisplay}</span>
+                        </div>`;
+                }
+                if (!html) html = '<div class="leaderboard-entry">No scores yet - be the first!</div>';
+                this.elements.leaderboardList.innerHTML = html;
+            }
+
+            saveHighScore() {
+                const name = this.elements.nameInput.value.trim();
+                if (name.length >= 1 && name.length <= 4) {
+                    this.addToLeaderboard(this.score, name, this.currentTime);
+                    this.showGameOver();
+                }
+            }
+
+            skipHighScore() { this.showGameOver(); }
+
+            showGameOver() {
+                this.elements.newHighScore.style.display = 'none';
+                this.elements.finalScore.textContent = this.score;
+                this.displayLeaderboard(this.score, this.currentTime);
+                this.elements.gameOver.style.display = 'block';
+            }
+
+            showStartScreen() {
+                this.hideAllScreens();
+                this.elements.startScreen.style.display = 'block';
+            }
+
+            hideAllScreens() {
+                this.elements.startScreen.style.display = 'none';
+                this.elements.gameOver.style.display = 'none';
+                this.elements.newHighScore.style.display = 'none';
+            }
+
+            quickRestart() {
+                this.resetGame();
+                this.showStartScreen();
+            }
+
+            endGame() {
+                this.isGameRunning = false;
+                if (this.animationId) cancelAnimationFrame(this.animationId);
+                if (this.shouldShowScoreEntry(this.score)) {
+                    this.elements.newHighScoreValue.textContent = this.score;
+                    this.elements.nameInput.value = '';
+                    this.elements.newHighScore.style.display = 'block';
+                    this.elements.nameInput.focus();
+                } else {
+                    this.showGameOver();
+                }
+            }
         }
-      }, 1200);
-    }
 
-    startBtn.onclick = () => {
-      if (gameActive) return;
-      gameActive = true;
-      score = 0;
-      totalReaction = 0;
-      stats.textContent = "Get ready...";
-      setTimeout(() => {
-        stats.textContent = "Go!";
-        spawnTarget();
-      }, 500);
-    };
-  </script>
+        new ReactionGame();
+    </script>
 </body>
 </html>
