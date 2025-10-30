@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reaction Game — Rod Space</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: radial-gradient(circle at center, #1a1a1a, #000);
+      font-family: 'Inter', system-ui, sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #00c4cc;
+      text-shadow: 0 0 10px #7d2ae8;
+    }
+
+    #gameArea {
+      position: relative;
+      width: 600px;
+      height: 400px;
+      background: #111;
+      border: 2px solid #444;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 25px rgba(125, 42, 232, 0.5);
+    }
+
+    .target {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #00c4cc, #7d2ae8);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(125, 42, 232, 0.8);
+      transition: transform 0.2s ease;
+    }
+    .target:hover {
+      transform: scale(1.15);
+    }
+
+    #startBtn {
+      background: linear-gradient(90deg, #00c4cc, #7d2ae8);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      transition: opacity 0.3s ease;
+    }
+    #startBtn:hover {
+      opacity: 0.85;
+    }
+
+    #stats {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #ccc;
+    }
+
+    .back {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      text-decoration: none;
+      color: #888;
+      background: rgba(255,255,255,0.05);
+      padding: 8px 14px;
+      border-radius: 20px;
+      transition: background 0.3s;
+    }
+    .back:hover {
+      background: rgba(255,255,255,0.15);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="index.html">← Back</a>
+  <h1>Reaction Game</h1>
+  <div id="gameArea"></div>
+  <button id="startBtn">Start</button>
+  <div id="stats"></div>
+
+  <script>
+    const gameArea = document.getElementById("gameArea");
+    const startBtn = document.getElementById("startBtn");
+    const stats = document.getElementById("stats");
+
+    let score = 0;
+    let gameActive = false;
+    let lastTime = 0;
+    let totalReaction = 0;
+
+    function randomPos(max) {
+      return Math.floor(Math.random() * (max - 60));
+    }
+
+    function spawnTarget() {
+      const target = document.createElement("div");
+      target.classList.add("target");
+      target.style.left = randomPos(540) + "px";
+      target.style.top = randomPos(340) + "px";
+      gameArea.appendChild(target);
+      const appearTime = performance.now();
+
+      target.onclick = () => {
+        const reaction = performance.now() - appearTime;
+        totalReaction += reaction;
+        score++;
+        stats.textContent = `Hits: ${score} | Avg Reaction: ${(totalReaction / score).toFixed(0)} ms`;
+        target.remove();
+        if (gameActive) setTimeout(spawnTarget, 600);
+      };
+
+      setTimeout(() => {
+        if (target.parentElement) {
+          target.remove();
+          if (gameActive) setTimeout(spawnTarget, 800);
+        }
+      }, 1200);
+    }
+
+    startBtn.onclick = () => {
+      if (gameActive) return;
+      gameActive = true;
+      score = 0;
+      totalReaction = 0;
+      stats.textContent = "Get ready...";
+      setTimeout(() => {
+        stats.textContent = "Go!";
+        spawnTarget();
+      }, 500);
+    };
+  </script>
+</body>
+</html>
