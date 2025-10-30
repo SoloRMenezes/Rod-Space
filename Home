@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rod Space — Where creativity meets code</title>
+  <meta name="description" content="Rod Space: Rodrigo's hub for games, school projects, and personal experiments on the web." />
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css" />
+  <script defer src="assets/script.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a href="#" class="brand">
+      <img src="assets/logo.svg" alt="Rod Space logo" width="28" height="28" />
+      <span>Rod Space</span>
+    </a>
+    <nav class="nav">
+      <a href="#home">Home</a>
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌓</button>
+    </nav>
+  </header>
+
+  <main id="home">
+    <section class="hero">
+      <div class="hero-inner">
+        <h1><span class="fade">Welcome to</span> <span class="gradient-text">Rod Space</span></h1>
+        <p class="tagline">Where creativity meets code. Explore my collection of web projects and digital experiences.</p>
+        <div class="cta">
+          <a href="#projects" class="btn primary">Explore Projects</a>
+          <a href="#about" class="btn ghost">About Me</a>
+        </div>
+      </div>
+      <div class="hero-bg" aria-hidden="true"></div>
+    </section>
+
+    <section id="about" class="about">
+      <div class="container">
+        <h2>About Me</h2>
+        <p>Hi, I'm <strong>Rodrigo</strong> — a student who loves building websites and small games for school and for fun. This site is my playground: a place to test ideas, ship experiments, and collect everything I'm proud of (and a few things I'm still fixing).</p>
+        <ul class="quick-facts">
+          <li>💡 Favorite stack: HTML, CSS, JavaScript</li>
+          <li>🎮 I tinker with mini-games and UI micro-interactions</li>
+          <li>📚 I also post school projects (IB DP) when they look nice</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="projects" class="projects">
+      <div class="container">
+        <div class="section-head">
+          <h2>My Websites & Projects</h2>
+          <div class="filters" role="tablist" aria-label="Project filters">
+            <button class="chip active" data-filter="all" role="tab" aria-selected="true">All</button>
+            <button class="chip" data-filter="games" role="tab">Games</button>
+            <button class="chip" data-filter="school" role="tab">School</button>
+            <button class="chip" data-filter="personal" role="tab">Personal</button>
+          </div>
+        </div>
+
+        <div class="grid">
+          <article class="card" data-tags="games">
+            <div class="card-top">
+              <div class="icon">🎯</div>
+              <h3>Reaction Game</h3>
+              <p>Challenge your reflexes. Hit the targets before they vanish.</p>
+            </div>
+            <div class="card-actions">
+              <a href="#" class="btn small primary" aria-label="Open Reaction Game">Play</a>
+              <span class="pill">Games</span>
+            </div>
+          </article>
+
+          <article class="card" data-tags="personal school">
+            <div class="card-top">
+              <div class="icon">🌌</div>
+              <h3>DreamGrounds</h3>
+              <p>Where Personalisation Meets Dreams. Concept site & visual prototype.</p>
+            </div>
+            <div class="card-actions">
+              <a href="#" class="btn small primary" aria-label="Open DreamGrounds">Visit</a>
+              <span class="pill">Personal</span>
+            </div>
+          </article>
+
+          <article class="card disabled" data-tags="school">
+            <div class="card-top">
+              <div class="icon">❓</div>
+              <h3>Physics Visualiser</h3>
+              <p>Motion, forces, and energy — interactive diagrams for IB DP.</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn small" disabled>Coming Soon</button>
+              <span class="pill">School</span>
+            </div>
+          </article>
+
+          <article class="card disabled" data-tags="games">
+            <div class="card-top">
+              <div class="icon">🧩</div>
+              <h3>Puzzle Lab</h3>
+              <p>Quick brain teasers & pattern games built in vanilla JS.</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn small" disabled>Coming Soon</button>
+              <span class="pill">Games</span>
+            </div>
+          </article>
+
+          <article class="card disabled" data-tags="personal">
+            <div class="card-top">
+              <div class="icon">🗂️</div>
+              <h3>Portfolio v2</h3>
+              <p>Revamped design, better animations, and live demos.</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn small" disabled>Coming Soon</button>
+              <span class="pill">Personal</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <div class="container">
+        <h2>Contact</h2>
+        <p>Want to collaborate or give feedback? Reach out:</p>
+        <div class="contact-rows">
+          <a class="contact-item" href="mailto:rodrigo@example.com">✉️ rodrigo@example.com</a>
+          <a class="contact-item" href="https://github.com/" target="_blank" rel="noopener">🐙 GitHub</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span id="year"></span> Rod Space. All rights reserved.</span>
+      <a href="#home" class="to-top" aria-label="Back to top">↑</a>
+    </div>
+  </footer>
+</body>
+</html>
