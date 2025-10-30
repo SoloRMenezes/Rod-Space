@@ -1,37 +1,25 @@
-// ===== EXPANDABLE CARDS =====
-const cards = document.querySelectorAll('.cards-3.expandable .card');
-
-cards.forEach(card => {
-  card.addEventListener('click', () => {
-    const isOpen = card.classList.contains('expanded');
-
-    // collapse all cards first
-    cards.forEach(c => c.classList.remove('expanded'));
-
-    // expand clicked one if it was closed
-    if (!isOpen) card.classList.add('expanded');
-    if (!isOpen) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-
-  // optional keyboard accessibility
-  card.addEventListener('keypress', e => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      card.click();
-    }
-  });
+// Smooth reveal
+const reveals = document.querySelectorAll(".reveal");
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => e.isIntersecting && e.target.classList.add("in"));
 });
-// === Expandable Cards & Tiles ===
-function enableExpandable(selector) {
-  const elements = document.querySelectorAll(selector);
-  elements.forEach(el => {
-    el.addEventListener('click', () => {
-      const isOpen = el.classList.contains('expanded');
-      elements.forEach(e => e.classList.remove('expanded'));
-      if (!isOpen) el.classList.add('expanded');
+reveals.forEach(r => observer.observe(r));
+
+// Expand cards & tiles
+function makeExpandable(selector) {
+  const items = document.querySelectorAll(selector);
+  items.forEach(i => {
+    i.addEventListener("click", () => {
+      const isOpen = i.classList.contains("expanded");
+      items.forEach(e => e.classList.remove("expanded"));
+      if (!isOpen) i.classList.add("expanded");
     });
   });
 }
+makeExpandable(".card");
+makeExpandable(".tile");
 
-enableExpandable('.cards-3.expandable .card');
-enableExpandable('.cards-grid.expandable .tile');
+// Modal
+const modal = document.getElementById("orderModal");
+document.getElementById("orderBtn").onclick = () => modal.showModal();
+document.getElementById("closeModal").onclick = () => modal.close();
