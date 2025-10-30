@@ -49,3 +49,25 @@
   z-index: 0;
   pointer-events: none;
 }
+/* EXPANDABLE TILE ANIMATION */
+.tile {
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(2,6,23,.18);
+}
+.tile .details {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-8px);
+  transition: all 0.45s cubic-bezier(.25,.8,.25,1);
+}
+.tile.expanded .details {
+  max-height: 220px;
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 10px;
+}
