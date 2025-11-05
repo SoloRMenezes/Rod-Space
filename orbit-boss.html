@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Orbit Boss — Multi-Shield Version</title>
+<style>
+  html,body{height:100%;margin:0;background:#0b1020;color:#e9eef9;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
+  #hud{position:fixed;inset:0 0 auto 0;display:flex;gap:.75rem;align-items:center;justify-content:center;padding:.5rem;pointer-events:none}
+  #hud .pill{background:#111a35;border:1px solid #263158;padding:.35rem .6rem;border-radius:999px;box-shadow:0 1px 8px rgba(0,0,0,.35)}
+  #hud .pill strong{color:#9bd1ff}
+  #footer{position:fixed;inset:auto 0 0 0;display:flex;justify-content:center;padding:.35rem;font-size:.9rem;opacity:.85}
+  #footer span{background:#0f1730;border:1px solid #263158;padding:.35rem .6rem;border-radius:.6rem}
+  canvas{display:block;width:100vw;height:100vh}
+  #centerMsg{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;letter-spacing:.5px;text-align:center}
+  #centerMsg .card{background:rgba(7,10,24,.8);border:1px solid #24305a;border-radius:16px;padding:20px 22px;max-width:680px}
+  kbd{background:#101735;border:1px solid #31407a;border-bottom-width:2px;border-radius:6px;padding:.15rem .35rem;color:#cfe5ff}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="hud"></div>
+<div id="centerMsg" hidden>
+  <div class="card" id="msg"></div>
+</div>
+<div id="footer"><span>
+  Controls: <kbd>W</kbd>/<kbd>S</kbd> radius • <kbd>Space</kbd> change spin direction • <kbd>R</kbd> restart
+</span></div>
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const hud = document.getElementById('hud');
+  const centerMsg = document.getElementById('centerMsg');
+  const msg = document.getElementById('msg');
+
+  const state = { w: innerWidth, h: innerHeight, running: true, level: 1, score: 0, time: 0, rngSeed: 1337 };
+
+  function resize(){ canvas.width = state.w = innerWidth * devicePixelRatio; canvas.height = state.h = innerHeight * devicePixelRatio; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); }
+  addEventListener('resize', resize, {passive:true}); resize();
+
+  const TAU = Math.PI*2; const clamp = (v,a,b)=>Math.max(a,Math.min(b,v)); function rand(){ state.rngSeed = (1103515245*state.rngSeed + 12345) & 0x7fffffff; return state.rngSeed/0x7fffffff; }
+
+  const player = { angle: 0, radius: 220, minR: 140, maxR: 300, spin: 1, speed: 2.2, alive: true };
+
+  const boss = { hp: 20, maxHp: 20, radius: 36, rings: [], ringSpeed: 0.6, fireTimer: 0, fireRate: 1.2 };
+
+  const bullets = [];
+  const keys = new Set();
+  onkeydown = e => { if(['w','s',' ','r'].includes(e.key.toLowerCase())) e.preventDefault(); keys.add(e.key.toLowerCase()); };
+  onkeyup = e => { keys.delete(e.key.toLowerCase()); };
+
+  function initRings(){
+    boss.rings = [];
+    const num = Math.min(1 + Math.floor(state.level/2), 4);
+    for(let i=0;i<num;i++){
+      let r = 120 + i*40;
+      let w = 22;
+      if(num>2 && i===Math.floor(num/2)) w = 14; // middle one smaller once
+      boss.rings.push({r:r,w:w,angle:rand()*TAU});
+    }
+  }
+
+  function nextLevel(){
+    state.level++;
+    state.score += 100;
+    boss.maxHp = Math.floor(20 + (state.level-1)*10);
+    boss.hp = boss.maxHp;
+    boss.fireRate = Math.max(0.5, boss.fireRate - 0.05);
+    boss.ringSpeed += 0.1;
+    initRings();
+    flashCenter(`Level ${state.level}<br><small>+Shield layer & stronger attacks!</small>`);
+  }
+
+  function reset(){
+    state.level = 1; state.score = 0; state.time = 0; state.running = true; state.rngSeed = 1337;
+    player.angle = 0; player.radius = 220; player.spin = 1; player.alive = true;
+    boss.hp = boss.maxHp = 20; boss.ringSpeed = 0.6; boss.fireTimer=0; boss.fireRate=1.2;
+    initRings(); bullets.length = 0; hideCenter();
+  }
+
+  function flashCenter(html){ msg.innerHTML = html; centerMsg.hidden = false; setTimeout(()=>centerMsg.hidden=true, 1200); }
+  function showGameOver(){ centerMsg.hidden=false; msg.innerHTML=`<div style='font-size:1.4rem;margin-bottom:.4rem;'>Game Over</div><div>Score: <strong>${state.score}</strong> — Level: <strong>${state.level}</strong></div><div>Press <kbd>R</kbd> to restart</div>`; }
+  function hideCenter(){ centerMsg.hidden=true; }
+
+  function bossBurst(){
+    const n = 12 + Math.floor(state.level*2*rand());
+    const base = rand()*TAU;
+    const spd = 180 + state.level*30;
+    for(let i=0;i<n;i++){
+      const a = base + i*(TAU/n);
+      bullets.push({x:state.w/2,y:state.h/2,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,owner:'b'});
+    }
+  }
+
+  function update(dt){
+    state.time += dt;
+    if(!player.alive) return;
+
+    if(keys.has('w')) player.radius -= 140*dt;
+    if(keys.has('s')) player.radius += 140*dt;
+    player.radius = clamp(player.radius, player.minR, player.maxR);
+
+    if(keys.has(' ')) { player.spin *= -1; keys.delete(' '); }
+    player.angle += player.spin * player.speed * dt;
+
+    boss.fireTimer += dt;
+    if(boss.fireTimer >= boss.fireRate){ boss.fireTimer = 0; bossBurst(); }
+    for(const r of boss.rings) r.angle += boss.ringSpeed*dt;
+
+    for(let i=bullets.length-1;i>=0;i--){
+      const b=bullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt;
+      if(b.x<-40||b.y<-40||b.x>state.w+40||b.y>state.h+40){ bullets.splice(i,1); continue; }
+      const cx=state.w/2, cy=state.h/2; const dx=b.x-cx, dy=b.y-cy; const dist=Math.hypot(dx,dy);
+
+      if(b.owner==='p'){
+        let blocked=false;
+        for(const r of boss.rings){
+          const withinRing = dist>(r.r - r.w/2)&&dist<(r.r + r.w/2);
+          if(withinRing){ blocked=true; break; }
+        }
+        if(blocked){ bullets.splice(i,1); continue; }
+        if(dist<=boss.radius){ bullets.splice(i,1); boss.hp--; state.score+=5; if(boss.hp<=0) nextLevel(); }
+      } else {
+        const px=cx+Math.cos(player.angle)*player.radius, py=cy+Math.sin(player.angle)*player.radius;
+        if(Math.hypot(b.x-px,b.y-py)<12){ bullets.splice(i,1); player.alive=false; showGameOver(); state.running=false; }
+      }
+    }
+  }
+
+  function draw(){
+    const w=state.w/devicePixelRatio, h=state.h/devicePixelRatio;
+    ctx.clearRect(0,0,w,h);
+    const cx=w/2, cy=h/2;
+
+    ctx.save(); ctx.globalAlpha=.12; ctx.lineWidth=1; ctx.strokeStyle='#3c4b7a';
+    for(let r=60;r<Math.max(w,h);r+=60){ ctx.beginPath(); ctx.arc(cx,cy,r,0,TAU); ctx.stroke(); }
+    ctx.restore();
+
+    ctx.fillStyle='#ff6b9c'; ctx.beginPath(); ctx.arc(cx,cy,boss.radius,0,TAU); ctx.fill();
+
+    for(const r of boss.rings){
+      ctx.save(); ctx.translate(cx,cy); ctx.rotate(r.angle);
+      ctx.lineWidth=r.w; ctx.strokeStyle='#8ed0ff';
+      ctx.beginPath(); ctx.arc(0,0,r.r,0,TAU); ctx.stroke(); ctx.restore();
+    }
+
+    const px=cx+Math.cos(player.angle)*player.radius, py=cy+Math.sin(player.angle)*player.radius;
+    const shipAngle=player.angle+Math.PI;
+    ctx.save(); ctx.translate(px,py); ctx.rotate(shipAngle);
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-10,-7); ctx.lineTo(-10,7); ctx.closePath(); ctx.fill(); ctx.restore();
+
+    for(const b of bullets){ ctx.beginPath(); ctx.fillStyle=(b.owner==='p')?'#e6f7ff':'#ffa76b'; ctx.arc(b.x/devicePixelRatio,b.y/devicePixelRatio,3,0,TAU); ctx.fill(); }
+
+    hud.innerHTML=`<div class='pill'><strong>Level</strong> ${state.level}</div><div class='pill'><strong>Boss</strong> ${Math.max(0,boss.hp)}/${boss.maxHp}</div><div class='pill'><strong>Score</strong> ${state.score}</div>`;
+  }
+
+  let last=performance.now();
+  function loop(now){ const dt=Math.min(0.033,(now-last)/1000); last=now; if(state.running) update(dt); draw(); requestAnimationFrame(loop);} requestAnimationFrame(loop);
+
+  addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='r') reset(); });
+
+  initRings();
+  flashCenter(`<div style='font-size:1.2rem;margin-bottom:.4rem;'>Orbit Boss</div><div>Each level adds more shields and stronger attacks.</div>`);
+})();
+</script>
+</body>
+</html>
