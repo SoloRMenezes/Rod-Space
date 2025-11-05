@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Orbit Boss — Multi‑Gap Shields + Models</title>
+<title>Orbit Boss — WASD Version</title>
 <style>
   html,body{height:100%;margin:0;background:#0b1020;color:#e9eef9;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
   #hud{position:fixed;inset:0 0 auto 0;display:flex;gap:.75rem;align-items:center;justify-content:center;padding:.5rem;pointer-events:none}
@@ -12,7 +12,8 @@
   #footer{position:fixed;inset:auto 0 0 0;display:flex;justify-content:center;padding:.35rem;font-size:.9rem;opacity:.85}
   #footer span{background:#0f1730;border:1px solid #263158;padding:.35rem .6rem;border-radius:.6rem}
   canvas{display:block;width:100vw;height:100vh}
-  #centerMsg{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;letter-spacing:.5px;text-align:center}
+  #centerMsg{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;letter-spacing:.5px;text-align:center;transition:opacity .5s ease;}
+  #centerMsg.hidden{opacity:0;pointer-events:none;}
   #centerMsg .card{background:rgba(7,10,24,.8);border:1px solid #24305a;border-radius:16px;padding:20px 22px;max-width:680px}
   kbd{background:#101735;border:1px solid #31407a;border-bottom-width:2px;border-radius:6px;padding:.15rem .35rem;color:#cfe5ff}
 </style>
@@ -20,11 +21,11 @@
 <body>
 <canvas id="game"></canvas>
 <div id="hud"></div>
-<div id="centerMsg" hidden>
-  <div class="card" id="msg"></div>
+<div id="centerMsg">
+  <div class="card" id="msg">Orbit Boss<br><small>Auto-fire. Move with <kbd>WASD</kbd>.</small></div>
 </div>
 <div id="footer"><span>
-  Controls: <kbd>W</kbd>/<kbd>S</kbd> radius • <kbd>Shift</kbd> flip spin • <kbd>R</kbd> restart — Auto‑fires
+  Controls: <kbd>W</kbd>/<kbd>S</kbd> radius • <kbd>A</kbd>/<kbd>D</kbd> rotate • <kbd>R</kbd> restart — Auto-fires
 </span></div>
 <script>
 (() => {
@@ -32,187 +33,94 @@
   const ctx = canvas.getContext('2d');
   const hud = document.getElementById('hud');
   const centerMsg = document.getElementById('centerMsg');
-  const msg = document.getElementById('msg');
 
-  const state = { w: innerWidth, h: innerHeight, running: true, level: 1, score: 0, time: 0, rngSeed: 1337 };
+  const state = { w: innerWidth, h: innerHeight, running: true, level: 1, score: 0, time: 0, rngSeed: 1337, moved: false };
   function resize(){ canvas.width = state.w = innerWidth * devicePixelRatio; canvas.height = state.h = innerHeight * devicePixelRatio; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); }
   addEventListener('resize', resize, {passive:true}); resize();
 
   const TAU = Math.PI*2; const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)); function rand(){ state.rngSeed=(1103515245*state.rngSeed+12345)&0x7fffffff; return state.rngSeed/0x7fffffff; }
 
-  // Player with model
   const player = { angle: 0, radius: 180, minR: 120, maxR: 260, spin: 1, speed: 2.2, alive: true, fireTimer: 0, firePeriod: 2.0 };
-
-  // Boss with multiple rotating ring shields, each with its own gap
   const boss = { hp: 20, maxHp: 20, coreR: 26, rings: [], ringSpeedBase: 0.7, fireTimer: 0, fireCooldown: 1.4 };
-
-  const bullets = []; // {x,y,vx,vy,r,owner}
+  const bullets = [];
   const keys = new Set();
 
   onkeydown = e => {
     const k=e.key.toLowerCase();
-    if(['w','s','shift','r'].includes(k)) e.preventDefault();
+    if(['w','a','s','d','r'].includes(k)) e.preventDefault();
     keys.add(k);
+    if(!state.moved && ['w','a','s','d'].includes(k)) hideCenter();
   };
   onkeyup = e => { keys.delete(e.key.toLowerCase()); };
 
   function initLevel(){
-    // Scale difficulty & sizes
     const lvl = state.level;
     boss.maxHp = Math.floor(18 + (lvl-1)*9);
     boss.hp = boss.maxHp;
     boss.fireCooldown = Math.max(0.9, 1.6 - (lvl-1)*0.08);
     player.firePeriod = clamp(2.0 - (lvl-1)*0.2, 0.3, 2.0);
 
-    // Build ring shields: level 1 => 0 rings, level 2 => 1 ring, etc.
     boss.rings = [];
     const ringCount = Math.max(0, Math.min(5, lvl-1));
-    const baseR = 95; // smaller arena
+    const baseR = 95;
     for(let i=0;i<ringCount;i++){
-      const r = baseR + i*32; // spacing
-      const w = 14; // thinner rings
-      const gap = clamp(0.9 - i*0.1, 0.5, 1.2); // radians (~50–70°)
+      const r = baseR + i*32;
+      const w = 14;
+      const gap = clamp(0.9 - i*0.1, 0.5, 1.2);
       boss.rings.push({ r, w, gap, angle: rand()*TAU, speed: boss.ringSpeedBase * (1 + i*0.25) * (rand()*0.4+0.8) * (i%2? -1:1) });
     }
   }
 
-  function reset(){ state.level=1; state.score=0; state.time=0; state.running=true; state.rngSeed=1337; player.angle=0; player.radius=180; player.spin=1; player.alive=true; player.fireTimer=0; initLevel(); bullets.length=0; hideCenter(); }
-
+  function reset(){ state.level=1; state.score=0; state.time=0; state.running=true; state.rngSeed=1337; player.angle=0; player.radius=180; player.alive=true; player.fireTimer=0; bullets.length=0; state.moved=false; centerMsg.classList.remove('hidden'); initLevel(); }
   function nextLevel(){ state.level++; state.score+=150; initLevel(); bullets.length=0; flashCenter(`Level ${state.level}<br><small>Extra shield ring & faster fire.</small>`); }
 
-  // Shooting
-  function shootPlayer(){
-    const cx=state.w/2, cy=state.h/2; const px=cx+Math.cos(player.angle)*player.radius; const py=cy+Math.sin(player.angle)*player.radius;
-    const ang=Math.atan2(cy-py,cx-px); const spd=540; bullets.push({x:px,y:py,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,r:3.2,owner:'p'});
-  }
-  function bossShoot(){
-    // 1–2 bullets at low levels, scaling up slowly
-    const lvl=state.level; const n=clamp(1 + Math.floor((lvl-1)/2), 1, 8);
-    const base = rand()*TAU; const spd = 160 + lvl*26;
-    for(let i=0;i<n;i++){
-      const a = base + i*(TAU/n);
-      bullets.push({x:state.w/2,y:state.h/2,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:3.2,owner:'b'});
-    }
-  }
+  function shootPlayer(){ const cx=state.w/2, cy=state.h/2; const px=cx+Math.cos(player.angle)*player.radius; const py=cy+Math.sin(player.angle)*player.radius; const ang=Math.atan2(cy-py,cx-px); const spd=540; bullets.push({x:px,y:py,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,r:3.2,owner:'p'}); }
+  function bossShoot(){ const lvl=state.level; const n=clamp(1 + Math.floor((lvl-1)/2), 1, 8); const base = rand()*TAU; const spd = 160 + lvl*26; for(let i=0;i<n;i++){ const a = base + i*(TAU/n); bullets.push({x:state.w/2,y:state.h/2,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:3.2,owner:'b'}); } }
 
-  function flashCenter(html){ msg.innerHTML=html; centerMsg.hidden=false; setTimeout(()=>centerMsg.hidden=true,1200); }
-  function showGameOver(){ centerMsg.hidden=false; msg.innerHTML=`<div style='font-size:1.4rem;margin-bottom:.4rem;'>Game Over</div><div>Score: <strong>${state.score}</strong> — Level: <strong>${state.level}</strong></div><div>Press <kbd>R</kbd> to restart</div>`; }
-  function hideCenter(){ centerMsg.hidden=true; }
+  function flashCenter(html){ const msg=document.getElementById('msg'); msg.innerHTML=html; centerMsg.classList.remove('hidden'); setTimeout(()=>centerMsg.classList.add('hidden'),1200); }
+  function showGameOver(){ centerMsg.classList.remove('hidden'); document.getElementById('msg').innerHTML=`<div style='font-size:1.4rem;margin-bottom:.4rem;'>Game Over</div><div>Score: <strong>${state.score}</strong> — Level: <strong>${state.level}</strong></div><div>Press <kbd>R</kbd> to restart</div>`; }
+  function hideCenter(){ centerMsg.classList.add('hidden'); state.moved=true; }
 
   function update(dt){
     state.time += dt; if(!player.alive) return;
 
-    // Controls
+    if(keys.has('a')) player.angle -= player.speed*dt;
+    if(keys.has('d')) player.angle += player.speed*dt;
     if(keys.has('w')) player.radius -= 130*dt;
     if(keys.has('s')) player.radius += 130*dt;
     player.radius = clamp(player.radius, player.minR, player.maxR);
-    if(keys.has('shift')) { player.spin*=-1; keys.delete('shift'); }
-    player.angle += player.spin*player.speed*dt;
 
-    // Auto fire (player)
     player.fireTimer += dt; if(player.fireTimer >= player.firePeriod){ player.fireTimer = 0; shootPlayer(); }
 
-    // Boss fire
     boss.fireTimer += dt; if(boss.fireTimer >= boss.fireCooldown){ boss.fireTimer=0; bossShoot(); }
 
-    // Rotate rings
     for(const r of boss.rings) r.angle += r.speed*dt;
 
-    // Move bullets + collisions
     for(let i=bullets.length-1;i>=0;i--){
-      const b = bullets[i]; b.x += b.vx*dt; b.y += b.vy*dt;
+      const b=bullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt;
       if(b.x<-60||b.y<-60||b.x>state.w+60||b.y>state.h+60){ bullets.splice(i,1); continue; }
       const cx=state.w/2, cy=state.h/2; const dx=b.x-cx, dy=b.y-cy; const dist=Math.hypot(dx,dy);
-
       if(b.owner==='p'){
-        // Check ring blocking with rotating gaps
         let blocked=false;
-        for(const ring of boss.rings){
-          const inBand = dist>(ring.r-ring.w/2) && dist<(ring.r+ring.w/2);
-          if(inBand){
-            let a = Math.atan2(dy,dx) - ring.angle; a%=TAU; if(a<0)a+=TAU;
-            if(a > ring.gap) { blocked=true; break; } // outside the gap -> blocked
-          }
-        }
+        for(const ring of boss.rings){ const inBand=dist>(ring.r-ring.w/2)&&dist<(ring.r+ring.w/2); if(inBand){ let a=Math.atan2(dy,dx)-ring.angle; a%=TAU; if(a<0)a+=TAU; if(a>ring.gap){blocked=true;break;} } }
         if(blocked){ bullets.splice(i,1); continue; }
-        // Hit core
         if(dist <= boss.coreR){ bullets.splice(i,1); boss.hp--; state.score+=5; if(boss.hp<=0) nextLevel(); }
       } else {
-        // Enemy bullet hits ship (smaller, fair hitbox)
-        const px=cx+Math.cos(player.angle)*player.radius, py=cy+Math.sin(player.angle)*player.radius;
-        if(Math.hypot(b.x-px,b.y-py) < 10){ bullets.splice(i,1); player.alive=false; showGameOver(); state.running=false; }
+        const px=state.w/2+Math.cos(player.angle)*player.radius, py=state.h/2+Math.sin(player.angle)*player.radius;
+        if(Math.hypot(b.x-px,b.y-py)<10){ bullets.splice(i,1); player.alive=false; showGameOver(); state.running=false; }
       }
     }
   }
 
-  // Drawing helpers — MODELS
-  function drawShip(x,y,ang){
-    ctx.save(); ctx.translate(x,y); ctx.rotate(ang);
-    // fuselage
-    ctx.fillStyle = '#e8f4ff';
-    ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(-12,-8); ctx.lineTo(-6,0); ctx.lineTo(-12,8); ctx.closePath(); ctx.fill();
-    // cockpit
-    ctx.fillStyle = '#9bd1ff'; ctx.beginPath(); ctx.arc(0,0,3,0,TAU); ctx.fill();
-    // fins
-    ctx.fillStyle = '#cfe5ff'; ctx.beginPath(); ctx.moveTo(-6,-6); ctx.lineTo(-12,-10); ctx.lineTo(-8,-4); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(-6,6); ctx.lineTo(-12,10); ctx.lineTo(-8,4); ctx.closePath(); ctx.fill();
-    // exhaust pulse
-    const pulse = 3 + Math.sin(state.time*10)*1.2; ctx.fillStyle='#fff7c2'; ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(-18,-pulse); ctx.lineTo(-18,pulse); ctx.closePath(); ctx.fill();
-    ctx.restore();
-  }
+  function drawShip(x,y,ang){ ctx.save(); ctx.translate(x,y); ctx.rotate(ang); ctx.fillStyle = '#e8f4ff'; ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(-12,-8); ctx.lineTo(-6,0); ctx.lineTo(-12,8); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#9bd1ff'; ctx.beginPath(); ctx.arc(0,0,3,0,TAU); ctx.fill(); const pulse=3+Math.sin(state.time*10)*1.2; ctx.fillStyle='#fff7c2'; ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(-18,-pulse); ctx.lineTo(-18,pulse); ctx.closePath(); ctx.fill(); ctx.restore(); }
 
-  function drawBoss(cx,cy){
-    // core
-    const t = state.time;
-    const r = boss.coreR + Math.sin(t*2)*1.5;
-    const grd = ctx.createRadialGradient(cx,cy,2,cx,cy,r+8); grd.addColorStop(0,'#ff7bb0'); grd.addColorStop(1,'#641a3a');
-    ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(cx,cy,r,0,TAU); ctx.fill();
-    // spikes (procedural)
-    ctx.save(); ctx.translate(cx,cy); ctx.rotate(t*0.8);
-    ctx.strokeStyle = '#ffb6d2'; ctx.lineWidth=2; ctx.globalAlpha=.8;
-    for(let i=0;i<8;i++){
-      ctx.rotate(TAU/8);
-      ctx.beginPath(); ctx.moveTo(r+3,0); ctx.lineTo(r+10,0); ctx.stroke();
-    }
-    ctx.restore(); ctx.globalAlpha=1;
-  }
+  function drawBoss(cx,cy){ const t=state.time; const r=boss.coreR+Math.sin(t*2)*1.5; const grd=ctx.createRadialGradient(cx,cy,2,cx,cy,r+8); grd.addColorStop(0,'#ff7bb0'); grd.addColorStop(1,'#641a3a'); ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(cx,cy,r,0,TAU); ctx.fill(); ctx.save(); ctx.translate(cx,cy); ctx.rotate(t*0.8); ctx.strokeStyle='#ffb6d2'; ctx.lineWidth=2; ctx.globalAlpha=.8; for(let i=0;i<8;i++){ ctx.rotate(TAU/8); ctx.beginPath(); ctx.moveTo(r+3,0); ctx.lineTo(r+10,0); ctx.stroke(); } ctx.restore(); ctx.globalAlpha=1; }
 
-  function draw(){
-    const w=state.w/devicePixelRatio, h=state.h/devicePixelRatio; ctx.clearRect(0,0,w,h);
-    const cx=w/2, cy=h/2;
+  function draw(){ const w=state.w/devicePixelRatio, h=state.h/devicePixelRatio; ctx.clearRect(0,0,w,h); const cx=w/2, cy=h/2; ctx.save(); ctx.globalAlpha=.10; ctx.lineWidth=1; ctx.strokeStyle='#3c4b7a'; for(let rr=50; rr<Math.max(w,h); rr+=50){ ctx.beginPath(); ctx.arc(cx,cy,rr,0,TAU); ctx.stroke(); } ctx.restore(); drawBoss(cx,cy); for(const ring of boss.rings){ ctx.save(); ctx.translate(cx,cy); ctx.rotate(ring.angle); ctx.lineWidth=ring.w; ctx.strokeStyle='#8ed0ff'; ctx.beginPath(); ctx.arc(0,0, ring.r, ring.gap, TAU); ctx.stroke(); ctx.restore(); } const px=cx+Math.cos(player.angle)*player.radius, py=cy+Math.sin(player.angle)*player.radius; const shipAngle=player.angle+Math.PI; drawShip(px,py,shipAngle); for(const b of bullets){ ctx.beginPath(); ctx.fillStyle=(b.owner==='p')?'#e6f7ff':'#ffa76b'; ctx.arc(b.x/devicePixelRatio,b.y/devicePixelRatio,b.r,0,TAU); ctx.fill(); } hud.innerHTML=`<div class='pill'><strong>Level</strong> ${state.level}</div><div class='pill'><strong>Boss</strong> ${Math.max(0,boss.hp)}/${boss.maxHp}</div><div class='pill'><strong>Score</strong> ${state.score}</div>`; }
 
-    // subtle radial rings background
-    ctx.save(); ctx.globalAlpha=.10; ctx.lineWidth=1; ctx.strokeStyle='#3c4b7a';
-    for(let rr=50; rr<Math.max(w,h); rr+=50){ ctx.beginPath(); ctx.arc(cx,cy,rr,0,TAU); ctx.stroke(); }
-    ctx.restore();
-
-    drawBoss(cx,cy);
-
-    // rings with gaps
-    for(const ring of boss.rings){
-      ctx.save(); ctx.translate(cx,cy); ctx.rotate(ring.angle);
-      ctx.lineWidth = ring.w; ctx.strokeStyle = '#8ed0ff';
-      ctx.beginPath(); ctx.arc(0,0, ring.r, ring.gap, TAU); ctx.stroke();
-      ctx.restore();
-    }
-
-    // player
-    const px=cx+Math.cos(player.angle)*player.radius, py=cy+Math.sin(player.angle)*player.radius; const shipAngle=player.angle+Math.PI;
-    drawShip(px,py,shipAngle);
-
-    // bullets
-    for(const b of bullets){ ctx.beginPath(); ctx.fillStyle=(b.owner==='p')?'#e6f7ff':'#ffa76b'; ctx.arc(b.x/devicePixelRatio,b.y/devicePixelRatio,b.r,0,TAU); ctx.fill(); }
-
-    hud.innerHTML=`<div class='pill'><strong>Level</strong> ${state.level}</div><div class='pill'><strong>Boss</strong> ${Math.max(0,boss.hp)}/${boss.maxHp}</div><div class='pill'><strong>Score</strong> ${state.score}</div><div class='pill'><strong>Fire</strong> ${player.firePeriod.toFixed(2)}s</div>`;
-  }
-
-  let last=performance.now();
-  function loop(now){ const dt=Math.min(0.033,(now-last)/1000); last=now; if(state.running) update(dt); draw(); requestAnimationFrame(loop);} requestAnimationFrame(loop);
-
+  let last=performance.now(); function loop(now){ const dt=Math.min(0.033,(now-last)/1000); last=now; if(state.running) update(dt); draw(); requestAnimationFrame(loop);} requestAnimationFrame(loop);
   addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='r') reset(); });
-
   initLevel();
-  flashCenter(`<div style='font-size:1.2rem;margin-bottom:.4rem;'>Orbit Boss</div><div>Auto‑fire. Hit through rotating shield gaps.</div>`);
 })();
 </script>
 </body>
