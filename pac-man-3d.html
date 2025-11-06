@@ -3,15 +3,18 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Pac-Man 3D — Arcade FPS + Minimap</title>
+<title>Pac-Man 3D — Arcade FPS</title>
 <style>
   html,body{height:100%;margin:0;background:#03060f;color:#bfe9ff;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,sans-serif;overflow:hidden}
   #game{display:block;width:100vw;height:100vh}
-  #hud{position:fixed;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:rgba(8,12,24,.6);border:1px solid rgba(191,233,255,.18);padding:6px 10px;border-radius:999px;backdrop-filter:blur(6px);z-index:10}
+
+  /* ===== Minimap + compact HUD (bottom-left) ===== */
+  #hudMini{position:fixed;left:12px;bottom:200px;z-index:8;text-shadow:0 1px 0 rgba(0,0,0,.45)}
+  #hudMini .row{display:flex;gap:.6rem;align-items:center}
   .pill{padding:2px 8px;border-radius:999px;border:1px solid rgba(191,233,255,.25);background:#0c1326}
   #map{position:fixed;left:12px;bottom:12px;width:160px;height:176px;background:rgba(10,20,40,.86);border:2px solid #2049ff;border-radius:10px;box-shadow:0 0 10px rgba(32,73,255,.35) inset;z-index:8;display:none}
 
-  /* ✚ Shift-Lock Crosshair (Roblox-style plus) */
+  /* ✚ Crosshair */
   #crosshair{
     position:fixed;top:50%;left:50%;
     width:20px;height:20px;transform:translate(-50%,-50%);
@@ -23,29 +26,103 @@
   #crosshair::before{width:2px;height:20px;left:9px;top:0}
   #crosshair::after{width:20px;height:2px;left:0;top:9px}
 
-  #msg{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:12}
-  #msg>div{padding:10px 14px;border-radius:10px;background:rgba(10,16,28,.78);border:1px solid rgba(191,233,255,.2)}
+  /* Lives popup on death */
+  #lifePopup{position:fixed;inset:0;display:none;place-items:center;z-index:12}
+  #lifePopup .box{padding:12px 18px;border-radius:12px;background:rgba(8,12,24,.75);border:1px solid rgba(191,233,255,.2)}
+  .fade{animation:fade .75s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+  /* ===== Start Screen ===== */
+  #startScreen{
+    position:fixed;inset:0;z-index:20;display:grid;place-items:center;
+    background:radial-gradient(1200px 600px at 50% -20%, #0b1a6e 0%, #06113d 35%, #03060f 70%);
+  }
+  .menu{
+    width:min(90vw,540px);
+    background:rgba(6,12,28,.6);
+    border:1px solid rgba(191,233,255,.15);
+    border-radius:18px;
+    padding:28px 26px;
+    box-shadow:0 10px 40px rgba(0,0,0,.5), inset 0 0 40px rgba(32,73,255,.1);
+    text-align:center;
+  }
+  .title{font-size:40px;font-weight:800;letter-spacing:.02em;margin:0 0 18px}
+  .subtitle{opacity:.8;margin-top:2px;margin-bottom:18px}
+  .btn{
+    display:block;width:100%;padding:12px 14px;margin:10px 0;border-radius:12px;
+    border:1px solid #2049ff;background:#0b1a6e;color:#e7f3ff;font-weight:700;
+    box-shadow:0 0 12px rgba(32,73,255,.25) inset;cursor:pointer;transition:transform .08s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 0 24px rgba(32,73,255,.45) inset;background:#1233c7}
+  .btn.secondary{background:#0c1326;border-color:#2c3e73}
+  .credits{margin-top:12px;font-size:12px;opacity:.8}
+
+  /* Panels for Keybinds / Credits */
+  .panel{display:none;margin-top:8px;text-align:left;background:rgba(10,18,36,.6);border:1px solid rgba(191,233,255,.14);border-radius:12px;padding:12px}
+  .panel h3{margin:0 0 6px;font-size:16px}
+  .kbd{padding:2px 6px;border:1px solid #607dff;background:#0c1326;border-radius:6px}
 </style>
 </head>
 <body>
-<div id="hud">
-  <span class="pill">Score: <strong id="score">0</strong></span>
-  <span class="pill">Lives: <strong id="lives">3</strong></span>
-  <span class="pill">Level: <strong id="level">1</strong></span>
-  <span class="pill">WASD + Mouse • <kbd>Shift</kbd> lock • <kbd>Space</kbd> map • <kbd>P</kbd> pause • <kbd>R</kbd> reset</span>
-</div>
-<canvas id="game"></canvas>
-<canvas id="map" width="160" height="176" aria-label="Minimap"></canvas>
-<div id="crosshair"></div>
-<div id="msg"><div id="msgText">Press <b>Shift</b> to start. Use <b>Space</b> for the minimap.</div></div>
+  <canvas id="game"></canvas>
+
+  <!-- Compact HUD above minimap -->
+  <div id="hudMini">
+    <div class="row">
+      <span class="pill">Score: <strong id="score">0</strong></span>
+      <span class="pill">Level: <strong id="level">1</strong></span>
+    </div>
+  </div>
+  <canvas id="map" width="160" height="176" aria-label="Minimap"></canvas>
+  <div id="crosshair"></div>
+
+  <!-- Lives popup -->
+  <div id="lifePopup"><div class="box fade" id="lifeText">Lives: 3</div></div>
+
+  <!-- Start Screen -->
+  <div id="startScreen">
+    <div class="menu">
+      <h1 class="title">PAC-MAN 3D</h1>
+      <div class="subtitle">Arcade maze in first-person</div>
+      <button id="btnStart" class="btn">Start Game</button>
+      <button id="btnKeys" class="btn secondary">Keybinds</button>
+      <div id="panelKeys" class="panel">
+        <h3>Keybinds</h3>
+        <p><span class="kbd">WASD</span> move • Mouse look<br>
+           <span class="kbd">Space</span> minimap • <span class="kbd">P</span> pause • <span class="kbd">R</span> reset<br>
+           Click in the game to lock the cursor (crosshair “+”)</p>
+      </div>
+      <button id="btnCredits" class="btn secondary">Credits</button>
+      <div id="panelCredits" class="panel">
+        <h3>Credits</h3>
+        <p>Created by Rodrigo — inspired by the Pac-Man game and Dark Deception playstyle.</p>
+      </div>
+      <div class="credits">© Rod Space</div>
+    </div>
+  </div>
 
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
+/* ==== MENU BEHAVIOUR ==== */
+const startScreen = document.getElementById('startScreen');
+document.getElementById('btnKeys').onclick = ()=> {
+  const p = document.getElementById('panelKeys');
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+};
+document.getElementById('btnCredits').onclick = ()=> {
+  const p = document.getElementById('panelCredits');
+  p.style.display = p.style.display==='block' ? 'none' : 'block';
+};
+document.getElementById('btnStart').onclick = ()=> {
+  startScreen.style.display='none';
+  boot(); // start the game
+  // optional: auto pointer-lock on first click inside canvas
+};
+
 /* ===== Grid & EXACT layout (28x31) ===== */
 const TILE=2.0, ROWS=31, COLS=28;
 const T={PATH:0,WALL:1,POWER:2,GATE:3,HOUSE:4,VOID:9};
-
 const pacman_map = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   [1,2,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,2,1],
@@ -61,7 +138,7 @@ const pacman_map = [
   [9,9,9,9,9,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,9,9,9,9,9],
   [9,9,9,9,9,1,0,1,1,0,1,1,1,3,3,1,1,1,0,1,1,0,1,9,9,9,9,9],
   [1,1,1,1,1,1,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,1,1,1,1,1,1],
-  [0,0,0,0,0,0,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0,0], /* tunnel row 14 */
+  [0,0,0,0,0,0,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0,0],
   [1,1,1,1,1,1,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,1,1,1,1,1,1],
   [9,9,9,9,9,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,9,9,9,9,9],
   [9,9,9,9,9,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,9,9,9,9,9],
@@ -80,7 +157,7 @@ const pacman_map = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
-/* ===== Three.js scene ===== */
+/* ===== Three.js scene (arcade look) ===== */
 const canvas=document.getElementById('game');
 const renderer=new THREE.WebGLRenderer({antialias:true,canvas});
 renderer.setSize(innerWidth,innerHeight); renderer.setPixelRatio(devicePixelRatio);
@@ -98,11 +175,12 @@ scene.add(new THREE.AmbientLight(0x1a2038, 0.95));
 const dLight=new THREE.DirectionalLight(0xaec6ff, 0.35); dLight.position.set(12,26,12); scene.add(dLight);
 
 /* Floor */
+const TILE_W = COLS*TILE, TILE_H = ROWS*TILE;
 const floor=new THREE.Mesh(
-  new THREE.PlaneGeometry(COLS*TILE,ROWS*TILE),
+  new THREE.PlaneGeometry(TILE_W,TILE_H),
   new THREE.MeshStandardMaterial({color:0x070a16, metalness:.15, roughness:.95})
 );
-floor.rotation.x=-Math.PI/2; floor.position.set((COLS*TILE)/2,-0.02,(ROWS*TILE)/2);
+floor.rotation.x=-Math.PI/2; floor.position.set(TILE_W/2,-0.02,TILE_H/2);
 scene.add(floor);
 
 /* Neon-brick procedural texture */
@@ -144,7 +222,6 @@ const wx=c=>c*TILE, wz=r=>r*TILE;
 const tile=(c,r)=> (r<0||c<0||r>=ROWS||c>=COLS)?T.WALL:pacman_map[r][c];
 const isWall=(c,r)=> tile(c,r)===T.WALL || tile(c,r)===T.VOID;
 const isGate=(c,r)=> tile(c,r)===T.GATE;
-const isWalkable=(c,r)=>{ const t=tile(c,r); return t===T.PATH || t===T.POWER || t===T.HOUSE; };
 
 function buildLevel(refill=true){
   walls.clear();
@@ -186,16 +263,22 @@ ghosts.forEach(g=>scene.add(g.mesh));
   }
 })();
 
-/* Pac-Man spawn: row 23, col 13 */
+/* Player */
 const player={x:13,y:23,speed:3.9};
 
-/* State & HUD */
-const ui={s:document.getElementById('score'),l:document.getElementById('lives'),lvl:document.getElementById('level'),msg:document.getElementById('msgText')};
-const state={score:0,lives:3,level:1,paused:false,playing:true,fright:0,streak:0,mode:'scatter',modeTime:0};
-const setMsg=t=>ui.msg.textContent=t||'';
-const recount=()=>{state.pelCount=pellets.size; state.powCount=powers.size;};
+/* HUD */
+const uiScore=document.getElementById('score');
+const uiLevel=document.getElementById('level');
+const lifePopup=document.getElementById('lifePopup');
+const lifeText=document.getElementById('lifeText');
 
-/* Resets */
+const state={score:0,lives:3,level:1,paused:false,playing:false,fright:0,streak:0,mode:'scatter',modeTime:0};
+
+function showLives(){
+  lifeText.textContent = `Lives: ${state.lives}`;
+  lifePopup.style.display='grid';
+  setTimeout(()=>{lifePopup.style.display='none';},900);
+}
 function resetPositions(){
   yaw=Math.PI; pitch=0;
   camera.position.set(player.x*TILE,1.26,player.y*TILE);
@@ -203,29 +286,29 @@ function resetPositions(){
   ghosts.forEach(g=>{ g.dir='left'; g.eyes=false; g.speed=2.9+(state.level-1)*0.06; g.mesh.material.color.setHex(g.color); g.mesh.material.emissive.setHex(0x0f1024); });
 }
 function softReset(){
-  state.lives--; ui.l.textContent=state.lives;
-  if (state.lives<0){ state.playing=false; setMsg('Game Over — press R'); return; }
+  state.lives--;
+  if (state.lives<0){ state.playing=false; lifeText.textContent='Game Over — R to reset'; lifePopup.style.display='grid'; return; }
+  showLives();
   resetPositions();
 }
 function hardReset(){
-  buildLevel(true); recount();
-  state.score=0; ui.s.textContent=0; state.lives=3; ui.l.textContent=3; state.level=1; ui.lvl.textContent=1;
+  buildLevel(true);
+  state.score=0; uiScore.textContent=0; state.lives=3; state.level=1; uiLevel.textContent=1;
   state.paused=false; state.playing=true; state.fright=0; state.streak=0; state.mode='scatter'; state.modeTime=0;
-  resetPositions(); setMsg('Press Shift to start');
+  resetPositions(); showLives();
 }
 function nextLevel(){
-  state.level++; ui.lvl.textContent=state.level;
-  buildLevel(true); recount(); resetPositions(); setTimeout(()=>setMsg(''),700);
+  state.level++; uiLevel.textContent=state.level;
+  buildLevel(true); resetPositions();
 }
 
-/* Controls & shift-lock */
+/* Controls & pointer lock */
 const keys=new Set();
 addEventListener('keydown',e=>{
   keys.add(e.key);
   if(e.key===' '){ e.preventDefault(); toggleMap(); }
-  if(e.key==='p'||e.key==='P'){ state.paused=!state.paused; setMsg(state.paused?'Paused':''); }
+  if(e.key==='p'||e.key==='P'){ state.paused=!state.paused; }
   if(e.key==='r'||e.key==='R'){ hardReset(); }
-  if(e.key==='Shift'){ e.preventDefault(); toggleLock(); }
 });
 addEventListener('keyup',e=>keys.delete(e.key));
 
@@ -233,61 +316,36 @@ const cross=document.getElementById('crosshair');
 let lockMode='unlocked';
 const pointerLockSupported=()=>!!document.body.requestPointerLock;
 function tryPointerLock(){ try{ document.body.requestPointerLock(); }catch{ return false; } return true; }
-document.addEventListener('pointerlockerror',()=>{ if(lockMode==='pointer'){ lockMode='fallback'; cross.style.display='block'; document.body.style.cursor='none'; setMsg(''); }});
 document.addEventListener('pointerlockchange',()=>{ 
   if(document.pointerLockElement===document.body){
-    lockMode='pointer';
-    cross.style.display='block';
-    document.body.style.cursor='none';
-    setMsg('');
-    document.getElementById('msg').style.display='none';  // hide overlay behind crosshair
+    lockMode='pointer'; cross.style.display='block'; document.body.style.cursor='none';
   } else if(lockMode==='pointer'){
-    lockMode='unlocked';
-    cross.style.display='none';
-    document.body.style.cursor='';
-    document.getElementById('msg').style.display='grid';  // restore overlay
+    lockMode='unlocked'; cross.style.display='none'; document.body.style.cursor='';
   }
 });
-function toggleLock(){
-  if(lockMode==='unlocked'){
-    const ok=pointerLockSupported() && tryPointerLock();
-    if(ok){ lockMode='pointer'; }
-    else { lockMode='fallback'; cross.style.display='block'; document.body.style.cursor='none'; setMsg(''); document.getElementById('msg').style.display='none'; }
-  } else {
-    if(lockMode==='pointer') document.exitPointerLock();
-    lockMode='unlocked';
-    cross.style.display='none';
-    document.body.style.cursor='';
-    document.getElementById('msg').style.display='grid';
-  }
-}
+canvas.addEventListener('click',()=>{
+  if(lockMode==='unlocked' && pointerLockSupported()) tryPointerLock();
+});
 
-/* Mouse look: up=up, down=down; clamp ±60°; NO ROLL */
-let yaw=Math.PI, pitch=0, lastX=null,lastY=null;
+/* Mouse look: up=up, down=down; clamp ±60°; no roll */
+let yaw=Math.PI, pitch=0;
 addEventListener('mousemove',e=>{
-  let dx=0, dy=0;
-  if(document.pointerLockElement===document.body){ dx=e.movementX; dy=e.movementY; }
-  else if(lockMode==='fallback'){ if(lastX!==null){ dx=e.clientX-lastX; dy=e.clientY-lastY; } lastX=e.clientX; lastY=e.clientY; }
-  else { lastX=null; lastY=null; return; }
-
-  yaw   -= dx*0.002;
-  pitch -= dy*0.002;
+  if(lockMode==='unlocked')return;
+  yaw   -= e.movementX*0.002;
+  pitch -= e.movementY*0.002;
   pitch = Math.max(-Math.PI/3, Math.min(Math.PI/3, pitch));
-
   camera.rotation.order = "YXZ";
-  camera.rotation.y = yaw;
-  camera.rotation.x = pitch;
-  camera.rotation.z = 0;
+  camera.rotation.set(pitch, yaw, 0);
 });
 
 /* Movement & collisions + tunnel row */
-function canMoveTo(nx,ny, who='player'){
+const isWalkable=(c,r)=>{ const t=tile(c,r); return t!==T.WALL && t!==T.VOID && !(t===T.GATE); };
+function canMoveTo(nx,ny){
   const r=0.18;
   const pts=[[nx-r,ny-r],[nx+r,ny-r],[nx-r,ny+r],[nx+r,ny+r]];
   for(const [x,y] of pts){
     const c=Math.floor(x), rr=Math.floor(y);
-    if(isWall(c,rr)) return false;
-    if(isGate(c,rr) && who==='player') return false;
+    if(!isWalkable(c,rr)) return false;
   }
   return true;
 }
@@ -299,20 +357,26 @@ function applyTunnelsEntity(obj){
   }
 }
 function movePlayer(dt){
-  const sp=player.speed*dt/TILE;
-  let dx=0,dy=0;
-  if(keys.has('w')||keys.has('ArrowUp'))   { dx+=Math.sin(yaw); dy+=Math.cos(yaw); }
-  if(keys.has('s')||keys.has('ArrowDown')) { dx-=Math.sin(yaw); dy-=Math.cos(yaw); }
-  if(keys.has('a')||keys.has('ArrowLeft')) { dx+=Math.cos(yaw); dy-=Math.sin(yaw); }
-  if(keys.has('d')||keys.has('ArrowRight')){ dx-=Math.cos(yaw); dy+=Math.sin(yaw); }
-  const nx=player.x+dx*sp, ny=player.y+dy*sp;
-  if(canMoveTo(nx,player.y,'player')) player.x=nx;
-  if(canMoveTo(player.x,ny,'player')) player.y=ny;
-  applyTunnelsEntity(player);
+  const speed=player.speed*dt;
+  const dir=new THREE.Vector3();
+  if(keys.has('w')||keys.has('ArrowUp'))dir.z-=1;
+  if(keys.has('s')||keys.has('ArrowDown'))dir.z+=1;
+  if(keys.has('a')||keys.has('ArrowLeft'))dir.x-=1;
+  if(keys.has('d')||keys.has('ArrowRight'))dir.x+=1;
+  if(dir.lengthSq()>0){
+    dir.normalize();
+    const yawOnly=new THREE.Euler(0,camera.rotation.y,0,'YXZ');
+    dir.applyEuler(yawOnly);
+    const nx=player.x+dir.x*(speed/TILE);
+    const ny=player.y+dir.z*(speed/TILE);
+    if(canMoveTo(nx,player.y)) player.x=nx;
+    if(canMoveTo(player.x,ny)) player.y=ny;
+    applyTunnelsEntity(player);
+  }
   camera.position.set(player.x*TILE,1.26,player.y*TILE);
 }
 
-/* Ghost AI (scatter/chase, plus frightened) */
+/* Ghost AI (scatter/chase, frightened) */
 const dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 const opposite=d=>({up:'down',down:'up',left:'right',right:'left'})[d];
 const atCenter=(x,y)=>Math.abs(x-Math.round(x))<0.15 && Math.abs(y-Math.round(y))<0.15;
@@ -326,13 +390,12 @@ function chooseNextDir(g,target){
     const [dx,dy]=dirs[d];
     const cx=Math.round(g.x), cy=Math.round(g.y);
     const t = tile(Math.floor(cx+dx*0.5),Math.floor(cy+dy*0.5));
-    if(t===T.WALL || t===T.VOID) continue;   // ghosts may pass gate
+    if(t===T.WALL || t===T.VOID) continue; // ghosts pass gate
     const nx=g.x+dx, ny=g.y+dy;
     const d2=(nx-target.x)**2+(ny-target.y)**2;
     if(d2<best){ best=d2; pick=d; }
   }
-  if(pick) g.dir=pick;
-  else g.dir=opposite(g.dir);
+  g.dir = pick || opposite(g.dir);
 }
 function randomTurn(g){
   if(!atCenter(g.x,g.y)) return;
@@ -376,22 +439,22 @@ function moveGhost(g,dt){
 /* Eating & collisions */
 function eat(){
   const c=Math.floor(player.x), r=Math.floor(player.y), k=`${r},${c}`;
-  if(pellets.has(k)){ scene.remove(pellets.get(k)); pellets.delete(k); state.score+=10; ui.s.textContent=state.score; if(pellets.size===0) nextLevel(); }
-  else if(powers.has(k)){ scene.remove(powers.get(k)); powers.delete(k); state.score+=50; ui.s.textContent=state.score; state.fright=6; state.streak=0; ghosts.forEach(g=>{ if(!g.eyes){ g.mesh.material.color.setHex(0x1f6cff); } }); }
+  if(pellets.has(k)){ scene.remove(pellets.get(k)); pellets.delete(k); state.score+=10; uiScore.textContent=state.score; if(pellets.size===0) nextLevel(); }
+  else if(powers.has(k)){ scene.remove(powers.get(k)); powers.delete(k); state.score+=50; uiScore.textContent=state.score; state.fright=6; state.streak=0; ghosts.forEach(g=>{ if(!g.eyes){ g.mesh.material.color.setHex(0x1f6cff); } }); }
 }
 function checkDeaths(){
   for(const g of ghosts){
     const d=Math.hypot((g.x-player.x)*TILE,(g.y-player.y)*TILE);
     if(d<0.9){
       if(state.fright>0 && !g.eyes){
-        g.eyes=true; state.streak++; state.score+=200*(2**(state.streak-1)); ui.s.textContent=state.score; g.speed=3.6;
+        g.eyes=true; state.streak++; state.score+=200*(2**(state.streak-1)); uiScore.textContent=state.score; g.speed=3.6;
         g.mesh.material.color.setHex(0xffffff);
       }else if(!g.eyes){ softReset(); return; }
     }
   }
 }
 
-/* Minimap */
+/* Minimap bottom-left */
 const mapCanvas=document.getElementById('map'), mctx=mapCanvas.getContext('2d');
 let mapVisible=false; function toggleMap(){ mapVisible=!mapVisible; mapCanvas.style.display=mapVisible?'block':'none'; }
 function drawMap(){
@@ -411,13 +474,7 @@ function drawMap(){
 }
 
 /* Boot & loop */
-function boot(){ hardReset(); }
-boot();
-
-const keysDown=new Set();
-addEventListener('keydown',e=>keysDown.add(e.key));
-addEventListener('keyup',e=>keysDown.delete(e.key));
-
+function boot(){ hardReset(); state.playing=true; }
 let prev=performance.now();
 function loop(now){
   const dt=Math.min(0.033,(now-prev)/1000); prev=now;
