@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Pac-Man 3D — Arcade FPS</title>
 <style>
   html,body{height:100%;margin:0;background:#03060f;color:#bfe9ff;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,sans-serif;overflow:hidden}
@@ -21,18 +21,18 @@
     pointer-events:none;z-index:9;display:none;
   }
   #crosshair::before,#crosshair::after{
-    content:"";position:absolute;background:#fff;opacity:.75;
+    content:"";position:absolute;background:#fff;opacity:.85;
   }
   #crosshair::before{width:2px;height:20px;left:9px;top:0}
   #crosshair::after{width:20px;height:2px;left:0;top:9px}
 
   /* Lives popup on death */
   #lifePopup{position:fixed;inset:0;display:none;place-items:center;z-index:12}
-  #lifePopup .box{padding:12px 18px;border-radius:12px;background:rgba(8,12,24,.75);border:1px solid rgba(191,233,255,.2)}
+  #lifePopup .box{padding:12px 18px;border-radius:12px;background:rgba(8,12,24,.78);border:1px solid rgba(191,233,255,.2)}
   .fade{animation:fade .75s ease}
   @keyframes fade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 
-  /* ===== Start Screen ===== */
+  /* ===== Start / Pause Screen ===== */
   #startScreen{
     position:fixed;inset:0;z-index:20;display:grid;place-items:center;
     background:radial-gradient(1200px 600px at 50% -20%, #0b1a6e 0%, #06113d 35%, #03060f 70%);
@@ -57,10 +57,12 @@
   .btn.secondary{background:#0c1326;border-color:#2c3e73}
   .credits{margin-top:12px;font-size:12px;opacity:.8}
 
-  /* Panels for Keybinds / Credits */
-  .panel{display:none;margin-top:8px;text-align:left;background:rgba(10,18,36,.6);border:1px solid rgba(191,233,255,.14);border-radius:12px;padding:12px}
-  .panel h3{margin:0 0 6px;font-size:16px}
+  /* Panels for Keybinds / Credits (mini separate screens) */
+  .panel{display:none;position:fixed;inset:0;z-index:30;place-items:center;background:rgba(0,0,0,.6)}
+  .panel .box{width:min(90vw,420px);background:rgba(8,16,32,.95);border:1px solid rgba(191,233,255,.18);border-radius:16px;padding:20px;text-align:center}
+  .panel h3{margin-top:0}
   .kbd{padding:2px 6px;border:1px solid #607dff;background:#0c1326;border-radius:6px}
+  .range{width:80%}
 </style>
 </head>
 <body>
@@ -73,56 +75,84 @@
       <span class="pill">Level: <strong id="level">1</strong></span>
     </div>
   </div>
+
+  <!-- Minimap -->
   <canvas id="map" width="160" height="176" aria-label="Minimap"></canvas>
+
+  <!-- Crosshair -->
   <div id="crosshair"></div>
 
   <!-- Lives popup -->
   <div id="lifePopup"><div class="box fade" id="lifeText">Lives: 3</div></div>
 
-  <!-- Start Screen -->
+  <!-- Start / Pause Screen -->
   <div id="startScreen">
     <div class="menu">
       <h1 class="title">PAC-MAN 3D</h1>
       <div class="subtitle">Arcade maze in first-person</div>
       <button id="btnStart" class="btn">Start Game</button>
       <button id="btnKeys" class="btn secondary">Keybinds</button>
-      <div id="panelKeys" class="panel">
-        <h3>Keybinds</h3>
-        <p><span class="kbd">WASD</span> move • Mouse look<br>
-           <span class="kbd">Space</span> minimap • <span class="kbd">P</span> pause • <span class="kbd">R</span> reset<br>
-           Click in the game to lock the cursor (crosshair “+”)</p>
-      </div>
       <button id="btnCredits" class="btn secondary">Credits</button>
-      <div id="panelCredits" class="panel">
-        <h3>Credits</h3>
-        <p>Created by Rodrigo — inspired by the Pac-Man game and Dark Deception playstyle.</p>
-      </div>
       <div class="credits">© Rod Space</div>
+    </div>
+  </div>
+
+  <!-- Keybinds Panel -->
+  <div id="panelKeys" class="panel">
+    <div class="box">
+      <h3>Keybinds</h3>
+      <p><span class="kbd">WASD</span> move • Mouse look<br>
+         <span class="kbd">Space</span> minimap • <span class="kbd">P</span> pause • <span class="kbd">R</span> reset<br>
+         <span class="kbd">Shift</span> toggle cursor-lock • <span class="kbd">Esc</span> main menu</p>
+      <label>Sensitivity: <span id="sensVal">1.00x</span></label><br>
+      <input type="range" id="sensSlider" class="range" min="0.2" max="2" step="0.05" value="1"/>
+      <br><br><button id="closeKeys" class="btn">Back</button>
+    </div>
+  </div>
+
+  <!-- Credits Panel -->
+  <div id="panelCredits" class="panel">
+    <div class="box">
+      <h3>Credits</h3>
+      <p>Created by Rodrigo — inspired by the Pac-Man game and Dark Deception playstyle.</p>
+      <button id="closeCredits" class="btn">Back</button>
     </div>
   </div>
 
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-/* ==== MENU BEHAVIOUR ==== */
+/* ===================== MENU ===================== */
 const startScreen = document.getElementById('startScreen');
-document.getElementById('btnKeys').onclick = ()=> {
-  const p = document.getElementById('panelKeys');
-  p.style.display = p.style.display==='block' ? 'none' : 'block';
-};
-document.getElementById('btnCredits').onclick = ()=> {
-  const p = document.getElementById('panelCredits');
-  p.style.display = p.style.display==='block' ? 'none' : 'block';
-};
-document.getElementById('btnStart').onclick = ()=> {
+const btnStart     = document.getElementById('btnStart');
+const btnKeys      = document.getElementById('btnKeys');
+const btnCredits   = document.getElementById('btnCredits');
+const panelKeys    = document.getElementById('panelKeys');
+const panelCredits = document.getElementById('panelCredits');
+const closeKeys    = document.getElementById('closeKeys');
+const closeCredits = document.getElementById('closeCredits');
+
+btnKeys.onclick = ()=> panelKeys.style.display='grid';
+btnCredits.onclick = ()=> panelCredits.style.display='grid';
+closeKeys.onclick = ()=> panelKeys.style.display='none';
+closeCredits.onclick = ()=> panelCredits.style.display='none';
+
+let sensitivity=1.0;
+const sensSlider=document.getElementById('sensSlider');
+const sensVal=document.getElementById('sensVal');
+sensSlider.oninput=()=>{sensitivity=parseFloat(sensSlider.value);sensVal.textContent=sensitivity.toFixed(2)+'x';};
+
+btnStart.onclick = ()=>{
+  // If coming from pause, resume; otherwise start fresh
   startScreen.style.display='none';
-  boot(); // start the game
-  // optional: auto pointer-lock on first click inside canvas
+  if (booted) { state.paused=false; return; }
+  boot();
 };
 
-/* ===== Grid & EXACT layout (28x31) ===== */
+/* ===================== GRID & MAP ===================== */
 const TILE=2.0, ROWS=31, COLS=28;
 const T={PATH:0,WALL:1,POWER:2,GATE:3,HOUSE:4,VOID:9};
+
 const pacman_map = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
   [1,2,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,2,1],
@@ -157,33 +187,34 @@ const pacman_map = [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
-/* ===== Three.js scene (arcade look) ===== */
-const canvas=document.getElementById('game');
-const renderer=new THREE.WebGLRenderer({antialias:true,canvas});
-renderer.setSize(innerWidth,innerHeight); renderer.setPixelRatio(devicePixelRatio);
+/* ===================== THREE.JS SCENE ===================== */
+const canvas = document.getElementById('game');
+const renderer = new THREE.WebGLRenderer({antialias:true,canvas});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(devicePixelRatio);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.12;
 addEventListener('resize',()=>renderer.setSize(innerWidth,innerHeight));
 
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x05070f);
-scene.fog=new THREE.Fog(0x05070f, 60, 140);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070f);
+scene.fog = new THREE.Fog(0x05070f, 60, 140);
 
-const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,2000);
+const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 2000);
 scene.add(new THREE.AmbientLight(0x1a2038, 0.95));
-const dLight=new THREE.DirectionalLight(0xaec6ff, 0.35); dLight.position.set(12,26,12); scene.add(dLight);
+const dLight = new THREE.DirectionalLight(0xaec6ff, 0.35); dLight.position.set(12,26,12); scene.add(dLight);
 
 /* Floor */
 const TILE_W = COLS*TILE, TILE_H = ROWS*TILE;
-const floor=new THREE.Mesh(
+const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(TILE_W,TILE_H),
   new THREE.MeshStandardMaterial({color:0x070a16, metalness:.15, roughness:.95})
 );
 floor.rotation.x=-Math.PI/2; floor.position.set(TILE_W/2,-0.02,TILE_H/2);
 scene.add(floor);
 
-/* Neon-brick procedural texture */
+/* Neon-brick canvas texture */
 function makeNeonBrickTexture(){
   const size=64;
   const c=document.createElement("canvas"); c.width=c.height=size;
@@ -202,7 +233,7 @@ function makeNeonBrickTexture(){
 }
 const brickTex=makeNeonBrickTexture();
 
-/* Build maze */
+/* Maze build */
 const wallGeo=new THREE.BoxGeometry(TILE,2.4,TILE);
 const wallMat=new THREE.MeshStandardMaterial({
   color:0x1133ff, emissive:0x0d1a7a, emissiveIntensity:1.6,
@@ -212,7 +243,7 @@ const gateMat=new THREE.MeshStandardMaterial({color:0x9fd3ff, transparent:true, 
 const walls=new THREE.Group(); scene.add(walls);
 
 const pelletGeo=new THREE.BoxGeometry(0.28,0.28,0.28);
-const pelletMat=new THREE.MeshStandardMaterial({color:0xffd400,emissive:0xffe97a,emissiveIntensity:1.45,metalness:.6,roughness:.2});
+const pelletMat=new THREE.MeshStandardMaterial({color:0xffd400,emissive:0xffe97a,emissiveIntensity:1.5,metalness:.6,roughness:.2});
 const powerGeo=new THREE.SphereGeometry(0.44,16,16);
 const powerMat=new THREE.MeshStandardMaterial({color:0xff6b6b,emissive:0xff4747,emissiveIntensity:1.7,metalness:.4,roughness:.25});
 
@@ -220,13 +251,14 @@ const pellets=new Map(), powers=new Map();
 
 const wx=c=>c*TILE, wz=r=>r*TILE;
 const tile=(c,r)=> (r<0||c<0||r>=ROWS||c>=COLS)?T.WALL:pacman_map[r][c];
-const isWall=(c,r)=> tile(c,r)===T.WALL || tile(c,r)===T.VOID;
-const isGate=(c,r)=> tile(c,r)===T.GATE;
+const isWall =(c,r)=> tile(c,r)===T.WALL || tile(c,r)===T.VOID;
+const isGate =(c,r)=> tile(c,r)===T.GATE;
+const isWalkable=(c,r)=>{ const t=tile(c,r); return t!==T.WALL && t!==T.VOID && t!==T.GATE; };
 
 function buildLevel(refill=true){
   walls.clear();
   for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
-    const t = pacman_map[r][c];
+    const t=pacman_map[r][c];
     if (t===T.WALL){ const m=new THREE.Mesh(wallGeo,wallMat); m.position.set(wx(c),1.2,wz(r)); walls.add(m); }
     else if (t===T.GATE){ const g=new THREE.Mesh(new THREE.BoxGeometry(TILE,.8,TILE*.2),gateMat); g.position.set(wx(c),.4,wz(r)); walls.add(g); }
   }
@@ -263,17 +295,20 @@ ghosts.forEach(g=>scene.add(g.mesh));
   }
 })();
 
-/* Player */
+/* Player spawn */
 const player={x:13,y:23,speed:3.9};
 
-/* HUD */
+/* HUD refs */
 const uiScore=document.getElementById('score');
 const uiLevel=document.getElementById('level');
 const lifePopup=document.getElementById('lifePopup');
 const lifeText=document.getElementById('lifeText');
 
-const state={score:0,lives:3,level:1,paused:false,playing:false,fright:0,streak:0,mode:'scatter',modeTime:0};
+/* Game state */
+const state={score:0,lives:3,level:1,paused:true,playing:false,fright:0,streak:0,mode:'scatter',modeTime:0};
+let booted=false;
 
+/* HUD helpers */
 function showLives(){
   lifeText.textContent = `Lives: ${state.lives}`;
   lifePopup.style.display='grid';
@@ -297,49 +332,49 @@ function hardReset(){
   state.paused=false; state.playing=true; state.fright=0; state.streak=0; state.mode='scatter'; state.modeTime=0;
   resetPositions(); showLives();
 }
-function nextLevel(){
-  state.level++; uiLevel.textContent=state.level;
-  buildLevel(true); resetPositions();
-}
 
-/* Controls & pointer lock */
+/* ============ Controls / Pointer Lock (SHIFT) / ESC Pause ============ */
 const keys=new Set();
 addEventListener('keydown',e=>{
-  keys.add(e.key);
   if(e.key===' '){ e.preventDefault(); toggleMap(); }
   if(e.key==='p'||e.key==='P'){ state.paused=!state.paused; }
   if(e.key==='r'||e.key==='R'){ hardReset(); }
+  if(e.key==='Shift'){ toggleLock(); }
+  if(e.key==='Escape'){ pauseToMenu(); }
+  keys.add(e.key);
 });
 addEventListener('keyup',e=>keys.delete(e.key));
 
 const cross=document.getElementById('crosshair');
-let lockMode='unlocked';
-const pointerLockSupported=()=>!!document.body.requestPointerLock;
-function tryPointerLock(){ try{ document.body.requestPointerLock(); }catch{ return false; } return true; }
-document.addEventListener('pointerlockchange',()=>{ 
-  if(document.pointerLockElement===document.body){
-    lockMode='pointer'; cross.style.display='block'; document.body.style.cursor='none';
-  } else if(lockMode==='pointer'){
-    lockMode='unlocked'; cross.style.display='none'; document.body.style.cursor='';
-  }
+let locked=false;
+function toggleLock(){
+  if(!locked){ try{document.body.requestPointerLock();}catch{} }
+  else { document.exitPointerLock(); }
+}
+document.addEventListener('pointerlockchange',()=>{
+  locked = (document.pointerLockElement===document.body);
+  cross.style.display = locked ? 'block' : 'none';
+  document.body.style.cursor = locked ? 'none' : 'default';
 });
-canvas.addEventListener('click',()=>{
-  if(lockMode==='unlocked' && pointerLockSupported()) tryPointerLock();
-});
+function pauseToMenu(){
+  state.paused=true;
+  startScreen.style.display='grid';
+  btnStart.textContent='Resume Game';
+  if(locked) document.exitPointerLock();
+}
 
-/* Mouse look: up=up, down=down; clamp ±60°; no roll */
+/* ============ Mouse look (with sensitivity), no roll ============ */
 let yaw=Math.PI, pitch=0;
 addEventListener('mousemove',e=>{
-  if(lockMode==='unlocked')return;
-  yaw   -= e.movementX*0.002;
-  pitch -= e.movementY*0.002;
+  if(!locked || !state.playing || state.paused) return;
+  yaw   -= e.movementX*0.002*sensitivity;
+  pitch -= e.movementY*0.002*sensitivity;
   pitch = Math.max(-Math.PI/3, Math.min(Math.PI/3, pitch));
   camera.rotation.order = "YXZ";
   camera.rotation.set(pitch, yaw, 0);
 });
 
-/* Movement & collisions + tunnel row */
-const isWalkable=(c,r)=>{ const t=tile(c,r); return t!==T.WALL && t!==T.VOID && !(t===T.GATE); };
+/* ============ Movement / Collisions / Tunnel ============ */
 function canMoveTo(nx,ny){
   const r=0.18;
   const pts=[[nx-r,ny-r],[nx+r,ny-r],[nx-r,ny+r],[nx+r,ny+r]];
@@ -376,7 +411,7 @@ function movePlayer(dt){
   camera.position.set(player.x*TILE,1.26,player.y*TILE);
 }
 
-/* Ghost AI (scatter/chase, frightened) */
+/* ============ Ghost AI ============ */
 const dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 const opposite=d=>({up:'down',down:'up',left:'right',right:'left'})[d];
 const atCenter=(x,y)=>Math.abs(x-Math.round(x))<0.15 && Math.abs(y-Math.round(y))<0.15;
@@ -390,7 +425,7 @@ function chooseNextDir(g,target){
     const [dx,dy]=dirs[d];
     const cx=Math.round(g.x), cy=Math.round(g.y);
     const t = tile(Math.floor(cx+dx*0.5),Math.floor(cy+dy*0.5));
-    if(t===T.WALL || t===T.VOID) continue; // ghosts pass gate
+    if(t===T.WALL || t===T.VOID) continue; // ghosts can cross gate elsewhere if you want, here they don't
     const nx=g.x+dx, ny=g.y+dy;
     const d2=(nx-target.x)**2+(ny-target.y)**2;
     if(d2<best){ best=d2; pick=d; }
@@ -436,7 +471,7 @@ function moveGhost(g,dt){
   g.mesh.rotation.y = ({left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0);
 }
 
-/* Eating & collisions */
+/* ============ Eating & collisions ============ */
 function eat(){
   const c=Math.floor(player.x), r=Math.floor(player.y), k=`${r},${c}`;
   if(pellets.has(k)){ scene.remove(pellets.get(k)); pellets.delete(k); state.score+=10; uiScore.textContent=state.score; if(pellets.size===0) nextLevel(); }
@@ -454,7 +489,7 @@ function checkDeaths(){
   }
 }
 
-/* Minimap bottom-left */
+/* ============ Minimap ============ */
 const mapCanvas=document.getElementById('map'), mctx=mapCanvas.getContext('2d');
 let mapVisible=false; function toggleMap(){ mapVisible=!mapVisible; mapCanvas.style.display=mapVisible?'block':'none'; }
 function drawMap(){
@@ -467,21 +502,53 @@ function drawMap(){
     else mctx.fillStyle='#050a14';
     mctx.fillRect(c*cw,r*ch,cw,ch);
   }
-  mctx.fillStyle='#ffd400'; for(const key of pellets.keys()){ const [r,c]=key.split(',').map(Number); mctx.fillRect(c*cw+cw*.35,r*ch+ch*.35,cw*.3,ch*.3); }
-  mctx.fillStyle='#ff6b6b'; for(const key of powers.keys()){ const [r,c]=key.split(',').map(Number); mctx.fillRect(c*cw+cw*.25,r*ch+ch*.25,cw*.5,ch*.5); }
+  // pellets (small yellow squares)
+  mctx.fillStyle='#ffd400';
+  for(const key of pellets.keys()){
+    const [r,c]=key.split(',').map(Number);
+    mctx.fillRect(c*cw+cw*.35,r*ch+ch*.35,cw*.3,ch*.3);
+  }
+  // power pellets (bigger red squares)
+  mctx.fillStyle='#ff6b6b';
+  for(const key of powers.keys()){
+    const [r,c]=key.split(',').map(Number);
+    mctx.fillRect(c*cw+cw*.25,r*ch+ch*.25,cw*.5,ch*.5);
+  }
+  // player
   mctx.fillStyle='#ffd400'; mctx.beginPath(); mctx.arc(player.x*cw,player.y*ch,2.6,0,Math.PI*2); mctx.fill();
-  ghosts.forEach(g=>{ mctx.save(); mctx.translate(g.x*cw,g.y*ch); const ang={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0; mctx.rotate(ang); mctx.fillStyle=`#${g.color.toString(16).padStart(6,'0')}`; mctx.beginPath(); mctx.moveTo(0,-4); mctx.lineTo(3,3); mctx.lineTo(-3,3); mctx.closePath(); mctx.fill(); mctx.restore(); });
+  // ghosts as arrows
+  ghosts.forEach(g=>{
+    mctx.save(); mctx.translate(g.x*cw,g.y*ch);
+    const ang={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0; mctx.rotate(ang);
+    mctx.fillStyle=`#${g.color.toString(16).padStart(6,'0')}`;
+    mctx.beginPath(); mctx.moveTo(0,-4); mctx.lineTo(3,3); mctx.lineTo(-3,3); mctx.closePath(); mctx.fill();
+    mctx.restore();
+  });
 }
 
-/* Boot & loop */
-function boot(){ hardReset(); state.playing=true; }
+/* ============ Boot & Loop ============ */
+function nextLevel(){
+  state.level++; uiLevel.textContent=state.level;
+  buildLevel(true); resetPositions();
+}
+
+function boot(){
+  buildLevel(true);
+  booted=true;
+  state.score=0; uiScore.textContent=0;
+  state.lives=3; state.level=1; uiLevel.textContent=1;
+  state.fright=0; state.streak=0; state.mode='scatter'; state.modeTime=0;
+  state.playing=true; state.paused=false;
+  resetPositions(); showLives();
+}
+
 let prev=performance.now();
 function loop(now){
   const dt=Math.min(0.033,(now-prev)/1000); prev=now;
   pelletMat.emissiveIntensity = 1.2 + Math.sin(now*0.004)*0.28;
 
   if(state.playing && !state.paused){
-    if(lockMode!=='unlocked') movePlayer(dt);
+    if(locked) movePlayer(dt);
     ghosts.forEach(g=>{ ghostAI(g); moveGhost(g,dt); });
     eat(); checkDeaths();
     state.modeTime+=dt;
