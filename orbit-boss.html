@@ -1,90 +1,55 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Orbit Boss — Cosmic Entity</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Orbit Boss — Alien Geometric Version</title>
 <style>
-  html,body{
-    height:100%;margin:0;overflow:hidden;
-    background:radial-gradient(circle at 50% 55%, #0b0f1e 0%, #060912 60%, #010308 100%);
-    font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    color:#e8f0ff;
-  }
-  canvas{display:block;width:100vw;height:100vh;}
-  #hud{
-    position:fixed;top:.5rem;left:50%;transform:translateX(-50%);
-    display:flex;gap:.6rem;pointer-events:none;
-  }
-  .pill{
-    background:rgba(16,25,45,.85);
-    border:1px solid #2d3d70;
-    border-radius:999px;
-    padding:.3rem .7rem;
-    box-shadow:0 0 6px rgba(0,0,0,.3);
-  }
-  .pill strong{color:#8ecaff}
-  #centerMsg{
-    position:fixed;inset:0;display:grid;place-items:center;
-    text-align:center;transition:opacity .35s ease;
-  }
-  #centerMsg.hidden{opacity:0;pointer-events:none;}
-  #centerMsg .card{
-    background:rgba(6,10,22,.8);
-    border:1px solid #28345f;
-    border-radius:16px;
-    padding:18px 20px;max-width:680px;
-  }
-  kbd{background:#0f1735;border:1px solid #31407a;border-bottom-width:2px;
-      border-radius:6px;padding:.1rem .3rem;color:#cfe5ff;}
+  html,body{margin:0;height:100%;background:#05060a;overflow:hidden;color:#bfe9ff;font-family:sans-serif}
+  canvas{display:block;width:100vw;height:100vh}
+  #hud{position:fixed;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:.6rem;pointer-events:none}
+  .pill{background:#0c111f;border:1px solid #2a3a60;border-radius:999px;padding:.25rem .6rem}
+  .pill strong{color:#8fd2ff}
+  #centerMsg{position:fixed;inset:0;display:grid;place-items:center;text-align:center;transition:opacity .35s ease}
+  #centerMsg.hidden{opacity:0;pointer-events:none}
+  #centerMsg .card{background:rgba(5,8,20,.85);border:1px solid #24305a;border-radius:12px;padding:18px 22px}
+  kbd{background:#111835;border:1px solid #31407a;border-bottom-width:2px;border-radius:6px;padding:.1rem .3rem;color:#cfe5ff}
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
 <div id="hud"></div>
-<div id="centerMsg"><div class="card" id="msg">Orbit Boss<br>
-<small>Move with <kbd>WASD</kbd> · Auto-fire · <kbd>R</kbd> to restart</small></div></div>
-
+<div id="centerMsg"><div class="card" id="msg">Orbit Boss<br><small>Move with <kbd>WASD</kbd> — Auto fire — <kbd>R</kbd> to restart</small></div></div>
 <script>
 (() => {
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const hud = document.getElementById('hud');
-const centerMsg = document.getElementById('centerMsg');
-const msg = document.getElementById('msg');
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const hud=document.getElementById("hud");
+const msg=document.getElementById("msg");
+const centerMsg=document.getElementById("centerMsg");
 
-let TAU=Math.PI*2;
-let state={w:innerWidth,h:innerHeight,running:true,level:1,score:0,time:0,moved:false};
-const resize=()=>{canvas.width=innerWidth;canvas.height=innerHeight;state.w=innerWidth;state.h=innerHeight;};
-addEventListener('resize',resize,{passive:true});resize();
+const state={w:innerWidth,h:innerHeight,level:1,score:0,time:0,running:true,moved:false};
+const resize=()=>{canvas.width=innerWidth;canvas.height=innerHeight;state.w=innerWidth;state.h=innerHeight};
+addEventListener("resize",resize,{passive:true});resize();
 
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const TAU=Math.PI*2,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
-const player={angle:0,radius:170,minR:110,maxR:250,speed:2.4,alive:true,
-              fireTimer:0,firePeriod:2.0,invincible:0};
-const boss={hp:20,maxHp:20,coreR:24,fireTimer:0,fireCooldown:1,fireHold:0,rings:[],tentacles:[],eyePhase:0};
-const bullets=[];
-const keys={};
+const player={angle:0,radius:180,minR:110,maxR:260,speed:2.5,fireTimer:0,firePeriod:1.8,alive:true,invincible:0};
+const boss={hp:20,maxHp:20,coreR:28,fireTimer:0,fireCooldown:1.3,fireHold:0,parts:[]};
+const bullets=[];const keys={};
 
 onkeydown=e=>{
-  const k=e.key.toLowerCase();
-  if(['w','a','s','d','r'].includes(k)) e.preventDefault();
-  keys[k]=true;
-  if(!state.moved && ['w','a','s','d'].includes(k)) hideCenter();
-  if(k==='r') reset();
+  const k=e.key.toLowerCase();if(['w','a','s','d','r'].includes(k))e.preventDefault();
+  keys[k]=true;if(!state.moved&&['w','a','s','d'].includes(k))hideCenter();
+  if(k==='r')reset();
 };
 onkeyup=e=>{delete keys[e.key.toLowerCase()];};
 
-function flash(html){
-  msg.innerHTML=html;
-  centerMsg.classList.remove('hidden');
-  setTimeout(()=>centerMsg.classList.add('hidden'),2500);
-}
+function flash(txt){msg.innerHTML=txt;centerMsg.classList.remove('hidden');setTimeout(()=>centerMsg.classList.add('hidden'),2500);}
 function showGameOver(){
   centerMsg.classList.remove('hidden');
-  msg.innerHTML=`<div style='font-size:1.2rem;margin-bottom:.3rem;'>Game Over</div>
-  <div>Score: <strong>${state.score}</strong> — Level: <strong>${state.level}</strong></div>
-  <div>Press <kbd>R</kbd> to restart</div>`;
+  msg.innerHTML=`<div style="font-size:1.1rem;margin-bottom:.3rem;">Game Over</div>
+  <div>Score: <strong>${state.score}</strong> — Level: <strong>${state.level}</strong></div><div>Press <kbd>R</kbd> to restart</div>`;
 }
 function hideCenter(){centerMsg.classList.add('hidden');state.moved=true;}
 
@@ -92,40 +57,39 @@ function initLevel(){
   const lvl=state.level;
   boss.maxHp=Math.floor(20+(lvl-1)*10);
   boss.hp=boss.maxHp;
-  boss.fireCooldown=Math.max(0.9,1.5-(lvl-1)*0.08);
+  boss.fireCooldown=Math.max(0.8,1.5-(lvl-1)*0.08);
   player.firePeriod=clamp(2.0-(lvl-1)*0.2,0.3,2.0);
-  boss.rings=[];
-  const ringCount=clamp(lvl-1,0,3);
-  for(let i=0;i<ringCount;i++){
-    const r=100+i*35,w=12,gap=clamp(0.9-i*0.1,0.5,1),speed=(0.7+i*0.25)*(i%2?-1:1);
-    boss.rings.push({r,w,gap,angle:Math.random()*TAU,speed});
+  boss.parts=[];
+  // irregular polygon points
+  const sides=5+Math.floor(Math.random()*3);
+  for(let i=0;i<sides;i++){
+    const ang=i*TAU/sides+Math.random()*0.4;
+    const r=boss.coreR*(0.8+Math.random()*0.5);
+    boss.parts.push({ang,r});
   }
-  // generate tentacles for the monster
-  boss.tentacles=[];
-  for(let i=0;i<8;i++){
-    boss.tentacles.push({
-      angle:(i/8)*TAU,
-      length:70+Math.random()*40,
-      phase:Math.random()*TAU,
-      speed:0.8+Math.random()*0.3
+  boss.fragments=[];
+  for(let i=0;i<6;i++){
+    boss.fragments.push({
+      r:boss.coreR+40+Math.random()*60,
+      ang:Math.random()*TAU,
+      speed:(Math.random()<0.5?-1:1)*(0.4+Math.random()*0.6),
+      size:6+Math.random()*5
     });
+  }
+  boss.spikes=[];
+  for(let i=0;i<8;i++){
+    boss.spikes.push({baseAng:Math.random()*TAU,length:70+Math.random()*50});
   }
 }
 function reset(){
   state.level=1;state.score=0;state.time=0;state.running=true;
-  player.angle=0;player.radius=170;player.alive=true;player.fireTimer=0;
-  player.invincible=0;bullets.length=0;state.moved=false;
-  centerMsg.classList.remove('hidden');
-  initLevel();
+  player.angle=0;player.radius=180;player.alive=true;player.fireTimer=0;player.invincible=0;
+  bullets.length=0;state.moved=false;centerMsg.classList.remove('hidden');initLevel();
 }
 function nextLevel(){
-  state.level++;
-  state.score+=150;
-  bullets.length=0;
-  initLevel();
-  player.invincible=2.0; // grace
-  boss.fireHold=1.5;     // delay before boss fires
-  flash(`Level ${state.level}<br><small>New ring & tougher monster.</small>`);
+  state.level++;state.score+=200;bullets.length=0;initLevel();
+  player.invincible=2.0;boss.fireHold=1.2;
+  flash(`Level ${state.level}<br><small>The alien grows...</small>`);
 }
 
 function shootPlayer(){
@@ -133,17 +97,16 @@ function shootPlayer(){
   const px=cx+Math.cos(player.angle)*player.radius;
   const py=cy+Math.sin(player.angle)*player.radius;
   const ang=Math.atan2(cy-py,cx-px);
-  const spd=560;
+  const spd=580;
   bullets.push({x:px,y:py,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,r:3,owner:'p'});
 }
 
 function bossVolley(){
-  const lvl=state.level;
-  const cx=state.w/2,cy=state.h/2;
-  let count=Math.min(8,1+lvl*2);
+  const lvl=state.level;const cx=state.w/2,cy=state.h/2;
+  let count=Math.min(10,2+lvl*2);
   for(let i=0;i<count;i++){
     const ang=Math.random()*TAU;
-    const spd=180+lvl*25;
+    const spd=160+lvl*25;
     bullets.push({x:cx,y:cy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,r:3.2,owner:'b'});
   }
 }
@@ -153,40 +116,25 @@ function update(dt){
   if(!player.alive)return;
   if(player.invincible>0)player.invincible=Math.max(0,player.invincible-dt);
   if(boss.fireHold>0)boss.fireHold=Math.max(0,boss.fireHold-dt);
-
-  // movement
   const turn=(keys['d']?1:0)-(keys['a']?1:0);
   player.angle+=turn*player.speed*dt;
   if(keys['w'])player.radius-=130*dt;
   if(keys['s'])player.radius+=130*dt;
   player.radius=clamp(player.radius,player.minR,player.maxR);
 
-  // player shooting
   player.fireTimer+=dt;
   if(player.fireTimer>=player.firePeriod){player.fireTimer=0;shootPlayer();}
 
-  // boss actions
   boss.fireTimer+=dt;
   if(boss.fireHold===0 && boss.fireTimer>=boss.fireCooldown){boss.fireTimer=0;bossVolley();}
-  for(const r of boss.rings)r.angle+=r.speed*dt;
+  for(const f of boss.fragments)f.ang+=f.speed*dt;
 
-  // bullets update
   for(let i=bullets.length-1;i>=0;i--){
-    const b=bullets[i];
-    b.x+=b.vx*dt;b.y+=b.vy*dt;
+    const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;
     if(b.x<-80||b.y<-80||b.x>state.w+80||b.y>state.h+80){bullets.splice(i,1);continue;}
     const cx=state.w/2,cy=state.h/2;
-    const dx=b.x-cx,dy=b.y-cy;const dist=Math.hypot(dx,dy);
+    const dx=b.x-cx,dy=b.y-cy,dist=Math.hypot(dx,dy);
     if(b.owner==='p'){
-      let blocked=false;
-      for(const ring of boss.rings){
-        const inBand=dist>(ring.r-ring.w/2)&&dist<(ring.r+ring.w/2);
-        if(inBand){
-          let a=Math.atan2(dy,dx)-ring.angle;a%=TAU;if(a<0)a+=TAU;
-          if(a>ring.gap){blocked=true;break;}
-        }
-      }
-      if(blocked){bullets.splice(i,1);continue;}
       if(dist<=boss.coreR){
         bullets.splice(i,1);
         boss.hp--;state.score+=5;
@@ -197,8 +145,7 @@ function update(dt){
       const py=state.h/2+Math.sin(player.angle)*player.radius;
       if(Math.hypot(b.x-px,b.y-py)<10){
         if(player.invincible>0){bullets.splice(i,1);continue;}
-        bullets.splice(i,1);
-        player.alive=false;state.running=false;showGameOver();
+        bullets.splice(i,1);player.alive=false;state.running=false;showGameOver();
       }
     }
   }
@@ -208,106 +155,78 @@ function drawShip(x,y,ang){
   ctx.save();
   ctx.translate(x,y);
   ctx.rotate(ang);
-  if(player.invincible>0 && Math.floor(state.time*10)%2===0)ctx.globalAlpha=0.35;
-  ctx.fillStyle='#e6f7ff';
+  if(player.invincible>0 && Math.floor(state.time*10)%2===0)ctx.globalAlpha=0.4;
+  ctx.strokeStyle='#aee3ff';
+  ctx.lineWidth=2;
   ctx.beginPath();
-  ctx.moveTo(13,0);
-  ctx.lineTo(-11,-7);ctx.lineTo(-5,0);ctx.lineTo(-11,7);ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle='#9bd1ff';
-  ctx.beginPath();ctx.arc(0,0,3,0,TAU);ctx.fill();
-  ctx.restore();
+  ctx.moveTo(14,0);ctx.lineTo(-10,-7);ctx.lineTo(-4,0);ctx.lineTo(-10,7);ctx.closePath();ctx.stroke();
   ctx.globalAlpha=1;
+  ctx.restore();
 }
 
-function drawMonster(cx,cy){
+function drawAlienBoss(cx,cy){
   const t=state.time;
-  // energy aura
-  const auraGrad=ctx.createRadialGradient(cx,cy,0,cx,cy,boss.coreR*3.5);
-  auraGrad.addColorStop(0,'rgba(120,200,255,0.5)');
-  auraGrad.addColorStop(1,'rgba(0,0,30,0)');
-  ctx.fillStyle=auraGrad;
-  ctx.beginPath();ctx.arc(cx,cy,boss.coreR*3.5,0,TAU);ctx.fill();
+  ctx.save();
+  ctx.translate(cx,cy);
+  // core shape (irregular polygon)
+  ctx.rotate(t*0.3);
+  ctx.strokeStyle=boss.hp<boss.maxHp/2?(t*6%2>1?'#ff5577':'#ff8899'):'#85d8ff';
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  for(let i=0;i<boss.parts.length;i++){
+    const p=boss.parts[i];
+    const a=p.ang+Math.sin(t+p.r*0.05)*0.2;
+    const x=Math.cos(a)*p.r;
+    const y=Math.sin(a)*p.r;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.stroke();
 
-  // tentacles
-  ctx.save();ctx.translate(cx,cy);
-  ctx.strokeStyle='#3fcaff';ctx.lineWidth=3;ctx.lineCap='round';
-  for(const tent of boss.tentacles){
-    const sway=Math.sin(t*tent.speed+tent.phase)*15;
-    const segs=6;
+  // spikes / tentacle lines
+  ctx.lineWidth=1.5;ctx.strokeStyle='#ffcc55';
+  for(const s of boss.spikes){
+    const ang=s.baseAng+Math.sin(t*2+s.length*0.02)*0.3;
+    const len=s.length*(0.7+0.3*Math.sin(t*1.2+s.baseAng));
+    ctx.beginPath();ctx.moveTo(0,0);
+    ctx.lineTo(Math.cos(ang)*len,Math.sin(ang)*len);ctx.stroke();
+  }
+
+  // fragments / orbiting shards
+  ctx.lineWidth=2;
+  for(const f of boss.fragments){
+    const x=Math.cos(f.ang)*f.r;
+    const y=Math.sin(f.ang)*f.r;
+    ctx.save();ctx.translate(x,y);
+    ctx.rotate(f.ang*2);
+    ctx.strokeStyle='#f76cf7';
     ctx.beginPath();
-    for(let j=0;j<=segs;j++){
-      const p=j/segs;
-      const r=p*tent.length;
-      const ang=tent.angle+Math.sin(t*tent.speed+tent.phase+p*3)*0.2;
-      const x=Math.cos(ang)*(r+sway*p*0.4);
-      const y=Math.sin(ang)*(r+sway*p*0.4);
-      if(j===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-    }
+    ctx.moveTo(-f.size,0);ctx.lineTo(0,-f.size);ctx.lineTo(f.size,0);ctx.lineTo(0,f.size);ctx.closePath();
     ctx.stroke();
+    ctx.restore();
   }
   ctx.restore();
-
-  // monster core
-  const grd=ctx.createRadialGradient(cx,cy,4,cx,cy,boss.coreR);
-  grd.addColorStop(0,'#ffe3f6');
-  grd.addColorStop(0.5,'#ff6bb1');
-  grd.addColorStop(1,'#5a1033');
-  ctx.fillStyle=grd;
-  ctx.beginPath();ctx.arc(cx,cy,boss.coreR,0,TAU);ctx.fill();
-
-  // eyes orbiting
-  const eyes=5;
-  for(let i=0;i<eyes;i++){
-    const a=(i/eyes)*TAU + t*0.7;
-    const ex=cx+Math.cos(a)*(boss.coreR+14);
-    const ey=cy+Math.sin(a)*(boss.coreR+14);
-    ctx.fillStyle='#fff';
-    ctx.beginPath();ctx.arc(ex,ey,4,0,TAU);ctx.fill();
-    ctx.fillStyle='#ff3860';
-    ctx.beginPath();ctx.arc(ex+Math.sin(t*3)*1.2,ey,2,0,TAU);ctx.fill();
-  }
 }
 
 function draw(){
   const w=state.w,h=state.h;
   ctx.clearRect(0,0,w,h);
   const cx=w/2,cy=h/2;
-
-  // background starfield faint rings
-  ctx.save();ctx.globalAlpha=0.15;ctx.strokeStyle='#4c5c80';ctx.lineWidth=1;
-  for(let rr=80;rr<Math.max(w,h);rr+=80){ctx.beginPath();ctx.arc(cx,cy,rr,0,TAU);ctx.stroke();}
+  ctx.save();ctx.strokeStyle='#242a3c';ctx.globalAlpha=0.2;
+  for(let r=80;r<Math.max(w,h);r+=80){ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.stroke();}
   ctx.restore();
-
-  drawMonster(cx,cy);
-
-  // rings
-  for(const ring of boss.rings){
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(ring.angle);
-    ctx.strokeStyle='#8ed0ff';ctx.lineWidth=ring.w;ctx.globalAlpha=.9;
-    ctx.beginPath();ctx.arc(0,0,ring.r,ring.gap,TAU);ctx.stroke();
-    ctx.restore();
-  }
-
-  // player
+  drawAlienBoss(cx,cy);
   const px=cx+Math.cos(player.angle)*player.radius;
   const py=cy+Math.sin(player.angle)*player.radius;
   drawShip(px,py,player.angle+Math.PI);
-
-  // bullets
   for(const b of bullets){
-    ctx.beginPath();
-    ctx.fillStyle=(b.owner==='p')?'#e6f7ff':'#ff9a5b';
-    ctx.arc(b.x,b.y,b.r,0,TAU);
-    ctx.fill();
+    ctx.fillStyle=(b.owner==='p')?'#e8f6ff':'#ff904f';
+    ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,TAU);ctx.fill();
   }
-
-  // HUD
   hud.innerHTML=`
-    <div class='pill'><strong>Lvl</strong> ${state.level}</div>
-    <div class='pill'><strong>Boss</strong> ${Math.max(0,boss.hp)}/${boss.maxHp}</div>
-    <div class='pill'><strong>Score</strong> ${state.score}</div>
-  `;
+  <div class='pill'><strong>Lvl</strong> ${state.level}</div>
+  <div class='pill'><strong>Boss</strong> ${Math.max(0,boss.hp)}/${boss.maxHp}</div>
+  <div class='pill'><strong>Score</strong> ${state.score}</div>`;
 }
 
 let last=performance.now();
