@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Orbit Boss — Alien Face Edition</title>
+<title>Orbit Boss — Alien Face Edition (Fixed)</title>
 <style>
   html,body{margin:0;height:100%;background:#05060a;overflow:hidden;color:#bfe9ff;font-family:sans-serif}
   canvas{display:block;width:100vw;height:100vh}
@@ -25,7 +25,7 @@
 
 <script>
 (() => {
-// ==== Base setup ============================================================
+// ===== Base setup =====
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
 const hud=document.getElementById("hud");
@@ -40,35 +40,32 @@ const TAU=Math.PI*2, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const randRange=(a,b)=>a+Math.random()*(b-a);
 const nowMs=()=>performance.now();
 
-// ==== Player, Boss, World ===================================================
+// ===== Entities =====
 const player={
   angle:0, radius:180, minR:110, maxR:260,
   speed:2.2, alive:true, invincible:0, dir:1,
-  // shooting/cooldown
-  lastShotMs:0, shootCooldown:2000, scheduledShots:[], // ms timestamps
+  lastShotMs:0, shootCooldown:2000 // ms; 2.0s at L1, -0.1s/level
 };
 
 const boss={
   hp:20, maxHp:20, coreR:32,
   fireTimer:0, fireCooldown:1.2, fireHold:0,
-  // alien face parts
-  faceRot:0, eyes:[], mouth:{open:0},
-  tentacles:[], // slithering multi-segment tentacles
-  shards:[],    // orbiting squares (visual, NOT asteroids)
+  eyes:[], mouth:{open:0},
+  tentacles:[]
 };
 
-const bullets=[];     // both player and boss bullets
-const asteroids=[];   // level 3+ moving hazards
+const bullets=[];    // player + boss bullets
+const asteroids=[];  // only Level >= 3
 const keys={};
 
-// ==== Input =================================================================
+// ===== Input =====
 onkeydown=e=>{
   const k=e.key.toLowerCase();
   if(['w','a','s','d','r'].includes(k)) e.preventDefault();
   keys[k]=true;
   if(!state.moved && ['w','a','s','d'].includes(k)) hideCenter();
   if(k==='a') player.dir*=-1;
-  if(k==='d') tryShoot();         // manual shoot with cooldown
+  if(k==='d') tryShoot();     // single shot, cooldown-gated
   if(k==='r') reset();
 };
 onkeyup=e=>{ delete keys[e.key.toLowerCase()]; };
@@ -81,17 +78,14 @@ function showGameOver(){
   <div>Score: <strong>${state.score}</strong> — Level: <strong>${state.level}</strong></div><div>Press <kbd>R</kbd> to restart</div>`;
 }
 
-// ==== Level init / reset ====================================================
+// ===== Level init / reset =====
 function initAlienFace(){
-  // Eyes: two orbits offset (geometric, simple)
   boss.eyes = [
-    {off: {x:-boss.coreR*0.8, y:-boss.coreR*0.25}, blink:0},
-    {off: {x:+boss.coreR*0.8, y:-boss.coreR*0.15}, blink:0},
+    {off:{x:-boss.coreR*0.8, y:-boss.coreR*0.25}},
+    {off:{x:+boss.coreR*0.8, y:-boss.coreR*0.15}}
   ];
-  // Mouth jagged triangles
-  boss.mouth = {open:0}; // animated open amount 0..1
+  boss.mouth = {open:0};
 
-  // Slithering tentacles (multi-segment)
   boss.tentacles = [];
   const tentCount = 8;
   for(let i=0;i<tentCount;i++){
@@ -101,18 +95,7 @@ function initAlienFace(){
       amp: randRange(0.12,0.28),
       speed: randRange(1.0,1.8),
       segs: 8 + Math.floor(Math.random()*4),
-      phase: Math.random()*TAU,
-    });
-  }
-
-  // Decorative shards (not collisions): small squares orbiting
-  boss.shards = [];
-  for(let i=0;i<5;i++){
-    boss.shards.push({
-      r: boss.coreR + randRange(40,70),
-      ang: Math.random()*TAU,
-      speed: (Math.random()<0.5?-1:1)*randRange(0.3,0.7),
-      size: randRange(5,8),
+      phase: Math.random()*TAU
     });
   }
 }
@@ -132,7 +115,7 @@ function initAsteroids(){
       vy: Math.sin(ang)*spd,
       size: randRange(12,20),
       rot: Math.random()*TAU,
-      rotSpeed: randRange(-1,1),
+      rotSpeed: randRange(-1,1)
     });
   }
 }
@@ -142,9 +125,9 @@ function initLevel(){
   boss.maxHp = Math.floor(22 + (lvl-1)*10);
   boss.hp = boss.maxHp;
   boss.fireCooldown = Math.max(0.8, 1.5 - (lvl-1)*0.08);
-  boss.fireHold = Math.min(1.5, 1.2 + (lvl-1)*0.05); // small intro delay each level
+  boss.fireHold = 1.0; // short intro delay each level
 
-  // Shooting cooldown (ms)
+  // cooldown (ms): 2.0 - 0.1*level-1, min 0.3
   const cdSec = clamp(2.0 - (lvl-1)*0.1, 0.3, 2.0);
   player.shootCooldown = cdSec * 1000;
 
@@ -156,7 +139,7 @@ function initLevel(){
 function reset(){
   state.level=1; state.score=0; state.time=0; state.running=true;
   player.angle=0; player.radius=180; player.alive=true; player.invincible=0; player.dir=1;
-  player.lastShotMs=0; player.scheduledShots.length=0;
+  player.lastShotMs=0;
   asteroids.length=0; bullets.length=0; state.moved=false; centerMsg.classList.remove('hidden');
   initLevel();
 }
@@ -164,30 +147,19 @@ function reset(){
 function nextLevel(){
   state.level++;
   state.score += 200;
-  player.invincible = 1.5;
-  boss.fireHold = 1.1;
-  player.scheduledShots.length=0;
+  player.invincible = 1.2;
   initLevel();
   flash(`Level ${state.level}<br><small>It mutates… and space gets crowded.</small>`);
 }
 
-// ==== Player shooting (cooldown + staggered micro-shots) ====================
-function canShoot(){
-  return (nowMs() - player.lastShotMs) >= player.shootCooldown;
-}
+// ===== Shooting (single shot per press, cooldown) =====
+function canShoot(){ return (nowMs() - player.lastShotMs) >= player.shootCooldown; }
+
 function tryShoot(){
   if(!player.alive) return;
   if(!canShoot()) return;
-
   player.lastShotMs = nowMs();
-
-  // Queue 3–4 micro-shots spaced ~0.3s apart with slight jitter
-  const shots = 3 + Math.floor(Math.random()*2);
-  const baseDelay = 300; // ms
-  for(let i=0;i<shots;i++){
-    const jitter = randRange(-50, 50); // ±0.05 s
-    player.scheduledShots.push(player.lastShotMs + i*baseDelay + jitter);
-  }
+  spawnPlayerBullet();
 }
 
 function spawnPlayerBullet(){
@@ -205,7 +177,7 @@ function spawnPlayerBullet(){
   });
 }
 
-// ==== Boss attack (one aimed + random spread) ===============================
+// ===== Boss volley (one aimed + random spread) =====
 function bossVolley(){
   const lvl=state.level;
   const cx=state.w/2, cy=state.h/2;
@@ -221,7 +193,7 @@ function bossVolley(){
   }
 }
 
-// ==== Update ================================================================
+// ===== Update =====
 function update(dt){
   state.time += dt;
   if(!player.alive) return;
@@ -229,41 +201,22 @@ function update(dt){
   if(player.invincible>0) player.invincible=Math.max(0, player.invincible - dt);
   if(boss.fireHold>0) boss.fireHold=Math.max(0, boss.fireHold - dt);
 
-  // Player auto-rotation + radius control
+  // Auto rotation + radius control
   player.angle += player.dir * player.speed * dt;
   if(keys['w']) player.radius -= 130*dt;
   if(keys['s']) player.radius += 130*dt;
   player.radius = clamp(player.radius, player.minR, player.maxR);
 
-  // Dequeue scheduled micro-shots
-  if (player.scheduledShots.length){
-    const tMs = nowMs();
-    let fired = 0;
-    for(let i=player.scheduledShots.length-1;i>=0;i--){
-      if (tMs >= player.scheduledShots[i]){
-        spawnPlayerBullet();
-        player.scheduledShots.splice(i,1);
-        fired++;
-      }
-    }
-    // no-op if none ready
-  }
-
-  // Boss timers
+  // Boss timing
   boss.fireTimer += dt;
   if(boss.fireHold===0 && boss.fireTimer >= boss.fireCooldown){
     boss.fireTimer = 0;
-    // subtle eye "pre-flash" via mouth open spike
-    boss.mouth.open = 1.0;
+    boss.mouth.open = 1.0; // quick tell
     bossVolley();
   }
-  // relax mouth open
   boss.mouth.open = Math.max(0, boss.mouth.open - dt*1.5);
 
-  // Shards orbit
-  for(const s of boss.shards) s.ang += s.speed * dt;
-
-  // Asteroids movement + wall bounces
+  // Asteroids move + bounce (only if level >= 3)
   for(const a of asteroids){
     a.x += a.vx*dt; a.y += a.vy*dt;
     a.rot += a.rotSpeed*dt;
@@ -283,14 +236,12 @@ function update(dt){
     const dx=b.x-cx, dy=b.y-cy, dist=Math.hypot(dx,dy);
 
     if(b.owner==='p'){
-      // Hit boss core
       if(dist <= boss.coreR){
         bullets.splice(i,1);
         boss.hp--; state.score += 5;
         if(boss.hp<=0) nextLevel();
       }
     } else {
-      // Hit player
       const px=cx + Math.cos(player.angle)*player.radius;
       const py=cy + Math.sin(player.angle)*player.radius;
       if(Math.hypot(b.x-px, b.y-py) < 10){
@@ -301,12 +252,11 @@ function update(dt){
     }
   }
 
-  // Asteroids collide with player
+  // Asteroid collision with player
   const cx=state.w/2, cy=state.h/2;
   const px=cx + Math.cos(player.angle)*player.radius;
   const py=cy + Math.sin(player.angle)*player.radius;
   for(const a of asteroids){
-    // simple circle approx vs ship
     if (Math.hypot(a.x - px, a.y - py) < a.size + 9){
       if(player.invincible<=0){
         player.alive=false; state.running=false; showGameOver();
@@ -315,7 +265,7 @@ function update(dt){
   }
 }
 
-// ==== Draw ==================================================================
+// ===== Draw =====
 function drawShip(x,y,ang){
   ctx.save();
   ctx.translate(x,y);
@@ -328,8 +278,8 @@ function drawShip(x,y,ang){
   ctx.moveTo(14,0); ctx.lineTo(-10,-7); ctx.lineTo(-4,0); ctx.lineTo(-10,7); ctx.closePath();
   ctx.stroke();
 
-  // weapon ready indicator: red core (no flashing)
-  const ready = canShoot() && player.scheduledShots.length===0;
+  // weapon ready indicator: red core when ready
+  const ready = canShoot();
   ctx.fillStyle = ready ? '#ff4444' : '#162036';
   ctx.beginPath(); ctx.arc(-2,0,3.8,0,TAU); ctx.fill();
 
@@ -344,12 +294,11 @@ function drawAlienFace(cx,cy){
   ctx.strokeStyle='#ffcc55';
   for(const tent of boss.tentacles){
     const segs = tent.segs;
-    let x0=cx, y0=cy;
     ctx.beginPath();
-    ctx.moveTo(x0,y0);
+    ctx.moveTo(cx,cy);
     for(let i=1;i<=segs;i++){
       const p=i/segs;
-      const wave = Math.sin(t*tent.speed + tent.phase + p*3)*tent.amp; // radians
+      const wave = Math.sin(t*tent.speed + tent.phase + p*3)*tent.amp;
       const dir = tent.baseAng + wave;
       const r = tent.baseLen * p;
       const x = cx + Math.cos(dir)*r;
@@ -374,15 +323,15 @@ function drawAlienFace(cx,cy){
   ctx.closePath(); ctx.stroke();
 
   // Eyes
-  const eyeBlink = (Math.sin(t*3)+1)/2; // 0..1
   for(const e of boss.eyes){
     const ex = cx + e.off.x + Math.sin(t*1.1)*2;
     const ey = cy + e.off.y + Math.cos(t*0.9)*2;
     ctx.fillStyle = '#ffffff';
     ctx.beginPath(); ctx.arc(ex,ey,4,0,TAU); ctx.fill();
-    // pupil
-    ctx.fillStyle = (boss.fireTimer>boss.fireCooldown*0.8 && boss.fireHold===0) ? '#ff3333' : '#222a4a';
-    ctx.beginPath(); ctx.arc(ex + Math.sin(t*4)*0.8, ey, eyeBlink<0.15?0.6:1.7, 0, TAU); ctx.fill();
+    // pupil (red when about to fire)
+    const aboutToFire = boss.fireHold===0 && boss.fireTimer>boss.fireCooldown*0.8;
+    ctx.fillStyle = aboutToFire ? '#ff3333' : '#222a4a';
+    ctx.beginPath(); ctx.arc(ex + Math.sin(t*4)*0.8, ey, 1.7, 0, TAU); ctx.fill();
   }
 
   // Mouth (jagged)
@@ -398,28 +347,16 @@ function drawAlienFace(cx,cy){
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   }
   ctx.stroke();
-
-  // Orbiting shards (visual)
-  ctx.lineWidth=2; ctx.strokeStyle='#f76cf7';
-  for(const s of boss.shards){
-    const x = cx + Math.cos(s.ang)*s.r;
-    const y = cy + Math.sin(s.ang)*s.r;
-    ctx.save(); ctx.translate(x,y); ctx.rotate(s.ang*2);
-    ctx.beginPath();
-    ctx.moveTo(-s.size,0); ctx.lineTo(0,-s.size); ctx.lineTo(s.size,0); ctx.lineTo(0,s.size); ctx.closePath();
-    ctx.stroke();
-    ctx.restore();
-  }
 }
 
 function drawAsteroids(){
+  if(state.level < 3) return;
   ctx.strokeStyle='#8d99b3';
   ctx.lineWidth=2;
   for(const a of asteroids){
     ctx.save();
     ctx.translate(a.x, a.y);
     ctx.rotate(a.rot);
-    // square, looks like an asteroid block
     const s=a.size;
     ctx.beginPath();
     ctx.rect(-s, -s, s*2, s*2);
@@ -431,10 +368,11 @@ function drawAsteroids(){
 function drawBullets(){
   for(const b of bullets){
     if(b.owner==='p'){
-      // "Fireball" look via flicker in size + hue
-      const flick = Math.sin((state.time - (b.born||0))*30 + b.flameHue)*0.2;
+      // fireball look (flicker size + hue)
+      const age = state.time - (b.born||0);
+      const flick = Math.sin(age*30 + b.flameHue)*0.2;
       const size = b.r * (1 + flick);
-      const hue = b.flameHue + Math.sin((state.time - (b.born||0))*40 + b.flameHue)*12;
+      const hue = b.flameHue + Math.sin(age*40 + b.flameHue)*12;
       ctx.fillStyle = `hsl(${hue},100%,60%)`;
       ctx.beginPath(); ctx.arc(b.x,b.y,size,0,TAU); ctx.fill();
     } else {
@@ -454,26 +392,25 @@ function draw(){
   for(let r=80;r<Math.max(w,h);r+=80){ ctx.beginPath(); ctx.arc(cx,cy,r,0,TAU); ctx.stroke(); }
   ctx.restore();
 
-  // boss + asteroids + player + bullets
   drawAlienFace(cx,cy);
   drawAsteroids();
 
+  // player
   const px=cx + Math.cos(player.angle)*player.radius;
   const py=cy + Math.sin(player.angle)*player.radius;
   drawShip(px,py,player.angle+Math.PI);
 
   drawBullets();
 
-  // HUD
+  // HUD (no cooldown pill anymore)
   hud.innerHTML = `
     <div class='pill'><strong>Lvl</strong> ${state.level}</div>
     <div class='pill'><strong>Boss</strong> ${Math.max(0,boss.hp)}/${boss.maxHp}</div>
     <div class='pill'><strong>Score</strong> ${state.score}</div>
-    <div class='pill'><strong>CD</strong> ${(player.shootCooldown/1000).toFixed(1)}s</div>
   `;
 }
 
-// ==== Main loop =============================================================
+// ===== Loop =====
 let last=performance.now();
 function loop(now){
   const dt=Math.min(0.033,(now-last)/1000);
@@ -482,7 +419,6 @@ function loop(now){
   draw();
   requestAnimationFrame(loop);
 }
-
 function start(){ initLevel(); requestAnimationFrame(loop); }
 start();
 })();
