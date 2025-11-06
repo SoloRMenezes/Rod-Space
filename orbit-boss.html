@@ -271,26 +271,23 @@ function drawShip(x,y,ang){
   ctx.translate(x,y);
   ctx.rotate(ang);
 
-// outline + fill when ready
-const ready = canShoot();
-ctx.beginPath();
-ctx.moveTo(14,0);
-ctx.lineTo(-10,-7);
-ctx.lineTo(-4,0);
-ctx.lineTo(-10,7);
-ctx.closePath();
+  // outline
+  ctx.strokeStyle='#aee3ff';
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(14,0); ctx.lineTo(-10,-7); ctx.lineTo(-4,0); ctx.lineTo(-10,7); ctx.closePath();
+  ctx.stroke();
 
-if (ready) {
-  ctx.fillStyle = '#ff4444'; // red fill when ready
-  ctx.fill();
-} else {
-  ctx.fillStyle = '#162036'; // dark fill otherwise
-  ctx.fill();
+  // weapon ready indicator: red core when ready
+  const ready = canShoot();
+  ctx.fillStyle = ready ? '#ff4444' : '#162036';
+  ctx.beginPath(); ctx.arc(-2,0,3.8,0,TAU); ctx.fill();
+
+  ctx.restore();
 }
 
-ctx.strokeStyle = '#aee3ff';
-ctx.lineWidth = 2;
-ctx.stroke();
+function drawAlienFace(cx,cy){
+  const t=state.time;
 
   // Slithering tentacles
   ctx.lineWidth=1.8;
