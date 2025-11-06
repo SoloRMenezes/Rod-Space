@@ -548,7 +548,7 @@ function loop(now){
   pelletMat.emissiveIntensity = 1.2 + Math.sin(now*0.004)*0.28;
 
   if(state.playing && !state.paused){
-    if(locked) movePlayer(dt);
+    if(state.paused) return;
     ghosts.forEach(g=>{ ghostAI(g); moveGhost(g,dt); });
     eat(); checkDeaths();
     state.modeTime+=dt;
