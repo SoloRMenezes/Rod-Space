@@ -266,10 +266,32 @@ function update(dt){
 }
 
 // ===== Draw =====
-function drawShip(x,y,ang){
+function drawShip(x, y, ang) {
   ctx.save();
-  ctx.translate(x,y);
+  ctx.translate(x, y);
   ctx.rotate(ang);
+
+  const ready = canShoot();
+
+  // Define the ship shape
+  ctx.beginPath();
+  ctx.moveTo(14, 0);
+  ctx.lineTo(-10, -7);
+  ctx.lineTo(-4, 0);
+  ctx.lineTo(-10, 7);
+  ctx.closePath();
+
+  // Fill: red if ready, dark if not
+  ctx.fillStyle = ready ? '#ff3333' : '#162036';
+  ctx.fill();
+
+  // Outline
+  ctx.strokeStyle = '#aee3ff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.restore();
+}
 
   // outline
   ctx.strokeStyle='#aee3ff';
