@@ -292,17 +292,6 @@ ctx.strokeStyle = '#aee3ff';
 ctx.lineWidth = 2;
 ctx.stroke();
 
-  // weapon ready indicator: red core when ready
-  const ready = canShoot();
-  ctx.fillStyle = ready ? '#ff4444' : '#162036';
-  ctx.beginPath(); ctx.arc(-2,0,3.8,0,TAU); ctx.fill();
-
-  ctx.restore();
-}
-
-function drawAlienFace(cx,cy){
-  const t=state.time;
-
   // Slithering tentacles
   ctx.lineWidth=1.8;
   ctx.strokeStyle='#ffcc55';
