@@ -10,7 +10,19 @@
   #hud{position:fixed;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:rgba(8,12,24,.6);border:1px solid rgba(191,233,255,.18);padding:6px 10px;border-radius:999px;backdrop-filter:blur(6px);z-index:10}
   .pill{padding:2px 8px;border-radius:999px;border:1px solid rgba(191,233,255,.25);background:#0c1326}
   #map{position:fixed;left:12px;bottom:12px;width:160px;height:176px;background:rgba(10,20,40,.86);border:2px solid #2049ff;border-radius:10px;box-shadow:0 0 10px rgba(32,73,255,.35) inset;z-index:8;display:none}
-  #centerSquare{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:#fff;opacity:.6;border-radius:2px;z-index:9;display:none}
+
+  /* ✚ Shift-Lock Crosshair (Roblox-style plus) */
+  #crosshair{
+    position:fixed;top:50%;left:50%;
+    width:20px;height:20px;transform:translate(-50%,-50%);
+    pointer-events:none;z-index:9;display:none;
+  }
+  #crosshair::before,#crosshair::after{
+    content:"";position:absolute;background:#fff;opacity:.75;
+  }
+  #crosshair::before{width:2px;height:20px;left:9px;top:0}
+  #crosshair::after{width:20px;height:2px;left:0;top:9px}
+
   #msg{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:12}
   #msg>div{padding:10px 14px;border-radius:10px;background:rgba(10,16,28,.78);border:1px solid rgba(191,233,255,.2)}
 </style>
@@ -24,7 +36,7 @@
 </div>
 <canvas id="game"></canvas>
 <canvas id="map" width="160" height="176" aria-label="Minimap"></canvas>
-<div id="centerSquare" aria-hidden="true"></div>
+<div id="crosshair"></div>
 <div id="msg"><div id="msgText">Press <b>Shift</b> to start. Use <b>Space</b> for the minimap.</div></div>
 
 <script type="module">
@@ -49,7 +61,7 @@ const pacman_map = [
   [9,9,9,9,9,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,9,9,9,9,9],
   [9,9,9,9,9,1,0,1,1,0,1,1,1,3,3,1,1,1,0,1,1,0,1,9,9,9,9,9],
   [1,1,1,1,1,1,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,1,1,1,1,1,1],
-  [0,0,0,0,0,0,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0,0], // tunnel row (index 14)
+  [0,0,0,0,0,0,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0,0], // tunnel row 14
   [1,1,1,1,1,1,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,1,1,1,1,1,1],
   [9,9,9,9,9,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,9,9,9,9,9],
   [9,9,9,9,9,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,9,9,9,9,9],
@@ -93,9 +105,31 @@ const floor=new THREE.Mesh(
 floor.rotation.x=-Math.PI/2; floor.position.set((COLS*TILE)/2,-0.02,(ROWS*TILE)/2);
 scene.add(floor);
 
+/* ---------- Neon-brick procedural texture ---------- */
+function makeNeonBrickTexture(){
+  const size=64;
+  const c=document.createElement("canvas"); c.width=c.height=size;
+  const ctx=c.getContext("2d");
+  ctx.fillStyle="#1133ff"; ctx.fillRect(0,0,size,size);
+  ctx.strokeStyle="#000"; ctx.lineWidth=2;
+  const step=8;
+  for(let i=0;i<=size;i+=step){
+    ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,size);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(size,i);ctx.stroke();
+  }
+  const tex=new THREE.CanvasTexture(c);
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+  tex.repeat.set(2,2);
+  return tex;
+}
+const brickTex=makeNeonBrickTexture();
+
 /* Build maze */
 const wallGeo=new THREE.BoxGeometry(TILE,2.4,TILE);
-const wallMat=new THREE.MeshStandardMaterial({color:0x1133ff,emissive:0x0d1a7a,emissiveIntensity:1.6,metalness:.25,roughness:.25});
+const wallMat=new THREE.MeshStandardMaterial({
+  color:0x1133ff, emissive:0x0d1a7a, emissiveIntensity:1.6,
+  metalness:.25, roughness:.25, map:brickTex     // <- neon bricks
+});
 const gateMat=new THREE.MeshStandardMaterial({color:0x9fd3ff, transparent:true, opacity:.45});
 const walls=new THREE.Group(); scene.add(walls);
 
@@ -108,12 +142,9 @@ const pellets=new Map(), powers=new Map();
 
 const wx=c=>c*TILE, wz=r=>r*TILE;
 const tile=(c,r)=> (r<0||c<0||r>=ROWS||c>=COLS)?T.WALL:pacman_map[r][c];
-const isWalkable=(c,r)=>{ const t=tile(c,r); return t===T.PATH || t===T.POWER || t===T.HOUSE; };
 const isWall=(c,r)=> tile(c,r)===T.WALL || tile(c,r)===T.VOID;
 const isGate=(c,r)=> tile(c,r)===T.GATE;
-const isHouse=(c,r)=> tile(c,r)===T.HOUSE;
 
-/* place walls + pellets exactly per layout; pellets only on PATH(0), power on 2 */
 function buildLevel(refill=true){
   walls.clear();
   for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
@@ -144,19 +175,18 @@ const ghosts=[
 }));
 ghosts.forEach(g=>scene.add(g.mesh));
 
-/* Spawn ghosts inside HOUSE tiles (average their positions) */
+/* place ghosts inside HOUSE */
 (function placeGhostsInHouse(){
-  const houseCells=[];
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(pacman_map[r][c]===T.HOUSE) houseCells.push([c,r]);
-  if(houseCells.length){
-    const mid=houseCells[Math.floor(houseCells.length/2)];
-    const [cx,cy]=mid;
+  const house=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(pacman_map[r][c]===T.HOUSE) house.push([c,r]);
+  if(house.length){
+    const mid=house[Math.floor(house.length/2)];
     const offs=[[-1,0],[1,0],[0,-1],[0,1]];
-    ghosts.forEach((g,i)=>{ g.x=cx+offs[i%offs.length][0]; g.y=cy+offs[i%offs.length][1]; });
+    ghosts.forEach((g,i)=>{ g.x=mid[0]+offs[i%4][0]; g.y=mid[1]+offs[i%4][1]; });
   }
 })();
 
-/* Pac-Man spawn: row 23, col 13 (0-indexed) */
+/* Pac-Man spawn: row 23, col 13 */
 const player={x:13,y:23,speed:3.9};
 
 /* State & HUD */
@@ -167,10 +197,9 @@ const recount=()=>{state.pelCount=pellets.size; state.powCount=powers.size;};
 
 /* Resets */
 function resetPositions(){
-  // clamp to centers
-  player.x+=0; player.y+=0; yaw=Math.PI; pitch=0;
+  let yawStart=Math.PI; yaw=yawStart; pitch=0;
   camera.position.set(player.x*TILE,1.26,player.y*TILE); camera.rotation.set(0,yaw,0);
-  ghosts.forEach((g,i)=>{ g.dir='left'; g.eyes=false; g.speed=2.9+(state.level-1)*0.06; g.mesh.material.color.setHex(g.color); g.mesh.material.emissive.setHex(0x0f1024); });
+  ghosts.forEach(g=>{ g.dir='left'; g.eyes=false; g.speed=2.9+(state.level-1)*0.06; g.mesh.material.color.setHex(g.color); g.mesh.material.emissive.setHex(0x0f1024); });
 }
 function softReset(){
   state.lives--; ui.l.textContent=state.lives;
@@ -188,7 +217,7 @@ function nextLevel(){
   buildLevel(true); recount(); resetPositions(); setTimeout(()=>setMsg(''),700);
 }
 
-/* Controls & shift-lock (with fallback if pointer-lock blocked) */
+/* Controls & shift-lock (fallback safe) */
 const keys=new Set();
 addEventListener('keydown',e=>{
   keys.add(e.key);
@@ -199,7 +228,7 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>keys.delete(e.key));
 
-const cross=document.getElementById('centerSquare');
+const cross=document.getElementById('crosshair');
 let lockMode='unlocked';
 const pointerLockSupported=()=>!!document.body.requestPointerLock;
 function tryPointerLock(){ try{ document.body.requestPointerLock(); }catch{ return false; } return true; }
@@ -212,7 +241,7 @@ function toggleLock(){
   } else { if(lockMode==='pointer') document.exitPointerLock(); lockMode='unlocked'; cross.style.display='none'; document.body.style.cursor=''; }
 }
 
-/* Mouse look: up=up, down=down; clamp ±60° (no upside-down) */
+/* Mouse look: up=up, down=down; clamp ±60° */
 let yaw=Math.PI, pitch=0, lastX=null,lastY=null;
 addEventListener('mousemove',e=>{
   let dx=0, dy=0;
@@ -225,14 +254,14 @@ addEventListener('mousemove',e=>{
   pitch=Math.max(-LIMIT, Math.min(LIMIT, pitch));
 });
 
-/* Movement, collisions, tunnel row 14 wrap */
+/* Movement & collisions + tunnel row */
 function canMoveTo(nx,ny, who='player'){
   const r=0.18;
   const pts=[[nx-r,ny-r],[nx+r,ny-r],[nx-r,ny+r],[nx+r,ny+r]];
   for(const [x,y] of pts){
     const c=Math.floor(x), rr=Math.floor(y);
     if(isWall(c,rr)) return false;
-    if(isGate(c,rr) && who==='player') return false; // player blocked by gate
+    if(isGate(c,rr) && who==='player') return false;
   }
   return true;
 }
@@ -258,7 +287,7 @@ function movePlayer(dt){
   camera.rotation.set(pitch,yaw,0);
 }
 
-/* Ghost AI (simple scatter/chase + gate pass) */
+/* Ghost AI (scatter/chase similar to classic) */
 const dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 const opposite=d=>({up:'down',down:'up',left:'right',right:'left'})[d];
 const atCenter=(x,y)=>Math.abs(x-Math.round(x))<0.15 && Math.abs(y-Math.round(y))<0.15;
@@ -270,24 +299,26 @@ function chooseNextDir(g,target){
   for(const d of options){
     if(d===opposite(g.dir)) continue;
     const [dx,dy]=dirs[d]; const cx=Math.round(g.x), cy=Math.round(g.y);
-    // ghosts can pass gate
-    const ok = (()=>{
-      const tc = cx+dx*0.5, tr=cy+dy*0.5;
-      const t = tile(Math.floor(tc),Math.floor(tr));
-      if(t===T.WALL || t===T.VOID) return false;
-      return true;
-    })();
-    if(!ok) continue;
+    // ghosts can pass gate; blocked by walls/void
+    const tc=tile(Math.floor(cx+dx*0.5),Math.floor(cy+dy*0.5));
+    if(tc===T.WALL || tc===T.VOID) continue;
+    const nx=g.x+dx, ny=g.y+dy; const d2=(nx-target.x)**2+(ny,target.y)**2;
+  }
+  // recompute with distances
+  let pick=null,dist=Infinity;
+  for(const d of options){
+    if(d===opposite(g.dir)) continue;
+    const [dx,dy]=dirs[d]; const cx=Math.round(g.x), cy=Math.round(g.y);
+    const tc=tile(Math.floor(cx+dx*0.5),Math.floor(cy+dy*0.5));
+    if(tc===T.WALL || tc===T.VOID) continue;
     const nx=g.x+dx, ny=g.y+dy; const d2=(nx-target.x)**2+(ny-target.y)**2;
-    if(d2<bestD){ bestD=d2; best=d; }
+    if(d2<dist){dist=d2; pick=d;}
   }
-  if(best===g.dir){
+  if(pick===null){
     const [dx,dy]=dirs[g.dir]||[0,0];
-    const tc=g.x+dx*0.5, tr=g.y+dy*0.5;
-    const t = tile(Math.floor(tc),Math.floor(tr));
-    if(t===T.WALL||t===T.VOID) best=opposite(g.dir);
-  }
-  g.dir=best;
+    const tc=tile(Math.floor(g.x+dx*0.5),Math.floor(g.y+dy*0.5));
+    if(tc===T.WALL||tc===T.VOID) g.dir=opposite(g.dir);
+  } else g.dir=pick;
 }
 function randomTurn(g){
   if(!atCenter(g.x,g.y)) return;
@@ -300,11 +331,11 @@ function randomTurn(g){
   if(opts.length) g.dir=opts[Math.floor(Math.random()*opts.length)];
 }
 function chaseTarget(g){
-  if(g.name==='blinky') return {x:player.x,y:player.y};
+  if(g.name==='blinky') return {x:player.x,y:player.y}; // direct
   if(g.name==='pinky'){ const fx=Math.sin(yaw), fz=Math.cos(yaw); return {x:player.x+fx*3,y:player.y+fz*3}; }
   if(g.name==='inky'){  const fx=Math.sin(yaw), fz=Math.cos(yaw); return {x:player.x+fx*2+(ghosts[0].x-player.x), y:player.y+fz*2+(ghosts[0].y-player.y)}; }
-  const d=Math.hypot(g.x-player.x,g.y-player.y);
-  return d<6? {x:COLS-2,y:ROWS-2} : {x:player.x,y:player.y};
+  const d=Math.hypot(g.x-player.x,g.y-player.y); // clyde
+  return d<6? {x:1,y:ROWS-2} : {x:player.x,y:player.y};
 }
 function ghostAI(g){
   if(g.eyes){
@@ -314,13 +345,13 @@ function ghostAI(g){
     return;
   }
   if(state.fright>0){ randomTurn(g); return; }
-  const t=(state.mode==='scatter') ? ({blinky:[COLS-2,1],pinky:[1,1],inky:[COLS-2,ROWS-2],clyde:[1,ROWS-2]}[g.name] || [1,1]) : chaseTarget(g);
-  chooseNextDir(g, {x:t[0],y:t[1]});
+  const scatter={blinky:[COLS-2,1],pinky:[1,1],inky:[COLS-2,ROWS-2],clyde:[1,ROWS-2]}[g.name];
+  const t=(state.mode==='scatter') ? {x:scatter[0],y:scatter[1]} : chaseTarget(g);
+  chooseNextDir(g,t);
 }
 function moveGhost(g,dt){
   const [dx,dy]=dirs[g.dir]||[0,0];
   const sp=g.speed*dt/TILE;
-  // ghosts can pass gate, not walls/void
   const nx=g.x+dx*sp, ny=g.y+dy*sp;
   const tc=tile(Math.floor(nx),Math.floor(ny));
   if(tc!==T.WALL && tc!==T.VOID){ g.x=nx; g.y=ny; }
@@ -329,7 +360,7 @@ function moveGhost(g,dt){
   g.mesh.rotation.y = ({left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0);
 }
 
-/* Eat & collisions */
+/* Eating & collisions */
 function eat(){
   const c=Math.floor(player.x), r=Math.floor(player.y), k=`${r},${c}`;
   if(pellets.has(k)){ scene.remove(pellets.get(k)); pellets.delete(k); state.score+=10; ui.s.textContent=state.score; if(pellets.size===0) nextLevel(); }
@@ -347,7 +378,7 @@ function checkDeaths(){
   }
 }
 
-/* Minimap bottom-left (retro blue) */
+/* Minimap bottom-left */
 const mapCanvas=document.getElementById('map'), mctx=mapCanvas.getContext('2d');
 let mapVisible=false; function toggleMap(){ mapVisible=!mapVisible; mapCanvas.style.display=mapVisible?'block':'none'; }
 function drawMap(){
@@ -360,13 +391,9 @@ function drawMap(){
     else mctx.fillStyle='#050a14';
     mctx.fillRect(c*cw,r*ch,cw,ch);
   }
-  // pellets (yellow squares)
   mctx.fillStyle='#ffd400'; for(const key of pellets.keys()){ const [r,c]=key.split(',').map(Number); mctx.fillRect(c*cw+cw*.35,r*ch+ch*.35,cw*.3,ch*.3); }
-  // power pellets (larger squares)
   mctx.fillStyle='#ff6b6b'; for(const key of powers.keys()){ const [r,c]=key.split(',').map(Number); mctx.fillRect(c*cw+cw*.25,r*ch+ch*.25,cw*.5,ch*.5); }
-  // player
   mctx.fillStyle='#ffd400'; mctx.beginPath(); mctx.arc(player.x*cw,player.y*ch,2.6,0,Math.PI*2); mctx.fill();
-  // ghosts (colored arrows)
   ghosts.forEach(g=>{ mctx.save(); mctx.translate(g.x*cw,g.y*ch); const ang={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0; mctx.rotate(ang); mctx.fillStyle=`#${g.color.toString(16).padStart(6,'0')}`; mctx.beginPath(); mctx.moveTo(0,-4); mctx.lineTo(3,3); mctx.lineTo(-3,3); mctx.closePath(); mctx.fill(); mctx.restore(); });
 }
 
@@ -377,15 +404,12 @@ boot();
 let prev=performance.now();
 function loop(now){
   const dt=Math.min(0.033,(now-prev)/1000); prev=now;
-  // pellet pulse
-  const pulse = 1.2 + Math.sin(now*0.004)*0.28;
-  pelletMat.emissiveIntensity = pulse;
+  pelletMat.emissiveIntensity = 1.2 + Math.sin(now*0.004)*0.28;
 
   if(state.playing && !state.paused){
     if(lockMode!=='unlocked') movePlayer(dt);
     ghosts.forEach(g=>{ ghostAI(g); moveGhost(g,dt); });
     eat(); checkDeaths();
-    // scatter/chase
     state.modeTime+=dt;
     if(state.fright>0){
       state.fright-=dt;
