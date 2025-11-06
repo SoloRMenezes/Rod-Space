@@ -30,54 +30,51 @@
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-/* ===== Grid & classic layout (28x31) ===== */
+/* ===== Grid & EXACT layout (28x31) ===== */
 const TILE=2.0, ROWS=31, COLS=28;
-const T={E:0,W:1,P:2,PP:3,G:4,H:5}; // empty, wall, pellet, power, gate, house
+const T={PATH:0,WALL:1,POWER:2,GATE:3,HOUSE:4,VOID:9};
 
-/* Classic Pac-Man maze (symmetrical, with ghost house+gate). */
-const map = [
- [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
- [1,3,2,2,2,2,2,1,2,2,2,2,2,3,2,2,2,2,2,1,2,2,2,2,2,2,3,1],
- [1,2,1,1,1,1,2,1,2,1,1,1,2,2,2,1,1,1,2,1,2,1,1,1,1,2,2,1],
- [1,2,1,0,0,1,2,1,2,1,0,0,2,1,2,0,0,1,2,1,2,1,0,0,1,2,2,1],
- [1,2,1,0,0,1,2,1,2,1,0,0,2,1,2,0,0,1,2,1,2,1,0,0,1,2,2,1],
- [1,2,1,1,1,1,2,1,2,1,1,1,2,1,2,1,1,1,2,1,2,1,1,1,1,2,2,1],
- [1,2,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
- [1,2,1,1,1,1,2,1,1,1,1,2,2,1,2,2,1,1,1,1,2,1,1,1,1,1,2,1],
- [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
- [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
- [1,2,1,1,1,1,2,1,1,1,1,2,0,4,4,0,2,1,1,1,1,2,1,1,1,1,2,1],
- [1,2,2,2,2,2,2,2,2,2,2,2,0,5,5,0,2,2,2,2,2,2,2,2,2,2,2,1],
- [1,2,1,1,1,1,2,1,1,1,1,2,0,5,5,0,2,1,1,1,1,2,1,1,1,1,2,1],
- [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
- [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
- [1,2,1,1,1,1,2,1,1,1,1,2,2,1,2,2,1,1,1,1,2,1,1,1,1,1,2,1],
- [1,3,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
- [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
- [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1],
- [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1],
- [1,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,1],
- [1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1],
- [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1],
- [1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,1],
- [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1],
- [1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1],
- [1,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,1],
- [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1],
- [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1]
+const pacman_map = [
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,2,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,2,1],
+  [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+  [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+  [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+  [1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1],
+  [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1],
+  [9,9,9,9,9,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,9,9,9,9,9],
+  [9,9,9,9,9,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,9,9,9,9,9],
+  [9,9,9,9,9,1,0,1,1,0,1,1,1,3,3,1,1,1,0,1,1,0,1,9,9,9,9,9],
+  [1,1,1,1,1,1,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,1,1,1,1,1,1],
+  [0,0,0,0,0,0,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,0,0,0,0,0,0], // tunnel row (index 14)
+  [1,1,1,1,1,1,0,0,0,0,1,4,4,4,4,4,4,1,0,0,0,0,1,1,1,1,1,1],
+  [9,9,9,9,9,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,9,9,9,9,9],
+  [9,9,9,9,9,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,9,9,9,9,9],
+  [9,9,9,9,9,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,9,9,9,9,9],
+  [1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+  [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1],
+  [1,2,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,2,1],
+  [1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1],
+  [1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1],
+  [1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1],
+  [1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1],
+  [1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
-/* Fill pellets on all walkable tiles except house & gate */
-for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
-  if (map[r][c]===T.E) map[r][c]=T.P;
-}
 
-/* ===== Three.js scene (arcade) ===== */
+/* ===== Three.js scene (arcade look) ===== */
 const canvas=document.getElementById('game');
 const renderer=new THREE.WebGLRenderer({antialias:true,canvas});
 renderer.setSize(innerWidth,innerHeight); renderer.setPixelRatio(devicePixelRatio);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+renderer.toneMappingExposure = 1.12;
 addEventListener('resize',()=>renderer.setSize(innerWidth,innerHeight));
 
 const scene=new THREE.Scene();
@@ -88,6 +85,7 @@ const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,2000);
 scene.add(new THREE.AmbientLight(0x1a2038, 0.95));
 const dLight=new THREE.DirectionalLight(0xaec6ff, 0.35); dLight.position.set(12,26,12); scene.add(dLight);
 
+/* Floor */
 const floor=new THREE.Mesh(
   new THREE.PlaneGeometry(COLS*TILE,ROWS*TILE),
   new THREE.MeshStandardMaterial({color:0x070a16, metalness:.15, roughness:.95})
@@ -95,64 +93,84 @@ const floor=new THREE.Mesh(
 floor.rotation.x=-Math.PI/2; floor.position.set((COLS*TILE)/2,-0.02,(ROWS*TILE)/2);
 scene.add(floor);
 
-/* Walls & pellets */
+/* Build maze */
 const wallGeo=new THREE.BoxGeometry(TILE,2.4,TILE);
 const wallMat=new THREE.MeshStandardMaterial({color:0x1133ff,emissive:0x0d1a7a,emissiveIntensity:1.6,metalness:.25,roughness:.25});
 const gateMat=new THREE.MeshStandardMaterial({color:0x9fd3ff, transparent:true, opacity:.45});
 const walls=new THREE.Group(); scene.add(walls);
 
-const pellets=new Map(), powers=new Map();
-const pelletMat=new THREE.MeshStandardMaterial({color:0xffd400,emissive:0xffe97a,emissiveIntensity:1.35,metalness:.6,roughness:.2});
 const pelletGeo=new THREE.BoxGeometry(0.28,0.28,0.28);
-const powerMat=new THREE.MeshStandardMaterial({color:0xff6b6b,emissive:0xff4747,emissiveIntensity:1.6,metalness:.4,roughness:.25});
+const pelletMat=new THREE.MeshStandardMaterial({color:0xffd400,emissive:0xffe97a,emissiveIntensity:1.45,metalness:.6,roughness:.2});
 const powerGeo=new THREE.SphereGeometry(0.44,16,16);
+const powerMat=new THREE.MeshStandardMaterial({color:0xff6b6b,emissive:0xff4747,emissiveIntensity:1.7,metalness:.4,roughness:.25});
+
+const pellets=new Map(), powers=new Map();
 
 const wx=c=>c*TILE, wz=r=>r*TILE;
-const tile=(c,r)=> (r<0||c<0||r>=ROWS||c>=COLS)?T.W:map[r][c];
-const isWall=(c,r)=>tile(c,r)===T.W, isGate=(c,r)=>tile(c,r)===T.G;
+const tile=(c,r)=> (r<0||c<0||r>=ROWS||c>=COLS)?T.WALL:pacman_map[r][c];
+const isWalkable=(c,r)=>{ const t=tile(c,r); return t===T.PATH || t===T.POWER || t===T.HOUSE; };
+const isWall=(c,r)=> tile(c,r)===T.WALL || tile(c,r)===T.VOID;
+const isGate=(c,r)=> tile(c,r)===T.GATE;
+const isHouse=(c,r)=> tile(c,r)===T.HOUSE;
 
+/* place walls + pellets exactly per layout; pellets only on PATH(0), power on 2 */
 function buildLevel(refill=true){
   walls.clear();
   for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
-    const t=map[r][c];
-    if (t===T.W){ const m=new THREE.Mesh(wallGeo,wallMat); m.position.set(wx(c),1.2,wz(r)); walls.add(m); }
-    else if (t===T.G){ const g=new THREE.Mesh(new THREE.BoxGeometry(TILE,.8,TILE*.2),gateMat); g.position.set(wx(c),.4,wz(r)); walls.add(g); }
+    const t = pacman_map[r][c];
+    if (t===T.WALL){ const m=new THREE.Mesh(wallGeo,wallMat); m.position.set(wx(c),1.2,wz(r)); walls.add(m); }
+    else if (t===T.GATE){ const g=new THREE.Mesh(new THREE.BoxGeometry(TILE,.8,TILE*.2),gateMat); g.position.set(wx(c),.4,wz(r)); walls.add(g); }
   }
-  if (refill){
+  if(refill){
     for (const [,m] of pellets) scene.remove(m); pellets.clear();
     for (const [,m] of powers) scene.remove(m); powers.clear();
     for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
-      const t=map[r][c];
-      if (t===T.PP){ const m=new THREE.Mesh(powerGeo,powerMat); m.position.set(wx(c),.45,wz(r)); scene.add(m); powers.set(`${r},${c}`,m); }
-      else if (t!==T.W && t!==T.G && t!==T.H){ const m=new THREE.Mesh(pelletGeo,pelletMat); m.position.set(wx(c),.15,wz(r)); scene.add(m); pellets.set(`${r},${c}`,m); }
+      const t=pacman_map[r][c];
+      if (t===T.POWER){ const m=new THREE.Mesh(powerGeo,powerMat); m.position.set(wx(c),.45,wz(r)); scene.add(m); powers.set(`${r},${c}`,m); }
+      else if (t===T.PATH){ const m=new THREE.Mesh(pelletGeo,pelletMat); m.position.set(wx(c),.15,wz(r)); scene.add(m); pellets.set(`${r},${c}`,m); }
     }
   }
 }
 
 /* Entities */
 const ghosts=[
-  {name:'blinky', color:0xff2b2b, corner:[COLS-2,1]},
-  {name:'pinky',  color:0xff7ad5, corner:[1,1]},
-  {name:'inky',   color:0x00e5ff, corner:[COLS-2,ROWS-2]},
-  {name:'clyde',  color:0xff9c2b, corner:[1,ROWS-2]}
-].map((g,i)=>({
-  ...g, x:13.5+i, y:14, dir:'left', speed:2.9, eyes:false,
+  {name:'blinky', color:0xff2b2b},
+  {name:'pinky',  color:0xff7ad5},
+  {name:'inky',   color:0x00e5ff},
+  {name:'clyde',  color:0xff9c2b}
+].map(g=>({
+  ...g, x:14, y:14, dir:'left', speed:2.9, eyes:false,
   mesh:new THREE.Mesh(new THREE.CapsuleGeometry(.8,.6,8,16), new THREE.MeshStandardMaterial({color:g.color,emissive:0x0f1024,emissiveIntensity:.55,metalness:.1,roughness:.35}))
 }));
 ghosts.forEach(g=>scene.add(g.mesh));
 
-const player={x:14.5,y:23,speed:3.9};
+/* Spawn ghosts inside HOUSE tiles (average their positions) */
+(function placeGhostsInHouse(){
+  const houseCells=[];
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++) if(pacman_map[r][c]===T.HOUSE) houseCells.push([c,r]);
+  if(houseCells.length){
+    const mid=houseCells[Math.floor(houseCells.length/2)];
+    const [cx,cy]=mid;
+    const offs=[[-1,0],[1,0],[0,-1],[0,1]];
+    ghosts.forEach((g,i)=>{ g.x=cx+offs[i%offs.length][0]; g.y=cy+offs[i%offs.length][1]; });
+  }
+})();
 
-/* State */
+/* Pac-Man spawn: row 23, col 13 (0-indexed) */
+const player={x:13,y:23,speed:3.9};
+
+/* State & HUD */
 const ui={s:document.getElementById('score'),l:document.getElementById('lives'),lvl:document.getElementById('level'),msg:document.getElementById('msgText')};
 const state={score:0,lives:3,level:1,paused:false,playing:true,fright:0,streak:0,mode:'scatter',modeTime:0};
 const setMsg=t=>ui.msg.textContent=t||'';
 const recount=()=>{state.pelCount=pellets.size; state.powCount=powers.size;};
 
+/* Resets */
 function resetPositions(){
-  player.x=14.5; player.y=23; yaw=Math.PI; pitch=0;
+  // clamp to centers
+  player.x+=0; player.y+=0; yaw=Math.PI; pitch=0;
   camera.position.set(player.x*TILE,1.26,player.y*TILE); camera.rotation.set(0,yaw,0);
-  ghosts.forEach((g,i)=>{ g.x=13.5+i; g.y=14; g.dir='left'; g.eyes=false; g.speed=2.9+(state.level-1)*0.06; g.mesh.material.color.setHex(g.color); g.mesh.material.emissive.setHex(0x0f1024); });
+  ghosts.forEach((g,i)=>{ g.dir='left'; g.eyes=false; g.speed=2.9+(state.level-1)*0.06; g.mesh.material.color.setHex(g.color); g.mesh.material.emissive.setHex(0x0f1024); });
 }
 function softReset(){
   state.lives--; ui.l.textContent=state.lives;
@@ -170,7 +188,7 @@ function nextLevel(){
   buildLevel(true); recount(); resetPositions(); setTimeout(()=>setMsg(''),700);
 }
 
-/* Controls & shift-lock (fallback safe) */
+/* Controls & shift-lock (with fallback if pointer-lock blocked) */
 const keys=new Set();
 addEventListener('keydown',e=>{
   keys.add(e.key);
@@ -194,7 +212,7 @@ function toggleLock(){
   } else { if(lockMode==='pointer') document.exitPointerLock(); lockMode='unlocked'; cross.style.display='none'; document.body.style.cursor=''; }
 }
 
-/* Mouse look (fixed: up=up, down=down; clamp to ±60°) */
+/* Mouse look: up=up, down=down; clamp ±60° (no upside-down) */
 let yaw=Math.PI, pitch=0, lastX=null,lastY=null;
 addEventListener('mousemove',e=>{
   let dx=0, dy=0;
@@ -202,33 +220,28 @@ addEventListener('mousemove',e=>{
   else if(lockMode==='fallback'){ if(lastX!==null){ dx=e.clientX-lastX; dy=e.clientY-lastY; } lastX=e.clientX; lastY=e.clientY; }
   else { lastX=null; lastY=null; return; }
   yaw  -= dx*0.002;
-  pitch+= dy*0.002;                 // << fixed direction
-  const LIMIT=Math.PI/3;            // ~±60°
+  pitch+= dy*0.002;
+  const LIMIT=Math.PI/3; // ~±60°
   pitch=Math.max(-LIMIT, Math.min(LIMIT, pitch));
 });
 
-/* Movement & collision (smaller radius) + side tunnels */
-function canMoveTo(nx,ny){
+/* Movement, collisions, tunnel row 14 wrap */
+function canMoveTo(nx,ny, who='player'){
   const r=0.18;
   const pts=[[nx-r,ny-r],[nx+r,ny-r],[nx-r,ny+r],[nx+r,ny+r]];
   for(const [x,y] of pts){
     const c=Math.floor(x), rr=Math.floor(y);
-    if(isWall(c,rr) && !isGate(c,rr)) return false;
+    if(isWall(c,rr)) return false;
+    if(isGate(c,rr) && who==='player') return false; // player blocked by gate
   }
   return true;
 }
-function applyTunnels(){
-  const row=14; // classic tunnel row
-  if (Math.round(player.y)===row){
-    if (player.x < 0.5) player.x = COLS-1.5;
-    else if (player.x > COLS-0.5) player.x = 1.5;
+function applyTunnelsEntity(obj){
+  const row=14;
+  if (Math.round(obj.y)===row){
+    if (obj.x < 0.5) obj.x = COLS-1.5;
+    else if (obj.x > COLS-0.5) obj.x = 1.5;
   }
-  ghosts.forEach(g=>{
-    if (Math.round(g.y)===row){
-      if (g.x < 0.5) g.x = COLS-1.5;
-      else if (g.x > COLS-0.5) g.x = 1.5;
-    }
-  });
 }
 function movePlayer(dt){
   const sp=player.speed*dt/TILE;
@@ -238,17 +251,18 @@ function movePlayer(dt){
   if(keys.has('a')||keys.has('ArrowLeft')) { dx+=Math.cos(yaw); dy-=Math.sin(yaw); }
   if(keys.has('d')||keys.has('ArrowRight')){ dx-=Math.cos(yaw); dy+=Math.sin(yaw); }
   const nx=player.x+dx*sp, ny=player.y+dy*sp;
-  if(canMoveTo(nx,player.y)) player.x=nx;
-  if(canMoveTo(player.x,ny)) player.y=ny;
-  applyTunnels();
+  if(canMoveTo(nx,player.y,'player')) player.x=nx;
+  if(canMoveTo(player.x,ny,'player')) player.y=ny;
+  applyTunnelsEntity(player);
   camera.position.set(player.x*TILE,1.26,player.y*TILE);
   camera.rotation.set(pitch,yaw,0);
 }
 
-/* Ghost AI */
+/* Ghost AI (simple scatter/chase + gate pass) */
 const dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 const opposite=d=>({up:'down',down:'up',left:'right',right:'left'})[d];
 const atCenter=(x,y)=>Math.abs(x-Math.round(x))<0.15 && Math.abs(y-Math.round(y))<0.15;
+
 function chooseNextDir(g,target){
   if(!atCenter(g.x,g.y)) return;
   const options=['up','left','down','right'];
@@ -256,13 +270,22 @@ function chooseNextDir(g,target){
   for(const d of options){
     if(d===opposite(g.dir)) continue;
     const [dx,dy]=dirs[d]; const cx=Math.round(g.x), cy=Math.round(g.y);
-    if(!canMoveTo(cx+dx*0.5,cy+dy*0.5)) continue;
+    // ghosts can pass gate
+    const ok = (()=>{
+      const tc = cx+dx*0.5, tr=cy+dy*0.5;
+      const t = tile(Math.floor(tc),Math.floor(tr));
+      if(t===T.WALL || t===T.VOID) return false;
+      return true;
+    })();
+    if(!ok) continue;
     const nx=g.x+dx, ny=g.y+dy; const d2=(nx-target.x)**2+(ny-target.y)**2;
     if(d2<bestD){ bestD=d2; best=d; }
   }
   if(best===g.dir){
     const [dx,dy]=dirs[g.dir]||[0,0];
-    if(!canMoveTo(g.x+dx*0.5,g.y+dy*0.5)) best=opposite(g.dir);
+    const tc=g.x+dx*0.5, tr=g.y+dy*0.5;
+    const t = tile(Math.floor(tc),Math.floor(tr));
+    if(t===T.WALL||t===T.VOID) best=opposite(g.dir);
   }
   g.dir=best;
 }
@@ -271,7 +294,8 @@ function randomTurn(g){
   const cx=Math.round(g.x), cy=Math.round(g.y);
   const opts=['up','left','down','right'].filter(d=>{
     const [dx,dy]=dirs[d];
-    return d!==opposite(g.dir) && canMoveTo(cx+dx*0.5,cy+dy*0.5);
+    const t = tile(Math.floor(cx+dx*0.5),Math.floor(cy+dy*0.5));
+    return d!==opposite(g.dir) && t!==T.WALL && t!==T.VOID;
   });
   if(opts.length) g.dir=opts[Math.floor(Math.random()*opts.length)];
 }
@@ -280,7 +304,7 @@ function chaseTarget(g){
   if(g.name==='pinky'){ const fx=Math.sin(yaw), fz=Math.cos(yaw); return {x:player.x+fx*3,y:player.y+fz*3}; }
   if(g.name==='inky'){  const fx=Math.sin(yaw), fz=Math.cos(yaw); return {x:player.x+fx*2+(ghosts[0].x-player.x), y:player.y+fz*2+(ghosts[0].y-player.y)}; }
   const d=Math.hypot(g.x-player.x,g.y-player.y);
-  return d<6? {x:g.corner[0],y:g.corner[1]} : {x:player.x,y:player.y};
+  return d<6? {x:COLS-2,y:ROWS-2} : {x:player.x,y:player.y};
 }
 function ghostAI(g){
   if(g.eyes){
@@ -290,13 +314,17 @@ function ghostAI(g){
     return;
   }
   if(state.fright>0){ randomTurn(g); return; }
-  const t=(state.mode==='scatter') ? {x:g.corner[0],y:g.corner[1]} : chaseTarget(g);
-  chooseNextDir(g,t);
+  const t=(state.mode==='scatter') ? ({blinky:[COLS-2,1],pinky:[1,1],inky:[COLS-2,ROWS-2],clyde:[1,ROWS-2]}[g.name] || [1,1]) : chaseTarget(g);
+  chooseNextDir(g, {x:t[0],y:t[1]});
 }
 function moveGhost(g,dt){
   const [dx,dy]=dirs[g.dir]||[0,0];
   const sp=g.speed*dt/TILE;
-  if(canMoveTo(g.x+dx*sp,g.y+dy*sp)){ g.x+=dx*sp; g.y+=dy*sp; }
+  // ghosts can pass gate, not walls/void
+  const nx=g.x+dx*sp, ny=g.y+dy*sp;
+  const tc=tile(Math.floor(nx),Math.floor(ny));
+  if(tc!==T.WALL && tc!==T.VOID){ g.x=nx; g.y=ny; }
+  applyTunnelsEntity(g);
   g.mesh.position.set(g.x*TILE,1.0,g.y*TILE);
   g.mesh.rotation.y = ({left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0);
 }
@@ -304,16 +332,8 @@ function moveGhost(g,dt){
 /* Eat & collisions */
 function eat(){
   const c=Math.floor(player.x), r=Math.floor(player.y), k=`${r},${c}`;
-  if(pellets.has(k)){
-    scene.remove(pellets.get(k)); pellets.delete(k);
-    state.score+=10; ui.s.textContent=state.score;
-    if(pellets.size===0) nextLevel();
-  } else if(powers.has(k)){
-    scene.remove(powers.get(k)); powers.delete(k);
-    state.score+=50; ui.s.textContent=state.score;
-    state.fright=6; state.streak=0;
-    ghosts.forEach(g=>{ if(!g.eyes){ g.mesh.material.color.setHex(0x1f6cff); } });
-  }
+  if(pellets.has(k)){ scene.remove(pellets.get(k)); pellets.delete(k); state.score+=10; ui.s.textContent=state.score; if(pellets.size===0) nextLevel(); }
+  else if(powers.has(k)){ scene.remove(powers.get(k)); powers.delete(k); state.score+=50; ui.s.textContent=state.score; state.fright=6; state.streak=0; ghosts.forEach(g=>{ if(!g.eyes){ g.mesh.material.color.setHex(0x1f6cff); } }); }
 }
 function checkDeaths(){
   for(const g of ghosts){
@@ -334,31 +354,38 @@ function drawMap(){
   const cw=mapCanvas.width/COLS, ch=mapCanvas.height/ROWS;
   mctx.fillStyle='rgba(8,16,32,0.9)'; mctx.fillRect(0,0,mapCanvas.width,mapCanvas.height);
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
-    mctx.fillStyle=(map[r][c]===T.W)?'#2049ff':'#050a14';
+    const t=pacman_map[r][c];
+    if(t===T.WALL) mctx.fillStyle='#2049ff';
+    else if(t===T.VOID) { mctx.fillStyle='#03060f'; }
+    else mctx.fillStyle='#050a14';
     mctx.fillRect(c*cw,r*ch,cw,ch);
   }
+  // pellets (yellow squares)
   mctx.fillStyle='#ffd400'; for(const key of pellets.keys()){ const [r,c]=key.split(',').map(Number); mctx.fillRect(c*cw+cw*.35,r*ch+ch*.35,cw*.3,ch*.3); }
+  // power pellets (larger squares)
   mctx.fillStyle='#ff6b6b'; for(const key of powers.keys()){ const [r,c]=key.split(',').map(Number); mctx.fillRect(c*cw+cw*.25,r*ch+ch*.25,cw*.5,ch*.5); }
+  // player
   mctx.fillStyle='#ffd400'; mctx.beginPath(); mctx.arc(player.x*cw,player.y*ch,2.6,0,Math.PI*2); mctx.fill();
+  // ghosts (colored arrows)
   ghosts.forEach(g=>{ mctx.save(); mctx.translate(g.x*cw,g.y*ch); const ang={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0; mctx.rotate(ang); mctx.fillStyle=`#${g.color.toString(16).padStart(6,'0')}`; mctx.beginPath(); mctx.moveTo(0,-4); mctx.lineTo(3,3); mctx.lineTo(-3,3); mctx.closePath(); mctx.fill(); mctx.restore(); });
 }
 
 /* Boot & loop (pellet pulse) */
-function hardBoot(){ hardReset(); }
-hardBoot();
+function boot(){ hardReset(); }
+boot();
 
 let prev=performance.now();
 function loop(now){
   const dt=Math.min(0.033,(now-prev)/1000); prev=now;
-
-  // pellet pulse (subtle sine)
-  const pulse = 1.15 + Math.sin(now*0.004)*0.25;
+  // pellet pulse
+  const pulse = 1.2 + Math.sin(now*0.004)*0.28;
   pelletMat.emissiveIntensity = pulse;
 
   if(state.playing && !state.paused){
     if(lockMode!=='unlocked') movePlayer(dt);
     ghosts.forEach(g=>{ ghostAI(g); moveGhost(g,dt); });
     eat(); checkDeaths();
+    // scatter/chase
     state.modeTime+=dt;
     if(state.fright>0){
       state.fright-=dt;
