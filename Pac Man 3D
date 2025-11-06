@@ -1,1 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pac-Man 3D — First-Person Shift-Lock</title>
+<style>
+  html,body{height:100%;margin:0;background:#060913;color:#bfe9ff;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,sans-serif;overflow:hidden}
+  #hud{position:fixed;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:rgba(10,14,26,.6);border:1px solid rgba(191,233,255,.18);padding:6px 10px;border-radius:999px;backdrop-filter:blur(4px);z-index:10}
+  .pill{padding:2px 8px;border-radius:999px;border:1px solid rgba(191,233,255,.25);background:#0c1326}
+  #map{position:fixed;top:50%;right:12px;transform:translateY(-50%);background:rgba(10,20,40,0.6);backdrop-filter:blur(4px);border:2px solid #2049ff;border-radius:10px;z-index:20;display:none}
+  #centerSquare{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:16px;height:16px;background:white;opacity:.6;z-index:30;display:none;border-radius:2px}
+  canvas{display:block;width:100vw;height:100vh}
+</style>
+</head>
+<body>
+<div id="hud">
+  <span class="pill">Score: <strong id="score">0</strong></span>
+  <span class="pill">Lives: <strong id="lives">3</strong></span>
+  <span class="pill">Level: <strong id="level">1</strong></span>
+  <span class="pill">WASD + Mouse move • <kbd>Shift</kbd> lock cursor • <kbd>Space</kbd> map • <kbd>R</kbd> reset</span>
+</div>
+<canvas id="game"></canvas>
+<canvas id="map" width="280" height="310"></canvas>
+<div id="centerSquare"></div>
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
+const TILE=2.0, ROWS=31, COLS=28;
+const mapData=[];for(let r=0;r<ROWS;r++){mapData[r]=[];for(let c=0;c<COLS;c++){mapData[r][c]=Math.random()<0.2?1:0;}}
+const player={x:14.5,y:23};
+const ghosts=[{x:5,y:5,color:'#ff2b2b',dir:0},{x:22,y:20,color:'#ff7ad5',dir:Math.PI/2},{x:10,y:15,color:'#00e5ff',dir:-Math.PI/2},{x:20,y:7,color:'#ff9c2b',dir:Math.PI}];
+
+const renderer=new THREE.WebGLRenderer({antialias:true});document.body.appendChild(renderer.domElement);renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(devicePixelRatio);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x060913);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,1000);
+const hemi=new THREE.HemisphereLight(0xbbe0ff,0x0a0e1a,0.9);scene.add(hemi);
+const floorGeo=new THREE.PlaneGeometry(COLS*TILE,ROWS*TILE);
+const floorMat=new THREE.MeshStandardMaterial({color:0x0a1226});
+const floor=new THREE.Mesh(floorGeo,floorMat);floor.rotation.x=-Math.PI/2;floor.position.set((COLS*TILE)/2,0,(ROWS*TILE)/2);scene.add(floor);
+const wallGeo=new THREE.BoxGeometry(TILE,2.4,TILE);
+const wallMat=new THREE.MeshStandardMaterial({color:0x2049ff});
+for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(mapData[r][c]===1){const m=new THREE.Mesh(wallGeo,wallMat);m.position.set(c*TILE,1.2,r*TILE);scene.add(m);}}
+const ghostGeo=new THREE.ConeGeometry(0.5,1,4);
+const ghostMeshes=ghosts.map(g=>{const m=new THREE.Mesh(ghostGeo,new THREE.MeshStandardMaterial({color:g.color}));m.position.set(g.x*TILE,1,g.y*TILE);m.rotation.y=g.dir;scene.add(m);return m;});
+
+function canMove(nx,ny){const c=Math.floor(nx),r=Math.floor(ny);return!(mapData[r]&&mapData[r][c]===1);} 
+
+const keys=new Set();window.addEventListener('keydown',e=>{keys.add(e.key);if(e.key===' '){toggleMap();}if(e.key==='Shift'){toggleLock();}});
+window.addEventListener('keyup',e=>keys.delete(e.key));
+let locked=false;const center=document.getElementById('centerSquare');
+function toggleLock(){locked=!locked;center.style.display=locked?'block':'none';if(locked){document.body.requestPointerLock();}else{document.exitPointerLock();}}
+
+let yaw=0,pitch=0;document.addEventListener('mousemove',e=>{if(document.pointerLockElement===document.body){yaw-=e.movementX*0.002;pitch-=e.movementY*0.002;pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,pitch));}});
+
+function movePlayer(dt){const sp=3.4*dt/TILE;let dx=0,dy=0;if(keys.has('w')){dx+=Math.sin(yaw);dy+=Math.cos(yaw);}if(keys.has('s')){dx-=Math.sin(yaw);dy-=Math.cos(yaw);}if(keys.has('a')){dx+=Math.cos(yaw);dy-=Math.sin(yaw);}if(keys.has('d')){dx-=Math.cos(yaw);dy+=Math.sin(yaw);}const nx=player.x+dx*sp,ny=player.y+dy*sp;if(canMove(nx,player.y))player.x=nx;if(canMove(player.x,ny))player.y=ny;camera.position.set(player.x*TILE,1.2,player.y*TILE);camera.rotation.set(pitch,yaw,0);} 
+
+const mapCanvas=document.getElementById('map');const mapCtx=mapCanvas.getContext('2d');let mapVisible=false;function toggleMap(){mapVisible=!mapVisible;mapCanvas.style.display=mapVisible?'block':'none';}
+function drawMap(){mapCtx.fillStyle='rgba(10,20,40,0.8)';mapCtx.fillRect(0,0,mapCanvas.width,mapCanvas.height);const cw=mapCanvas.width/COLS,ch=mapCanvas.height/ROWS;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(mapData[r][c]===1){mapCtx.fillStyle='#2049ff';mapCtx.fillRect(c*cw,r*ch,cw,ch);}else{mapCtx.fillStyle='#050a14';mapCtx.fillRect(c*cw,r*ch,cw,ch);} }
+mapCtx.fillStyle='#ffd400';mapCtx.beginPath();mapCtx.arc(player.x*cw,player.y*ch,3,0,Math.PI*2);mapCtx.fill();ghosts.forEach((g,i)=>{mapCtx.save();mapCtx.translate(g.x*cw,g.y*ch);mapCtx.rotate(g.dir);mapCtx.fillStyle=g.color;mapCtx.beginPath();mapCtx.moveTo(0,-3);mapCtx.lineTo(2,3);mapCtx.lineTo(-2,3);mapCtx.closePath();mapCtx.fill();mapCtx.restore();});}
+
+let prev=performance.now();function loop(now){const dt=(now-prev)/1000;prev=now;if(document.pointerLockElement===document.body){movePlayer(dt);}ghostMeshes.forEach((m,i)=>{const g=ghosts[i];g.dir+=0.005;g.x+=Math.sin(g.dir)*0.002;g.y+=Math.cos(g.dir)*0.002;m.position.set(g.x*TILE,1,g.y*TILE);m.rotation.y=g.dir;});if(mapVisible)drawMap();renderer.render(scene,camera);requestAnimationFrame(loop);}requestAnimationFrame(loop);
+</script>
+</body>
+</html>
