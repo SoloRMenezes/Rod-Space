@@ -6,19 +6,13 @@
 <title>Pac-Man 3D — Arcade FPS + Minimap</title>
 <style>
   html,body{height:100%;margin:0;background:#03060f;color:#bfe9ff;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,sans-serif;overflow:hidden}
-  canvas#game{display:block;width:100vw;height:100vh}
-  /* HUD */
+  #game{display:block;width:100vw;height:100vh}
   #hud{position:fixed;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:rgba(8,12,24,.6);border:1px solid rgba(191,233,255,.18);padding:6px 10px;border-radius:999px;backdrop-filter:blur(6px);z-index:10}
   .pill{padding:2px 8px;border-radius:999px;border:1px solid rgba(191,233,255,.25);background:#0c1326}
+  #map{position:fixed;left:12px;bottom:12px;width:160px;height:176px;background:rgba(10,20,40,.86);border:2px solid #2049ff;border-radius:10px;box-shadow:0 0 10px rgba(32,73,255,.35) inset;z-index:8;display:none}
+  #centerSquare{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:#fff;opacity:.6;border-radius:2px;z-index:9;display:none}
   #msg{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:12}
   #msg>div{padding:10px 14px;border-radius:10px;background:rgba(10,16,28,.78);border:1px solid rgba(191,233,255,.2)}
-  /* Minimap: bottom-left, small */
-  #map{position:fixed;left:12px;bottom:12px;width:160px;height:176px; /* 28x31 scale */
-       background:rgba(10,20,40,0.86);border:2px solid #2049ff;border-radius:10px;
-       box-shadow:0 0 10px rgba(32,73,255,.35) inset;z-index:8;display:none}
-  /* Crosshair square when locked */
-  #centerSquare{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:14px;height:14px;background:#fff;opacity:.6;border-radius:2px;z-index:9;display:none}
 </style>
 </head>
 <body>
@@ -36,46 +30,50 @@
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-/* ================== Constants & Maze ================== */
-const TILE=2.0; const ROWS=31, COLS=28;
-const T={EMPTY:0,WALL:1,PELLET:2,POWER:3,GATE:4,HOUSE:5};
-/* Classic-like layout: walls, pellets (2), power (3), ghost house (5), gate (4). */
-const map=[
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,3,2,2,2,2,2,1,2,2,2,2,2,3,2,2,2,2,2,1,2,2,2,2,2,2,3,1],
-  [1,2,1,1,1,1,2,1,2,1,1,1,2,2,2,1,1,1,2,1,2,1,1,1,1,2,2,1],
-  [1,2,1,0,0,1,2,1,2,1,0,0,2,1,2,0,0,1,2,1,2,1,0,0,1,2,2,1],
-  [1,2,1,0,0,1,2,1,2,1,0,0,2,1,2,0,0,1,2,1,2,1,0,0,1,2,2,1],
-  [1,2,1,1,1,1,2,1,2,1,1,1,2,1,2,1,1,1,2,1,2,1,1,1,1,2,2,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
-  [1,2,1,1,1,1,2,1,1,1,1,2,2,1,2,2,1,1,1,1,2,1,1,1,1,1,2,1],
-  [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
-  [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
-  [1,2,1,1,1,1,2,1,1,1,1,2,0,4,4,0,2,1,1,1,1,2,1,1,1,1,2,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,0,5,5,0,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,2,1,1,1,1,2,1,1,1,1,2,0,5,5,0,2,1,1,1,1,2,1,1,1,1,2,1],
-  [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
-  [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
-  [1,2,1,1,1,1,2,1,1,1,1,2,2,1,2,2,1,1,1,1,2,1,1,1,1,1,2,1],
-  [1,3,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1],
-  [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1],
-  [1,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,1],
-  [1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1],
-  [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1],
-  [1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,1],
-  [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1],
-  [1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1],
-  [1,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,1],
-  [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1],
-  [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1]
-];
-while(map.length<ROWS) map.push([...map[map.length-1]]);
+/* ===== Grid & classic layout (28x31) ===== */
+const TILE=2.0, ROWS=31, COLS=28;
+const T={E:0,W:1,P:2,PP:3,G:4,H:5}; // empty, wall, pellet, power, gate, house
 
-/* ================== Three.js Setup (Arcade look) ================== */
-const game=document.getElementById('game');
-const renderer=new THREE.WebGLRenderer({antialias:true,canvas:game});
+/* Classic Pac-Man maze (symmetrical, with ghost house+gate). */
+const map = [
+ [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+ [1,3,2,2,2,2,2,1,2,2,2,2,2,3,2,2,2,2,2,1,2,2,2,2,2,2,3,1],
+ [1,2,1,1,1,1,2,1,2,1,1,1,2,2,2,1,1,1,2,1,2,1,1,1,1,2,2,1],
+ [1,2,1,0,0,1,2,1,2,1,0,0,2,1,2,0,0,1,2,1,2,1,0,0,1,2,2,1],
+ [1,2,1,0,0,1,2,1,2,1,0,0,2,1,2,0,0,1,2,1,2,1,0,0,1,2,2,1],
+ [1,2,1,1,1,1,2,1,2,1,1,1,2,1,2,1,1,1,2,1,2,1,1,1,1,2,2,1],
+ [1,2,2,2,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+ [1,2,1,1,1,1,2,1,1,1,1,2,2,1,2,2,1,1,1,1,2,1,1,1,1,1,2,1],
+ [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
+ [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
+ [1,2,1,1,1,1,2,1,1,1,1,2,0,4,4,0,2,1,1,1,1,2,1,1,1,1,2,1],
+ [1,2,2,2,2,2,2,2,2,2,2,2,0,5,5,0,2,2,2,2,2,2,2,2,2,2,2,1],
+ [1,2,1,1,1,1,2,1,1,1,1,2,0,5,5,0,2,1,1,1,1,2,1,1,1,1,2,1],
+ [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
+ [1,2,1,0,0,1,2,1,0,0,1,2,0,5,5,0,2,1,0,0,1,2,1,0,0,1,2,1],
+ [1,2,1,1,1,1,2,1,1,1,1,2,2,1,2,2,1,1,1,1,2,1,1,1,1,1,2,1],
+ [1,3,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+ [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+ [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1],
+ [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1],
+ [1,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,1],
+ [1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1],
+ [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1],
+ [1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,1],
+ [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1],
+ [1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1],
+ [1,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,1],
+ [1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1],
+ [1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,1,2,2,1]
+];
+/* Fill pellets on all walkable tiles except house & gate */
+for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
+  if (map[r][c]===T.E) map[r][c]=T.P;
+}
+
+/* ===== Three.js scene (arcade) ===== */
+const canvas=document.getElementById('game');
+const renderer=new THREE.WebGLRenderer({antialias:true,canvas});
 renderer.setSize(innerWidth,innerHeight); renderer.setPixelRatio(devicePixelRatio);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -87,147 +85,131 @@ scene.background=new THREE.Color(0x05070f);
 scene.fog=new THREE.Fog(0x05070f, 60, 140);
 
 const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,2000);
-/* Lighting: ambient + subtle dir + emissive walls give neon effect */
-scene.add(new THREE.AmbientLight(0x1a2038, 0.9));
-const dir=new THREE.DirectionalLight(0x9fb8ff, 0.35); dir.position.set(12,26,12); scene.add(dir);
+scene.add(new THREE.AmbientLight(0x1a2038, 0.95));
+const dLight=new THREE.DirectionalLight(0xaec6ff, 0.35); dLight.position.set(12,26,12); scene.add(dLight);
 
-/* Floor */
-const floorGeo=new THREE.PlaneGeometry(COLS*TILE,ROWS*TILE);
-const floorMat=new THREE.MeshStandardMaterial({color:0x070a16, metalness:0.15, roughness:0.95});
-const floor=new THREE.Mesh(floorGeo,floorMat);
+const floor=new THREE.Mesh(
+  new THREE.PlaneGeometry(COLS*TILE,ROWS*TILE),
+  new THREE.MeshStandardMaterial({color:0x070a16, metalness:.15, roughness:.95})
+);
 floor.rotation.x=-Math.PI/2; floor.position.set((COLS*TILE)/2,-0.02,(ROWS*TILE)/2);
 scene.add(floor);
 
-/* Walls + pellets */
-const wallG=new THREE.BoxGeometry(TILE,2.4,TILE);
-const wallMat=new THREE.MeshStandardMaterial({
-  color:0x1133ff, emissive:0x0d1a7a, emissiveIntensity:1.6, metalness:0.25, roughness:0.25
-});
-const gateMat=new THREE.MeshStandardMaterial({color:0x9fd3ff, transparent:true, opacity:0.45});
+/* Walls & pellets */
+const wallGeo=new THREE.BoxGeometry(TILE,2.4,TILE);
+const wallMat=new THREE.MeshStandardMaterial({color:0x1133ff,emissive:0x0d1a7a,emissiveIntensity:1.6,metalness:.25,roughness:.25});
+const gateMat=new THREE.MeshStandardMaterial({color:0x9fd3ff, transparent:true, opacity:.45});
 const walls=new THREE.Group(); scene.add(walls);
 
+const pellets=new Map(), powers=new Map();
+const pelletMat=new THREE.MeshStandardMaterial({color:0xffd400,emissive:0xffe97a,emissiveIntensity:1.35,metalness:.6,roughness:.2});
 const pelletGeo=new THREE.BoxGeometry(0.28,0.28,0.28);
-const pelletMat=new THREE.MeshStandardMaterial({color:0xffd400, emissive:0x2b2100, emissiveIntensity:0.65});
+const powerMat=new THREE.MeshStandardMaterial({color:0xff6b6b,emissive:0xff4747,emissiveIntensity:1.6,metalness:.4,roughness:.25});
 const powerGeo=new THREE.SphereGeometry(0.44,16,16);
-const powerMat=new THREE.MeshStandardMaterial({color:0xff6b6b, emissive:0x3b0015, emissiveIntensity:0.9});
 
-const pellets=new Map(), powerPellets=new Map();
-const worldX=c=>c*TILE, worldZ=r=>r*TILE;
-const tileAt=(c,r)=> (r<0||c<0||r>=ROWS||c>=COLS)?T.WALL:map[r][c];
-const isWall=(c,r)=> tileAt(c,r)===T.WALL;
-const isGate=(c,r)=> tileAt(c,r)===T.GATE;
+const wx=c=>c*TILE, wz=r=>r*TILE;
+const tile=(c,r)=> (r<0||c<0||r>=ROWS||c>=COLS)?T.W:map[r][c];
+const isWall=(c,r)=>tile(c,r)===T.W, isGate=(c,r)=>tile(c,r)===T.G;
 
 function buildLevel(refill=true){
   walls.clear();
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+  for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
     const t=map[r][c];
-    if(t===T.WALL){ const m=new THREE.Mesh(wallG,wallMat); m.position.set(worldX(c),1.2,worldZ(r)); walls.add(m); }
-    else if(t===T.GATE){ const g=new THREE.Mesh(new THREE.BoxGeometry(TILE,0.8,TILE*0.2),gateMat); g.position.set(worldX(c),0.4,worldZ(r)); walls.add(g); }
+    if (t===T.W){ const m=new THREE.Mesh(wallGeo,wallMat); m.position.set(wx(c),1.2,wz(r)); walls.add(m); }
+    else if (t===T.G){ const g=new THREE.Mesh(new THREE.BoxGeometry(TILE,.8,TILE*.2),gateMat); g.position.set(wx(c),.4,wz(r)); walls.add(g); }
   }
-  if(refill){
-    for(const [,m] of pellets) scene.remove(m); pellets.clear();
-    for(const [,m] of powerPellets) scene.remove(m); powerPellets.clear();
-    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+  if (refill){
+    for (const [,m] of pellets) scene.remove(m); pellets.clear();
+    for (const [,m] of powers) scene.remove(m); powers.clear();
+    for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++){
       const t=map[r][c];
-      if(t===T.POWER){ const m=new THREE.Mesh(powerGeo,powerMat); m.position.set(worldX(c),0.45,worldZ(r)); scene.add(m); powerPellets.set(`${r},${c}`,m); }
-      else if(t!==T.WALL && t!==T.GATE && t!==T.HOUSE){
-        const m=new THREE.Mesh(pelletGeo,pelletMat); m.position.set(worldX(c),0.15,worldZ(r)); scene.add(m); pellets.set(`${r},${c}`,m);
-      }
+      if (t===T.PP){ const m=new THREE.Mesh(powerGeo,powerMat); m.position.set(wx(c),.45,wz(r)); scene.add(m); powers.set(`${r},${c}`,m); }
+      else if (t!==T.W && t!==T.G && t!==T.H){ const m=new THREE.Mesh(pelletGeo,pelletMat); m.position.set(wx(c),.15,wz(r)); scene.add(m); pellets.set(`${r},${c}`,m); }
     }
   }
 }
 
-/* ============== Entities ============== */
-function makeGhost(x,y,color,name,corner){ return {x,y,dir:'left',speed:2.9,color,name,corner,eyes:false,mesh:null}; }
+/* Entities */
 const ghosts=[
-  makeGhost(13.5,14,0xff2b2b,'blinky',[COLS-2,1]),
-  makeGhost(14.5,14,0xff7ad5,'pinky',[1,1]),
-  makeGhost(15.5,14,0x00e5ff,'inky',[COLS-2,ROWS-2]),
-  makeGhost(16.5,14,0xff9c2b,'clyde',[1,ROWS-2])
-];
-const ghostGeo=new THREE.CapsuleGeometry(0.8,0.6,8,16);
-const ghostMat=hex=> new THREE.MeshStandardMaterial({color:hex, emissive:0x0f1024, emissiveIntensity:0.55, metalness:0.1, roughness:0.35});
-for(const g of ghosts){ g.mesh=new THREE.Mesh(ghostGeo,ghostMat(g.color)); scene.add(g.mesh); }
+  {name:'blinky', color:0xff2b2b, corner:[COLS-2,1]},
+  {name:'pinky',  color:0xff7ad5, corner:[1,1]},
+  {name:'inky',   color:0x00e5ff, corner:[COLS-2,ROWS-2]},
+  {name:'clyde',  color:0xff9c2b, corner:[1,ROWS-2]}
+].map((g,i)=>({
+  ...g, x:13.5+i, y:14, dir:'left', speed:2.9, eyes:false,
+  mesh:new THREE.Mesh(new THREE.CapsuleGeometry(.8,.6,8,16), new THREE.MeshStandardMaterial({color:g.color,emissive:0x0f1024,emissiveIntensity:.55,metalness:.1,roughness:.35}))
+}));
+ghosts.forEach(g=>scene.add(g.mesh));
 
-const player={x:14.5,y:23,speed:3.8};
+const player={x:14.5,y:23,speed:3.9};
 
-/* ============== Game state ============== */
-const ui={score:document.getElementById('score'),lives:document.getElementById('lives'),level:document.getElementById('level'),msg:document.getElementById('msgText')};
-const state={score:0,lives:3,level:1,paused:false,playing:true,frightened:0,streak:0,mode:'scatter',modeTime:0};
-const msg=t=>ui.msg.textContent=t||'';
-const recount=()=>{state.pellets=pellets.size; state.power=powerPellets.size;};
+/* State */
+const ui={s:document.getElementById('score'),l:document.getElementById('lives'),lvl:document.getElementById('level'),msg:document.getElementById('msgText')};
+const state={score:0,lives:3,level:1,paused:false,playing:true,fright:0,streak:0,mode:'scatter',modeTime:0};
+const setMsg=t=>ui.msg.textContent=t||'';
+const recount=()=>{state.pelCount=pellets.size; state.powCount=powers.size;};
 
 function resetPositions(){
   player.x=14.5; player.y=23; yaw=Math.PI; pitch=0;
   camera.position.set(player.x*TILE,1.26,player.y*TILE); camera.rotation.set(0,yaw,0);
-  ghosts.forEach((g,i)=>{ g.x=13.5+i; g.y=14; g.dir='left'; g.eyes=false; g.speed=2.9+(state.level-1)*0.06; g.mesh.material=ghostMat(g.color); });
+  ghosts.forEach((g,i)=>{ g.x=13.5+i; g.y=14; g.dir='left'; g.eyes=false; g.speed=2.9+(state.level-1)*0.06; g.mesh.material.color.setHex(g.color); g.mesh.material.emissive.setHex(0x0f1024); });
 }
 function softReset(){
-  state.lives--; ui.lives.textContent=state.lives;
-  if(state.lives<0){ state.playing=false; msg('Game Over — press R'); return; }
+  state.lives--; ui.l.textContent=state.lives;
+  if (state.lives<0){ state.playing=false; setMsg('Game Over — press R'); return; }
   resetPositions();
 }
 function hardReset(){
   buildLevel(true); recount();
-  state.score=0; ui.score.textContent=0;
-  state.lives=3; ui.lives.textContent=3;
-  state.level=1; ui.level.textContent=1;
-  state.paused=false; state.playing=true; state.frightened=0; state.streak=0; state.mode='scatter'; state.modeTime=0;
-  resetPositions(); msg('Press Shift to start');
+  state.score=0; ui.s.textContent=0; state.lives=3; ui.l.textContent=3; state.level=1; ui.lvl.textContent=1;
+  state.paused=false; state.playing=true; state.fright=0; state.streak=0; state.mode='scatter'; state.modeTime=0;
+  resetPositions(); setMsg('Press Shift to start');
 }
 function nextLevel(){
-  state.level++; ui.level.textContent=state.level; msg('Level '+state.level);
-  buildLevel(true); recount(); resetPositions(); setTimeout(()=>msg(''),700);
+  state.level++; ui.lvl.textContent=state.level;
+  buildLevel(true); recount(); resetPositions(); setTimeout(()=>setMsg(''),700);
 }
 
-/* ============== Controls & Shift-Lock (with fallback) ============== */
+/* Controls & shift-lock (fallback safe) */
 const keys=new Set();
 addEventListener('keydown',e=>{
   keys.add(e.key);
-  if(e.key===' ') { e.preventDefault(); toggleMap(); }
-  if(e.key==='p'||e.key==='P'){ state.paused=!state.paused; msg(state.paused?'Paused':''); }
+  if(e.key===' '){ e.preventDefault(); toggleMap(); }
+  if(e.key==='p'||e.key==='P'){ state.paused=!state.paused; setMsg(state.paused?'Paused':''); }
   if(e.key==='r'||e.key==='R'){ hardReset(); }
   if(e.key==='Shift'){ e.preventDefault(); toggleLock(); }
 });
 addEventListener('keyup',e=>keys.delete(e.key));
 
-const center=document.getElementById('centerSquare');
-let lockMode='unlocked'; // 'unlocked'|'pointer'|'fallback'
-const pointerLockSupported=()=> !!document.body.requestPointerLock;
+const cross=document.getElementById('centerSquare');
+let lockMode='unlocked';
+const pointerLockSupported=()=>!!document.body.requestPointerLock;
 function tryPointerLock(){ try{ document.body.requestPointerLock(); }catch{ return false; } return true; }
-
-document.addEventListener('pointerlockerror',()=>{
-  if(lockMode==='pointer'){ lockMode='fallback'; center.style.display='block'; document.body.style.cursor='none'; msg(''); }
-});
-document.addEventListener('pointerlockchange',()=>{
-  if(document.pointerLockElement===document.body){
-    lockMode='pointer'; center.style.display='block'; document.body.style.cursor='none'; msg('');
-  } else if(lockMode==='pointer'){
-    lockMode='unlocked'; center.style.display='none'; document.body.style.cursor='';
-  }
-});
+document.addEventListener('pointerlockerror',()=>{ if(lockMode==='pointer'){ lockMode='fallback'; cross.style.display='block'; document.body.style.cursor='none'; setMsg(''); }});
+document.addEventListener('pointerlockchange',()=>{ if(document.pointerLockElement===document.body){ lockMode='pointer'; cross.style.display='block'; document.body.style.cursor='none'; setMsg(''); } else if(lockMode==='pointer'){ lockMode='unlocked'; cross.style.display='none'; document.body.style.cursor=''; }});
 function toggleLock(){
   if(lockMode==='unlocked'){
     const ok=pointerLockSupported() && tryPointerLock();
-    if(ok){ lockMode='pointer'; } else { lockMode='fallback'; center.style.display='block'; document.body.style.cursor='none'; msg(''); }
-  } else {
-    if(lockMode==='pointer') document.exitPointerLock();
-    lockMode='unlocked'; center.style.display='none'; document.body.style.cursor='';
-  }
+    if(ok){ lockMode='pointer'; } else { lockMode='fallback'; cross.style.display='block'; document.body.style.cursor='none'; setMsg(''); }
+  } else { if(lockMode==='pointer') document.exitPointerLock(); lockMode='unlocked'; cross.style.display='none'; document.body.style.cursor=''; }
 }
 
+/* Mouse look (fixed: up=up, down=down; clamp to ±60°) */
 let yaw=Math.PI, pitch=0, lastX=null,lastY=null;
 addEventListener('mousemove',e=>{
   let dx=0, dy=0;
   if(document.pointerLockElement===document.body){ dx=e.movementX; dy=e.movementY; }
   else if(lockMode==='fallback'){ if(lastX!==null){ dx=e.clientX-lastX; dy=e.clientY-lastY; } lastX=e.clientX; lastY=e.clientY; }
   else { lastX=null; lastY=null; return; }
-  yaw -= dx*0.002; pitch -= dy*0.002; pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,pitch));
+  yaw  -= dx*0.002;
+  pitch+= dy*0.002;                 // << fixed direction
+  const LIMIT=Math.PI/3;            // ~±60°
+  pitch=Math.max(-LIMIT, Math.min(LIMIT, pitch));
 });
 
-/* ============== Movement & Collisions ============== */
+/* Movement & collision (smaller radius) + side tunnels */
 function canMoveTo(nx,ny){
-  const r=0.31;
+  const r=0.18;
   const pts=[[nx-r,ny-r],[nx+r,ny-r],[nx-r,ny+r],[nx+r,ny+r]];
   for(const [x,y] of pts){
     const c=Math.floor(x), rr=Math.floor(y);
@@ -235,25 +217,38 @@ function canMoveTo(nx,ny){
   }
   return true;
 }
+function applyTunnels(){
+  const row=14; // classic tunnel row
+  if (Math.round(player.y)===row){
+    if (player.x < 0.5) player.x = COLS-1.5;
+    else if (player.x > COLS-0.5) player.x = 1.5;
+  }
+  ghosts.forEach(g=>{
+    if (Math.round(g.y)===row){
+      if (g.x < 0.5) g.x = COLS-1.5;
+      else if (g.x > COLS-0.5) g.x = 1.5;
+    }
+  });
+}
 function movePlayer(dt){
   const sp=player.speed*dt/TILE;
   let dx=0,dy=0;
-  if(keys.has('w')||keys.has('ArrowUp')){ dx+=Math.sin(yaw); dy+=Math.cos(yaw); }
-  if(keys.has('s')||keys.has('ArrowDown')){ dx-=Math.sin(yaw); dy-=Math.cos(yaw); }
-  if(keys.has('a')||keys.has('ArrowLeft')){ dx+=Math.cos(yaw); dy-=Math.sin(yaw); }
+  if(keys.has('w')||keys.has('ArrowUp'))   { dx+=Math.sin(yaw); dy+=Math.cos(yaw); }
+  if(keys.has('s')||keys.has('ArrowDown')) { dx-=Math.sin(yaw); dy-=Math.cos(yaw); }
+  if(keys.has('a')||keys.has('ArrowLeft')) { dx+=Math.cos(yaw); dy-=Math.sin(yaw); }
   if(keys.has('d')||keys.has('ArrowRight')){ dx-=Math.cos(yaw); dy+=Math.sin(yaw); }
   const nx=player.x+dx*sp, ny=player.y+dy*sp;
   if(canMoveTo(nx,player.y)) player.x=nx;
   if(canMoveTo(player.x,ny)) player.y=ny;
+  applyTunnels();
   camera.position.set(player.x*TILE,1.26,player.y*TILE);
   camera.rotation.set(pitch,yaw,0);
 }
 
-/* ============== Ghost AI ============== */
+/* Ghost AI */
 const dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 const opposite=d=>({up:'down',down:'up',left:'right',right:'left'})[d];
-const atCenter=(x,y)=> Math.abs(x-Math.round(x))<0.15 && Math.abs(y-Math.round(y))<0.15;
-
+const atCenter=(x,y)=>Math.abs(x-Math.round(x))<0.15 && Math.abs(y-Math.round(y))<0.15;
 function chooseNextDir(g,target){
   if(!atCenter(g.x,g.y)) return;
   const options=['up','left','down','right'];
@@ -283,7 +278,7 @@ function randomTurn(g){
 function chaseTarget(g){
   if(g.name==='blinky') return {x:player.x,y:player.y};
   if(g.name==='pinky'){ const fx=Math.sin(yaw), fz=Math.cos(yaw); return {x:player.x+fx*3,y:player.y+fz*3}; }
-  if(g.name==='inky'){ const fx=Math.sin(yaw), fz=Math.cos(yaw); return {x:player.x+fx*2+(ghosts[0].x-player.x), y:player.y+fz*2+(ghosts[0].y-player.y)}; }
+  if(g.name==='inky'){  const fx=Math.sin(yaw), fz=Math.cos(yaw); return {x:player.x+fx*2+(ghosts[0].x-player.x), y:player.y+fz*2+(ghosts[0].y-player.y)}; }
   const d=Math.hypot(g.x-player.x,g.y-player.y);
   return d<6? {x:g.corner[0],y:g.corner[1]} : {x:player.x,y:player.y};
 }
@@ -291,13 +286,11 @@ function ghostAI(g){
   if(g.eyes){
     const home={x:14,y:14};
     chooseNextDir(g,home);
-    if(Math.hypot(g.x-home.x,g.y-home.y)<0.4){
-      g.eyes=false; g.speed=2.9+(state.level-1)*0.06; g.mesh.material=ghostMat(g.color);
-    }
+    if(Math.hypot(g.x-home.x,g.y-home.y)<0.4){ g.eyes=false; g.speed=2.9+(state.level-1)*0.06; g.mesh.material.color.setHex(g.color); }
     return;
   }
-  if(state.frightened>0){ randomTurn(g); return; }
-  const t= state.mode==='scatter' ? {x:g.corner[0],y:g.corner[1]} : chaseTarget(g);
+  if(state.fright>0){ randomTurn(g); return; }
+  const t=(state.mode==='scatter') ? {x:g.corner[0],y:g.corner[1]} : chaseTarget(g);
   chooseNextDir(g,t);
 }
 function moveGhost(g,dt){
@@ -308,84 +301,70 @@ function moveGhost(g,dt){
   g.mesh.rotation.y = ({left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0);
 }
 
-/* ============== Eating & Collisions ============== */
+/* Eat & collisions */
 function eat(){
   const c=Math.floor(player.x), r=Math.floor(player.y), k=`${r},${c}`;
   if(pellets.has(k)){
     scene.remove(pellets.get(k)); pellets.delete(k);
-    state.score+=10; ui.score.textContent=state.score;
+    state.score+=10; ui.s.textContent=state.score;
     if(pellets.size===0) nextLevel();
-  }else if(powerPellets.has(k)){
-    scene.remove(powerPellets.get(k)); powerPellets.delete(k);
-    state.score+=50; ui.score.textContent=state.score;
-    state.frightened=6; state.streak=0;
-    ghosts.forEach(g=>{ if(!g.eyes) g.mesh.material=new THREE.MeshStandardMaterial({color:0x1f6cff, emissive:0x001133, emissiveIntensity:.7}); });
+  } else if(powers.has(k)){
+    scene.remove(powers.get(k)); powers.delete(k);
+    state.score+=50; ui.s.textContent=state.score;
+    state.fright=6; state.streak=0;
+    ghosts.forEach(g=>{ if(!g.eyes){ g.mesh.material.color.setHex(0x1f6cff); } });
   }
 }
 function checkDeaths(){
   for(const g of ghosts){
     const d=Math.hypot((g.x-player.x)*TILE,(g.y-player.y)*TILE);
     if(d<0.9){
-      if(state.frightened>0 && !g.eyes){
-        g.eyes=true; state.streak++; state.score+=200*(2**(state.streak-1)); ui.score.textContent=state.score;
-        g.mesh.material=new THREE.MeshStandardMaterial({color:0xffffff, emissive:0x222244, emissiveIntensity:.6});
-        g.speed=3.6;
+      if(state.fright>0 && !g.eyes){
+        g.eyes=true; state.streak++; state.score+=200*(2**(state.streak-1)); ui.s.textContent=state.score; g.speed=3.6;
+        g.mesh.material.color.setHex(0xffffff);
       }else if(!g.eyes){ softReset(); return; }
     }
   }
 }
 
-/* ============== Minimap (bottom-left) ============== */
-const mapCanvas=document.getElementById('map'); const mctx=mapCanvas.getContext('2d');
+/* Minimap bottom-left (retro blue) */
+const mapCanvas=document.getElementById('map'), mctx=mapCanvas.getContext('2d');
 let mapVisible=false; function toggleMap(){ mapVisible=!mapVisible; mapCanvas.style.display=mapVisible?'block':'none'; }
 function drawMap(){
   const cw=mapCanvas.width/COLS, ch=mapCanvas.height/ROWS;
   mctx.fillStyle='rgba(8,16,32,0.9)'; mctx.fillRect(0,0,mapCanvas.width,mapCanvas.height);
-  // Walls background (retro blue)
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-    mctx.fillStyle = (map[r][c]===T.WALL)? '#2049ff' : '#050a14';
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    mctx.fillStyle=(map[r][c]===T.W)?'#2049ff':'#050a14';
     mctx.fillRect(c*cw,r*ch,cw,ch);
   }
-  // Pellets — yellow squares
-  mctx.fillStyle='#ffd400';
-  for(const key of pellets.keys()){ const [r,c]=key.split(',').map(Number);
-    mctx.fillRect(c*cw+cw*0.35, r*ch+ch*0.35, cw*0.3, ch*0.3);
-  }
-  // Power pellets — larger squares
-  mctx.fillStyle='#ff6b6b';
-  for(const key of powerPellets.keys()){ const [r,c]=key.split(',').map(Number);
-    mctx.fillRect(c*cw+cw*0.25, r*ch+ch*0.25, cw*0.5, ch*0.5);
-  }
-  // Player
+  mctx.fillStyle='#ffd400'; for(const key of pellets.keys()){ const [r,c]=key.split(',').map(Number); mctx.fillRect(c*cw+cw*.35,r*ch+ch*.35,cw*.3,ch*.3); }
+  mctx.fillStyle='#ff6b6b'; for(const key of powers.keys()){ const [r,c]=key.split(',').map(Number); mctx.fillRect(c*cw+cw*.25,r*ch+ch*.25,cw*.5,ch*.5); }
   mctx.fillStyle='#ffd400'; mctx.beginPath(); mctx.arc(player.x*cw,player.y*ch,2.6,0,Math.PI*2); mctx.fill();
-  // Ghosts — colored arrows
-  ghosts.forEach(g=>{
-    mctx.save(); mctx.translate(g.x*cw,g.y*ch);
-    const ang={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0; mctx.rotate(ang);
-    mctx.fillStyle = `#${g.color.toString(16).padStart(6,'0')}`;
-    mctx.beginPath(); mctx.moveTo(0,-4); mctx.lineTo(3,3); mctx.lineTo(-3,3); mctx.closePath(); mctx.fill();
-    mctx.restore();
-  });
+  ghosts.forEach(g=>{ mctx.save(); mctx.translate(g.x*cw,g.y*ch); const ang={left:Math.PI,right:0,up:-Math.PI/2,down:Math.PI/2}[g.dir]||0; mctx.rotate(ang); mctx.fillStyle=`#${g.color.toString(16).padStart(6,'0')}`; mctx.beginPath(); mctx.moveTo(0,-4); mctx.lineTo(3,3); mctx.lineTo(-3,3); mctx.closePath(); mctx.fill(); mctx.restore(); });
 }
 
-/* ============== Boot & Loop ============== */
-function boot(){ hardReset(); }
-boot();
+/* Boot & loop (pellet pulse) */
+function hardBoot(){ hardReset(); }
+hardBoot();
 
 let prev=performance.now();
 function loop(now){
   const dt=Math.min(0.033,(now-prev)/1000); prev=now;
+
+  // pellet pulse (subtle sine)
+  const pulse = 1.15 + Math.sin(now*0.004)*0.25;
+  pelletMat.emissiveIntensity = pulse;
+
   if(state.playing && !state.paused){
     if(lockMode!=='unlocked') movePlayer(dt);
     ghosts.forEach(g=>{ ghostAI(g); moveGhost(g,dt); });
     eat(); checkDeaths();
-    // Scatter/Chase timer
     state.modeTime+=dt;
-    if(state.frightened>0){
-      state.frightened-=dt;
-      if(state.frightened<=0){ state.frightened=0; ghosts.forEach(g=>{ if(!g.eyes) g.mesh.material=ghostMat(g.color); }); }
+    if(state.fright>0){
+      state.fright-=dt;
+      if(state.fright<=0){ state.fright=0; ghosts.forEach(g=>{ if(!g.eyes) g.mesh.material.color.setHex(g.color); }); }
     }else if(state.mode==='scatter' && state.modeTime>7){ state.mode='chase'; state.modeTime=0; }
-    else if(state.mode==='chase' && state.modeTime>20){ state.mode='scatter'; state.modeTime=0; }
+     else if(state.mode==='chase' && state.modeTime>20){ state.mode='scatter'; state.modeTime=0; }
   }
   if(mapVisible) drawMap();
   renderer.render(scene,camera);
