@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Orbit Boss — Alien Geometric Version</title>
+<title>Orbit Boss — Alien Geometric Edition</title>
 <style>
   html,body{margin:0;height:100%;background:#05060a;overflow:hidden;color:#bfe9ff;font-family:sans-serif}
   canvas{display:block;width:100vw;height:100vh}
@@ -19,7 +19,7 @@
 <body>
 <canvas id="game"></canvas>
 <div id="hud"></div>
-<div id="centerMsg"><div class="card" id="msg">Orbit Boss<br><small>Move with <kbd>WASD</kbd> — Auto fire — <kbd>R</kbd> to restart</small></div></div>
+<div id="centerMsg"><div class="card" id="msg">Orbit Boss<br><small><kbd>W</kbd>/<kbd>S</kbd> = in/out · <kbd>A</kbd> = flip · <kbd>D</kbd> = shoot · auto move</small></div></div>
 <script>
 (() => {
 const canvas=document.getElementById("game");
@@ -34,13 +34,17 @@ addEventListener("resize",resize,{passive:true});resize();
 
 const TAU=Math.PI*2,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
-const player={angle:0,radius:180,minR:110,maxR:260,speed:2.5,fireTimer:0,firePeriod:1.8,alive:true,invincible:0};
-const boss={hp:20,maxHp:20,coreR:28,fireTimer:0,fireCooldown:1.3,fireHold:0,parts:[]};
+const player={angle:0,radius:180,minR:110,maxR:260,speed:2.2,moveSpeed:2.5,alive:true,invincible:0,dir:1};
+const boss={hp:20,maxHp:20,coreR:28,fireTimer:0,fireCooldown:1.3,fireHold:0,parts:[],fragments:[],spikes:[]};
 const bullets=[];const keys={};
 
 onkeydown=e=>{
-  const k=e.key.toLowerCase();if(['w','a','s','d','r'].includes(k))e.preventDefault();
-  keys[k]=true;if(!state.moved&&['w','a','s','d'].includes(k))hideCenter();
+  const k=e.key.toLowerCase();
+  if(['w','a','s','d','r'].includes(k))e.preventDefault();
+  keys[k]=true;
+  if(!state.moved&&['w','a','s','d'].includes(k))hideCenter();
+  if(k==='a')player.dir*=-1;
+  if(k==='d')shootPlayer();
   if(k==='r')reset();
 };
 onkeyup=e=>{delete keys[e.key.toLowerCase()];};
@@ -58,9 +62,7 @@ function initLevel(){
   boss.maxHp=Math.floor(20+(lvl-1)*10);
   boss.hp=boss.maxHp;
   boss.fireCooldown=Math.max(0.8,1.5-(lvl-1)*0.08);
-  player.firePeriod=clamp(2.0-(lvl-1)*0.2,0.3,2.0);
   boss.parts=[];
-  // irregular polygon points
   const sides=5+Math.floor(Math.random()*3);
   for(let i=0;i<sides;i++){
     const ang=i*TAU/sides+Math.random()*0.4;
@@ -83,13 +85,13 @@ function initLevel(){
 }
 function reset(){
   state.level=1;state.score=0;state.time=0;state.running=true;
-  player.angle=0;player.radius=180;player.alive=true;player.fireTimer=0;player.invincible=0;
+  player.angle=0;player.radius=180;player.alive=true;player.invincible=0;player.dir=1;
   bullets.length=0;state.moved=false;centerMsg.classList.remove('hidden');initLevel();
 }
 function nextLevel(){
   state.level++;state.score+=200;bullets.length=0;initLevel();
   player.invincible=2.0;boss.fireHold=1.2;
-  flash(`Level ${state.level}<br><small>The alien grows...</small>`);
+  flash(`Level ${state.level}<br><small>The alien evolves...</small>`);
 }
 
 function shootPlayer(){
@@ -103,10 +105,14 @@ function shootPlayer(){
 
 function bossVolley(){
   const lvl=state.level;const cx=state.w/2,cy=state.h/2;
-  let count=Math.min(10,2+lvl*2);
+  const px=cx+Math.cos(player.angle)*player.radius;
+  const py=cy+Math.sin(player.angle)*player.radius;
+  const aimAng=Math.atan2(py-cy,px-cx);
+  const count=Math.min(10,2+lvl*2);
+  // fire bullets in random spread, one precisely aimed at player
   for(let i=0;i<count;i++){
-    const ang=Math.random()*TAU;
-    const spd=160+lvl*25;
+    const ang=(i===0)?aimAng+(Math.random()*0.15-0.075):Math.random()*TAU;
+    const spd=150+lvl*25;
     bullets.push({x:cx,y:cy,vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,r:3.2,owner:'b'});
   }
 }
@@ -116,19 +122,17 @@ function update(dt){
   if(!player.alive)return;
   if(player.invincible>0)player.invincible=Math.max(0,player.invincible-dt);
   if(boss.fireHold>0)boss.fireHold=Math.max(0,boss.fireHold-dt);
-  const turn=(keys['d']?1:0)-(keys['a']?1:0);
-  player.angle+=turn*player.speed*dt;
+  // player auto-rotates
+  player.angle+=player.dir*player.speed*dt;
+  // radius control
   if(keys['w'])player.radius-=130*dt;
   if(keys['s'])player.radius+=130*dt;
   player.radius=clamp(player.radius,player.minR,player.maxR);
-
-  player.fireTimer+=dt;
-  if(player.fireTimer>=player.firePeriod){player.fireTimer=0;shootPlayer();}
-
+  // boss
   boss.fireTimer+=dt;
   if(boss.fireHold===0 && boss.fireTimer>=boss.fireCooldown){boss.fireTimer=0;bossVolley();}
   for(const f of boss.fragments)f.ang+=f.speed*dt;
-
+  // bullet movement
   for(let i=bullets.length-1;i>=0;i--){
     const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;
     if(b.x<-80||b.y<-80||b.x>state.w+80||b.y>state.h+80){bullets.splice(i,1);continue;}
@@ -156,19 +160,16 @@ function drawShip(x,y,ang){
   ctx.translate(x,y);
   ctx.rotate(ang);
   if(player.invincible>0 && Math.floor(state.time*10)%2===0)ctx.globalAlpha=0.4;
-  ctx.strokeStyle='#aee3ff';
-  ctx.lineWidth=2;
+  ctx.strokeStyle='#aee3ff';ctx.lineWidth=2;
   ctx.beginPath();
-  ctx.moveTo(14,0);ctx.lineTo(-10,-7);ctx.lineTo(-4,0);ctx.lineTo(-10,7);ctx.closePath();ctx.stroke();
-  ctx.globalAlpha=1;
+  ctx.moveTo(14,0);ctx.lineTo(-10,-7);ctx.lineTo(-4,0);ctx.lineTo(-10,7);ctx.closePath();
+  ctx.stroke();ctx.globalAlpha=1;
   ctx.restore();
 }
 
 function drawAlienBoss(cx,cy){
   const t=state.time;
-  ctx.save();
-  ctx.translate(cx,cy);
-  // core shape (irregular polygon)
+  ctx.save();ctx.translate(cx,cy);
   ctx.rotate(t*0.3);
   ctx.strokeStyle=boss.hp<boss.maxHp/2?(t*6%2>1?'#ff5577':'#ff8899'):'#85d8ff';
   ctx.lineWidth=3;
@@ -176,14 +177,10 @@ function drawAlienBoss(cx,cy){
   for(let i=0;i<boss.parts.length;i++){
     const p=boss.parts[i];
     const a=p.ang+Math.sin(t+p.r*0.05)*0.2;
-    const x=Math.cos(a)*p.r;
-    const y=Math.sin(a)*p.r;
+    const x=Math.cos(a)*p.r;const y=Math.sin(a)*p.r;
     if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
   }
-  ctx.closePath();
-  ctx.stroke();
-
-  // spikes / tentacle lines
+  ctx.closePath();ctx.stroke();
   ctx.lineWidth=1.5;ctx.strokeStyle='#ffcc55';
   for(const s of boss.spikes){
     const ang=s.baseAng+Math.sin(t*2+s.length*0.02)*0.3;
@@ -191,19 +188,15 @@ function drawAlienBoss(cx,cy){
     ctx.beginPath();ctx.moveTo(0,0);
     ctx.lineTo(Math.cos(ang)*len,Math.sin(ang)*len);ctx.stroke();
   }
-
-  // fragments / orbiting shards
   ctx.lineWidth=2;
   for(const f of boss.fragments){
-    const x=Math.cos(f.ang)*f.r;
-    const y=Math.sin(f.ang)*f.r;
-    ctx.save();ctx.translate(x,y);
-    ctx.rotate(f.ang*2);
+    const x=Math.cos(f.ang)*f.r;const y=Math.sin(f.ang)*f.r;
+    ctx.save();ctx.translate(x,y);ctx.rotate(f.ang*2);
     ctx.strokeStyle='#f76cf7';
     ctx.beginPath();
-    ctx.moveTo(-f.size,0);ctx.lineTo(0,-f.size);ctx.lineTo(f.size,0);ctx.lineTo(0,f.size);ctx.closePath();
-    ctx.stroke();
-    ctx.restore();
+    ctx.moveTo(-f.size,0);ctx.lineTo(0,-f.size);
+    ctx.lineTo(f.size,0);ctx.lineTo(0,f.size);ctx.closePath();
+    ctx.stroke();ctx.restore();
   }
   ctx.restore();
 }
