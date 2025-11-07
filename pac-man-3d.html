@@ -526,6 +526,7 @@ function drawMap(){
   });
 }
 
+...
 /* ============ Boot & Loop ============ */
 function nextLevel(){
   state.level++; uiLevel.textContent=state.level;
@@ -548,7 +549,7 @@ function loop(now){
   pelletMat.emissiveIntensity = 1.2 + Math.sin(now*0.004)*0.28;
 
   if(state.playing && !state.paused){
-    if(state.paused) return;
+    movePlayer(dt); // ✅ Added this line — WASD now always works
     ghosts.forEach(g=>{ ghostAI(g); moveGhost(g,dt); });
     eat(); checkDeaths();
     state.modeTime+=dt;
