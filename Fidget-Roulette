@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fidget-Roulette</title>
+<style>
+  :root{
+    --felt1:#176a37; --felt2:#0c3d1d; --felt3:#0b2d16;
+    --gold:#d4af37; --wood1:#5d3513; --wood2:#2b1606;
+    --red1:#b22222; --red2:#7a1414;
+  }
+  html,body{
+    height:100%; margin:0; color:#fff;
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:
+      radial-gradient(circle at 50% 40%, var(--felt1) 0%, var(--felt2) 80%, #092a15 100%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 2px, transparent 2px 6px);
+    overflow:hidden;
+  }
+
+  .layout{
+    height:100%;
+    display:grid;
+    grid-template-columns:auto 1fr;
+    gap:1.5rem;
+    align-items:start;
+    padding:1.4rem 2rem;
+  }
+
+  /* ===== TABLE ===== */
+  .table-wrap{justify-self:start}
+  .table{
+    background:#0e3a1a;
+    padding:14px;
+    border-radius:12px;
+    border:3px solid var(--gold);
+    box-shadow:inset 0 0 18px rgba(0,0,0,.6);
+    background-image:repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 2px, transparent 2px 6px);
+    display:grid;
+    grid-template-columns:60px repeat(12, 60px);
+    grid-template-rows: repeat(3, 56px);
+  }
+  .cell{
+    border:1px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:1rem;position:relative;user-select:none;
+    text-shadow:0 0 4px rgba(0,0,0,.5);
+  }
+  .red{background:linear-gradient(180deg,var(--red1),var(--red2))}
+  .black{background:linear-gradient(180deg,#222,#000)}
+  .green{background:linear-gradient(180deg,#1e7c46,#134e2d)}
+  .cell:hover{outline:2px solid #fff}
+  .zero{grid-row:1 / span 3;grid-column:1;writing-mode:vertical-rl;text-orientation:upright;}
+
+  .belt,.belt2,.bottom-info{
+    width: calc(60px + 12*60px);
+  }
+  .belt{margin-top:10px;display:grid;grid-template-columns: repeat(3, 1fr);gap:8px;}
+  .belt div{text-align:center;padding:.35rem 0;border:2px solid var(--gold);border-radius:8px;background:#143b1e;font-weight:700}
+  .belt2{margin-top:8px;display:grid;grid-template-columns: repeat(6, 1fr);gap:8px;}
+  .marker{position:absolute;right:6px;top:6px;width:12px;height:12px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, #fff 0%, #ddd 45%, #bcbcbc 100%);
+    box-shadow:0 0 6px rgba(255,255,255,.85);animation:pop .2s ease-out;}
+  @keyframes pop{from{transform:scale(.4);opacity:.2}to{transform:scale(1);opacity:1}}
+
+  /* ===== WHEEL ===== */
+  .wheel-sec{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    transform:translate(-70px,0);
+    height:100vh;
+  }
+  .wheel-wrap{
+    position:relative;width:560px;height:560px;border-radius:50%;
+    background:radial-gradient(circle at 50% 50%, var(--wood1) 0%, #42230a 60%, var(--wood2) 100%);
+    box-shadow:inset 0 0 80px rgba(0,0,0,.7), 0 0 30px #000;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .wheel{
+    position:relative;width:500px;height:500px;border-radius:50%;
+    border:16px solid var(--gold);
+    background:conic-gradient(
+      #27ae60 0deg 9.73deg,
+      #c0392b 9.73deg 19.46deg,#000 19.46deg 29.19deg,
+      #c0392b 29.19deg 38.92deg,#000 38.92deg 48.65deg,
+      #c0392b 48.65deg 58.38deg,#000 58.38deg 68.11deg,
+      #c0392b 68.11deg 77.84deg,#000 77.84deg 87.57deg,
+      #c0392b 87.57deg 97.3deg,#000 97.3deg 107.03deg,
+      #c0392b 107.03deg 116.76deg,#000 116.76deg 126.49deg,
+      #c0392b 126.49deg 136.22deg,#000 136.22deg 145.95deg,
+      #c0392b 145.95deg 155.68deg,#000 155.68deg 165.41deg,
+      #c0392b 165.41deg 175.14deg,#000 175.14deg 184.87deg,
+      #c0392b 184.87deg 194.6deg,#000 194.6deg 204.33deg,
+      #c0392b 204.33deg 214.06deg,#000 214.06deg 223.79deg,
+      #c0392b 223.79deg 233.52deg,#000 233.52deg 243.25deg,
+      #c0392b 243.25deg 252.98deg,#000 252.98deg 262.71deg,
+      #c0392b 262.71deg 272.44deg,#000 272.44deg 282.17deg,
+      #c0392b 282.17deg 291.9deg,#000 291.9deg 301.63deg,
+      #c0392b 301.63deg 311.36deg,#000 311.36deg 321.09deg,
+      #c0392b 321.09deg 330.82deg,#000 330.82deg 340.55deg,
+      #c0392b 340.55deg 350.28deg,#000 350.28deg 360deg
+    );
+    transition:transform 6.4s cubic-bezier(.22,.85,.27,1);
+  }
+
+  .zero-slice {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    clip-path: polygon(50% 50%, 59% 0%, 59% 0%);
+    background: linear-gradient(180deg, #27ae60, #1e7c46);
+    transform: translate(-50%, -50%) rotate(-9.73deg);
+    z-index: 999;
+  }
+
+  .zero-label {
+    position: absolute;
+    top: 5%;
+    left: 53.5%;
+    transform: translateX(-50%);
+    font-weight: 800;
+    font-size: 1rem;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,100000);
+    z-index: 1000;
+  }
+
+  .zero-label::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 26px;
+    height: 26px;
+    background: #27ae60;
+    transform: translate(-50%, -50%);
+    border-radius: 0px;
+    z-index: -1;
+  }
+
+  .label{
+    position:absolute;
+    width:40px;height:22px;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:.9rem;color:#fff;
+    text-shadow:0 1px 2px rgba(0,0,0,.65);
+    transform-origin:center center;
+  }
+  .lab-red{color:#fff}
+  .lab-black{color:#fff}
+  .lab-green{color:#fff}
+  .top-dot{position:absolute;top:-11px;left:50%;transform:translateX(-50%);width:18px;height:18px;border-radius:50%;background:#111;}
+  .ball{position:absolute;top:50%;left:50%;width:18px;height:18px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, #fff 0%, #ddd 40%, #aaa 100%);
+    transform:translate(-50%,-240px);transition:transform 6.4s cubic-bezier(.22,.85,.27,1);}
+  button#spinBtn{
+    margin-top:18px;padding:.9rem 1.8rem;font-size:1.1rem;font-weight:700;
+    border:none;border-radius:10px;background:linear-gradient(180deg,#f1c40f,#b88700);color:#000;cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,.5), inset 0 0 6px rgba(255,255,255,.4);
+  }
+
+  /* ===== RULES + PAYOUTS ===== */
+  .bottom-info {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 12px;
+    width: calc(60px + 9*60px);
+    position: relative;
+    left: 0;
+    z-index: 2;
+  }
+  .info-box{
+    background:var(--felt3);
+    border:2px solid var(--gold);
+    border-radius:10px;
+    padding:10px 14px;
+    box-shadow:inset 0 0 12px rgba(0,0,0,.5);
+  }
+  .info-box h3{margin:0 0 6px;font-size:1rem;color:var(--gold)}
+  .info-box p{margin:4px 0;font-size:.9rem;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <div class="table-wrap">
+    <div class="table" id="tableGrid"></div>
+    <div class="belt"><div>1st 12</div><div>2nd 12</div><div>3rd 12</div></div>
+    <div class="belt2"><div>1–18</div><div>RED</div><div>BLACK</div><div>BLACK</div><div>RED</div><div>19–36</div></div>
+
+    <div class="bottom-info">
+      <div class="info-box">
+        <h3>RULES</h3>
+        <p>0 is Green</p>
+        <p>Even = Black</p>
+        <p>Odd = Red</p>
+        <p>Wheel randomizes each spin</p>
+        <p>If you land on 🔁, you spin again</p>
+      </div>
+      <div class="info-box">
+        <h3>PAYOUTS</h3>
+        <p>Color = 2 Caps</p>
+        <p>Specific Number = 18 Caps</p>
+        <p>Row = 3 Caps</p>
+        <p>Column = 6 Caps</p>
+        <p>3 Repeats in a Row = 10 Caps</p>
+        <p>Choosing 3 Numbers and Getting One = 3 Caps</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wheel-sec">
+    <div class="wheel-wrap">
+      <div class="wheel" id="wheel"></div>
+      <div class="wheel-center"></div>
+      <div class="ball" id="ball"></div>
+      <div class="top-dot"></div>
+    </div>
+    <button id="spinBtn">SPIN</button>
+  </div>
+</div>
+
+<script>
+const wheel=document.getElementById('wheel');
+const ball=document.getElementById('ball');
+const grid=document.getElementById('tableGrid');
+const spin=document.getElementById('spinBtn');
+
+const zero=document.createElement('div');
+zero.className='cell green zero';zero.textContent='0';zero.dataset.num='0';grid.appendChild(zero);
+
+for (let c = 0; c < 12; c++) {
+  const n1=3*c+1,n2=3*c+2,n3=3*c+3;
+  [n3,n2,n1].forEach(n=>{
+    const cell=document.createElement('div');
+    cell.className='cell '+(n%2===0?'black':'red');
+    cell.textContent = n;
+    cell.dataset.num = n;
+    grid.appendChild(cell);
+  });
+}
+
+const nums=['🔁', ...Array.from({length: 36}, (_, i) => i + 1)];
+for(let i=nums.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nums[i],nums[j]]=[nums[j],nums[i]];}
+
+const N = nums.length;
+const labelRadius = 215; // closer to rim but still inside
+
+const zeroSlice = document.createElement('div');
+zeroSlice.className = 'zero-slice';
+wheel.appendChild(zeroSlice);
+const zeroLabel = document.createElement('div');
+zeroLabel.className = 'zero-label';
+zeroLabel.textContent = '0';
+wheel.appendChild(zeroLabel);
+
+nums.forEach((n, i) => {
+  // Center each label on its color section by offsetting by slightly less than half a segment
+  const globalOffset = 2.8; // negative = rotate left, positive = right
+  const angle = (i / N) * 360 + globalOffset;
+  const label = document.createElement('div');
+  label.className = 'label ' + (n % 2 === 0 ? 'lab-black' : 'lab-red');
+  label.textContent = n;
+
+  // Align each number with its color section (not between)
+  const radians = (angle) * Math.PI / 180;
+  const x = Math.cos(radians) * (labelRadius + 2);
+  const y = Math.sin(radians) * (labelRadius + 2);
+  // Added clarification comment for alignment adjustments
+  // This defines vertical placement of each label relative to the wheel radius.
+
+  label.style.left = `calc(50% + ${x}px)`;
+  label.style.top = `calc(50% + ${y}px)`;
+  // Rotate each label so it faces toward the center of the wheel more accurately
+  label.style.transform = `translate(-50%, -50%) rotate(${angle + 92}deg) rotateY(180deg)`;
+
+  wheel.appendChild(label);
+});
+
+
+// Rotate the wheel so that 0 always aligns perfectly with the green segment at the top
+wheel.style.transformOrigin = 'center center';
+wheel.style.rotate = '-8.5deg'; // aligns green (0) to top center
+
+let spinning=false,lastMarker=null;
+spin.addEventListener('click',()=>{
+  if(spinning)return;
+  spinning=true;spin.textContent='SPINNING…';spin.disabled=true;
+  const winIndex=Math.floor(Math.random()*N);
+  const degPer=360/N;
+  const fullTurns=360*(10+Math.floor(Math.random()*3));
+  const target=fullTurns+winIndex*degPer+degPer/2;
+  wheel.style.transform=`rotate(${target}deg)`;
+  ball.style.transform=`translate(-50%,-240px) rotate(-${target}deg)`;
+  setTimeout(()=>{
+    const landed=nums[winIndex];
+    placeMarker(landed);
+    spin.textContent='SPIN';
+    spin.disabled=false;spinning=false;
+  },6400);
+});
+
+function placeMarker(n){
+  if(lastMarker)lastMarker.remove();
+  const cell=grid.querySelector(`[data-num="${n}"]`);
+  if(!cell)return;
+  const m=document.createElement('div');
+  m.className='marker';cell.appendChild(m);
+  lastMarker=m;
+}
+</script>
+</body>
+</html>
+
+</style>
+<style>
+  .wheel-center {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #5d3513 0%, #3b200a 40%, #2b1606 100%);
+    box-shadow: inset 0 0 30px rgba(0,0,0,.6), 0 0 10px rgba(0,0,0,.8);
+    z-index: 5;
+  }</style>
