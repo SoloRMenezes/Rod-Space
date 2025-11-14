@@ -9,7 +9,7 @@
   #game{display:block;width:100vw;height:100vh}
 
   /* ===== Minimap + compact HUD (bottom-left) ===== */
-  #hudMini{position:fixed;left:12px;bottom:200px;z-index:8;text-shadow:0 1px 0 rgba(0,0,0,.45);pointer-events:none}
+  #hudMini{position:fixed;left:12px;bottom:1px;z-index:8;text-shadow:0 1px 0 rgba(0,0,0,.45);pointer-events:none}
   #hudMini .row{display:flex;gap:.6rem;align-items:center}
   .pill{padding:2px 8px;border-radius:999px;border:1px solid rgba(191,233,255,.25);background:#0c1326}
   #map{position:fixed;left:12px;bottom:12px;width:160px;height:176px;background:rgba(10,20,40,.86);border:2px solid #2049ff;border-radius:10px;box-shadow:0 0 10px rgba(32,73,255,.35) inset;z-index:8;display:none}
@@ -109,7 +109,7 @@
       <input type="range" id="sensSlider" class="range" min="0.2" max="2" step="0.05" value="1"/>
       <br><br><button id="closeKeys" class="btn">Back</button>
     </div>
-  </div>
+  </div> 
 
   <!-- Credits Panel -->
   <div id="panelCredits" class="panel">
@@ -184,15 +184,37 @@ const TILE = 4;
    G = ghost spawn
 */
 const MAZE = [
-  "####################",
-  "#.......#..........#",
-  "#.###.#.#.####.##..#",
-  "#o#...#.#......#...#",
-  "#.###.#.####.#.###.#",
-  "#......G.....#.....#",
-  "####.#####.####.####",
-  "#P.................#",
-  "####################"
+"###############################",
+"#P....##.....#...#.....##.....#",
+"#.##.#..###.#.#.#.###.#..###..#",
+"#....#.#...#.#.#.#...#.#...#..#",
+"###.#.###.#.#.#.#.#.#.###.#.###",
+"#...#.....#.#.#.#.#.#.....#....#",
+"#.#####.###.#.#.#.#.###.#####.#",
+"#.#.....#...#.#.#.#...#.....#.#",
+"#.#.###.#.###.#.#.###.#.###.#.#",
+"#.#.#...#.#...#.#...#.#.#...#.#",
+"#.#.#.###.#.###.#.###.#.#.###.#",
+"#.#.#.#...#.....#.....#.#.#...#",
+"#.#.#.#.###############.#.#.###",
+"#.#.#.#.................#.#...#",
+"#.#.#.###################.###.#",
+"#.#.#.....................#...#",
+"#.#.#############.#########.###",
+"#.#.............#.#.........#.#",
+"###.##########.#.#.########.#.#",
+"#...#.........#.#.#.......#.#.#",
+"#.###.#.#####.#.#.#.#####.#.#.#",
+"#.....#.#...#.#.#.#.#...#.#.#.#",
+"#######.#.#.#.#.#.#.#.#.#.#.#.#",
+"#.......#.#.#.#.#.#.#.#.#.#.#.#",
+"#.#######.#.#.#.#.#.#.#.#.#.#.#",
+"#.......#.#.#.#.#.#.#.#.#.#.#.#",
+"###.###.#.#.#.#.#.#.#.#.#.###.#",
+"#...#...#.#.#.#.#.#.#.#.#.....#",
+"#.#####.#.#.#.#.#.#.#.#.#####.#",
+"#........#...#...#...#........#",
+"###############################"
 ];
 
 const rows = MAZE.length;
@@ -423,8 +445,8 @@ document.addEventListener('keydown', e => {
   }
 
   if (e.code === 'Space') {
-    mapVisible = true;
-    mapCanvas.style.display = 'block';
+    mapVisible = !mapVisible;
+    mapCanvas.style.display = mapVisible ? 'block' : 'none';
   }
 
   if (e.code === 'Escape') {
@@ -449,10 +471,6 @@ document.addEventListener('keydown', e => {
 
 document.addEventListener('keyup', e => {
   keys[e.code] = false;
-  if (e.code === 'Space') {
-    mapVisible = false;
-    mapCanvas.style.display = 'none';
-  }
 });
 
 document.addEventListener('pointerlockchange', () => {
@@ -864,44 +882,62 @@ function showLifePopup() {
 /* ========= MINIMAP ========= */
 function drawMap() {
   mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
-  const cw = mapCanvas.width / cols;
-  const ch = mapCanvas.height / rows;
+  // Minimap radius (in maze cells)
+  const VIEW = 4; // shows 9×9 area
+  const pCell = worldToCell(playerPos.x, playerPos.z);
 
-  // Walls
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
+  const cw = mapCanvas.width / (VIEW*2 + 1);
+  const ch = mapCanvas.height / (VIEW*2 + 1);
+
+  const startR = Math.max(0, pCell.row - VIEW);
+  const endR   = Math.min(rows - 1, pCell.row + VIEW);
+  const startC = Math.max(0, pCell.col - VIEW);
+  const endC   = Math.min(cols - 1, pCell.col + VIEW);
+
+  // Draw walls within local area
+  for (let r = startR; r <= endR; r++) {
+    for (let c = startC; c <= endC; c++) {
       if (MAZE[r][c] === '#') {
+        const dr = r - (pCell.row - VIEW);
+        const dc = c - (pCell.col - VIEW);
         mapCtx.fillStyle = '#1f3fff';
-        mapCtx.fillRect(c * cw, r * ch, cw, ch);
+        mapCtx.fillRect(dc * cw, dr * ch, cw, ch);
       }
     }
   }
 
-  // Pellets
+  // Pellets in local region
   mapCtx.fillStyle = '#ffe9a6';
   for (const p of pellets) {
     if (p.eaten) continue;
-    const x = (p.col + 0.5) * cw;
-    const y = (p.row + 0.5) * ch;
+    if (p.row < startR || p.row > endR || p.col < startC || p.col > endC) continue;
+    const dr = p.row - (pCell.row - VIEW);
+    const dc = p.col - (pCell.col - VIEW);
+    const x = (dc + 0.5) * cw;
+    const y = (dr + 0.5) * ch;
     const rad = p.power ? 3 : 1.5;
     mapCtx.beginPath();
     mapCtx.arc(x, y, rad, 0, Math.PI * 2);
     mapCtx.fill();
   }
 
-  // Player
-  const pCell = worldToCell(playerPos.x, playerPos.z);
+  // Player at center of minimap
   mapCtx.fillStyle = '#ffff00';
   mapCtx.beginPath();
-  mapCtx.arc((pCell.col + 0.5)*cw, (pCell.row + 0.5)*ch, 3, 0, Math.PI*2);
+  mapCtx.arc((VIEW + 0.5) * cw, (VIEW + 0.5) * ch, 3, 0, Math.PI * 2);
   mapCtx.fill();
 
-  // Ghosts
+  // Ghosts if inside view radius
   mapCtx.fillStyle = '#ff5555';
   for (const g of ghosts) {
     const gc = worldToCell(g.mesh.position.x, g.mesh.position.z);
+    if (gc.row < startR || gc.row > endR || gc.col < startC || gc.col > endC) continue;
+    const dr = gc.row - (pCell.row - VIEW);
+    const dc = gc.col - (pCell.col - VIEW);
+    const x = (dc + 0.5) * cw;
+    const y = (dr + 0.5) * ch;
     mapCtx.beginPath();
-    mapCtx.arc((gc.col + 0.5)*cw, (gc.row + 0.5)*ch, 3, 0, Math.PI*2);
+    mapCtx.arc(x, y, 3, 0, Math.PI * 2);
     mapCtx.fill();
   }
 }
