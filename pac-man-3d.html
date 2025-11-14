@@ -38,7 +38,7 @@
     background:radial-gradient(1200px 600px at 50% -20%, #0b1a6e 0%, #06113d 35%, #03060f 70%);
   }
   .menu{
-    width:min(90vw,540px);
+    width:min(90vw,540px); 
     background:rgba(6,12,28,.6);
     border:1px solid rgba(191,233,255,.15);
     border-radius:18px;
@@ -211,33 +211,20 @@ brickCanvas.width = 256;
 brickCanvas.height = 256;
 const bctx = brickCanvas.getContext('2d');
 
-// Clear
-bctx.fillStyle = '#050710';
+// BASE wall color
+bctx.fillStyle = '#0b0f2a';  
 bctx.fillRect(0, 0, 256, 256);
 
-// Brick grid
-const BRICK_W = 60;
-const BRICK_H = 32;
-
-// Draw glowing outlines
-for (let y = 0; y < 256; y += BRICK_H) {
-  const offset = (Math.floor(y / BRICK_H) % 2) * (BRICK_W / 2);
-  for (let x = 0; x < 256; x += BRICK_W) {
-
-    // Glow around brick edges
-    bctx.save();
-    bctx.shadowBlur = 18;
-    bctx.shadowColor = '#3b63ff';
-    bctx.strokeStyle = '#3b63ff';
-    bctx.lineWidth = 4;
-    bctx.strokeRect(x + offset, y, BRICK_W - 6, BRICK_H - 6);
-    bctx.restore();
-
-    // Actual brick fill
-    bctx.fillStyle = '#1c2a52';
-    bctx.fillRect(x + offset, y, BRICK_W - 6, BRICK_H - 6);
+// Draw subtle brick pattern (no glow)
+bctx.fillStyle = '#1a2750';
+const BW = 60, BH = 32;
+for (let y = 0; y < 256; y += BH) {
+  const offset = (Math.floor(y / BH) % 2) * (BW / 2);
+  for (let x = 0; x < 256; x += BW) {
+    bctx.fillRect(x + offset, y, BW - 8, BH - 8);
   }
 }
+
 
 const wallTexture = new THREE.CanvasTexture(brickCanvas);
 wallTexture.wrapS = THREE.RepeatWrapping;
@@ -246,8 +233,8 @@ wallTexture.repeat.set(1, 1);
 
 const wallMat = new THREE.MeshStandardMaterial({
   map: wallTexture,
-  emissive: 0x1a2aff,
-  emissiveIntensity: 1.0,
+  emissive: 0x000000,
+  emissiveIntensity: 0.0,
   metalness: 0.4,
   roughness: 0.35
 });
@@ -326,13 +313,21 @@ function buildWorld() {
     ghostMesh.position.copy(spawn);
     scene.add(ghostMesh);
 
+    const spawnCell = worldToCell(spawn.x, spawn.z);
     ghosts.push({
       mesh: ghostMesh,
       color: ghostColors[i % ghostColors.length],
       spawn: spawn.clone(),
+      spawnCell,
       target: spawn.clone(),
       eyes: false,
-      baseSpeed: 3 + i * 0.3
+      baseSpeed: 3 + i * 0.3,
+      path: [],
+      currentMode: null,
+      nextCell: null,
+      speedMult: 1,
+      lastTargetRow: null,
+      lastTargetCol: null
     });
   });
 }
@@ -543,8 +538,16 @@ function movePlayer(dt) {
     const nx = playerPos.x + dx;
     const nz = playerPos.z + dz;
 
-    if (canMoveTo(nx, nz)) {
+    // Sliding-collision logic
+    const canX = canMoveTo(nx, playerPos.z);
+    const canZ = canMoveTo(playerPos.x, nz);
+
+    if (canX && canZ) {
       playerPos.x = nx;
+      playerPos.z = nz;
+    } else if (canX) {
+      playerPos.x = nx;
+    } else if (canZ) {
       playerPos.z = nz;
     }
   }
@@ -555,57 +558,127 @@ function movePlayer(dt) {
 
 /* ========= GHOSTS / AI ========= */
 function ghostAI(g) {
-  if (g.eyes) {
-    g.target.copy(g.spawn);
+  // === Power Pellet: run away from the player ===
+  if (state.fright > 0 && !g.eyes) {
+    const gx = g.mesh.position.x;
+    const gz = g.mesh.position.z;
+
+    const gCell = worldToCell(gx, gz);
+    const pCell = worldToCell(playerPos.x, playerPos.z);
+
+    // Clamp inside bounds
+    gCell.col = Math.max(0, Math.min(cols - 1, gCell.col));
+    gCell.row = Math.max(0, Math.min(rows - 1, gCell.row));
+
+    // Pick a far cell (already provided in your code)
+    const far = pickRandomFarCell(pCell, 5);
+    if (far) {
+      const path = bfsShortestPath(gCell.row, gCell.col, far.row, far.col);
+      if (path && path.length > 0) {
+        g.nextCell = path[0];
+        const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
+        g.target.set(x, 1.7, z);
+        return; // STOP — do not chase
+      }
+    }
+  }
+
+  // === Simple AI: always compute BFS shortest path to the player ===
+  const gx = g.mesh.position.x;
+  const gz = g.mesh.position.z;
+
+  const gCell = worldToCell(gx, gz);
+  const pCell = worldToCell(playerPos.x, playerPos.z);
+
+  // Clamp inside bounds
+  gCell.col = Math.max(0, Math.min(cols - 1, gCell.col));
+  gCell.row = Math.max(0, Math.min(rows - 1, gCell.row));
+
+  // Compute shortest path using BFS every frame
+  const path = bfsShortestPath(gCell.row, gCell.col, pCell.row, pCell.col);
+
+  // No valid path? Stop here.
+  if (!path || path.length === 0) {
+    g.nextCell = null;
     return;
   }
-  if (state.fright > 0) {
-    // Random-ish jitter target near ghost
-    g.target.set(
-      g.mesh.position.x + (Math.random()-0.5) * 10,
-      1.7,
-      g.mesh.position.z + (Math.random()-0.5) * 10
-    );
-    return;
-  }
-  if (state.mode === 'scatter') {
-    // Corners as scatter targets depending on color index
-    const idx = ghostColors.indexOf(g.color);
-    const cornerOffsets = [
-      cellToWorld(1, 1),
-      cellToWorld(cols-2, 1),
-      cellToWorld(1, rows-2),
-      cellToWorld(cols-2, rows-2)
-    ];
-    const co = cornerOffsets[idx % cornerOffsets.length];
-    g.target.set(co.x, 1.7, co.z);
-  } else {
-    // Chase player
-    g.target.copy(playerPos);
-  }
+
+  // Path's first cell is the next tile to walk to
+  g.nextCell = path[0];
+
+  // Convert next cell into world coordinates
+  const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
+  g.target.set(x, 1.7, z);
 }
 
 function moveGhost(g, dt) {
-  const speed = (g.eyes ? 1.4 : (state.fright > 0 ? 0.6 : 1.0)) * g.baseSpeed;
+  // --- CUSTOM SPEED SYSTEM ---
+  let speed = g.baseSpeed;   // default "normal" speed
+
+  // corridor check: same row or same col AND clear LOS
+  const gCell = worldToCell(g.mesh.position.x, g.mesh.position.z);
+  const pCell = worldToCell(playerPos.x, playerPos.z);
+  let sameCorridor = false;
+
+  if (gCell.row === pCell.row) {
+    sameCorridor = true;
+    const step = (pCell.col > gCell.col) ? 1 : -1;
+    for (let c = gCell.col + step; c !== pCell.col; c += step) {
+      if (MAZE[gCell.row][c] === '#') { sameCorridor = false; break; }
+    }
+  } else if (gCell.col === pCell.col) {
+    sameCorridor = true;
+    const step = (pCell.row > gCell.row) ? 1 : -1;
+    for (let r = gCell.row + step; r !== pCell.row; r += step) {
+      if (MAZE[r][gCell.col] === '#') { sameCorridor = false; break; }
+    }
+  }
+
+  // 1. Eyes mode (returning to spawn)
+  if (g.eyes) {
+    speed = 21;
+  }
+  // 2. Frightened (blue) mode
+  else if (state.fright > 0) {
+    speed = 5;
+  }
+  // 3. Corridor chase (same corridor & LOS)
+  else if (sameCorridor) {
+    speed = 7;
+  }
+  // 4. Normal mode (not aligned)
+  else {
+    speed = g.baseSpeed;
+  }
+
+  // Direction to target
   const dir = new THREE.Vector3().subVectors(g.target, g.mesh.position);
   dir.y = 0;
-
   const dist = dir.length();
-  if (dist < 0.01) {
-    if (g.eyes) {
-      g.eyes = false;
-      g.mesh.material.color.setHex(g.color);
-    }
-    return;
-  }
+
+  // If extremely close, let AI pick next tile
+  if (dist < 0.05) return;
 
   dir.normalize();
   const step = speed * dt;
-  const next = g.mesh.position.clone().addScaledVector(dir, step);
 
-  // prevent passing through walls
-  if (!isWallAt(next.x, next.z)) {
-    g.mesh.position.copy(next);
+  const nextX = g.mesh.position.x + dir.x * step;
+  const nextZ = g.mesh.position.z + dir.z * step;
+
+  const canX = !isWallAt(nextX, g.mesh.position.z);
+  const canZ = !isWallAt(g.mesh.position.x, nextZ);
+
+  if (canX && canZ) {
+    g.mesh.position.x = nextX;
+    g.mesh.position.z = nextZ;
+  } else if (canX) {
+    g.mesh.position.x = nextX;
+  } else if (canZ) {
+    g.mesh.position.z = nextZ;
+  } else {
+    // If blocked completely, force AI to pick a new path
+    g.path = [];
+    g.nextCell = null;
   }
 }
 
@@ -614,6 +687,84 @@ function worldToCell(x, z) {
   const col = Math.floor(x / TILE + cols / 2);
   const row = Math.floor(z / TILE + rows / 2);
   return { row, col };
+}
+
+function isWalkableCell(row, col) {
+  if (row < 0 || row >= rows || col < 0 || col >= cols) return false;
+  return MAZE[row][col] !== '#';
+}
+
+function bfsShortestPath(sr, sc, tr, tc) {
+  if (sr === tr && sc === tc) return [];
+
+  const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
+  const prev = Array.from({ length: rows }, () => Array(cols).fill(null));
+  const queue = [];
+
+  queue.push({ row: sr, col: sc });
+  visited[sr][sc] = true;
+
+  const dirs = [
+    { dr: 1, dc: 0 },
+    { dr: -1, dc: 0 },
+    { dr: 0, dc: 1 },
+    { dr: 0, dc: -1 }
+  ];
+
+  while (queue.length) {
+    const cur = queue.shift();
+    if (cur.row === tr && cur.col === tc) break;
+
+    for (const d of dirs) {
+      const nr = cur.row + d.dr;
+      const nc = cur.col + d.dc;
+
+      if (!isWalkableCell(nr, nc)) continue;
+      if (visited[nr][nc]) continue;
+
+      visited[nr][nc] = true;
+      prev[nr][nc] = cur;
+      queue.push({ row: nr, col: nc });
+    }
+  }
+
+  if (!visited[tr][tc]) return [];
+
+  const path = [];
+  let cur = { row: tr, col: tc };
+  while (cur && !(cur.row === sr && cur.col === sc)) {
+    path.push(cur);
+    cur = prev[cur.row][cur.col];
+  }
+  path.reverse();
+  return path;
+}
+
+function pickRandomWalkableCell() {
+  const candidates = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (isWalkableCell(r, c)) candidates.push({ row: r, col: c });
+    }
+  }
+  if (!candidates.length) return null;
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function pickRandomFarCell(playerCell, minDist) {
+  const minDist2 = minDist * minDist;
+  const candidates = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (!isWalkableCell(r, c)) continue;
+      const dr = r - playerCell.row;
+      const dc = c - playerCell.col;
+      const d2 = dr * dr + dc * dc;
+      if (d2 >= minDist2) candidates.push({ row: r, col: c });
+    }
+  }
+  if (!candidates.length) return null;
+  return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 function eat() {
@@ -788,8 +939,7 @@ function loop(now) {
   }
 
   if (mapVisible) drawMap();
-  // Pulsating wall effect
-  wallMat.emissiveIntensity = 1.0 + Math.sin(now * 0.003) * 0.5;
+  // (No wall glow)
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
