@@ -9,7 +9,7 @@
   #game{display:block;width:100vw;height:100vh}
 
   /* ===== Minimap + compact HUD (bottom-left) ===== */
-  #hudMini{position:fixed;left:12px;bottom:200px;z-index:8;text-shadow:0 1px 0 rgba(0,0,0,.45)}
+  #hudMini{position:fixed;left:12px;bottom:200px;z-index:8;text-shadow:0 1px 0 rgba(0,0,0,.45);pointer-events:none}
   #hudMini .row{display:flex;gap:.6rem;align-items:center}
   .pill{padding:2px 8px;border-radius:999px;border:1px solid rgba(191,233,255,.25);background:#0c1326}
   #map{position:fixed;left:12px;bottom:12px;width:160px;height:176px;background:rgba(10,20,40,.86);border:2px solid #2049ff;border-radius:10px;box-shadow:0 0 10px rgba(32,73,255,.35) inset;z-index:8;display:none}
@@ -27,7 +27,7 @@
   #crosshair::after{width:20px;height:2px;left:0;top:9px}
 
   /* Lives popup on death */
-  #lifePopup{position:fixed;inset:0;display:none;place-items:center;z-index:12}
+  #lifePopup{position:fixed;inset:0;display:none;place-items:center;z-index:12;pointer-events:none}
   #lifePopup .box{padding:12px 18px;border-radius:12px;background:rgba(8,12,24,.78);border:1px solid rgba(191,233,255,.2)}
   .fade{animation:fade .75s ease}
   @keyframes fade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
@@ -73,6 +73,7 @@
     <div class="row">
       <span class="pill">Score: <strong id="score">0</strong></span>
       <span class="pill">Level: <strong id="level">1</strong></span>
+      <span class="pill">Lives: <strong id="lives">3</strong></span>
     </div>
   </div>
 
@@ -89,7 +90,7 @@
   <div id="startScreen">
     <div class="menu">
       <h1 class="title">PAC-MAN 3D</h1>
-      <div class="subtitle">Arcade maze in first-person</div>
+      <div class="subtitle" id="menuSubtitle">Arcade maze in first-person</div>
       <button id="btnStart" class="btn">Start Game</button>
       <button id="btnKeys" class="btn secondary">Keybinds</button>
       <button id="btnCredits" class="btn secondary">Credits</button>
@@ -102,8 +103,8 @@
     <div class="box">
       <h3>Keybinds</h3>
       <p><span class="kbd">WASD</span> move • Mouse look<br>
-         <span class="kbd">Space</span> minimap • <span class="kbd">P</span> pause • <span class="kbd">R</span> reset<br>
-         <span class="kbd">Shift</span> toggle cursor-lock • <span class="kbd">Esc</span> main menu</p>
+         <span class="kbd">Space</span> hold minimap • <span class="kbd">P</span> pause • <span class="kbd">R</span> reset<br>
+         <span class="kbd">Shift</span> toggle cursor-lock • <span class="kbd">Esc</span> menu</p>
       <label>Sensitivity: <span id="sensVal">1.00x</span></label><br>
       <input type="range" id="sensSlider" class="range" min="0.2" max="2" step="0.05" value="1"/>
       <br><br><button id="closeKeys" class="btn">Back</button>
@@ -114,7 +115,7 @@
   <div id="panelCredits" class="panel">
     <div class="box">
       <h3>Credits</h3>
-      <p>Created by Rodrigo — inspired by the Pac-Man game and Dark Deception playstyle.</p>
+      <p>Created by Rodrigo — inspired by Pac-Man and Dark Deception.</p>
       <button id="closeCredits" class="btn">Back</button>
     </div>
   </div>
@@ -122,30 +123,678 @@
 <script type="module">
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-/* ===================== MENU ===================== */
-// (same as your version — omitted for brevity, unchanged setup ...)
+/* ========= DOM ========= */
+const canvas      = document.getElementById('game');
+const mapCanvas   = document.getElementById('map');
+const mapCtx      = mapCanvas.getContext('2d');
 
-/* ===================== MAIN LOOP ===================== */
-let prev=performance.now();
-function loop(now){
-  const dt=Math.min(0.033,(now-prev)/1000); prev=now;
-  pelletMat.emissiveIntensity = 1.2 + Math.sin(now*0.004)*0.28;
+const scoreEl     = document.getElementById('score');
+const levelEl     = document.getElementById('level');
+const livesEl     = document.getElementById('lives');
 
-  if(state.playing && !state.paused){
-    movePlayer(dt); // ✅ added this line so WASD always works
-    ghosts.forEach(g=>{ ghostAI(g); moveGhost(g,dt); });
-    eat(); checkDeaths();
-    state.modeTime+=dt;
-    if(state.fright>0){
-      state.fright-=dt;
-      if(state.fright<=0){ state.fright=0; ghosts.forEach(g=>{ if(!g.eyes) g.mesh.material.color.setHex(g.color); }); }
-    }else if(state.mode==='scatter' && state.modeTime>7){ state.mode='chase'; state.modeTime=0; }
-     else if(state.mode==='chase' && state.modeTime>20){ state.mode='scatter'; state.modeTime=0; }
+const crosshair   = document.getElementById('crosshair');
+const lifePopup   = document.getElementById('lifePopup');
+const lifeText    = document.getElementById('lifeText');
+
+const startScreen   = document.getElementById('startScreen');
+const menuSubtitle  = document.getElementById('menuSubtitle');
+const btnStart      = document.getElementById('btnStart');
+const btnKeys       = document.getElementById('btnKeys');
+const btnCredits    = document.getElementById('btnCredits');
+const panelKeys     = document.getElementById('panelKeys');
+const panelCredits  = document.getElementById('panelCredits');
+const closeKeys     = document.getElementById('closeKeys');
+const closeCredits  = document.getElementById('closeCredits');
+
+const sensSlider  = document.getElementById('sensSlider');
+const sensVal     = document.getElementById('sensVal');
+
+/* ========= THREE BASICS ========= */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x03060f);
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.rotation.order = "YXZ";
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+/* Lighting */
+const ambient = new THREE.AmbientLight(0x8899ff, 0.5);
+scene.add(ambient);
+
+const mainLight = new THREE.DirectionalLight(0xffffff, 0.9);
+mainLight.position.set(20, 40, 10);
+scene.add(mainLight);
+
+/* ========= MAZE / WORLD ========= */
+const TILE = 4;
+
+/* 
+   # = wall
+   . = pellet
+   o = power pellet
+   P = player spawn
+   G = ghost spawn
+*/
+const MAZE = [
+  "####################",
+  "#.......#..........#",
+  "#.###.#.#.####.##..#",
+  "#o#...#.#......#...#",
+  "#.###.#.####.#.###.#",
+  "#......G.....#.....#",
+  "####.#####.####.####",
+  "#P.................#",
+  "####################"
+];
+
+const rows = MAZE.length;
+const cols = MAZE[0].length;
+
+const pellets = [];
+const ghosts  = [];
+
+let playerSpawn = new THREE.Vector3();
+let ghostSpawns = [];
+
+/* Materials / geometries */
+const floorMat   = new THREE.MeshStandardMaterial({ color:0x050a18 });
+const brickCanvas = document.createElement('canvas');
+brickCanvas.width = 256;
+brickCanvas.height = 256;
+const bctx = brickCanvas.getContext('2d');
+
+// Clear
+bctx.fillStyle = '#050710';
+bctx.fillRect(0, 0, 256, 256);
+
+// Brick grid
+const BRICK_W = 60;
+const BRICK_H = 32;
+
+// Draw glowing outlines
+for (let y = 0; y < 256; y += BRICK_H) {
+  const offset = (Math.floor(y / BRICK_H) % 2) * (BRICK_W / 2);
+  for (let x = 0; x < 256; x += BRICK_W) {
+
+    // Glow around brick edges
+    bctx.save();
+    bctx.shadowBlur = 18;
+    bctx.shadowColor = '#3b63ff';
+    bctx.strokeStyle = '#3b63ff';
+    bctx.lineWidth = 4;
+    bctx.strokeRect(x + offset, y, BRICK_W - 6, BRICK_H - 6);
+    bctx.restore();
+
+    // Actual brick fill
+    bctx.fillStyle = '#1c2a52';
+    bctx.fillRect(x + offset, y, BRICK_W - 6, BRICK_H - 6);
   }
-  if(mapVisible) drawMap();
-  renderer.render(scene,camera);
+}
+
+const wallTexture = new THREE.CanvasTexture(brickCanvas);
+wallTexture.wrapS = THREE.RepeatWrapping;
+wallTexture.wrapT = THREE.RepeatWrapping;
+wallTexture.repeat.set(1, 1);
+
+const wallMat = new THREE.MeshStandardMaterial({
+  map: wallTexture,
+  emissive: 0x1a2aff,
+  emissiveIntensity: 1.0,
+  metalness: 0.4,
+  roughness: 0.35
+});
+const pelletGeom = new THREE.SphereGeometry(0.35, 10, 10);
+const powerGeom  = new THREE.SphereGeometry(0.7, 12, 12);
+const pelletMat  = new THREE.MeshStandardMaterial({ color:0xfff7aa, emissive:0xfff4b3, emissiveIntensity:1.35 });
+
+const ghostColors = [0xff5555, 0xffb852, 0x55ffff, 0xff77ff];
+
+function cellToWorld(c, r) {
+  const x = (c - cols/2 + 0.5) * TILE;
+  const z = (r - rows/2 + 0.5) * TILE;
+  return { x, z };
+}
+
+function buildWorld() {
+  /* Floor */
+  const floorGeo = new THREE.PlaneGeometry(cols*TILE, rows*TILE);
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI/2;
+  scene.add(floor);
+
+  const wallGeo = new THREE.BoxGeometry(TILE, 3, TILE);
+  wallTexture.repeat.set(1, 1);
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const ch = MAZE[r][c];
+      const { x, z } = cellToWorld(c, r);
+
+      if (ch === '#') {
+        const wall = new THREE.Mesh(wallGeo, wallMat);
+        wall.position.set(x, 1.5, z);
+        wall.castShadow = true;
+        wall.receiveShadow = true;
+        scene.add(wall);
+      }
+
+      if (ch === '.' || ch === 'o') {
+        const geom = ch === 'o' ? powerGeom : pelletGeom;
+        const pellet = new THREE.Mesh(geom, pelletMat);
+        pellet.position.set(x, 1, z);
+        pellet.castShadow = false;
+        pellet.receiveShadow = false;
+        scene.add(pellet);
+        pellets.push({
+          mesh: pellet,
+          row: r,
+          col: c,
+          power: ch === 'o',
+          eaten: false
+        });
+      }
+
+      if (ch === 'P') {
+        const pos = cellToWorld(c, r);
+        playerSpawn.set(pos.x, 1.7, pos.z);
+      }
+
+      if (ch === 'G') {
+        const pos = cellToWorld(c, r);
+        ghostSpawns.push(new THREE.Vector3(pos.x, 1.7, pos.z));
+      }
+    }
+  }
+
+  /* Ghosts */
+  ghostSpawns.forEach((spawn, i) => {
+    const bodyGeo = new THREE.SphereGeometry(1.1, 16, 16);
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: ghostColors[i % ghostColors.length],
+      emissive: 0x111111,
+      emissiveIntensity: 0.6
+    });
+    const ghostMesh = new THREE.Mesh(bodyGeo, bodyMat);
+    ghostMesh.position.copy(spawn);
+    scene.add(ghostMesh);
+
+    ghosts.push({
+      mesh: ghostMesh,
+      color: ghostColors[i % ghostColors.length],
+      spawn: spawn.clone(),
+      target: spawn.clone(),
+      eyes: false,
+      baseSpeed: 3 + i * 0.3
+    });
+  });
+}
+
+buildWorld();
+
+/* ========= PLAYER / STATE ========= */
+const playerPos = playerSpawn.clone();
+let yaw = Math.PI;     // looking “down” the maze
+let pitch = 0;
+
+const state = {
+  playing: false,
+  paused:  false,
+  score:   0,
+  level:   1,
+  lives:   3,
+  fright:  0,
+  mode:    'scatter',
+  modeTime:0
+};
+
+function resetPellets() {
+  pellets.forEach(p => {
+    p.eaten = false;
+    p.mesh.visible = true;
+  });
+}
+
+function resetPlayerAndGhosts() {
+  playerPos.copy(playerSpawn);
+  yaw = Math.PI;
+  pitch = 0;
+  camera.position.set(playerPos.x, playerPos.y, playerPos.z);
+  camera.rotation.set(pitch, yaw, 0);
+
+  ghosts.forEach((g, i) => {
+    g.mesh.position.copy(g.spawn);
+    g.mesh.material.color.setHex(g.color);
+    g.eyes = false;
+  });
+}
+
+function resetGame(full = true) {
+  if (full) {
+    state.score = 0;
+    state.level = 1;
+    state.lives = 3;
+  }
+  state.fright = 0;
+  state.mode = 'scatter';
+  state.modeTime = 0;
+  updateHUD();
+  resetPellets();
+  resetPlayerAndGhosts();
+}
+
+/* ========= INPUT / POINTER LOCK ========= */
+const keys = {};
+let pointerLocked = false;
+let mapVisible = false;
+
+const mouseBase = 0.0025;
+let mouseSensitivityFactor = 1.0;
+let mouseSensitivity = mouseBase * mouseSensitivityFactor;
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+document.addEventListener('keydown', e => {
+  keys[e.code] = true;
+
+  if (e.code === 'KeyP') {
+    if (state.playing) {
+      state.paused = !state.paused;
+      if (state.paused) {
+        menuSubtitle.textContent = 'Paused';
+        btnStart.textContent = 'Resume';
+        startScreen.style.display = 'grid';
+        document.exitPointerLock();
+      } else {
+        startScreen.style.display = 'none';
+        canvas.requestPointerLock();
+      }
+    }
+  }
+
+  if (e.code === 'KeyR') {
+    resetGame(true);
+  }
+
+  if (e.code === 'Space') {
+    mapVisible = true;
+    mapCanvas.style.display = 'block';
+  }
+
+  if (e.code === 'Escape') {
+    // Go to menu (pause)
+    if (state.playing) {
+      state.paused = true;
+      menuSubtitle.textContent = 'Paused';
+      btnStart.textContent = 'Resume';
+      startScreen.style.display = 'grid';
+      document.exitPointerLock();
+    }
+  }
+
+  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+    if (pointerLocked) {
+      document.exitPointerLock();
+    } else if (state.playing && !state.paused) {
+      canvas.requestPointerLock();
+    }
+  }
+});
+
+document.addEventListener('keyup', e => {
+  keys[e.code] = false;
+  if (e.code === 'Space') {
+    mapVisible = false;
+    mapCanvas.style.display = 'none';
+  }
+});
+
+document.addEventListener('pointerlockchange', () => {
+  pointerLocked = (document.pointerLockElement === canvas);
+  crosshair.style.display = (pointerLocked && state.playing && !state.paused) ? 'block' : 'none';
+});
+
+document.addEventListener('mousemove', e => {
+  if (!pointerLocked || !state.playing || state.paused) return;
+  yaw   -= e.movementX * mouseSensitivity;
+  pitch -= e.movementY * mouseSensitivity;
+  const maxPitch = Math.PI/2 - 0.2;
+  pitch = Math.max(-maxPitch, Math.min(maxPitch, pitch));
+});
+
+sensSlider.addEventListener('input', () => {
+  mouseSensitivityFactor = parseFloat(sensSlider.value);
+  mouseSensitivity = mouseBase * mouseSensitivityFactor;
+  sensVal.textContent = mouseSensitivityFactor.toFixed(2) + 'x';
+});
+
+/* ========= MENU BUTTONS ========= */
+btnStart.addEventListener('click', () => {
+  startScreen.style.display = 'none';
+  state.playing = true;
+  state.paused = false;
+  menuSubtitle.textContent = 'Arcade maze in first-person';
+  btnStart.textContent = 'Start Game';
+  canvas.requestPointerLock();
+});
+
+btnKeys.addEventListener('click', () => {
+  panelKeys.style.display = 'grid';
+});
+
+closeKeys.addEventListener('click', () => {
+  panelKeys.style.display = 'none';
+});
+
+btnCredits.addEventListener('click', () => {
+  panelCredits.style.display = 'grid';
+});
+
+closeCredits.addEventListener('click', () => {
+  panelCredits.style.display = 'none';
+});
+
+/* ========= MOVEMENT / COLLISION ========= */
+function isWallAt(x, z) {
+  const col = Math.floor(x / TILE + cols / 2);
+  const row = Math.floor(z / TILE + rows / 2);
+  if (row < 0 || row >= rows || col < 0 || col >= cols) return true;
+  return MAZE[row][col] === '#';
+}
+
+function canMoveTo(x, z) {
+  const r = 0.7;
+  if (isWallAt(x + r, z)) return false;
+  if (isWallAt(x - r, z)) return false;
+  if (isWallAt(x, z + r)) return false;
+  if (isWallAt(x, z - r)) return false;
+  return true;
+}
+
+function movePlayer(dt) {
+  const speed = 7;
+  let mx = 0, mz = 0;
+  if (keys['KeyW']) mz -= 1;
+  if (keys['KeyS']) mz += 1;
+  if (keys['KeyA']) mx -= 1;
+  if (keys['KeyD']) mx += 1;
+
+  if (mx !== 0 || mz !== 0) {
+    const len = Math.hypot(mx, mz);
+    mx /= len; mz /= len;
+
+    const sin = Math.sin(yaw);
+    const cos = Math.cos(yaw);
+
+    const dx = (mx * cos + mz * sin) * speed * dt;
+    const dz = (-mx * sin + mz * cos) * speed * dt;
+
+    const nx = playerPos.x + dx;
+    const nz = playerPos.z + dz;
+
+    if (canMoveTo(nx, nz)) {
+      playerPos.x = nx;
+      playerPos.z = nz;
+    }
+  }
+
+  camera.position.set(playerPos.x, playerPos.y, playerPos.z);
+  camera.rotation.set(pitch, yaw, 0);
+}
+
+/* ========= GHOSTS / AI ========= */
+function ghostAI(g) {
+  if (g.eyes) {
+    g.target.copy(g.spawn);
+    return;
+  }
+  if (state.fright > 0) {
+    // Random-ish jitter target near ghost
+    g.target.set(
+      g.mesh.position.x + (Math.random()-0.5) * 10,
+      1.7,
+      g.mesh.position.z + (Math.random()-0.5) * 10
+    );
+    return;
+  }
+  if (state.mode === 'scatter') {
+    // Corners as scatter targets depending on color index
+    const idx = ghostColors.indexOf(g.color);
+    const cornerOffsets = [
+      cellToWorld(1, 1),
+      cellToWorld(cols-2, 1),
+      cellToWorld(1, rows-2),
+      cellToWorld(cols-2, rows-2)
+    ];
+    const co = cornerOffsets[idx % cornerOffsets.length];
+    g.target.set(co.x, 1.7, co.z);
+  } else {
+    // Chase player
+    g.target.copy(playerPos);
+  }
+}
+
+function moveGhost(g, dt) {
+  const speed = (g.eyes ? 1.4 : (state.fright > 0 ? 0.6 : 1.0)) * g.baseSpeed;
+  const dir = new THREE.Vector3().subVectors(g.target, g.mesh.position);
+  dir.y = 0;
+
+  const dist = dir.length();
+  if (dist < 0.01) {
+    if (g.eyes) {
+      g.eyes = false;
+      g.mesh.material.color.setHex(g.color);
+    }
+    return;
+  }
+
+  dir.normalize();
+  const step = speed * dt;
+  const next = g.mesh.position.clone().addScaledVector(dir, step);
+
+  // prevent passing through walls
+  if (!isWallAt(next.x, next.z)) {
+    g.mesh.position.copy(next);
+  }
+}
+
+/* ========= GAMEPLAY: EAT, DEATH, LEVEL ========= */
+function worldToCell(x, z) {
+  const col = Math.floor(x / TILE + cols / 2);
+  const row = Math.floor(z / TILE + rows / 2);
+  return { row, col };
+}
+
+function eat() {
+  for (const p of pellets) {
+    if (p.eaten) continue;
+    const dx = playerPos.x - p.mesh.position.x;
+    const dz = playerPos.z - p.mesh.position.z;
+    if (dx*dx + dz*dz < 1.2) {
+      p.eaten = true;
+      p.mesh.visible = false;
+      state.score += p.power ? 50 : 10;
+
+      if (p.power) {
+        state.fright = 8;
+        ghosts.forEach(g => {
+          if (!g.eyes) g.mesh.material.color.setHex(0x3333ff);
+        });
+      }
+
+      updateHUD();
+    }
+  }
+
+  const remaining = pellets.some(p => !p.eaten);
+  if (!remaining) {
+    nextLevel();
+  }
+}
+
+function checkDeaths() {
+  for (const g of ghosts) {
+    const dx = playerPos.x - g.mesh.position.x;
+    const dz = playerPos.z - g.mesh.position.z;
+    const d2 = dx*dx + dz*dz;
+    if (d2 < 1.6) {
+      if (state.fright > 0 && !g.eyes) {
+        // Eat ghost
+        state.score += 200;
+        g.eyes = true;
+        g.mesh.material.color.setHex(0xffffff);
+        updateHUD();
+      } else if (!g.eyes) {
+        // Player dies
+        state.lives -= 1;
+        showLifePopup();
+        if (state.lives <= 0) {
+          gameOver();
+        } else {
+          resetPlayerAndGhosts();
+        }
+        updateHUD();
+      }
+    }
+  }
+}
+
+function nextLevel() {
+  state.level += 1;
+  state.fright = 0;
+  state.mode = 'scatter';
+  state.modeTime = 0;
+  resetPellets();
+  resetPlayerAndGhosts();
+  updateHUD();
+}
+
+function gameOver() {
+  state.playing = false;
+  state.paused  = false;
+  menuSubtitle.textContent = 'Game Over';
+  btnStart.textContent = 'Restart';
+  startScreen.style.display = 'grid';
+  document.exitPointerLock();
+  // Reset for next start
+  resetGame(true);
+}
+
+/* ========= HUD / UI HELPERS ========= */
+function updateHUD() {
+  scoreEl.textContent = state.score;
+  levelEl.textContent = state.level;
+  livesEl.textContent = state.lives;
+}
+
+function showLifePopup() {
+  lifeText.textContent = `Lives: ${state.lives}`;
+  lifePopup.style.display = 'grid';
+  lifeText.classList.remove('fade');
+  // force reflow
+  void lifeText.offsetWidth;
+  lifeText.classList.add('fade');
+  setTimeout(() => {
+    lifePopup.style.display = 'none';
+  }, 700);
+}
+
+/* ========= MINIMAP ========= */
+function drawMap() {
+  mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+  const cw = mapCanvas.width / cols;
+  const ch = mapCanvas.height / rows;
+
+  // Walls
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (MAZE[r][c] === '#') {
+        mapCtx.fillStyle = '#1f3fff';
+        mapCtx.fillRect(c * cw, r * ch, cw, ch);
+      }
+    }
+  }
+
+  // Pellets
+  mapCtx.fillStyle = '#ffe9a6';
+  for (const p of pellets) {
+    if (p.eaten) continue;
+    const x = (p.col + 0.5) * cw;
+    const y = (p.row + 0.5) * ch;
+    const rad = p.power ? 3 : 1.5;
+    mapCtx.beginPath();
+    mapCtx.arc(x, y, rad, 0, Math.PI * 2);
+    mapCtx.fill();
+  }
+
+  // Player
+  const pCell = worldToCell(playerPos.x, playerPos.z);
+  mapCtx.fillStyle = '#ffff00';
+  mapCtx.beginPath();
+  mapCtx.arc((pCell.col + 0.5)*cw, (pCell.row + 0.5)*ch, 3, 0, Math.PI*2);
+  mapCtx.fill();
+
+  // Ghosts
+  mapCtx.fillStyle = '#ff5555';
+  for (const g of ghosts) {
+    const gc = worldToCell(g.mesh.position.x, g.mesh.position.z);
+    mapCtx.beginPath();
+    mapCtx.arc((gc.col + 0.5)*cw, (gc.row + 0.5)*ch, 3, 0, Math.PI*2);
+    mapCtx.fill();
+  }
+}
+
+/* ========= MAIN LOOP ========= */
+let prev = performance.now();
+
+function loop(now) {
+  const dt = Math.min(0.033, (now - prev) / 1000);
+  prev = now;
+
+  // Pellet glow
+  pelletMat.emissiveIntensity = 1.2 + Math.sin(now * 0.004) * 0.28;
+
+  if (state.playing && !state.paused) {
+    movePlayer(dt);
+    ghosts.forEach(g => { ghostAI(g); moveGhost(g, dt); });
+    eat();
+    checkDeaths();
+
+    state.modeTime += dt;
+    if (state.fright > 0) {
+      state.fright -= dt;
+      if (state.fright <= 0) {
+        state.fright = 0;
+        ghosts.forEach(g => { if (!g.eyes) g.mesh.material.color.setHex(g.color); });
+      }
+    } else if (state.mode === 'scatter' && state.modeTime > 7) {
+      state.mode = 'chase';
+      state.modeTime = 0;
+    } else if (state.mode === 'chase' && state.modeTime > 20) {
+      state.mode = 'scatter';
+      state.modeTime = 0;
+    }
+  }
+
+  if (mapVisible) drawMap();
+  // Pulsating wall effect
+  wallMat.emissiveIntensity = 1.0 + Math.sin(now * 0.003) * 0.5;
+  renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
+
+resetGame(true);
 requestAnimationFrame(loop);
 </script>
 </body>
