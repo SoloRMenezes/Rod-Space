@@ -374,14 +374,63 @@ function buildWorld() {
 
   /* Ghosts */
   ghostSpawns.forEach((spawn, i) => {
-    const bodyGeo = new THREE.SphereGeometry(1.1, 16, 16);
+    const bodyGeo = new THREE.CapsuleGeometry(1.1, 0.6, 12, 16);
     const bodyMat = new THREE.MeshStandardMaterial({
       color: ghostColors[i % ghostColors.length],
       emissive: 0x111111,
       emissiveIntensity: 0.6
     });
     const ghostMesh = new THREE.Mesh(bodyGeo, bodyMat);
-    ghostMesh.position.copy(spawn);
+    ghostMesh.position.set(spawn.x, spawn.y + 0.4, spawn.z);
+    // Rounded scallop skirt (6 bumps, shorter + lifted)
+    const skirtPoints = [];
+    const skirtRadius = 1.05;
+    const skirtHeight = -0.55; // lift skirt higher on the ghost
+
+    const scallops = 6;
+    for (let j = 0; j <= scallops; j++) {
+      const angle = (j / scallops) * Math.PI * 2;
+      const wave = Math.sin(angle * 3) * 0.06; // MUCH shorter bumps
+
+      // upper curve (closer to body)
+      skirtPoints.push(new THREE.Vector2(
+        skirtRadius + wave,
+        skirtHeight
+      ));
+
+      // lower curve (barely dips)
+      skirtPoints.push(new THREE.Vector2(
+        (skirtRadius + wave) * 0.985,
+        skirtHeight - 0.08
+      ));
+    }
+
+    const skirtGeo = new THREE.LatheGeometry(skirtPoints, 60);
+    skirtGeo.translate(0, -0.5, 0); // lowered skirt without touching body
+    const skirtMesh = new THREE.Mesh(skirtGeo, bodyMat);
+    ghostMesh.add(skirtMesh);
+    // Eyes
+    const eyeGeo = new THREE.SphereGeometry(0.35, 12, 12);
+    const pupilGeo = new THREE.SphereGeometry(0.18, 12, 12);
+    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const blackMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+
+    const eyeL = new THREE.Mesh(eyeGeo, whiteMat);
+    const eyeR = new THREE.Mesh(eyeGeo, whiteMat);
+    const pupilL = new THREE.Mesh(pupilGeo, blackMat);
+    const pupilR = new THREE.Mesh(pupilGeo, blackMat);
+
+    eyeL.position.set(0.45, 0.4, 1);
+    eyeR.position.set(-0.45, 0.4, 1);
+    pupilL.position.set(0.45, 0.4, 1.2);
+    pupilR.position.set(-0.45, 0.4, 1.2);
+
+    ghostMesh.add(eyeL);
+    ghostMesh.add(eyeR);
+    ghostMesh.add(pupilL);
+    ghostMesh.add(pupilR);
+    // Store eye meshes for later rotation
+    const eyeMeshes = [eyeL, eyeR, pupilL, pupilR];
     scene.add(ghostMesh);
 
     const spawnCell = worldToCell(spawn.x, spawn.z);
@@ -399,7 +448,8 @@ function buildWorld() {
       nextCell: null,
       speedMult: 1,
       lastTargetRow: null,
-      lastTargetCol: null
+      lastTargetCol: null,
+      eyeMeshes,
     });
   });
 }
@@ -581,7 +631,7 @@ function isWallAt(x, z) {
 }
 
 function canMoveTo(x, z) {
-  const r = 0.7;
+  const r = 1.05;
   if (isWallAt(x + r, z)) return false;
   if (isWallAt(x - r, z)) return false;
   if (isWallAt(x, z + r)) return false;
@@ -609,6 +659,25 @@ function movePlayer(dt) {
 
     const nx = playerPos.x + dx;
     const nz = playerPos.z + dz;
+
+    // --- BLOCK PLAYER IF TOO CLOSE TO A GHOST (bigger hitbox) ---
+    let blockedByGhost = false;
+    for (const g of ghosts) {
+      const gx = g.mesh.position.x;
+      const gz = g.mesh.position.z;
+      // Enlarged hitbox WITHOUT scaling the ghost model
+      const hitboxRadius = 1.2; 
+      const dxg = nx - gx;
+      const dzg = nz - gz;
+      const d2 = dxg * dxg + dzg * dzg;
+
+      if (d2 < hitboxRadius * hitboxRadius) {
+        blockedByGhost = true;
+        break;
+      }
+    }
+
+    if (blockedByGhost) return; // stop movement if ghost blocks corridor
 
     // Sliding-collision logic
     const canX = canMoveTo(nx, playerPos.z);
@@ -1241,6 +1310,23 @@ function loop(now) {
       state.modeTime = 0;
     }
   }
+
+  // Rotate entire ghost toward its movement direction
+  ghosts.forEach(g => {
+    const gx = g.mesh.position.x;
+    const gz = g.mesh.position.z;
+
+    const tx = g.target.x;
+    const tz = g.target.z;
+
+    const dx = tx - gx;
+    const dz = tz - gz;
+
+    if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
+      const angle = Math.atan2(dx, dz);
+      g.mesh.rotation.y = angle;
+    }
+  });
 
   // (minimap updater moved to setInterval)
   // (No wall glow)
