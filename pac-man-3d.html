@@ -1113,6 +1113,16 @@ function drawMap() {
   mapCtx.restore();
 }
 
+
+/* ===== Ultra‑Smooth Minimap Updater (per‑frame) ===== */
+function updateMiniSmooth() {
+  if (mapVisible) {
+    drawMap();
+  }
+  requestAnimationFrame(updateMiniSmooth);
+}
+requestAnimationFrame(updateMiniSmooth);
+
 /* ========= MAIN LOOP ========= */
 let prev = performance.now();
 
@@ -1145,11 +1155,7 @@ function loop(now) {
     }
   }
 
-  if (mapVisible) {
-    for (let i = 0; i < 10; i++) {
-      drawMap();
-    }
-  }
+  // (minimap updater moved to setInterval)
   // (No wall glow)
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
