@@ -918,14 +918,48 @@ function moveGhost(g, dt) {
   if (canX && canZ) {
     g.mesh.position.x = nextX;
     g.mesh.position.z = nextZ;
+    g._stuckTime = 0; // reset stuck timer if moving
   } else if (canX) {
     g.mesh.position.x = nextX;
+    g._stuckTime = 0;
   } else if (canZ) {
     g.mesh.position.z = nextZ;
+    g._stuckTime = 0;
   } else {
-    // If blocked completely, force AI to pick a new path
+    // === ANTI-TWITCH: Backup + reroute system ===
     g.path = [];
     g.nextCell = null;
+
+    // initialize stuck counter
+    g._stuckTime = (g._stuckTime || 0) + dt;
+
+    // if ghost is stuck for longer than 0.06s → perform backup action
+    if (g._stuckTime > 0.06) {
+      const gCell = worldToCell(g.mesh.position.x, g.mesh.position.z);
+
+      // 1️⃣ find opposite direction (backup cell)
+      let backupCandidates = [];
+      const dirs = [
+        {r:1,c:0}, {r:-1,c:0}, {r:0,c:1}, {r:0,c:-1}
+      ];
+
+      for (const d of dirs) {
+        const nr = gCell.row + d.r;
+        const nc = gCell.col + d.c;
+        if (isWalkableCell(nr, nc)) {
+          backupCandidates.push({ row:nr, col:nc });
+        }
+      }
+
+      // 2️⃣ if possible, move 1 tile backwards, then re-path
+      if (backupCandidates.length > 0) {
+        const choice = backupCandidates[Math.floor(Math.random() * backupCandidates.length)];
+        const pos = cellToWorld(choice.col, choice.row);
+        g.target.set(pos.x, 1.7, pos.z);
+      }
+
+      g._stuckTime = 0;
+    }
   }
 }
 
@@ -1049,7 +1083,6 @@ function checkDeaths() {
     if (d2 < 1.6) {
       if (state.fright > 0 && !g.eyes) {
         // Eat ghost
-        state.score += 200;
         g.eyes = true;
         g.mesh.material.color.setHex(0xffffff);
         g.respawnTimer = 0;
