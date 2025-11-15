@@ -185,36 +185,32 @@ const TILE = 4;
 */
 const MAZE = [
 "###############################",
-"#P....##.....#...#.....##.....#",
-"#.##.#..###.#.#.#.###.#..###..#",
-"#....#.#...#.#.#.#...#.#...#..#",
-"###.#.###.#.#.#.#.#.#.###.#.###",
-"#...#.....#.#.#.#.#.#.....#....#",
-"#.#####.###.#.#.#.#.###.#####.#",
-"#.#.....#...#.#.#.#...#.....#.#",
-"#.#.###.#.###.#.#.###.#.###.#.#",
-"#.#.#...#.#...#.#...#.#.#...#.#",
-"#.#.#.###.#.###.#.###.#.#.###.#",
-"#.#.#.#...#.....#.....#.#.#...#",
-"#.#.#.#.###############.#.#.###",
-"#.#.#.#.................#.#...#",
-"#.#.#.###################.###.#",
-"#.#.#.....................#...#",
-"#.#.#############.#########.###",
-"#.#.............#.#.........#.#",
-"###.##########.#.#.########.#.#",
-"#...#.........#.#.#.......#.#.#",
-"#.###.#.#####.#.#.#.#####.#.#.#",
-"#.....#.#...#.#.#.#.#...#.#.#.#",
-"#######.#.#.#.#.#.#.#.#.#.#.#.#",
-"#.......#.#.#.#.#.#.#.#.#.#.#.#",
-"#.#######.#.#.#.#.#.#.#.#.#.#.#",
-"#.......#.#.#.#.#.#.#.#.#.#.#.#",
-"###.###.#.#.#.#.#.#.#.#.#.###.#",
-"#...#...#.#.#.#.#.#.#.#.#.....#",
-"#.#####.#.#.#.#.#.#.#.#.#####.#",
-"#........#...#...#...#........#",
-"###############################"
+"#P  . . .#.. ..#  .  .##.... ##",
+"# ##### .#..  .. #### .  #.#.##",
+"#. ..## ## ##.#  ##. .#  #. .##",
+"# ## # ....   #.... ### .# ...#",
+"#.##   ###  ####  ###..# ###..#",
+"#. .#..# ..## ..##  #..#..  . #",
+"##  #. . #### . .#.  .###  . .#",
+"#####....#    ## . . ##o.#..###",
+"#. . . #.#o#.##. #. #. ... # .#",
+"#.#..##  #. . #.###... . .##  #",
+"#..# . . ## # . ...##. #.  ..##",
+"#..####..##.##. ##. .####. #..#",
+"## #..###...####. .#. .   #.. #",
+"#..#. ###.##... . . ##..#  . ##",
+"# # .#.......#. # #. ## ####  #",
+"#.#.## ##..#####  . . #.  ..#.#",
+"#.  .  . # .. .#.###  ## ## #.#",
+"# #.#.# ..#.  .#.#.  #   .# # #",
+"#.#.# .#. ####.#.# #.# o# # #.#",
+"#.  ##.## ..##.#. o  . #.   # #",
+"#.###... ##   .## . #### #.##.#",
+"# #. .##.  ###  # ##. ##.#.## #",
+"#...#### ...###. .#....    #. #",
+"#...  #.. #.. ..  #...###### .#",
+"# .##  .#. .##.  #### . . .  G#",
+"###############################",
 ];
 
 const rows = MAZE.length;
@@ -882,6 +878,15 @@ function showLifePopup() {
 /* ========= MINIMAP ========= */
 function drawMap() {
   mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+  mapCtx.save();
+
+  // Rotate minimap around its center
+  const cx = mapCanvas.width / 2;
+  const cy = mapCanvas.height / 2;
+
+  mapCtx.translate(cx, cy);
+  mapCtx.rotate(-yaw); // rotate opposite of player so map spins
+  mapCtx.translate(-cx, -cy);
   // Minimap radius (in maze cells)
   const VIEW = 4; // shows 9×9 area
   const pCell = worldToCell(playerPos.x, playerPos.z);
@@ -900,8 +905,130 @@ function drawMap() {
       if (MAZE[r][c] === '#') {
         const dr = r - (pCell.row - VIEW);
         const dc = c - (pCell.col - VIEW);
-        mapCtx.fillStyle = '#1f3fff';
-        mapCtx.fillRect(dc * cw, dr * ch, cw, ch);
+
+        // === TRUE WALL BOUNDARY OUTLINES (Option 1A) ===
+        // Outer + inner strokes, aligned to the nearest corridor edge
+        const outerColor = "rgba(25,40,150,0.85)";
+        const innerColor = "rgba(70,110,255,0.95)";
+
+        const outerT = cw * 0.18;   // outer thickness
+        const innerT = cw * 0.10;   // inner thickness
+
+        // Neighbor checks (open means corridor)
+        const upOpen    = (r > 0          && MAZE[r-1][c] !== '#');
+        const downOpen  = (r < rows-1     && MAZE[r+1][c] !== '#');
+        const leftOpen  = (c > 0          && MAZE[r][c-1] !== '#');
+        const rightOpen = (c < cols-1     && MAZE[r][c+1] !== '#');
+
+        // Tile top-left corner
+        const tx = dc * cw;
+        const ty = dr * ch;
+
+        // === HORIZONTAL BOUNDARIES ===
+        if (upOpen) {
+          // Top edge of wall touching corridor below
+          // Outer
+          mapCtx.fillStyle = outerColor;
+          mapCtx.fillRect(
+            tx, ty,               // exact tile boundary
+            cw, outerT
+          );
+          // Inner
+          mapCtx.fillStyle = innerColor;
+          mapCtx.fillRect(
+            tx, ty,               // same but thinner
+            cw, innerT
+          );
+        }
+
+        if (downOpen) {
+          // Bottom edge of wall touching corridor above
+          const y = ty + ch - outerT;
+          // Outer
+          mapCtx.fillStyle = outerColor;
+          mapCtx.fillRect(tx, y, cw, outerT);
+          // Inner
+          mapCtx.fillStyle = innerColor;
+          mapCtx.fillRect(
+            tx,
+            (ty + ch - innerT),
+            cw,
+            innerT
+          );
+        }
+
+        // === VERTICAL BOUNDARIES ===
+        if (leftOpen) {
+          // Left edge of wall touching corridor to the left
+          mapCtx.fillStyle = outerColor;
+          mapCtx.fillRect(
+            tx, ty,               // left-most boundary
+            outerT, ch
+          );
+          mapCtx.fillStyle = innerColor;
+          mapCtx.fillRect(
+            tx, ty,
+            innerT, ch
+          );
+        }
+
+        if (rightOpen) {
+          // Right edge of wall touching corridor on the right
+          const x = tx + cw - outerT;
+          mapCtx.fillStyle = outerColor;
+          mapCtx.fillRect(x, ty, outerT, ch);
+          mapCtx.fillStyle = innerColor;
+          mapCtx.fillRect(
+            (tx + cw - innerT),
+            ty,
+            innerT, ch
+          );
+        }
+
+        // === CORNER CONNECTORS (patch to remove gaps) ===
+        // size of the corner square
+        const cOuter = outerT;
+        const cInner = innerT;
+
+        // TOP-LEFT CORNER
+        if (upOpen && leftOpen) {
+          mapCtx.fillStyle = outerColor;
+          mapCtx.fillRect(tx, ty, cOuter, cOuter);
+          mapCtx.fillStyle = innerColor;
+          mapCtx.fillRect(tx, ty, cInner, cInner);
+        }
+
+        // TOP-RIGHT CORNER
+        if (upOpen && rightOpen) {
+          const x = tx + cw - cOuter;
+          mapCtx.fillStyle = outerColor;
+          mapCtx.fillRect(x, ty, cOuter, cOuter);
+          const x2 = tx + cw - cInner;
+          mapCtx.fillStyle = innerColor;
+          mapCtx.fillRect(x2, ty, cInner, cInner);
+        }
+
+        // BOTTOM-LEFT CORNER
+        if (downOpen && leftOpen) {
+          const y = ty + ch - cOuter;
+          mapCtx.fillStyle = outerColor;
+          mapCtx.fillRect(tx, y, cOuter, cOuter);
+          const y2 = ty + ch - cInner;
+          mapCtx.fillStyle = innerColor;
+          mapCtx.fillRect(tx, y2, cInner, cInner);
+        }
+
+        // BOTTOM-RIGHT CORNER
+        if (downOpen && rightOpen) {
+          const x = tx + cw - cOuter;
+          const y = ty + ch - cOuter;
+          mapCtx.fillStyle = outerColor;
+          mapCtx.fillRect(x, y, cOuter, cOuter);
+          const x2 = tx + cw - cInner;
+          const y2 = ty + ch - cInner;
+          mapCtx.fillStyle = innerColor;
+          mapCtx.fillRect(x2, y2, cInner, cInner);
+        }
       }
     }
   }
@@ -940,6 +1067,50 @@ function drawMap() {
     mapCtx.arc(x, y, 3, 0, Math.PI * 2);
     mapCtx.fill();
   }
+
+  // === Pointer to closest pellet ===
+  let closest = null;
+  let bestD2 = Infinity;
+
+  for (const p of pellets) {
+    if (p.eaten) continue;
+    const dx = p.mesh.position.x - playerPos.x;
+    const dz = p.mesh.position.z - playerPos.z;
+    const d2 = dx*dx + dz*dz;
+    if (d2 < bestD2) {
+      bestD2 = d2;
+      closest = { dx, dz };
+    }
+  }
+
+  if (closest) {
+    const angle = Math.atan2(closest.dz, closest.dx);
+
+    // Smaller radius so arc is very close but not touching the player
+    const radius = 14;
+
+    // Arc size: 1/3 of the circle
+    const arcSpan = Math.PI * (1/3);
+
+    // Pulsing glow: alpha oscillates
+    const pulse = 0.55 + Math.sin(Date.now() * 0.006) * 0.35;
+
+    // Match pellet color and give glow effect
+    mapCtx.strokeStyle = `rgba(255, 233, 166, ${pulse})`;
+    mapCtx.lineWidth = 3;
+
+    mapCtx.beginPath();
+    mapCtx.arc(
+      cx,
+      cy,
+      radius,
+      angle - arcSpan / 2,
+      angle + arcSpan / 2
+    );
+    mapCtx.stroke();
+  }
+
+  mapCtx.restore();
 }
 
 /* ========= MAIN LOOP ========= */
@@ -974,7 +1145,11 @@ function loop(now) {
     }
   }
 
-  if (mapVisible) drawMap();
+  if (mapVisible) {
+    for (let i = 0; i < 10; i++) {
+      drawMap();
+    }
+  }
   // (No wall glow)
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
