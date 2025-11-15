@@ -27,6 +27,30 @@
     transition:bottom 0.28s ease, opacity 0.28s ease;
   }
 
+  #mapScore{
+    position:fixed;
+    left:12px;
+    bottom: -12px;
+    width:200px;
+    text-align:center;
+    padding:4px 0;
+    background:rgba(10,20,40,.86);
+    border:2px solid #2049ff;
+    border-bottom:none;
+    border-radius:10px 10px 0 0;
+    color:#e7f3ff;
+    font-weight:700;
+    font-size:14px;
+    opacity:0;
+    transition:bottom 0.28s ease, opacity 0.28s ease;
+    z-index:9;
+    pointer-events:none;
+  }
+  #map.show + #mapScore{
+    bottom:232px;
+    opacity:1;
+  }
+
   #map.show {
     bottom:12px;
     opacity:1;
@@ -88,9 +112,6 @@
 
   <!-- Compact HUD above minimap -->
   <div id="hudMini">
-    <div class="row">
-      <span class="pill">Score: <strong id="score">0</strong></span>
-    </div>
     <div id="livesHUD" style="position:fixed; right:12px; bottom:12px; font-size:22px;">
       <span id="livesHearts">💛💛💛</span>
     </div>
@@ -98,6 +119,7 @@
 
   <!-- Minimap -->
   <canvas id="map" width="160" height="176" aria-label="Minimap"></canvas>
+  <div id="mapScore">Score: <strong id="mapScoreValue">0</strong></div>
 
   <!-- Crosshair -->
   <div id="crosshair"></div>
@@ -147,7 +169,7 @@ const canvas      = document.getElementById('game');
 const mapCanvas   = document.getElementById('map');
 const mapCtx      = mapCanvas.getContext('2d');
 
-const scoreEl     = document.getElementById('score');
+const mapScoreValue = document.getElementById('mapScoreValue');
 
 const crosshair   = document.getElementById('crosshair');
 const lifePopup   = document.getElementById('lifePopup');
@@ -907,7 +929,7 @@ function gameOver() {
 
 /* ========= HUD / UI HELPERS ========= */
 function updateHUD() {
-  scoreEl.textContent = state.score;
+  mapScoreValue.textContent = state.score;
   const hearts = "💛".repeat(state.lives);
   document.getElementById("livesHearts").textContent = hearts;
 }
