@@ -16,8 +16,8 @@
     position:fixed;
     left:12px;
     bottom:-240px;
-    width:200px;
-    height:260px;
+    width:230px;
+    height:230px;
     background:#000;
     border-radius:17px;
     padding:7px 10px;
@@ -32,7 +32,7 @@
     padding-bottom:30px;
   }
   #mapFrame.show{
-    bottom:20px;
+    bottom:10px;
     opacity:1;
   }
   #mapTopBar{
@@ -135,7 +135,7 @@
     <div id="mapTopBar">
       <strong id="mapScoreValue" style="font-size:36px;font-weight:900;color:#e7f3ff;margin:0 auto;margin-top:0px;">0</strong>
     </div>
-    <canvas id="map" width="200" height="230" aria-label="Minimap"></canvas>
+    <canvas id="map" width="230" height="230" aria-label="Minimap"></canvas>
   </div>
 
   <!-- Crosshair -->
@@ -1113,6 +1113,9 @@ function showLifePopup() {
 /* ========= MINIMAP ========= */
 function drawMap() {
   mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+  // Fill background with black before drawing walls/corridors
+  mapCtx.fillStyle = "#000000";
+  mapCtx.fillRect(0, 0, mapCanvas.width, mapCanvas.height);
   mapCtx.save();
 
   // Rotate minimap around its center
@@ -1133,6 +1136,20 @@ function drawMap() {
   const endR   = Math.min(rows - 1, pCell.row + VIEW + 4);
   const startC = Math.max(0, pCell.col - VIEW - 4);
   const endC   = Math.min(cols - 1, pCell.col + VIEW + 4);
+
+  // Draw blue corridor floors
+  for (let r = startR; r <= endR; r++) {
+    for (let c = startC; c <= endC; c++) {
+      if (MAZE[r][c] !== '#') {
+        const dr = r - (pCell.row - VIEW);
+        const dc = c - (pCell.col - VIEW);
+        const x = dc * cw;
+        const y = dr * ch;
+        mapCtx.fillStyle = "rgba(10,20,40,0.86)";
+        mapCtx.fillRect(x, y, cw, ch);
+      }
+    }
+  }
 
   // Draw walls within local area
   for (let r = startR; r <= endR; r++) {
@@ -1283,11 +1300,87 @@ function drawMap() {
     mapCtx.fill();
   }
 
-  // Player at center of minimap
+  // Player using continuous position with C2 hybrid smoothing (minimap camera anchoring)
+  const worldOffsetX = ((playerPos.x / TILE) + cols / 2);
+  const worldOffsetY = ((playerPos.z / TILE) + rows / 2);
+
+  const centerCol = pCell.col;
+  const centerRow = pCell.row;
+
+  const localX = (worldOffsetX - (centerCol - VIEW)) * cw;
+  const localY = (worldOffsetY - (centerRow - VIEW)) * ch;
+
+  // C2 hybrid: allow limited drift near edges
+  const driftLimit = cw * 1.2;
+  const driftX = Math.max(-driftLimit, Math.min(driftLimit, localX - mapCanvas.width / 2));
+  const driftY = Math.max(-driftLimit, Math.min(driftLimit, localY - mapCanvas.height / 2));
+
+  // smooth drifting
+  const smoothFactor = 0.35; // smoother, less jitter
+  // previous frame cache (initialize if missing)
+  if (!window._prevPlayerMapX) {
+    window._prevPlayerMapX = (mapCanvas.width / 2);
+    window._prevPlayerMapY = (mapCanvas.height / 2);
+  }
+  // target values
+  const targetX = (mapCanvas.width / 2) + driftX * smoothFactor;
+  const targetY = (mapCanvas.height / 2) + driftY * smoothFactor;
+  // linear interpolation for smoother movement
+  const lerp = 0.22;
+  window._prevPlayerMapX = window._prevPlayerMapX + (targetX - window._prevPlayerMapX) * lerp;
+  window._prevPlayerMapY = window._prevPlayerMapY + (targetY - window._prevPlayerMapY) * lerp;
+
+  let playerMapX = window._prevPlayerMapX;
+  let playerMapY = window._prevPlayerMapY;
+
   mapCtx.fillStyle = '#ffff00';
   mapCtx.beginPath();
-  mapCtx.arc((VIEW + 0.5) * cw, (VIEW + 0.5) * ch, 6, 0, Math.PI * 2);
+  mapCtx.arc(playerMapX, playerMapY, 6, 0, Math.PI * 2);
   mapCtx.fill();
+
+  // === Cardinal Directions (circular, evenly spaced, facing outward) ===
+  mapCtx.save();
+
+  // style
+  mapCtx.fillStyle = "rgba(74,203,255,0.82)";          // slightly dimmed neon blue
+  mapCtx.strokeStyle = "#000000";        // black outline
+  mapCtx.lineWidth = 2.5;                // thinner outline for less dominance
+  mapCtx.font = "bold 13px sans-serif";  // slightly smaller + bold for glow effect
+  mapCtx.textAlign = "center";
+  mapCtx.textBaseline = "middle";
+  // Removed shadowColor and shadowBlur for NSEW
+
+  // center
+  const CCX = cx;
+  const CCY = cy;
+
+  // perfect circular radius based on smaller dimension
+  const radiusCD = Math.min(mapCanvas.width, mapCanvas.height) * 0.47;
+
+  // directions + angles
+  const dirs = [
+    { text:"N", angle:-Math.PI/2 },
+    { text:"E", angle:0 },
+    { text:"S", angle:Math.PI/2 },
+    { text:"W", angle:Math.PI }
+  ];
+
+  dirs.forEach(d => {
+    const lx = CCX + Math.cos(d.angle) * radiusCD;
+    const ly = CCY + Math.sin(d.angle) * radiusCD;
+
+    // outward-facing rotation
+    mapCtx.save();
+    mapCtx.translate(lx, ly);
+    mapCtx.rotate(d.angle + Math.PI/2);
+
+    mapCtx.strokeText(d.text, 0, 0);
+    mapCtx.fillText(d.text, 0, 0);
+
+    mapCtx.restore();
+  });
+
+  mapCtx.restore();
 
   // Ghosts if inside view radius
   mapCtx.fillStyle = '#ff5555';
@@ -1318,7 +1411,8 @@ function drawMap() {
     }
   }
 
-  if (closest) {
+  // Show help arc only when player has found less than 100 pellets (score > 133 disables)
+  if (closest && state.score <= 133) {
     const angle = Math.atan2(closest.dz, closest.dx);
 
     // Smaller radius so arc is very close but not touching the player
@@ -1336,8 +1430,8 @@ function drawMap() {
 
     mapCtx.beginPath();
     mapCtx.arc(
-      cx,
-      cy,
+      playerMapX,
+      playerMapY,
       radius,
       angle - arcSpan / 2,
       angle + arcSpan / 2
@@ -1417,1352 +1511,6 @@ function loop(now) {
 
     if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
       const angle = Math.atan2(dz, dx);
-      g.mesh.rotation.y = angle;
-    }
-  });
-
-  // (minimap updater moved to setInterval)
-  // (No wall glow)
-  renderer.render(scene, camera);
-  requestAnimationFrame(loop);
-}
-
-resetGame(true);
-requestAnimationFrame(loop);
-</script>
-</body>
-</html><!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Pac-Man 3D — Arcade FPS</title>
-<style>
-  html,body{height:100%;margin:0;background:#03060f;color:#bfe9ff;font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,sans-serif;overflow:hidden}
-  #game{display:block;width:100vw;height:100vh}
-
-  /* ===== Minimap + compact HUD (bottom-left) ===== */
-  #hudMini{position:fixed;left:12px;bottom:242px;z-index:8;text-shadow:0 1px 0 rgba(0,0,0,.45);pointer-events:none}
-  #hudMini .row{display:flex;gap:.6rem;align-items:center}
-  .pill{padding:2px 8px;border-radius:999px;border:1px solid rgba(191,233,255,.25);background:#0c1326}
-  #mapFrame{
-    position:fixed;
-    left:12px;
-    bottom:-240px;
-    width:200px;
-    height:260px;
-    background:#000;
-    border-radius:17px;
-    padding:7px 10px;
-    box-shadow:0 0 20px rgba(0,0,0,0.8) inset;
-    z-index:7;
-    opacity:0;
-    transition:bottom 0.28s ease, opacity 0.28s ease;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:space-between;
-    padding-bottom:30px;
-  }
-  #mapFrame.show{
-    bottom:20px;
-    opacity:1;
-  }
-  #mapTopBar{
-    width:93%;
-    height:66px;
-    background:#1a1a1a;
-    border-radius:10px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:0 10px;
-    margin-bottom:6px;
-  }
-  .mapDot{
-    width:26px;
-    height:26px;
-    background:#0f0f0f;
-    border-radius:50%;
-  }
-  #map{
-    width:100%;
-    height:100%;
-    background:rgba(10,20,40,.86);
-    border:2px solid #3a3a3a;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(80,80,80,0.35) inset;
-    display:block;
-  }
-
-
-  #map.show {
-    bottom:12px;
-    opacity:1;
-  }
-
-  /* ✚ Crosshair */
-  #crosshair{
-    position:fixed;top:50%;left:50%;
-    width:20px;height:20px;transform:translate(-50%,-50%);
-    pointer-events:none;z-index:9;display:none;
-  }
-  #crosshair::before,#crosshair::after{
-    content:"";position:absolute;background:#fff;opacity:.85;
-  }
-  #crosshair::before{width:2px;height:20px;left:9px;top:0}
-  #crosshair::after{width:20px;height:2px;left:0;top:9px}
-
-  /* Lives popup on death */
-  #lifePopup{position:fixed;inset:0;display:none;place-items:center;z-index:12;pointer-events:none;background:black}
-  #lifePopup .box{padding:12px 18px;border-radius:12px;background:rgba(8,12,24,.78);border:1px solid rgba(191,233,255,.2)}
-  .fade{animation:fade .75s ease}
-  @keyframes fade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-
-  /* ===== Start / Pause Screen ===== */
-  #startScreen{
-    position:fixed;inset:0;z-index:20;display:grid;place-items:center;
-    background:radial-gradient(1200px 600px at 50% -20%, #0b1a6e 0%, #06113d 35%, #03060f 70%);
-  }
-  .menu{
-    width:min(90vw,540px); 
-    background:rgba(6,12,28,.6);
-    border:1px solid rgba(191,233,255,.15);
-    border-radius:18px;
-    padding:28px 26px;
-    box-shadow:0 10px 40px rgba(0,0,0,.5), inset 0 0 40px rgba(32,73,255,.1);
-    text-align:center;
-  }
-  .title{font-size:40px;font-weight:800;letter-spacing:.02em;margin:0 0 18px}
-  .subtitle{opacity:.8;margin-top:2px;margin-bottom:18px}
-  .btn{
-    display:block;width:100%;padding:12px 14px;margin:10px 0;border-radius:12px;
-    border:1px solid #2049ff;background:#0b1a6e;color:#e7f3ff;font-weight:700;
-    box-shadow:0 0 12px rgba(32,73,255,.25) inset;cursor:pointer;transition:transform .08s ease, box-shadow .2s ease, background .2s ease;
-  }
-  .btn:hover{transform:translateY(-1px);box-shadow:0 0 24px rgba(32,73,255,.45) inset;background:#1233c7}
-  .btn.secondary{background:#0c1326;border-color:#2c3e73}
-  .credits{margin-top:12px;font-size:12px;opacity:.8}
-
-  /* Panels for Keybinds / Credits (mini separate screens) */
-  .panel{display:none;position:fixed;inset:0;z-index:30;place-items:center;background:rgba(0,0,0,.6)}
-  .panel .box{width:min(90vw,420px);background:rgba(8,16,32,.95);border:1px solid rgba(191,233,255,.18);border-radius:16px;padding:20px;text-align:center}
-  .panel h3{margin-top:0}
-  .kbd{padding:2px 6px;border:1px solid #607dff;background:#0c1326;border-radius:6px}
-  .range{width:80%}
-</style>
-</head>
-<body>
-  <canvas id="game"></canvas>
-
-  <!-- Compact HUD above minimap -->
-  <div id="hudMini">
-    <div id="livesHUD" style="position:fixed; right:12px; bottom:12px; font-size:22px;">
-      <span id="livesHearts">💛💛💛</span>
-    </div>
-  </div>
-
-  <!-- Minimap -->
-  <div id="mapFrame">
-    <div id="mapTopBar">
-      <strong id="mapScoreValue" style="font-size:36px;font-weight:900;color:#e7f3ff;margin:0 auto;margin-top:0px;">0</strong>
-    </div>
-    <canvas id="map" width="200" height="230" aria-label="Minimap"></canvas>
-  </div>
-
-  <!-- Crosshair -->
-  <div id="crosshair"></div>
-
-  <!-- Lives popup -->
-  <div id="lifePopup"><div class="box fade" id="lifeText">Lives: 3</div></div>
-
-  <!-- Start / Pause Screen -->
-  <div id="startScreen">
-    <div class="menu">
-      <h1 class="title">PAC-MAN 3D</h1>
-      <div class="subtitle" id="menuSubtitle">Arcade maze in first-person</div>
-      <button id="btnStart" class="btn">Start Game</button>
-      <button id="btnKeys" class="btn secondary">Keybinds</button>
-      <button id="btnCredits" class="btn secondary">Credits</button>
-      <div class="credits">© Rod Space</div>
-    </div>
-  </div>
-
-  <!-- Keybinds Panel -->
-  <div id="panelKeys" class="panel">
-    <div class="box">
-      <h3>Keybinds</h3>
-      <table style="width:100%; text-align:left; margin-top:10px; margin-bottom:18px; font-size:15px; border-spacing: 0 10px;">
-        <tr><td style="padding-right:20px;"><span class="kbd">WASD</span></td><td>Move</td></tr>
-        <tr><td style="padding-right:20px;">Mouse</td><td>Look</td></tr>
-        <tr><td style="padding-right:20px;"><span class="kbd">Space</span></td><td>Hold minimap</td></tr>
-        <tr><td style="padding-right:20px;"><span class="kbd">P</span></td><td>Pause</td></tr>
-        <tr><td style="padding-right:20px;"><span class="kbd">R</span></td><td>Reset</td></tr>
-        <tr><td style="padding-right:20px;"><span class="kbd">Shift</span></td><td>Cursor‑lock</td></tr>
-        <tr><td style="padding-right:20px;"><span class="kbd">Esc</span></td><td>Menu</td></tr>
-      </table>
-      <label>Sensitivity: <span id="sensVal">5.00x</span></label><br>
-      <input type="range" id="sensSlider" class="range" min="0" max="10" step="0.1" value="5"/>
-      <br><br><button id="closeKeys" class="btn">Back</button>
-    </div>
-  </div> 
-
-  <!-- Credits Panel -->
-  <div id="panelCredits" class="panel">
-    <div class="box">
-      <h3>Credits</h3>
-      <p>Created by Rodrigo — inspired by Pac-Man and Dark Deception.</p>
-      <button id="closeCredits" class="btn">Back</button>
-    </div>
-  </div>
-
-<script type="module">
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-
-/* ========= DOM ========= */
-const canvas      = document.getElementById('game');
-const mapCanvas   = document.getElementById('map');
-const mapCtx      = mapCanvas.getContext('2d');
-
-const mapScoreValue = document.getElementById('mapScoreValue');
-
-const crosshair   = document.getElementById('crosshair');
-const lifePopup   = document.getElementById('lifePopup');
-const lifeText    = document.getElementById('lifeText');
-
-const startScreen   = document.getElementById('startScreen');
-const menuSubtitle  = document.getElementById('menuSubtitle');
-const btnStart      = document.getElementById('btnStart');
-const btnKeys       = document.getElementById('btnKeys');
-const btnCredits    = document.getElementById('btnCredits');
-const panelKeys     = document.getElementById('panelKeys');
-const panelCredits  = document.getElementById('panelCredits');
-const closeKeys     = document.getElementById('closeKeys');
-const closeCredits  = document.getElementById('closeCredits');
-
-const sensSlider  = document.getElementById('sensSlider');
-const sensVal     = document.getElementById('sensVal');
-
-/* ========= THREE BASICS ========= */
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x03060f);
-
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-camera.rotation.order = "YXZ";
-
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-
-/* Lighting */
-const ambient = new THREE.AmbientLight(0x8899ff, 0.5);
-scene.add(ambient);
-
-const mainLight = new THREE.DirectionalLight(0xffffff, 0.9);
-mainLight.position.set(20, 40, 10);
-scene.add(mainLight);
-
-/* ========= MAZE / WORLD ========= */
-const TILE = 4;
-
-/* 
-   # = wall
-   . = pellet
-   o = power pellet
-   P = player spawn
-   G = ghost spawn
-*/
-const MAZE = [
-"############################",
-"#............##............#",
-"#.####.#####.##.#####.####.#",
-"#o####.#####.##.#####.####o#",
-"#.####.#####.##.#####.####.#",
-"#..........................#",
-"#.####.##.########.##.####.#",
-"#.####.##.########.##.####.#",
-"#......##....##....##......#",
-"######.##### ## #####.######",
-"######.##### ## #####.######",
-"######.##G        G##.######",
-"######.##G        G##.######",
-"######.##############.######",
-"#............##............#",
-"#.####.#####.##.#####.####.#",
-"#.####.#####.##.#####.####.#",
-"#o..##................##..o#",
-"###.##.##.########.##.##.###",
-"###.##.##.########.##.##.###",
-"#......##....##....##......#",
-"#.##########.##.##########.#",
-"#.##########.##.##########.#",
-"#............P.............#",
-"############################",
-];
-
-const rows = MAZE.length;
-const cols = MAZE[0].length;
-
-const pellets = [];
-const ghosts  = [];
-
-let playerSpawn = new THREE.Vector3();
-let ghostSpawns = [];
-
-/* Materials / geometries */
-const floorMat   = new THREE.MeshStandardMaterial({ color:0x050a18 });
-const brickCanvas = document.createElement('canvas');
-brickCanvas.width = 256;
-brickCanvas.height = 256;
-const bctx = brickCanvas.getContext('2d');
-
-// BASE wall color
-bctx.fillStyle = '#0b0f2a';  
-bctx.fillRect(0, 0, 256, 256);
-
-// Draw subtle brick pattern (no glow)
-bctx.fillStyle = '#1a2750';
-const BW = 60, BH = 32;
-for (let y = 0; y < 256; y += BH) {
-  const offset = (Math.floor(y / BH) % 2) * (BW / 2);
-  for (let x = 0; x < 256; x += BW) {
-    bctx.fillRect(x + offset, y, BW - 8, BH - 8);
-  }
-}
-
-
-const wallTexture = new THREE.CanvasTexture(brickCanvas);
-wallTexture.wrapS = THREE.RepeatWrapping;
-wallTexture.wrapT = THREE.RepeatWrapping;
-wallTexture.repeat.set(1, 1);
-
-const wallMat = new THREE.MeshStandardMaterial({
-  map: wallTexture,
-  emissive: 0x000000,
-  emissiveIntensity: 0.0,
-  metalness: 0.4,
-  roughness: 0.35
-});
-const pelletGeom = new THREE.SphereGeometry(0.35, 10, 10);
-const powerGeom  = new THREE.SphereGeometry(0.7, 12, 12);
-const pelletMat  = new THREE.MeshStandardMaterial({ color:0xfff7aa, emissive:0xfff4b3, emissiveIntensity:1.35 });
-
-const ghostColors = [0xff5555, 0xffb852, 0x55ffff, 0xff77ff];
-
-function cellToWorld(c, r) {
-  const x = (c - cols/2 + 0.5) * TILE;
-  const z = (r - rows/2 + 0.5) * TILE;
-  return { x, z };
-}
-
-function buildWorld() {
-  /* Floor */
-  const floorGeo = new THREE.PlaneGeometry(cols*TILE, rows*TILE);
-  const floor = new THREE.Mesh(floorGeo, floorMat);
-  floor.rotation.x = -Math.PI/2;
-  scene.add(floor);
-
-  const wallGeo = new THREE.BoxGeometry(TILE, 3, TILE);
-  wallTexture.repeat.set(1, 1);
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const ch = MAZE[r][c];
-      const { x, z } = cellToWorld(c, r);
-
-      if (ch === '#') {
-        const wall = new THREE.Mesh(wallGeo, wallMat);
-        wall.position.set(x, 1.5, z);
-        wall.castShadow = true;
-        wall.receiveShadow = true;
-        scene.add(wall);
-      }
-
-      if (ch === '.' || ch === 'o') {
-        const geom = ch === 'o' ? powerGeom : pelletGeom;
-        const pellet = new THREE.Mesh(geom, pelletMat);
-        pellet.position.set(x, 1, z);
-        pellet.castShadow = false;
-        pellet.receiveShadow = false;
-        scene.add(pellet);
-        pellets.push({
-          mesh: pellet,
-          row: r,
-          col: c,
-          power: ch === 'o',
-          eaten: false
-        });
-      }
-
-      if (ch === 'P') {
-        const pos = cellToWorld(c, r);
-        playerSpawn.set(pos.x, 1.7, pos.z);
-      }
-
-      if (ch === 'G') {
-        const pos = cellToWorld(c, r);
-        ghostSpawns.push(new THREE.Vector3(pos.x, 1.7, pos.z));
-      }
-    }
-  }
-
-  /* Ghosts */
-  ghostSpawns.forEach((spawn, i) => {
-    const bodyGeo = new THREE.CapsuleGeometry(1.1, 0.6, 12, 16);
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: ghostColors[i % ghostColors.length],
-      emissive: 0x111111,
-      emissiveIntensity: 0.6
-    });
-    const ghostMesh = new THREE.Mesh(bodyGeo, bodyMat);
-    ghostMesh.position.set(spawn.x, spawn.y + 0.4, spawn.z);
-    // Rounded scallop skirt (6 bumps, shorter + lifted)
-    const skirtPoints = [];
-    const skirtRadius = 1.05;
-    const skirtHeight = -0.55; // lift skirt higher on the ghost
-
-    const scallops = 6;
-    for (let j = 0; j <= scallops; j++) {
-      const angle = (j / scallops) * Math.PI * 2;
-      const wave = Math.sin(angle * 3) * 0.06; // MUCH shorter bumps
-
-      // upper curve (closer to body)
-      skirtPoints.push(new THREE.Vector2(
-        skirtRadius + wave,
-        skirtHeight
-      ));
-
-      // lower curve (barely dips)
-      skirtPoints.push(new THREE.Vector2(
-        (skirtRadius + wave) * 0.985,
-        skirtHeight - 0.08
-      ));
-    }
-
-    const skirtGeo = new THREE.LatheGeometry(skirtPoints, 60);
-    skirtGeo.translate(0, -0.5, 0); // lowered skirt without touching body
-    const skirtMesh = new THREE.Mesh(skirtGeo, bodyMat);
-    ghostMesh.add(skirtMesh);
-    // Eyes
-    const eyeGeo = new THREE.SphereGeometry(0.35, 12, 12);
-    const pupilGeo = new THREE.SphereGeometry(0.18, 12, 12);
-    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const blackMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
-
-    const eyeL = new THREE.Mesh(eyeGeo, whiteMat);
-    const eyeR = new THREE.Mesh(eyeGeo, whiteMat);
-    const pupilL = new THREE.Mesh(pupilGeo, blackMat);
-    const pupilR = new THREE.Mesh(pupilGeo, blackMat);
-
-    eyeL.position.set(0.45, 0.4, 1);
-    eyeR.position.set(-0.45, 0.4, 1);
-    pupilL.position.set(0.45, 0.4, 1.2);
-    pupilR.position.set(-0.45, 0.4, 1.2);
-
-    ghostMesh.add(eyeL);
-    ghostMesh.add(eyeR);
-    ghostMesh.add(pupilL);
-    ghostMesh.add(pupilR);
-    // Store eye meshes for later rotation
-    const eyeMeshes = [eyeL, eyeR, pupilL, pupilR];
-    scene.add(ghostMesh);
-
-    const spawnCell = worldToCell(spawn.x, spawn.z);
-    ghosts.push({
-      mesh: ghostMesh,
-      color: ghostColors[i % ghostColors.length],
-      spawn: spawn.clone(),
-      spawnCell,
-      target: spawn.clone(),
-      eyes: false,
-      respawnTimer: 0,
-      baseSpeed: 3 + i * 0.3,
-      path: [],
-      currentMode: null,
-      nextCell: null,
-      speedMult: 1,
-      lastTargetRow: null,
-      lastTargetCol: null,
-      eyeMeshes,
-    });
-  });
-}
-
-buildWorld();
-
-/* ========= PLAYER / STATE ========= */
-const playerPos = playerSpawn.clone();
-let yaw = Math.PI;     // looking “down” the maze
-let pitch = 0;
-
-const state = {
-  playing: false,
-  paused:  false,
-  score:   0,
-  level:   1,
-  lives:   3,
-  fright:  0,
-  mode:    'scatter',
-  modeTime:0
-};
-
-function resetPellets() {
-  pellets.forEach(p => {
-    p.eaten = false;
-    p.mesh.visible = true;
-  });
-}
-
-function resetPlayerAndGhosts() {
-  playerPos.copy(playerSpawn);
-  yaw = Math.PI;
-  pitch = 0;
-  camera.position.set(playerPos.x, playerPos.y, playerPos.z);
-  camera.rotation.set(pitch, yaw, 0);
-
-  ghosts.forEach((g, i) => {
-    g.mesh.position.copy(g.spawn);
-    g.mesh.material.color.setHex(g.color);
-    g.eyes = false;
-  });
-}
-
-function resetGame(full = true) {
-  if (full) {
-    state.score = 229; // remaining pellets
-    state.level = 1;
-    state.lives = 3;
-  }
-  state.fright = 0;
-  state.mode = 'scatter';
-  state.modeTime = 0;
-  updateHUD();
-  resetPellets();
-  resetPlayerAndGhosts();
-}
-
-/* ========= INPUT / POINTER LOCK ========= */
-const keys = {};
-let pointerLocked = false;
-let mapVisible = false;
-
-const mouseBase = 0.0025;
-let mouseSensitivityFactor = 5.0;
-let mouseSensitivity = 0.0005 * mouseSensitivityFactor;
-
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-document.addEventListener('keydown', e => {
-  keys[e.code] = true;
-
-  if (e.code === 'KeyP') {
-    if (state.playing) {
-      state.paused = !state.paused;
-      if (state.paused) {
-        menuSubtitle.textContent = 'Paused';
-        btnStart.textContent = 'Resume';
-        startScreen.style.display = 'grid';
-        document.exitPointerLock();
-      } else {
-        startScreen.style.display = 'none';
-        canvas.requestPointerLock();
-      }
-    }
-  }
-
-  if (e.code === 'KeyR') {
-    resetGame(true);
-  }
-
-  if (e.code === 'Space') {
-    mapVisible = !mapVisible;
-    if (mapVisible) {
-      document.getElementById("mapFrame").classList.add("show");
-    } else {
-      document.getElementById("mapFrame").classList.remove("show");
-    }
-  }
-
-  if (e.code === 'Escape') {
-    // Go to menu (pause)
-    if (state.playing) {
-      state.paused = true;
-      menuSubtitle.textContent = 'Paused';
-      btnStart.textContent = 'Resume';
-      startScreen.style.display = 'grid';
-      document.exitPointerLock();
-    }
-  }
-
-  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
-    if (pointerLocked) {
-      document.exitPointerLock();
-    } else if (state.playing && !state.paused) {
-      canvas.requestPointerLock();
-    }
-  }
-});
-
-document.addEventListener('keyup', e => {
-  keys[e.code] = false;
-});
-
-document.addEventListener('pointerlockchange', () => {
-  pointerLocked = (document.pointerLockElement === canvas);
-  crosshair.style.display = (pointerLocked && state.playing && !state.paused) ? 'block' : 'none';
-});
-
-document.addEventListener('mousemove', e => {
-  if (!pointerLocked || !state.playing || state.paused) return;
-  yaw   -= e.movementX * mouseSensitivity;
-  pitch -= e.movementY * mouseSensitivity;
-  const maxPitch = Math.PI/2 - 0.2;
-  pitch = Math.max(-maxPitch, Math.min(maxPitch, pitch));
-});
-
-sensSlider.addEventListener('input', () => {
-  mouseSensitivityFactor = parseFloat(sensSlider.value);
-  mouseSensitivity = 0.0005 * mouseSensitivityFactor;
-  sensVal.textContent = mouseSensitivityFactor.toFixed(2) + 'x';
-});
-
-/* ========= MENU BUTTONS ========= */
-btnStart.addEventListener('click', () => {
-  startScreen.style.display = 'none';
-  state.playing = true;
-  state.paused = false;
-  menuSubtitle.textContent = 'Arcade maze in first-person';
-  btnStart.textContent = 'Start Game';
-  canvas.requestPointerLock();
-});
-
-btnKeys.addEventListener('click', () => {
-  panelKeys.style.display = 'grid';
-});
-
-closeKeys.addEventListener('click', () => {
-  panelKeys.style.display = 'none';
-});
-
-btnCredits.addEventListener('click', () => {
-  panelCredits.style.display = 'grid';
-});
-
-closeCredits.addEventListener('click', () => {
-  panelCredits.style.display = 'none';
-});
-
-/* ========= MOVEMENT / COLLISION ========= */
-function isWallAt(x, z) {
-  const col = Math.floor(x / TILE + cols / 2);
-  const row = Math.floor(z / TILE + rows / 2);
-  if (row < 0 || row >= rows || col < 0 || col >= cols) return true;
-  return MAZE[row][col] === '#';
-}
-
-function canMoveTo(x, z) {
-  const r = 1.05;
-  if (isWallAt(x + r, z)) return false;
-  if (isWallAt(x - r, z)) return false;
-  if (isWallAt(x, z + r)) return false;
-  if (isWallAt(x, z - r)) return false;
-  return true;
-}
-
-function movePlayer(dt) {
-  const speed = 7;
-  let mx = 0, mz = 0;
-  if (keys['KeyW']) mz -= 1;
-  if (keys['KeyS']) mz += 1;
-  if (keys['KeyA']) mx -= 1;
-  if (keys['KeyD']) mx += 1;
-
-  if (mx !== 0 || mz !== 0) {
-    const len = Math.hypot(mx, mz);
-    mx /= len; mz /= len;
-
-    const sin = Math.sin(yaw);
-    const cos = Math.cos(yaw);
-
-    const dx = (mx * cos + mz * sin) * speed * dt;
-    const dz = (-mx * sin + mz * cos) * speed * dt;
-
-    const nx = playerPos.x + dx;
-    const nz = playerPos.z + dz;
-
-    // --- BLOCK PLAYER IF TOO CLOSE TO A GHOST (bigger hitbox) ---
-    let blockedByGhost = false;
-    for (const g of ghosts) {
-      const gx = g.mesh.position.x;
-      const gz = g.mesh.position.z;
-      // Enlarged hitbox WITHOUT scaling the ghost model
-      const hitboxRadius = 1.2; 
-      const dxg = nx - gx;
-      const dzg = nz - gz;
-      const d2 = dxg * dxg + dzg * dzg;
-
-      if (d2 < hitboxRadius * hitboxRadius) {
-        blockedByGhost = true;
-        break;
-      }
-    }
-
-    if (blockedByGhost) return; // stop movement if ghost blocks corridor
-
-    // Sliding-collision logic
-    const canX = canMoveTo(nx, playerPos.z);
-    const canZ = canMoveTo(playerPos.x, nz);
-
-    if (canX && canZ) {
-      playerPos.x = nx;
-      playerPos.z = nz;
-    } else if (canX) {
-      playerPos.x = nx;
-    } else if (canZ) {
-      playerPos.z = nz;
-    }
-  }
-
-  camera.position.set(playerPos.x, playerPos.y, playerPos.z);
-  camera.rotation.set(pitch, yaw, 0);
-}
-
-/* ========= GHOSTS / AI ========= */
-function ghostAI(g) {
-  // === Eyes mode: return to spawn ===
-  if (g.eyes) {
-    const gCell = worldToCell(g.mesh.position.x, g.mesh.position.z);
-    const sCell = g.spawnCell;
-
-    // Pathfind back to spawn
-    const path = bfsShortestPath(gCell.row, gCell.col, sCell.row, sCell.col);
-    if (path && path.length > 0) {
-      g.nextCell = path[0];
-      const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
-      g.target.set(x, 1.7, z);
-    }
-
-    return; // IMPORTANT: do not chase player
-  }
-  // === Power Pellet: run away from the player ===
-  if (state.fright > 0 && !g.eyes) {
-    const gx = g.mesh.position.x;
-    const gz = g.mesh.position.z;
-
-    const gCell = worldToCell(gx, gz);
-    const pCell = worldToCell(playerPos.x, playerPos.z);
-
-    // Clamp inside bounds
-    gCell.col = Math.max(0, Math.min(cols - 1, gCell.col));
-    gCell.row = Math.max(0, Math.min(rows - 1, gCell.row));
-
-    // Pick a far cell (already provided in your code)
-    const far = pickRandomFarCell(pCell, 5);
-    if (far) {
-      const path = bfsShortestPath(gCell.row, gCell.col, far.row, far.col);
-      if (path && path.length > 0) {
-        g.nextCell = path[0];
-        const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
-        g.target.set(x, 1.7, z);
-        return; // STOP — do not chase
-      }
-    }
-  }
-
-  // === Simple AI: always compute BFS shortest path to the player ===
-  const gx = g.mesh.position.x;
-  const gz = g.mesh.position.z;
-
-  const gCell = worldToCell(gx, gz);
-  const pCell = worldToCell(playerPos.x, playerPos.z);
-
-  // Clamp inside bounds
-  gCell.col = Math.max(0, Math.min(cols - 1, gCell.col));
-  gCell.row = Math.max(0, Math.min(rows - 1, gCell.row));
-
-  // Compute shortest path using BFS every frame
-  const path = bfsShortestPath(gCell.row, gCell.col, pCell.row, pCell.col);
-
-  // No valid path? Stop here.
-  if (!path || path.length === 0) {
-    g.nextCell = null;
-    return;
-  }
-
-  // Path's first cell is the next tile to walk to
-  g.nextCell = path[0];
-
-  // Convert next cell into world coordinates
-  const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
-  g.target.set(x, 1.7, z);
-}
-
-function moveGhost(g, dt) {
-  // --- CUSTOM SPEED SYSTEM ---
-  let speed = g.baseSpeed;   // default "normal" speed
-
-  // corridor check: same row or same col AND clear LOS
-  const gCell = worldToCell(g.mesh.position.x, g.mesh.position.z);
-  const pCell = worldToCell(playerPos.x, playerPos.z);
-  let sameCorridor = false;
-
-  if (gCell.row === pCell.row) {
-    sameCorridor = true;
-    const step = (pCell.col > gCell.col) ? 1 : -1;
-    for (let c = gCell.col + step; c !== pCell.col; c += step) {
-      if (MAZE[gCell.row][c] === '#') { sameCorridor = false; break; }
-    }
-  } else if (gCell.col === pCell.col) {
-    sameCorridor = true;
-    const step = (pCell.row > gCell.row) ? 1 : -1;
-    for (let r = gCell.row + step; r !== pCell.row; r += step) {
-      if (MAZE[r][gCell.col] === '#') { sameCorridor = false; break; }
-    }
-  }
-// If eyes reached spawn: wait 3 seconds, then revive
-if (g.eyes &&
-    gCell.row === g.spawnCell.row &&
-    gCell.col === g.spawnCell.col) {
-
-  g.respawnTimer += dt;
-  if (g.respawnTimer >= 3) {
-    g.eyes = false;
-    g.mesh.material.color.setHex(g.color);
-    g.respawnTimer = 0;
-  }
-  return; // ghost stays still during wait
-}
-
-  // 1. Eyes mode (returning to spawn)
-  if (g.eyes) {
-    speed = 21;
-  }
-  // 2. Frightened (blue) mode
-  else if (state.fright > 0) {
-    speed = 5;
-  }
-  // 3. Corridor chase (same corridor & LOS)
-  else if (sameCorridor) {
-    speed = 7;
-  }
-  // 4. Normal mode (not aligned)
-  else {
-    speed = g.baseSpeed;
-  }
-
-  // Direction to target
-  const dir = new THREE.Vector3().subVectors(g.target, g.mesh.position);
-  dir.y = 0;
-  const dist = dir.length();
-
-  // If extremely close, let AI pick next tile
-  if (dist < 0.05) return;
-
-  dir.normalize();
-  const step = speed * dt;
-
-  const nextX = g.mesh.position.x + dir.x * step;
-  const nextZ = g.mesh.position.z + dir.z * step;
-
-  const canX = !isWallAt(nextX, g.mesh.position.z);
-  const canZ = !isWallAt(g.mesh.position.x, nextZ);
-
-  if (canX && canZ) {
-    g.mesh.position.x = nextX;
-    g.mesh.position.z = nextZ;
-  } else if (canX) {
-    g.mesh.position.x = nextX;
-  } else if (canZ) {
-    g.mesh.position.z = nextZ;
-  } else {
-    // If blocked completely, force AI to pick a new path
-    g.path = [];
-    g.nextCell = null;
-  }
-}
-
-/* ========= GAMEPLAY: EAT, DEATH, LEVEL ========= */
-function worldToCell(x, z) {
-  const col = Math.floor(x / TILE + cols / 2);
-  const row = Math.floor(z / TILE + rows / 2);
-  return { row, col };
-}
-
-function isWalkableCell(row, col) {
-  if (row < 0 || row >= rows || col < 0 || col >= cols) return false;
-  return MAZE[row][col] !== '#';
-}
-
-function bfsShortestPath(sr, sc, tr, tc) {
-  if (sr === tr && sc === tc) return [];
-
-  const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
-  const prev = Array.from({ length: rows }, () => Array(cols).fill(null));
-  const queue = [];
-
-  queue.push({ row: sr, col: sc });
-  visited[sr][sc] = true;
-
-  const dirs = [
-    { dr: 1, dc: 0 },
-    { dr: -1, dc: 0 },
-    { dr: 0, dc: 1 },
-    { dr: 0, dc: -1 }
-  ];
-
-  while (queue.length) {
-    const cur = queue.shift();
-    if (cur.row === tr && cur.col === tc) break;
-
-    for (const d of dirs) {
-      const nr = cur.row + d.dr;
-      const nc = cur.col + d.dc;
-
-      if (!isWalkableCell(nr, nc)) continue;
-      if (visited[nr][nc]) continue;
-
-      visited[nr][nc] = true;
-      prev[nr][nc] = cur;
-      queue.push({ row: nr, col: nc });
-    }
-  }
-
-  if (!visited[tr][tc]) return [];
-
-  const path = [];
-  let cur = { row: tr, col: tc };
-  while (cur && !(cur.row === sr && cur.col === sc)) {
-    path.push(cur);
-    cur = prev[cur.row][cur.col];
-  }
-  path.reverse();
-  return path;
-}
-
-function pickRandomWalkableCell() {
-  const candidates = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (isWalkableCell(r, c)) candidates.push({ row: r, col: c });
-    }
-  }
-  if (!candidates.length) return null;
-  return candidates[Math.floor(Math.random() * candidates.length)];
-}
-
-function pickRandomFarCell(playerCell, minDist) {
-  const minDist2 = minDist * minDist;
-  const candidates = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (!isWalkableCell(r, c)) continue;
-      const dr = r - playerCell.row;
-      const dc = c - playerCell.col;
-      const d2 = dr * dr + dc * dc;
-      if (d2 >= minDist2) candidates.push({ row: r, col: c });
-    }
-  }
-  if (!candidates.length) return null;
-  return candidates[Math.floor(Math.random() * candidates.length)];
-}
-
-function eat() {
-  for (const p of pellets) {
-    if (p.eaten) continue;
-    const dx = playerPos.x - p.mesh.position.x;
-    const dz = playerPos.z - p.mesh.position.z;
-    if (dx*dx + dz*dz < 1.2) {
-      p.eaten = true;
-      p.mesh.visible = false;
-      state.score -= 1; // reduce remaining pellet count
-
-      if (p.power) {
-        state.fright = 8;
-        ghosts.forEach(g => {
-          if (!g.eyes) g.mesh.material.color.setHex(0x3333ff);
-        });
-      }
-
-      updateHUD();
-    }
-  }
-
-  const remaining = pellets.some(p => !p.eaten);
-  if (!remaining) {
-    nextLevel();
-  }
-}
-
-function checkDeaths() {
-  for (const g of ghosts) {
-    const dx = playerPos.x - g.mesh.position.x;
-    const dz = playerPos.z - g.mesh.position.z;
-    const d2 = dx*dx + dz*dz;
-    if (d2 < 1.6) {
-      if (state.fright > 0 && !g.eyes) {
-        // Eat ghost
-        state.score += 200;
-        g.eyes = true;
-        g.mesh.material.color.setHex(0xffffff);
-        g.respawnTimer = 0;
-        updateHUD();
-      } else if (!g.eyes) {
-        // Player dies
-        state.lives -= 1;
-        showLifePopup();
-        if (state.lives <= 0) {
-          gameOver();
-        } else {
-          resetPlayerAndGhosts();
-        }
-        updateHUD();
-      }
-    }
-  }
-}
-
-function nextLevel() {
-  state.level += 1;
-  state.fright = 0;
-  state.mode = 'scatter';
-  state.modeTime = 0;
-  resetPellets();
-  resetPlayerAndGhosts();
-  updateHUD();
-}
-
-function gameOver() {
-  state.playing = false;
-  state.paused  = false;
-  menuSubtitle.textContent = 'Game Over';
-  btnStart.textContent = 'Restart';
-  startScreen.style.display = 'grid';
-  document.exitPointerLock();
-  // Reset for next start
-  resetGame(true);
-}
-
-/* ========= HUD / UI HELPERS ========= */
-function updateHUD() {
-  mapScoreValue.textContent = state.score;
-  const hearts = "💛".repeat(state.lives);
-  document.getElementById("livesHearts").textContent = hearts;
-}
-
-function showLifePopup() {
-  lifeText.textContent = `Lives: ${state.lives}`;
-  lifePopup.style.display = 'grid';
-  lifeText.classList.remove('fade');
-  // force reflow
-  void lifeText.offsetWidth;
-  lifeText.classList.add('fade');
-  setTimeout(() => {
-    lifePopup.style.display = 'none';
-  }, 700);
-}
-
-/* ========= MINIMAP ========= */
-function drawMap() {
-  mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
-  mapCtx.save();
-
-  // Rotate minimap around its center
-  const cx = mapCanvas.width / 2;
-  const cy = mapCanvas.height / 2;
-
-  mapCtx.translate(cx, cy);
-  mapCtx.rotate(-yaw); // rotate opposite of player so map spins
-  mapCtx.translate(-cx, -cy);
-  // Minimap radius (in maze cells)
-  const VIEW = 4; // shows 9×9 area
-  const pCell = worldToCell(playerPos.x, playerPos.z);
-
-  const cw = mapCanvas.width / (VIEW*2 + 1);
-  const ch = mapCanvas.height / (VIEW*2 + 1);
-
-  const startR = Math.max(0, pCell.row - VIEW - 4);
-  const endR   = Math.min(rows - 1, pCell.row + VIEW + 4);
-  const startC = Math.max(0, pCell.col - VIEW - 4);
-  const endC   = Math.min(cols - 1, pCell.col + VIEW + 4);
-
-  // Draw walls within local area
-  for (let r = startR; r <= endR; r++) {
-    for (let c = startC; c <= endC; c++) {
-      if (MAZE[r][c] === '#') {
-        const dr = r - (pCell.row - VIEW);
-        const dc = c - (pCell.col - VIEW);
-
-        // === TRUE WALL BOUNDARY OUTLINES (Option 1A) ===
-        // Outer + inner strokes, aligned to the nearest corridor edge
-        const outerColor = "rgba(25,40,150,0.85)";
-        const innerColor = "rgba(70,110,255,0.95)";
-
-        const outerT = cw * 0.18;   // outer thickness
-        const innerT = cw * 0.10;   // inner thickness
-
-        // Neighbor checks (open means corridor)
-        const upOpen    = (r > 0          && MAZE[r-1][c] !== '#');
-        const downOpen  = (r < rows-1     && MAZE[r+1][c] !== '#');
-        const leftOpen  = (c > 0          && MAZE[r][c-1] !== '#');
-        const rightOpen = (c < cols-1     && MAZE[r][c+1] !== '#');
-
-        // Tile top-left corner
-        const tx = dc * cw;
-        const ty = dr * ch;
-
-        // === HORIZONTAL BOUNDARIES ===
-        if (upOpen) {
-          // Top edge of wall touching corridor below
-          // Outer
-          mapCtx.fillStyle = outerColor;
-          mapCtx.fillRect(
-            tx, ty,               // exact tile boundary
-            cw, outerT
-          );
-          // Inner
-          mapCtx.fillStyle = innerColor;
-          mapCtx.fillRect(
-            tx, ty,               // same but thinner
-            cw, innerT
-          );
-        }
-
-        if (downOpen) {
-          // Bottom edge of wall touching corridor above
-          const y = ty + ch - outerT;
-          // Outer
-          mapCtx.fillStyle = outerColor;
-          mapCtx.fillRect(tx, y, cw, outerT);
-          // Inner
-          mapCtx.fillStyle = innerColor;
-          mapCtx.fillRect(
-            tx,
-            (ty + ch - innerT),
-            cw,
-            innerT
-          );
-        }
-
-        // === VERTICAL BOUNDARIES ===
-        if (leftOpen) {
-          // Left edge of wall touching corridor to the left
-          mapCtx.fillStyle = outerColor;
-          mapCtx.fillRect(
-            tx, ty,               // left-most boundary
-            outerT, ch
-          );
-          mapCtx.fillStyle = innerColor;
-          mapCtx.fillRect(
-            tx, ty,
-            innerT, ch
-          );
-        }
-
-        if (rightOpen) {
-          // Right edge of wall touching corridor on the right
-          const x = tx + cw - outerT;
-          mapCtx.fillStyle = outerColor;
-          mapCtx.fillRect(x, ty, outerT, ch);
-          mapCtx.fillStyle = innerColor;
-          mapCtx.fillRect(
-            (tx + cw - innerT),
-            ty,
-            innerT, ch
-          );
-        }
-
-        // === CORNER CONNECTORS (patch to remove gaps) ===
-        // size of the corner square
-        const cOuter = outerT;
-        const cInner = innerT;
-
-        // TOP-LEFT CORNER
-        if (upOpen && leftOpen) {
-          mapCtx.fillStyle = outerColor;
-          mapCtx.fillRect(tx, ty, cOuter, cOuter);
-          mapCtx.fillStyle = innerColor;
-          mapCtx.fillRect(tx, ty, cInner, cInner);
-        }
-
-        // TOP-RIGHT CORNER
-        if (upOpen && rightOpen) {
-          const x = tx + cw - cOuter;
-          mapCtx.fillStyle = outerColor;
-          mapCtx.fillRect(x, ty, cOuter, cOuter);
-          const x2 = tx + cw - cInner;
-          mapCtx.fillStyle = innerColor;
-          mapCtx.fillRect(x2, ty, cInner, cInner);
-        }
-
-        // BOTTOM-LEFT CORNER
-        if (downOpen && leftOpen) {
-          const y = ty + ch - cOuter;
-          mapCtx.fillStyle = outerColor;
-          mapCtx.fillRect(tx, y, cOuter, cOuter);
-          const y2 = ty + ch - cInner;
-          mapCtx.fillStyle = innerColor;
-          mapCtx.fillRect(tx, y2, cInner, cInner);
-        }
-
-        // BOTTOM-RIGHT CORNER
-        if (downOpen && rightOpen) {
-          const x = tx + cw - cOuter;
-          const y = ty + ch - cOuter;
-          mapCtx.fillStyle = outerColor;
-          mapCtx.fillRect(x, y, cOuter, cOuter);
-          const x2 = tx + cw - cInner;
-          const y2 = ty + ch - cInner;
-          mapCtx.fillStyle = innerColor;
-          mapCtx.fillRect(x2, y2, cInner, cInner);
-        }
-      }
-    }
-  }
-
-  // Pellets in local region
-  mapCtx.fillStyle = '#ffe9a6';
-  for (const p of pellets) {
-    if (p.eaten) continue;
-    if (p.row < startR || p.row > endR || p.col < startC || p.col > endC) continue;
-    const dr = p.row - (pCell.row - VIEW);
-    const dc = p.col - (pCell.col - VIEW);
-    const x = (dc + 0.5) * cw;
-    const y = (dr + 0.5) * ch;
-    const rad = p.power ? 3 : 1.5;
-    mapCtx.beginPath();
-    mapCtx.arc(x, y, rad, 0, Math.PI * 2);
-    mapCtx.fill();
-  }
-
-  // Player at center of minimap
-  mapCtx.fillStyle = '#ffff00';
-  mapCtx.beginPath();
-  mapCtx.arc((VIEW + 0.5) * cw, (VIEW + 0.5) * ch, 3, 0, Math.PI * 2);
-  mapCtx.fill();
-
-  // Ghosts if inside view radius
-  mapCtx.fillStyle = '#ff5555';
-  for (const g of ghosts) {
-    const gc = worldToCell(g.mesh.position.x, g.mesh.position.z);
-    if (gc.row < startR || gc.row > endR || gc.col < startC || gc.col > endC) continue;
-    const dr = gc.row - (pCell.row - VIEW);
-    const dc = gc.col - (pCell.col - VIEW);
-    const x = (dc + 0.5) * cw;
-    const y = (dr + 0.5) * ch;
-    mapCtx.beginPath();
-    mapCtx.arc(x, y, 3, 0, Math.PI * 2);
-    mapCtx.fill();
-  }
-
-  // === Pointer to closest pellet ===
-  let closest = null;
-  let bestD2 = Infinity;
-
-  for (const p of pellets) {
-    if (p.eaten) continue;
-    const dx = p.mesh.position.x - playerPos.x;
-    const dz = p.mesh.position.z - playerPos.z;
-    const d2 = dx*dx + dz*dz;
-    if (d2 < bestD2) {
-      bestD2 = d2;
-      closest = { dx, dz };
-    }
-  }
-
-  if (closest) {
-    const angle = Math.atan2(closest.dz, closest.dx);
-
-    // Smaller radius so arc is very close but not touching the player
-    const radius = 8;
-
-    // Arc size: true 1/3 of a full circle (≈120°)
-    const arcSpan = (Math.PI * 2) / 3; // true 1/3 of a full circle (≈120°)
-
-    // Pulsing glow: alpha oscillates
-    const pulse = 0.55 + Math.sin(Date.now() * 0.006) * 0.35;
-
-    // Match pellet color and give glow effect
-    mapCtx.strokeStyle = `rgba(255, 233, 166, ${pulse})`;
-    mapCtx.lineWidth = 3;
-
-    mapCtx.beginPath();
-    mapCtx.arc(
-      cx,
-      cy,
-      radius,
-      angle - arcSpan / 2,
-      angle + arcSpan / 2
-    );
-    mapCtx.stroke();
-  }
-
-  mapCtx.restore();
-}
-
-
-/* ===== Ultra‑Smooth Minimap Updater (per‑frame) ===== */
-function updateMiniSmooth() {
-  if (mapVisible) {
-    drawMap();
-  }
-  requestAnimationFrame(updateMiniSmooth);
-}
-requestAnimationFrame(updateMiniSmooth);
-
-/* ========= MAIN LOOP ========= */
-let prev = performance.now();
-
-function loop(now) {
-  const dt = Math.min(0.033, (now - prev) / 1000);
-  prev = now;
-
-  // Pellet glow
-  pelletMat.emissiveIntensity = 1.2 + Math.sin(now * 0.004) * 0.28;
-
-  if (state.playing && !state.paused) {
-    movePlayer(dt);
-    ghosts.forEach(g => { ghostAI(g); moveGhost(g, dt); });
-    eat();
-    checkDeaths();
-
-    state.modeTime += dt;
-    if (state.fright > 0) {
-      state.fright -= dt;
-      if (state.fright <= 0) {
-        state.fright = 0;
-        ghosts.forEach(g => { if (!g.eyes) g.mesh.material.color.setHex(g.color); });
-      }
-    } else if (state.mode === 'scatter' && state.modeTime > 7) {
-      state.mode = 'chase';
-      state.modeTime = 0;
-    } else if (state.mode === 'chase' && state.modeTime > 20) {
-      state.mode = 'scatter';
-      state.modeTime = 0;
-    }
-  }
-
-  // Rotate entire ghost toward its movement direction
-  ghosts.forEach(g => {
-    const gx = g.mesh.position.x;
-    const gz = g.mesh.position.z;
-
-    const tx = g.target.x;
-    const tz = g.target.z;
-
-    const dx = tx - gx;
-    const dz = tz - gz;
-
-    if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
-      const angle = Math.atan2(dx, dz);
       g.mesh.rotation.y = angle;
     }
   });
