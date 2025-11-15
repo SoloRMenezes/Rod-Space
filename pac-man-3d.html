@@ -12,44 +12,56 @@
   #hudMini{position:fixed;left:12px;bottom:242px;z-index:8;text-shadow:0 1px 0 rgba(0,0,0,.45);pointer-events:none}
   #hudMini .row{display:flex;gap:.6rem;align-items:center}
   .pill{padding:2px 8px;border-radius:999px;border:1px solid rgba(191,233,255,.25);background:#0c1326}
-  #map{
+  #mapFrame{
     position:fixed;
     left:12px;
     bottom:-240px;
     width:200px;
-    height:220px;
-    background:rgba(10,20,40,.86);
-    border:2px solid #2049ff;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(32,73,255,.35) inset;
-    z-index:8;
+    height:260px;
+    background:#000;
+    border-radius:17px;
+    padding:7px 10px;
+    box-shadow:0 0 20px rgba(0,0,0,0.8) inset;
+    z-index:7;
     opacity:0;
     transition:bottom 0.28s ease, opacity 0.28s ease;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+    padding-bottom:30px;
   }
-
-  #mapScore{
-    position:fixed;
-    left:12px;
-    bottom: -12px;
-    width:200px;
-    text-align:center;
-    padding:4px 0;
-    background:rgba(10,20,40,.86);
-    border:2px solid #2049ff;
-    border-bottom:none;
-    border-radius:10px 10px 0 0;
-    color:#e7f3ff;
-    font-weight:700;
-    font-size:14px;
-    opacity:0;
-    transition:bottom 0.28s ease, opacity 0.28s ease;
-    z-index:9;
-    pointer-events:none;
-  }
-  #map.show + #mapScore{
-    bottom:232px;
+  #mapFrame.show{
+    bottom:20px;
     opacity:1;
   }
+  #mapTopBar{
+    width:93%;
+    height:66px;
+    background:#1a1a1a;
+    border-radius:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 10px;
+    margin-bottom:6px;
+  }
+  .mapDot{
+    width:26px;
+    height:26px;
+    background:#0f0f0f;
+    border-radius:50%;
+  }
+  #map{
+    width:100%;
+    height:100%;
+    background:rgba(10,20,40,.86);
+    border:2px solid #3a3a3a;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(80,80,80,0.35) inset;
+    display:block;
+  }
+
 
   #map.show {
     bottom:12px;
@@ -118,8 +130,12 @@
   </div>
 
   <!-- Minimap -->
-  <canvas id="map" width="160" height="176" aria-label="Minimap"></canvas>
-  <div id="mapScore">Score: <strong id="mapScoreValue">0</strong></div>
+  <div id="mapFrame">
+    <div id="mapTopBar">
+      <strong id="mapScoreValue" style="font-size:36px;font-weight:900;color:#e7f3ff;margin:0 auto;margin-top:0px;">0</strong>
+    </div>
+    <canvas id="map" width="200" height="230" aria-label="Minimap"></canvas>
+  </div>
 
   <!-- Crosshair -->
   <div id="crosshair"></div>
@@ -234,9 +250,9 @@ const MAZE = [
 "#......##....##....##......#",
 "######.##### ## #####.######",
 "######.##### ## #####.######",
-"######.##    G G    ##.######",
-"######.##    G G    ##.######",
-"######.## ######## ##.######",
+"######.##G        G##.######",
+"######.##G        G##.######",
+"######.##############.######",
 "#............##............#",
 "#.####.#####.##.#####.####.#",
 "#.####.#####.##.#####.####.#",
@@ -429,7 +445,7 @@ function resetPlayerAndGhosts() {
 
 function resetGame(full = true) {
   if (full) {
-    state.score = 0;
+    state.score = 229; // remaining pellets
     state.level = 1;
     state.lives = 3;
   }
@@ -481,9 +497,9 @@ document.addEventListener('keydown', e => {
   if (e.code === 'Space') {
     mapVisible = !mapVisible;
     if (mapVisible) {
-      mapCanvas.classList.add('show');
+      document.getElementById("mapFrame").classList.add("show");
     } else {
-      mapCanvas.classList.remove('show');
+      document.getElementById("mapFrame").classList.remove("show");
     }
   }
 
@@ -859,7 +875,7 @@ function eat() {
     if (dx*dx + dz*dz < 1.2) {
       p.eaten = true;
       p.mesh.visible = false;
-      state.score += p.power ? 50 : 10;
+      state.score -= 1; // reduce remaining pellet count
 
       if (p.power) {
         state.fright = 8;
@@ -965,10 +981,10 @@ function drawMap() {
   const cw = mapCanvas.width / (VIEW*2 + 1);
   const ch = mapCanvas.height / (VIEW*2 + 1);
 
-  const startR = Math.max(0, pCell.row - VIEW);
-  const endR   = Math.min(rows - 1, pCell.row + VIEW);
-  const startC = Math.max(0, pCell.col - VIEW);
-  const endC   = Math.min(cols - 1, pCell.col + VIEW);
+  const startR = Math.max(0, pCell.row - VIEW - 4);
+  const endR   = Math.min(rows - 1, pCell.row + VIEW + 4);
+  const startC = Math.max(0, pCell.col - VIEW - 4);
+  const endC   = Math.min(cols - 1, pCell.col + VIEW + 4);
 
   // Draw walls within local area
   for (let r = startR; r <= endR; r++) {
@@ -1158,10 +1174,10 @@ function drawMap() {
     const angle = Math.atan2(closest.dz, closest.dx);
 
     // Smaller radius so arc is very close but not touching the player
-    const radius = 14;
+    const radius = 8;
 
-    // Arc size: 1/3 of the circle
-    const arcSpan = Math.PI * (1/3);
+    // Arc size: true 1/3 of a full circle (≈120°)
+    const arcSpan = (Math.PI * 2) / 3; // true 1/3 of a full circle (≈120°)
 
     // Pulsing glow: alpha oscillates
     const pulse = 0.55 + Math.sin(Date.now() * 0.006) * 0.35;
