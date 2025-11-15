@@ -9,10 +9,10 @@
   #game{display:block;width:100vw;height:100vh}
 
   /* ===== Minimap + compact HUD (bottom-left) ===== */
-  #hudMini{position:fixed;left:12px;bottom:1px;z-index:8;text-shadow:0 1px 0 rgba(0,0,0,.45);pointer-events:none}
+  #hudMini{position:fixed;left:12px;bottom:242px;z-index:8;text-shadow:0 1px 0 rgba(0,0,0,.45);pointer-events:none}
   #hudMini .row{display:flex;gap:.6rem;align-items:center}
   .pill{padding:2px 8px;border-radius:999px;border:1px solid rgba(191,233,255,.25);background:#0c1326}
-  #map{position:fixed;left:12px;bottom:12px;width:160px;height:176px;background:rgba(10,20,40,.86);border:2px solid #2049ff;border-radius:10px;box-shadow:0 0 10px rgba(32,73,255,.35) inset;z-index:8;display:none}
+  #map{position:fixed;left:12px;bottom:12px;width:200px;height:220px;background:rgba(10,20,40,.86);border:2px solid #2049ff;border-radius:10px;box-shadow:0 0 10px rgba(32,73,255,.35) inset;z-index:8;display:none}
 
   /* ✚ Crosshair */
   #crosshair{
@@ -27,7 +27,7 @@
   #crosshair::after{width:20px;height:2px;left:0;top:9px}
 
   /* Lives popup on death */
-  #lifePopup{position:fixed;inset:0;display:none;place-items:center;z-index:12;pointer-events:none}
+  #lifePopup{position:fixed;inset:0;display:none;place-items:center;z-index:12;pointer-events:none;background:black}
   #lifePopup .box{padding:12px 18px;border-radius:12px;background:rgba(8,12,24,.78);border:1px solid rgba(191,233,255,.2)}
   .fade{animation:fade .75s ease}
   @keyframes fade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
@@ -184,33 +184,31 @@ const TILE = 4;
    G = ghost spawn
 */
 const MAZE = [
-"###############################",
-"#P  . . .#.. ..#  .  .##.... ##",
-"# ##### .#..  .. #### .  #.#.##",
-"#. ..## ## ##.#  ##. .#  #. .##",
-"# ## # ....   #.... ### .# ...#",
-"#.##   ###  ####  ###..# ###..#",
-"#. .#..# ..## ..##  #..#..  . #",
-"##  #. . #### . .#.  .###  . .#",
-"#####....#    ## . . ##o.#..###",
-"#. . . #.#o#.##. #. #. ... # .#",
-"#.#..##  #. . #.###... . .##  #",
-"#..# . . ## # . ...##. #.  ..##",
-"#..####..##.##. ##. .####. #..#",
-"## #..###...####. .#. .   #.. #",
-"#..#. ###.##... . . ##..#  . ##",
-"# # .#.......#. # #. ## ####  #",
-"#.#.## ##..#####  . . #.  ..#.#",
-"#.  .  . # .. .#.###  ## ## #.#",
-"# #.#.# ..#.  .#.#.  #   .# # #",
-"#.#.# .#. ####.#.# #.# o# # #.#",
-"#.  ##.## ..##.#. o  . #.   # #",
-"#.###... ##   .## . #### #.##.#",
-"# #. .##.  ###  # ##. ##.#.## #",
-"#...#### ...###. .#....    #. #",
-"#...  #.. #.. ..  #...###### .#",
-"# .##  .#. .##.  #### . . .  G#",
-"###############################",
+"############################",
+"#............##............#",
+"#.####.#####.##.#####.####.#",
+"#o####.#####.##.#####.####o#",
+"#.####.#####.##.#####.####.#",
+"#..........................#",
+"#.####.##.########.##.####.#",
+"#.####.##.########.##.####.#",
+"#......##....##....##......#",
+"######.##### ## #####.######",
+"######.##### ## #####.######",
+"######.##    G G    ##.######",
+"######.##    G G    ##.######",
+"######.## ######## ##.######",
+"#............##............#",
+"#.####.#####.##.#####.####.#",
+"#.####.#####.##.#####.####.#",
+"#o..##................##..o#",
+"###.##.##.########.##.##.###",
+"###.##.##.########.##.##.###",
+"#......##....##....##......#",
+"#.##########.##.##########.#",
+"#.##########.##.##########.#",
+"#............P.............#",
+"############################",
 ];
 
 const rows = MAZE.length;
@@ -339,6 +337,7 @@ function buildWorld() {
       spawnCell,
       target: spawn.clone(),
       eyes: false,
+      respawnTimer: 0,
       baseSpeed: 3 + i * 0.3,
       path: [],
       currentMode: null,
@@ -572,6 +571,21 @@ function movePlayer(dt) {
 
 /* ========= GHOSTS / AI ========= */
 function ghostAI(g) {
+  // === Eyes mode: return to spawn ===
+  if (g.eyes) {
+    const gCell = worldToCell(g.mesh.position.x, g.mesh.position.z);
+    const sCell = g.spawnCell;
+
+    // Pathfind back to spawn
+    const path = bfsShortestPath(gCell.row, gCell.col, sCell.row, sCell.col);
+    if (path && path.length > 0) {
+      g.nextCell = path[0];
+      const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
+      g.target.set(x, 1.7, z);
+    }
+
+    return; // IMPORTANT: do not chase player
+  }
   // === Power Pellet: run away from the player ===
   if (state.fright > 0 && !g.eyes) {
     const gx = g.mesh.position.x;
@@ -647,6 +661,19 @@ function moveGhost(g, dt) {
       if (MAZE[r][gCell.col] === '#') { sameCorridor = false; break; }
     }
   }
+// If eyes reached spawn: wait 3 seconds, then revive
+if (g.eyes &&
+    gCell.row === g.spawnCell.row &&
+    gCell.col === g.spawnCell.col) {
+
+  g.respawnTimer += dt;
+  if (g.respawnTimer >= 3) {
+    g.eyes = false;
+    g.mesh.material.color.setHex(g.color);
+    g.respawnTimer = 0;
+  }
+  return; // ghost stays still during wait
+}
 
   // 1. Eyes mode (returning to spawn)
   if (g.eyes) {
@@ -819,6 +846,7 @@ function checkDeaths() {
         state.score += 200;
         g.eyes = true;
         g.mesh.material.color.setHex(0xffffff);
+        g.respawnTimer = 0;
         updateHUD();
       } else if (!g.eyes) {
         // Player dies
