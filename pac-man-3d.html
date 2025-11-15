@@ -159,11 +159,17 @@
   <div id="panelKeys" class="panel">
     <div class="box">
       <h3>Keybinds</h3>
-      <p><span class="kbd">WASD</span> move • Mouse look<br>
-         <span class="kbd">Space</span> hold minimap • <span class="kbd">P</span> pause • <span class="kbd">R</span> reset<br>
-         <span class="kbd">Shift</span> toggle cursor-lock • <span class="kbd">Esc</span> menu</p>
-      <label>Sensitivity: <span id="sensVal">1.00x</span></label><br>
-      <input type="range" id="sensSlider" class="range" min="0.2" max="2" step="0.05" value="1"/>
+      <table style="width:100%; text-align:left; margin-top:10px; margin-bottom:18px; font-size:15px; border-spacing: 0 10px;">
+        <tr><td style="padding-right:20px;"><span class="kbd">WASD</span></td><td>Move</td></tr>
+        <tr><td style="padding-right:20px;">Mouse</td><td>Look</td></tr>
+        <tr><td style="padding-right:20px;"><span class="kbd">Space</span></td><td>Hold minimap</td></tr>
+        <tr><td style="padding-right:20px;"><span class="kbd">P</span></td><td>Pause</td></tr>
+        <tr><td style="padding-right:20px;"><span class="kbd">R</span></td><td>Reset</td></tr>
+        <tr><td style="padding-right:20px;"><span class="kbd">Shift</span></td><td>Cursor‑lock</td></tr>
+        <tr><td style="padding-right:20px;"><span class="kbd">Esc</span></td><td>Menu</td></tr>
+      </table>
+      <label>Sensitivity: <span id="sensVal">5.00x</span></label><br>
+      <input type="range" id="sensSlider" class="range" min="0" max="10" step="0.1" value="5"/>
       <br><br><button id="closeKeys" class="btn">Back</button>
     </div>
   </div> 
@@ -513,8 +519,8 @@ let pointerLocked = false;
 let mapVisible = false;
 
 const mouseBase = 0.0025;
-let mouseSensitivityFactor = 1.0;
-let mouseSensitivity = mouseBase * mouseSensitivityFactor;
+let mouseSensitivityFactor = 5.0;
+let mouseSensitivity = 0.0005 * mouseSensitivityFactor;
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -592,7 +598,7 @@ document.addEventListener('mousemove', e => {
 
 sensSlider.addEventListener('input', () => {
   mouseSensitivityFactor = parseFloat(sensSlider.value);
-  mouseSensitivity = mouseBase * mouseSensitivityFactor;
+  mouseSensitivity = 0.0005 * mouseSensitivityFactor;
   sensVal.textContent = mouseSensitivityFactor.toFixed(2) + 'x';
 });
 
