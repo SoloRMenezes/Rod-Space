@@ -398,33 +398,35 @@ function buildWorld() {
     });
     const ghostMesh = new THREE.Mesh(bodyGeo, bodyMat);
     ghostMesh.position.set(spawn.x, spawn.y + 0.4, spawn.z);
-    // Rounded scallop skirt (6 bumps, shorter + lifted)
+
+    // ----- Improved Ghost Skirt (3D scalloped, visible, proper shape) -----
     const skirtPoints = [];
-    const skirtRadius = 1.05;
-    const skirtHeight = -0.55; // lift skirt higher on the ghost
+    const skirtHeightTop = -0.1;   // where it starts under body
+    const skirtHeightBottom = 1.6; // hangs lower to form ghost silhouette
+    const radiusTop = 1.1;
+    const radiusBottom = 1.1;
+    const scallops = 12;
 
-    const scallops = 6;
     for (let j = 0; j <= scallops; j++) {
-      const angle = (j / scallops) * Math.PI * 2;
-      const wave = Math.sin(angle * 3) * 0.06; // MUCH shorter bumps
-
-      // upper curve (closer to body)
-      skirtPoints.push(new THREE.Vector2(
-        skirtRadius + wave,
-        skirtHeight
-      ));
-
-      // lower curve (barely dips)
-      skirtPoints.push(new THREE.Vector2(
-        (skirtRadius + wave) * 0.985,
-        skirtHeight - 0.08
-      ));
+        const a = (j / scallops) * Math.PI * 2;
+        const wave = -Math.sin(a * 6) * 0.22; // inverted bump amplitude
+        skirtPoints.push(new THREE.Vector2(radiusTop, skirtHeightTop));
+        skirtPoints.push(new THREE.Vector2(radiusBottom + wave, skirtHeightBottom));
     }
 
-    const skirtGeo = new THREE.LatheGeometry(skirtPoints, 60);
-    skirtGeo.translate(0, -0.5, 0); // lowered skirt without touching body
-    const skirtMesh = new THREE.Mesh(skirtGeo, bodyMat);
+    const skirtGeo = new THREE.LatheGeometry(skirtPoints, 64);
+    const skirtMat = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        emissive: 0x000000,
+        emissiveIntensity: 0.0,
+        metalness: 0.25,
+        roughness: 0.65
+    });
+
+    const skirtMesh = new THREE.Mesh(skirtGeo, skirtMat);
+    skirtMesh.position.y = -1;
     ghostMesh.add(skirtMesh);
+
     // Eyes
     const eyeGeo = new THREE.SphereGeometry(0.35, 12, 12);
     const pupilGeo = new THREE.SphereGeometry(0.18, 12, 12);
@@ -1155,7 +1157,7 @@ function drawMap() {
   const cy = mapCanvas.height / 2;
 
   mapCtx.translate(cx, cy);
-  mapCtx.rotate(-yaw); // rotate opposite of player so map spins
+  mapCtx.rotate(-yaw + Math.PI); // invert orientation so player movement appears upward
   mapCtx.translate(-cx, -cy);
   // Minimap radius (in maze cells)
   const VIEW = 4; // shows 9×9 area
