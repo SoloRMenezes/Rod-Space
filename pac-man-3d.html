@@ -1372,49 +1372,6 @@ function drawMap() {
   mapCtx.arc(playerMapX, playerMapY, 6, 0, Math.PI * 2);
   mapCtx.fill();
 
-  // === Cardinal Directions (circular, evenly spaced, facing outward) ===
-  mapCtx.save();
-
-  // style
-  mapCtx.fillStyle = "rgba(74,203,255,0.82)";          // slightly dimmed neon blue
-  mapCtx.strokeStyle = "#000000";        // black outline
-  mapCtx.lineWidth = 2.5;                // thinner outline for less dominance
-  mapCtx.font = "bold 13px sans-serif";  // slightly smaller + bold for glow effect
-  mapCtx.textAlign = "center";
-  mapCtx.textBaseline = "middle";
-  // Removed shadowColor and shadowBlur for NSEW
-
-  // center
-  const CCX = cx;
-  const CCY = cy;
-
-  // perfect circular radius based on smaller dimension
-  const radiusCD = Math.min(mapCanvas.width, mapCanvas.height) * 0.47;
-
-  // directions + angles
-  const dirs = [
-    { text:"N", angle:-Math.PI/2 },
-    { text:"E", angle:0 },
-    { text:"S", angle:Math.PI/2 },
-    { text:"W", angle:Math.PI }
-  ];
-
-  dirs.forEach(d => {
-    const lx = CCX + Math.cos(d.angle) * radiusCD;
-    const ly = CCY + Math.sin(d.angle) * radiusCD;
-
-    // outward-facing rotation
-    mapCtx.save();
-    mapCtx.translate(lx, ly);
-    mapCtx.rotate(d.angle + Math.PI/2);
-
-    mapCtx.strokeText(d.text, 0, 0);
-    mapCtx.fillText(d.text, 0, 0);
-
-    mapCtx.restore();
-  });
-
-  mapCtx.restore();
 
   // Ghosts if inside view radius
   mapCtx.fillStyle = '#ff5555';
