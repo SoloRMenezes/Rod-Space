@@ -278,9 +278,10 @@ let sprintToggle = false;
 let inGame = false;
 document.addEventListener("keydown", e => {
     keys[e.key.toLowerCase()] = true;
-    if(e.key.toLowerCase() === 'shift') {
+    if (e.key.toLowerCase() === 'shift') {
+      if (!inGame) return; // prevent shift‑lock on title screen
       shiftLock = !shiftLock;
-      if(shiftLock) controls.lock();
+      if (shiftLock) controls.lock();
       else controls.unlock();
     }
     if(e.key.toLowerCase() === 'control') sprintToggle = !sprintToggle;
