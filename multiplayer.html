@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>R6 Multiplayer Test</title>
+<style>
+    body { margin: 0; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
+    #crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 22px;
+      opacity: 0.6;
+      pointer-events: none;
+      z-index: 10;
+    }
+    #startScreen {
+        position: absolute; inset: 0; display: flex;
+        flex-direction: column; justify-content: center; align-items: center;
+        background: rgba(0,0,0,0.85); color: white;
+    }
+    #nameInput {
+        padding: 12px; width: 220px; font-size: 16px; border-radius: 6px;
+        border: none; outline: none; margin-bottom: 12px; text-align: center;
+    }
+    #startBtn {d
+        padding: 10px 22px; cursor: pointer;
+        background: #00aaff; border: none; border-radius: 6px;
+        color: white; font-size: 16px; transition: .2s;
+    }
+    #startBtn:hover { background: #0077cc; }
+
+button.menu-btn {
+  padding: 10px 22px;
+  cursor: pointer;
+  background: #00aaff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  transition: .2s;
+  width: 220px;
+}
+
+button.menu-btn:hover {
+  background: #0077cc;
+}
+</style>
+</head>
+<body>
+
+<div id="crosshair" style="display:none;">+</div>
+<div id="startScreen">
+    <h2>Enter Nickname</h2>
+    <input id="nameInput" maxlength="16" placeholder="Your name...">
+    <button id="startBtn" class="menu-btn">Join</button>
+    <button id="settingsBtn" class="menu-btn" style="margin-top:10px;">Settings ⚙️</button>
+    <div id="settingsPanel" style="margin-top:10px; display:none; padding:12px; background:rgba(0,0,0,0.6); border-radius:8px; width:220px;">
+        <label for="sensitivitySlider" style="font-size:14px;">Mouse Sensitivity</label>
+        <input type="range" id="sensitivitySlider" min="0.2" max="4" step="0.1" value="1.5" style="width:100%; margin-top:6px;">
+        <button id="backBtn" class="menu-btn" style="margin-top:10px;">Back</button>
+    </div>
+</div>
+
+<!-- Working compatible Three.js + Examples -->
+<script src="https://unpkg.com/three@0.126.1/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.126.1/examples/js/controls/PointerLockControls.js"></script>
+<script src="https://unpkg.com/three@0.126.1/examples/js/renderers/CSS2DRenderer.js"></script>
+
+<script>
+// === SCENE ===
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const orbitPivot = new THREE.Object3D();
+scene.add(orbitPivot);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// === NAME RENDERER ===
+const labelRenderer = new THREE.CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = "absolute";
+labelRenderer.domElement.style.top = "0";
+labelRenderer.domElement.style.pointerEvents = "none";
+document.body.appendChild(labelRenderer.domElement);
+
+// === LIGHT ===
+const sun = new THREE.DirectionalLight(0xffffff, 1.1);
+sun.position.set(50,120,50);
+sun.castShadow = true;
+sun.shadow.mapSize.width = 2048;
+sun.shadow.mapSize.height = 2048;
+sun.shadow.camera.near = 0.5;
+sun.shadow.camera.far = 300;
+sun.shadow.camera.left = -120;
+sun.shadow.camera.right = 120;
+sun.shadow.camera.top = 120;
+sun.shadow.camera.bottom = -120;
+scene.add(sun);
+scene.add(new THREE.AmbientLight(0xffffff,0.25));
+
+// === PROCEDURAL SIMPLE GRASS TEXTURE ===
+function generateGrassTexture() {
+    const size = 256;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+
+    // base green
+    ctx.fillStyle = "#3cb043";
+    ctx.fillRect(0, 0, size, size);
+
+    // darker dots
+    for (let i = 0; i < 1400; i++) {
+        ctx.fillStyle = "#2e7d32";
+        const x = Math.random() * size;
+        const y = Math.random() * size;
+        const r = Math.random() * 3 + 1;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(30, 30);
+    return texture;
+}
+
+const grassTex = generateGrassTexture();
+
+const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(500, 500),
+    new THREE.MeshStandardMaterial({
+        map: grassTex,
+        roughness: 1,
+        metalness: 0
+    })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// === SIMPLE TREES ===
+function createTree(x, z) {
+    const tree = new THREE.Group();
+
+    const trunk = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 8.5, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+    );
+    trunk.position.y = 4.25;
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+
+    const leaves = new THREE.Mesh(
+        new THREE.SphereGeometry(2, 18, 18),
+        new THREE.MeshStandardMaterial({ color: 0x2ecc71 })
+    );
+    leaves.position.y = 9.5;
+    leaves.castShadow = true;
+    leaves.receiveShadow = true;
+
+    // random scale variation for natural look
+    const scaleFactor = 0.7 + Math.random() * 0.8;
+    trunk.scale.set(1, scaleFactor, 1);
+    leaves.scale.set(scaleFactor, scaleFactor, scaleFactor);
+    leaves.position.y = 9.5 * scaleFactor;
+    trunk.position.y = 4.25 * scaleFactor;
+
+    tree.add(trunk, leaves);
+    tree.position.set(x, 0, z);
+    // Add separate hitboxes for trunk and leaves
+    tree.userData.trunkHitbox = new THREE.Box3();
+    tree.userData.leafHitbox = new THREE.Box3();
+    scene.add(tree);
+}
+
+// === SIMPLE PINE TREE ===
+function createPine(x, z) {
+    const pine = new THREE.Group();
+
+    const trunk = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 7.5, 0.5),
+        new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+    );
+    trunk.position.y = 3.75;
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+
+    const leafMat = new THREE.MeshStandardMaterial({ color: 0x1f5f2a });
+
+    // cone layers
+    for (let i = 0; i < 3; i++) {
+        const cone = new THREE.Mesh(
+            new THREE.ConeGeometry(2.6 - i * 0.7, 3, 12),
+            leafMat
+        );
+        cone.position.y = 5.5 + i * 1.8;
+        cone.castShadow = true;
+        cone.receiveShadow = true;
+        pine.add(cone);
+    }
+
+    pine.add(trunk);
+    pine.position.set(x, 0, z);
+    pine.userData.trunkHitbox = new THREE.Box3();
+    pine.userData.leafHitbox = new THREE.Box3();
+    // create combined leaf group hitbox bounding
+    pine.userData.coneGroup = new THREE.Group();
+    pine.children.forEach(child => {
+        if (child.geometry && child.geometry.type === "ConeGeometry") pine.userData.coneGroup.add(child);
+    });
+    pine.add(pine.userData.coneGroup);
+    scene.add(pine);
+}
+
+const spawnClearRadius = 8; // 6-player sized spawn area
+
+// Spawn random trees with clustering for natural forest look
+for (let i = 0; i < 2400; i++) {
+    // Cluster-based placement for natural forest look
+    const clusterSize = 60;
+    const clusterX = (Math.random() - 0.5) * 450;
+    const clusterZ = (Math.random() - 0.5) * 450;
+    const x = clusterX + (Math.random() - 0.5) * clusterSize;
+    const z = clusterZ + (Math.random() - 0.5) * clusterSize;
+    if (Math.random() < 0.35) createPine(x, z);
+    else createTree(x, z);
+}
+
+// === CONTROLS ===
+const controls = new THREE.PointerLockControls(camera, document.body);
+
+// === MOUSE SENSITIVITY & ORBIT STATE ===
+let mouseSensitivity = 1.5;
+let camYaw = 0;    // horizontal orbit angle (around Y)
+let camPitch = 0;  // vertical orbit angle (around X, clamped to ±~85°)
+
+document.addEventListener("mousemove", e => {
+    if (!player) return;
+
+    // In shift-lock: always rotate with mouse (Roblox-style).
+    if (!shiftLock) return;
+
+    const dx = e.movementX || 0;
+    const dy = e.movementY || 0;
+    const rotSpeed = 0.002 * mouseSensitivity;
+
+    camYaw   -= dx * rotSpeed;
+    camPitch -= dy * rotSpeed;
+
+    // Clamp vertical to safe ±85°
+    const maxPitch = 1.48; // ~85 degrees
+    if (camPitch >  maxPitch) camPitch =  maxPitch;
+    if (camPitch < -maxPitch) camPitch = -maxPitch;
+
+    // M3 ALTERNATIVE (commented):
+    // If you ever want semi-locked orbit that keeps camera mostly behind player:
+    // const maxOffset = 0.6; // ~34°
+    // const targetYaw = player.rotation.y;
+    // const yawDelta = THREE.MathUtils.clamp(camYaw - targetYaw, -maxOffset, maxOffset);
+    // camYaw = targetYaw + yawDelta;
+});
+
+// === INPUT ===
+const keys = {};
+let shiftLock = false;
+let sprintToggle = false;
+let inGame = false;
+document.addEventListener("keydown", e => {
+    keys[e.key.toLowerCase()] = true;
+    if(e.key.toLowerCase() === 'shift') {
+      shiftLock = !shiftLock;
+      if(shiftLock) controls.lock();
+      else controls.unlock();
+    }
+    if(e.key.toLowerCase() === 'control') sprintToggle = !sprintToggle;
+    if(e.code === 'Space' && canJump) {
+        velocityY = 0.20;
+        canJump = false;
+    }
+});
+document.addEventListener("keyup", e => {
+    keys[e.key.toLowerCase()] = false;
+});
+
+// === ESC KEY MENU TOGGLE ===
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    // Show main menu
+    startScreen.style.display = "flex";
+    settingsPanel.style.display = "none";
+    startScreen.querySelector("h2").style.display = "block";
+    nameInput.style.display = "block";
+    startBtn.style.display = "block";
+    settingsBtn.style.display = "block";
+
+    // Hide crosshair and unlock controls
+    document.getElementById("crosshair").style.display = "none";
+    controls.unlock();
+    inGame = false;
+  }
+});
+
+// === R6 CREATION ===
+function createR6(color=0xffffff){
+    const g = new THREE.Group();
+    // All body parts use bright solid colors
+    const headMat  = new THREE.MeshStandardMaterial({color: 0xff0000}); // red
+    const torsoMat = new THREE.MeshStandardMaterial({color: 0xffff00}); // yellow
+    const laMat    = new THREE.MeshStandardMaterial({color: 0x00ff00}); // green
+    const raMat    = new THREE.MeshStandardMaterial({color: 0x0000ff}); // blue
+    const llMat    = new THREE.MeshStandardMaterial({color: 0xff00ff}); // pink
+    const rlMat    = new THREE.MeshStandardMaterial({color: 0x00ffff}); // cyan
+
+    // Torso slightly widerm
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.6,0.6),torsoMat);
+    // Head with blue front face, rest red
+    const headGeo = new THREE.BoxGeometry(0.8,0.8,0.8);
+    const faceMaterials = [
+        new THREE.MeshStandardMaterial({color: 0xff0000}), // right
+        new THREE.MeshStandardMaterial({color: 0xff0000}), // left
+        new THREE.MeshStandardMaterial({color: 0xff0000}), // top
+        new THREE.MeshStandardMaterial({color: 0xff0000}), // bottom
+        new THREE.MeshStandardMaterial({color: 0x0000ff}), // front (BLUE FACE)
+        new THREE.MeshStandardMaterial({color: 0xff0000})  // back
+    ];
+    const head  = new THREE.Mesh(headGeo, faceMaterials);
+    const la    = new THREE.Mesh(new THREE.BoxGeometry(0.5,1.6,0.5),laMat);
+    const ra    = new THREE.Mesh(new THREE.BoxGeometry(0.5,1.6,0.5),raMat);
+    la.geometry.translate(0, -0.8, 0);
+    ra.geometry.translate(0, -0.8, 0);
+    const ll    = new THREE.Mesh(new THREE.BoxGeometry(0.6,1.6,0.6),llMat);
+    const rl    = new THREE.Mesh(new THREE.BoxGeometry(0.6,1.6,0.6),rlMat);
+
+    // Adjusted positions for new proportions
+    ll.position.set(-0.3, 0.8, 0);
+    rl.position.set( 0.3, 0.8, 0);
+
+    torso.position.set(0, 2.4, 0);
+    head.position.set(0, 3.6, 0);
+
+    la.position.set(-0.85, 3.2, 0);
+    ra.position.set( 0.85, 3.2, 0);
+
+    torso.castShadow = head.castShadow = la.castShadow = ra.castShadow = ll.castShadow = rl.castShadow = true;
+    torso.receiveShadow = head.receiveShadow = la.receiveShadow = ra.receiveShadow = ll.receiveShadow = rl.receiveShadow = true;
+
+    g.add(torso, head, la, ra, ll, rl);
+    g.head = head;
+    g.position.y = 0;
+    return g;
+}
+
+// === UI + SPAWN ===
+const startUI = document.getElementById("startScreen");
+const startBtn = document.getElementById("startBtn");
+const nameInput = document.getElementById("nameInput");
+
+let player, camDist = 4;
+let velocityY = 0;
+const gravity = 0.012;
+let canJump = false;
+let isSprinting = false;
+const borderSize = 240;
+
+startBtn.onclick = () => {
+    if (player) {
+        startUI.style.display = "none";
+        document.getElementById("crosshair").style.display = "block";
+        controls.lock();
+        camera.position.set(player.position.x, player.position.y + 1.6, player.position.z + camDist);
+        camera.lookAt(player.position.x, player.position.y + 1.6, player.position.z);
+        animate();
+        return;
+    }
+    const name = nameInput.value.trim();
+    if (name.length < 3) return;
+    startUI.style.display = "none";
+    document.getElementById("crosshair").style.display = "block";
+
+    player = createR6();
+    scene.add(player);
+    player.add(orbitPivot);
+    orbitPivot.position.set(0,2.7,0); // raised head height anchor
+    camera.position.y = 1.6;
+
+    // Initialize orbit to look from behind player at head level
+    camYaw = player.rotation.y;
+    camPitch = 0;
+
+    const tag = document.createElement("div");
+    tag.style.color = "white";
+    tag.style.fontSize = "16px";
+    tag.style.fontWeight = "600";
+    tag.style.background = "rgba(50,50,50,0.7)";
+    tag.style.padding = "4px 8px";
+    tag.style.borderRadius = "4px";
+    tag.textContent = name;
+    const label = new THREE.CSS2DObject(tag);
+    label.position.set(0,4.0,0);
+    player.add(label);
+
+    controls.lock();
+    animate();
+    inGame = true;
+    camera.position.set(player.position.x, player.position.y + 1.6, player.position.z + camDist);
+    camera.lookAt(player.position.x, player.position.y + 1.6, player.position.z);
+};
+
+// === SETTINGS TOGGLE ===
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsPanel = document.getElementById("settingsPanel");
+settingsBtn.addEventListener("click", () => {
+    startScreen.querySelector("h2").style.display = "none";
+    nameInput.style.display = "none";
+    startBtn.style.display = "none";
+    settingsBtn.style.display = "none";
+    settingsPanel.style.display = "block";
+});
+
+const backBtn = document.getElementById("backBtn");
+backBtn.addEventListener("click", () => {
+    settingsPanel.style.display = "none";
+    startScreen.querySelector("h2").style.display = "block";
+    nameInput.style.display = "block";
+    startBtn.style.display = "block";
+    settingsBtn.style.display = "block";
+});
+
+// === ZOOM ===
+document.addEventListener("keydown", e => {
+    if(e.key==='i') camDist = Math.max(camDist-0.6,0);
+    if(e.key==='o') camDist = Math.min(camDist+0.6,6);
+
+    if(!player) return;
+    if(camDist<=0.25){
+        player.head.material.transparent = true;
+        player.head.material.opacity = 0.05;
+    } else player.head.material.opacity = 1;
+});
+
+// === MOUSE WHEEL ZOOM SUPPORT ===
+document.addEventListener("wheel", e => {
+  if (!player) return;
+  camDist += e.deltaY * 0.006;
+  camDist = Math.max(0, Math.min(camDist, 6));
+  if(camDist <= 0.25){
+    player.head.material.transparent = true;
+    player.head.material.opacity = 0.05;
+  } else player.head.material.opacity = 1;
+});
+
+const sensitivitySlider = document.getElementById("sensitivitySlider");
+sensitivitySlider.addEventListener("input", () => {
+    mouseSensitivity = parseFloat(sensitivitySlider.value);
+});
+
+// === RESIZE ===
+window.addEventListener("resize", ()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    labelRenderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+// === LOOP ===
+function animate(){
+    requestAnimationFrame(animate);
+
+    if(player){
+        const torso = player.children[0];
+        const head  = player.children[1];
+        const la    = player.children[2];
+        const ra    = player.children[3];
+        const ll    = player.children[4];
+        const rl    = player.children[5];
+        const t     = Date.now() * 0.008;
+
+        const d = new THREE.Vector3();
+        if(keys["w"]) d.z -= 1;
+        if(keys["s"]) d.z += 1;
+        if(keys["a"]) d.x -= 1;
+        if(keys["d"]) d.x += 1;
+
+        // Camera bobbing when moving (sprint only)
+        let camBob = 0;
+        if (d.length() > 0) {
+            camBob = 0;
+            d.normalize();
+            // Always move relative to camera yaw
+            const moveDir = d.clone();
+            moveDir.applyAxisAngle(new THREE.Vector3(0,1,0), camYaw);
+            const moveSpeed = sprintToggle ? 0.13 : 0.08;
+            player.position.addScaledVector(moveDir, moveSpeed);
+
+            // Non-locked mode: face movement direction relative to camera
+            if (shiftLock) {
+                // Face AWAY from the camera (opposite direction), shortest-path interpolation
+                let target = camYaw + Math.PI;
+                let currentLocked = player.rotation.y;
+                let delta = target - currentLocked;
+                delta = THREE.MathUtils.euclideanModulo(delta + Math.PI, Math.PI * 2) - Math.PI;
+                const lerpSpeedLocked = 0.22;
+                player.rotation.y = currentLocked + delta * lerpSpeedLocked;
+            } else {
+                // Face the direction you are walking (relative to camera, shortest-path interpolation)
+                const angle = Math.atan2(moveDir.x, moveDir.z);
+                const current = player.rotation.y;
+                let delta = angle - current;
+                delta = THREE.MathUtils.euclideanModulo(delta + Math.PI, Math.PI * 2) - Math.PI;
+                const lerpSpeed = 0.18;
+                player.rotation.y = current + delta * lerpSpeed;
+            }
+
+            const walkStrength = 0.25;
+            const swing = Math.sin(t) * walkStrength;
+            torso.rotation.y = 0;
+            la.rotation.x = swing;
+            ra.rotation.x = -swing;
+            ll.rotation.x = -swing;
+            rl.rotation.x = swing;
+        } else {
+            camBob = 0;
+            const idle = Math.sin(t) * 0.04;
+            torso.rotation.y = 0;
+            la.rotation.x = idle * 0.05;
+            ra.rotation.x = -idle * 0.05;
+            ll.rotation.x = 0;
+            rl.rotation.x = 0;
+            if (shiftLock) {
+                let target = camYaw + Math.PI;
+                let currentLocked = player.rotation.y;
+                let delta = target - currentLocked;
+                delta = THREE.MathUtils.euclideanModulo(delta + Math.PI, Math.PI * 2) - Math.PI;
+                const lerpSpeedLocked = 0.22;
+                player.rotation.y = currentLocked + delta * lerpSpeedLocked;
+            }
+        }
+
+        // Add player bounding box for collision
+        const playerBox = new THREE.Box3().setFromCenterAndSize(
+            new THREE.Vector3(player.position.x, 1.8, player.position.z),
+            new THREE.Vector3(1.2, 3.6, 1.2)
+        );
+
+        // Tree collision prevention
+        scene.traverse(obj => {
+            if (obj.userData && obj.userData.trunkHitbox && obj.userData.leafHitbox) {
+                // Update hitboxes
+                if (obj.children.length > 3 && obj.userData.coneGroup) {
+                    // Pine tree
+                    obj.userData.trunkHitbox.setFromObject(obj.children[obj.children.length - 1]);
+                    obj.userData.leafHitbox.setFromObject(obj.userData.coneGroup);
+                } else {
+                    // Normal tree
+                    obj.userData.trunkHitbox.setFromObject(obj.children[0]);
+                    obj.userData.leafHitbox.setFromObject(obj.children[1]);
+                }
+
+                // Slight shrink for better feel
+                const shrink = 0.2;
+                obj.userData.trunkHitbox.expandByScalar(-shrink);
+                obj.userData.leafHitbox.expandByScalar(-shrink);
+
+                // Collision resolution for EACH separately
+                const hitboxes = [obj.userData.trunkHitbox, obj.userData.leafHitbox];
+                hitboxes.forEach(box => {
+                    if (box.intersectsBox(playerBox)) {
+                        const direction = new THREE.Vector3().subVectors(player.position, obj.position);
+                        direction.y = 0;
+                        direction.normalize();
+                        player.position.addScaledVector(direction, 0.18);
+                    }
+                });
+            }
+        });
+
+        velocityY -= gravity;
+        player.position.y += velocityY;
+        if(player.position.y <= 0){
+            player.position.y = 0;
+            velocityY = 0;
+            canJump = true;
+        }
+        player.position.x = Math.max(Math.min(player.position.x, borderSize), -borderSize);
+        player.position.z = Math.max(Math.min(player.position.z, borderSize), -borderSize);
+
+        // Jump overlay: tilt arms slightly when in air
+        if (!canJump || Math.abs(velocityY) > 0.001) {
+            const jumpTilt = Math.max(-0.6, Math.min(0.6, -velocityY * 8));
+            la.rotation.x -= jumpTilt * 0.6;
+            ra.rotation.x -= jumpTilt * 0.6;
+        }
+
+        // Camera logic: unified third-person orbit around head (M1)
+        const headPos = orbitPivot.getWorldPosition(new THREE.Vector3());
+        const orbitOffset = new THREE.Vector3(0, 0, camDist);
+
+        // Apply pitch (X) then yaw (Y) to the offset
+        orbitOffset.applyAxisAngle(new THREE.Vector3(1,0,0), camPitch);
+        orbitOffset.applyAxisAngle(new THREE.Vector3(0,1,0), camYaw);
+
+        const desiredCamPos = headPos.clone().add(orbitOffset);
+        camera.position.lerp(desiredCamPos, 0.2);
+
+        // Apply head-level look with tiny bob
+        const lookTarget = headPos.clone();
+        lookTarget.y += 0;
+        camera.lookAt(lookTarget);
+        camera.up.set(0,1,0);
+    }
+
+    renderer.render(scene,camera);
+    labelRenderer.render(scene,camera);
+}
+
+</script>
+</body>
+</html>
