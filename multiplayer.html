@@ -315,27 +315,58 @@ document.addEventListener("keydown", e => {
 // === R6 CREATION ===
 function createR6(color=0xffffff){
     const g = new THREE.Group();
-    // All body parts use bright solid colors
-    const headMat  = new THREE.MeshStandardMaterial({color: 0xff0000}); // red
-    const torsoMat = new THREE.MeshStandardMaterial({color: 0xffff00}); // yellow
-    const laMat    = new THREE.MeshStandardMaterial({color: 0x00ff00}); // green
-    const raMat    = new THREE.MeshStandardMaterial({color: 0x0000ff}); // blue
-    const llMat    = new THREE.MeshStandardMaterial({color: 0xff00ff}); // pink
-    const rlMat    = new THREE.MeshStandardMaterial({color: 0x00ffff}); // cyan
+    // New materials for more realistic colors
+    const headMat  = new THREE.MeshStandardMaterial({color: 0xf2d2b6}); // beige skin
+    const torsoMat = new THREE.MeshStandardMaterial({color: 0x2e7d32}); // green shirt
+    const laMat    = new THREE.MeshStandardMaterial({color: 0xf2d2b6}); // beige arms
+    const raMat    = new THREE.MeshStandardMaterial({color: 0xf2d2b6}); // beige arms
+    const llMat    = new THREE.MeshStandardMaterial({color: 0x1c335f}); // dark jeans blue
+    const rlMat    = new THREE.MeshStandardMaterial({color: 0x1c335f}); // dark jeans blue
 
     // Torso slightly widerm
     const torso = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.6,0.6),torsoMat);
-    // Head with blue front face, rest red
+    // Head: only front face has texture, rest beige
     const headGeo = new THREE.BoxGeometry(0.8,0.8,0.8);
-    const faceMaterials = [
-        new THREE.MeshStandardMaterial({color: 0xff0000}), // right
-        new THREE.MeshStandardMaterial({color: 0xff0000}), // left
-        new THREE.MeshStandardMaterial({color: 0xff0000}), // top
-        new THREE.MeshStandardMaterial({color: 0xff0000}), // bottom
-        new THREE.MeshStandardMaterial({color: 0x0000ff}), // front (BLUE FACE)
-        new THREE.MeshStandardMaterial({color: 0xff0000})  // back
+
+    // Create face texture (front only)
+    const faceCanvas = document.createElement("canvas");
+    faceCanvas.width = 64;
+    faceCanvas.height = 64;
+    const ftx = faceCanvas.getContext("2d");
+
+    // beige background
+    ftx.fillStyle = "#f2d2b6";
+    ftx.fillRect(0,0,64,64);
+
+    // eyes
+    ftx.fillStyle = "#000000";
+    ftx.fillRect(20,20,6,6);
+    ftx.fillRect(38,20,6,6);
+
+    // smile
+    ftx.lineWidth = 4;
+    ftx.strokeStyle = "#000000";
+    ftx.beginPath();
+    ftx.arc(32, 34, 12, 0, Math.PI);
+    ftx.stroke();
+
+    const faceTex = new THREE.CanvasTexture(faceCanvas);
+    faceTex.magFilter = THREE.NearestFilter;
+    faceTex.minFilter = THREE.NearestFilter;
+
+    const beigeMat = new THREE.MeshStandardMaterial({color: 0xf2d2b6});
+    const faceMat  = new THREE.MeshStandardMaterial({map: faceTex});
+
+    const headMaterials = [
+        beigeMat, // right
+        beigeMat, // left
+        beigeMat, // top
+        beigeMat, // bottom
+        faceMat,  // front (face)
+        beigeMat  // back
     ];
-    const head  = new THREE.Mesh(headGeo, faceMaterials);
+
+    const head = new THREE.Mesh(headGeo, headMaterials);
     const la    = new THREE.Mesh(new THREE.BoxGeometry(0.5,1.6,0.5),laMat);
     const ra    = new THREE.Mesh(new THREE.BoxGeometry(0.5,1.6,0.5),raMat);
     la.geometry.translate(0, -0.8, 0);
