@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Mahogany Slot Machine</title>
+    <style>
+        :root {
+            --wood-base: #4a2c1d;
+            --wood-dark: #2a1810;
+            --brass: #c5a059;
+            --gold-light: #f9d976;
+            --screen-depth: inset 10px 10px 20px rgba(0,0,0,0.8), inset -5px -5px 15px rgba(255,255,255,0.05);
+        }
+
+        body {
+            background-color: #080808;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Times New Roman', serif;
+            perspective: 1000px;
+        }
+
+        /* 3D Cabinet with Shadow Depth */
+        .cabinet {
+            position: relative;
+            background-color: var(--wood-base);
+            background-image: 
+                repeating-linear-gradient(90deg, transparent 0, transparent 50px, rgba(0,0,0,0.15) 51px, transparent 52px),
+                linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.4) 100%);
+            padding: 60px;
+            border-radius: 30px;
+            border: 14px solid #1a0f0a;
+            box-shadow: 
+                0 50px 100px rgba(0,0,0,0.9), 
+                0 0 40px rgba(0,0,0,0.5),
+                inset 0 0 60px rgba(0,0,0,0.6);
+            text-align: center;
+            min-width: 460px;
+            transform: rotateX(2deg);
+        }
+
+        h1 {
+            color: var(--gold-light);
+            background: linear-gradient(to bottom, #8a6d3b, #f9d976, #8a6d3b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.8rem;
+            margin: 0 0 25px 0;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.8));
+        }
+
+        /* Recessed Display Panel */
+        .display-panel {
+            background: #050505;
+            border: 3px solid #332211;
+            color: #ff2222;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+            border-radius: 10px;
+            box-shadow: var(--screen-depth);
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        /* The Slot Window with Deep Bevel */
+        .slot-window-outer {
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 15px;
+            box-shadow: inset 5px 5px 15px #000, 2px 2px 5px rgba(255,255,255,0.1);
+            border: 2px solid #333;
+        }
+
+        .slot-window {
+            display: flex;
+            gap: 15px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            justify-content: center;
+            /* Inner screen shadow to make it look 3D */
+            box-shadow: 
+                inset 0px 20px 30px rgba(0,0,0,0.5),
+                inset 0px -20px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Realistic Curved Glass Overlay */
+        .glass-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(
+                160deg, 
+                rgba(255,255,255,0.2) 0%, 
+                transparent 45%, 
+                transparent 55%, 
+                rgba(0,0,0,0.15) 100%
+            );
+            z-index: 10;
+            pointer-events: none;
+            border-radius: 5px;
+        }
+
+        .reel {
+            width: 95px;
+            height: 120px;
+            background: linear-gradient(to bottom, #ddd 0%, #fff 15%, #fff 85%, #ddd 100%);
+            border-left: 1px solid #bbb;
+            border-right: 1px solid #bbb;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .symbol-container {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .symbol {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+        }
+
+        /* 3D Mechanical Lever */
+        .lever-arm {
+            position: absolute;
+            right: -75px;
+            top: 35%;
+            width: 70px;
+            height: 300px;
+            cursor: pointer;
+            filter: drop-shadow(-10px 10px 10px rgba(0,0,0,0.5));
+        }
+
+        .lever-stick {
+            width: 18px;
+            height: 180px;
+            background: linear-gradient(to right, #333, #888, #333);
+            margin-left: 25px;
+            border-radius: 10px;
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            transform-origin: bottom;
+            border: 1px solid #111;
+        }
+
+        .lever-head {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 35% 35%, #ff3333, #660000);
+            border-radius: 50%;
+            position: absolute;
+            top: -25px;
+            left: -16px;
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.5), 5px 10px 15px rgba(0,0,0,0.4);
+        }
+
+        .lever-active .lever-stick {
+            transform: rotateX(65deg) scaleY(0.7);
+        }
+
+        .controls { margin-top: 40px; }
+
+        #spin-btn {
+            background: linear-gradient(#d4af37, #8a6d3b);
+            color: white;
+            border: 2px solid #443311;
+            padding: 16px 45px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            cursor: pointer;
+            border-radius: 50px;
+            text-shadow: 2px 2px 3px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 0 #3d2b0e, 0 15px 20px rgba(0,0,0,0.4);
+            transition: all 0.1s;
+        }
+
+        #spin-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #3d2b0e, 0 8px 10px rgba(0,0,0,0.4);
+        }
+
+        #spin-btn:disabled {
+            background: #555;
+            box-shadow: 0 8px 0 #222;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cabinet" id="machine">
+        <h1>Grand Slots</h1>
+        
+        <div class="display-panel">
+            MONEY: $<span id="balance">1000</span> | 
+            <span id="status">PULL LEVER</span>
+        </div>
+
+        <div class="slot-window-outer">
+            <div class="slot-window">
+                <div class="glass-overlay"></div>
+                <div class="reel"><div id="reel1" class="symbol-container"></div></div>
+                <div class="reel"><div id="reel2" class="symbol-container"></div></div>
+                <div class="reel"><div id="reel3" class="symbol-container"></div></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="spin-btn">SPIN ($100)</button>
+        </div>
+
+        <div class="lever-arm" id="lever">
+            <div class="lever-stick">
+                <div class="lever-head"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const symbols = ['🍒', '🍋', '🍇', '🔔', '💎', '7️⃣', '🍀'];
+        const balanceDisplay = document.getElementById('balance');
+        const statusDisplay = document.getElementById('status');
+        const spinBtn = document.getElementById('spin-btn');
+        const lever = document.getElementById('lever');
+        const machine = document.getElementById('machine');
+        const reelContainers = [
+            document.getElementById('reel1'),
+            document.getElementById('reel2'),
+            document.getElementById('reel3')
+        ];
+
+        let money = 1000;
+        let spinning = false;
+
+        function init() {
+            reelContainers.forEach(container => {
+                container.innerHTML = '';
+                for (let i = 0; i < 40; i++) {
+                    const el = document.createElement('div');
+                    el.className = 'symbol';
+                    el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    container.appendChild(el);
+                }
+            });
+        }
+
+        async function handleSpin() {
+            if (spinning || money < 100) return;
+
+            spinning = true;
+            money -= 100;
+            updateDisplay();
+            
+            spinBtn.disabled = true;
+            statusDisplay.textContent = "GOOD LUCK!";
+            
+            machine.classList.add('lever-active');
+            setTimeout(() => machine.classList.remove('lever-active'), 500);
+
+            const finalPicks = [];
+            
+            const animationTasks = reelContainers.map((container, i) => {
+                return new Promise(resolve => {
+                    const result = symbols[Math.floor(Math.random() * symbols.length)];
+                    finalPicks.push(result);
+
+                    container.children[container.children.length - 1].textContent = result;
+                    
+                    const time = 2 + (i * 0.6);
+                    container.style.transition = `top ${time}s cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
+                    container.style.top = `-${(container.children.length - 1) * 120}px`;
+
+                    setTimeout(() => {
+                        container.style.transition = 'none';
+                        container.style.top = '0px';
+                        container.children[0].textContent = result;
+                        resolve();
+                    }, time * 1000);
+                });
+            });
+
+            await Promise.all(animationTasks);
+            evaluate(finalPicks);
+            spinning = false;
+            spinBtn.disabled = false;
+        }
+
+        function evaluate(results) {
+            if (results[0] === results[1] && results[1] === results[2]) {
+                money += 1500;
+                statusDisplay.textContent = "JACKPOT! +$1500";
+            } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
+                money += 200;
+                statusDisplay.textContent = "MATCH! +$200";
+            } else {
+                statusDisplay.textContent = "TRY AGAIN";
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            balanceDisplay.textContent = money;
+            if (money < 100) {
+                statusDisplay.textContent = "INSERT COINS";
+                setTimeout(() => { money = 1000; updateDisplay(); statusDisplay.textContent = "RELOADED"; }, 3000);
+            }
+        }
+
+        spinBtn.addEventListener('click', handleSpin);
+        lever.addEventListener('click', handleSpin);
+        init();
+    </script>
+</body>
+</html>
