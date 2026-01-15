@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Slots - No Stakes</title>
+    <style>
+        :root {
+            --gold: #ffd700;
+            --dark-red: #8b0000;
+            --neon-blue: #00f2ff;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background: linear-gradient(145deg, #2a2a2a, #111);
+            padding: 30px;
+            border-radius: 20px;
+            border: 4px solid var(--gold);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--neon-blue);
+        }
+
+        .slot-machine {
+            display: flex;
+            gap: 15px;
+            background: #000;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #444;
+            margin-bottom: 30px;
+        }
+
+        .reel {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .symbol-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transition: top 2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .symbol {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        button {
+            background: var(--dark-red);
+            color: white;
+            border: 2px solid var(--gold);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        button:hover:not(:disabled) {
+            transform: scale(1.05);
+            background: #b30000;
+            box-shadow: 0 0 15px var(--gold);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .message {
+            margin-top: 20px;
+            height: 30px;
+            font-size: 1.2rem;
+            color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🍒 FRUIT FREE-SPIN 🍋</h1>
+        
+        <div class="stats">
+            <div>Score: <span id="balance">100</span></div>
+        </div>
+
+        <div class="slot-machine">
+            <div class="reel"><div id="reel1" class="symbol-container"></div></div>
+            <div class="reel"><div id="reel2" class="symbol-container"></div></div>
+            <div class="reel"><div id="reel3" class="symbol-container"></div></div>
+        </div>
+
+        <button id="spin-btn">Spin (Cost: 5)</button>
+        <div class="message" id="status">Good Luck!</div>
+    </div>
+
+    <script>
+        const symbols = ['🍒', '🍋', '🍇', '🍉', '🔔', '💎', '7️⃣'];
+        const balanceDisplay = document.getElementById('balance');
+        const statusDisplay = document.getElementById('status');
+        const spinBtn = document.getElementById('spin-btn');
+        const reelContainers = [
+            document.getElementById('reel1'),
+            document.getElementById('reel2'),
+            document.getElementById('reel3')
+        ];
+
+        let balance = 100;
+        const spinCost = 5;
+
+        // Initialize reels with random icons
+        function initReels() {
+            reelContainers.forEach(container => {
+                for (let i = 0; i < 20; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'symbol';
+                    div.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    container.appendChild(div);
+                }
+            });
+        }
+
+        async function spin() {
+            if (balance < spinCost) {
+                statusDisplay.textContent = "Out of points! Wait for refill...";
+                setTimeout(() => { balance = 50; updateUI(); }, 2000);
+                return;
+            }
+
+            // Deduct points
+            balance -= spinCost;
+            updateUI();
+            
+            spinBtn.disabled = true;
+            statusDisplay.textContent = "Spinning...";
+
+            const results = [];
+            
+            const promises = reelContainers.map((container, index) => {
+                return new Promise(resolve => {
+                    const randomOffset = Math.floor(Math.random() * (symbols.length * 2)) + 5;
+                    const finalSymbolIndex = Math.floor(Math.random() * symbols.length);
+                    results.push(symbols[finalSymbolIndex]);
+
+                    // Animation
+                    container.style.transition = 'none';
+                    container.style.top = '0px';
+                    
+                    // Force reflow
+                    container.offsetHeight;
+
+                    // Swap the last symbol to our target result
+                    container.children[container.children.length - 1].textContent = symbols[finalSymbolIndex];
+                    
+                    container.style.transition = `top ${2 + index * 0.5}s cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
+                    container.style.top = `-${(container.children.length - 1) * 100}px`;
+
+                    setTimeout(resolve, 2000 + index * 500);
+                });
+            });
+
+            await Promise.all(promises);
+            checkWin(results);
+            spinBtn.disabled = false;
+        }
+
+        function checkWin(results) {
+            if (results[0] === results[1] && results[1] === results[2]) {
+                const prize = 50;
+                balance += prize;
+                statusDisplay.textContent = `JACKPOT! +${prize} Points! 🎉`;
+            } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
+                const prize = 10;
+                balance += prize;
+                statusDisplay.textContent = `Small Win! +${prize} Points! ✨`;
+            } else {
+                statusDisplay.textContent = "Try again!";
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            balanceDisplay.textContent = balance;
+        }
+
+        spinBtn.addEventListener('click', spin);
+        initReels();
+    </script>
+</body>
+</html>
