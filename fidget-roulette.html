@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Fidget-Roulette: Final Fix</title>
+    <title>Fidget-Roulette: Pro Edition</title>
     <style>
         :root {
             --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
@@ -23,20 +23,17 @@
         }
 
         /* --- TABLE SECTION --- */
-        .table-section { 
-            display: flex; flex-direction: column; gap: 0; 
-            width: 615px; /* Matches 50px zero + 12*47px cells + padding */
-        }
+        .table-section { display: flex; flex-direction: column; width: 620px; }
         
         .table-grid {
             background: var(--table-bg); padding: 10px; border-radius: 8px 8px 0 0;
             border: 3px solid var(--gold); border-bottom: none;
-            display: grid; grid-template-columns: 50px repeat(12, 45px);
+            display: grid; grid-template-columns: 55px repeat(12, 45px);
             grid-template-rows: repeat(3, 45px); gap: 2px;
         }
 
         .cell {
-            border: 1px solid rgba(212, 175, 55, 0.4); display: flex; align-items: center;
+            border: 1px solid rgba(212, 175, 55, 0.3); display: flex; align-items: center;
             justify-content: center; font-weight: 700; position: relative; font-size: 0.9rem;
         }
         .red { background: linear-gradient(180deg, #b22222, #7a1414); }
@@ -44,81 +41,72 @@
         .green { background: linear-gradient(180deg, #1e7c46, #134e2d); }
         .zero { grid-row: 1 / span 3; grid-column: 1; border: 1px solid var(--gold); }
 
-        /* ALIGNMENT FIX: Belts now match the 12-column grid width */
         .bet-belts { 
-            display: grid; width: 100%; background: var(--table-bg);
-            border: 3px solid var(--gold); border-radius: 0 0 8px 8px;
-            padding: 5px 10px 10px 10px; box-sizing: border-box; gap: 5px;
+            display: grid; background: var(--table-bg); border: 3px solid var(--gold);
+            border-radius: 0 0 8px 8px; padding: 10px; gap: 5px;
         }
-        .belt-offset-row { display: grid; grid-template-columns: 50px 1fr; gap: 2px; }
+        .belt-row { display: grid; grid-template-columns: 55px 1fr; gap: 5px; }
         .belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
         .belt2 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
         
-        .bet-belts div.btn {
-            text-align: center; padding: 10px 0; border: 1px solid var(--gold);
-            border-radius: 4px; background: #143b1e; font-size: 0.7rem; font-weight: bold;
+        .btn {
+            text-align: center; padding: 8px 0; border: 1px solid var(--gold);
+            border-radius: 4px; background: #143b1e; font-size: 0.75rem; font-weight: bold;
         }
 
-        /* BIG TRANSPARENT BALL MARKER */
+        /* TRANSPARENT TABLE MARKER */
         .marker {
-            position: absolute; width: 35px; height: 35px; border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
-            border: 2px solid rgba(255,255,255,0.8);
-            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            position: absolute; width: 40px; height: 40px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+            border: 2px solid rgba(255,255,255,0.5);
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
             z-index: 10; pointer-events: none;
-            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* --- WHEEL SECTION --- */
         .roulette-container {
             position: relative; width: 500px; height: 500px;
             border-radius: 50%; background: var(--wood);
             box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 0 10px var(--rim), 0 0 0 12px var(--gold);
-            display: flex; justify-content: center; align-items: center; flex-shrink: 0;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* THE NEEDLE / ARROW */
+        .needle {
+            position: absolute; top: -25px; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 35px solid var(--gold-bright);
+            z-index: 200;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
         }
 
         .wheel {
-            position: relative; width: 440px; height: 440px; border-radius: 50%;
-            transition: transform 6s cubic-bezier(0.15, 0, 0.15, 1);
-            overflow: hidden; border: 4px solid #111;
+            position: relative; width: 450px; height: 450px; border-radius: 50%;
+            transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);
+            overflow: hidden; border: 5px solid #111;
         }
 
         .slot-label {
-            position: absolute; top: 12px; left: 50%;
-            transform-origin: 50% 208px; width: 30px; text-align: center;
-            font-weight: 900; font-size: 0.95rem; color: white;
+            position: absolute; top: 15px; left: 50%;
+            transform-origin: 50% 210px; width: 34px; text-align: center;
+            font-weight: 900; font-size: 1rem; color: white;
         }
 
         #spinBtn {
-            position: absolute; width: 100px; height: 100px; z-index: 100;
-            border-radius: 50%; border: 3px solid #443300; cursor: pointer;
+            position: absolute; width: 110px; height: 110px; z-index: 100;
+            border-radius: 50%; border: 4px solid #443300; cursor: pointer;
             background: radial-gradient(circle at 30% 30%, var(--gold-bright) 0%, var(--gold) 40%, #886600 100%);
-            color: #2b1606; font-weight: 900; font-size: 0.9rem;
-        }
-
-        /* DEFINITIVE FIX: Separate Orbital Track */
-        #ball-track {
-            position: absolute; width: 100%; height: 100%;
-            transition: transform 6s cubic-bezier(0.1, 0, 0.2, 1);
-            z-index: 90; pointer-events: none;
-        }
-
-        .ball {
-            position: absolute; width: 16px; height: 16px;
-            background: radial-gradient(circle at 30% 30%, #fff, #bbb);
-            border-radius: 50%; top: 50%; left: 50%;
-            /* Lock to orbit radius */
-            transform: translate(-50%, -205px); 
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #2b1606; font-weight: 900; font-size: 1rem;
         }
 
         @media (orientation: portrait) {
             body::after {
                 content: "Please rotate your phone sideways ↻";
                 position: fixed; inset: 0; background: #0a2113;
-                display: flex; align-items: center; justify-content: center;
-                z-index: 1000; font-weight: bold;
+                display: flex; align-items: center; justify-content: center; z-index: 1000;
             }
         }
     </style>
@@ -131,12 +119,13 @@
             <div class="cell green zero" data-num="0">0</div>
         </div>
         <div class="bet-belts">
-            <div class="belt-offset-row">
-                <div></div> <div class="belt">
+            <div class="belt-row">
+                <div></div>
+                <div class="belt">
                     <div class="btn">1st 12</div><div class="btn">2nd 12</div><div class="btn">3rd 12</div>
                 </div>
             </div>
-            <div class="belt-offset-row">
+            <div class="belt-row">
                 <div></div>
                 <div class="belt2">
                     <div class="btn">1-18</div><div class="btn">EVEN</div><div class="btn">RED</div>
@@ -147,28 +136,23 @@
     </div>
 
     <div class="roulette-container">
+        <div class="needle"></div>
         <button id="spinBtn">SPIN</button>
-        <div id="ball-track">
-            <div class="ball" id="ball"></div>
-        </div>
         <div class="wheel" id="wheel"></div>
     </div>
 </div>
 
 <script>
     const wheel = document.getElementById('wheel');
-    const ball = document.getElementById('ball');
-    const track = document.getElementById('ball-track');
     const spinBtn = document.getElementById('spinBtn');
     const grid = document.getElementById('tableGrid');
 
     const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
     const step = 360 / numbers.length;
 
-    // Build Table
+    // Table Generation
     for (let c = 0; c < 12; c++) {
-        const nArr = [3*c+3, 3*c+2, 3*c+1];
-        nArr.forEach(n => {
+        [3*c+3, 3*c+2, 3*c+1].forEach(n => {
             const cell = document.createElement('div');
             cell.className = 'cell ' + (n % 2 === 0 ? 'black' : 'red');
             cell.textContent = n;
@@ -177,7 +161,7 @@
         });
     }
 
-    // Build Wheel with correct labels
+    // Wheel Generation
     let conic = [];
     numbers.forEach((num, i) => {
         const color = num === 0 ? '#27ae60' : (i % 2 === 0 ? '#000' : '#c0392b');
@@ -190,7 +174,8 @@
     });
     wheel.style.background = `conic-gradient(${conic.join(',')})`;
 
-    let wRot = 0, bRot = 0, lastMarker = null;
+    let currentRotation = 0;
+    let lastMarker = null;
 
     spinBtn.addEventListener('click', () => {
         if (spinBtn.disabled) return;
@@ -198,35 +183,23 @@
 
         const winIdx = Math.floor(Math.random() * numbers.length);
         
-        // Reset Ball Radius to Rim
-        ball.style.transition = 'none';
-        ball.style.transform = 'translate(-50%, -205px)';
-        ball.offsetHeight; 
-
-        const wFinal = (360 * 5) + (360 - (winIdx * step));
-        const bFinal = - ((360 * 8) + (winIdx * step));
-
-        wRot += wFinal; bRot += bFinal;
-
-        wheel.style.transform = `rotate(${wRot}deg)`;
-        track.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.2, 1)';
-        track.style.transform = `rotate(${bRot}deg)`;
+        // Math: Total rotations + offset to bring slice to top (0 degrees)
+        // We subtract the slice center rotation from 360 to align with needle
+        const sliceCenter = (winIdx * step) + (step / 2);
+        const rotationNeeded = (360 * 6) + (360 - sliceCenter);
+        
+        currentRotation += rotationNeeded;
+        wheel.style.transform = `rotate(${currentRotation}deg)`;
 
         setTimeout(() => {
-            // Drop to pocket radius
-            ball.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            ball.style.transform = 'translate(-50%, -155px)';
-            
-            setTimeout(() => {
-                if (lastMarker) lastMarker.remove();
-                const target = document.querySelector(`[data-num="${numbers[winIdx]}"]`);
-                const m = document.createElement('div');
-                m.className = 'marker';
-                target.appendChild(m);
-                lastMarker = m;
-                spinBtn.disabled = false;
-            }, 600);
-        }, 6000);
+            if (lastMarker) lastMarker.remove();
+            const target = document.querySelector(`[data-num="${numbers[winIdx]}"]`);
+            const m = document.createElement('div');
+            m.className = 'marker';
+            target.appendChild(m);
+            lastMarker = m;
+            spinBtn.disabled = false;
+        }, 5100);
     });
 </script>
 </body>
