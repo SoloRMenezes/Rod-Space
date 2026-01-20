@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Fidget-Roulette: Final Fix</title>
+    <title>Fidget-Roulette: Perfect Alignment</title>
     <style>
         :root {
             --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
@@ -18,6 +18,7 @@
             color: white; position: relative;
         }
 
+        /* Felt Texture */
         body::before {
             content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             opacity: 0.15; pointer-events: none; z-index: -1;
@@ -29,14 +30,13 @@
             padding: 20px; transform: scale(0.85); z-index: 1;
         }
 
-        /* --- TABLE SECTION: TIGHTENED WIDTHS --- */
+        /* --- TABLE SECTION (Marker Logic Removed) --- */
         .table-section { display: flex; flex-direction: column; width: 600px; }
         
         .table-grid {
             background: var(--table-bg); padding: 8px; border-radius: 10px 10px 0 0;
             border: 3.5px solid var(--gold); border-bottom: none;
             display: grid; 
-            /* Reduced column width from 55/46 to 50/42 to prevent "going out" */
             grid-template-columns: 50px repeat(12, 42px);
             grid-template-rows: repeat(3, 44px); gap: 2px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
@@ -67,17 +67,7 @@
             font-size: 0.7rem; font-weight: bold;
         }
 
-        /* --- MARKER: ADJUSTED FOR SMALLER CELLS --- */
-        .marker {
-            position: absolute; width: 36px; height: 36px; border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.4), rgba(255,255,255,0.05));
-            border: 2.5px solid rgba(255,255,255,0.7);
-            z-index: 10; pointer-events: none;
-            animation: markerEntry 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes markerEntry { from { transform: scale(1.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        /* --- WHEEL SECTION: ALIGNED NEEDLE --- */
+        /* --- WHEEL SECTION --- */
         .roulette-container {
             position: relative; width: 480px; height: 480px;
             border-radius: 50%; background: var(--wood);
@@ -86,7 +76,7 @@
         }
 
         .needle {
-            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
             width: 0; height: 0; border-left: 16px solid transparent; 
             border-right: 16px solid transparent; border-top: 35px solid var(--gold-bright);
             z-index: 200; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
@@ -100,7 +90,7 @@
 
         .slot-label {
             position: absolute; top: 14px; left: 50%;
-            transform-origin: 50% 196px; /* Centered for 420px wheel */
+            transform-origin: 50% 196px; 
             width: 34px; text-align: center;
             font-weight: 900; font-size: 0.95rem; color: white;
         }
@@ -118,18 +108,16 @@
 <div class="game-wrapper">
     <div class="table-section">
         <div class="table-grid" id="tableGrid">
-            <div class="cell green zero" data-num="0">0</div>
+            <div class="cell green zero">0</div>
         </div>
         <div class="bet-belts">
             <div class="belt-row">
-                <div></div> 
-                <div class="belt">
+                <div></div> <div class="belt">
                     <div class="btn">1st 12</div><div class="btn">2nd 12</div><div class="btn">3rd 12</div>
                 </div>
             </div>
             <div class="belt-row">
-                <div></div>
-                <div class="belt2">
+                <div></div> <div class="belt2">
                     <div class="btn">1-18</div><div class="btn">EVEN</div><div class="btn">RED</div>
                     <div class="btn">BLACK</div><div class="btn">ODD</div><div class="btn">19-36</div>
                 </div>
@@ -151,26 +139,23 @@
 
     const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
     const step = 360 / numbers.length;
+    const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 
-    // Table Generation Fix
+    // Table Generation
     for (let c = 0; c < 12; c++) {
         const rowNums = [3*c+3, 3*c+2, 3*c+1]; 
         rowNums.forEach((n, rowIndex) => {
             const cell = document.createElement('div');
-            // Correct European color pattern
-            const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
             cell.className = 'cell ' + (redNums.includes(n) ? 'red' : 'black');
             cell.textContent = n;
-            cell.dataset.num = n;
             cell.style.gridColumn = c + 2;
             cell.style.gridRow = rowIndex + 1;
             grid.appendChild(cell);
         });
     }
 
-    // Wheel Setup
+    // Wheel Visuals
     numbers.forEach((num, i) => {
-        const color = num === 0 ? '#1e7c46' : ([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(num) ? '#c0392b' : '#000');
         const label = document.createElement('div');
         label.className = 'slot-label';
         label.innerText = num;
@@ -178,44 +163,43 @@
         wheel.appendChild(label);
     });
     
-    // Generate wheel background colors to match labels exactly
     const conicParts = numbers.map((num, i) => {
-        const color = num === 0 ? '#1e7c46' : ([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(num) ? '#c0392b' : '#000');
+        const color = num === 0 ? '#1e7c46' : (redNums.includes(num) ? '#c0392b' : '#000');
         return `${color} ${i * step}deg ${(i + 1) * step}deg`;
     });
     wheel.style.background = `conic-gradient(${conicParts.join(',')})`;
 
     let currentRotation = 0;
-    let lastMarker = null;
 
     spinBtn.addEventListener('click', () => {
         if (spinBtn.disabled) return;
         spinBtn.disabled = true;
 
+        // 1. Pick a truly random index from the wheel
         const winIdx = Math.floor(Math.random() * numbers.length);
         
-        // --- CALCULATION FIX ---
-        // sliceRotation targets the start of the wedge. 
-        // (step/2) centers the needle in the middle of that wedge.
-        const sliceRotation = (winIdx * step) + (step / 2);
-        const rotationNeeded = (360 * 8) + (360 - sliceRotation);
+        // 2. Continuous rotation logic
+        // We add 5+ full spins (1800deg+) to current rotation so it never spins backwards
+        const spins = 360 * 6; 
         
-        currentRotation += rotationNeeded;
+        // 3. Perfect Centering Math:
+        // (winIdx * step) is the start of the slice.
+        // (step / 2) moves the needle to the EXACT middle of that slice.
+        const sliceCenter = (winIdx * step) + (step / 2);
+        
+        // Target is the distance needed to bring that slice center to the top (0deg)
+        const targetDistance = 360 - sliceCenter;
+
+        // Update currentRotation to keep the wheel spinning forward
+        const baseRotation = Math.ceil(currentRotation / 360) * 360;
+        currentRotation = baseRotation + spins + targetDistance;
+
         wheel.style.transform = `rotate(${currentRotation}deg)`;
 
+        // Unlock button after transition (5 seconds)
         setTimeout(() => {
-            if (lastMarker) lastMarker.remove();
-            const winNum = numbers[winIdx];
-            const target = document.querySelector(`[data-num="${winNum}"]`);
-            
-            if (target) {
-                const m = document.createElement('div');
-                m.className = 'marker';
-                target.appendChild(m);
-                lastMarker = m;
-            }
             spinBtn.disabled = false;
-        }, 5100);
+        }, 5000);
     });
 </script>
 </body>
