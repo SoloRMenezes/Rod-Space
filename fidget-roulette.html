@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Fidget-Roulette: Final Polished Edition</title>
+    <title>Fidget-Roulette: Jumbo Textured Edition</title>
     <style>
         :root {
             --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
@@ -11,67 +11,82 @@
         }
 
         body {
-            margin: 0; background: radial-gradient(circle at 50% 50%, #2a5c3d, #0a2113);
+            margin: 0;
+            background-color: #0a2113;
+            background: radial-gradient(circle at 50% 50%, #1a4d2e, #071a0d);
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif;
             color: white;
+            position: relative;
+        }
+
+        /* Felt Grain Texture Overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.18;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
         }
 
         .game-wrapper {
-            display: flex; flex-direction: row; align-items: flex-start; gap: 50px;
-            padding: 40px; transform: scale(0.9);
+            display: flex; flex-direction: row; align-items: center; gap: 60px;
+            padding: 40px; transform: scale(1.1);
+            z-index: 1;
         }
 
-        /* --- TABLE SECTION: STRICT GRID ALIGNMENT --- */
+        /* --- TABLE SECTION --- */
         .table-section { 
             display: flex; flex-direction: column; 
-            width: 610px; /* Precise width to prevent layout drift */
+            width: 735px; /* Aligned for the larger grid */
         }
         
         .table-grid {
-            background: var(--table-bg); padding: 8px; border-radius: 8px 8px 0 0;
-            border: 3px solid var(--gold); border-bottom: none;
+            background: var(--table-bg); padding: 12px; border-radius: 12px 12px 0 0;
+            border: 4px solid var(--gold); border-bottom: none;
             display: grid; 
-            /* 50px for Zero, then 12 columns for numbers */
-            grid-template-columns: 50px repeat(12, 1fr);
-            grid-template-rows: repeat(3, 46px); gap: 2px;
+            /* 60px for Zero, then 12 columns of 55px */
+            grid-template-columns: 60px repeat(12, 55px);
+            grid-template-rows: repeat(3, 55px); gap: 3px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
         }
 
         .cell {
-            border: 1px solid rgba(212, 175, 55, 0.3); display: flex; align-items: center;
-            justify-content: center; font-weight: 700; position: relative; font-size: 1rem;
-            border-radius: 2px;
+            border: 1px solid rgba(212, 175, 55, 0.4); display: flex; align-items: center;
+            justify-content: center; font-weight: 800; position: relative; font-size: 1.2rem;
+            border-radius: 4px;
         }
         .red { background: linear-gradient(180deg, #b22222, #7a1414); }
         .black { background: linear-gradient(180deg, #222, #000); }
         .green { background: linear-gradient(180deg, #1e7c46, #134e2d); }
         .zero { grid-row: 1 / span 3; grid-column: 1; border: 2px solid var(--gold); margin-right: 2px; }
 
-        /* THE BELTS: Aligning perfectly with the columns above */
+        /* THE BELTS */
         .bet-belts { 
-            display: grid; background: var(--table-bg); border: 3px solid var(--gold);
-            border-radius: 0 0 8px 8px; padding: 10px; gap: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: grid; background: var(--table-bg); border: 4px solid var(--gold);
+            border-radius: 0 0 12px 12px; padding: 15px; gap: 10px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
         }
 
-        /* Using a sub-grid to skip the Zero column space */
-        .belt-row { display: grid; grid-template-columns: 50px 1fr; gap: 5px; }
-        .belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .belt2 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+        .belt-row { display: grid; grid-template-columns: 60px 1fr; gap: 8px; }
+        .belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .belt2 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
         
         .btn {
-            text-align: center; padding: 12px 0; border: 1.5px solid var(--gold);
-            border-radius: 4px; background: rgba(20, 59, 30, 0.8); 
-            font-size: 0.75rem; font-weight: bold; text-transform: uppercase;
+            text-align: center; padding: 15px 0; border: 1.5px solid var(--gold);
+            border-radius: 6px; background: rgba(20, 59, 30, 0.8); 
+            font-size: 0.85rem; font-weight: bold; text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        /* THE MARKER: Large, Soft, Transparent */
+        /* THE MARKER */
         .marker {
-            position: absolute; width: 44px; height: 44px; border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.4), rgba(255,255,255,0.05));
-            border: 2px solid rgba(255,255,255,0.3);
-            box-shadow: 0 0 15px rgba(255,255,255,0.2);
+            position: absolute; width: 48px; height: 48px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+            border: 3px solid white;
+            box-shadow: 0 0 15px rgba(255,255,255,0.4);
             z-index: 10; pointer-events: none;
             animation: markerEntry 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -79,49 +94,47 @@
 
         /* --- WHEEL SECTION --- */
         .roulette-container {
-            position: relative; width: 520px; height: 520px;
+            position: relative; width: 580px; height: 580px;
             border-radius: 50%; background: var(--wood);
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 0 12px var(--rim), 0 0 0 15px var(--gold);
+            box-shadow: 0 30px 70px rgba(0,0,0,0.8), 0 0 0 12px var(--rim), 0 0 0 18px var(--gold);
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* Lowered Arrow */
         .needle {
-            position: absolute; top: -10px; /* Moved down closer to the wheel rim */
-            left: 50%; transform: translateX(-50%);
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
             width: 0; height: 0;
-            border-left: 18px solid transparent;
-            border-right: 18px solid transparent;
-            border-top: 40px solid var(--gold-bright);
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 45px solid var(--gold-bright);
             z-index: 200;
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
         }
 
         .wheel {
-            position: relative; width: 460px; height: 460px; border-radius: 50%;
+            position: relative; width: 520px; height: 520px; border-radius: 50%;
             transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);
-            overflow: hidden; border: 6px solid #111;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.9);
+            overflow: hidden; border: 8px solid #111;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
         }
 
         .slot-label {
-            position: absolute; top: 16px; left: 50%;
-            transform-origin: 50% 214px; width: 36px; text-align: center;
-            font-weight: 900; font-size: 1.05rem; color: white;
+            position: absolute; top: 18px; left: 50%;
+            transform-origin: 50% 242px; width: 40px; text-align: center;
+            font-weight: 900; font-size: 1.2rem; color: white;
             text-shadow: 0 2px 4px rgba(0,0,0,0.9);
         }
 
         #spinBtn {
-            position: absolute; width: 120px; height: 120px; z-index: 100;
-            border-radius: 50%; border: 4px solid #443300; cursor: pointer;
+            position: absolute; width: 140px; height: 140px; z-index: 100;
+            border-radius: 50%; border: 5px solid #443300; cursor: pointer;
             background: radial-gradient(circle at 30% 30%, var(--gold-bright) 0%, var(--gold) 40%, #886600 100%);
-            color: #2b1606; font-weight: 900; font-size: 1.1rem;
+            color: #2b1606; font-weight: 900; font-size: 1.3rem;
             box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.5);
             transition: transform 0.1s;
         }
         #spinBtn:active { transform: scale(0.95); }
 
-        @media (max-width: 1000px) { .game-wrapper { transform: scale(0.7); } }
+        @media (max-width: 1200px) { .game-wrapper { transform: scale(0.8); } }
     </style>
 </head>
 <body>
@@ -130,10 +143,11 @@
     <div class="table-section">
         <div class="table-grid" id="tableGrid">
             <div class="cell green zero" data-num="0">0</div>
-            </div>
+        </div>
         <div class="bet-belts">
             <div class="belt-row">
-                <div></div> <div class="belt">
+                <div></div> 
+                <div class="belt">
                     <div class="btn">1st 12</div><div class="btn">2nd 12</div><div class="btn">3rd 12</div>
                 </div>
             </div>
@@ -162,19 +176,24 @@
     const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
     const step = 360 / numbers.length;
 
-    // Generate Table Numbers (3 rows, 12 columns)
+    // Fixed Table Alignment (3 Rows, 12 Columns)
     for (let c = 0; c < 12; c++) {
-        const rowNums = [3*c+3, 3*c+2, 3*c+1]; // Top-to-bottom: 3, 2, 1 ... 36, 35, 34
-        rowNums.forEach(n => {
+        const rowNums = [3*c+3, 3*c+2, 3*c+1]; // Top-to-bottom placement
+        rowNums.forEach((n, rowIndex) => {
             const cell = document.createElement('div');
             cell.className = 'cell ' + (n % 2 === 0 ? 'black' : 'red');
             cell.textContent = n;
             cell.dataset.num = n;
+            
+            // Lock into CSS Grid
+            cell.style.gridColumn = c + 2;
+            cell.style.gridRow = rowIndex + 1;
+            
             grid.appendChild(cell);
         });
     }
 
-    // Generate Wheel
+    // Generate Wheel Visuals
     let conic = [];
     numbers.forEach((num, i) => {
         const color = num === 0 ? '#27ae60' : (i % 2 === 0 ? '#000' : '#c0392b');
@@ -182,7 +201,6 @@
         const label = document.createElement('div');
         label.className = 'slot-label';
         label.innerText = num;
-        // Center text in slice
         label.style.transform = `translateX(-50%) rotate(${(i * step) + (step / 2)}deg)`;
         wheel.appendChild(label);
     });
@@ -196,15 +214,12 @@
         spinBtn.disabled = true;
 
         const winIdx = Math.floor(Math.random() * numbers.length);
-        
-        // Calculate rotation to stop winning slice under the 12 o'clock needle
         const sliceRotation = (winIdx * step) + (step / 2);
         const rotationNeeded = (360 * 7) + (360 - sliceRotation);
         
         currentRotation += rotationNeeded;
         wheel.style.transform = `rotate(${currentRotation}deg)`;
 
-        // Update table marker after animation ends
         setTimeout(() => {
             if (lastMarker) lastMarker.remove();
             const winNum = numbers[winIdx];
