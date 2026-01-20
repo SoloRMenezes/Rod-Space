@@ -2,142 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Fidget-Roulette: Pro Edition</title>
+    <title>Fidget-Roulette: Physics Fix</title>
     <style>
         :root {
-            --felt: #1a4d2e;
-            --gold: #d4af37;
-            --gold-bright: #f9e29c;
-            --wood: #3d1f05;
-            --rim: #2b1606;
+            --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
+            --wood: #3d1f05; --rim: #2b1606;
         }
 
         body {
-            margin: 0;
-            background: radial-gradient(circle at 50% 50%, #2a5c3d, #0a2113);
-            color: white;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0; background: radial-gradient(circle at 50% 50%, #2a5c3d, #0a2113);
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden; font-family: sans-serif;
         }
 
-        /* --- THE WHEEL ASSEMBLY --- */
         .roulette-container {
-            position: relative;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: var(--wood);
-            /* Creating the 3D wooden rim effect */
-            box-shadow: 
-                0 20px 50px rgba(0,0,0,0.8),
-                inset 0 0 40px rgba(0,0,0,0.9),
-                0 0 0 15px var(--rim),
-                0 0 0 18px var(--gold);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: relative; width: 580px; height: 580px;
+            border-radius: 50%; background: var(--wood);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.7), inset 0 0 50px rgba(0,0,0,0.9),
+                        0 0 0 12px var(--rim), 0 0 0 15px var(--gold);
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* The spinning part */
         .wheel {
-            position: relative;
-            width: 520px;
-            height: 520px;
-            border-radius: 50%;
-            border: 8px solid #111;
-            background: #000;
+            position: relative; width: 500px; height: 500px;
+            border-radius: 50%; border: 6px solid #111;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
             transition: transform 6s cubic-bezier(0.15, 0, 0.15, 1);
             overflow: hidden;
         }
 
-        /* Pocket Textures */
         .slot-label {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform-origin: 50% 250px;
-            width: 40px;
-            text-align: center;
-            font-weight: 900;
-            font-size: 1.2rem;
-            text-shadow: 0 2px 2px rgba(0,0,0,0.8);
+            position: absolute; top: 12px; left: 50%;
+            transform-origin: 50% 238px; width: 38px; text-align: center;
+            font-weight: 900; font-size: 1.1rem; color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
-        /* --- THE BALL --- */
+        #spinBtn {
+            position: absolute; width: 130px; height: 130px; z-index: 100;
+            border-radius: 50%; border: 4px solid #443300; cursor: pointer;
+            background: radial-gradient(circle at 30% 30%, var(--gold-bright) 0%, var(--gold) 40%, #886600 100%);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.6);
+            display: flex; align-items: center; justify-content: center;
+            color: #2b1606; font-weight: 900; font-size: 1.1rem; transition: 0.1s;
+        }
+
+        #spinBtn:active { transform: scale(0.96); }
+
+        /* --- THE PHYSICS FIX --- */
+        /* This container rotates around the center */
+        #ball-track {
+            position: absolute; width: 100%; height: 100%;
+            transition: transform 6s cubic-bezier(0.1, 0, 0.2, 1);
+            z-index: 90; pointer-events: none;
+        }
+
+        /* This is the actual ball moving up and down (Radius) */
         .ball {
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            background: radial-gradient(circle at 30% 30%, #fff, #999);
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            /* Starting position in the outer rim track */
-            transform: translate(-50%, -245px);
-            z-index: 100;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-            /* The ball's transition is independent to simulate 'dropping' in */
-            transition: transform 6s cubic-bezier(0.2, 0, 0.2, 1), top 0.5s ease-in 5.5s;
-        }
-
-        /* Decorative Center Piece */
-        .center-cap {
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle at 30% 30%, var(--gold-bright), var(--gold), #443300);
-            border-radius: 50%;
-            z-index: 50;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.5);
-        }
-
-        button#spinBtn {
-            position: absolute;
-            bottom: -80px;
-            padding: 15px 50px;
-            background: linear-gradient(to bottom, var(--gold-bright), var(--gold));
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px #886600;
-        }
-
-        button#spinBtn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px #886600;
+            position: absolute; width: 18px; height: 18px;
+            background: radial-gradient(circle at 30% 30%, #fff, #bbb, #888);
+            border-radius: 50%; top: 50%; left: 50%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+            /* Start in the outer rim */
+            transform: translate(-50%, -230px);
+            transition: transform 0.6s ease-out;
         }
     </style>
 </head>
 <body>
 
 <div class="roulette-container">
-    <div class="center-cap"></div>
-    <div class="ball" id="ball"></div>
+    <button id="spinBtn">SPIN</button>
+    <div id="ball-track">
+        <div class="ball" id="ball"></div>
+    </div>
     <div class="wheel" id="wheel"></div>
-    <button id="spinBtn">SPIN WHEEL</button>
 </div>
 
 <script>
     const wheel = document.getElementById('wheel');
     const ball = document.getElementById('ball');
+    const track = document.getElementById('ball-track');
     const spinBtn = document.getElementById('spinBtn');
 
-    // Official European Layout
     const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
     const total = numbers.length;
     const step = 360 / total;
 
-    // Build the Wheel segments visually
+    // Build UI
     let conicParts = [];
     numbers.forEach((num, i) => {
         const color = num === 0 ? '#27ae60' : (i % 2 === 0 ? '#000' : '#c0392b');
         conicParts.push(`${color} ${i * step}deg ${(i + 1) * step}deg`);
-
         const label = document.createElement('div');
         label.className = 'slot-label';
         label.innerText = num;
@@ -146,41 +102,44 @@
     });
     wheel.style.background = `conic-gradient(${conicParts.join(',')})`;
 
-    let currentRotation = 0;
+    let wheelRotation = 0;
+    let ballRotation = 0;
 
     spinBtn.addEventListener('click', () => {
         if (spinBtn.disabled) return;
         spinBtn.disabled = true;
 
         const winIndex = Math.floor(Math.random() * total);
-        const winNum = numbers[winIndex];
         
-        // Calculation: 5 Full rotations + the offset to bring the winning slice to the TOP (12 o'clock)
-        const rotationNeeded = (360 * 8) + (360 - (winIndex * step));
-        currentRotation += rotationNeeded;
-
-        // Reset ball position to the outer track
+        // 1. Reset ball to rim
         ball.style.transition = 'none';
-        ball.style.transform = 'translate(-50%, -245px) rotate(0deg)';
+        ball.style.transform = 'translate(-50%, -230px)';
         
-        // Force reflow
-        ball.offsetHeight;
-
-        // Execute Spin
-        wheel.style.transform = `rotate(${currentRotation}deg)`;
+        // 2. Calculate rotations
+        // Wheel spins clockwise, Ball spins counter-clockwise faster
+        const extraWheel = 360 * 5;
+        const extraBall = 360 * 8;
         
-        // Ball moves in opposite direction to simulate physics
-        ball.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.1, 1)';
-        ball.style.transform = `translate(-50%, -245px) rotate(-${currentRotation * 1.5}deg)`;
+        const wheelFinal = extraWheel + (360 - (winIndex * step));
+        const ballFinal = - (extraBall + (winIndex * step));
 
-        // At the very end, "drop" the ball into the pocket
+        wheelRotation += wheelFinal;
+        ballRotation += ballFinal;
+
+        // 3. Execute animations
+        wheel.style.transform = `rotate(${wheelRotation}deg)`;
+        track.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.15, 1)';
+        track.style.transform = `rotate(${ballRotation}deg)`;
+
+        // 4. The Landing Sequence
         setTimeout(() => {
-            // Adjust ball transform to sit in the pocket (inner radius)
-            // We lock it to the winning number's final position
-            ball.style.transform = `translate(-50%, -180px) rotate(-${currentRotation}deg)`;
+            // Drop ball from -230px (rim) to -172px (pocket)
+            ball.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            ball.style.transform = 'translate(-50%, -172px)';
             
-            console.log("Landed on: " + winNum);
-            spinBtn.disabled = false;
+            console.log("WINNER:", numbers[winIndex]);
+            
+            setTimeout(() => { spinBtn.disabled = false; }, 500);
         }, 6000);
     });
 </script>
