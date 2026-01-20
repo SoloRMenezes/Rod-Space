@@ -3,56 +3,53 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Orbit Boss — One-Tap Flip</title>
+<title>Orbit Boss — High FPS Flip</title>
 <style>
-  html,body{margin:0;height:100%;background:#05070a;overflow:hidden;color:#fff;font-family:monospace}
-  canvas{display:block;width:100vw;height:100vh}
-  #hud{position:fixed;top:20px;width:100%;text-align:center;pointer-events:none;font-size:1.2rem;letter-spacing:2px}
-  #centerMsg{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,0.8);transition:opacity .3s}
+  html,body{margin:0;height:100%;background:#030508;overflow:hidden;color:#fff;font-family:monospace}
+  canvas{display:block;width:100vw;height:100vh;image-rendering: crisp-edges}
+  #hud{position:fixed;top:20px;width:100%;text-align:center;pointer-events:none;font-size:1.2rem;letter-spacing:1px}
+  #centerMsg{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,0.85);transition:opacity .2s}
   .hidden{opacity:0;pointer-events:none}
-  .stat{color:#00d4ff;font-weight:bold}
+  .stat{color:#00ffaa;text-shadow: 0 0 5px #00ffaa}
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="hud">LVL <span id="lvl" class="stat">1</span> | HP <span id="hp" class="stat">100%</span> | SCORE <span id="scr" class="stat">0</span></div>
-<div id="centerMsg"><div id="msg">PRESS <span style="border:1px solid #fff;padding:2px 5px">SPACE</span> TO FLIP DIRECTION</div></div>
+<div id="hud">LVL <span id="lvl" class="stat">1</span> | BOSS <span id="hp" class="stat">100%</span> | SCORE <span id="scr" class="stat">0</span></div>
+<div id="centerMsg"><div id="msg">SPACE/ENTER TO FLIP DIRECTION</div></div>
 
 <script>
 const canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
-const state={w:0,h:0,lvl:1,score:0,running:true,time:0};
-const player={ang:0, r:200, speed:2.8, dir:1, lastShot:0};
+const state={w:0,h:0,lvl:1,score:0,running:true,time:0,cx:0,cy:0};
+const player={ang:0, r:200, speed:3.2, dir:1, lastShot:0};
 const boss={hp:20, maxHp:20, r:45, fireT:0};
 const bullets=[], asteroids=[];
 
-const resize=()=>{canvas.width=state.w=innerWidth;canvas.height=state.h=innerHeight};
+const resize=()=>{
+    canvas.width=state.w=innerWidth;
+    canvas.height=state.h=innerHeight;
+    state.cx=innerWidth/2;
+    state.cy=innerHeight/2;
+};
 addEventListener("resize",resize); resize();
 
-// Single Action: Flip Direction
-const flip = (e) => {
+const handleFlip = (e) => {
     if(e.code==='Space' || e.code==='Enter') {
         if(!state.running) { location.reload(); return; }
-        player.dir *= -1; // Change direction
+        player.dir *= -1; 
         document.getElementById("centerMsg").classList.add("hidden");
     }
 };
-addEventListener("keydown", flip);
+addEventListener("keydown", handleFlip);
 
 function initLevel(){
     boss.maxHp = 20 + (state.lvl*10);
     boss.hp = boss.maxHp;
     asteroids.length = 0;
-    // Spawn asteroids in a wider circle
-    for(let i=0; i<Math.min(state.lvl+3, 12); i++) {
+    for(let i=0; i<Math.min(state.lvl+4, 15); i++) {
         const a = Math.random()*Math.PI*2;
-        const dist = 300 + Math.random()*200;
-        asteroids.push({
-            x:state.w/2 + Math.cos(a)*dist, 
-            y:state.h/2 + Math.sin(a)*dist, 
-            vx:(Math.random()-0.5)*80, 
-            vy:(Math.random()-0.5)*80, 
-            s:18
-        });
+        const d = 350 + Math.random()*200;
+        asteroids.push({x:state.cx+Math.cos(a)*d, y:state.cy+Math.sin(a)*d, vx:(Math.random()-0.5)*120, vy:(Math.random()-0.5)*120, s:16});
     }
 }
 
@@ -60,107 +57,122 @@ function update(dt){
     if(!state.running) return;
     state.time += dt;
 
-    // Movement: Auto-orbit with Flip
+    // Movement
     player.ang += (player.speed * player.dir) * dt;
-    // Auto-pulsing radius to add challenge
-    player.r = 180 + Math.sin(state.time * 0.5) * 60;
+    player.r = 190 + Math.sin(state.time * 0.7) * 70; // Automatic pulsing orbit
 
-    // Auto Fire (Every 0.4 seconds)
-    if(state.time - player.lastShot > 0.4){
+    const px = state.cx + Math.cos(player.ang)*player.r;
+    const py = state.cy + Math.sin(player.ang)*player.r;
+
+    // Fast Auto-fire
+    if(state.time - player.lastShot > 0.35){
         player.lastShot = state.time;
-        const px = state.w/2 + Math.cos(player.ang)*player.r;
-        const py = state.h/2 + Math.sin(player.ang)*player.r;
-        const a = Math.atan2(state.h/2-py, state.w/2-px);
-        bullets.push({x:px, y:py, vx:Math.cos(a)*550, vy:Math.sin(a)*550, p:true});
+        const a = Math.atan2(state.cy-py, state.cx-px);
+        bullets.push({x:px, y:py, vx:Math.cos(a)*650, vy:Math.sin(a)*650, p:true});
     }
 
-    // Boss Patterns
+    // Boss pattern logic
     boss.fireT += dt;
-    const fireRate = Math.max(0.4, 1.8 - (state.lvl*0.15));
-    if(boss.fireT > fireRate){
+    if(boss.fireT > Math.max(0.3, 1.5 - (state.lvl*0.1))){
         boss.fireT = 0;
-        const count = 4 + Math.min(state.lvl, 6);
+        const count = 5 + Math.min(state.lvl, 5);
         for(let i=0; i<count; i++){
-            const a = (i/count)*Math.PI*2 + (state.time * 0.5);
-            bullets.push({x:state.w/2, y:state.h/2, vx:Math.cos(a)*180, vy:Math.sin(a)*180, p:false});
+            const a = (i/count)*Math.PI*2 + (state.time);
+            bullets.push({x:state.cx, y:state.cy, vx:Math.cos(a)*220, vy:Math.sin(a)*220, p:false});
         }
     }
 
-    const cx=state.w/2, cy=state.h/2;
-    const px=cx+Math.cos(player.ang)*player.r, py=cy+Math.sin(player.ang)*player.r;
-
-    // Bullet Logic
+    // Bullet and Collision Logic (Optimized with squared distance)
     for(let i=bullets.length-1; i>=0; i--){
         const b = bullets[i];
         b.x += b.vx*dt; b.y += b.vy*dt;
         
-        if(b.p){ // Player bullet hits boss
-            if(Math.hypot(b.x-cx, b.y-cy) < boss.r){
-                bullets.splice(i,1); boss.hp--; state.score+=15;
+        const dxB = b.x - state.cx, dyB = b.y - state.cy;
+        const distSqB = dxB*dxB + dyB*dyB;
+
+        if(b.p){ 
+            if(distSqB < boss.r*boss.r){
+                bullets.splice(i,1); boss.hp--; state.score+=20;
                 if(boss.hp <= 0) { state.lvl++; initLevel(); }
             }
-        } else { // Boss bullet hits player
-            if(Math.hypot(b.x-px, b.y-py) < 14){ 
-                state.running = false; 
-                document.getElementById("centerMsg").innerHTML = "DESTROYED<br>SCORE: "+state.score+"<br>PRESS SPACE TO RE-FLY"; 
-                document.getElementById("centerMsg").classList.remove("hidden"); 
+        } else {
+            const dxP = b.x - px, dyP = b.y - py;
+            if(dxP*dxP + dyP*dyP < 196){ // 14^2
+                state.running = false;
+                document.getElementById("centerMsg").innerHTML = "REBOOT REQUIRED<br>SCORE: "+state.score+"<br>PRESS SPACE";
+                document.getElementById("centerMsg").classList.remove("hidden");
             }
         }
         if(b.x<0||b.x>state.w||b.y<0||b.y>state.h) bullets.splice(i,1);
     }
 
     // Asteroid Logic
-    asteroids.forEach(a => {
+    for(let i=0; i<asteroids.length; i++){
+        const a = asteroids[i];
         a.x += a.vx*dt; a.y += a.vy*dt;
         if(a.x<0||a.x>state.w) a.vx*=-1; if(a.y<0||a.y>state.h) a.vy*=-1;
-        if(Math.hypot(a.x-px, a.y-py) < a.s + 8) { 
-            state.running = false; 
-            document.getElementById("centerMsg").innerHTML = "COLLISION<br>PRESS SPACE"; 
-            document.getElementById("centerMsg").classList.remove("hidden"); 
+        const dxA = a.x - px, dyA = a.y - py;
+        if(dxA*dxA + dyA*dyA < 625){ // (16+9)^2
+            state.running = false;
+            document.getElementById("centerMsg").classList.remove("hidden");
         }
-    });
+    }
 
     document.getElementById("lvl").innerText = state.lvl;
     document.getElementById("scr").innerText = state.score;
-    document.getElementById("hp").innerText = Math.ceil((boss.hp/boss.maxHp)*100) + "%";
+    document.getElementById("hp").innerText = Math.max(0, Math.ceil((boss.hp/boss.maxHp)*100)) + "%";
 }
 
 function draw(){
-    ctx.fillStyle="#05070a"; ctx.fillRect(0,0,state.w,state.h);
-    const cx=state.w/2, cy=state.h/2;
+    ctx.fillStyle="#030508";
+    ctx.fillRect(0,0,state.w,state.h);
 
-    // Orbit Path Hint
-    ctx.strokeStyle="#111"; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.arc(cx,cy,player.r,0,Math.PI*2); ctx.stroke();
+    // Draw Boss
+    ctx.strokeStyle = "#00ffaa"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(state.cx, state.cy, boss.r + Math.sin(state.time*12)*2, 0, Math.PI*2);
+    ctx.stroke();
 
-    // Boss Core
-    ctx.shadowBlur = 15; ctx.shadowColor = "#0dffae";
-    ctx.strokeStyle = "#0dffae"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(cx,cy,boss.r + Math.sin(state.time*8)*3,0,Math.PI*2); ctx.stroke();
-    ctx.fillStyle = "#0dffae11"; ctx.fill();
-    ctx.shadowBlur = 0;
+    // Draw Player (Always facing middle)
+    const px = state.cx + Math.cos(player.ang)*player.r;
+    const py = state.cy + Math.sin(player.ang)*player.r;
+    const lookAngle = Math.atan2(state.cy - py, state.cx - px);
 
-    // Player Ship
-    const px=cx+Math.cos(player.ang)*player.r, py=cy+Math.sin(player.ang)*player.r;
-    ctx.save(); ctx.translate(px,py); ctx.rotate(player.ang + (player.dir > 0 ? 0 : Math.PI));
-    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-8,-8); ctx.lineTo(-8,8); ctx.closePath(); ctx.fill();
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(lookAngle);
+    ctx.fillStyle="#fff";
+    ctx.beginPath();
+    ctx.moveTo(15,0); ctx.lineTo(-10,-8); ctx.lineTo(-10,8); ctx.closePath();
+    ctx.fill();
     ctx.restore();
 
-    // Bullets & Asteroids
-    bullets.forEach(b => { 
-        ctx.fillStyle=b.p?"#0ff":"#ff3b3b"; 
-        ctx.beginPath(); ctx.arc(b.x,b.y,b.p?3:4,0,7); ctx.fill(); 
-    });
+    // Draw Bullets (Grouped by color for performance)
+    ctx.beginPath();
+    for(const b of bullets) { if(!b.p) { ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 4, 0, 7); } }
+    ctx.fillStyle = "#ff4444"; ctx.fill();
+
+    ctx.beginPath();
+    for(const b of bullets) { if(b.p) { ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 3, 0, 7); } }
+    ctx.fillStyle = "#00ffff"; ctx.fill();
+
+    // Draw Asteroids
     ctx.strokeStyle="#444"; ctx.lineWidth=2;
-    asteroids.forEach(a => { ctx.strokeRect(a.x-a.s/2, a.y-a.s/2, a.s, a.s); });
+    ctx.beginPath();
+    for(const a of asteroids) { ctx.rect(a.x-8, a.y-8, 16, 16); }
+    ctx.stroke();
 
     requestAnimationFrame(draw);
 }
 
 let last = performance.now();
-function loop(t){ update((t-last)/1000); last=t; draw(); requestAnimationFrame(loop); }
+function loop(t){ 
+    const dt = Math.min(0.1, (t-last)/1000); // Cap dt to prevent logic jumps
+    last=t; 
+    update(dt); 
+    draw(); 
+}
 initLevel();
-requestAnimationFrame(loop);
+requestAnimationFrame(function(t){ last=t; requestAnimationFrame(loop); });
 </script>
 </body>
 </html>
