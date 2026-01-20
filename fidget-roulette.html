@@ -1,206 +1,292 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Fidget-Roulette: Perfect Alignment</title>
-    <style>
-        :root {
-            --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
-            --wood: #3d1f05; --rim: #2b1606; --table-bg: #0e3a1a;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Fidget Roulette — Corrected Build</title>
 
-        body {
-            margin: 0; background-color: #0a2113;
-            background: radial-gradient(circle at 50% 50%, #1a4d2e, #071a0d);
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif;
-            color: white; position: relative;
-        }
+<style>
+:root{
+  --felt:#1a4d2e;
+  --gold:#d4af37;
+  --gold-bright:#f9e29c;
+  --wood:#3d1f05;
+  --rim:#2b1606;
+  --table-bg:#0e3a1a;
+  --zero:#1e7c46;
+}
 
-        /* Felt Texture */
-        body::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.15; pointer-events: none; z-index: -1;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
+*{box-sizing:border-box}
 
-        .game-wrapper {
-            display: flex; flex-direction: row; align-items: center; gap: 40px;
-            padding: 20px; transform: scale(0.85); z-index: 1;
-        }
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle,#1a4d2e,#071a0d);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  color:#fff;
+}
 
-        /* --- TABLE SECTION (Marker Logic Removed) --- */
-        .table-section { display: flex; flex-direction: column; width: 600px; }
-        
-        .table-grid {
-            background: var(--table-bg); padding: 8px; border-radius: 10px 10px 0 0;
-            border: 3.5px solid var(--gold); border-bottom: none;
-            display: grid; 
-            grid-template-columns: 50px repeat(12, 42px);
-            grid-template-rows: repeat(3, 44px); gap: 2px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
-        }
+.game-wrapper{
+  display:flex;
+  gap:40px;
+  padding:20px;
+}
 
-        .cell {
-            border: 1px solid rgba(212, 175, 55, 0.3); display: flex; align-items: center;
-            justify-content: center; font-weight: 700; position: relative; font-size: 1rem;
-            border-radius: 3px;
-        }
-        .red { background: linear-gradient(180deg, #b22222, #7a1414); }
-        .black { background: linear-gradient(180deg, #222, #000); }
-        .green { background: linear-gradient(180deg, #1e7c46, #134e2d); }
-        .zero { grid-row: 1 / span 3; grid-column: 1; border: 2px solid var(--gold); }
+/* ---------- TABLE ---------- */
 
-        .bet-belts { 
-            display: grid; background: var(--table-bg); border: 3.5px solid var(--gold);
-            border-radius: 0 0 10px 10px; padding: 10px; gap: 8px;
-        }
+.table-section{
+  width:600px;
+  display:flex;
+  flex-direction:column;
+}
 
-        .belt-row { display: grid; grid-template-columns: 50px 1fr; gap: 8px; }
-        .belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .belt2 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
-        
-        .btn {
-            text-align: center; padding: 10px 0; border: 1px solid var(--gold);
-            border-radius: 4px; background: rgba(20, 59, 30, 0.8); 
-            font-size: 0.7rem; font-weight: bold;
-        }
+.table-grid{
+  background:var(--table-bg);
+  padding:8px;
+  border-radius:10px 10px 0 0;
+  border:3px solid var(--gold);
+  border-bottom:none;
+  display:grid;
+  grid-template-columns:50px repeat(12,42px);
+  grid-template-rows:repeat(3,44px);
+  gap:2px;
+}
 
-        /* --- WHEEL SECTION --- */
-        .roulette-container {
-            position: relative; width: 480px; height: 480px;
-            border-radius: 50%; background: var(--wood);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 0 10px var(--rim), 0 0 0 14px var(--gold);
-            display: flex; justify-content: center; align-items: center;
-        }
+.cell{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  border-radius:3px;
+  border:1px solid rgba(212,175,55,.35);
+}
 
-        .needle {
-            position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0; border-left: 16px solid transparent; 
-            border-right: 16px solid transparent; border-top: 35px solid var(--gold-bright);
-            z-index: 200; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
-        }
+.red{background:linear-gradient(#b22222,#7a1414)}
+.black{background:linear-gradient(#222,#000)}
+.green{background:linear-gradient(#1e7c46,#134e2d)}
 
-        .wheel {
-            position: relative; width: 420px; height: 420px; border-radius: 50%;
-            transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);
-            overflow: hidden; border: 6px solid #111;
-        }
+.zero{
+  grid-row:1 / span 3;
+  grid-column:1;
+  border:2px solid var(--gold);
+}
 
-        .slot-label {
-            position: absolute; top: 14px; left: 50%;
-            transform-origin: 50% 196px; 
-            width: 34px; text-align: center;
-            font-weight: 900; font-size: 0.95rem; color: white;
-        }
+.bet-belts{
+  background:var(--table-bg);
+  border:3px solid var(--gold);
+  border-radius:0 0 10px 10px;
+  padding:10px;
+  display:grid;
+  gap:8px;
+}
 
-        #spinBtn {
-            position: absolute; width: 110px; height: 110px; z-index: 100;
-            border-radius: 50%; border: 4px solid #443300; cursor: pointer;
-            background: radial-gradient(circle at 30% 30%, var(--gold-bright) 0%, var(--gold) 40%, #886600 100%);
-            color: #2b1606; font-weight: 900; font-size: 1rem;
-        }
-    </style>
+.belt-row{
+  display:grid;
+  grid-template-columns:50px 1fr;
+  gap:8px;
+}
+
+.belt{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.belt2{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+
+.btn{
+  padding:10px 0;
+  text-align:center;
+  border:1px solid var(--gold);
+  border-radius:4px;
+  font-size:.7rem;
+  font-weight:700;
+  background:rgba(20,59,30,.85);
+}
+
+/* ---------- WHEEL ---------- */
+
+.roulette-container{
+  position:relative;
+  width:460px;
+  height:460px;
+  border-radius:50%;
+  background:var(--wood);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.7),
+    0 0 0 10px var(--rim),
+    0 0 0 14px var(--gold);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.needle{
+  position:absolute;
+  top:-12px;
+  left:50%;
+  transform:translateX(-50%);
+  width:0;height:0;
+  border-left:16px solid transparent;
+  border-right:16px solid transparent;
+  border-top:34px solid var(--gold-bright);
+  z-index:10;
+}
+
+.wheel{
+  width:400px;
+  height:400px;
+  border-radius:50%;
+  border:6px solid #111;
+  position:relative;
+  overflow:hidden;
+  transition:transform 5.5s cubic-bezier(.12,0,0,1);
+}
+
+.slot-label{
+  position:absolute;
+  top:14px;
+  left:50%;
+  width:32px;
+  text-align:center;
+  font-weight:900;
+  font-size:.9rem;
+  color:#fff;
+  transform:translateX(-50%);
+}
+
+#spinBtn{
+  position:absolute;
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  border:4px solid #443300;
+  background:radial-gradient(circle at 30% 30%,var(--gold-bright),var(--gold),#886600);
+  font-weight:900;
+  cursor:pointer;
+  z-index:20;
+}
+
+#spinBtn:disabled{
+  opacity:.6;
+  pointer-events:none;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width:900px){
+  .game-wrapper{
+    flex-direction:column;
+    align-items:center;
+  }
+}
+</style>
 </head>
 <body>
 
 <div class="game-wrapper">
-    <div class="table-section">
-        <div class="table-grid" id="tableGrid">
-            <div class="cell green zero">0</div>
-        </div>
-        <div class="bet-belts">
-            <div class="belt-row">
-                <div></div> <div class="belt">
-                    <div class="btn">1st 12</div><div class="btn">2nd 12</div><div class="btn">3rd 12</div>
-                </div>
-            </div>
-            <div class="belt-row">
-                <div></div> <div class="belt2">
-                    <div class="btn">1-18</div><div class="btn">EVEN</div><div class="btn">RED</div>
-                    <div class="btn">BLACK</div><div class="btn">ODD</div><div class="btn">19-36</div>
-                </div>
-            </div>
-        </div>
+
+  <div class="table-section">
+    <div class="table-grid" id="tableGrid">
+      <div class="cell green zero">0</div>
     </div>
 
-    <div class="roulette-container">
-        <div class="needle"></div>
-        <button id="spinBtn">SPIN</button>
-        <div class="wheel" id="wheel"></div>
+    <div class="bet-belts">
+      <div class="belt-row">
+        <div></div>
+        <div class="belt">
+          <div class="btn">1st 12</div>
+          <div class="btn">2nd 12</div>
+          <div class="btn">3rd 12</div>
+        </div>
+      </div>
+      <div class="belt-row">
+        <div></div>
+        <div class="belt2">
+          <div class="btn">1–18</div>
+          <div class="btn">EVEN</div>
+          <div class="btn">RED</div>
+          <div class="btn">BLACK</div>
+          <div class="btn">ODD</div>
+          <div class="btn">19–36</div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <div class="roulette-container">
+    <div class="needle"></div>
+    <button id="spinBtn">SPIN</button>
+    <div class="wheel" id="wheel"></div>
+  </div>
+
 </div>
 
 <script>
-    const wheel = document.getElementById('wheel');
-    const spinBtn = document.getElementById('spinBtn');
-    const grid = document.getElementById('tableGrid');
+const wheel = document.getElementById("wheel");
+const spinBtn = document.getElementById("spinBtn");
+const grid = document.getElementById("tableGrid");
 
-    const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
-    const step = 360 / numbers.length;
-    const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+const numbers = [
+  0,32,15,19,4,21,2,25,17,34,6,27,
+  13,36,11,30,8,23,10,5,24,16,
+  33,1,20,14,31,9,22,18,29,
+  7,28,12,35,3,26
+];
 
-    // Table Generation
-    for (let c = 0; c < 12; c++) {
-        const rowNums = [3*c+3, 3*c+2, 3*c+1]; 
-        rowNums.forEach((n, rowIndex) => {
-            const cell = document.createElement('div');
-            cell.className = 'cell ' + (redNums.includes(n) ? 'red' : 'black');
-            cell.textContent = n;
-            cell.style.gridColumn = c + 2;
-            cell.style.gridRow = rowIndex + 1;
-            grid.appendChild(cell);
-        });
-    }
+const reds = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+const step = 360 / numbers.length;
 
-    // Wheel Visuals
-    numbers.forEach((num, i) => {
-        const label = document.createElement('div');
-        label.className = 'slot-label';
-        label.innerText = num;
-        label.style.transform = `translateX(-50%) rotate(${(i * step) + (step / 2)}deg)`;
-        wheel.appendChild(label);
-    });
-    
-    const conicParts = numbers.map((num, i) => {
-        const color = num === 0 ? '#1e7c46' : (redNums.includes(num) ? '#c0392b' : '#000');
-        return `${color} ${i * step}deg ${(i + 1) * step}deg`;
-    });
-    wheel.style.background = `conic-gradient(${conicParts.join(',')})`;
+/* ----- TABLE ----- */
 
-    let currentRotation = 0;
+for(let c=0;c<12;c++){
+  const col = [3*c+1,3*c+2,3*c+3];
+  col.forEach((n,i)=>{
+    const cell = document.createElement("div");
+    cell.className = `cell ${reds.has(n) ? "red":"black"}`;
+    cell.textContent = n;
+    cell.style.gridColumn = c+2;
+    cell.style.gridRow = 3-i;
+    grid.appendChild(cell);
+  });
+}
 
-    spinBtn.addEventListener('click', () => {
-        if (spinBtn.disabled) return;
-        spinBtn.disabled = true;
+/* ----- WHEEL VISUAL ----- */
 
-        // 1. Pick a truly random index from the wheel
-        const winIdx = Math.floor(Math.random() * numbers.length);
-        
-        // 2. Continuous rotation logic
-        // We add 5+ full spins (1800deg+) to current rotation so it never spins backwards
-        const spins = 360 * 6; 
-        
-        // 3. Perfect Centering Math:
-        // (winIdx * step) is the start of the slice.
-        // (step / 2) moves the needle to the EXACT middle of that slice.
-        const sliceCenter = (winIdx * step) + (step / 2);
-        
-        // Target is the distance needed to bring that slice center to the top (0deg)
-        const targetDistance = 360 - sliceCenter;
+const radius = wheel.clientWidth/2 - 26;
 
-        // Update currentRotation to keep the wheel spinning forward
-        const baseRotation = Math.ceil(currentRotation / 360) * 360;
-        currentRotation = baseRotation + spins + targetDistance;
+numbers.forEach((num,i)=>{
+  const lbl = document.createElement("div");
+  lbl.className = "slot-label";
+  lbl.textContent = num;
+  lbl.style.transform =
+    `translateX(-50%) rotate(${i*step + step/2}deg)`;
+  lbl.style.transformOrigin = `50% ${radius}px`;
+  wheel.appendChild(lbl);
+});
 
-        wheel.style.transform = `rotate(${currentRotation}deg)`;
+wheel.style.background =
+  `conic-gradient(${numbers.map((n,i)=>{
+    const c = n===0 ? "var(--zero)" : (reds.has(n)?"#c0392b":"#000");
+    return `${c} ${i*step}deg ${(i+1)*step}deg`;
+  }).join(",")})`;
 
-        // Unlock button after transition (5 seconds)
-        setTimeout(() => {
-            spinBtn.disabled = false;
-        }, 5000);
-    });
+/* ----- SPIN LOGIC ----- */
+
+let rotation = 0;
+const needleAngle = 0;
+
+spinBtn.onclick = ()=>{
+  spinBtn.disabled = true;
+
+  const winIdx = Math.floor(Math.random()*numbers.length);
+  const sliceCenter = winIdx*step + step/2;
+  const offset = (needleAngle - sliceCenter + 360) % 360;
+
+  rotation = (rotation % 3600) + 2160 + offset;
+  wheel.style.transform = `rotate(${rotation}deg)`;
+
+  setTimeout(()=>spinBtn.disabled=false,5500);
+};
 </script>
+
 </body>
 </html>
