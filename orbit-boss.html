@@ -3,51 +3,56 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Orbit Boss — One Key Edition</title>
+<title>Orbit Boss — One-Tap Flip</title>
 <style>
-  html,body{margin:0;height:100%;background:#020408;overflow:hidden;color:#fff;font-family:monospace}
+  html,body{margin:0;height:100%;background:#05070a;overflow:hidden;color:#fff;font-family:monospace}
   canvas{display:block;width:100vw;height:100vh}
-  #hud{position:fixed;top:20px;width:100%;text-align:center;pointer-events:none;font-size:1.2rem;text-shadow:0 0 10px #00a2ff}
-  #centerMsg{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,0.7);transition:opacity .3s}
+  #hud{position:fixed;top:20px;width:100%;text-align:center;pointer-events:none;font-size:1.2rem;letter-spacing:2px}
+  #centerMsg{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,0.8);transition:opacity .3s}
   .hidden{opacity:0;pointer-events:none}
+  .stat{color:#00d4ff;font-weight:bold}
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="hud">LEVEL <span id="lvl">1</span> | SCORE <span id="scr">0</span></div>
-<div id="centerMsg"><div id="msg">HOLD SPACE TO MOVE IN<br>RELEASE TO MOVE OUT</div></div>
+<div id="hud">LVL <span id="lvl" class="stat">1</span> | HP <span id="hp" class="stat">100%</span> | SCORE <span id="scr" class="stat">0</span></div>
+<div id="centerMsg"><div id="msg">PRESS <span style="border:1px solid #fff;padding:2px 5px">SPACE</span> TO FLIP DIRECTION</div></div>
 
 <script>
 const canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
 const state={w:0,h:0,lvl:1,score:0,running:true,time:0};
-const player={ang:0, r:250, minR:80, maxR:350, speed:2.5, lastShot:0};
-const boss={hp:20, maxHp:20, r:40, fireT:0};
-const bullets=[], particles=[], asteroids=[], keys={};
+const player={ang:0, r:200, speed:2.8, dir:1, lastShot:0};
+const boss={hp:20, maxHp:20, r:45, fireT:0};
+const bullets=[], asteroids=[];
 
 const resize=()=>{canvas.width=state.w=innerWidth;canvas.height=state.h=innerHeight};
 addEventListener("resize",resize); resize();
 
-// Single Key Control
-const handleInput = (e) => { 
+// Single Action: Flip Direction
+const flip = (e) => {
     if(e.code==='Space' || e.code==='Enter') {
-        keys.active = (e.type === 'keydown');
-        if(!state.running) location.reload();
+        if(!state.running) { location.reload(); return; }
+        player.dir *= -1; // Change direction
         document.getElementById("centerMsg").classList.add("hidden");
     }
 };
-addEventListener("keydown", handleInput);
-addEventListener("keyup", handleInput);
-
-function spawnPart(x,y,c){
-    for(let i=0;i<8;i++) particles.push({x,y,vx:(Math.random()-0.5)*100,vy:(Math.random()-0.5)*100,l:1,c});
-}
+addEventListener("keydown", flip);
 
 function initLevel(){
-    boss.maxHp = 15 + (state.lvl*5);
+    boss.maxHp = 20 + (state.lvl*10);
     boss.hp = boss.maxHp;
     asteroids.length = 0;
-    for(let i=0; i<state.lvl+2; i++) {
-        asteroids.push({x:Math.random()*state.w, y:Math.random()*state.h, vx:(Math.random()-0.5)*100, vy:(Math.random()-0.5)*100, s:20});
+    // Spawn asteroids in a wider circle
+    for(let i=0; i<Math.min(state.lvl+3, 12); i++) {
+        const a = Math.random()*Math.PI*2;
+        const dist = 300 + Math.random()*200;
+        asteroids.push({
+            x:state.w/2 + Math.cos(a)*dist, 
+            y:state.h/2 + Math.sin(a)*dist, 
+            vx:(Math.random()-0.5)*80, 
+            vy:(Math.random()-0.5)*80, 
+            s:18
+        });
     }
 }
 
@@ -55,84 +60,99 @@ function update(dt){
     if(!state.running) return;
     state.time += dt;
 
-    // Movement: Auto-orbit + Space to pull in
-    player.ang += player.speed * dt;
-    if(keys.active) player.r -= 250 * dt;
-    else player.r += 180 * dt;
-    player.r = Math.max(player.minR, Math.min(player.maxR, player.r));
+    // Movement: Auto-orbit with Flip
+    player.ang += (player.speed * player.dir) * dt;
+    // Auto-pulsing radius to add challenge
+    player.r = 180 + Math.sin(state.time * 0.5) * 60;
 
-    // Auto Fire
+    // Auto Fire (Every 0.4 seconds)
     if(state.time - player.lastShot > 0.4){
         player.lastShot = state.time;
         const px = state.w/2 + Math.cos(player.ang)*player.r;
         const py = state.h/2 + Math.sin(player.ang)*player.r;
         const a = Math.atan2(state.h/2-py, state.w/2-px);
-        bullets.push({x:px, y:py, vx:Math.cos(a)*500, vy:Math.sin(a)*500, p:true});
+        bullets.push({x:px, y:py, vx:Math.cos(a)*550, vy:Math.sin(a)*550, p:true});
     }
 
-    // Boss Fire
+    // Boss Patterns
     boss.fireT += dt;
-    if(boss.fireT > Math.max(0.5, 2 - (state.lvl*0.2))){
+    const fireRate = Math.max(0.4, 1.8 - (state.lvl*0.15));
+    if(boss.fireT > fireRate){
         boss.fireT = 0;
-        for(let i=0; i<6; i++){
-            const a = (i/6)*Math.PI*2 + state.time;
-            bullets.push({x:state.w/2, y:state.h/2, vx:Math.cos(a)*150, vy:Math.sin(a)*150, p:false});
+        const count = 4 + Math.min(state.lvl, 6);
+        for(let i=0; i<count; i++){
+            const a = (i/count)*Math.PI*2 + (state.time * 0.5);
+            bullets.push({x:state.w/2, y:state.h/2, vx:Math.cos(a)*180, vy:Math.sin(a)*180, p:false});
         }
     }
 
-    // Physics
     const cx=state.w/2, cy=state.h/2;
     const px=cx+Math.cos(player.ang)*player.r, py=cy+Math.sin(player.ang)*player.r;
 
+    // Bullet Logic
     for(let i=bullets.length-1; i>=0; i--){
         const b = bullets[i];
         b.x += b.vx*dt; b.y += b.vy*dt;
-        if(b.p){
+        
+        if(b.p){ // Player bullet hits boss
             if(Math.hypot(b.x-cx, b.y-cy) < boss.r){
-                bullets.splice(i,1); boss.hp--; state.score+=10;
-                spawnPart(b.x, b.y, "#0ff");
+                bullets.splice(i,1); boss.hp--; state.score+=15;
                 if(boss.hp <= 0) { state.lvl++; initLevel(); }
             }
-        } else {
-            if(Math.hypot(b.x-px, b.y-py) < 15){ state.running = false; document.getElementById("centerMsg").innerHTML = "CRASHED<br>SPACE TO RESTART"; document.getElementById("centerMsg").classList.remove("hidden"); }
+        } else { // Boss bullet hits player
+            if(Math.hypot(b.x-px, b.y-py) < 14){ 
+                state.running = false; 
+                document.getElementById("centerMsg").innerHTML = "DESTROYED<br>SCORE: "+state.score+"<br>PRESS SPACE TO RE-FLY"; 
+                document.getElementById("centerMsg").classList.remove("hidden"); 
+            }
         }
         if(b.x<0||b.x>state.w||b.y<0||b.y>state.h) bullets.splice(i,1);
     }
 
+    // Asteroid Logic
     asteroids.forEach(a => {
         a.x += a.vx*dt; a.y += a.vy*dt;
         if(a.x<0||a.x>state.w) a.vx*=-1; if(a.y<0||a.y>state.h) a.vy*=-1;
-        if(Math.hypot(a.x-px, a.y-py) < a.s + 10) { state.running = false; document.getElementById("centerMsg").innerHTML = "ASTEROID IMPACT<br>SPACE TO RESTART"; document.getElementById("centerMsg").classList.remove("hidden"); }
+        if(Math.hypot(a.x-px, a.y-py) < a.s + 8) { 
+            state.running = false; 
+            document.getElementById("centerMsg").innerHTML = "COLLISION<br>PRESS SPACE"; 
+            document.getElementById("centerMsg").classList.remove("hidden"); 
+        }
     });
-
-    for(let i=particles.length-1; i>=0; i--){
-        particles[i].l -= dt; if(particles[i].l <=0) particles.splice(i,1);
-    }
 
     document.getElementById("lvl").innerText = state.lvl;
     document.getElementById("scr").innerText = state.score;
+    document.getElementById("hp").innerText = Math.ceil((boss.hp/boss.maxHp)*100) + "%";
 }
 
 function draw(){
-    ctx.fillStyle="#020408"; ctx.fillRect(0,0,state.w,state.h);
+    ctx.fillStyle="#05070a"; ctx.fillRect(0,0,state.w,state.h);
     const cx=state.w/2, cy=state.h/2;
 
-    // Boss
-    ctx.strokeStyle = "#0af"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(cx,cy,boss.r + Math.sin(state.time*10)*2,0,Math.PI*2); ctx.stroke();
-    ctx.fillStyle = "#0af2"; ctx.fill();
+    // Orbit Path Hint
+    ctx.strokeStyle="#111"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(cx,cy,player.r,0,Math.PI*2); ctx.stroke();
 
-    // Player
+    // Boss Core
+    ctx.shadowBlur = 15; ctx.shadowColor = "#0dffae";
+    ctx.strokeStyle = "#0dffae"; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(cx,cy,boss.r + Math.sin(state.time*8)*3,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle = "#0dffae11"; ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Player Ship
     const px=cx+Math.cos(player.ang)*player.r, py=cy+Math.sin(player.ang)*player.r;
-    ctx.save(); ctx.translate(px,py); ctx.rotate(player.ang + Math.PI/2);
-    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.moveTo(0,-12); ctx.lineTo(8,8); ctx.lineTo(-8,8); ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.translate(px,py); ctx.rotate(player.ang + (player.dir > 0 ? 0 : Math.PI));
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-8,-8); ctx.lineTo(-8,8); ctx.closePath(); ctx.fill();
     ctx.restore();
 
-    // Elements
-    bullets.forEach(b => { ctx.fillStyle=b.p?"#0ff":"#f36"; ctx.beginPath(); ctx.arc(b.x,b.y,3,0,7); ctx.fill(); });
-    asteroids.forEach(a => { ctx.strokeStyle="#555"; ctx.strokeRect(a.x-a.s/2, a.y-a.s/2, a.s, a.s); });
-    particles.forEach(p => { ctx.fillStyle=p.c; ctx.globalAlpha=p.l; ctx.fillRect(p.x,p.y,2,2); });
-    ctx.globalAlpha=1;
+    // Bullets & Asteroids
+    bullets.forEach(b => { 
+        ctx.fillStyle=b.p?"#0ff":"#ff3b3b"; 
+        ctx.beginPath(); ctx.arc(b.x,b.y,b.p?3:4,0,7); ctx.fill(); 
+    });
+    ctx.strokeStyle="#444"; ctx.lineWidth=2;
+    asteroids.forEach(a => { ctx.strokeRect(a.x-a.s/2, a.y-a.s/2, a.s, a.s); });
 
     requestAnimationFrame(draw);
 }
