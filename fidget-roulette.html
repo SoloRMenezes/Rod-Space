@@ -3,106 +3,70 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Fidget-Roulette: Perfect Alignment</title>
+    <title>Fidget-Roulette: Pro Edition</title>
     <style>
         :root {
             --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
-            --wood: #3d1f05; --rim: #2b1606; --table-bg: #0e3a1a;
+            --wood: #3d1f05; --rim: #2b1606;
         }
 
         body {
-            margin: 0; background-color: #0a2113;
-            background: radial-gradient(circle at 50% 50%, #1a4d2e, #071a0d);
+            margin: 0; background: radial-gradient(circle at 50% 50%, #1a4d2e, #071a0d);
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif;
-            color: white; position: relative;
-        }
-
-        /* Felt Texture */
-        body::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.15; pointer-events: none; z-index: -1;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            color: white;
         }
 
         .game-wrapper {
-            display: flex; flex-direction: row; align-items: center; gap: 40px;
-            padding: 20px; transform: scale(0.85); z-index: 1;
+            display: flex; align-items: center; gap: 60px;
+            transform: scale(0.9);
         }
 
-        /* --- TABLE SECTION --- */
-        .table-section { display: flex; flex-direction: column; width: 600px; }
-        
-        .table-grid {
-            background: var(--table-bg); padding: 8px; border-radius: 10px 10px 0 0;
-            border: 3.5px solid var(--gold); border-bottom: none;
-            display: grid; 
-            grid-template-columns: 50px repeat(12, 42px);
-            grid-template-rows: repeat(3, 44px); gap: 2px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
-        }
+        /* --- TABLE --- */
+        .table-section { width: 550px; border: 3px solid var(--gold); border-radius: 12px; padding: 10px; background: rgba(0,0,0,0.3); }
+        .table-grid { display: grid; grid-template-columns: 50px repeat(12, 1fr); grid-template-rows: repeat(3, 45px); gap: 2px; }
+        .cell { display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 2px; border: 1px solid rgba(255,255,255,0.1); }
+        .red { background: #b22222; }
+        .black { background: #222; }
+        .green { background: #1e7c46; }
+        .zero { grid-row: 1 / span 3; }
 
-        .cell {
-            border: 1px solid rgba(212, 175, 55, 0.3); display: flex; align-items: center;
-            justify-content: center; font-weight: 700; position: relative; font-size: 1rem;
-            border-radius: 3px;
-        }
-        .red { background: linear-gradient(180deg, #b22222, #7a1414); }
-        .black { background: linear-gradient(180deg, #222, #000); }
-        .green { background: linear-gradient(180deg, #1e7c46, #134e2d); }
-        .zero { grid-row: 1 / span 3; grid-column: 1; border: 2px solid var(--gold); }
-
-        .bet-belts { 
-            display: grid; background: var(--table-bg); border: 3.5px solid var(--gold);
-            border-radius: 0 0 10px 10px; padding: 10px; gap: 8px;
-        }
-
-        .belt-row { display: grid; grid-template-columns: 50px 1fr; gap: 8px; }
-        .belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-        .belt2 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
-        
-        .btn {
-            text-align: center; padding: 10px 0; border: 1px solid var(--gold);
-            border-radius: 4px; background: rgba(20, 59, 30, 0.8); 
-            font-size: 0.7rem; font-weight: bold;
-        }
-
-        /* --- WHEEL SECTION --- */
+        /* --- WHEEL --- */
         .roulette-container {
-            position: relative; width: 480px; height: 480px;
+            position: relative; width: 500px; height: 500px;
             border-radius: 50%; background: var(--wood);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 0 10px var(--rim), 0 0 0 14px var(--gold);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 0 8px var(--rim), 0 0 0 12px var(--gold);
             display: flex; justify-content: center; align-items: center;
         }
 
         .needle {
-            position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0; border-left: 16px solid transparent; 
-            border-right: 16px solid transparent; border-top: 35px solid var(--gold-bright);
-            z-index: 200; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 18px solid transparent; 
+            border-right: 18px solid transparent; border-top: 40px solid var(--gold-bright);
+            z-index: 200; filter: drop-shadow(0 4px 5px rgba(0,0,0,0.5));
         }
 
         .wheel {
-            position: relative; width: 420px; height: 420px; border-radius: 50%;
-            transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);
-            overflow: hidden; border: 6px solid #111;
+            position: relative; width: 440px; height: 440px; border-radius: 50%;
+            transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1);
+            border: 5px solid #111;
         }
 
         .slot-label {
-            position: absolute; top: 14px; left: 50%;
-            transform-origin: 50% 196px; 
-            width: 34px; text-align: center;
-            font-weight: 900; font-size: 0.95rem; color: white;
+            position: absolute; top: 15px; left: 50%;
+            transform-origin: 50% 205px; 
+            width: 38px; text-align: center;
+            font-weight: 900; font-size: 1.1rem; color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
 
         #spinBtn {
-            position: absolute; width: 110px; height: 110px; z-index: 100;
+            position: absolute; width: 100px; height: 100px; z-index: 100;
             border-radius: 50%; border: 4px solid #443300; cursor: pointer;
-            background: radial-gradient(circle at 30% 30%, var(--gold-bright) 0%, var(--gold) 40%, #886600 100%);
-            color: #2b1606; font-weight: 900; font-size: 1rem;
-            transition: transform 0.1s;
+            background: radial-gradient(circle at 30% 30%, var(--gold-bright), var(--gold));
+            color: #2b1606; font-weight: 900; font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-        #spinBtn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -111,19 +75,6 @@
     <div class="table-section">
         <div class="table-grid" id="tableGrid">
             <div class="cell green zero">0</div>
-        </div>
-        <div class="bet-belts">
-            <div class="belt-row">
-                <div></div> <div class="belt">
-                    <div class="btn">1st 12</div><div class="btn">2nd 12</div><div class="btn">3rd 12</div>
-                </div>
-            </div>
-            <div class="belt-row">
-                <div></div> <div class="belt2">
-                    <div class="btn">1-18</div><div class="btn">EVEN</div><div class="btn">RED</div>
-                    <div class="btn">BLACK</div><div class="btn">ODD</div><div class="btn">19-36</div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -140,64 +91,51 @@
     const grid = document.getElementById('tableGrid');
 
     const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
-    const step = 360 / numbers.length;
     const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+    const step = 360 / numbers.length;
 
-    // Table Generation
+    // 1. Generate Table
     for (let c = 0; c < 12; c++) {
-        const rowNums = [3*c+3, 3*c+2, 3*c+1]; 
-        rowNums.forEach((n, rowIndex) => {
+        [3*c+3, 3*c+2, 3*c+1].forEach((n, i) => {
             const cell = document.createElement('div');
-            cell.className = 'cell ' + (redNums.includes(n) ? 'red' : 'black');
+            cell.className = `cell ${redNums.includes(n) ? 'red' : 'black'}`;
             cell.textContent = n;
             cell.style.gridColumn = c + 2;
-            cell.style.gridRow = rowIndex + 1;
+            cell.style.gridRow = i + 1;
             grid.appendChild(cell);
         });
     }
 
-    // Wheel Visuals
+    // 2. Build Wheel Visuals
+    let gradientStops = [];
     numbers.forEach((num, i) => {
+        // Label logic
         const label = document.createElement('div');
         label.className = 'slot-label';
         label.innerText = num;
-        // Position number at exactly i * step
         label.style.transform = `translateX(-50%) rotate(${i * step}deg)`;
         wheel.appendChild(label);
+
+        // Gradient logic - centered on the number
+        const color = num === 0 ? '#1e7c46' : (redNums.includes(num) ? '#c0392b' : '#111');
+        gradientStops.push(`${color} ${(i * step) - (step / 2)}deg ${((i + 1) * step) - (step / 2)}deg`);
     });
     
-    // Background: Offsetting by half-step to ensure numbers are centered in color slots
-    const conicParts = numbers.map((num, i) => {
-        const color = num === 0 ? '#1e7c46' : (redNums.includes(num) ? '#c0392b' : '#000');
-        const startDeg = (i * step) - (step / 2);
-        const endDeg = ((i + 1) * step) - (step / 2);
-        return `${color} ${startDeg}deg ${endDeg}deg`;
-    });
-    wheel.style.background = `conic-gradient(${conicParts.join(',')})`;
+    wheel.style.background = `conic-gradient(${gradientStops.join(',')})`;
 
-    let currentRotation = 0;
-
+    // 3. Spin Logic
+    let rotation = 0;
     spinBtn.addEventListener('click', () => {
         if (spinBtn.disabled) return;
         spinBtn.disabled = true;
 
-        // Choose random winner
         const winIdx = Math.floor(Math.random() * numbers.length);
-        const winningNumber = numbers[winIdx];
+        const targetRotation = 360 - (winIdx * step);
         
-        // Spinning logic
-        const spins = 360 * 8; // 8 full spins
-        const targetDistance = 360 - (winIdx * step);
+        rotation += (360 * 10) + targetRotation - (rotation % 360);
+        wheel.style.transform = `rotate(${rotation}deg)`;
 
-        // Ensure currentRotation only increases (always spins forward)
-        const baseRotation = Math.ceil(currentRotation / 360) * 360;
-        currentRotation = baseRotation + spins + targetDistance;
-
-        wheel.style.transform = `rotate(${currentRotation}deg)`;
-
-        // Log winner after animation ends
         setTimeout(() => {
-            console.log("Ball landed on: " + winningNumber);
             spinBtn.disabled = false;
         }, 5000);
     });
