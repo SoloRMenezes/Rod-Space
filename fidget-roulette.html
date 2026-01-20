@@ -2,30 +2,73 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Fidget-Roulette: Physics Fix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Fidget-Roulette: Mobile Pro</title>
     <style>
         :root {
             --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
-            --wood: #3d1f05; --rim: #2b1606;
+            --wood: #3d1f05; --rim: #2b1606; --table-bg: #0e3a1a;
         }
 
         body {
             margin: 0; background: radial-gradient(circle at 50% 50%, #2a5c3d, #0a2113);
             display: flex; justify-content: center; align-items: center;
-            height: 100vh; overflow: hidden; font-family: sans-serif;
+            min-height: 100vh; overflow-x: hidden; font-family: 'Segoe UI', sans-serif;
+            color: white;
         }
 
+        /* Responsive Wrapper */
+        .game-wrapper {
+            display: flex; flex-direction: row; align-items: center; gap: 40px;
+            padding: 20px; transform-origin: center;
+        }
+
+        /* --- TABLE SECTION --- */
+        .table-section { display: flex; flex-direction: column; gap: 10px; }
+        
+        .table-grid {
+            background: var(--table-bg); padding: 12px; border-radius: 8px;
+            border: 3px solid var(--gold); box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+            display: grid; grid-template-columns: 50px repeat(12, 45px);
+            grid-template-rows: repeat(3, 45px); gap: 1px;
+        }
+
+        .cell {
+            border: 1px solid var(--gold); display: flex; align-items: center;
+            justify-content: center; font-weight: 700; position: relative; font-size: 0.9rem;
+        }
+        .red { background: linear-gradient(180deg, #b22222, #7a1414); }
+        .black { background: linear-gradient(180deg, #222, #000); }
+        .green { background: linear-gradient(180deg, #1e7c46, #134e2d); }
+        .zero { grid-row: 1 / span 3; grid-column: 1; }
+
+        .bet-belts { display: grid; gap: 5px; width: 100%; }
+        .belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .belt2 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+        .belt div, .belt2 div {
+            text-align: center; padding: 10px 0; border: 1.5px solid var(--gold);
+            border-radius: 4px; background: #143b1e; font-size: 0.7rem; font-weight: bold;
+        }
+
+        .marker {
+            position: absolute; width: 12px; height: 12px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #aaa);
+            box-shadow: 0 0 10px #fff; animation: pop 0.3s ease-out;
+        }
+        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+
+        /* --- WHEEL SECTION --- */
         .roulette-container {
-            position: relative; width: 580px; height: 580px;
+            position: relative; width: 500px; height: 500px;
             border-radius: 50%; background: var(--wood);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.7), inset 0 0 50px rgba(0,0,0,0.9),
-                        0 0 0 12px var(--rim), 0 0 0 15px var(--gold);
-            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.9),
+                        0 0 0 10px var(--rim), 0 0 0 12px var(--gold);
+            display: flex; justify-content: center; align-items: center; flex-shrink: 0;
         }
 
         .wheel {
-            position: relative; width: 500px; height: 500px;
-            border-radius: 50%; border: 6px solid #111;
+            position: relative; width: 440px; height: 440px;
+            border-radius: 50%; border: 4px solid #111;
             box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
             transition: transform 6s cubic-bezier(0.15, 0, 0.15, 1);
             overflow: hidden;
@@ -33,50 +76,74 @@
 
         .slot-label {
             position: absolute; top: 12px; left: 50%;
-            transform-origin: 50% 238px; width: 38px; text-align: center;
-            font-weight: 900; font-size: 1.1rem; color: white;
+            transform-origin: 50% 208px; width: 30px; text-align: center;
+            font-weight: 900; font-size: 0.95rem; color: white;
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         #spinBtn {
-            position: absolute; width: 130px; height: 130px; z-index: 100;
-            border-radius: 50%; border: 4px solid #443300; cursor: pointer;
+            position: absolute; width: 100px; height: 100px; z-index: 100;
+            border-radius: 50%; border: 3px solid #443300; cursor: pointer;
             background: radial-gradient(circle at 30% 30%, var(--gold-bright) 0%, var(--gold) 40%, #886600 100%);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.6);
-            display: flex; align-items: center; justify-content: center;
-            color: #2b1606; font-weight: 900; font-size: 1.1rem; transition: 0.1s;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.6);
+            color: #2b1606; font-weight: 900; font-size: 0.9rem; transition: 0.1s;
         }
+        #spinBtn:active { transform: scale(0.95); }
 
-        #spinBtn:active { transform: scale(0.96); }
-
-        /* --- THE PHYSICS FIX --- */
-        /* This container rotates around the center */
         #ball-track {
             position: absolute; width: 100%; height: 100%;
             transition: transform 6s cubic-bezier(0.1, 0, 0.2, 1);
             z-index: 90; pointer-events: none;
         }
 
-        /* This is the actual ball moving up and down (Radius) */
         .ball {
-            position: absolute; width: 18px; height: 18px;
-            background: radial-gradient(circle at 30% 30%, #fff, #bbb, #888);
+            position: absolute; width: 14px; height: 14px;
+            background: radial-gradient(circle at 30% 30%, #fff, #bbb);
             border-radius: 50%; top: 50%; left: 50%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
-            /* Start in the outer rim */
-            transform: translate(-50%, -230px);
-            transition: transform 0.6s ease-out;
+            transform: translate(-50%, -205px);
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Mobile Scale Logic */
+        @media (max-width: 1100px) {
+            .game-wrapper { transform: scale(0.85); gap: 20px; }
+        }
+
+        @media (max-width: 900px) {
+            .game-wrapper { transform: scale(0.65); }
+        }
+
+        /* Force landscape prompt for very narrow screens */
+        @media (orientation: portrait) {
+            body::after {
+                content: "Please rotate your phone sideways ↻";
+                position: fixed; inset: 0; background: #0a2113;
+                display: flex; align-items: center; justify-content: center;
+                z-index: 1000; font-weight: bold; font-size: 1.2rem;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="roulette-container">
-    <button id="spinBtn">SPIN</button>
-    <div id="ball-track">
-        <div class="ball" id="ball"></div>
+<div class="game-wrapper">
+    <div class="table-section">
+        <div class="table-grid" id="tableGrid">
+            <div class="cell green zero" data-num="0">0</div>
+        </div>
+        <div class="bet-belts">
+            <div class="belt"><div>1st 12</div><div>2nd 12</div><div>3rd 12</div></div>
+            <div class="belt2"><div>1-18</div><div>EVEN</div><div>RED</div><div>BLACK</div><div>ODD</div><div>19-36</div></div>
+        </div>
     </div>
-    <div class="wheel" id="wheel"></div>
+
+    <div class="roulette-container">
+        <button id="spinBtn">SPIN</button>
+        <div id="ball-track">
+            <div class="ball" id="ball"></div>
+        </div>
+        <div class="wheel" id="wheel"></div>
+    </div>
 </div>
 
 <script>
@@ -84,12 +151,25 @@
     const ball = document.getElementById('ball');
     const track = document.getElementById('ball-track');
     const spinBtn = document.getElementById('spinBtn');
+    const grid = document.getElementById('tableGrid');
 
     const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
     const total = numbers.length;
     const step = 360 / total;
 
-    // Build UI
+    // 1. Build Table Grid
+    for (let c = 0; c < 12; c++) {
+        const n1=3*c+1, n2=3*c+2, n3=3*c+3;
+        [n3, n2, n1].forEach(n => {
+            const cell = document.createElement('div');
+            cell.className = 'cell ' + (n % 2 === 0 ? 'black' : 'red');
+            cell.textContent = n;
+            cell.dataset.num = n;
+            grid.appendChild(cell);
+        });
+    }
+
+    // 2. Build Wheel
     let conicParts = [];
     numbers.forEach((num, i) => {
         const color = num === 0 ? '#27ae60' : (i % 2 === 0 ? '#000' : '#c0392b');
@@ -97,51 +177,56 @@
         const label = document.createElement('div');
         label.className = 'slot-label';
         label.innerText = num;
-        label.style.transform = `translateX(-50%) rotate(${i * step}deg)`;
+        const centerRotation = (i * step) + (step / 2);
+        label.style.transform = `translateX(-50%) rotate(${centerRotation}deg)`;
         wheel.appendChild(label);
     });
     wheel.style.background = `conic-gradient(${conicParts.join(',')})`;
 
     let wheelRotation = 0;
     let ballRotation = 0;
+    let lastMarker = null;
 
     spinBtn.addEventListener('click', () => {
         if (spinBtn.disabled) return;
         spinBtn.disabled = true;
 
         const winIndex = Math.floor(Math.random() * total);
-        
-        // 1. Reset ball to rim
         ball.style.transition = 'none';
-        ball.style.transform = 'translate(-50%, -230px)';
-        
-        // 2. Calculate rotations
-        // Wheel spins clockwise, Ball spins counter-clockwise faster
+        ball.style.transform = 'translate(-50%, -205px)';
+        ball.offsetHeight; // reflow
+
         const extraWheel = 360 * 5;
         const extraBall = 360 * 8;
-        
         const wheelFinal = extraWheel + (360 - (winIndex * step));
         const ballFinal = - (extraBall + (winIndex * step));
 
         wheelRotation += wheelFinal;
         ballRotation += ballFinal;
 
-        // 3. Execute animations
         wheel.style.transform = `rotate(${wheelRotation}deg)`;
-        track.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.15, 1)';
+        track.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.2, 1)';
         track.style.transform = `rotate(${ballRotation}deg)`;
 
-        // 4. The Landing Sequence
         setTimeout(() => {
-            // Drop ball from -230px (rim) to -172px (pocket)
-            ball.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            ball.style.transform = 'translate(-50%, -172px)';
+            ball.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            ball.style.transform = 'translate(-50%, -152px)';
             
-            console.log("WINNER:", numbers[winIndex]);
-            
-            setTimeout(() => { spinBtn.disabled = false; }, 500);
+            setTimeout(() => {
+                placeMarker(numbers[winIndex]);
+                spinBtn.disabled = false;
+            }, 600);
         }, 6000);
     });
+
+    function placeMarker(num) {
+        if (lastMarker) lastMarker.remove();
+        const target = document.querySelector(`[data-num="${num}"]`);
+        const marker = document.createElement('div');
+        marker.className = 'marker';
+        target.appendChild(marker);
+        lastMarker = marker;
+    }
 </script>
 
 </body>
