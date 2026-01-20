@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Fidget-Roulette: Textured Edition</title>
+    <title>Fidget-Roulette: Final Fix</title>
     <style>
         :root {
             --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
@@ -11,51 +11,40 @@
         }
 
         body {
-            margin: 0;
-            background-color: #0a2113;
+            margin: 0; background-color: #0a2113;
             background: radial-gradient(circle at 50% 50%, #1a4d2e, #071a0d);
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif;
-            color: white;
-            position: relative;
+            color: white; position: relative;
         }
 
-        /* Felt Grain Texture Overlay */
         body::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.15;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: -1;
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.15; pointer-events: none; z-index: -1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
 
         .game-wrapper {
-            display: flex; flex-direction: row; align-items: center; gap: 50px;
-            padding: 20px; 
-            transform: scale(1); /* Bigger scale to fit the screen better */
-            z-index: 1;
+            display: flex; flex-direction: row; align-items: center; gap: 40px;
+            padding: 20px; transform: scale(0.85); z-index: 1;
         }
 
-        /* --- TABLE SECTION --- */
-        .table-section { 
-            display: flex; flex-direction: column; 
-            width: 630px; 
-        }
+        /* --- TABLE SECTION: TIGHTENED WIDTHS --- */
+        .table-section { display: flex; flex-direction: column; width: 600px; }
         
         .table-grid {
-            background: var(--table-bg); padding: 10px; border-radius: 10px 10px 0 0;
+            background: var(--table-bg); padding: 8px; border-radius: 10px 10px 0 0;
             border: 3.5px solid var(--gold); border-bottom: none;
             display: grid; 
-            grid-template-columns: 55px repeat(12, 46px);
-            grid-template-rows: repeat(3, 46px); gap: 2.5px;
+            /* Reduced column width from 55/46 to 50/42 to prevent "going out" */
+            grid-template-columns: 50px repeat(12, 42px);
+            grid-template-rows: repeat(3, 44px); gap: 2px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
         }
 
         .cell {
             border: 1px solid rgba(212, 175, 55, 0.3); display: flex; align-items: center;
-            justify-content: center; font-weight: 700; position: relative; font-size: 1.1rem;
+            justify-content: center; font-weight: 700; position: relative; font-size: 1rem;
             border-radius: 3px;
         }
         .red { background: linear-gradient(180deg, #b22222, #7a1414); }
@@ -65,34 +54,32 @@
 
         .bet-belts { 
             display: grid; background: var(--table-bg); border: 3.5px solid var(--gold);
-            border-radius: 0 0 10px 10px; padding: 12px; gap: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 0 0 10px 10px; padding: 10px; gap: 8px;
         }
 
-        .belt-row { display: grid; grid-template-columns: 55px 1fr; gap: 8px; }
-        .belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .belt2 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+        .belt-row { display: grid; grid-template-columns: 50px 1fr; gap: 8px; }
+        .belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .belt2 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
         
         .btn {
-            text-align: center; padding: 12px 0; border: 1px solid var(--gold);
+            text-align: center; padding: 10px 0; border: 1px solid var(--gold);
             border-radius: 4px; background: rgba(20, 59, 30, 0.8); 
-            font-size: 0.75rem; font-weight: bold; text-transform: uppercase;
+            font-size: 0.7rem; font-weight: bold;
         }
 
-        /* THE MARKER */
+        /* --- MARKER: ADJUSTED FOR SMALLER CELLS --- */
         .marker {
-            position: absolute; width: 42px; height: 42px; border-radius: 50%;
+            position: absolute; width: 36px; height: 36px; border-radius: 50%;
             background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.4), rgba(255,255,255,0.05));
-            border: 2px solid rgba(255,255,255,0.6);
-            box-shadow: 0 0 12px rgba(255,255,255,0.3);
+            border: 2.5px solid rgba(255,255,255,0.7);
             z-index: 10; pointer-events: none;
             animation: markerEntry 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes markerEntry { from { transform: scale(1.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* --- WHEEL SECTION --- */
+        /* --- WHEEL SECTION: ALIGNED NEEDLE --- */
         .roulette-container {
-            position: relative; width: 500px; height: 500px;
+            position: relative; width: 480px; height: 480px;
             border-radius: 50%; background: var(--wood);
             box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 0 10px var(--rim), 0 0 0 14px var(--gold);
             display: flex; justify-content: center; align-items: center;
@@ -100,36 +87,30 @@
 
         .needle {
             position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 18px solid transparent; border-right: 18px solid transparent;
-            border-top: 40px solid var(--gold-bright);
+            width: 0; height: 0; border-left: 16px solid transparent; 
+            border-right: 16px solid transparent; border-top: 35px solid var(--gold-bright);
             z-index: 200; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
         }
 
         .wheel {
-            position: relative; width: 440px; height: 440px; border-radius: 50%;
+            position: relative; width: 420px; height: 420px; border-radius: 50%;
             transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);
             overflow: hidden; border: 6px solid #111;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.9);
         }
 
         .slot-label {
-            position: absolute; top: 16px; left: 50%;
-            transform-origin: 50% 204px; width: 36px; text-align: center;
-            font-weight: 900; font-size: 1rem; color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            position: absolute; top: 14px; left: 50%;
+            transform-origin: 50% 196px; /* Centered for 420px wheel */
+            width: 34px; text-align: center;
+            font-weight: 900; font-size: 0.95rem; color: white;
         }
 
         #spinBtn {
-            position: absolute; width: 120px; height: 120px; z-index: 100;
+            position: absolute; width: 110px; height: 110px; z-index: 100;
             border-radius: 50%; border: 4px solid #443300; cursor: pointer;
             background: radial-gradient(circle at 30% 30%, var(--gold-bright) 0%, var(--gold) 40%, #886600 100%);
-            color: #2b1606; font-weight: 900; font-size: 1.1rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.5);
-            transition: transform 0.1s;
+            color: #2b1606; font-weight: 900; font-size: 1rem;
         }
-        #spinBtn:active { transform: scale(0.95); }
-
     </style>
 </head>
 <body>
@@ -171,12 +152,14 @@
     const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
     const step = 360 / numbers.length;
 
-    // Table Generation: Aligned and Sized
+    // Table Generation Fix
     for (let c = 0; c < 12; c++) {
         const rowNums = [3*c+3, 3*c+2, 3*c+1]; 
         rowNums.forEach((n, rowIndex) => {
             const cell = document.createElement('div');
-            cell.className = 'cell ' + (n % 2 === 0 ? 'black' : 'red');
+            // Correct European color pattern
+            const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+            cell.className = 'cell ' + (redNums.includes(n) ? 'red' : 'black');
             cell.textContent = n;
             cell.dataset.num = n;
             cell.style.gridColumn = c + 2;
@@ -186,17 +169,21 @@
     }
 
     // Wheel Setup
-    let conic = [];
     numbers.forEach((num, i) => {
-        const color = num === 0 ? '#27ae60' : (i % 2 === 0 ? '#000' : '#c0392b');
-        conic.push(`${color} ${i * step}deg ${(i+1) * step}deg`);
+        const color = num === 0 ? '#1e7c46' : ([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(num) ? '#c0392b' : '#000');
         const label = document.createElement('div');
         label.className = 'slot-label';
         label.innerText = num;
         label.style.transform = `translateX(-50%) rotate(${(i * step) + (step / 2)}deg)`;
         wheel.appendChild(label);
     });
-    wheel.style.background = `conic-gradient(${conic.join(',')})`;
+    
+    // Generate wheel background colors to match labels exactly
+    const conicParts = numbers.map((num, i) => {
+        const color = num === 0 ? '#1e7c46' : ([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(num) ? '#c0392b' : '#000');
+        return `${color} ${i * step}deg ${(i + 1) * step}deg`;
+    });
+    wheel.style.background = `conic-gradient(${conicParts.join(',')})`;
 
     let currentRotation = 0;
     let lastMarker = null;
@@ -206,8 +193,12 @@
         spinBtn.disabled = true;
 
         const winIdx = Math.floor(Math.random() * numbers.length);
+        
+        // --- CALCULATION FIX ---
+        // sliceRotation targets the start of the wedge. 
+        // (step/2) centers the needle in the middle of that wedge.
         const sliceRotation = (winIdx * step) + (step / 2);
-        const rotationNeeded = (360 * 7) + (360 - sliceRotation);
+        const rotationNeeded = (360 * 8) + (360 - sliceRotation);
         
         currentRotation += rotationNeeded;
         wheel.style.transform = `rotate(${currentRotation}deg)`;
@@ -217,11 +208,12 @@
             const winNum = numbers[winIdx];
             const target = document.querySelector(`[data-num="${winNum}"]`);
             
-            const m = document.createElement('div');
-            m.className = 'marker';
-            target.appendChild(m);
-            lastMarker = m;
-            
+            if (target) {
+                const m = document.createElement('div');
+                m.className = 'marker';
+                target.appendChild(m);
+                lastMarker = m;
+            }
             spinBtn.disabled = false;
         }, 5100);
     });
