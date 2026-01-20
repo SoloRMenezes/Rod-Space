@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Fidget-Roulette: Mobile Pro</title>
+    <title>Fidget-Roulette: Final Fix</title>
     <style>
         :root {
             --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
@@ -13,83 +13,91 @@
         body {
             margin: 0; background: radial-gradient(circle at 50% 50%, #2a5c3d, #0a2113);
             display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; overflow-x: hidden; font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif;
             color: white;
         }
 
-        /* Responsive Wrapper */
         .game-wrapper {
             display: flex; flex-direction: row; align-items: center; gap: 40px;
-            padding: 20px; transform-origin: center;
+            padding: 20px;
         }
 
         /* --- TABLE SECTION --- */
-        .table-section { display: flex; flex-direction: column; gap: 10px; }
+        .table-section { 
+            display: flex; flex-direction: column; gap: 0; 
+            width: 615px; /* Matches 50px zero + 12*47px cells + padding */
+        }
         
         .table-grid {
-            background: var(--table-bg); padding: 12px; border-radius: 8px;
-            border: 3px solid var(--gold); box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+            background: var(--table-bg); padding: 10px; border-radius: 8px 8px 0 0;
+            border: 3px solid var(--gold); border-bottom: none;
             display: grid; grid-template-columns: 50px repeat(12, 45px);
-            grid-template-rows: repeat(3, 45px); gap: 1px;
+            grid-template-rows: repeat(3, 45px); gap: 2px;
         }
 
         .cell {
-            border: 1px solid var(--gold); display: flex; align-items: center;
+            border: 1px solid rgba(212, 175, 55, 0.4); display: flex; align-items: center;
             justify-content: center; font-weight: 700; position: relative; font-size: 0.9rem;
         }
         .red { background: linear-gradient(180deg, #b22222, #7a1414); }
         .black { background: linear-gradient(180deg, #222, #000); }
         .green { background: linear-gradient(180deg, #1e7c46, #134e2d); }
-        .zero { grid-row: 1 / span 3; grid-column: 1; }
+        .zero { grid-row: 1 / span 3; grid-column: 1; border: 1px solid var(--gold); }
 
-        .bet-belts { display: grid; gap: 5px; width: 100%; }
+        /* ALIGNMENT FIX: Belts now match the 12-column grid width */
+        .bet-belts { 
+            display: grid; width: 100%; background: var(--table-bg);
+            border: 3px solid var(--gold); border-radius: 0 0 8px 8px;
+            padding: 5px 10px 10px 10px; box-sizing: border-box; gap: 5px;
+        }
+        .belt-offset-row { display: grid; grid-template-columns: 50px 1fr; gap: 2px; }
         .belt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
         .belt2 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
-        .belt div, .belt2 div {
-            text-align: center; padding: 10px 0; border: 1.5px solid var(--gold);
+        
+        .bet-belts div.btn {
+            text-align: center; padding: 10px 0; border: 1px solid var(--gold);
             border-radius: 4px; background: #143b1e; font-size: 0.7rem; font-weight: bold;
         }
 
+        /* BIG TRANSPARENT BALL MARKER */
         .marker {
-            position: absolute; width: 12px; height: 12px; border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #fff, #aaa);
-            box-shadow: 0 0 10px #fff; animation: pop 0.3s ease-out;
+            position: absolute; width: 35px; height: 35px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+            border: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            z-index: 10; pointer-events: none;
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+        @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* --- WHEEL SECTION --- */
         .roulette-container {
             position: relative; width: 500px; height: 500px;
             border-radius: 50%; background: var(--wood);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.9),
-                        0 0 0 10px var(--rim), 0 0 0 12px var(--gold);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 0 10px var(--rim), 0 0 0 12px var(--gold);
             display: flex; justify-content: center; align-items: center; flex-shrink: 0;
         }
 
         .wheel {
-            position: relative; width: 440px; height: 440px;
-            border-radius: 50%; border: 4px solid #111;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+            position: relative; width: 440px; height: 440px; border-radius: 50%;
             transition: transform 6s cubic-bezier(0.15, 0, 0.15, 1);
-            overflow: hidden;
+            overflow: hidden; border: 4px solid #111;
         }
 
         .slot-label {
             position: absolute; top: 12px; left: 50%;
             transform-origin: 50% 208px; width: 30px; text-align: center;
             font-weight: 900; font-size: 0.95rem; color: white;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         #spinBtn {
             position: absolute; width: 100px; height: 100px; z-index: 100;
             border-radius: 50%; border: 3px solid #443300; cursor: pointer;
             background: radial-gradient(circle at 30% 30%, var(--gold-bright) 0%, var(--gold) 40%, #886600 100%);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.6);
-            color: #2b1606; font-weight: 900; font-size: 0.9rem; transition: 0.1s;
+            color: #2b1606; font-weight: 900; font-size: 0.9rem;
         }
-        #spinBtn:active { transform: scale(0.95); }
 
+        /* DEFINITIVE FIX: Separate Orbital Track */
         #ball-track {
             position: absolute; width: 100%; height: 100%;
             transition: transform 6s cubic-bezier(0.1, 0, 0.2, 1);
@@ -97,29 +105,20 @@
         }
 
         .ball {
-            position: absolute; width: 14px; height: 14px;
+            position: absolute; width: 16px; height: 16px;
             background: radial-gradient(circle at 30% 30%, #fff, #bbb);
             border-radius: 50%; top: 50%; left: 50%;
-            transform: translate(-50%, -205px);
+            /* Lock to orbit radius */
+            transform: translate(-50%, -205px); 
             transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Mobile Scale Logic */
-        @media (max-width: 1100px) {
-            .game-wrapper { transform: scale(0.85); gap: 20px; }
-        }
-
-        @media (max-width: 900px) {
-            .game-wrapper { transform: scale(0.65); }
-        }
-
-        /* Force landscape prompt for very narrow screens */
         @media (orientation: portrait) {
             body::after {
                 content: "Please rotate your phone sideways ↻";
                 position: fixed; inset: 0; background: #0a2113;
                 display: flex; align-items: center; justify-content: center;
-                z-index: 1000; font-weight: bold; font-size: 1.2rem;
+                z-index: 1000; font-weight: bold;
             }
         }
     </style>
@@ -132,8 +131,18 @@
             <div class="cell green zero" data-num="0">0</div>
         </div>
         <div class="bet-belts">
-            <div class="belt"><div>1st 12</div><div>2nd 12</div><div>3rd 12</div></div>
-            <div class="belt2"><div>1-18</div><div>EVEN</div><div>RED</div><div>BLACK</div><div>ODD</div><div>19-36</div></div>
+            <div class="belt-offset-row">
+                <div></div> <div class="belt">
+                    <div class="btn">1st 12</div><div class="btn">2nd 12</div><div class="btn">3rd 12</div>
+                </div>
+            </div>
+            <div class="belt-offset-row">
+                <div></div>
+                <div class="belt2">
+                    <div class="btn">1-18</div><div class="btn">EVEN</div><div class="btn">RED</div>
+                    <div class="btn">BLACK</div><div class="btn">ODD</div><div class="btn">19-36</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -154,13 +163,12 @@
     const grid = document.getElementById('tableGrid');
 
     const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
-    const total = numbers.length;
-    const step = 360 / total;
+    const step = 360 / numbers.length;
 
-    // 1. Build Table Grid
+    // Build Table
     for (let c = 0; c < 12; c++) {
-        const n1=3*c+1, n2=3*c+2, n3=3*c+3;
-        [n3, n2, n1].forEach(n => {
+        const nArr = [3*c+3, 3*c+2, 3*c+1];
+        nArr.forEach(n => {
             const cell = document.createElement('div');
             cell.className = 'cell ' + (n % 2 === 0 ? 'black' : 'red');
             cell.textContent = n;
@@ -169,65 +177,57 @@
         });
     }
 
-    // 2. Build Wheel
-    let conicParts = [];
+    // Build Wheel with correct labels
+    let conic = [];
     numbers.forEach((num, i) => {
         const color = num === 0 ? '#27ae60' : (i % 2 === 0 ? '#000' : '#c0392b');
-        conicParts.push(`${color} ${i * step}deg ${(i + 1) * step}deg`);
+        conic.push(`${color} ${i * step}deg ${(i+1) * step}deg`);
         const label = document.createElement('div');
         label.className = 'slot-label';
         label.innerText = num;
-        const centerRotation = (i * step) + (step / 2);
-        label.style.transform = `translateX(-50%) rotate(${centerRotation}deg)`;
+        label.style.transform = `translateX(-50%) rotate(${(i * step) + (step / 2)}deg)`;
         wheel.appendChild(label);
     });
-    wheel.style.background = `conic-gradient(${conicParts.join(',')})`;
+    wheel.style.background = `conic-gradient(${conic.join(',')})`;
 
-    let wheelRotation = 0;
-    let ballRotation = 0;
-    let lastMarker = null;
+    let wRot = 0, bRot = 0, lastMarker = null;
 
     spinBtn.addEventListener('click', () => {
         if (spinBtn.disabled) return;
         spinBtn.disabled = true;
 
-        const winIndex = Math.floor(Math.random() * total);
+        const winIdx = Math.floor(Math.random() * numbers.length);
+        
+        // Reset Ball Radius to Rim
         ball.style.transition = 'none';
         ball.style.transform = 'translate(-50%, -205px)';
-        ball.offsetHeight; // reflow
+        ball.offsetHeight; 
 
-        const extraWheel = 360 * 5;
-        const extraBall = 360 * 8;
-        const wheelFinal = extraWheel + (360 - (winIndex * step));
-        const ballFinal = - (extraBall + (winIndex * step));
+        const wFinal = (360 * 5) + (360 - (winIdx * step));
+        const bFinal = - ((360 * 8) + (winIdx * step));
 
-        wheelRotation += wheelFinal;
-        ballRotation += ballFinal;
+        wRot += wFinal; bRot += bFinal;
 
-        wheel.style.transform = `rotate(${wheelRotation}deg)`;
+        wheel.style.transform = `rotate(${wRot}deg)`;
         track.style.transition = 'transform 6s cubic-bezier(0.1, 0, 0.2, 1)';
-        track.style.transform = `rotate(${ballRotation}deg)`;
+        track.style.transform = `rotate(${bRot}deg)`;
 
         setTimeout(() => {
+            // Drop to pocket radius
             ball.style.transition = 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            ball.style.transform = 'translate(-50%, -152px)';
+            ball.style.transform = 'translate(-50%, -155px)';
             
             setTimeout(() => {
-                placeMarker(numbers[winIndex]);
+                if (lastMarker) lastMarker.remove();
+                const target = document.querySelector(`[data-num="${numbers[winIdx]}"]`);
+                const m = document.createElement('div');
+                m.className = 'marker';
+                target.appendChild(m);
+                lastMarker = m;
                 spinBtn.disabled = false;
             }, 600);
         }, 6000);
     });
-
-    function placeMarker(num) {
-        if (lastMarker) lastMarker.remove();
-        const target = document.querySelector(`[data-num="${num}"]`);
-        const marker = document.createElement('div');
-        marker.className = 'marker';
-        target.appendChild(marker);
-        lastMarker = marker;
-    }
 </script>
-
 </body>
 </html>
