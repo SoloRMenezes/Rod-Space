@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Orbit Boss — Clean Mechanical Core</title>
+<title>Orbit Boss — Single-Press Logic</title>
 <style>
   html,body{margin:0;height:100%;background:#010205;overflow:hidden;color:#fff;font-family: 'Courier New', monospace}
   canvas{display:block;width:100vw;height:100vh}
@@ -21,14 +21,17 @@
   <div style="letter-spacing:2px">LVL <span id="lvl" class="stat">1</span> | SCORE <span id="scr" class="stat">0</span></div>
   <div id="hp-container"><div id="hp-bar"></div></div>
 </div>
-<div id="centerMsg"><div id="msg">PRESS SPACE TO START<br><small style="opacity:0.6; font-size:0.8rem">TAP SPACE TO FLIP & FIRE</small></div></div>
+<div id="centerMsg"><div id="msg">PRESS SPACE TO START<br><small style="opacity:0.6; font-size:0.8rem">CLICK ONCE PER TURN — NO HOLDING</small></div></div>
 
 <script>
 const canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
 const state={w:0,h:0,lvl:1,score:0,running:false,started:false,time:0,cx:0,cy:0};
-const player={ang:0, r:200, baseSpeed:1.1, currentSpeed:1.1, dir:1};
-const boss={hp:40, maxHp:40, r:45, fireT:0, hue:190, rot:0};
+const player={ang:0, r:200, baseSpeed:0.9, currentSpeed:0.9, dir:1, lastShot:0};
+const boss={hp:40, maxHp:40, r:45, fireT:0, hue:190};
 const bullets=[], asteroids=[];
+
+// MOVEMENT LOCK: Prevents rapid-flipping by holding the key
+let keyLocked = false;
 
 const resize=()=>{
     canvas.width=state.w=innerWidth; canvas.height=state.h=innerHeight;
@@ -37,17 +40,20 @@ const resize=()=>{
 addEventListener("resize",resize); resize();
 
 addEventListener("keydown", (e) => {
-    if(e.code==='Space' || e.code==='Enter') {
+    if((e.code==='Space' || e.code==='Enter') && !keyLocked) {
         e.preventDefault();
+        keyLocked = true; // Lock until key is released
+
         if(!state.started) { state.started = true; state.running = true; document.getElementById("centerMsg").classList.add("hidden"); return; }
         if(!state.running) { location.reload(); return; }
         
         player.dir *= -1; 
-        const px = state.cx + Math.cos(player.ang)*player.r;
-        const py = state.cy + Math.sin(player.ang)*player.r;
-        const lookAngle = Math.atan2(state.cy-py, state.cx-px);
-        // Manual Fire with every tap
-        bullets.push({x:px, y:py, vx:Math.cos(lookAngle)*950, vy:Math.sin(lookAngle)*950, p:true});
+    }
+});
+
+addEventListener("keyup", (e) => {
+    if(e.code==='Space' || e.code==='Enter') {
+        keyLocked = false; // Unlock for the next press
     }
 });
 
@@ -59,11 +65,11 @@ function initLevel(){
     boss.maxHp = 30 + (state.lvl*15);
     boss.hp = boss.maxHp;
     asteroids.length = 0;
-    const count = 30 + Math.min(state.lvl * 5, 50); 
+    const count = 25 + Math.min(state.lvl * 5, 40); 
     for(let i=0; i<count; i++) {
         const a = Math.random()*Math.PI*2;
         const d = 350 + Math.random()*650;
-        spawnAsteroid(state.cx+Math.cos(a)*d, state.cy+Math.sin(a)*d, (Math.random()-0.5)*200, (Math.random()-0.5)*200, 8+Math.random()*10);
+        spawnAsteroid(state.cx+Math.cos(a)*d, state.cy+Math.sin(a)*d, (Math.random()-0.5)*180, (Math.random()-0.5)*180, 8+Math.random()*10);
     }
 }
 
@@ -71,32 +77,38 @@ function update(dt){
     if(!state.running) return;
     state.time += dt;
 
-    // Start slow, increase with time
-    player.currentSpeed = player.baseSpeed + (state.lvl-1)*0.2 + (state.time * 0.035);
+    // Progression speed
+    player.currentSpeed = player.baseSpeed + (state.lvl-1)*0.2 + (state.time * 0.025);
     player.ang += (player.currentSpeed * player.dir) * dt;
-    player.r = 210 + Math.sin(state.time * 0.7) * 55;
+    player.r = 210 + Math.sin(state.time * 0.7) * 50;
 
     const px = state.cx + Math.cos(player.ang)*player.r;
     const py = state.cy + Math.sin(player.ang)*player.r;
+    const lookAngle = Math.atan2(state.cy-py, state.cx-px);
 
-    // Boss Patterns - Highly staggered and randomized
+    // Auto-fire
+    if(state.time - player.lastShot > 0.25){
+        player.lastShot = state.time;
+        bullets.push({x:px, y:py, vx:Math.cos(lookAngle)*950, vy:Math.sin(lookAngle)*950, p:true});
+    }
+
+    // Boss Firing Pattern
     boss.fireT += dt;
     if(boss.fireT > Math.max(0.6, 2.0 - (state.lvl*0.2))){
         boss.fireT = 0;
-        const count = 7 + Math.floor(Math.random() * 5);
+        const count = 6 + Math.floor(Math.random() * 6);
         for(let i=0; i<count; i++){
             const angleJitter = (Math.random() - 0.5) * 1.0;
-            const speedVar = 130 + Math.random() * 170;
+            const speedVar = 140 + Math.random() * 160;
             const a = (i/count)*Math.PI*2 + state.time + angleJitter;
             bullets.push({x:state.cx, y:state.cy, vx:Math.cos(a)*speedVar, vy:Math.sin(a)*speedVar, p:false});
         }
     }
 
-    // Bullet Physics
+    // Collisions
     for(let i=bullets.length-1; i>=0; i--){
         const b = bullets[i];
         b.x += b.vx*dt; b.y += b.vy*dt;
-        
         if(b.p){ 
             if((b.x-state.cx)**2 + (b.y-state.cy)**2 < (boss.r+12)**2){
                 bullets.splice(i,1); boss.hp--; state.score+=25;
@@ -108,7 +120,7 @@ function update(dt){
                 if((b.x-ast.x)**2 + (b.y-ast.y)**2 < (ast.s+15)**2){
                     bullets.splice(i,1);
                     state.score += 40;
-                    if(!ast.isFragment) for(let k=0; k<3; k++) spawnAsteroid(ast.x, ast.y, (Math.random()-0.5)*380, (Math.random()-0.5)*380, 4, true);
+                    if(!ast.isFragment) for(let k=0; k<3; k++) spawnAsteroid(ast.x, ast.y, (Math.random()-0.5)*350, (Math.random()-0.5)*350, 4, true);
                     asteroids.splice(j,1);
                     break;
                 }
@@ -138,21 +150,13 @@ function drawBoss(){
     const hue = boss.hue;
     ctx.save();
     ctx.translate(state.cx, state.cy);
-    
-    // Outer Mechanical Plates
     ctx.strokeStyle = `hsla(${hue}, 100%, 50%, 0.4)`;
     ctx.lineWidth = 2;
     ctx.rotate(t * 0.4);
     for(let i=0; i<6; i++){
         ctx.rotate(Math.PI/3);
-        ctx.beginPath();
-        ctx.moveTo(boss.r + 5, -15);
-        ctx.lineTo(boss.r + 20, 0);
-        ctx.lineTo(boss.r + 5, 15);
-        ctx.stroke();
+        ctx.strokeRect(boss.r + 5, -10, 15, 20);
     }
-
-    // Hexagonal Reactor
     ctx.rotate(-t * 0.9);
     ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
     ctx.lineWidth = 4;
@@ -163,13 +167,6 @@ function drawBoss(){
         ctx.lineTo(Math.cos(ang)*r, Math.sin(ang)*r);
     }
     ctx.closePath(); ctx.stroke();
-
-    // Core Pulse
-    ctx.fillStyle = `hsla(${hue}, 100%, 50%, 0.25)`;
-    ctx.beginPath();
-    ctx.arc(0,0, boss.r - 12 + Math.sin(t*8)*6, 0, Math.PI*2);
-    ctx.fill();
-
     ctx.restore();
 }
 
@@ -180,23 +177,19 @@ function draw(){
 
     drawBoss();
 
-    // Clean Ship Model
     ctx.save(); ctx.translate(px, py); ctx.rotate(lookAngle);
     ctx.fillStyle="#fff"; ctx.shadowBlur = 10; ctx.shadowColor = "#00f2ff";
     ctx.beginPath(); ctx.moveTo(18,0); ctx.lineTo(-10,-8); ctx.lineTo(-10,8); ctx.closePath(); ctx.fill();
     ctx.restore(); ctx.shadowBlur = 0;
 
-    // Bullet Batches
     ctx.beginPath(); bullets.forEach(b => { if(!b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 4, 0, 7); }});
     ctx.fillStyle = "#ff4444"; ctx.fill();
     ctx.beginPath(); bullets.forEach(b => { if(b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 3, 0, 7); }});
     ctx.fillStyle = "#00f2ff"; ctx.fill();
 
-    // Chaotic Asteroids
-    ctx.strokeStyle="#444"; 
     asteroids.forEach(a => {
         ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(a.rot);
-        ctx.strokeRect(-a.s, -a.s, a.s*2, a.s*2); ctx.restore();
+        ctx.strokeStyle="#444"; ctx.strokeRect(-a.s, -a.s, a.s*2, a.s*2); ctx.restore();
     });
 
     requestAnimationFrame(draw);
