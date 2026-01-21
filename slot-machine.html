@@ -253,15 +253,16 @@
             statusDisplay.textContent = "JACKPOT READY";
         });
 
-        // Cheat 2: Reset Money (R) - Always resets to 1000
+        // Cheat 2: Reset Money (R) - Only if GREATER than 1000
         secretR.addEventListener('click', (e) => {
             e.stopPropagation();
-            money = 1000;
-            localStorage.setItem('lastPlayDate', new Date().toDateString());
-            saveBalance(money);
-            updateDisplay();
-            statusDisplay.textContent = "CREDITS RESET TO $1000";
-            spinBtn.disabled = false;
+            if (money > 1000) {
+                money = 1000;
+                localStorage.setItem('lastPlayDate', new Date().toDateString());
+                saveBalance(money);
+                updateDisplay();
+                statusDisplay.textContent = "RESET";
+            }
         });
 
         // Cheat 3: Manual Rickroll (D)
