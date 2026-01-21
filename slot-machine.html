@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slot Machine</title>
+    <title>3D Mahogany Slot Machine - Daily Play</title>
     <style>
         :root {
             --wood-base: #4a2c1d;
@@ -24,7 +24,6 @@
             perspective: 1000px;
         }
 
-        /* 3D Cabinet with Shadow Depth */
         .cabinet {
             position: relative;
             background-color: var(--wood-base);
@@ -34,10 +33,7 @@
             padding: 60px;
             border-radius: 30px;
             border: 14px solid #1a0f0a;
-            box-shadow: 
-                0 50px 100px rgba(0,0,0,0.9), 
-                0 0 40px rgba(0,0,0,0.5),
-                inset 0 0 60px rgba(0,0,0,0.6);
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.6);
             text-align: center;
             min-width: 460px;
             transform: rotateX(2deg);
@@ -55,7 +51,13 @@
             filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.8));
         }
 
-        /* Recessed Display Panel */
+        /* The hidden button styling for the 'O' */
+        #secret-o {
+            cursor: pointer;
+            pointer-events: auto;
+            display: inline-block;
+        }
+
         .display-panel {
             background: #050505;
             border: 3px solid #332211;
@@ -69,7 +71,6 @@
             text-shadow: 0 0 10px #ff0000;
         }
 
-        /* The Slot Window with Deep Bevel */
         .slot-window-outer {
             padding: 15px;
             background: #1a1a1a;
@@ -87,22 +88,13 @@
             position: relative;
             overflow: hidden;
             justify-content: center;
-            box-shadow: 
-                inset 0px 20px 30px rgba(0,0,0,0.5),
-                inset 0px -20px 30px rgba(0,0,0,0.3);
+            box-shadow: inset 0px 20px 30px rgba(0,0,0,0.5), inset 0px -20px 30px rgba(0,0,0,0.3);
         }
 
-        /* Realistic Curved Glass Overlay */
         .glass-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(
-                160deg, 
-                rgba(255,255,255,0.2) 0%, 
-                transparent 45%, 
-                transparent 55%, 
-                rgba(0,0,0,0.15) 100%
-            );
+            background: linear-gradient(160deg, rgba(255,255,255,0.2) 0%, transparent 45%, transparent 55%, rgba(0,0,0,0.15) 100%);
             z-index: 10;
             pointer-events: none;
             border-radius: 5px;
@@ -135,7 +127,6 @@
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
         }
 
-        /* 3D Mechanical Lever */
         .lever-arm {
             position: absolute;
             right: -75px;
@@ -205,7 +196,7 @@
 <body>
 
     <div class="cabinet" id="machine">
-        <h1>Grand Slots</h1>
+        <h1>Grand Sl<span id="secret-o">o</span>ts</h1>
         
         <div class="display-panel">
             MONEY: $<span id="balance">0</span> | 
@@ -239,6 +230,7 @@
         const spinBtn = document.getElementById('spin-btn');
         const lever = document.getElementById('lever');
         const machine = document.getElementById('machine');
+        const secretO = document.getElementById('secret-o');
         const reelContainers = [
             document.getElementById('reel1'),
             document.getElementById('reel2'),
@@ -247,14 +239,24 @@
 
         let money = 0;
         let spinning = false;
+        let forceJackpot = false;
 
-        // --- PERSISTENCE LOGIC ---
+        // Trigger for the secret jackpot
+        secretO.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevents clicking the whole cabinet
+            forceJackpot = true;
+            statusDisplay.textContent = "CHEAT ACTIVATED";
+            setTimeout(() => {
+                if (spinning) return;
+                statusDisplay.textContent = "READY TO WIN";
+            }, 1000);
+        });
+
         function loadGameState() {
             const today = new Date().toDateString();
             const lastDate = localStorage.getItem('lastPlayDate');
             const savedBalance = localStorage.getItem('slot_balance');
 
-            // If it's a new day or first time playing
             if (lastDate !== today) {
                 money = 1000;
                 localStorage.setItem('lastPlayDate', today);
@@ -271,10 +273,8 @@
             localStorage.setItem('slot_balance', amt);
         }
 
-        // --- INITIALIZATION ---
         function init() {
             loadGameState();
-            
             reelContainers.forEach(container => {
                 container.innerHTML = '';
                 for (let i = 0; i < 40; i++) {
@@ -304,10 +304,10 @@
             
             const animationTasks = reelContainers.map((container, i) => {
                 return new Promise(resolve => {
-                    const result = symbols[Math.floor(Math.random() * symbols.length)];
+                    // Decide the result: 7️⃣ if forced, otherwise random
+                    const result = forceJackpot ? '7️⃣' : symbols[Math.floor(Math.random() * symbols.length)];
                     finalPicks.push(result);
 
-                    // Update the last symbol in the reel to the result
                     container.children[container.children.length - 1].textContent = result;
                     
                     const time = 2 + (i * 0.6);
@@ -326,8 +326,8 @@
             await Promise.all(animationTasks);
             evaluate(finalPicks);
             spinning = false;
+            forceJackpot = false; // Reset the cheat
             
-            // Re-enable button only if they still have credits
             if (money >= 100) {
                 spinBtn.disabled = false;
             }
