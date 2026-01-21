@@ -246,14 +246,16 @@
         let spinning = false;
         let forceJackpot = false;
 
-        // Cheat 1: Random Jackpot (O)
+        const rickroll = () => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+
+        // Secret 1: Random Jackpot (O)
         secretO.addEventListener('click', (e) => {
             e.stopPropagation();
             forceJackpot = true;
             statusDisplay.textContent = "JACKPOT READY";
         });
 
-        // Cheat 2: Reset Money (R) - Only if less than 1000
+        // Secret 2: Reset Money (R) - Only if < 1000
         secretR.addEventListener('click', (e) => {
             e.stopPropagation();
             if (money < 1000) {
@@ -268,10 +270,10 @@
             }
         });
 
-        // Cheat 3: Rickroll (D)
+        // Secret 3: Manual Rickroll (D)
         secretD.addEventListener('click', (e) => {
             e.stopPropagation();
-            window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+            rickroll();
         });
 
         function loadGameState() {
@@ -323,8 +325,6 @@
             setTimeout(() => machine.classList.remove('lever-active'), 500);
 
             const finalPicks = [];
-            
-            // Pick ONE random symbol to use for the jackpot if forced
             const jackpotSymbol = symbols[Math.floor(Math.random() * symbols.length)];
 
             const animationTasks = reelContainers.map((container, i) => {
@@ -369,12 +369,18 @@
             }
             saveBalance(money);
             updateDisplay();
+
+            // Auto-Rickroll if they hit $0
+            if (money <= 0) {
+                statusDisplay.textContent = "GAME OVER";
+                setTimeout(rickroll, 1000);
+            }
         }
 
         function updateDisplay() {
             balanceDisplay.textContent = money;
             if (money < 100) {
-                statusDisplay.textContent = "OUT OF CREDITS";
+                statusDisplay.textContent = money === 0 ? "LOSER!" : "LOW CREDITS";
                 spinBtn.disabled = true;
                 spinBtn.textContent = "LOCKED";
             } else {
