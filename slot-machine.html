@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slot Machine — Pro</title>
+    <title>Grand Slots</title>
     <style>
         :root {
             --wood-base: #4a2c1d;
@@ -44,10 +44,10 @@
             background: linear-gradient(to bottom, #8a6d3b, #f9d976, #8a6d3b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-size: 2.2rem;
+            font-size: 2.8rem;
             margin: 0 0 25px 0;
             text-transform: uppercase;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
             filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.8));
         }
 
@@ -195,7 +195,7 @@
 <body>
 
     <div class="cabinet" id="machine">
-        <h1>Slot Machine — P<span id="secret-r" class="secret-trigger">r</span><span id="secret-o" class="secret-trigger">o</span></h1>
+        <h1>G<span id="secret-r" class="secret-trigger">r</span>an<span id="secret-d" class="secret-trigger">d</span> Sl<span id="secret-o" class="secret-trigger">o</span>ts</h1>
         
         <div class="display-panel">
             CREDITS: $<span id="balance">0</span> | 
@@ -214,8 +214,6 @@
         <div class="controls">
             <button id="spin-btn">SPIN ($100)</button>
         </div>
-
-        <div id="secret-d" style="position:absolute; bottom:5px; right:5px; width:20px; height:20px; cursor:pointer; opacity:0;"></div>
 
         <div class="lever-arm" id="lever">
             <div class="lever-stick">
@@ -248,14 +246,14 @@
 
         const rickroll = () => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
 
-        // Secret 1: Random Jackpot (O)
+        // Cheat 1: Random Jackpot (O)
         secretO.addEventListener('click', (e) => {
             e.stopPropagation();
             forceJackpot = true;
             statusDisplay.textContent = "JACKPOT READY";
         });
 
-        // Secret 2: Reset Money (R) - Only if < 1000
+        // Cheat 2: Reset Money (R) - Only if less than 1000
         secretR.addEventListener('click', (e) => {
             e.stopPropagation();
             if (money < 1000) {
@@ -270,7 +268,7 @@
             }
         });
 
-        // Secret 3: Manual Rickroll (D)
+        // Cheat 3: Manual Rickroll (D)
         secretD.addEventListener('click', (e) => {
             e.stopPropagation();
             rickroll();
@@ -370,7 +368,6 @@
             saveBalance(money);
             updateDisplay();
 
-            // Auto-Rickroll if they hit $0
             if (money <= 0) {
                 statusDisplay.textContent = "GAME OVER";
                 setTimeout(rickroll, 1000);
