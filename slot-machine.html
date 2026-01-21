@@ -51,7 +51,6 @@
             filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.8));
         }
 
-        /* Secret trigger styling */
         .secret-trigger {
             cursor: pointer;
             pointer-events: auto;
@@ -231,7 +230,6 @@
         const lever = document.getElementById('lever');
         const machine = document.getElementById('machine');
         
-        // Secret Selectors
         const secretO = document.getElementById('secret-o');
         const secretR = document.getElementById('secret-r');
         const secretD = document.getElementById('secret-d');
@@ -246,25 +244,29 @@
         let spinning = false;
         let forceJackpot = false;
 
-        // Secret 1: Jackpot (O)
+        // Cheat 1: Jackpot
         secretO.addEventListener('click', (e) => {
             e.stopPropagation();
             forceJackpot = true;
             statusDisplay.textContent = "LUCK++ ACTIVATED";
         });
 
-        // Secret 2: Reset Money (R)
+        // Cheat 2: Reset Money (ONLY if less than 1000)
         secretR.addEventListener('click', (e) => {
             e.stopPropagation();
-            money = 1000;
-            localStorage.setItem('lastPlayDate', new Date().toDateString());
-            saveBalance(money);
-            updateDisplay();
-            statusDisplay.textContent = "FUNDS RELOADED";
-            spinBtn.disabled = false;
+            if (money < 1000) {
+                money = 1000;
+                localStorage.setItem('lastPlayDate', new Date().toDateString());
+                saveBalance(money);
+                updateDisplay();
+                statusDisplay.textContent = "RESET TO $1000";
+                spinBtn.disabled = false;
+            } else {
+                statusDisplay.textContent = "ALREADY RICH!";
+            }
         });
 
-        // Secret 3: Rickroll (D)
+        // Cheat 3: Rickroll
         secretD.addEventListener('click', (e) => {
             e.stopPropagation();
             window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
