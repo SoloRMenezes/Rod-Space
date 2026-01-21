@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Mahogany Slot Machine</title>
+    <title>Slot Machine</title>
     <style>
         :root {
             --wood-base: #4a2c1d;
@@ -87,7 +87,6 @@
             position: relative;
             overflow: hidden;
             justify-content: center;
-            /* Inner screen shadow to make it look 3D */
             box-shadow: 
                 inset 0px 20px 30px rgba(0,0,0,0.5),
                 inset 0px -20px 30px rgba(0,0,0,0.3);
@@ -209,8 +208,8 @@
         <h1>Grand Slots</h1>
         
         <div class="display-panel">
-            MONEY: $<span id="balance">1000</span> | 
-            <span id="status">PULL LEVER</span>
+            MONEY: $<span id="balance">0</span> | 
+            <span id="status">LOADING...</span>
         </div>
 
         <div class="slot-window-outer">
@@ -246,10 +245,36 @@
             document.getElementById('reel3')
         ];
 
-        let money = 1000;
+        let money = 0;
         let spinning = false;
 
+        // --- PERSISTENCE LOGIC ---
+        function loadGameState() {
+            const today = new Date().toDateString();
+            const lastDate = localStorage.getItem('lastPlayDate');
+            const savedBalance = localStorage.getItem('slot_balance');
+
+            // If it's a new day or first time playing
+            if (lastDate !== today) {
+                money = 1000;
+                localStorage.setItem('lastPlayDate', today);
+                saveBalance(1000);
+                statusDisplay.textContent = "DAILY RELOAD! +$1000";
+            } else {
+                money = savedBalance ? parseInt(savedBalance) : 1000;
+                statusDisplay.textContent = "WELCOME BACK";
+            }
+            updateDisplay();
+        }
+
+        function saveBalance(amt) {
+            localStorage.setItem('slot_balance', amt);
+        }
+
+        // --- INITIALIZATION ---
         function init() {
+            loadGameState();
+            
             reelContainers.forEach(container => {
                 container.innerHTML = '';
                 for (let i = 0; i < 40; i++) {
@@ -266,6 +291,7 @@
 
             spinning = true;
             money -= 100;
+            saveBalance(money);
             updateDisplay();
             
             spinBtn.disabled = true;
@@ -281,6 +307,7 @@
                     const result = symbols[Math.floor(Math.random() * symbols.length)];
                     finalPicks.push(result);
 
+                    // Update the last symbol in the reel to the result
                     container.children[container.children.length - 1].textContent = result;
                     
                     const time = 2 + (i * 0.6);
@@ -299,7 +326,11 @@
             await Promise.all(animationTasks);
             evaluate(finalPicks);
             spinning = false;
-            spinBtn.disabled = false;
+            
+            // Re-enable button only if they still have credits
+            if (money >= 100) {
+                spinBtn.disabled = false;
+            }
         }
 
         function evaluate(results) {
@@ -312,14 +343,18 @@
             } else {
                 statusDisplay.textContent = "TRY AGAIN";
             }
+            saveBalance(money);
             updateDisplay();
         }
 
         function updateDisplay() {
             balanceDisplay.textContent = money;
             if (money < 100) {
-                statusDisplay.textContent = "INSERT COINS";
-                setTimeout(() => { money = 1000; updateDisplay(); statusDisplay.textContent = "RELOADED"; }, 3000);
+                statusDisplay.textContent = "NO CREDITS. RETURN TOMORROW";
+                spinBtn.disabled = true;
+                spinBtn.textContent = "LOCKED";
+            } else {
+                spinBtn.textContent = "SPIN ($100)";
             }
         }
 
