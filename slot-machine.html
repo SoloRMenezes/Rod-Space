@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slot Machine</title>
+    <title>3D Mahogany Slot Machine - Pro</title>
     <style>
         :root {
             --wood-base: #4a2c1d;
@@ -51,8 +51,8 @@
             filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.8));
         }
 
-        /* The hidden button styling for the 'O' */
-        #secret-o {
+        /* Secret trigger styling */
+        .secret-trigger {
             cursor: pointer;
             pointer-events: auto;
             display: inline-block;
@@ -196,7 +196,7 @@
 <body>
 
     <div class="cabinet" id="machine">
-        <h1>Grand Sl<span id="secret-o">o</span>ts</h1>
+        <h1>G<span id="secret-r" class="secret-trigger">r</span>an<span id="secret-d" class="secret-trigger">d</span> Sl<span id="secret-o" class="secret-trigger">o</span>ts</h1>
         
         <div class="display-panel">
             MONEY: $<span id="balance">0</span> | 
@@ -230,7 +230,12 @@
         const spinBtn = document.getElementById('spin-btn');
         const lever = document.getElementById('lever');
         const machine = document.getElementById('machine');
+        
+        // Secret Selectors
         const secretO = document.getElementById('secret-o');
+        const secretR = document.getElementById('secret-r');
+        const secretD = document.getElementById('secret-d');
+        
         const reelContainers = [
             document.getElementById('reel1'),
             document.getElementById('reel2'),
@@ -241,15 +246,28 @@
         let spinning = false;
         let forceJackpot = false;
 
-        // Trigger for the secret jackpot
+        // Secret 1: Jackpot (O)
         secretO.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevents clicking the whole cabinet
+            e.stopPropagation();
             forceJackpot = true;
-            statusDisplay.textContent = "CHEAT ACTIVATED";
-            setTimeout(() => {
-                if (spinning) return;
-                statusDisplay.textContent = "READY TO WIN";
-            }, 1000);
+            statusDisplay.textContent = "LUCK++ ACTIVATED";
+        });
+
+        // Secret 2: Reset Money (R)
+        secretR.addEventListener('click', (e) => {
+            e.stopPropagation();
+            money = 1000;
+            localStorage.setItem('lastPlayDate', new Date().toDateString());
+            saveBalance(money);
+            updateDisplay();
+            statusDisplay.textContent = "FUNDS RELOADED";
+            spinBtn.disabled = false;
+        });
+
+        // Secret 3: Rickroll (D)
+        secretD.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
         });
 
         function loadGameState() {
@@ -264,7 +282,7 @@
                 statusDisplay.textContent = "DAILY RELOAD! +$1000";
             } else {
                 money = savedBalance ? parseInt(savedBalance) : 1000;
-                statusDisplay.textContent = "WELCOME BACK";
+                statusDisplay.textContent = "READY TO SPIN";
             }
             updateDisplay();
         }
@@ -295,7 +313,7 @@
             updateDisplay();
             
             spinBtn.disabled = true;
-            statusDisplay.textContent = "GOOD LUCK!";
+            statusDisplay.textContent = "SPINNING...";
             
             machine.classList.add('lever-active');
             setTimeout(() => machine.classList.remove('lever-active'), 500);
@@ -304,7 +322,6 @@
             
             const animationTasks = reelContainers.map((container, i) => {
                 return new Promise(resolve => {
-                    // Decide the result: 7️⃣ if forced, otherwise random
                     const result = forceJackpot ? '7️⃣' : symbols[Math.floor(Math.random() * symbols.length)];
                     finalPicks.push(result);
 
@@ -326,7 +343,7 @@
             await Promise.all(animationTasks);
             evaluate(finalPicks);
             spinning = false;
-            forceJackpot = false; // Reset the cheat
+            forceJackpot = false;
             
             if (money >= 100) {
                 spinBtn.disabled = false;
@@ -341,7 +358,7 @@
                 money += 200;
                 statusDisplay.textContent = "MATCH! +$200";
             } else {
-                statusDisplay.textContent = "TRY AGAIN";
+                statusDisplay.textContent = "NO LUCK THIS TIME";
             }
             saveBalance(money);
             updateDisplay();
@@ -350,7 +367,7 @@
         function updateDisplay() {
             balanceDisplay.textContent = money;
             if (money < 100) {
-                statusDisplay.textContent = "NO CREDITS. RETURN TOMORROW";
+                statusDisplay.textContent = "OUT OF MONEY! WAIT 24H";
                 spinBtn.disabled = true;
                 spinBtn.textContent = "LOCKED";
             } else {
