@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reaction Game (Fixed)</title>
+    <title>Reaction Game (Click & Space)</title>
     <style>
         body {
             box-sizing: border-box;
@@ -16,6 +16,9 @@
             justify-content: center;
             align-items: center;
             color: white;
+            /* Prevent text selection during fast clicking */
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         html { height: 100%; }
@@ -53,6 +56,7 @@
             background: #ff4757;
             border: 5px solid white;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            cursor: pointer;
         }
 
         .game-circle::after {
@@ -112,17 +116,6 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
-        .instructions {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            max-width: 500px;
-            margin: 0 auto 20px;
-        }
-
         .start-screen,
         .game-over,
         .new-high-score {
@@ -144,21 +137,9 @@
         }
 
         .start-screen h2 { color: #667eea; margin-bottom: 20px; font-size: 2rem; }
-
         .start-instructions { margin: 15px 0; line-height: 1.6; }
 
-        .key-instruction {
-            background: rgba(102, 126, 234, 0.1);
-            padding: 8px 12px;
-            border-radius: 5px;
-            margin: 5px 0;
-            font-weight: bold;
-        }
-
-        .game-over h2 { color: #ff4757; margin-bottom: 15px; font-size: 2rem; }
-
         .leaderboard { margin: 15px 0; text-align: left; }
-
         .leaderboard h3 { color: #667eea; margin-bottom: 10px; text-align: center; font-size: 1.3rem; }
 
         .leaderboard-entry {
@@ -183,22 +164,15 @@
         .leaderboard-score { font-weight: bold; color: #ff4757; min-width: 35px; }
         .leaderboard-time { font-size: 0.8rem; color: #667eea; min-width: 45px; }
 
-        .new-high-score { background: rgba(46, 213, 115, 0.95); border: 2px solid #2ed573; }
-        .new-high-score h2 { color: #2ed573; margin-bottom: 15px; font-size: 2rem; }
-
         .name-input {
-            width: 100%;
+            width: 80%;
             padding: 10px;
             margin: 10px 0;
             border: 2px solid #2ed573;
             border-radius: 5px;
-            background: rgba(255,255,255,0.9);
-            color: #333;
             font-size: 1.1rem;
             text-align: center;
         }
-
-        .name-input:focus { outline: none; box-shadow: 0 0 10px rgba(46, 213, 115, 0.5); }
 
         .save-button {
             background: #2ed573;
@@ -209,35 +183,17 @@
             font-size: 1.1rem;
             cursor: pointer;
             margin: 10px 5px;
-            transition: background 0.3s ease;
         }
-        .save-button:hover { background: #27ae60; }
 
         .skip-button {
-            background: rgba(255,255,255,0.2);
+            background: #999;
             color: white;
-            border: 2px solid white;
-            padding: 8px 18px;
+            border: none;
+            padding: 10px 20px;
             border-radius: 5px;
             font-size: 1.1rem;
             cursor: pointer;
             margin: 10px 5px;
-            transition: all 0.3s ease;
-        }
-        .skip-button:hover { background: rgba(255,255,255,0.3); }
-
-        .pulse { animation: pulse 0.3s ease-in-out; }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .success-flash { animation: successFlash 0.25s ease-in-out; }
-        @keyframes successFlash {
-            0% { background: #ff4757; }
-            50% { background: #2ed573; }
-            100% { background: #ff4757; }
         }
 
         .lives {
@@ -253,7 +209,6 @@
             background: #ff4757;
             border-radius: 50%;
             border: 2px solid white;
-            transition: all 0.3s ease;
         }
 
         .life.lost {
@@ -282,7 +237,6 @@
         
         <div class="game-stats">
             <div class="stat">Time: <span id="timer">0.0s</span></div>
-            <!-- <div class="stat">Speed: <span id="speed">2</span></div> -->
         </div>
 
         <div class="lives" id="lives">
@@ -301,20 +255,20 @@
         </div>
 
         <div class="start-screen" id="startScreen" style="display:block;">
-            <h2>⚡ Reaction Game ⚡</h2>
+            <h2>⚡ Ready? ⚡</h2>
             <div class="start-instructions">
-                <p>Press <strong>SPACEBAR</strong> when the white bar is in the green section!</p>
-                <p>You have 3 lives. The target gets smaller and faster as you score!</p>
-                <p><strong>Press ENTER to start</strong></p>
+                <p><strong>SPACEBAR</strong> or <strong>CLICK</strong> when the white bar is in the green section!</p>
+                <p>Target gets smaller and faster as you score.</p>
+                <p><strong>Click anywhere or press ENTER to start</strong></p>
             </div>
         </div>
 
         <div class="new-high-score" id="newHighScore">
-            <h2>🎉 Game Complete! 🎉</h2>
+            <h2>🎉 New High Score! 🎉</h2>
             <p>Score: <span id="newHighScoreValue">0</span></p>
-            <input type="text" class="name-input" id="nameInput" placeholder="Enter initials (1-4 chars)" maxlength="4">
+            <input type="text" class="name-input" id="nameInput" placeholder="Initials" maxlength="4">
             <div>
-                <button class="save-button" id="saveButton">Save Score</button>
+                <button class="save-button" id="saveButton">Save</button>
                 <button class="skip-button" id="skipButton">Skip</button>
             </div>
         </div>
@@ -323,10 +277,10 @@
             <h2>Game Over!</h2>
             <p>Final Score: <span id="finalScore">0</span></p>
             <div class="leaderboard" id="leaderboard">
-                <h3>🏆 Top 10 Scores 🏆</h3>
+                <h3>🏆 Top Scores 🏆</h3>
                 <div id="leaderboardList"></div>
             </div>
-            <p>Press <strong>ENTER</strong> to play again</p>
+            <p>Click anywhere or press <strong>ENTER</strong> to restart</p>
         </div>
     </div>
 
@@ -337,10 +291,10 @@
                 this.lives = 3;
                 this.startTime = 0;
                 this.currentTime = 0;
-                this.greenSectionSize = 180; // degrees (start large)
-                this.rotationSpeed = 2; // degrees per frame (positive = CW, negative = CCW)
-                this.currentRotation = 0; // degrees
-                this.greenSectionStart = 0; // degrees [0,360)
+                this.greenSectionSize = 180;
+                this.rotationSpeed = 2;
+                this.currentRotation = 0;
+                this.greenSectionStart = 0;
                 this.isGameRunning = false;
                 this.animationId = null;
                 
@@ -370,41 +324,43 @@
             init() {
                 this.setupEventListeners();
                 this.resetGame();
-                this.showStartScreen();
             }
 
             setupEventListeners() {
+                // Keyboard Support
                 document.addEventListener('keydown', (e) => {
                     if (e.code === 'Space') {
                         e.preventDefault();
-                        if (this.isGameRunning) {
-                            this.handleSpacePress();
-                        }
+                        if (this.isGameRunning) this.handleAction();
                     } else if (e.code === 'Enter') {
                         e.preventDefault();
-                        if (!this.isGameRunning) {
-                            if (this.elements.newHighScore.style.display === 'block') {
-                                this.saveHighScore();
-                            } else {
-                                this.hideAllScreens();
-                                this.resetGame();
-                                this.startGame();
-                            }
-                        }
-                    } else if (e.code === 'Backslash') {
-                        e.preventDefault();
-                        this.quickRestart();
+                        this.handleGlobalClick();
+                    }
+                });
+
+                // Mouse/Touch Support
+                window.addEventListener('pointerdown', (e) => {
+                    // Ignore clicks on inputs or buttons so they still work
+                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+                    
+                    if (this.isGameRunning) {
+                        this.handleAction();
+                    } else {
+                        this.handleGlobalClick();
                     }
                 });
 
                 this.elements.saveButton.addEventListener('click', () => this.saveHighScore());
                 this.elements.skipButton.addEventListener('click', () => this.skipHighScore());
-                this.elements.nameInput.addEventListener('keydown', (e) => {
-                    if (e.code === 'Enter') {
-                        e.preventDefault();
-                        this.saveHighScore();
-                    }
-                });
+            }
+
+            handleGlobalClick() {
+                if (!this.isGameRunning) {
+                    if (this.elements.newHighScore.style.display === 'block') return;
+                    this.hideAllScreens();
+                    this.resetGame();
+                    this.startGame();
+                }
             }
 
             resetGame() {
@@ -412,10 +368,9 @@
                 this.lives = 3;
                 this.startTime = 0;
                 this.currentTime = 0;
-                this.greenSectionSize = 180; // Start with half the circle
+                this.greenSectionSize = 180;
                 this.rotationSpeed = 2;
                 this.currentRotation = 0;
-                this.isGameRunning = false;
                 if (this.animationId) cancelAnimationFrame(this.animationId);
                 this.generateNewGreenSection();
                 this.updateDisplay();
@@ -433,21 +388,18 @@
                 this.currentRotation = (this.currentRotation + this.rotationSpeed) % 360;
                 if (this.currentRotation < 0) this.currentRotation += 360;
 
-                this.elements.whiteBar.style.transform = 
-                    `translate(-50%, -100%) rotate(${this.currentRotation}deg)`;
-
+                this.elements.whiteBar.style.transform = `translate(-50%, -100%) rotate(${this.currentRotation}deg)`;
                 this.updateDisplay();
                 this.animationId = requestAnimationFrame(() => this.gameLoop());
             }
 
-            // Direction-agnostic membership: compute angle from arc start to bar; inside if <= size
-            isBarInGreen(tolerance = 0) {
-                const barAngle = this.currentRotation; // normalized [0,360)
+            isBarInGreen() {
+                const barAngle = this.currentRotation;
                 const delta = ( (barAngle - this.greenSectionStart + 360) % 360 );
-                return delta <= (this.greenSectionSize + 0);
+                return delta <= this.greenSectionSize;
             }
 
-            handleSpacePress() {
+            handleAction() {
                 if (this.isBarInGreen()) {
                     this.handleSuccess();
                 } else {
@@ -457,23 +409,13 @@
 
             handleSuccess() {
                 this.score++;
-                // Shrink target and increase speed; cap bounds
                 this.greenSectionSize = Math.max(15, this.greenSectionSize * 0.9);
-                const newSpeedMag = Math.min(8, Math.abs(this.rotationSpeed) + 0.3);
-                this.rotationSpeed = Math.sign(this.rotationSpeed || 1) * newSpeedMag; // keep same direction
-
-                // Visual feedback
-                // this.elements.gameCircle.classList.add('success-flash');
-                // setTimeout(() => this.elements.gameCircle.classList.remove('success-flash'), 250);
-
-                // "Perfect!" toast if very close to center of arc (within 1% of target size)
-                const perfectWindow = Math.max(0.5, this.greenSectionSize * 0.01);
+                this.rotationSpeed = Math.sign(this.rotationSpeed) * Math.min(8, Math.abs(this.rotationSpeed) + 0.3);
+                
+                // Show "Perfect!" if near center
                 const mid = (this.greenSectionStart + this.greenSectionSize / 2) % 360;
-                const dist = Math.min( ( (this.currentRotation - mid + 360) % 360 ),
-                                       ( (mid - this.currentRotation + 360) % 360 ) );
-                if (dist <= perfectWindow) {
-                    this.showToast("Perfect!");
-                }
+                const dist = Math.min(Math.abs(this.currentRotation - mid), 360 - Math.abs(this.currentRotation - mid));
+                if (dist < 10) this.showToast("Perfect!");
 
                 this.generateNewGreenSection();
                 this.updateDisplay();
@@ -481,7 +423,6 @@
 
             handleMiss() {
                 this.lives--;
-                setTimeout(() => this.elements.gameCircle.classList.remove('pulse'), 300);
                 this.updateDisplay();
                 if (this.lives <= 0) this.endGame();
             }
@@ -490,20 +431,12 @@
                 this.greenSectionStart = Math.random() * 360;
                 const start = this.greenSectionStart;
                 const size = this.greenSectionSize;
-                const gradient = `conic-gradient(from 0deg, 
-                    transparent 0deg, 
-                    transparent ${start}deg, 
-                    #2ed573 ${start}deg, 
-                    #2ed573 ${start + size}deg, 
-                    transparent ${start + size}deg, 
-                    transparent 360deg)`;
-                this.elements.greenSection.style.background = gradient;
+                this.elements.greenSection.style.background = `conic-gradient(from 0deg, transparent ${start}deg, #2ed573 ${start}deg, #2ed573 ${start + size}deg, transparent ${start + size}deg)`;
             }
 
             updateDisplay() {
                 this.elements.score.textContent = this.score;
                 this.elements.timer.textContent = `${this.currentTime.toFixed(1)}s`;
-                
                 const lifeElements = this.elements.lives.children;
                 for (let i = 0; i < lifeElements.length; i++) {
                     lifeElements[i].classList.toggle('lost', i >= this.lives);
@@ -513,66 +446,21 @@
             showToast(text) {
                 this.elements.toast.textContent = text;
                 this.elements.toast.style.display = 'block';
-                clearTimeout(this.toastTimeout);
-                this.toastTimeout = setTimeout(() => {
-                    this.elements.toast.style.display = 'none';
-                }, 600);
+                setTimeout(() => this.elements.toast.style.display = 'none', 600);
             }
 
             loadLeaderboard() {
                 const saved = localStorage.getItem('reactionGameLeaderboard');
-                if (saved) {
-                    try { return JSON.parse(saved); } catch { return []; }
-                }
-                return [];
-            }
-
-            saveLeaderboard() {
-                localStorage.setItem('reactionGameLeaderboard', JSON.stringify(this.leaderboard));
-            }
-
-            addToLeaderboard(score, name, time) {
-                if (name) {
-                    this.leaderboard.push({ score, name, time });
-                    this.leaderboard.sort((a, b) => {
-                        if (b.score !== a.score) return b.score - a.score;
-                        return a.time - b.time; // lower time wins ties
-                    });
-                    this.leaderboard = this.leaderboard.slice(0, 10);
-                    this.saveLeaderboard();
-                }
-            }
-
-            shouldShowScoreEntry(score) {
-                if (this.leaderboard.length < 10) return true;
-                const lowestScore = this.leaderboard[this.leaderboard.length - 1].score;
-                return score > lowestScore;
-            }
-
-            displayLeaderboard(currentScore, currentTime) {
-                let html = '';
-                for (let i = 0; i < this.leaderboard.length; i++) {
-                    const entry = this.leaderboard[i];
-                    const isCurrentScore = entry.score === currentScore && Math.abs(entry.time - currentTime) < 0.1 && i < 10;
-                    const timeDisplay = entry.time ? `${entry.time.toFixed(1)}s` : '--';
-                    html += `
-                        <div class="leaderboard-entry ${isCurrentScore ? 'current-score' : ''}">
-                            <span class="leaderboard-rank">${i + 1}.</span>
-                            <span class="leaderboard-name">${entry.name}</span>
-                            <span class="leaderboard-score">${entry.score}</span>
-                            <span class="leaderboard-time">${timeDisplay}</span>
-                        </div>`;
-                }
-                if (!html) html = '<div class="leaderboard-entry">No scores yet - be the first!</div>';
-                this.elements.leaderboardList.innerHTML = html;
+                return saved ? JSON.parse(saved) : [];
             }
 
             saveHighScore() {
-                const name = this.elements.nameInput.value.trim();
-                if (name.length >= 1 && name.length <= 4) {
-                    this.addToLeaderboard(this.score, name, this.currentTime);
-                    this.showGameOver();
-                }
+                const name = this.elements.nameInput.value.trim() || 'AAA';
+                this.leaderboard.push({ score: this.score, name, time: this.currentTime });
+                this.leaderboard.sort((a, b) => b.score - a.score || a.time - b.time);
+                this.leaderboard = this.leaderboard.slice(0, 10);
+                localStorage.setItem('reactionGameLeaderboard', JSON.stringify(this.leaderboard));
+                this.showGameOver();
             }
 
             skipHighScore() { this.showGameOver(); }
@@ -580,13 +468,13 @@
             showGameOver() {
                 this.elements.newHighScore.style.display = 'none';
                 this.elements.finalScore.textContent = this.score;
-                this.displayLeaderboard(this.score, this.currentTime);
+                let html = this.leaderboard.map((e, i) => `
+                    <div class="leaderboard-entry">
+                        <span>${i + 1}. ${e.name}</span>
+                        <span>${e.score} pts</span>
+                    </div>`).join('');
+                this.elements.leaderboardList.innerHTML = html || 'No scores yet!';
                 this.elements.gameOver.style.display = 'block';
-            }
-
-            showStartScreen() {
-                this.hideAllScreens();
-                this.elements.startScreen.style.display = 'block';
             }
 
             hideAllScreens() {
@@ -595,19 +483,13 @@
                 this.elements.newHighScore.style.display = 'none';
             }
 
-            quickRestart() {
-                this.resetGame();
-                this.showStartScreen();
-            }
-
             endGame() {
                 this.isGameRunning = false;
                 if (this.animationId) cancelAnimationFrame(this.animationId);
-                if (this.shouldShowScoreEntry(this.score)) {
+                const isHigh = this.leaderboard.length < 10 || this.score > this.leaderboard[9].score;
+                if (isHigh) {
                     this.elements.newHighScoreValue.textContent = this.score;
-                    this.elements.nameInput.value = '';
                     this.elements.newHighScore.style.display = 'block';
-                    this.elements.nameInput.focus();
                 } else {
                     this.showGameOver();
                 }
