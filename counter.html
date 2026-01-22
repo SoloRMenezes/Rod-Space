@@ -1,0 +1,343 @@
+<!--
+Daily Tracker & Timer
+Copyright (C) 2026 Rodrigo Menezes
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b0e14" id="meta-theme">
+    <title>Daily Tracker & Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --neutral: #94a3b8;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark {
+            /* obsidian & Charcoal Palette */
+            --bg: #0b0e14;       /* Deep Obsidian */
+            --card: #1a1d23;     /* Dark Charcoal Card */
+            --text: #e2e8f0;     /* Muted white text */
+            --muted: #71717a;    /* Muted zinc gray */
+            --border: #27272a;   /* Subtle border */
+            --primary: #3b82f6; 
+            --success: #065f46;  /* Deeper green */
+            --warning: #92400e;  /* Deeper orange */
+            --neutral: #3f3f46;  /* Zinc gray buttons */
+            --shadow: 0 0 0 1px rgba(255,255,255,0.05);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            transition: background 0.4s ease, color 0.4s ease;
+        }
+
+        .container { width: 100%; max-width: 500px; }
+
+        .card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        h2 { margin: 0 0 15px 0; font-size: 1.1rem; font-weight: 700; opacity: 0.7; letter-spacing: 0.02em; }
+
+        .timer-display {
+            font-size: 4.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin: 20px 0;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -3px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 5px;
+            transition: all 0.2s;
+        }
+
+        .input-group:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .btn-inline-add {
+            background: var(--primary);
+            color: white;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        #counterList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .counter-item {
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .counter-item-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .count-val {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .btn-up, .btn-down {
+            width: 58px;
+            height: 58px;
+            color: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-up { background: var(--success); }
+        .btn-down { background: var(--neutral); }
+
+        .btn-del {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            color: var(--muted);
+            padding: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-del:hover { color: var(--text); }
+
+        .timer-controls { display: flex; gap: 10px; justify-content: center; }
+        .timer-controls button { 
+            padding: 12px 24px; 
+            border-radius: 14px; 
+            border: none; 
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+        }
+
+        .btn-start { background: var(--success); }
+        .btn-stop { background: var(--warning); }
+        .btn-reset { background: var(--neutral); }
+
+        #themeToggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+<button id="themeToggle" onclick="toggleTheme()">
+    <i id="themeIcon" data-lucide="sun"></i>
+</button>
+
+<div class="container">
+    <div class="card">
+        <h2>STOPWATCH</h2>
+        <div class="timer-display" id="display">00:00:00</div>
+        <div class="timer-controls">
+            <button class="btn-start" onclick="startTimer()"><i data-lucide="play" size="20"></i></button>
+            <button class="btn-stop" onclick="stopTimer()"><i data-lucide="pause" size="20"></i></button>
+            <button class="btn-reset" onclick="resetTimer()"><i data-lucide="rotate-ccw" size="20"></i></button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>DAILY COUNTERS</h2>
+        <div class="input-group">
+            <input type="text" id="newName" placeholder="Item name" onkeydown="if(event.key==='Enter') addNewCounter()">
+            <button class="btn-inline-add" onclick="addNewCounter()">
+                <i data-lucide="plus" size="20"></i>
+            </button>
+        </div>
+        <div id="counterList"></div>
+    </div>
+</div>
+
+<script>
+    let counters = JSON.parse(localStorage.getItem('counters')) || [];
+    let lastResetDate = localStorage.getItem('lastResetDate');
+
+    function checkDailyReset() {
+        const today = new Date().toDateString();
+        if (lastResetDate !== today) {
+            counters.forEach(c => c.count = 0);
+            localStorage.setItem('lastResetDate', today);
+            saveData();
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem('counters', JSON.stringify(counters));
+        render();
+    }
+
+    function addNewCounter() {
+        const nameInput = document.getElementById('newName');
+        if (nameInput.value.trim() === "") return;
+        counters.push({ name: nameInput.value, count: 0 });
+        nameInput.value = "";
+        saveData();
+    }
+
+    function updateCount(index, delta) {
+        counters[index].count = Math.max(0, counters[index].count + delta);
+        saveData();
+    }
+
+    function removeCounter(index) {
+        counters.splice(index, 1);
+        saveData();
+    }
+
+    function render() {
+        const list = document.getElementById('counterList');
+        list.innerHTML = counters.map((item, index) => `
+            <div class="counter-item">
+                <button class="btn-del" onclick="removeCounter(${index})">
+                    <i data-lucide="trash-2" size="16"></i>
+                </button>
+                <div class="counter-item-name">${item.name.toUpperCase()}</div>
+                <div class="count-val">${item.count}</div>
+                <div class="controls-row">
+                    <button class="btn-down" onclick="updateCount(${index}, -1)">
+                        <i data-lucide="minus" size="28" stroke-width="3"></i>
+                    </button>
+                    <button class="btn-up" onclick="updateCount(${index}, 1)">
+                        <i data-lucide="plus" size="28" stroke-width="3"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    let startTime, elapsedTime = 0, timerInterval = null, isRunning = false;
+    function timeToString(time) {
+        let mm = Math.floor(time / 60000);
+        let ss = Math.floor((time % 60000) / 1000);
+        let ms = Math.floor((time % 1000) / 10);
+        return `${mm.toString().padStart(2, '0')}:${ss.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`;
+    }
+    function startTimer() {
+        if (isRunning) return;
+        isRunning = true;
+        startTime = Date.now() - elapsedTime;
+        timerInterval = setInterval(() => {
+            elapsedTime = Date.now() - startTime;
+            document.getElementById("display").innerHTML = timeToString(elapsedTime);
+        }, 10);
+    }
+    function stopTimer() { isRunning = false; clearInterval(timerInterval); }
+    function resetTimer() { stopTimer(); elapsedTime = 0; document.getElementById("display").innerHTML = "00:00:00"; }
+
+    function setTheme(mode) {
+        const isDark = mode === 'dark';
+        document.body.classList.toggle('dark', isDark);
+        localStorage.setItem('theme', mode);
+        document.getElementById('meta-theme').setAttribute('content', isDark ? '#0b0e14' : '#f8fafc');
+        const icon = document.getElementById('themeIcon');
+        icon.setAttribute('data-lucide', isDark ? 'moon' : 'sun');
+        lucide.createIcons();
+    }
+
+    function toggleTheme() {
+        const current = document.body.classList.contains('dark') ? 'light' : 'dark';
+        setTheme(current);
+    }
+
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    setTheme(savedTheme);
+    checkDailyReset();
+    render();
+</script>
+</body>
+</html>
