@@ -65,7 +65,6 @@ button {
 #scare img {
     max-width: 100%;
     max-height: 100%;
-    object-fit: contain;
 }
 </style>
 </head>
@@ -97,23 +96,22 @@ const scare = document.getElementById("scare");
 const lvlEl = document.getElementById("lvl");
 const sizeEl = document.getElementById("size");
 
-const VISION_RADIUS = 3;
+const CAMERA_ZOOM = 2.3;
+const WALL_HIT_THRESHOLD = 2.8;
 
 let state = { running:false, level:1, falling:false };
 let maze=[], cellSize=0;
 let gravity={x:0,y:0}, keyGravity={x:0,y:0};
-let visibility=[];
 let shakeTime=0, shakeStrength=0;
 
 const ball = { x:0, y:0, vx:0, vy:0, r:0, scale:1 };
-
-const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
 
 /* ---------- MAZE ---------- */
 function generateMaze(w,h){
     let m=Array(h).fill().map(()=>Array(w).fill(1));
     let stack=[{x:1,y:1}];
     m[1][1]=0;
+
     while(stack.length){
         let c=stack[stack.length-1];
         let dirs=[
@@ -129,9 +127,9 @@ function generateMaze(w,h){
             stack.push({x:c.x+d.x,y:c.y+d.y});
         } else stack.pop();
     }
-    m[h-2][w-2]=2; // real hole
 
-    // decoy hole
+    m[h-2][w-2]=2;
+
     let dx,dy;
     do{
         dx=1+Math.random()*(w-2)|0;
@@ -163,8 +161,6 @@ function initLevel(){
     ball.scale=1;
     state.falling=false;
 
-    visibility=Array(h).fill().map(()=>Array(w).fill(0));
-
     lvlEl.textContent=state.level;
     sizeEl.textContent=`${w}x${h}`;
 }
@@ -186,17 +182,12 @@ addEventListener("keyup",e=>{
     if(["w","s","ArrowUp","ArrowDown"].includes(e.key)) keyGravity.y=0;
 });
 
-/* ---------- HELPERS ---------- */
-function hasLineOfSight(x0,y0,x1,y1){
-    for(let i=0;i<=10;i++){
-        let t=i/10;
-        let x=x0+(x1-x0)*t;
-        let y=y0+(y1-y0)*t;
-        let gx=Math.floor(x/cellSize);
-        let gy=Math.floor(y/cellSize);
-        if(maze[gy]&&maze[gy][gx]===1) return false;
-    }
-    return true;
+/* ---------- EFFECTS ---------- */
+function hitWallHard(speed){
+    if(speed < WALL_HIT_THRESHOLD) return;
+    if(navigator.vibrate) navigator.vibrate(40);
+    shakeTime=10;
+    shakeStrength=4;
 }
 
 function triggerScare(){
@@ -225,7 +216,9 @@ function update(){
     ball.vx=(ball.vx+gx*0.1)*0.94;
     ball.vy=(ball.vy+gy*0.1)*0.94;
 
+    let speed=Math.hypot(ball.vx,ball.vy);
     let b=ball.r*0.8;
+
     let hit=(nx,ny)=>{
         for(let dx of[-b,b])for(let dy of[-b,b]){
             let gx=Math.floor((nx+dx)/cellSize);
@@ -235,10 +228,19 @@ function update(){
         return false;
     };
 
-    if(!hit(ball.x+ball.vx,ball.y)) ball.x+=ball.vx;
-    else ball.vx*=-0.3;
-    if(!hit(ball.x,ball.y+ball.vy)) ball.y+=ball.vy;
-    else ball.vy*=-0.3;
+    if(!hit(ball.x+ball.vx,ball.y)){
+        ball.x+=ball.vx;
+    } else {
+        hitWallHard(speed);
+        ball.vx*=-0.3;
+    }
+
+    if(!hit(ball.x,ball.y+ball.vy)){
+        ball.y+=ball.vy;
+    } else {
+        hitWallHard(speed);
+        ball.vy*=-0.3;
+    }
 
     let gx2=Math.floor(ball.x/cellSize);
     let gy2=Math.floor(ball.y/cellSize);
@@ -252,12 +254,23 @@ function update(){
 }
 
 /* ---------- DRAW ---------- */
+function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+
 function draw(){
     if(!state.running) return;
     update();
 
     ctx.setTransform(1,0,0,1,0,0);
     ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    const viewW=canvas.width/CAMERA_ZOOM;
+    const viewH=canvas.height/CAMERA_ZOOM;
+    const camX=clamp(ball.x,viewW/2,canvas.width-viewW/2);
+    const camY=clamp(ball.y,viewH/2,canvas.height-viewH/2);
+
+    ctx.translate(canvas.width/2,canvas.height/2);
+    ctx.scale(CAMERA_ZOOM,CAMERA_ZOOM);
+    ctx.translate(-camX,-camY);
 
     if(shakeTime>0){
         ctx.translate(
@@ -283,63 +296,14 @@ function draw(){
         }
     }
 
+    ctx.save();
+    ctx.translate(ball.x,ball.y);
+    ctx.fillStyle="#ddd";
+    ctx.beginPath();
+    ctx.arc(0,0,ball.r,0,7);
+    ctx.fill();
+    ctx.restore();
 
-    // fog + memory
-    ctx.fillStyle="rgba(0,0,0,0.9)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    let bx=Math.floor(ball.x/cellSize);
-    let by=Math.floor(ball.y/cellSize);
-
-    for(let y=0;y<visibility.length;y++)
-        for(let x=0;x<visibility[0].length;x++)
-            visibility[y][x]=Math.max(0,visibility[y][x]-0.01);
-
-    for(let y=by-VISION_RADIUS;y<=by+VISION_RADIUS;y++){
-        for(let x=bx-VISION_RADIUS;x<=bx+VISION_RADIUS;x++){
-            if(!maze[y]||maze[y][x]===undefined) continue;
-            let cx=x*cellSize+cellSize/2;
-            let cy=y*cellSize+cellSize/2;
-            if(Math.hypot(x-bx,y-by)>VISION_RADIUS) continue;
-            if(!hasLineOfSight(ball.x,ball.y,cx,cy)) continue;
-            visibility[y][x]=1;
-        }
-    }
-
-    for(let y=0;y<visibility.length;y++){
-        for(let x=0;x<visibility[0].length;x++){
-            if(visibility[y][x]>0){
-                ctx.globalAlpha=visibility[y][x];
-                ctx.clearRect(x*cellSize,y*cellSize,cellSize,cellSize);
-            }
-        }
-    }
-    ctx.globalAlpha=1;
-
-// === DRAW BALL ON TOP OF FOG ===
-ctx.save();
-ctx.translate(ball.x, ball.y);
-if (state.falling) ball.scale *= 0.9;
-ctx.scale(ball.scale, ball.scale);
-
-// soft glow so it never disappears
-let glow = ctx.createRadialGradient(0,0,ball.r*0.2,0,0,ball.r*2);
-glow.addColorStop(0, "rgba(255,255,255,0.9)");
-glow.addColorStop(1, "rgba(255,255,255,0)");
-
-ctx.fillStyle = glow;
-ctx.beginPath();
-ctx.arc(0,0,ball.r*2,0,Math.PI*2);
-ctx.fill();
-
-// solid ball
-ctx.fillStyle = "#ddd";
-ctx.beginPath();
-ctx.arc(0,0,ball.r,0,Math.PI*2);
-ctx.fill();
-
-ctx.restore();
-      
     requestAnimationFrame(draw);
 }
 
