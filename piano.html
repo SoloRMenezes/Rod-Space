@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #0f172a;
+            font-family: 'Inter', sans-serif;
+            color: #f8fafc;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        h2 { margin-bottom: 20px; letter-spacing: 2px; color: #8fc0e3; }
+
+        .piano {
+            display: flex;
+            background: #020617;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .key {
+            width: 60px;
+            height: 200px;
+            background: #e2e8f0;
+            border: 1px solid #94a3b8;
+            border-radius: 0 0 6px 6px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 10px;
+            color: #64748b;
+            font-weight: bold;
+            transition: background 0.1s, transform 0.1s;
+            user-select: none;
+        }
+
+        .key:active, .key.active {
+            background: #8fc0e3;
+            transform: translateY(2px);
+            color: #020617;
+        }
+
+        /* Black Keys */
+        .key.black {
+            width: 40px;
+            height: 120px;
+            background: #1e293b;
+            border: none;
+            margin-left: -20px;
+            margin-right: -20px;
+            z-index: 2;
+            color: #475569;
+        }
+
+        .key.black:active, .key.black.active {
+            background: #334155;
+        }
+
+        .controls {
+            margin-top: 30px;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        kbd {
+            background: #1e293b;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>PIANO SYNTH</h2>
+
+    <div class="piano" id="piano">
+        <div class="key" data-note="C4" data-key="a">A</div>
+        <div class="key black" data-note="C#4" data-key="w">W</div>
+        <div class="key" data-note="D4" data-key="s">S</div>
+        <div class="key black" data-note="D#4" data-key="e">E</div>
+        <div class="key" data-note="E4" data-key="d">D</div>
+        <div class="key" data-note="F4" data-key="f">F</div>
+        <div class="key black" data-note="F#4" data-key="t">T</div>
+        <div class="key" data-note="G4" data-key="g">G</div>
+        <div class="key black" data-note="G#4" data-key="y">Y</div>
+        <div class="key" data-note="A4" data-key="h">H</div>
+        <div class="key black" data-note="A#4" data-key="u">U</div>
+        <div class="key" data-note="B4" data-key="j">J</div>
+        <div class="key" data-note="C5" data-key="k">K</div>
+        <div class="key black" data-note="C#5" data-key="o">O</div>
+        <div class="key" data-note="D5" data-key="l">L</div>
+        <div class="key black" data-note="D#5" data-key="p">P</div>
+        <div class="key" data-note="E5" data-key="ç">Ç</div>
+    </div>
+
+    <div class="controls">
+        Use <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> <kbd>Ç</kbd> or Click
+    </div>
+
+<script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Note frequencies
+    const notes = {
+        "C4": 261.63, "C#4": 277.18, "D4": 293.66, "D#4": 311.13,
+        "E4": 329.63, "F4": 349.23, "F#4": 369.99, "G4": 392.00,
+        "G#4": 415.30, "A4": 440.00, "A#4": 466.16, "B4": 493.88,
+        "C5": 523.25, "C#5": 554.37, "D5": 587.33, "D#5": 622.25, "E5": 659.25
+    };
+
+    const playNote = (freq) => {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.type = 'triangle'; // Smoother than 'sine', less harsh than 'square'
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1);
+    };
+
+    const keys = document.querySelectorAll('.key');
+    
+    // Mouse/Touch events
+    keys.forEach(key => {
+        key.addEventListener('mousedown', () => {
+            playNote(notes[key.dataset.note]);
+            key.classList.add('active');
+        });
+        key.addEventListener('mouseup', () => key.classList.remove('active'));
+        key.addEventListener('mouseleave', () => key.classList.remove('active'));
+    });
+
+    // Keyboard events
+    window.addEventListener('keydown', (e) => {
+        const keyName = e.key.toLowerCase();
+        const keyElement = document.querySelector(`.key[data-key="${keyName}"]`);
+        
+        if (keyElement && !e.repeat) {
+            playNote(notes[keyElement.dataset.note]);
+            keyElement.classList.add('active');
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        const keyName = e.key.toLowerCase();
+        const keyElement = document.querySelector(`.key[data-key="${keyName}"]`);
+        if (keyElement) keyElement.classList.remove('active');
+    });
+</script>
+</body>
+</html>
