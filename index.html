@@ -1,186 +1,163 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rod Space — Where creativity meets code</title>
-  <meta name="description" content="Rod Space: Rodrigo's hub for gamesod Space: Rodrigo's hub for games, and personal experiments on the web." />
-  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Steel Ball Tilt</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #222; font-family: sans-serif; touch-action: none; }
+        canvas { display: block; background: #111; }
+        #ui {
+            position: fixed; inset: 0; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; background: #222;
+            color: #eee; z-index: 20; text-align: center;
+        }
+        #stats { position: fixed; top: 10px; width: 100%; text-align: center; color: #888; pointer-events: none; font-weight: bold; }
+        button {
+            background: #444; border: 1px solid #666; color: white;
+            padding: 15px 40px; font-size: 1.2rem; cursor: pointer;
+            box-shadow: 0 4px 0 #000;
+        }
+        button:active { transform: translateY(2px); box-shadow: 0 2px 0 #000; }
+        .hidden { display: none; }
+    </style>
 </head>
-
 <body>
-  <header class="site-header">
-    <a href="#" class="brand">
-      <img src="assets/logo.svg" alt="Rod Space logo" width="28" height="28" />
-      <span>Rod Space</span>
-    </a>
-  </header>
 
-  <main id="home">
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-inner">
-        <h1>
-          <span class="fade">Welcome to</span>
-          <span class="gradient-text">Rod Space</span>
-        </h1>
-      </div>
-      <div class="hero-bg" aria-hidden="true"></div>
-    </section>
-
-    <!-- ABOUT -->
-    <section id="about" class="about" style="text-align: center;">
-      <div class="container">
-        <h2>About Me</h2>
-        <p>
-          Hi, I'm <strong>Rodrigo</strong> — a 16-year-old student who enjoys building
-          small games and interactive experiments. This site is a collection of
-          things I code for learning and fun.
-        </p>
-      </div>
-    </section>
-
-    <!-- PROJECTS -->
-    <section id="projects" class="projects" style="text-align: center;">
-      <div class="container">
-        <div class="section-head">
-          <h2>Projects & Experiments</h2>
-        </div>
-
-        <div class="grid">
-
-          <!-- Reaction Game -->
-          <article class="card" data-tags="games">
-            <div class="card-top">
-              <div class="icon">🎯</div>
-              <h3>Reaction Game</h3>
-              <p>Challenge your reflexes.</p>
-            </div>
-            <div class="card-actions">
-              <a href="reaction.html" class="btn small primary">Play</a>
-              <span class="pill">Game</span>
-            </div>
-          </article>
-
-<!-- Tilt Maze Runner -->
-<article class="card" data-tags="games">
-  <div class="card-top">
-    <div class="icon">🧩</div>
-    <h3>Tilt Maze Runner</h3>
-    <p>Tilt-controlled maze game testing precision and balance.</p>
-  </div>
-  <div class="card-actions">
-    <a href="tilt_maze_runner.html" class="btn small primary">Play</a>
-    <span class="pill">Game</span>
-  </div>
-</article>
-          
-          <!-- Orbit Boss -->
-          <article class="card" data-tags="games">
-            <div class="card-top">
-              <div class="icon">🚀</div>
-              <h3>Orbit Boss</h3>
-              <p>Dodge, orbit, and strike at the right moment.</p>
-            </div>
-            <div class="card-actions">
-              <a href="orbit-boss.html" class="btn small primary">Play</a>
-              <span class="pill">Game</span>
-            </div>
-          </article>
-
-          <!-- Pac-Man 3D -->
-          <article class="card" data-tags="games">
-            <div class="card-top">
-              <div class="icon">🟡</div>
-              <h3>Pac-Man 3D</h3>
-              <p>First-person Pac-Man experience.</p>
-            </div>
-            <div class="card-actions">
-              <a href="pac-man-3d.html" class="btn small primary">Play</a>
-              <span class="pill">Game</span>
-            </div>
-          </article>
-
-          <!-- Fidget Roulette -->
-          <article class="card" data-tags="games">
-            <div class="card-top">
-              <div class="icon">🎯</div>
-              <h3>Fidget Roulette</h3>
-              <p>Casino-style roulette spinner.</p>
-            </div>
-            <div class="card-actions">
-              <a href="fidget-roulette.html" class="btn small primary">Play</a>
-              <span class="pill">Game</span>
-            </div>
-          </article>
-
-          <!-- Slot Machine -->
-          <article class="card" data-tags="games">
-            <div class="card-top">
-              <div class="icon">🎰</div>
-              <h3>Slot Machine</h3>
-              <p>Classic slots with spins and balance.</p>
-            </div>
-            <div class="card-actions">
-              <a href="slot-machine.html" class="btn small primary">Play</a>
-              <span class="pill">Game</span>
-            </div>
-          </article>
-
-          <!-- Multiplayer Test -->
-          <article class="card" data-tags="games">
-            <div class="card-top">
-              <div class="icon">👥</div>
-              <h3>Multiplayer Test</h3>
-              <p>Third-person multiplayer sandbox.</p>
-            </div>
-            <div class="card-actions">
-              <a href="multiplayer.html" class="btn small primary">Play</a>
-              <span class="pill">Game</span>
-            </div>
-          </article>
-
-          <!-- Counter -->
-          <article class="card" data-tags="tools">
-            <div class="card-top">
-              <div class="icon">🔢</div>
-              <h3>Counter</h3>
-              <p>Simple interactive counter experiment.</p>
-            </div>
-            <div class="card-actions">
-              <a href="counter.html" class="btn small primary">Open</a>
-              <span class="pill">Tool</span>
-            </div>
-          </article>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- CONTACT -->
-    <section id="contact" class="contact" style="text-align: center;">
-      <div class="container">
-        <h2>Contact</h2>
-        <p>Want to collaborate or give feedback?</p>
-        <p>
-          <a class="contact-item" href="mailto:rodrigoazancotmenezes@gmail.com">
-            ✉️ rodrigoazancotmenezes@gmail.com
-          </a>
-        </p>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <span>© <span id="year"></span> Rod Space. All rights reserved.</span>
+    <div id="stats">LEVEL: <span id="lvlDisplay">1</span></div>
+    <div id="ui">
+        <h2>STEEL BALL SIMULATOR</h2>
+        <p>Tilt to roll into the hole.</p>
+        <button id="startBtn">START</button>
     </div>
-  </footer>
+    <canvas id="game"></canvas>
 
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
+<script>
+const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
+const ui = document.getElementById('ui'), lvlDisplay = document.getElementById('lvlDisplay');
+
+let state = { running: false, level: 1, gridW: 10, gridH: 10, falling: false };
+let gravity = { x: 0, y: 0 }, maze = [], cellSize = 0;
+const ball = { x: 0, y: 0, vx: 0, vy: 0, r: 0, angle: 0, scale: 1 };
+
+function generateMaze(w, h) {
+    let m = Array(h).fill().map(() => Array(w).fill(1));
+    let stack = [{x: 1, y: 1}];
+    m[1][1] = 0;
+
+    while (stack.length > 0) {
+        let curr = stack[stack.length - 1];
+        let dirs = [{x:0,y:-2},{x:0,y:2},{x:-2,y:0},{x:2,y:0}].filter(d => {
+            let nx = curr.x + d.x, ny = curr.y + d.y;
+            return nx > 0 && nx < w-1 && ny > 0 && ny < h-1 && m[ny][nx] === 1;
+        });
+
+        if (dirs.length > 0) {
+            let d = dirs[Math.floor(Math.random() * dirs.length)];
+            m[curr.y + d.y/2][curr.x + d.x/2] = 0;
+            m[curr.y + d.y][curr.x + d.x] = 0;
+            stack.push({x: curr.x + d.x, y: curr.y + d.y});
+        } else stack.pop();
+    }
+    m[h-2][w-2] = 2; // Goal hole
+    return m;
+}
+
+function initLevel() {
+    state.gridW = 10 + Math.floor((state.level - 1) / 5) * 6;
+    state.gridH = 10 + Math.floor((state.level - 1) / 5) * 8;
+    maze = generateMaze(state.gridW, state.gridH);
+    resize();
+    ball.vx = 0; ball.vy = 0; ball.scale = 1; state.falling = false;
+    ball.x = cellSize * 1.5; ball.y = cellSize * 1.5;
+    lvlDisplay.innerText = state.level;
+}
+
+function resize() {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    cellSize = Math.min(canvas.width / state.gridW, canvas.height / state.gridH);
+    ball.r = cellSize * 0.35;
+}
+
+window.addEventListener('deviceorientation', e => {
+    gravity.x = e.gamma * 0.15; gravity.y = e.beta * 0.15;
+});
+
+function checkCollision(nx, ny) {
+    const b = ball.r * 0.8;
+    const pts = [{x:nx-b, y:ny-b},{x:nx+b, y:ny-b},{x:nx-b, y:ny+b},{x:nx+b, y:ny+b}];
+    for (let p of pts) {
+        let gx = Math.floor(p.x/cellSize), gy = Math.floor(p.y/cellSize);
+        if (maze[gy] && maze[gy][gx] === 1) return "wall";
+        if (maze[gy] && maze[gy][gx] === 2) return "goal";
+    }
+    return null;
+}
+
+function update() {
+    if (!state.running || state.falling) return;
+
+    ball.vx = (ball.vx + gravity.x * 0.1) * 0.96;
+    ball.vy = (ball.vy + gravity.y * 0.1) * 0.96;
+
+    if (!checkCollision(ball.x + ball.vx, ball.y)) ball.x += ball.vx;
+    else ball.vx *= -0.3;
+
+    if (!checkCollision(ball.x, ball.y + ball.vy)) ball.y += ball.vy;
+    else ball.vy *= -0.3;
+
+    if (checkCollision(ball.x, ball.y) === "goal") {
+        state.falling = true;
+        setTimeout(() => { state.level++; initLevel(); }, 800);
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw Maze
+    for (let r=0; r<state.gridH; r++) {
+        for (let c=0; c<state.gridW; c++) {
+            let x = c*cellSize, y = r*cellSize;
+            if (maze[r][c] === 1) {
+                ctx.fillStyle = '#333'; ctx.fillRect(x, y, cellSize, cellSize);
+                ctx.strokeStyle = '#222'; ctx.strokeRect(x,y,cellSize,cellSize);
+            } else if (maze[r][c] === 2) {
+                // The Hole
+                ctx.fillStyle = '#000'; ctx.beginPath();
+                ctx.arc(x+cellSize/2, y+cellSize/2, cellSize*0.4, 0, 7); ctx.fill();
+            }
+        }
+    }
+
+    // Draw Metal Ball
+    ctx.save();
+    ctx.translate(ball.x, ball.y);
+    if (state.falling) ball.scale *= 0.9;
+    ctx.scale(ball.scale, ball.scale);
+
+    // Ball Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.beginPath(); ctx.arc(3, 3, ball.r, 0, 7); ctx.fill();
+
+    // Metallic Gradient
+    let g = ctx.createRadialGradient(-ball.r/3, -ball.r/3, 1, 0, 0, ball.r);
+    g.addColorStop(0, '#ddd'); g.addColorStop(0.5, '#888'); g.addColorStop(1, '#444');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0, 0, ball.r, 0, 7); ctx.fill();
+    ctx.restore();
+
+    update();
+    requestAnimationFrame(draw);
+}
+
+document.getElementById('startBtn').onclick = () => {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().then(r => { if(r==='granted') { ui.classList.add('hidden'); state.running = true; }});
+    } else { ui.classList.add('hidden'); state.running = true; }
+    initLevel(); draw();
+};
+window.addEventListener('resize', resize);
+</script>
 </body>
 </html>
