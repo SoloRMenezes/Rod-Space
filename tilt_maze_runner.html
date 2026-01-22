@@ -84,6 +84,7 @@ LVL <span id="lvl">1</span> |
 <canvas id="game"></canvas>
 
 <script>
+/* ========= SETUP ========= */
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const ui = document.getElementById("ui");
@@ -93,27 +94,24 @@ const sizeEl = document.getElementById("size");
 
 const CAMERA_ZOOM = 2.3;
 const WALL_HIT_THRESHOLD = 2.8;
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 let state = { running:false, level:1, falling:false };
 let maze=[], cellSize=0;
 let gravity={x:0,y:0}, keyGravity={x:0,y:0};
 let shakeTime=0, shakeStrength=0;
 
-const ball = { x:0, y:0, vx:0, vy:0, r:0, scale:1 };
+const ball = { x:0, y:0, vx:0, vy:0, r:0 };
 
-/* ---------- HELPERS ---------- */
-function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
-
-function manhattan(a,b){
-    return Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
-}
+/* ========= HELPERS ========= */
+const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+const manhattan = (a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
 
 function isDeadEnd(m,x,y){
     if(m[y][x]!==0) return false;
     let open=0;
-    for(const d of[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]){
+    for(const d of[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}])
         if(m[y+d.y] && m[y+d.y][x+d.x]===0) open++;
-    }
     return open===1;
 }
 
@@ -125,7 +123,7 @@ function getSolutionPath(m,start,end){
 
     while(q.length){
         const {x,y}=q.shift();
-        if(x===end.x && y===end.y) break;
+        if(x===end.x&&y===end.y) break;
         for(const d of[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]){
             const nx=x+d.x, ny=y+d.y;
             if(nx>=0&&ny>=0&&nx<w&&ny<h&&m[ny][nx]===0&&!prev[ny][nx]){
@@ -137,7 +135,7 @@ function getSolutionPath(m,start,end){
 
     const path=new Set();
     let cur=end;
-    while(cur && !(cur.x===start.x && cur.y===start.y)){
+    while(cur && !(cur.x===start.x&&cur.y===start.y)){
         path.add(`${cur.x},${cur.y}`);
         cur=prev[cur.y][cur.x];
     }
@@ -145,7 +143,7 @@ function getSolutionPath(m,start,end){
     return path;
 }
 
-/* ---------- MAZE ---------- */
+/* ========= MAZE ========= */
 function generateMaze(w,h){
     let m=Array(h).fill().map(()=>Array(w).fill(1));
     let stack=[{x:1,y:1}];
@@ -169,7 +167,6 @@ function generateMaze(w,h){
 
     const start={x:1,y:1};
 
-    // place MAIN hole (dead end)
     const deadEnds=[];
     for(let y=1;y<h-1;y++)
         for(let x=1;x<w-1;x++)
@@ -182,7 +179,6 @@ function generateMaze(w,h){
 
     m[main.y][main.x]=2;
 
-    // place DECOY hole
     const solution=getSolutionPath(m,start,main);
     const candidates=[];
 
@@ -204,7 +200,7 @@ function generateMaze(w,h){
     return m;
 }
 
-/* ---------- LEVEL ---------- */
+/* ========= LEVEL ========= */
 function initLevel(){
     let grow=Math.floor((state.level-1)/5)*4;
     let w=11+grow, h=15+grow;
@@ -222,14 +218,13 @@ function initLevel(){
     ball.y=cellSize*1.5;
     ball.vx=ball.vy=0;
     ball.r=cellSize*0.35;
-    ball.scale=1;
     state.falling=false;
 
     lvlEl.textContent=state.level;
     sizeEl.textContent=`${w}x${h}`;
 }
 
-/* ---------- INPUT ---------- */
+/* ========= INPUT ========= */
 addEventListener("deviceorientation",e=>{
     gravity.x=e.gamma*0.15;
     gravity.y=e.beta*0.15;
@@ -245,17 +240,17 @@ addEventListener("keyup",e=>{
     if(["w","s","ArrowUp","ArrowDown"].includes(e.key)) keyGravity.y=0;
 });
 
-/* ---------- EFFECTS ---------- */
+/* ========= EFFECTS ========= */
 function hitWallHard(speed){
     if(speed<WALL_HIT_THRESHOLD) return;
-    if(navigator.vibrate) navigator.vibrate(40);
+    if(isMobile && navigator.vibrate) navigator.vibrate(40);
     shakeTime=10; shakeStrength=4;
 }
 
 function triggerScare(){
     if(state.falling) return;
     state.falling=true;
-    if(navigator.vibrate) navigator.vibrate([80,40,80]);
+    if(isMobile && navigator.vibrate) navigator.vibrate([80,40,80]);
     shakeTime=20; shakeStrength=6;
     scare.classList.remove("hidden");
 
@@ -268,7 +263,7 @@ function triggerScare(){
     },700);
 }
 
-/* ---------- UPDATE ---------- */
+/* ========= UPDATE ========= */
 function update(){
     if(!state.running||state.falling) return;
 
@@ -308,7 +303,7 @@ function update(){
     }
 }
 
-/* ---------- DRAW ---------- */
+/* ========= DRAW ========= */
 function draw(){
     if(!state.running) return;
     update();
@@ -360,7 +355,7 @@ function draw(){
     requestAnimationFrame(draw);
 }
 
-/* ---------- START ---------- */
+/* ========= START ========= */
 document.getElementById("startBtn").onclick=()=>{
     if(DeviceOrientationEvent?.requestPermission){
         DeviceOrientationEvent.requestPermission().then(p=>{
