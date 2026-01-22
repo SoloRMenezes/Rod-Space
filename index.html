@@ -32,15 +32,13 @@
 
 <section id="projects" class="projects" style="text-align:center">
   <div class="container">
-
     <div class="section-head">
       <h2>Projects & Experiments</h2>
 
-      <!-- FILTER + SORT -->
       <div style="margin-top:12px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
-        <button class="btn small" onclick="filterCards('all')">All</button>
-        <button class="btn small" onclick="filterCards('game')">Games</button>
-        <button class="btn small" onclick="filterCards('tool')">Tools</button>
+        <button class="btn small" type="button" onclick="filterCards('all')">All</button>
+        <button class="btn small" type="button" onclick="filterCards('game')">Games</button>
+        <button class="btn small" type="button" onclick="filterCards('tool')">Tools</button>
 
         <select class="btn small" onchange="sortCards(this.value)">
           <option value="new">Newest</option>
@@ -52,7 +50,7 @@
     <div class="grid" id="projectGrid">
 
       <!-- Reaction Game -->
-      <article class="card" data-type="game" data-date="2024-01-20">
+      <article class="card" data-type="game" data-date="2026-01-22">
         <div class="card-top">
           <div class="icon">🎯</div>
           <h3>Reaction Game</h3>
@@ -65,11 +63,11 @@
       </article>
 
       <!-- Orbit Boss -->
-      <article class="card" data-type="game" data-date="2024-01-22">
+      <article class="card" data-type="game" data-date="2026-01-22">
         <div class="card-top">
           <div class="icon">🚀</div>
           <h3>Orbit Boss</h3>
-          <p>Dodge, orbit, and strike.</p>
+          <p>Dodge, orbit, and strike at the right moment.</p>
         </div>
         <div class="card-actions">
           <a href="orbit-boss.html" class="btn small primary">Play</a>
@@ -78,11 +76,11 @@
       </article>
 
       <!-- Pac-Man 3D -->
-      <article class="card" data-type="game" data-date="2023-11-10">
+      <article class="card" data-type="game" data-date="2026-01-22">
         <div class="card-top">
           <div class="icon">🟡</div>
           <h3>Pac-Man 3D</h3>
-          <p>First-person Pac-Man.</p>
+          <p>First-person Pac-Man experience.</p>
         </div>
         <div class="card-actions">
           <a href="pac-man-3d.html" class="btn small primary">Play</a>
@@ -90,12 +88,25 @@
         </div>
       </article>
 
+      <!-- Fidget Roulette -->
+      <article class="card" data-type="game" data-date="2026-01-20">
+        <div class="card-top">
+          <div class="icon">🎯</div>
+          <h3>Fidget Roulette</h3>
+          <p>Casino-style roulette spinner.</p>
+        </div>
+        <div class="card-actions">
+          <a href="fidget-roulette.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+        </div>
+      </article>
+
       <!-- Slot Machine -->
-      <article class="card" data-type="game" data-date="2024-01-23">
+      <article class="card" data-type="game" data-date="2026-01-22">
         <div class="card-top">
           <div class="icon">🎰</div>
           <h3>Slot Machine</h3>
-          <p>Classic slot machine.</p>
+          <p>Classic fruit slots with money, spins, and animations.</p>
         </div>
         <div class="card-actions">
           <a href="slot-machine.html" class="btn small primary">Play</a>
@@ -103,12 +114,25 @@
         </div>
       </article>
 
+      <!-- Multiplayer Test -->
+      <article class="card" data-type="game" data-date="2025-11-20">
+        <div class="card-top">
+          <div class="icon">👥</div>
+          <h3>Multiplayer Test</h3>
+          <p>Third-person multiplayer sandbox.</p>
+        </div>
+        <div class="card-actions">
+          <a href="multiplayer.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+        </div>
+      </article>
+
       <!-- Counter -->
-      <article class="card" data-type="tool" data-date="2024-01-24">
+      <article class="card" data-type="tool" data-date="2026-01-22">
         <div class="card-top">
           <div class="icon">🔢</div>
           <h3>Counter</h3>
-          <p>Simple interactive counter.</p>
+          <p>Simple interactive counter experiment.</p>
         </div>
         <div class="card-actions">
           <a href="counter.html" class="btn small primary">Open</a>
@@ -116,8 +140,8 @@
         </div>
       </article>
 
-      <!-- Tilt Maze Runner (NEW) -->
-      <article class="card" data-type="game" data-date="2024-01-25">
+      <!-- Tilt Maze Runner -->
+      <article class="card" data-type="game" data-date="2026-01-22">
         <div class="card-top">
           <div class="icon">🧩</div>
           <h3>Tilt Maze Runner</h3>
@@ -131,8 +155,31 @@
 
     </div>
   </div>
-</section>
 
+  <script>
+    const grid = document.getElementById("projectGrid");
+
+    function filterCards(type) {
+      [...grid.children].forEach(card => {
+        card.style.display = (type === "all" || card.dataset.type === type) ? "" : "none";
+      });
+    }
+
+    function sortCards(mode) {
+      const cards = [...grid.children];
+      cards.sort((a, b) => {
+        if (mode === "az") {
+          return a.querySelector("h3").innerText.localeCompare(b.querySelector("h3").innerText);
+        }
+        return new Date(b.dataset.date) - new Date(a.dataset.date);
+      });
+      cards.forEach(c => grid.appendChild(c));
+    }
+
+    sortCards("new");
+  </script>
+</section>
+  
 </main>
 
 <footer class="site-footer">
