@@ -20,15 +20,16 @@
         .piano {
             display: flex;
             background: #020617;
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 30px 60px rgba(0,0,0,0.7);
             position: relative;
         }
 
+        /* Mobile Size (Default) */
         .key {
-            width: 60px;
-            height: 220px;
+            width: 50px;
+            height: 200px;
             background: linear-gradient(to bottom, #eee 0%, #fff 100%);
             border: 1px solid #94a3b8;
             border-radius: 0 0 6px 6px;
@@ -39,27 +40,43 @@
             padding-bottom: 15px;
             color: #64748b;
             font-weight: bold;
-            transition: transform 0.05s, box-shadow 0.05s;
+            transition: transform 0.05s, box-shadow 0.05s, background 0.1s;
             user-select: none;
             position: relative;
         }
 
         .key.black {
-            width: 40px;
-            height: 135px;
+            width: 34px;
+            height: 120px;
             background: linear-gradient(to bottom, #334155 0%, #1e293b 100%);
             border: none;
-            margin-left: -20px;
-            margin-right: -20px;
+            margin-left: -17px;
+            margin-right: -17px;
             z-index: 2;
             color: #94a3b8;
             box-shadow: 0 5px 10px rgba(0,0,0,0.5);
         }
 
+        /* PC Size (Screens wider than 768px) */
+        @media (min-width: 768px) {
+            .piano { padding: 35px; }
+            .key {
+                width: 80px;
+                height: 300px;
+                font-size: 1.2rem;
+            }
+            .key.black {
+                width: 54px;
+                height: 180px;
+                margin-left: -27px;
+                margin-right: -27px;
+            }
+        }
+
         .key:active, .key.active {
             background: #8fc0e3;
             color: #020617;
-            transform: translateY(4px);
+            transform: translateY(6px);
             box-shadow: inset 0 5px 10px rgba(0,0,0,0.2);
         }
 
@@ -96,27 +113,21 @@
 
     function playPianoNote(freq) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        
         const now = audioCtx.currentTime;
-        
-        // Main Oscillator (Body of the note)
         const osc = audioCtx.createOscillator();
         const masterGain = audioCtx.createGain();
         
-        // Piano-like timbre uses a square wave filtered down or a triangle wave
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
         
-        // Attack, Decay, Sustain, Release (ADSR)
         masterGain.gain.setValueAtTime(0, now);
-        masterGain.gain.linearRampToValueAtTime(0.4, now + 0.02); // Quick attack
-        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5); // Long decay
+        masterGain.gain.linearRampToValueAtTime(0.4, now + 0.02);
+        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
         
-        // Add a second oscillator for harmonics (richer sound)
         const osc2 = audioCtx.createOscillator();
         const gain2 = audioCtx.createGain();
         osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(freq * 2, now); // Octave up
+        osc2.frequency.setValueAtTime(freq * 2, now);
         gain2.gain.setValueAtTime(0.1, now);
         gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
 
@@ -139,7 +150,6 @@
 
     const removeActive = (el) => el && el.classList.remove('active');
 
-    // Mouse/Touch
     document.querySelectorAll('.key').forEach(key => {
         key.addEventListener('mousedown', () => handleInput(key));
         key.addEventListener('mouseup', () => removeActive(key));
@@ -151,7 +161,6 @@
         key.addEventListener('touchend', () => removeActive(key));
     });
 
-    // Keyboard
     window.addEventListener('keydown', (e) => {
         if (e.repeat) return;
         const keyVal = e.key === 'Ç' || e.key === 'ç' ? 'ç' : e.key.toLowerCase();
