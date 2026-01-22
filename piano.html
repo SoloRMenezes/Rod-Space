@@ -114,39 +114,36 @@
         osc.frequency.setValueAtTime(freq, now);
         
         const volume = isSoft ? 0.15 : 0.4;
-        const decay = isSoft ? 0.4 : 1.5;
+        // Natural decay is short (1.5s), Sustained decay is long (4.0s)
+        const decayTime = isSustaining ? 4.0 : (isSoft ? 0.4 : 1.5);
 
         masterGain.gain.setValueAtTime(0, now);
         masterGain.gain.linearRampToValueAtTime(volume, now + 0.02);
         
-        // If sustaining, we don't ramp to 0 immediately
-        if (!isSustaining) {
-            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
-        }
+        // Always set an exponential ramp to stop so notes don't ring forever
+        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + decayTime);
 
         osc.connect(masterGain);
         masterGain.connect(audioCtx.destination);
         
         osc.start(now);
+        osc.stop(now + decayTime);
         
-        const noteObj = { osc, gain: masterGain, startTime: now, decay };
+        const noteObj = { osc, gain: masterGain, startTime: now };
         activeNotes.add(noteObj);
 
-        if (!isSustaining) {
-            osc.stop(now + decay);
-            setTimeout(() => activeNotes.delete(noteObj), decay * 1000);
-        }
-        
-        return noteObj;
+        // Cleanup the set once the note has naturally faded out
+        setTimeout(() => activeNotes.delete(noteObj), decayTime * 1000);
     }
 
     function stopSustain() {
         const now = audioCtx.currentTime;
         activeNotes.forEach(note => {
+            // Quickly fade out whatever is currently ringing when Shift is released
             note.gain.gain.cancelScheduledValues(now);
             note.gain.gain.setValueAtTime(note.gain.gain.value, now);
-            note.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
-            note.osc.stop(now + 0.5);
+            note.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+            note.osc.stop(now + 0.3);
         });
         activeNotes.clear();
     }
