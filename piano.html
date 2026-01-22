@@ -26,7 +26,6 @@
             position: relative;
         }
 
-        /* Mobile Size (Default) */
         .key {
             width: 50px;
             height: 200px;
@@ -57,20 +56,10 @@
             box-shadow: 0 5px 10px rgba(0,0,0,0.5);
         }
 
-        /* PC Size (Screens wider than 768px) */
         @media (min-width: 768px) {
             .piano { padding: 35px; }
-            .key {
-                width: 80px;
-                height: 300px;
-                font-size: 1.2rem;
-            }
-            .key.black {
-                width: 54px;
-                height: 180px;
-                margin-left: -27px;
-                margin-right: -27px;
-            }
+            .key { width: 80px; height: 300px; font-size: 1.2rem; }
+            .key.black { width: 54px; height: 180px; margin-left: -27px; margin-right: -27px; }
         }
 
         .key:active, .key.active {
@@ -110,36 +99,56 @@
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let isSustaining = false;
+    let isSoft = false;
+    const activeNotes = new Set();
 
     function playPianoNote(freq) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const now = audioCtx.currentTime;
+        
         const osc = audioCtx.createOscillator();
         const masterGain = audioCtx.createGain();
         
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, now);
         
+        const volume = isSoft ? 0.15 : 0.4;
+        const decay = isSoft ? 0.4 : 1.5;
+
         masterGain.gain.setValueAtTime(0, now);
-        masterGain.gain.linearRampToValueAtTime(0.4, now + 0.02);
-        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+        masterGain.gain.linearRampToValueAtTime(volume, now + 0.02);
         
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(freq * 2, now);
-        gain2.gain.setValueAtTime(0.1, now);
-        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+        // If sustaining, we don't ramp to 0 immediately
+        if (!isSustaining) {
+            masterGain.gain.exponentialRampToValueAtTime(0.0001, now + decay);
+        }
 
         osc.connect(masterGain);
-        osc2.connect(gain2);
-        gain2.connect(masterGain);
         masterGain.connect(audioCtx.destination);
         
         osc.start(now);
-        osc2.start(now);
-        osc.stop(now + 1.5);
-        osc2.stop(now + 1.5);
+        
+        const noteObj = { osc, gain: masterGain, startTime: now, decay };
+        activeNotes.add(noteObj);
+
+        if (!isSustaining) {
+            osc.stop(now + decay);
+            setTimeout(() => activeNotes.delete(noteObj), decay * 1000);
+        }
+        
+        return noteObj;
+    }
+
+    function stopSustain() {
+        const now = audioCtx.currentTime;
+        activeNotes.forEach(note => {
+            note.gain.gain.cancelScheduledValues(now);
+            note.gain.gain.setValueAtTime(note.gain.gain.value, now);
+            note.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+            note.osc.stop(now + 0.5);
+        });
+        activeNotes.clear();
     }
 
     const handleInput = (el) => {
@@ -154,14 +163,17 @@
         key.addEventListener('mousedown', () => handleInput(key));
         key.addEventListener('mouseup', () => removeActive(key));
         key.addEventListener('mouseleave', () => removeActive(key));
-        key.addEventListener('touchstart', (e) => { 
-            e.preventDefault(); 
-            handleInput(key); 
-        }, {passive: false});
-        key.addEventListener('touchend', () => removeActive(key));
     });
 
     window.addEventListener('keydown', (e) => {
+        if (e.key === 'Shift') {
+            isSustaining = true;
+            return;
+        }
+        if (e.key === 'Control') {
+            isSoft = true;
+            return;
+        }
         if (e.repeat) return;
         const keyVal = e.key === 'Ç' || e.key === 'ç' ? 'ç' : e.key.toLowerCase();
         const keyEl = document.querySelector(`.key[data-key="${keyVal}"]`);
@@ -169,6 +181,15 @@
     });
 
     window.addEventListener('keyup', (e) => {
+        if (e.key === 'Shift') {
+            isSustaining = false;
+            stopSustain();
+            return;
+        }
+        if (e.key === 'Control') {
+            isSoft = false;
+            return;
+        }
         const keyVal = e.key === 'Ç' || e.key === 'ç' ? 'ç' : e.key.toLowerCase();
         const keyEl = document.querySelector(`.key[data-key="${keyVal}"]`);
         removeActive(keyEl);
