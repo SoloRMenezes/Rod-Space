@@ -5,12 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Rod Space — Where creativity meets code</title>
   <meta name="description" content="Rod Space: Rodrigo's hub for games and experiments." />
+
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css" />
+
+  <!-- FIXED CONTROL STYLES -->
+  <style>
+    .project-controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .control-btn,
+    .control-select {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e5f2ff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, border 0.2s ease;
+    }
+
+    .control-btn:hover,
+    .control-select:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .control-btn.active {
+      background: #8fc0e3;
+      color: #020617;
+      border-color: #8fc0e3;
+    }
+
+    .control-select {
+      appearance: none;
+    }
+  </style>
 </head>
 
 <body>
+
 <header class="site-header">
   <a href="#" class="brand">
     <img src="assets/logo.svg" alt="Rod Space logo" width="28" height="28" />
@@ -32,15 +73,17 @@
 
 <section id="projects" class="projects" style="text-align:center">
   <div class="container">
+
     <div class="section-head">
       <h2>Projects & Experiments</h2>
 
-      <div style="margin-top:12px; display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
-        <button class="btn small" type="button" onclick="filterCards('all')">All</button>
-        <button class="btn small" type="button" onclick="filterCards('game')">Games</button>
-        <button class="btn small" type="button" onclick="filterCards('tool')">Tools</button>
+      <div class="project-controls">
+        <button class="control-btn active" onclick="filterCards('all', this)">All</button>
+        <button class="control-btn" onclick="filterCards('game', this)">Games</button>
+        <button class="control-btn" onclick="filterCards('tool', this)">Tools</button>
 
-        <select class="btn small" onchange="sortCards(this.value)">
+        <select class="control-select" onchange="sortCards(this.value)">
+          <option value="new">Newest</option>
           <option value="az">A–Z</option>
         </select>
       </div>
@@ -48,137 +91,50 @@
 
     <div class="grid" id="projectGrid">
 
-      <!-- Reaction Game -->
       <article class="card" data-type="game" data-date="2026-01-22">
-        <div class="card-top">
-          <div class="icon">🎯</div>
-          <h3>Reaction Game</h3>
-          <p>Challenge your reflexes.</p>
-        </div>
-        <div class="card-actions">
-          <a href="reaction.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-        </div>
+        <div class="card-top"><div class="icon">🎯</div><h3>Reaction Game</h3><p>Challenge your reflexes.</p></div>
+        <div class="card-actions"><a href="reaction.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
-      <!-- Orbit Boss -->
       <article class="card" data-type="game" data-date="2026-01-22">
-        <div class="card-top">
-          <div class="icon">🚀</div>
-          <h3>Orbit Boss</h3>
-          <p>Dodge, orbit, and strike at the right moment.</p>
-        </div>
-        <div class="card-actions">
-          <a href="orbit-boss.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-        </div>
+        <div class="card-top"><div class="icon">🚀</div><h3>Orbit Boss</h3><p>Dodge, orbit, and strike.</p></div>
+        <div class="card-actions"><a href="orbit-boss.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
-      <!-- Pac-Man 3D -->
       <article class="card" data-type="game" data-date="2026-01-22">
-        <div class="card-top">
-          <div class="icon">🟡</div>
-          <h3>Pac-Man 3D</h3>
-          <p>First-person Pac-Man experience.</p>
-        </div>
-        <div class="card-actions">
-          <a href="pac-man-3d.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-        </div>
+        <div class="card-top"><div class="icon">🟡</div><h3>Pac-Man 3D</h3><p>First-person Pac-Man.</p></div>
+        <div class="card-actions"><a href="pac-man-3d.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
-      <!-- Fidget Roulette -->
       <article class="card" data-type="game" data-date="2026-01-20">
-        <div class="card-top">
-          <div class="icon">🎯</div>
-          <h3>Fidget Roulette</h3>
-          <p>Casino-style roulette spinner.</p>
-        </div>
-        <div class="card-actions">
-          <a href="fidget-roulette.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-        </div>
+        <div class="card-top"><div class="icon">🎯</div><h3>Fidget Roulette</h3><p>Casino-style roulette.</p></div>
+        <div class="card-actions"><a href="fidget-roulette.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
-      <!-- Slot Machine -->
       <article class="card" data-type="game" data-date="2026-01-22">
-        <div class="card-top">
-          <div class="icon">🎰</div>
-          <h3>Slot Machine</h3>
-          <p>Classic fruit slots with money, spins, and animations.</p>
-        </div>
-        <div class="card-actions">
-          <a href="slot-machine.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-        </div>
+        <div class="card-top"><div class="icon">🎰</div><h3>Slot Machine</h3><p>Classic fruit slots.</p></div>
+        <div class="card-actions"><a href="slot-machine.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
-      <!-- Multiplayer Test -->
       <article class="card" data-type="game" data-date="2025-11-20">
-        <div class="card-top">
-          <div class="icon">👥</div>
-          <h3>Multiplayer Test</h3>
-          <p>Third-person multiplayer sandbox.</p>
-        </div>
-        <div class="card-actions">
-          <a href="multiplayer.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-        </div>
+        <div class="card-top"><div class="icon">👥</div><h3>Multiplayer Test</h3><p>Third-person sandbox.</p></div>
+        <div class="card-actions"><a href="multiplayer.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
-      <!-- Counter -->
       <article class="card" data-type="tool" data-date="2026-01-22">
-        <div class="card-top">
-          <div class="icon">🔢</div>
-          <h3>Counter</h3>
-          <p>Simple interactive counter experiment.</p>
-        </div>
-        <div class="card-actions">
-          <a href="counter.html" class="btn small primary">Open</a>
-          <span class="pill">Tool</span>
-        </div>
+        <div class="card-top"><div class="icon">🔢</div><h3>Counter</h3><p>Simple interactive counter.</p></div>
+        <div class="card-actions"><a href="counter.html" class="btn small primary">Open</a><span class="pill">Tool</span></div>
       </article>
 
-      <!-- Tilt Maze Runner -->
       <article class="card" data-type="game" data-date="2026-01-22">
-        <div class="card-top">
-          <div class="icon">🧩</div>
-          <h3>Tilt Maze Runner</h3>
-          <p>Tilt-controlled maze challenge.</p>
-        </div>
-        <div class="card-actions">
-          <a href="tilt_maze_runner.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-        </div>
+        <div class="card-top"><div class="icon">🧩</div><h3>Tilt Maze Runner</h3><p>Tilt-controlled maze.</p></div>
+        <div class="card-actions"><a href="tilt_maze_runner.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
     </div>
   </div>
-
-  <script>
-    const grid = document.getElementById("projectGrid");
-
-    function filterCards(type) {
-      [...grid.children].forEach(card => {
-        card.style.display = (type === "all" || card.dataset.type === type) ? "" : "none";
-      });
-    }
-
-    function sortCards(mode) {
-      const cards = [...grid.children];
-      cards.sort((a, b) => {
-        if (mode === "az") {
-          return a.querySelector("h3").innerText.localeCompare(b.querySelector("h3").innerText);
-        }
-        return new Date(b.dataset.date) - new Date(a.dataset.date);
-      });
-      cards.forEach(c => grid.appendChild(c));
-    }
-
-    sortCards("new");
-  </script>
 </section>
-  
+
 </main>
 
 <footer class="site-footer">
@@ -188,31 +144,29 @@
 </footer>
 
 <script>
-document.getElementById("year").textContent = new Date().getFullYear();
+  document.getElementById("year").textContent = new Date().getFullYear();
+  const grid = document.getElementById("projectGrid");
 
-const grid = document.getElementById("projectGrid");
+  function filterCards(type, btn) {
+    document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
 
-function filterCards(type) {
-  [...grid.children].forEach(card => {
-    card.style.display =
-      type === "all" || card.dataset.type === type ? "" : "none";
-  });
-}
+    [...grid.children].forEach(card => {
+      card.style.display = (type === "all" || card.dataset.type === type) ? "" : "none";
+    });
+  }
 
-function sortCards(mode) {
-  const cards = [...grid.children];
-  cards.sort((a, b) => {
-    if (mode === "az") {
-      return a.querySelector("h3").innerText
-        .localeCompare(b.querySelector("h3").innerText);
-    }
-    return new Date(b.dataset.date) - new Date(a.dataset.date);
-  });
-  cards.forEach(c => grid.appendChild(c));
-}
+  function sortCards(mode) {
+    const cards = [...grid.children];
+    cards.sort((a, b) =>
+      mode === "az"
+        ? a.querySelector("h3").innerText.localeCompare(b.querySelector("h3").innerText)
+        : new Date(b.dataset.date) - new Date(a.dataset.date)
+    );
+    cards.forEach(c => grid.appendChild(c));
+  }
 
-// default sort = newest
-sortCards("new");
+  sortCards("new");
 </script>
 
 </body>
