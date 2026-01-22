@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css" />
 
-  <!-- FIXED CONTROL STYLES -->
   <style>
     .project-controls {
       display: flex;
@@ -46,6 +45,22 @@
 
     .control-select {
       appearance: none;
+    }
+
+    /* PC Only Tag Styling */
+    .pill.pc-tag {
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .tag-container {
+      display: flex;
+      gap: 6px;
+      align-items: center;
     }
   </style>
 </head>
@@ -103,7 +118,13 @@
 
       <article class="card" data-type="game" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🟡</div><h3>Pac-Man 3D</h3><p>First-person Pac-Man.</p></div>
-        <div class="card-actions"><a href="pac-man-3d.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="pac-man-3d.html" class="btn small primary">Play</a>
+          <div class="tag-container">
+            <span class="pill">Game</span>
+            <span class="pill pc-tag">PC Only</span>
+          </div>
+        </div>
       </article>
 
       <article class="card" data-type="game" data-date="2026-01-20">
@@ -118,7 +139,13 @@
 
       <article class="card" data-type="game" data-date="2025-11-20">
         <div class="card-top"><div class="icon">👥</div><h3>Multiplayer Test</h3><p>Third-person sandbox.</p></div>
-        <div class="card-actions"><a href="multiplayer.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="multiplayer.html" class="btn small primary">Play</a>
+          <div class="tag-container">
+            <span class="pill">Game</span>
+            <span class="pill pc-tag">PC Only</span>
+          </div>
+        </div>
       </article>
 
       <article class="card" data-type="tool" data-date="2026-01-22">
