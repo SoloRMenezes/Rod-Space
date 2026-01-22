@@ -61,10 +61,7 @@ button {
     justify-content: center;
     align-items: center;
     z-index: 9999;
-}
-#scare img {
-    max-width: 100%;
-    max-height: 100%;
+    font-size: 120px;
 }
 </style>
 </head>
@@ -82,9 +79,7 @@ LVL <span id="lvl">1</span> |
 <button id="startBtn">START</button>
 </div>
 
-<div id="scare" class="hidden">
-<img src="exorcist.jpg">
-</div>
+<div id="scare" class="hidden">👻</div>
 
 <canvas id="game"></canvas>
 
@@ -105,6 +100,50 @@ let gravity={x:0,y:0}, keyGravity={x:0,y:0};
 let shakeTime=0, shakeStrength=0;
 
 const ball = { x:0, y:0, vx:0, vy:0, r:0, scale:1 };
+
+/* ---------- HELPERS ---------- */
+function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+
+function manhattan(a,b){
+    return Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+}
+
+function isDeadEnd(m,x,y){
+    if(m[y][x]!==0) return false;
+    let open=0;
+    for(const d of[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]){
+        if(m[y+d.y] && m[y+d.y][x+d.x]===0) open++;
+    }
+    return open===1;
+}
+
+function getSolutionPath(m,start,end){
+    const h=m.length,w=m[0].length;
+    const q=[start];
+    const prev=Array(h).fill().map(()=>Array(w).fill(null));
+    prev[start.y][start.x]=start;
+
+    while(q.length){
+        const {x,y}=q.shift();
+        if(x===end.x && y===end.y) break;
+        for(const d of[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]){
+            const nx=x+d.x, ny=y+d.y;
+            if(nx>=0&&ny>=0&&nx<w&&ny<h&&m[ny][nx]===0&&!prev[ny][nx]){
+                prev[ny][nx]={x,y};
+                q.push({x:nx,y:ny});
+            }
+        }
+    }
+
+    const path=new Set();
+    let cur=end;
+    while(cur && !(cur.x===start.x && cur.y===start.y)){
+        path.add(`${cur.x},${cur.y}`);
+        cur=prev[cur.y][cur.x];
+    }
+    path.add(`${start.x},${start.y}`);
+    return path;
+}
 
 /* ---------- MAZE ---------- */
 function generateMaze(w,h){
@@ -128,14 +167,39 @@ function generateMaze(w,h){
         } else stack.pop();
     }
 
-    m[h-2][w-2]=2;
+    const start={x:1,y:1};
 
-    let dx,dy;
-    do{
-        dx=1+Math.random()*(w-2)|0;
-        dy=1+Math.random()*(h-2)|0;
-    }while(m[dy][dx]!==0||(dx===1&&dy===1));
-    m[dy][dx]=3;
+    // place MAIN hole (dead end)
+    const deadEnds=[];
+    for(let y=1;y<h-1;y++)
+        for(let x=1;x<w-1;x++)
+            if(isDeadEnd(m,x,y)&&manhattan({x,y},start)>2)
+                deadEnds.push({x,y});
+
+    const main = deadEnds.length
+        ? deadEnds[Math.random()*deadEnds.length|0]
+        : {x:w-2,y:h-2};
+
+    m[main.y][main.x]=2;
+
+    // place DECOY hole
+    const solution=getSolutionPath(m,start,main);
+    const candidates=[];
+
+    for(let y=1;y<h-1;y++){
+        for(let x=1;x<w-1;x++){
+            if(!isDeadEnd(m,x,y)) continue;
+            if(solution.has(`${x},${y}`)) continue;
+            if(manhattan({x,y},start)<=1) continue;
+            if(manhattan({x,y},main)<=1) continue;
+            candidates.push({x,y});
+        }
+    }
+
+    if(candidates.length){
+        const d=candidates[Math.random()*candidates.length|0];
+        m[d.y][d.x]=3;
+    }
 
     return m;
 }
@@ -166,11 +230,10 @@ function initLevel(){
 }
 
 /* ---------- INPUT ---------- */
-window.addEventListener("deviceorientation",e=>{
+addEventListener("deviceorientation",e=>{
     gravity.x=e.gamma*0.15;
     gravity.y=e.beta*0.15;
 });
-
 addEventListener("keydown",e=>{
     if(e.key==="a"||e.key==="ArrowLeft") keyGravity.x=-3;
     if(e.key==="d"||e.key==="ArrowRight") keyGravity.x=3;
@@ -184,10 +247,9 @@ addEventListener("keyup",e=>{
 
 /* ---------- EFFECTS ---------- */
 function hitWallHard(speed){
-    if(speed < WALL_HIT_THRESHOLD) return;
+    if(speed<WALL_HIT_THRESHOLD) return;
     if(navigator.vibrate) navigator.vibrate(40);
-    shakeTime=10;
-    shakeStrength=4;
+    shakeTime=10; shakeStrength=4;
 }
 
 function triggerScare(){
@@ -219,7 +281,7 @@ function update(){
     let speed=Math.hypot(ball.vx,ball.vy);
     let b=ball.r*0.8;
 
-    let hit=(nx,ny)=>{
+    const hit=(nx,ny)=>{
         for(let dx of[-b,b])for(let dy of[-b,b]){
             let gx=Math.floor((nx+dx)/cellSize);
             let gy=Math.floor((ny+dy)/cellSize);
@@ -228,22 +290,15 @@ function update(){
         return false;
     };
 
-    if(!hit(ball.x+ball.vx,ball.y)){
-        ball.x+=ball.vx;
-    } else {
-        hitWallHard(speed);
-        ball.vx*=-0.3;
-    }
+    if(!hit(ball.x+ball.vx,ball.y)) ball.x+=ball.vx;
+    else{ hitWallHard(speed); ball.vx*=-0.3; }
 
-    if(!hit(ball.x,ball.y+ball.vy)){
-        ball.y+=ball.vy;
-    } else {
-        hitWallHard(speed);
-        ball.vy*=-0.3;
-    }
+    if(!hit(ball.x,ball.y+ball.vy)) ball.y+=ball.vy;
+    else{ hitWallHard(speed); ball.vy*=-0.3; }
 
     let gx2=Math.floor(ball.x/cellSize);
     let gy2=Math.floor(ball.y/cellSize);
+
     if(maze[gy2]&&maze[gy2][gx2]===2){
         state.falling=true;
         setTimeout(()=>{state.level++;initLevel();},800);
@@ -254,8 +309,6 @@ function update(){
 }
 
 /* ---------- DRAW ---------- */
-function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
-
 function draw(){
     if(!state.running) return;
     update();
@@ -290,7 +343,7 @@ function draw(){
             if(maze[y][x]>=2){
                 ctx.fillStyle="#000";
                 ctx.beginPath();
-                ctx.arc(px+cellSize/2,py+cellSize/2,cellSize*0.4,0,7);
+                ctx.arc(px+cellSize/2,py+cellSize/2,cellSize*0.4,0,Math.PI*2);
                 ctx.fill();
             }
         }
@@ -300,7 +353,7 @@ function draw(){
     ctx.translate(ball.x,ball.y);
     ctx.fillStyle="#ddd";
     ctx.beginPath();
-    ctx.arc(0,0,ball.r,0,7);
+    ctx.arc(0,0,ball.r,0,Math.PI*2);
     ctx.fill();
     ctx.restore();
 
