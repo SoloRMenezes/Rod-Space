@@ -5,7 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Orbit Boss — Deep Space Edition</title>
 <style>
-  html,body{margin:0;height:100%;background:#02050a;overflow:hidden;color:#fff;font-family: 'Courier New', monospace}
+  html,body{
+    margin:0;
+    height:100%;
+    background:#02050a;
+    overflow:hidden;
+    color:#fff;
+    font-family: 'Courier New', monospace;
+    /* Prevent text selection and blue highlights on mobile tap */
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
   canvas{display:block;width:100vw;height:100vh}
   #hud{position:fixed;top:25px;width:100%;text-align:center;pointer-events:none;z-index:5;text-shadow: 0 0 10px rgba(0,242,255,0.5)}
   #centerMsg{position:fixed;inset:0;display:grid;place-items:center;background:rgba(1,2,5,0.9);transition:opacity .3s;z-index:10}
@@ -21,7 +32,7 @@
   <div style="letter-spacing:4px">SYSTEM: LVL <span id="lvl" class="stat">1</span> | DATA: <span id="scr" class="stat">0</span></div>
   <div id="hp-container"><div id="hp-bar"></div></div>
 </div>
-<div id="centerMsg"><div id="msg">PRESS [SPACE] TO ENGAGE<br><small style="opacity:0.6; font-size:0.8rem; letter-spacing:1px">CLICK ONCE TO FLIP | AUTO-FIRE ENGAGED</small></div></div>
+<div id="centerMsg"><div id="msg">PRESS [SPACE] OR TAP TO ENGAGE<br><small style="opacity:0.6; font-size:0.8rem; letter-spacing:1px">CLICK/TAP TO FLIP DIRECTION | AUTO-FIRE ENGAGED</small></div></div>
 
 <script>
 const canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
@@ -45,25 +56,45 @@ function generateStars(){
             y: Math.random()*state.h, 
             s: Math.random()*2, 
             o: Math.random(),
-            v: Math.random() * 0.5 // parallax speed
+            v: Math.random() * 0.5 
         });
     }
 }
 
 addEventListener("resize",resize); resize();
 
+// SHARED INTERACTION LOGIC
+function handleInteraction() {
+    if(!state.started) { 
+        state.started = true; 
+        state.running = true; 
+        document.getElementById("centerMsg").classList.add("hidden"); 
+        return; 
+    }
+    if(!state.running) { 
+        location.reload(); 
+        return; 
+    }
+    player.dir *= -1; 
+}
+
+// Keyboard Listeners
 addEventListener("keydown", (e) => {
     if((e.code==='Space' || e.code==='Enter') && !keyLocked) {
         e.preventDefault();
         keyLocked = true;
-        if(!state.started) { state.started = true; state.running = true; document.getElementById("centerMsg").classList.add("hidden"); return; }
-        if(!state.running) { location.reload(); return; }
-        player.dir *= -1; 
+        handleInteraction();
     }
 });
 
 addEventListener("keyup", (e) => {
     if(e.code==='Space' || e.code==='Enter') keyLocked = false;
+});
+
+// Pointer (Click/Touch) Listener
+addEventListener("pointerdown", (e) => {
+    // Only trigger if we aren't clicking a UI button (if you add any later)
+    handleInteraction();
 });
 
 function spawnAsteroid(x, y, vx, vy, s, isFragment = false) {
@@ -86,7 +117,6 @@ function update(dt){
     if(!state.running) return;
     state.time += dt;
 
-    // Movement ramping
     player.currentSpeed = player.baseSpeed + (state.lvl-1)*0.15 + (state.time * 0.02);
     player.ang += (player.currentSpeed * player.dir) * dt;
     player.r = 220 + Math.sin(state.time * 0.6) * 40;
@@ -95,13 +125,11 @@ function update(dt){
     const py = state.cy + Math.sin(player.ang)*player.r;
     const lookAngle = Math.atan2(state.cy-py, state.cx-px);
 
-    // Auto-fire
     if(state.time - player.lastShot > 0.22){
         player.lastShot = state.time;
         bullets.push({x:px, y:py, vx:Math.cos(lookAngle)*1000, vy:Math.sin(lookAngle)*1000, p:true});
     }
 
-    // Boss Staggered fire
     boss.fireT += dt;
     if(boss.fireT > Math.max(0.5, 2.2 - (state.lvl*0.25))){
         boss.fireT = 0;
@@ -157,16 +185,12 @@ function drawBoss(){
     const t = state.time, h = boss.hue;
     ctx.save();
     ctx.translate(state.cx, state.cy);
-    
-    // Outer Armor Plates
     ctx.strokeStyle = `hsla(${h}, 100%, 50%, 0.3)`;
     ctx.rotate(t * 0.3);
     for(let i=0; i<8; i++){
         ctx.rotate(Math.PI/4);
         ctx.strokeRect(boss.r + 10, -15, 10, 30);
     }
-
-    // Hex Shield
     ctx.rotate(-t * 0.8);
     ctx.strokeStyle = `hsl(${h}, 100%, 50%)`;
     ctx.lineWidth = 3;
@@ -176,8 +200,6 @@ function drawBoss(){
         ctx.lineTo(Math.cos(a)*boss.r, Math.sin(a)*boss.r);
     }
     ctx.closePath(); ctx.stroke();
-
-    // Core Pulse
     ctx.fillStyle = `hsla(${h}, 100%, 70%, ${0.2 + Math.sin(t*10)*0.1})`;
     ctx.beginPath(); ctx.arc(0,0, 20 + Math.sin(t*5)*5, 0, Math.PI*2); ctx.fill();
     ctx.restore();
@@ -185,12 +207,10 @@ function drawBoss(){
 
 function drawPlayer(px, py, ang){
     ctx.save(); ctx.translate(px, py); ctx.rotate(ang);
-    // Fighter Body
     ctx.fillStyle = "#fff";
     ctx.beginPath();
     ctx.moveTo(20, 0); ctx.lineTo(-12, -10); ctx.lineTo(-8, 0); ctx.lineTo(-12, 10);
     ctx.closePath(); ctx.fill();
-    // Engine Glow
     ctx.fillStyle = "#00f2ff";
     ctx.beginPath(); ctx.arc(-10, 0, 4 + Math.sin(state.time*20)*2, 0, Math.PI*2); ctx.fill();
     ctx.restore();
@@ -199,25 +219,19 @@ function drawPlayer(px, py, ang){
 function draw(){
     ctx.fillStyle="#02050a"; ctx.fillRect(0,0,state.w,state.h);
     drawStars();
-    
     const px = state.cx + Math.cos(player.ang)*player.r, py = state.cy + Math.sin(player.ang)*player.r;
     const lookAngle = Math.atan2(state.cy-py, state.cx-px);
-
     drawBoss();
     drawPlayer(px, py, lookAngle);
-
-    // Particles/Bullets
     ctx.beginPath(); bullets.forEach(b => { if(!b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 4, 0, 7); }});
     ctx.fillStyle = "#ff3333"; ctx.fill();
     ctx.beginPath(); bullets.forEach(b => { if(b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 3, 0, 7); }});
     ctx.fillStyle = "#00f2ff"; ctx.fill();
-
     asteroids.forEach(a => {
         ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(a.rot);
         ctx.strokeStyle="#4b5563"; ctx.lineWidth=2; ctx.strokeRect(-a.s, -a.s, a.s*2, a.s*2);
         ctx.restore();
     });
-
     requestAnimationFrame(draw);
 }
 
