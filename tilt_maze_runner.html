@@ -283,16 +283,6 @@ function draw(){
         }
     }
 
-    // ball
-    ctx.save();
-    ctx.translate(ball.x,ball.y);
-    if(state.falling) ball.scale*=0.9;
-    ctx.scale(ball.scale,ball.scale);
-    ctx.fillStyle="#999";
-    ctx.beginPath();
-    ctx.arc(0,0,ball.r,0,7);
-    ctx.fill();
-    ctx.restore();
 
     // fog + memory
     ctx.fillStyle="rgba(0,0,0,0.9)";
@@ -326,6 +316,30 @@ function draw(){
     }
     ctx.globalAlpha=1;
 
+// === DRAW BALL ON TOP OF FOG ===
+ctx.save();
+ctx.translate(ball.x, ball.y);
+if (state.falling) ball.scale *= 0.9;
+ctx.scale(ball.scale, ball.scale);
+
+// soft glow so it never disappears
+let glow = ctx.createRadialGradient(0,0,ball.r*0.2,0,0,ball.r*2);
+glow.addColorStop(0, "rgba(255,255,255,0.9)");
+glow.addColorStop(1, "rgba(255,255,255,0)");
+
+ctx.fillStyle = glow;
+ctx.beginPath();
+ctx.arc(0,0,ball.r*2,0,Math.PI*2);
+ctx.fill();
+
+// solid ball
+ctx.fillStyle = "#ddd";
+ctx.beginPath();
+ctx.arc(0,0,ball.r,0,Math.PI*2);
+ctx.fill();
+
+ctx.restore();
+      
     requestAnimationFrame(draw);
 }
 
