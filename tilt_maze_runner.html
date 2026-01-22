@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Tilt Maze Runner</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #0a0a0c; font-family: 'Courier New', monospace; touch-action: none; }
+        canvas { display: block; }
+        #ui {
+            position: fixed; inset: 0; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; background: rgba(0,0,0,0.85);
+            color: #00ff99; z-index: 20; text-align: center; transition: opacity 0.5s;
+        }
+        .hidden { opacity: 0; pointer-events: none; }
+        button {
+            background: transparent; border: 2px solid #00ff99; color: #00ff99;
+            padding: 15px 40px; font-size: 1.2rem; cursor: pointer; font-family: inherit;
+            box-shadow: 0 0 15px rgba(0,255,153,0.3);
+        }
+        #stats { position: fixed; top: 10px; left: 10px; color: #00ff99; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="stats">GOAL: REACH THE GOLDEN SQUARE</div>
+
+    <div id="ui">
+        <h1 id="title">MAZE PROTOCOL</h1>
+        <p>TILT PHONE TO NAVIGATE</p>
+        <button id="startBtn">INITIALIZE</button>
+    </div>
+
+    <canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const ui = document.getElementById('ui');
+const startBtn = document.getElementById('startBtn');
+
+let isRunning = false;
+let gravity = { x: 0, y: 0 };
+
+// Maze Grid: 1 = Wall, 0 = Path, 2 = Goal
+const gridSize = 12;
+const maze = [
+    [1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,1,0,0,0,0,0,0,1],
+    [1,0,1,0,1,0,1,1,1,1,0,1],
+    [1,0,1,0,0,0,1,0,0,0,0,1],
+    [1,0,1,1,1,1,1,0,1,1,1,1],
+    [1,0,0,0,0,0,0,0,0,0,0,1],
+    [1,1,1,1,0,1,1,1,1,1,0,1],
+    [1,0,0,0,0,1,0,0,0,1,0,1],
+    [1,0,1,1,0,1,0,1,0,1,0,1],
+    [1,0,0,1,0,0,0,1,0,0,2,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+const ball = {
+    x: 60, y: 60, 
+    vx: 0, vy: 0, 
+    r: 8, 
+    color: '#00ff99'
+};
+
+let cellSize = 0;
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    // Calculate cell size to fit screen
+    cellSize = Math.min(canvas.width / maze[0].length, canvas.height / maze.length);
+}
+
+window.addEventListener('resize', resize);
+resize();
+
+function handleOrientation(e) {
+    // Tuning the sensitivity: 0.15 is a good balance
+    gravity.x = e.gamma * 0.15;
+    gravity.y = e.beta * 0.15;
+}
+
+async function init() {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        const resp = await DeviceOrientationEvent.requestPermission();
+        if (resp === 'granted') window.addEventListener('deviceorientation', handleOrientation);
+    } else {
+        window.addEventListener('deviceorientation', handleOrientation);
+    }
+    ui.classList.add('hidden');
+    isRunning = true;
+    loop();
+}
+
+function checkCollision(nx, ny) {
+    // Check 4 points around the ball
+    const points = [
+        {x: nx - ball.r, y: ny - ball.r},
+        {x: nx + ball.r, y: ny - ball.r},
+        {x: nx - ball.r, y: ny + ball.r},
+        {x: nx + ball.r, y: ny + ball.r}
+    ];
+
+    for (let p of points) {
+        let gx = Math.floor(p.x / cellSize);
+        let gy = Math.floor(p.y / cellSize);
+        
+        if (maze[gy] && maze[gy][gx] === 1) return true;
+        if (maze[gy] && maze[gy][gx] === 2) {
+            alert("MAZE CLEARED!");
+            location.reload();
+        }
+    }
+    return false;
+}
+
+function update() {
+    if (!isRunning) return;
+
+    ball.vx += gravity.x;
+    ball.vy += gravity.y;
+    ball.vx *= 0.92; // Friction
+    ball.vy *= 0.92;
+
+    // Predicted positions
+    let nextX = ball.x + ball.vx;
+    let nextY = ball.y + ball.vy;
+
+    // X-axis collision
+    if (!checkCollision(nextX, ball.y)) {
+        ball.x = nextX;
+    } else {
+        ball.vx *= -0.5; // Bounce off wall
+    }
+
+    // Y-axis collision
+    if (!checkCollision(ball.x, nextY)) {
+        ball.y = nextY;
+    } else {
+        ball.vy *= -0.5; // Bounce off wall
+    }
+}
+
+function draw() {
+    ctx.fillStyle = '#0a0a0c';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Maze
+    for (let row = 0; row < maze.length; row++) {
+        for (let col = 0; col < maze[row].length; col++) {
+            if (maze[row][col] === 1) {
+                ctx.fillStyle = '#1a1a20';
+                ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                ctx.strokeStyle = '#333';
+                ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+            } else if (maze[row][col] === 2) {
+                ctx.fillStyle = '#ffcc00'; // Goal
+                ctx.shadowBlur = 15; ctx.shadowColor = '#ffcc00';
+                ctx.fillRect(col * cellSize + 5, row * cellSize + 5, cellSize - 10, cellSize - 10);
+                ctx.shadowBlur = 0;
+            }
+        }
+    }
+
+    // Draw Ball
+    ctx.fillStyle = ball.color;
+    ctx.shadowBlur = 10; ctx.shadowColor = ball.color;
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+}
+
+function loop() {
+    update();
+    draw();
+    if (isRunning) requestAnimationFrame(loop);
+}
+
+startBtn.addEventListener('click', init);
+</script>
+</body>
+</html>
