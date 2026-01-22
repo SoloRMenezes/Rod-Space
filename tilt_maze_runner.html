@@ -3,31 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Steel Ball Simulator</title>
+    <title>Steel Ball Tilt</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #1a1a1a; font-family: sans-serif; touch-action: none; }
-        canvas { display: block; background: #000; }
+        body { 
+            margin: 0; 
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #111; 
+            font-family: sans-serif; 
+            overflow: hidden;
+            touch-action: none; 
+        }
+        canvas { background: #000; display: block; }
         #ui {
             position: fixed; inset: 0; display: flex; flex-direction: column;
             justify-content: center; align-items: center; background: #1a1a1a;
-            color: #ccc; z-index: 20; text-align: center;
+            color: #eee; z-index: 20; text-align: center;
         }
-        #stats { position: fixed; top: 10px; width: 100%; text-align: center; color: #666; pointer-events: none; font-family: monospace; }
+        #stats { 
+            position: fixed; top: 10px; width: 100%; text-align: center; 
+            color: #444; pointer-events: none; font-size: 12px; font-family: monospace;
+        }
         button {
-            background: #333; border: 1px solid #555; color: white;
-            padding: 15px 40px; font-size: 1.2rem; cursor: pointer; border-radius: 4px;
+            background: #eee; border: none; color: #111;
+            padding: 18px 45px; font-size: 1.2rem; cursor: pointer;
+            font-weight: bold; border-radius: 4px;
         }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div id="stats">LVL: <span id="lvlDisplay">1</span> | SIZE: <span id="sizeDisplay">11x11</span></div>
+    <div id="stats">LVL: <span id="lvlDisplay">1</span> | <span id="sizeDisplay">11x15</span></div>
+    
     <div id="ui">
-        <h2 style="letter-spacing: 2px;">PRECISION TILT</h2>
-        <p>Guide the steel ball to the pit.</p>
-        <button id="startBtn">BEGIN SESSIONS</button>
+        <h2>STEEL BALL</h2>
+        <p>Ensure you are on <b>HTTPS</b><br>Tilt phone to roll</p>
+        <button id="startBtn">START GAME</button>
     </div>
+
     <canvas id="game"></canvas>
 
 <script>
@@ -38,19 +54,16 @@ let state = { running: false, level: 1, gridW: 11, gridH: 15, falling: false };
 let gravity = { x: 0, y: 0 }, maze = [], cellSize = 0;
 const ball = { x: 0, y: 0, vx: 0, vy: 0, r: 0, scale: 1 };
 
-// Recursive Backtracker Maze Generation
 function generateMaze(w, h) {
     let m = Array(h).fill().map(() => Array(w).fill(1));
     let stack = [{x: 1, y: 1}];
     m[1][1] = 0;
-
     while (stack.length > 0) {
         let curr = stack[stack.length - 1];
         let dirs = [{x:0,y:-2},{x:0,y:2},{x:-2,y:0},{x:2,y:0}].filter(d => {
             let nx = curr.x + d.x, ny = curr.y + d.y;
             return nx > 0 && nx < w-1 && ny > 0 && ny < h-1 && m[ny][nx] === 1;
         });
-
         if (dirs.length > 0) {
             let d = dirs[Math.floor(Math.random() * dirs.length)];
             m[curr.y + d.y/2][curr.x + d.x/2] = 0;
@@ -58,20 +71,24 @@ function generateMaze(w, h) {
             stack.push({x: curr.x + d.x, y: curr.y + d.y});
         } else stack.pop();
     }
-    m[h-2][w-2] = 2; // Goal hole
+    m[h-2][w-2] = 2;
     return m;
 }
 
 function initLevel() {
-    // Increment complexity every 5 levels
-    // We add 4 to width/height to keep the corridors odd (required for the algorithm)
     let growth = Math.floor((state.level - 1) / 5) * 4;
     state.gridW = 11 + growth;
     state.gridH = 15 + growth; 
-    
     maze = generateMaze(state.gridW, state.gridH);
-    calculateSizing();
     
+    const maxW = window.innerWidth - 20;
+    const maxH = window.innerHeight - 40;
+    cellSize = Math.min(maxW / state.gridW, maxH / state.gridH);
+    
+    canvas.width = state.gridW * cellSize;
+    canvas.height = state.gridH * cellSize;
+    
+    ball.r = cellSize * 0.35;
     ball.vx = 0; ball.vy = 0; ball.scale = 1; state.falling = false;
     ball.x = cellSize * 1.5; ball.y = cellSize * 1.5;
     
@@ -79,119 +96,92 @@ function initLevel() {
     sizeDisplay.innerText = `${state.gridW}x${state.gridH}`;
 }
 
-function calculateSizing() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    // Fit the maze to the screen
-    cellSize = Math.min(canvas.width / state.gridW, canvas.height / state.gridH);
-    // Ball stays proportional to the path size
-    ball.r = cellSize * 0.3; 
-}
-
-window.addEventListener('deviceorientation', e => {
-    // Sensitivity adjustment
-    gravity.x = e.gamma * 0.12; 
-    gravity.y = e.beta * 0.12;
-});
-
-function checkCollision(nx, ny) {
-    const b = ball.r * 0.7; // Collision box slightly smaller than visual ball
-    const pts = [{x:nx-b, y:ny-b},{x:nx+b, y:ny-b},{x:nx-b, y:ny+b},{x:nx+b, y:ny+b}];
-    for (let p of pts) {
-        let gx = Math.floor(p.x/cellSize), gy = Math.floor(p.y/cellSize);
-        if (maze[gy] && maze[gy][gx] === 1) return "wall";
-        if (maze[gy] && maze[gy][gx] === 2) return "goal";
-    }
-    return null;
+function handleOrientation(e) {
+    gravity.x = e.gamma * 0.15; 
+    gravity.y = e.beta * 0.15;
 }
 
 function update() {
     if (!state.running || state.falling) return;
+    ball.vx = (ball.vx + gravity.x * 0.1) * 0.94;
+    ball.vy = (ball.vy + gravity.y * 0.1) * 0.94;
 
-    ball.vx = (ball.vx + gravity.x * 0.1) * 0.95;
-    ball.vy = (ball.vy + gravity.y * 0.1) * 0.95;
+    const b = ball.r * 0.8;
+    const check = (nx, ny) => {
+        const pts = [{x:nx-b, y:ny-b},{x:nx+b, y:ny-b},{x:nx-b, y:ny+b},{x:nx+b, y:ny+b}];
+        for (let p of pts) {
+            let gx = Math.floor(p.x/cellSize), gy = Math.floor(p.y/cellSize);
+            if (maze[gy] && maze[gy][gx] === 1) return true;
+        }
+        return false;
+    };
 
-    if (!checkCollision(ball.x + ball.vx, ball.y)) ball.x += ball.vx;
-    else ball.vx *= -0.25;
+    if (!check(ball.x + ball.vx, ball.y)) ball.x += ball.vx; else ball.vx *= -0.3;
+    if (!check(ball.x, ball.y + ball.vy)) ball.y += ball.vy; else ball.vy *= -0.3;
 
-    if (!checkCollision(ball.x, ball.y + ball.vy)) ball.y += ball.vy;
-    else ball.vy *= -0.25;
-
-    // Check if center of ball is over the hole
     let gx = Math.floor(ball.x / cellSize), gy = Math.floor(ball.y / cellSize);
-    if (maze[gy][gx] === 2) {
+    if (maze[gy] && maze[gy][gx] === 2) {
         state.falling = true;
-        setTimeout(() => { state.level++; initLevel(); }, 1000);
+        setTimeout(() => { state.level++; initLevel(); }, 800);
     }
 }
 
 function draw() {
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw Floor
-    ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(0, 0, state.gridW * cellSize, state.gridH * cellSize);
-
-    // Draw Maze
+    if (!state.running) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let r=0; r<state.gridH; r++) {
         for (let c=0; c<state.gridW; c++) {
             let x = c*cellSize, y = r*cellSize;
             if (maze[r][c] === 1) {
-                // Concrete/Metal Wall Look
-                ctx.fillStyle = '#222';
-                ctx.fillRect(x, y, cellSize, cellSize);
-                ctx.strokeStyle = '#111';
-                ctx.strokeRect(x, y, cellSize, cellSize);
+                ctx.fillStyle = '#222'; ctx.fillRect(x, y, cellSize, cellSize);
+                ctx.strokeStyle = '#111'; ctx.strokeRect(x, y, cellSize, cellSize);
             } else if (maze[r][c] === 2) {
-                // The Pit
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(x+cellSize/2, y+cellSize/2, cellSize*0.4, 0, Math.PI*2);
-                ctx.fill();
-                // Inner rim shadow
-                ctx.strokeStyle = '#111';
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                ctx.fillStyle = '#000'; ctx.beginPath();
+                ctx.arc(x+cellSize/2, y+cellSize/2, cellSize*0.4, 0, 7); ctx.fill();
             }
         }
     }
-
-    // Draw Steel Ball
     ctx.save();
     ctx.translate(ball.x, ball.y);
-    if (state.falling) ball.scale *= 0.92;
+    if (state.falling) ball.scale *= 0.9;
     ctx.scale(ball.scale, ball.scale);
-
-    // Subtle Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.beginPath(); ctx.arc(2, 2, ball.r, 0, Math.PI*2); ctx.fill();
-
-    // Steel Gradient
-    let g = ctx.createRadialGradient(-ball.r/3, -ball.r/3, ball.r/10, 0, 0, ball.r);
-    g.addColorStop(0, '#fff'); 
-    g.addColorStop(0.2, '#aaa'); 
-    g.addColorStop(1, '#333');
-    
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(0, 0, ball.r, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath(); ctx.arc(2, 2, ball.r, 0, 7); ctx.fill();
+    let g = ctx.createRadialGradient(-ball.r/3, -ball.r/3, 1, 0, 0, ball.r);
+    g.addColorStop(0, '#fff'); g.addColorStop(0.4, '#888'); g.addColorStop(1, '#333');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, ball.r, 0, 7); ctx.fill();
     ctx.restore();
-
     update();
     requestAnimationFrame(draw);
 }
 
-document.getElementById('startBtn').onclick = () => {
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission().then(r => { 
-            if(r==='granted') { ui.classList.add('hidden'); state.running = true; initLevel(); draw(); }
-        });
-    } else { 
-        ui.classList.add('hidden'); state.running = true; initLevel(); draw(); 
+// THE START LOGIC
+async function startApp() {
+    // 1. Request Permission (Crucial for iOS)
+    if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+            const permission = await DeviceOrientationEvent.requestPermission();
+            if (permission !== 'granted') {
+                alert("Permission for motion sensors was denied.");
+                return;
+            }
+        } catch (e) {
+            alert("Error requesting permission. Are you on HTTPS?");
+            return;
+        }
     }
-};
+    
+    // 2. Add Listener
+    window.addEventListener('deviceorientation', handleOrientation);
+    
+    // 3. Start Game
+    ui.classList.add('hidden');
+    state.running = true;
+    initLevel();
+    draw();
+}
 
-window.addEventListener('resize', calculateSizing);
+document.getElementById('startBtn').addEventListener('click', startApp);
 </script>
 </body>
 </html>
