@@ -393,91 +393,103 @@ pellets.push({
     }
   }
 
-  /* Ghosts */
-  ghostSpawns.forEach((spawn, i) => {
-    const bodyGeo = new THREE.CapsuleGeometry(1.1, 0.6, 12, 16);
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: ghostColors[i % ghostColors.length],
-      emissive: 0x111111,
-      emissiveIntensity: 0.6
-    });
-    const ghostMesh = new THREE.Mesh(bodyGeo, bodyMat);
-    ghostMesh.position.set(spawn.x, spawn.y + 0.4, spawn.z);
+ // === FIXED GHOST MODEL ===
+ghostSpawns.forEach((spawn, i) => {
 
-    // ----- Improved Ghost Skirt (3D scalloped, visible, proper shape) -----
-    const skirtPoints = [];
-    const skirtHeightTop = -0.1;   // where it starts under body
-    const skirtHeightBottom = 1.6; // hangs lower to form ghost silhouette
-    const radiusTop = 1.1;
-    const radiusBottom = 1.1;
-    const scallops = 12;
+  const ghostGroup = new THREE.Group();
 
-    for (let j = 0; j <= scallops; j++) {
-        const a = (j / scallops) * Math.PI * 2;
-        const wave = -Math.sin(a * 6) * 0.22; // inverted bump amplitude
-        skirtPoints.push(new THREE.Vector2(radiusTop, skirtHeightTop));
-        skirtPoints.push(new THREE.Vector2(radiusBottom + wave, skirtHeightBottom));
-    }
-
-    const skirtGeo = new THREE.LatheGeometry(skirtPoints, 64);
-   const skirtMat = new THREE.MeshStandardMaterial({
-  color: ghostColors[i % ghostColors.length],
-  emissive: 0x000000,
-  metalness: 0.25,
-  roughness: 0.65
-});
-
-    const skirtMesh = new THREE.Mesh(skirtGeo, skirtMat);
-    skirtMesh.position.y = -1;
-    ghostMesh.add(skirtMesh);
-
-    // Eyes
-    const eyeGeo = new THREE.SphereGeometry(0.35, 12, 12);
-    const pupilGeo = new THREE.SphereGeometry(0.18, 12, 12);
-    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const blackMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
-
-    const eyeL = new THREE.Mesh(eyeGeo, whiteMat);
-    const eyeR = new THREE.Mesh(eyeGeo, whiteMat);
-    const pupilL = new THREE.Mesh(pupilGeo, blackMat);
-    const pupilR = new THREE.Mesh(pupilGeo, blackMat);
-
-    eyeL.position.set(0.45, 0.4, 1);
-    eyeR.position.set(-0.45, 0.4, 1);
-    pupilL.position.set(0.45, 0.4, 1.2);
-    pupilR.position.set(-0.45, 0.4, 1.2);
-
-    ghostMesh.add(eyeL);
-    ghostMesh.add(eyeR);
-    ghostMesh.add(pupilL);
-    ghostMesh.add(pupilR);
-    // Store eye meshes for later rotation
-    const eyeMeshes = [eyeL, eyeR, pupilL, pupilR];
-    scene.add(ghostMesh);
-
-    const spawnCell = worldToCell(spawn.x, spawn.z);
-    ghosts.push({
-      mesh: ghostMesh,
-      color: ghostColors[i % ghostColors.length],
-      spawn: spawn.clone(),
-      spawnCell,
-      target: spawn.clone(),
-      eyes: false,
-      respawnTimer: 0,
-      baseSpeed: 3 + i * 0.3,
-      path: [],
-      currentMode: null,
-      nextCell: null,
-      speedMult: 1,
-      lastTargetRow: null,
-      lastTargetCol: null,
-      eyeMeshes,
-      offset: Math.random() * Math.PI * 2,
-    });
+  /* --- Materials --- */
+  const ghostMat = new THREE.MeshStandardMaterial({
+    color: ghostColors[i % ghostColors.length],
+    roughness: 0.55,
+    metalness: 0.15
   });
-}
 
-buildWorld();
+  /* --- Head (dome) --- */
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(1.15, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+    ghostMat
+  );
+  head.position.y = 1.8;
+  ghostGroup.add(head);
+
+  /* --- Body (cylinder) --- */
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.15, 1.15, 1.2, 24),
+    ghostMat
+  );
+  body.position.y = 1.1;
+  ghostGroup.add(body);
+
+  /* --- Skirt (proper scalloped extrusion) --- */
+  const shape = new THREE.Shape();
+  const scallops = 10;
+  const radius = 1.15;
+
+  shape.moveTo(-radius, 0);
+  shape.lineTo(radius, 0);
+
+  for (let s = 0; s <= scallops; s++) {
+    const a = (s / scallops) * Math.PI;
+    const x = Math.cos(a) * radius;
+    const y = -Math.sin(a) * 0.45;
+    shape.lineTo(x, y);
+  }
+
+  shape.lineTo(-radius, 0);
+
+  const skirt = new THREE.Mesh(
+    new THREE.ExtrudeGeometry(shape, {
+      depth: 1.15,
+      bevelEnabled: false
+    }),
+    ghostMat
+  );
+  skirt.rotation.x = Math.PI / 2;
+  skirt.position.y = 0.5;
+  skirt.position.z = -0.575;
+  ghostGroup.add(skirt);
+
+  /* --- Face group (eyes) --- */
+  const face = new THREE.Group();
+
+  const eyeWhite = new THREE.MeshStandardMaterial({ color: 0xffffff });
+  const pupilMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+
+  const eyeGeo = new THREE.SphereGeometry(0.25, 12, 12);
+  const pupilGeo = new THREE.SphereGeometry(0.12, 10, 10);
+
+  const eyeL = new THREE.Mesh(eyeGeo, eyeWhite);
+  const eyeR = new THREE.Mesh(eyeGeo, eyeWhite);
+  const pupilL = new THREE.Mesh(pupilGeo, pupilMat);
+  const pupilR = new THREE.Mesh(pupilGeo, pupilMat);
+
+  eyeL.position.set(0.35, 1.8, 1.05);
+  eyeR.position.set(-0.35, 1.8, 1.05);
+  pupilL.position.set(0.35, 1.8, 1.2);
+  pupilR.position.set(-0.35, 1.8, 1.2);
+
+  face.add(eyeL, eyeR, pupilL, pupilR);
+  ghostGroup.add(face);
+
+  ghostGroup.position.copy(spawn);
+  scene.add(ghostGroup);
+
+  ghosts.push({
+    mesh: ghostGroup,
+    face,
+    eyeMeshes: [pupilL, pupilR],
+    color: ghostColors[i % ghostColors.length],
+    spawn: spawn.clone(),
+    spawnCell: worldToCell(spawn.x, spawn.z),
+    target: spawn.clone(),
+    eyes: false,
+    respawnTimer: 0,
+    baseSpeed: 3 + i * 0.3,
+    speedMult: 1,
+    offset: Math.random() * Math.PI * 2
+  });
+});
 
 /* ========= PLAYER / STATE ========= */
 const playerPos = playerSpawn.clone();
