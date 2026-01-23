@@ -366,14 +366,19 @@ function buildWorld() {
         pellet.castShadow = false;
         pellet.receiveShadow = false;
         scene.add(pellet);
-        pellets.push({
-          mesh: pellet,
-          row: r,
-          col: c,
-          power: ch === 'o',
-          eaten: false,
-          offset: Math.random() * Math.PI * 2
-        });
+pellets.push({
+  mesh: pellet,
+  row: r,
+  col: c,
+  power: ch === 'o',
+  eaten: false,
+
+  baseY: 1,
+  bobAmp: 0.08 + Math.random() * 0.12,
+  bobSpeed: 0.0015 + Math.random() * 0.003,
+  bobPhase: Math.random() * Math.PI * 2
+});
+
       }
 
       if (ch === 'P') {
@@ -415,13 +420,12 @@ function buildWorld() {
     }
 
     const skirtGeo = new THREE.LatheGeometry(skirtPoints, 64);
-    const skirtMat = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        emissive: 0x000000,
-        emissiveIntensity: 0.0,
-        metalness: 0.25,
-        roughness: 0.65
-    });
+   const skirtMat = new THREE.MeshStandardMaterial({
+  color: ghostColors[i % ghostColors.length],
+  emissive: 0x000000,
+  metalness: 0.25,
+  roughness: 0.65
+});
 
     const skirtMesh = new THREE.Mesh(skirtGeo, skirtMat);
     skirtMesh.position.y = -1;
@@ -514,7 +518,7 @@ function resetPlayerAndGhosts() {
 
 function resetGame(full = true) {
   if (full) {
-    state.score = 233; // remaining pellets (added +4)
+    state.score = 233; // remaining  (added +4)
     state.level = 1;
     state.lives = 3;
   }
@@ -1455,11 +1459,11 @@ function loop(now) {
 
   // Pellet hover animation
   pellets.forEach(p => {
-    if (!p.eaten) {
-      const offset = Math.sin(now * 0.003 + p.offset) * 0.15;
-      p.mesh.position.y = 1 + offset;
-    }
-  });
+  if (p.eaten) return;
+  p.mesh.position.y =
+    p.baseY +
+    Math.sin(now * p.bobSpeed + p.bobPhase) * p.bobAmp;
+});
 
   if (state.playing && !state.paused) {
     movePlayer(dt);
@@ -1486,7 +1490,7 @@ function loop(now) {
   // Ghost hover animation
   ghosts.forEach(g => {
     const gFloat = Math.sin(now * 0.003 + g.offset) * 0.18;
-    g.mesh.position.y = 1.7 + gFloat;
+    g.mesh.position.y = g.spawn.y + gFloat;
   });
 
   // Rotate entire ghost toward its movement direction
@@ -1503,6 +1507,22 @@ function loop(now) {
     if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
       const angle = Math.atan2(dz, dx);
       g.mesh.rotation.y = angle;
+
+      // --- Eye tracking (simple + cheap) ---
+if (g.eyeMeshes) {
+  const lookStrength = 0.18;
+  const len = Math.hypot(dx, dz) || 1;
+  const lx = dx / len;
+  const lz = dz / len;
+
+  // pupils are index 2 and 3
+  g.eyeMeshes[2].position.x =  0.45 + lx * lookStrength;
+  g.eyeMeshes[2].position.z =  1.2  + lz * lookStrength;
+
+  g.eyeMeshes[3].position.x = -0.45 + lx * lookStrength;
+  g.eyeMeshes[3].position.z =  1.2  + lz * lookStrength;
+}
+
     }
   });
 
