@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rod Space — </title>
+  <title>Rod Space</title>
   <meta name="description" content="Rod Space: Rodrigo's hub for games and experiments." />
 
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
@@ -43,17 +43,14 @@
       border-color: #8fc0e3;
     }
 
-    .control-select {
-      appearance: none;
-    }
+    .control-select { appearance: none; }
 
-    /* PC Only Tag Styling */
     .pill.pc-tag {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255,255,255,.05);
       color: #94a3b8;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      font-size: 0.7rem;
-      letter-spacing: 0.05em;
+      border: 1px solid rgba(255,255,255,.1);
+      font-size: .7rem;
+      letter-spacing: .05em;
       text-transform: uppercase;
     }
 
@@ -69,7 +66,7 @@
 
 <header class="site-header">
   <a href="#" class="brand">
-    <img src="assets/logo.svg" alt="Rod Space logo" width="28" height="28" />
+    <img src="assets/logo.svg" width="28" height="28" />
     <span>Rod Space</span>
   </a>
 </header>
@@ -83,7 +80,7 @@
       <span class="gradient-text">Rod Space</span>
     </h1>
   </div>
-  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-bg"></div>
 </section>
 
 <section id="projects" class="projects" style="text-align:center">
@@ -95,6 +92,7 @@
       <div class="project-controls">
         <button class="control-btn active" onclick="filterCards('all', this)">All</button>
         <button class="control-btn" onclick="filterCards('game', this)">Games</button>
+        <button class="control-btn" onclick="filterCards('party', this)">Party Games</button>
         <button class="control-btn" onclick="filterCards('tool', this)">Tools</button>
 
         <select class="control-select" onchange="sortCards(this.value)">
@@ -106,49 +104,31 @@
 
     <div class="grid" id="projectGrid">
 
-<article class="card" data-type="tool" data-date="2026-01-22">
-  <div class="card-top">
-    <div class="icon">🎹</div>
-    <h3>Virtual Piano</h3>
-    <p>Playable keyboard in the browser.</p>
-  </div>
-  <div class="card-actions">
-    <a href="piano.html" class="btn small primary">Open</a>
-    <span class="pill">Tool</span>
-  </div>
-</article>
+      <!-- Tools -->
+      <article class="card" data-type="tool" data-date="2026-01-22">
+        <div class="card-top"><div class="icon">🎹</div><h3>Virtual Piano</h3><p>Playable keyboard.</p></div>
+        <div class="card-actions"><a href="piano.html" class="btn small primary">Open</a><span class="pill">Tool</span></div>
+      </article>
 
-<article class="card" data-type="game" data-date="2026-01-26">
-  <div class="card-top">
-    <div class="icon">🤔</div>
-    <h3>Who's More Likely To?</h3>
-    <p>Party discussion game with themed prompts.</p>
-  </div>
-  <div class="card-actions">
-    <a href="whos-more-likely.html" class="btn small primary">Play</a>
-    <span class="pill">Game</span>
-  </div>
-</article>
-      
+      <!-- Party Games -->
+      <article class="card" data-type="party" data-date="2026-01-26">
+        <div class="card-top"><div class="icon">🤔</div><h3>Who's More Likely To?</h3><p>Party discussion game.</p></div>
+        <div class="card-actions"><a href="whos-more-likely.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+      </article>
+
+      <article class="card" data-type="party" data-date="2026-01-25">
+        <div class="card-top"><div class="icon">🃏</div><h3>Cards Against Boredom</h3><p>Pass-and-play CAH-style game.</p></div>
+        <div class="card-actions"><a href="cards-against-boredom.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+      </article>
+
+      <!-- Games -->
       <article class="card" data-type="game" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🎯</div><h3>Reaction Game</h3><p>Challenge your reflexes.</p></div>
+        <div class="card-top"><div class="icon">🎯</div><h3>Reaction Game</h3><p>Test your reflexes.</p></div>
         <div class="card-actions"><a href="reaction.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
-      <article class="card" data-type="game" data-date="2026-01-25">
-  <div class="card-top">
-    <div class="icon">🃏</div>
-    <h3>Cards Against Boredom</h3>
-    <p>Pass-and-play Cards Against Humanity-style game.</p>
-  </div>
-  <div class="card-actions">
-    <a href="cards-against-boredom.html" class="btn small primary">Play</a>
-    <span class="pill">Game</span>
-  </div>
-</article>
-      
       <article class="card" data-type="game" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🚀</div><h3>Orbit Boss</h3><p>Dodge, orbit, and strike.</p></div>
+        <div class="card-top"><div class="icon">🚀</div><h3>Orbit Boss</h3><p>Dodge, orbit, strike.</p></div>
         <div class="card-actions"><a href="orbit-boss.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
@@ -156,42 +136,13 @@
         <div class="card-top"><div class="icon">🟡</div><h3>Pac-Man 3D</h3><p>First-person Pac-Man.</p></div>
         <div class="card-actions">
           <a href="pac-man-3d.html" class="btn small primary">Play</a>
-          <div class="tag-container">
-            <span class="pill">Game</span>
-            <span class="pill pc-tag">PC Only</span>
-          </div>
-        </div>
-      </article>
-
-      <article class="card" data-type="game" data-date="2026-01-20">
-        <div class="card-top"><div class="icon">🎯</div><h3>Fidget Roulette</h3><p>Casino-style roulette.</p></div>
-        <div class="card-actions"><a href="fidget-roulette.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
-      </article>
-
-      <article class="card" data-type="game" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🎰</div><h3>Slot Machine</h3><p>Classic fruit slots.</p></div>
-        <div class="card-actions"><a href="slot-machine.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
-      </article>
-
-      <article class="card" data-type="game" data-date="2025-11-20">
-        <div class="card-top"><div class="icon">👥</div><h3>Multiplayer Test</h3><p>Third-person sandbox.</p></div>
-        <div class="card-actions">
-          <a href="multiplayer.html" class="btn small primary">Play</a>
-          <div class="tag-container">
-            <span class="pill">Game</span>
-            <span class="pill pc-tag">PC Only</span>
-          </div>
+          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
         </div>
       </article>
 
       <article class="card" data-type="tool" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🔢</div><h3>Counter</h3><p>Simple interactive counter.</p></div>
+        <div class="card-top"><div class="icon">🔢</div><h3>Counter</h3><p>Simple counter.</p></div>
         <div class="card-actions"><a href="counter.html" class="btn small primary">Open</a><span class="pill">Tool</span></div>
-      </article>
-
-      <article class="card" data-type="game" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🧩</div><h3>Tilt Maze Runner</h3><p>Tilt-controlled maze.</p></div>
-        <div class="card-actions"><a href="tilt_maze_runner.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
     </div>
@@ -202,12 +153,11 @@
 
 <footer class="site-footer">
   <div class="container footer-inner">
-    <span>© <span 2025 ></span> Rod Space</span>
+    <span>© 2026 Rod Space</span>
   </div>
 </footer>
 
 <script>
-  document.getElementById("year").textContent = new Date().getFullYear();
   const grid = document.getElementById("projectGrid");
 
   function filterCards(type, btn) {
@@ -215,7 +165,12 @@
     btn.classList.add('active');
 
     [...grid.children].forEach(card => {
-      card.style.display = (type === "all" || card.dataset.type === type) ? "" : "none";
+      const show =
+        type === "all" ||
+        card.dataset.type === type ||
+        (type === "game" && card.dataset.type === "party");
+
+      card.hidden = !show;
     });
   }
 
