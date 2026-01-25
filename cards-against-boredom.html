@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cards Against Boredom</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -17,17 +17,19 @@
             color: #f3f4f6;
             overflow-x: hidden;
             min-height: 100vh;
+            touch-action: manipulation;
         }
 
-        h1, h2, h3, .card-font {
+        h1, h2, h3, .logo-font {
             font-family: 'Fredoka One', cursive;
+            letter-spacing: -0.02em;
         }
 
         .card {
-            width: 130px;
-            height: 180px;
+            width: 100px;
+            height: 140px;
             border-radius: 12px;
-            padding: 12px;
+            padding: 10px;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -44,8 +46,7 @@
         }
 
         .card:hover {
-            transform: translateY(-8px) rotate(0.5deg);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+            transform: translateY(-5px);
             z-index: 20;
         }
 
@@ -53,13 +54,23 @@
             background-color: #000000;
             color: #ffffff;
             border: 1px solid #374151;
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            transition: opacity 0.5s ease;
         }
 
         .card-white {
             background-color: #ffffff;
             color: #111827;
             border: 1px solid #e5e7eb;
+        }
+
+        .card-judging {
+            transform: scale(1.03);
+        }
+
+        .card-winner {
+            border: 3px solid #eab308 !important;
+            box-shadow: 0 0 20px rgba(234, 179, 8, 0.3), 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+            z-index: 40;
         }
 
         .card-selected {
@@ -69,18 +80,20 @@
         }
 
         .card-text {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 700;
             line-height: 1.2;
-            max-height: 130px;
+            max-height: 100px;
             overflow-y: auto;
             scrollbar-width: none;
         }
         
-        .card-text::-webkit-scrollbar { display: none; }
+        @media (min-width: 768px) {
+            .card-text { font-size: 0.85rem; }
+        }
 
         .card-brand {
-            font-size: 0.6rem;
+            font-size: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-weight: 800;
@@ -92,7 +105,7 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 10px 10px;
+            padding: 10px;
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -105,52 +118,32 @@
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
             display: flex;
             justify-content: center;
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .judging-fade {
-            opacity: 0.4;
-            transform: scale(0.95);
+            transition: opacity 0.5s ease;
         }
 
         #play-area {
             display: flex;
-            gap: 12px;
-            min-height: 180px;
+            gap: 8px;
+            min-height: 150px;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
             margin-bottom: 5px;
             width: 100%;
-            position: relative;
         }
 
         #player-hand {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             justify-content: center;
             flex-wrap: wrap;
             margin-top: 5px;
-            padding: 12px;
+            padding: 10px;
             width: 100%;
             background: rgba(0,0,0,0.2);
             border-radius: 20px;
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.05);
         }
-
-        .animate-deal { animation: deal 0.4s ease-out forwards; }
-        .animate-play { animation: slideInFromBottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        
-        @keyframes deal { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideInFromBottom { from { opacity: 0; transform: translateY(100px) scale(0.8); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-        .winner-glow {
-            box-shadow: 0 0 25px 2px rgba(234, 179, 8, 0.6) !important;
-            border: 3px solid #eab308 !important;
-        }
-
-        .hidden { display: none !important; }
 
         #start-menu {
             position: fixed;
@@ -161,28 +154,66 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
+            overflow-y: auto;
         }
 
         .menu-card {
             background: #1f2937;
-            padding: 30px;
+            padding: 25px;
             border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
             width: 100%;
-            max-width: 480px;
+            max-width: 500px;
             border: 1px solid #374151;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .input-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .number-input {
+                width: 100% !important;
+                text-align: left !important;
+            }
+        }
+
+        .number-input {
+            background: #374151;
+            border: 2px solid #4b5563;
+            border-radius: 12px;
+            padding: 10px 15px;
+            color: white;
+            font-weight: bold;
+            width: 90px;
+            font-size: 1.25rem;
+            text-align: center;
+        }
+
+        .input-label {
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #9ca3af;
         }
 
         .btn-toggle {
             background: #374151;
-            padding: 8px 15px;
-            border-radius: 12px;
+            padding: 10px;
+            border-radius: 10px;
             font-weight: bold;
             flex: 1;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
             font-size: 0.9rem;
         }
 
@@ -191,153 +222,106 @@
             color: white;
         }
 
-        #pass-screen {
-            position: fixed;
-            inset: 0;
-            background: #111827;
-            z-index: 1500;
+        .hidden { display: none !important; }
+
+        #scoreboard {
+            width: 100%;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+            justify-content: space-between;
+            background: rgba(17, 24, 39, 0.9);
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #374151;
         }
 
-        #sound-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-            background: rgba(31, 41, 55, 0.8);
-            border: 1px solid rgba(75, 85, 99, 0.5);
-            padding: 8px 12px;
-            border-radius: 99px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #9ca3af;
-        }
-
-        #overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        .status-standard {
-            font-family: 'Fredoka One', cursive;
-            transition: all 0.3s;
-        }
-
-        /* Custom scroll for scoreboard on many players */
         #scores-container {
+            display: flex;
+            gap: 10px;
             overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            padding-bottom: 5px;
         }
-        #scores-container::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
-<!-- Start Menu -->
 <div id="start-menu">
     <div class="menu-card">
-        <h1 class="text-4xl text-yellow-500 mb-6 card-font text-center">CAB</h1>
+        <h1 class="text-3xl md:text-4xl text-yellow-500 mb-8 logo-font text-center leading-tight">Cards Against Boredom</h1>
         
-        <div class="mb-5">
-            <label class="text-[10px] font-black uppercase text-gray-400 mb-2 block">Game Mode</label>
+        <div class="mb-6">
+            <label class="input-label mb-2 block">Game Mode</label>
             <div class="flex gap-2">
                 <div id="mode-single" class="btn-toggle active" onclick="setMode('single')">Single Player</div>
                 <div id="mode-multi" class="btn-toggle" onclick="setMode('multi')">Multiplayer</div>
             </div>
         </div>
 
-        <div id="player-count-ctrl" class="mb-5">
-            <label class="text-[10px] font-black uppercase text-gray-400 mb-2 block">Player Count</label>
-            <input type="range" id="player-slider" min="3" max="12" value="3" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" oninput="updateMenuDisplays()">
-            <div id="count-display" class="text-center font-bold mt-2 text-blue-400 text-sm">3 Players</div>
+        <div class="input-row">
+            <label class="input-label">Player Count (3-12)</label>
+            <input type="number" id="player-input" min="3" max="12" value="3" class="number-input">
         </div>
 
-        <div class="mb-5">
-            <label class="text-[10px] font-black uppercase text-gray-400 mb-2 block">Total Rounds</label>
-            <input type="range" id="rounds-slider" min="1" max="10" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" oninput="updateMenuDisplays()">
-            <div id="rounds-display" class="text-center font-bold mt-2 text-yellow-400 text-sm">5 Rounds</div>
+        <div class="input-row">
+            <label class="input-label">Total Rounds (1-10)</label>
+            <input type="number" id="rounds-input" min="1" max="10" value="5" class="number-input">
         </div>
 
-        <div class="mb-6">
-            <label class="text-[10px] font-black uppercase text-gray-400 mb-2 block">Card Packs</label>
+        <div class="mb-8">
+            <label class="input-label mb-2 block">Card Packs</label>
             <div class="flex items-center gap-3 bg-gray-800 p-3 rounded-xl border border-gray-700">
                 <input type="checkbox" checked disabled class="w-5 h-5 accent-blue-500">
                 <span class="text-sm font-bold">Main Pack (PG-13)</span>
             </div>
         </div>
 
-        <button onclick="startGame()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg transition-all uppercase tracking-widest">Start Game</button>
+        <div id="menu-error" class="text-red-400 text-xs font-bold uppercase mb-4 text-center hidden"></div>
+
+        <button onclick="validateAndStart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 text-lg rounded-xl shadow-lg transition-all uppercase">Start Game</button>
     </div>
 </div>
 
-<!-- Pass Screen -->
-<div id="pass-screen" class="hidden">
-    <div class="text-gray-500 uppercase tracking-widest text-xs mb-2">Turn transition</div>
-    <h2 id="pass-to-name" class="text-4xl card-font text-white mb-8">Ready?</h2>
-    <button id="pass-btn" onclick="showPlayerHand()" class="bg-blue-600 hover:bg-blue-700 text-white font-black py-4 px-12 rounded-full uppercase tracking-widest">Show My Cards</button>
+<div id="pass-screen" class="fixed inset-0 bg-gray-900 z-[1500] flex flex-col items-center justify-center text-center hidden">
+    <h2 id="pass-to-name" class="text-3xl logo-font text-white mb-8">Ready?</h2>
+    <button onclick="showPlayerHand()" class="bg-blue-600 text-white font-bold py-4 px-10 rounded-full uppercase">Show My Cards</button>
 </div>
 
 <div id="game-table">
-    <!-- Scoreboard -->
-    <div id="scoreboard" class="w-full max-w-6xl flex justify-between items-center bg-gray-900/80 backdrop-blur-md border border-gray-700/50 text-white p-3 rounded-2xl shadow-2xl mb-2">
-        <div class="text-xl card-font text-yellow-500 tracking-tight mr-4">CAB</div>
-        <div id="scores-container" class="flex-1 flex gap-4 md:gap-6 text-[10px] font-bold uppercase tracking-wider overflow-x-auto">
-            <!-- Scores injected here -->
-        </div>
-        <div id="round-indicator" class="bg-gray-800 border border-gray-700 px-3 py-1 rounded-full text-[9px] font-black uppercase ml-4 whitespace-nowrap">Round 1/5</div>
+    <div id="scoreboard">
+        <div id="scores-container"></div>
+        <div id="round-indicator" class="text-[10px] font-black uppercase self-center bg-gray-800 px-2 py-1 rounded">R1/5</div>
     </div>
 
     <div id="prompt-container">
         <div id="active-prompt" class="card card-black">
             <div class="card-text">Loading...</div>
-            <div class="card-brand">Boredom</div>
+            <div class="card-brand">Against Boredom</div>
         </div>
     </div>
 
-    <div id="status-msg" class="status-standard text-gray-400 text-sm mb-2 h-6 text-center uppercase"></div>
+    <div id="status-msg" class="text-[10px] text-gray-400 font-bold mb-2 uppercase h-4 text-center"></div>
 
     <div id="play-area"></div>
 
-    <div class="flex flex-col items-center gap-2 mb-2">
-        <div id="selection-count" class="text-[10px] text-gray-500 font-bold uppercase hidden"></div>
-        <div class="flex gap-4">
-            <button id="confirm-btn" onclick="confirmSelection()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-full shadow-lg transition-all hidden uppercase tracking-widest text-xs">Play Cards</button>
-            <button id="next-round-btn" onclick="nextRound()" class="bg-yellow-500 hover:bg-yellow-600 text-black font-black py-2 px-8 rounded-full shadow-lg transition-all hidden uppercase tracking-widest text-xs">Continue</button>
-        </div>
+    <div class="flex gap-2 mb-2">
+        <button id="confirm-btn" onclick="confirmSelection()" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Play</button>
+        <button id="next-round-btn" onclick="nextRound()" class="bg-yellow-500 text-black font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Continue</button>
     </div>
 
     <div id="player-hand"></div>
 </div>
 
-<div id="sound-toggle" onclick="toggleSound()">
-    <span id="sound-icon">🔈</span>
-    <span id="sound-text">SOUND OFF</span>
+<div id="sound-toggle" onclick="toggleSound()" class="fixed bottom-4 right-4 bg-gray-800/80 p-2 rounded-full text-[10px] font-bold cursor-pointer">
+    <span id="sound-icon">🔈</span> <span id="sound-text">OFF</span>
 </div>
 
-<div id="overlay" class="hidden">
-    <h1 id="overlay-title" class="text-6xl text-yellow-500 mb-4 card-font">GAME OVER</h1>
-    <p id="overlay-msg" class="text-xl text-gray-300 mb-8 uppercase tracking-widest"></p>
-    <button onclick="location.reload()" class="bg-white text-black font-black py-4 px-12 rounded-full hover:bg-gray-200 transition-all uppercase">Main Menu</button>
+<div id="overlay" class="fixed inset-0 bg-black/90 z-[2000] flex flex-col items-center justify-center hidden">
+    <h1 class="text-4xl text-yellow-500 mb-2 logo-font">GAME OVER</h1>
+    <p id="overlay-msg" class="text-white mb-8 uppercase text-sm"></p>
+    <button onclick="location.reload()" class="bg-white text-black font-bold py-3 px-8 rounded-full">MAIN MENU</button>
 </div>
 
 <script>
-    // --- AUDIO ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let soundEnabled = false;
 
@@ -350,104 +334,75 @@
         if (type === 'slap') {
             osc.frequency.setValueAtTime(150, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        } else if (type === 'win') {
-            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2);
             gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
     }
 
     function toggleSound() {
         soundEnabled = !soundEnabled;
         if (soundEnabled && audioCtx.state === 'suspended') audioCtx.resume();
-        document.getElementById('sound-text').innerText = soundEnabled ? 'SOUND ON' : 'SOUND OFF';
+        document.getElementById('sound-text').innerText = soundEnabled ? 'ON' : 'OFF';
         document.getElementById('sound-icon').innerText = soundEnabled ? '🔊' : '🔈';
     }
 
-    // --- DATA ---
     const prompts = [
-        "Why does my back hurt?", "The principal just banned ____ at school.", "What's that smell?", "I got detention for ____.", "My secret superpower is ____.", "The new viral TikTok trend involves ____.", "Mom, it's not what it looks like! It's just ____.", "Next time on Dragon Ball Z: Goku fights ____.", "I have a crippling fear of ____.", "____. It's what's for dinner.", "Step 1: ____. Step 2: ____. Step 3: Profit.", "Doctors recommend ____ for ____.", "Introducing the Mc____.", "The worst flavor of ice cream is ____.", "Why is the Wi-Fi so slow?", "Top 10 anime betrayals: ____.", "What's hiding under my bed?", "Step 1: ____. Step 2: Profit.", "____ is the best part of the day.", "I think I left ____ in the car."
+        "The principal banned ____.", "What's that smell?", "I got detention for ____.", "My superpower is ____.", "The new TikTok trend is ____.", "Mom! It's just ____.", "Goku fights ____.", "I fear ____.", "____ for dinner.", "Step 1: ____. Step 2: Profit.", "Doctors recommend ____.", "The Mc____.", "Worst ice cream: ____.", "Slow Wi-Fi is caused by ____.", "Anime betrayal: ____."
     ];
 
     const answers = [
-        "A wet sock.", "Three hamsters in a trenchcoat.", "Grandma's secret recipe.", "A screaming goat.", "Kanye West.", "Forgetting how to read.", "Nicolas Cage.", "A bag of magic beans.", "Being a disappointment.", "Free samples.", "Shrek.", "A used diaper.", "Eating glue.", "Socks with sandals.", "A potato.", "My search history.", "Darth Vader.", "The mitochondria.", "Stepping on a Lego.", "Glitter.", "A clown.", "Farting in an elevator.", "Tax evasion.", "A weird rash.", "Just a salad.", "Bees?", "Explosive diarrhea.", "Getting catfished.", "A Nigerian Prince.", "Dad jokes.", "Social anxiety.", "A participation trophy.", "Eating a spider.", "Licking a doorknob.", "Spontaneous combustion.", "Drinking bathwater.", "Toaster in a bathtub.", "The Illuminati.", "Sentient gas cloud.", "Being awkward.", "Using comic sans.", "Faking your own death.", "Losing the game.", "Asking for the manager.", "The friend-zone.", "Rick Astley.", "A bowl of soup.", "Forgetting pants.", "Slow internet.", "Mid-life crisis.", "Awkward silence.", "Heavy breathing.", "A dumpster fire.", "TikTok.", "Existential dread.", "The Spanish Inquisition.", "A cardboard box.", "Actually doing homework.", "Cold pizza."
+        "A wet sock.", "Three hamsters.", "A screaming goat.", "Kanye West.", "Nicolas Cage.", "Magic beans.", "Shrek.", "A used diaper.", "Eating glue.", "Socks with sandals.", "A potato.", "My search history.", "Darth Vader.", "The mitochondria.", "Stepping on a Lego.", "Glitter.", "A clown.", "Farting.", "Tax evasion.", "A weird rash.", "Just a salad.", "Bees?", "Dad jokes.", "Social anxiety.", "Eating a spider.", "Licking a doorknob.", "The Illuminati.", "Being awkward.", "Using comic sans.", "Rick Astley.", "A dumpster fire.", "TikTok.", "Existential dread.", "A cardboard box.", "Homework.", "Cold pizza."
     ];
 
-    // --- STATE ---
-    let gameMode = "single";
-    let players = [];
-    let activePlayerIndex = 0;
-    let currentJudgeIndex = 0;
-    let currentRound = 1;
-    let gameState = "prompt"; 
-    let deckPrompts = [];
-    let deckAnswers = [];
-    let playedCards = [];
-    let selectedIndices = [];
-    let blanksRequired = 1;
-    let maxRoundsLimit = 5;
+    let gameMode = "single", players = [], activePlayerIndex = 0, currentJudgeIndex = 0;
+    let currentRound = 1, deckPrompts = [], deckAnswers = [], playedCards = [], selectedIndices = [];
+    let blanksRequired = 1, maxRoundsLimit = 5;
     const HAND_SIZE = 7;
+
+    // Fisher-Yates Shuffle for better randomness
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
 
     function setMode(mode) {
         gameMode = mode;
         document.getElementById('mode-single').classList.toggle('active', mode === 'single');
         document.getElementById('mode-multi').classList.toggle('active', mode === 'multi');
-        // Both modes use the sliders now for better customization
-        updateMenuDisplays();
     }
 
-    function updateMenuDisplays() {
-        const pCount = document.getElementById('player-slider').value;
-        const rCount = document.getElementById('rounds-slider').value;
-        document.getElementById('count-display').innerText = `${pCount} Players`;
-        document.getElementById('rounds-display').innerText = `${rCount} Round${rCount > 1 ? 's' : ''}`;
-    }
-
-    function startGame() {
-        const count = parseInt(document.getElementById('player-slider').value);
-        maxRoundsLimit = parseInt(document.getElementById('rounds-slider').value);
-        
-        players = Array.from({ length: count }, (_, i) => ({
-            name: gameMode === 'single' ? (i === 0 ? "You" : `Bot ${i}`) : `Player ${i + 1}`,
-            hand: [],
-            score: 0,
-            isBot: gameMode === 'single' && i !== 0
+    function validateAndStart() {
+        const pCount = parseInt(document.getElementById('player-input').value);
+        const rCount = parseInt(document.getElementById('rounds-input').value);
+        if (pCount < 3 || pCount > 12 || rCount < 1 || rCount > 10) {
+            document.getElementById('menu-error').innerText = "Invalid Input";
+            document.getElementById('menu-error').classList.remove('hidden');
+            return;
+        }
+        maxRoundsLimit = rCount;
+        players = Array.from({ length: pCount }, (_, i) => ({
+            name: gameMode === 'single' ? (i === 0 ? "You" : `Bot ${i}`) : `P${i + 1}`,
+            hand: [], score: 0, isBot: gameMode === 'single' && i !== 0
         }));
-        
         deckPrompts = shuffle([...prompts]);
         deckAnswers = shuffle([...answers]);
-        
-        players.forEach(p => {
-            for (let i = 0; i < HAND_SIZE; i++) p.hand.push(drawAnswer());
-        });
-        
+        players.forEach(p => { for (let i = 0; i < HAND_SIZE; i++) p.hand.push(drawAnswer()); });
         document.getElementById('start-menu').classList.add('hidden');
-        currentJudgeIndex = 0;
-        currentRound = 1;
         startRound();
     }
 
-    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
-    function drawAnswer() { 
-        if(deckAnswers.length === 0) deckAnswers = shuffle([...answers]);
-        return deckAnswers.pop(); 
-    }
+    function drawAnswer() { return (deckAnswers.length ? deckAnswers : deckAnswers = shuffle([...answers])).pop(); }
 
     function startRound() {
-        gameState = "prompt";
-        playedCards = [];
-        activePlayerIndex = 0;
-        selectedIndices = [];
-        if (deckPrompts.length === 0) deckPrompts = shuffle([...prompts]);
-        const prompt = deckPrompts.pop();
+        playedCards = []; activePlayerIndex = 0; selectedIndices = [];
+        document.getElementById('prompt-container').style.opacity = "1";
+        const prompt = (deckPrompts.length ? deckPrompts : deckPrompts = shuffle([...prompts])).pop();
         document.querySelector('#active-prompt .card-text').innerText = prompt;
-        const match = prompt.match(/____/g);
-        blanksRequired = match ? match.length : 1;
-        document.getElementById('round-indicator').innerText = `Round ${currentRound}/${maxRoundsLimit}`;
-        document.getElementById('prompt-container').classList.remove('judging-fade');
+        blanksRequired = (prompt.match(/____/g) || [1]).length;
+        document.getElementById('round-indicator').innerText = `R${currentRound}/${maxRoundsLimit}`;
         document.getElementById('play-area').innerHTML = '';
         document.getElementById('confirm-btn').classList.add('hidden');
         document.getElementById('next-round-btn').classList.add('hidden');
@@ -456,21 +411,24 @@
     }
 
     function setupPlayerTurn() {
+        if (activePlayerIndex >= players.length) { startJudging(); return; }
         const p = players[activePlayerIndex];
-        if (p.isBot) { botPlay(); return; }
-        if (activePlayerIndex === currentJudgeIndex) { nextPlayer(); return; }
-        showPassScreen(p.name);
-    }
-
-    function showPassScreen(name) {
-        document.getElementById('pass-screen').classList.remove('hidden');
-        document.getElementById('pass-to-name').innerText = `${name} Ready?`;
+        if (p.isBot) {
+            const chosen = [];
+            for(let i=0; i<blanksRequired; i++) chosen.push(p.hand.splice(Math.floor(Math.random()*p.hand.length), 1)[0]);
+            playedCards.push({ owner: p.name, text: chosen.join(" / ") });
+            activePlayerIndex++; setupPlayerTurn();
+        } else if (activePlayerIndex === currentJudgeIndex) {
+            activePlayerIndex++; setupPlayerTurn();
+        } else {
+            document.getElementById('pass-screen').classList.remove('hidden');
+            document.getElementById('pass-to-name').innerText = `${p.name}'s Turn`;
+        }
     }
 
     function showPlayerHand() {
         document.getElementById('pass-screen').classList.add('hidden');
-        gameState = "choose";
-        document.getElementById('status-msg').innerText = `${players[activePlayerIndex].name}: Pick ${blanksRequired} card${blanksRequired > 1 ? 's' : ''}`;
+        document.getElementById('status-msg').innerText = `Pick ${blanksRequired}`;
         renderHand();
     }
 
@@ -479,15 +437,11 @@
         handEl.innerHTML = '';
         players[activePlayerIndex].hand.forEach((text, i) => {
             const card = document.createElement('div');
-            card.className = `card card-white animate-deal ${selectedIndices.includes(i) ? 'card-selected' : ''}`;
-            card.innerHTML = `<div class="card-text">${text}</div><div class="card-brand">CAB</div>`;
+            card.className = `card card-white ${selectedIndices.includes(i) ? 'card-selected' : ''}`;
+            card.innerHTML = `<div class="card-text">${text}</div><div class="card-brand">Against Boredom</div>`;
             card.onclick = () => {
-                if(selectedIndices.includes(i)) {
-                    selectedIndices = selectedIndices.filter(x => x !== i);
-                } else if(selectedIndices.length < blanksRequired) {
-                    selectedIndices.push(i);
-                    playSound('slap');
-                }
+                if(selectedIndices.includes(i)) selectedIndices = selectedIndices.filter(x => x !== i);
+                else if(selectedIndices.length < blanksRequired) { selectedIndices.push(i); playSound('slap'); }
                 renderHand();
                 document.getElementById('confirm-btn').classList.toggle('hidden', selectedIndices.length < blanksRequired);
             };
@@ -495,48 +449,26 @@
         });
     }
 
-    function botPlay() {
-        const p = players[activePlayerIndex];
-        const chosen = [];
-        for(let i=0; i<blanksRequired; i++) {
-            const rIdx = Math.floor(Math.random() * p.hand.length);
-            chosen.push(p.hand.splice(rIdx, 1)[0]);
-        }
-        playedCards.push({ owner: p.name, text: chosen.join(" / "), isPlayer: false });
-        nextPlayer();
-    }
-
     function confirmSelection() {
         const p = players[activePlayerIndex];
-        // Extract cards based on selected indices
         const chosen = selectedIndices.sort((a,b)=>b-a).map(i => p.hand.splice(i, 1)[0]);
-        playedCards.push({ owner: p.name, text: chosen.reverse().join(" / "), isPlayer: true });
+        playedCards.push({ owner: p.name, text: chosen.reverse().join(" / ") });
         selectedIndices = [];
         document.getElementById('confirm-btn').classList.add('hidden');
         document.getElementById('player-hand').innerHTML = '';
-        nextPlayer();
-    }
-
-    function nextPlayer() {
-        activePlayerIndex++;
-        if (activePlayerIndex < players.length) {
-            setupPlayerTurn();
-        } else {
-            startJudging();
-        }
+        activePlayerIndex++; setupPlayerTurn();
     }
 
     function startJudging() {
-        gameState = "judge";
         document.getElementById('player-hand').innerHTML = '';
-        document.getElementById('prompt-container').classList.add('judging-fade');
+        document.getElementById('prompt-container').style.opacity = "0.5";
         const judge = players[currentJudgeIndex];
         document.getElementById('status-msg').innerText = `Judge: ${judge.name}`;
-        if (judge.isBot) {
-            revealCards(true);
-        } else {
-            showPassScreen(judge.name);
-            document.getElementById('pass-btn').onclick = () => {
+        if (judge.isBot) revealCards(true);
+        else {
+            document.getElementById('pass-screen').classList.remove('hidden');
+            document.getElementById('pass-to-name').innerText = `Judge: ${judge.name}`;
+            document.querySelector('#pass-screen button').onclick = () => {
                 document.getElementById('pass-screen').classList.add('hidden');
                 revealCards(false);
             };
@@ -544,34 +476,26 @@
     }
 
     function revealCards(isBotJudge) {
-        const area = document.getElementById('play-area');
-        area.innerHTML = '';
-        // Shuffle played cards so judge doesn't know who played what
-        shuffle(playedCards);
-        playedCards.forEach((c, i) => {
+        const area = document.getElementById('play-area'); area.innerHTML = '';
+        shuffle([...playedCards]).forEach((c, i) => {
             const card = document.createElement('div');
-            card.className = `card card-white animate-play`;
-            card.style.animationDelay = `${i * 0.15}s`;
+            card.className = `card card-white card-judging`;
             card.innerHTML = `<div class="card-text">${c.text}</div><div class="card-brand">???</div>`;
-            card.onclick = () => { if (gameState === "judge" && !players[currentJudgeIndex].isBot) selectWinner(i); };
+            card.onclick = () => { if (!players[currentJudgeIndex].isBot) selectWinner(c); };
             area.appendChild(card);
-            setTimeout(() => playSound('slap'), i * 150);
         });
-        if (isBotJudge) {
-            setTimeout(() => selectWinner(Math.floor(Math.random() * playedCards.length)), 2000);
-        }
+        if (isBotJudge) setTimeout(() => selectWinner(playedCards[Math.floor(Math.random()*playedCards.length)]), 1500);
     }
 
-    function selectWinner(idx) {
-        gameState = "result";
-        const winnerData = playedCards[idx];
-        const winnerPlayer = players.find(p => p.name === winnerData.owner);
-        winnerPlayer.score++;
-        playSound('win');
-        document.getElementById('status-msg').innerText = `${winnerData.owner} WINS THE ROUND!`;
-        document.querySelectorAll('#play-area .card').forEach((el, i) => {
-            el.querySelector('.card-brand').innerText = playedCards[i].owner;
-            if (i === idx) el.classList.add('winner-glow');
+    function selectWinner(winnerData) {
+        players.find(p => p.name === winnerData.owner).score++;
+        document.getElementById('status-msg').innerText = `${winnerData.owner} wins!`;
+        document.querySelectorAll('#play-area .card').forEach(el => {
+            const text = el.querySelector('.card-text').innerText;
+            const cardData = playedCards.find(pc => pc.text === text);
+            el.querySelector('.card-brand').innerText = cardData.owner;
+            el.classList.remove('card-judging');
+            if (cardData.owner === winnerData.owner) el.classList.add('card-winner');
         });
         updateScoreboard();
         document.getElementById('next-round-btn').classList.remove('hidden');
@@ -579,27 +503,19 @@
 
     function nextRound() {
         if (currentRound >= maxRoundsLimit) { endGame(); return; }
-        currentRound++;
-        currentJudgeIndex = (currentJudgeIndex + 1) % players.length;
-        players.forEach(p => { 
-            while(p.hand.length < HAND_SIZE) p.hand.push(drawAnswer()); 
-        });
+        currentRound++; currentJudgeIndex = (currentJudgeIndex + 1) % players.length;
+        players.forEach(p => { while(p.hand.length < HAND_SIZE) p.hand.push(drawAnswer()); });
         startRound();
     }
 
     function updateScoreboard() {
         const container = document.getElementById('scores-container');
-        container.innerHTML = '';
-        players.forEach((p, i) => {
-            const isJudge = i === currentJudgeIndex;
-            const scoreItem = document.createElement('div');
-            scoreItem.className = `flex flex-col items-center min-w-[60px] ${isJudge ? 'opacity-100' : 'opacity-60'}`;
-            scoreItem.innerHTML = `
-                <span class="text-[8px] text-gray-500 mb-0.5">${isJudge ? 'JUDGE' : p.name}</span>
-                <span class="${i === 0 ? 'text-green-400' : 'text-blue-400'} font-bold">${p.score}</span>
-            `;
-            container.appendChild(scoreItem);
-        });
+        container.innerHTML = players.map((p, i) => `
+            <div class="flex flex-col items-center min-w-[40px] ${i === currentJudgeIndex ? 'text-yellow-500' : 'text-gray-400'}">
+                <span class="text-[8px] font-black">${p.name}</span>
+                <span class="text-xs font-bold">${p.score}</span>
+            </div>
+        `).join('');
     }
 
     function endGame() {
@@ -607,9 +523,6 @@
         document.getElementById('overlay').classList.remove('hidden');
         document.getElementById('overlay-msg').innerText = `${winner.name} wins with ${winner.score} points!`;
     }
-
-    // Initialize UI
-    updateMenuDisplays();
 </script>
 </body>
 </html>
