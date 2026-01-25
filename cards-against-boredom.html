@@ -279,7 +279,20 @@
 
         <button onclick="validateAndStart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 text-lg rounded-xl shadow-lg transition-all uppercase">Start Game</button>
     </div>
+ </div>
 </div>
+
+<script>
+  function clampInput(el) {
+    const min = parseInt(el.min);
+    const max = parseInt(el.max);
+    let val = parseInt(el.value);
+    if (isNaN(val)) val = min;
+    if (val < min) val = min;
+    if (val > max) val = max;
+    el.value = val;
+  }
+</script>
 
 <div id="pass-screen" class="fixed inset-0 bg-gray-900 z-[1500] flex flex-col items-center justify-center text-center hidden">
     <h2 id="pass-to-name" class="text-3xl logo-font text-white mb-8">Ready?</h2>
@@ -306,6 +319,7 @@
     <div class="flex gap-2 mb-2">
         <button id="confirm-btn" onclick="confirmSelection()" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Play</button>
         <button id="next-round-btn" onclick="nextRound()" class="bg-yellow-500 text-black font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Continue</button>
+        <button id="confirm-winner-btn" onclick="confirmWinner()" class="bg-green-600 text-white font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Confirm Winner</button>
     </div>
 
     <div id="player-hand"></div>
@@ -324,6 +338,20 @@
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let soundEnabled = false;
+
+    document.getElementById('player-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') clampInput(e.target);
+    });
+    document.getElementById('player-input').addEventListener('blur', e => {
+      clampInput(e.target);
+    });
+
+    document.getElementById('rounds-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') clampInput(e.target);
+    });
+    document.getElementById('rounds-input').addEventListener('blur', e => {
+      clampInput(e.target);
+    });
 
     function playSound(type) {
         if (!soundEnabled) return;
@@ -357,6 +385,7 @@
     let gameMode = "single", players = [], activePlayerIndex = 0, currentJudgeIndex = 0;
     let currentRound = 1, deckPrompts = [], deckAnswers = [], playedCards = [], selectedIndices = [];
     let blanksRequired = 1, maxRoundsLimit = 5;
+    let selectedWinnerIndex = null;
     const HAND_SIZE = 7;
 
     // Fisher-Yates Shuffle for better randomness
@@ -398,6 +427,8 @@
 
     function startRound() {
         playedCards = []; activePlayerIndex = 0; selectedIndices = [];
+        selectedWinnerIndex = null;
+        document.getElementById('confirm-winner-btn').classList.add('hidden');
         document.getElementById('prompt-container').style.opacity = "1";
         const prompt = (deckPrompts.length ? deckPrompts : deckPrompts = shuffle([...prompts])).pop();
         document.querySelector('#active-prompt .card-text').innerText = prompt;
@@ -477,17 +508,39 @@
 
     function revealCards(isBotJudge) {
         const area = document.getElementById('play-area'); area.innerHTML = '';
-        shuffle([...playedCards]).forEach((c, i) => {
+        selectedWinnerIndex = null;
+        document.getElementById('confirm-winner-btn').classList.add('hidden');
+        const shuffledCards = shuffle([...playedCards]);
+        shuffledCards.forEach((c, i) => {
             const card = document.createElement('div');
             card.className = `card card-white card-judging`;
             card.innerHTML = `<div class="card-text">${c.text}</div><div class="card-brand">???</div>`;
-            card.onclick = () => { if (!players[currentJudgeIndex].isBot) selectWinner(c); };
+            if (!isBotJudge) {
+                card.onclick = () => {
+                  if (players[currentJudgeIndex].isBot) return;
+                  selectedWinnerIndex = i;
+                  document.querySelectorAll('#play-area .card').forEach(c => c.classList.remove('card-selected'));
+                  card.classList.add('card-selected');
+                  document.getElementById('confirm-winner-btn').classList.remove('hidden');
+                };
+            } else {
+                card.onclick = null;
+            }
             area.appendChild(card);
         });
         if (isBotJudge) setTimeout(() => selectWinner(playedCards[Math.floor(Math.random()*playedCards.length)]), 1500);
     }
 
+    function confirmWinner() {
+      if (selectedWinnerIndex === null) return;
+      document.getElementById('confirm-winner-btn').classList.add('hidden');
+      const winnerData = playedCards[selectedWinnerIndex];
+      selectedWinnerIndex = null;
+      selectWinner(winnerData);
+    }
+
     function selectWinner(winnerData) {
+        document.getElementById('confirm-winner-btn').classList.add('hidden');
         players.find(p => p.name === winnerData.owner).score++;
         document.getElementById('status-msg').innerText = `${winnerData.owner} wins!`;
         document.querySelectorAll('#play-area .card').forEach(el => {
@@ -503,6 +556,8 @@
 
     function nextRound() {
         if (currentRound >= maxRoundsLimit) { endGame(); return; }
+        selectedWinnerIndex = null;
+        document.getElementById('confirm-winner-btn').classList.add('hidden');
         currentRound++; currentJudgeIndex = (currentJudgeIndex + 1) % players.length;
         players.forEach(p => { while(p.hand.length < HAND_SIZE) p.hand.push(drawAnswer()); });
         startRound();
