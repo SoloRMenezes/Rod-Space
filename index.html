@@ -90,11 +90,12 @@
       <h2>Projects & Experiments</h2>
 
       <div class="project-controls">
-        <button class="control-btn active" onclick="filterCards('all', this)">All</button>
-        <button class="control-btn" onclick="filterCards('game', this)">Games</button>
-        <button class="control-btn" onclick="filterCards('party', this)">Party Games</button>
-        <button class="control-btn" onclick="filterCards('tool', this)">Tools</button>
-
+        <select class="control-select" onchange="setTypeFilter(this.value)">
+          <option value="all">All</option>
+          <option value="solo">Solo Games</option>
+          <option value="party">Party Games</option>
+          <option value="tools">Tools</option>
+        </select>
         <select class="control-select" onchange="sortCards(this.value)">
           <option value="new">Newest</option>
           <option value="az">A–Z</option>
@@ -122,17 +123,17 @@
       </article>
 
       <!-- Games -->
-      <article class="card" data-type="game" data-date="2026-01-22">
+      <article class="card" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🎯</div><h3>Reaction Game</h3><p>Test your reflexes.</p></div>
         <div class="card-actions"><a href="reaction.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
-      <article class="card" data-type="game" data-date="2026-01-22">
+      <article class="card" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🚀</div><h3>Orbit Boss</h3><p>Dodge, orbit, strike.</p></div>
         <div class="card-actions"><a href="orbit-boss.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
 
-      <article class="card" data-type="game" data-date="2026-01-22">
+      <article class="card" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🟡</div><h3>Pac-Man 3D</h3><p>First-person Pac-Man.</p></div>
         <div class="card-actions">
           <a href="pac-man-3d.html" class="btn small primary">Play</a>
@@ -145,6 +146,30 @@
         <div class="card-actions"><a href="counter.html" class="btn small primary">Open</a><span class="pill">Tool</span></div>
       </article>
 
+      <!-- More Solo Games -->
+      <article class="card" data-type="solo" data-date="2026-01-22">
+        <div class="card-top"><div class="icon">🎰</div><h3>Slot Machine</h3><p>Try your luck.</p></div>
+        <div class="card-actions"><a href="slot-machine.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+      </article>
+
+      <article class="card" data-type="solo" data-date="2026-01-22">
+        <div class="card-top"><div class="icon">🎯</div><h3>Fidget Roulette</h3><p>Spin and win.</p></div>
+        <div class="card-actions"><a href="fidget-roulette.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+      </article>
+
+      <article class="card" data-type="solo" data-date="2026-01-22">
+        <div class="card-top"><div class="icon">🧩</div><h3>Tilt Maze Runner</h3><p>Navigate the maze.</p></div>
+        <div class="card-actions"><a href="tilt_maze_runner.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+      </article>
+
+      <article class="card" data-type="solo" data-date="2025-11-20">
+        <div class="card-top"><div class="icon">👥</div><h3>Multiplayer Test</h3><p>Third-person sandbox.</p></div>
+        <div class="card-actions">
+          <a href="multiplayer.html" class="btn small primary">Play</a>
+          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
+        </div>
+      </article>
+
     </div>
   </div>
 </section>
@@ -153,38 +178,51 @@
 
 <footer class="site-footer">
   <div class="container footer-inner">
-    <span>© 2026 Rod Space</span>
+    <span>© 2025 Rod Space</span>
   </div>
 </footer>
 
 <script>
   const grid = document.getElementById("projectGrid");
+  let currentFilter = "all";
 
-  function filterCards(type, btn) {
-    document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+  function applyFilter(type) {
+    currentFilter = type;
 
     [...grid.children].forEach(card => {
+      const t = card.dataset.type;
       const show =
         type === "all" ||
-        card.dataset.type === type ||
-        (type === "game" && card.dataset.type === "party");
+        (type === "solo" && t === "solo") ||
+        (type === "party" && t === "party") ||
+        (type === "tools" && t === "tool");
 
       card.hidden = !show;
     });
   }
 
-  function sortCards(mode) {
-    const cards = [...grid.children];
-    cards.sort((a, b) =>
-      mode === "az"
-        ? a.querySelector("h3").innerText.localeCompare(b.querySelector("h3").innerText)
-        : new Date(b.dataset.date) - new Date(a.dataset.date)
-    );
-    cards.forEach(c => grid.appendChild(c));
+  function setTypeFilter(type) {
+    applyFilter(type);
   }
 
+  function sortCards(mode) {
+    const cards = [...grid.children];
+
+    cards.sort((a, b) =>
+      mode === "az"
+        ? a.querySelector("h3").innerText.localeCompare(
+            b.querySelector("h3").innerText
+          )
+        : new Date(b.dataset.date) - new Date(a.dataset.date)
+    );
+
+    cards.forEach(c => grid.appendChild(c));
+    applyFilter(currentFilter);
+  }
+
+  // default
   sortCards("new");
+  applyFilter("all");
 </script>
 
 </body>
