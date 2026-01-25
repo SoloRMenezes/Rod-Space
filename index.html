@@ -1,232 +1,347 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rod Space</title>
-  <meta name="description" content="Rod Space: Rodrigo's hub for games and experiments." />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who's More Likely To? - Party Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            /* Allow scrolling by default, will lock via JS if needed */
+            overflow-x: hidden;
+        }
 
-  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css" />
+        .main-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-  <style>
-    .project-controls {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 14px;
-    }
+        .theme-box {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
 
-    .control-btn,
-    .control-select {
-      background: rgba(255, 255, 255, 0.08);
-      color: #e5f2ff;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-family: inherit;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease, border 0.2s ease;
-    }
+        .theme-box:hover {
+            transform: translateY(-8px) scale(1.02);
+            filter: brightness(1.1);
+        }
 
-    .control-btn:hover,
-    .control-select:hover {
-      background: rgba(255, 255, 255, 0.14);
-    }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
 
-    .control-btn.active {
-      background: #8fc0e3;
-      color: #020617;
-      border-color: #8fc0e3;
-    }
+        .animate-slide-up {
+            animation: slideUp 0.5s ease-out forwards;
+        }
 
-    .control-select { appearance: none; }
+        .bg-school { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .bg-future { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+        .bg-silly { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .bg-travel { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
 
-    .pill.pc-tag {
-      background: rgba(255,255,255,.05);
-      color: #94a3b8;
-      border: 1px solid rgba(255,255,255,.1);
-      font-size: .7rem;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-    }
+        .question-gradient {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
 
-    .tag-container {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-  </style>
+        /* Adjust padding for small screens */
+        @media (max-width: 360px) {
+            .question-card-inner {
+                padding: 2rem !important;
+            }
+            #question-text {
+                font-size: 1.5rem !important;
+            }
+        }
+    </style>
 </head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
 
-<body>
+    <!-- Theme Selection Screen -->
+    <div id="theme-screen" class="max-w-4xl w-full text-center py-10">
+        <h1 class="text-4xl md:text-5xl font-700 mb-4 text-indigo-400">Who's More Likely To?</h1>
+        <p class="text-slate-400 mb-10 text-lg">Pick a theme and discuss your answers out loud!</p>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-slide-up">
+            <div onclick="startCategory('school')" class="theme-box bg-school p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">📚</div>
+                <h3 class="text-2xl font-700">School Life</h3>
+            </div>
 
-<header class="site-header">
-  <a href="#" class="brand">
-    <img src="assets/logo.svg" width="28" height="28" />
-    <span>Rod Space</span>
-  </a>
-</header>
+            <div onclick="startCategory('future')" class="theme-box bg-future p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">🚀</div>
+                <h3 class="text-2xl font-700">The Future</h3>
+            </div>
 
-<main id="home">
+            <div onclick="startCategory('silly')" class="theme-box bg-silly p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">😜</div>
+                <h3 class="text-2xl font-700">Silly & Wild</h3>
+            </div>
 
-<section class="hero">
-  <div class="hero-inner">
-    <h1>
-      <span class="fade">Welcome to</span>
-      <span class="gradient-text">Rod Space</span>
-    </h1>
-  </div>
-  <div class="hero-bg"></div>
-</section>
-
-<section id="projects" class="projects" style="text-align:center">
-  <div class="container">
-
-    <div class="section-head">
-      <h2>Projects & Experiments</h2>
-
-      <div class="project-controls">
-        <select class="control-select" onchange="setTypeFilter(this.value)">
-          <option value="all">All</option>
-          <option value="solo">Solo Games</option>
-          <option value="party">Party Games</option>
-          <option value="tools">Tools</option>
-        </select>
-        <select class="control-select" onchange="sortCards(this.value)">
-          <option value="new">Newest</option>
-          <option value="az">A–Z</option>
-        </select>
-      </div>
+            <div onclick="startCategory('travel')" class="theme-box bg-travel p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">🌎</div>
+                <h3 class="text-2xl font-700">Adventure</h3>
+            </div>
+            <div onclick="startCategory('dark')" class="theme-box bg-silly p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">🕳️</div>
+                <h3 class="text-2xl font-700">Dark</h3>
+            </div>
+        </div>
     </div>
 
-    <div class="grid" id="projectGrid">
-
-      <!-- Tools -->
-      <article class="card" data-type="tool" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🎹</div><h3>Virtual Piano</h3><p>Playable keyboard.</p></div>
-        <div class="card-actions"><a href="piano.html" class="btn small primary">Open</a><span class="pill">Tool</span></div>
-      </article>
-
-      <!-- Party Games -->
-      <article class="card" data-type="party" data-date="2026-01-26">
-        <div class="card-top"><div class="icon">🤔</div><h3>Who's More Likely To?</h3><p>Party discussion game.</p></div>
-        <div class="card-actions"><a href="whos-more-likely.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
-      </article>
-
-      <article class="card" data-type="party" data-date="2026-01-25">
-        <div class="card-top"><div class="icon">🃏</div><h3>Cards Against Boredom</h3><p>Pass-and-play CAH-style game.</p></div>
-        <div class="card-actions"><a href="cards-against-boredom.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
-      </article>
-
-      <!-- Games -->
-      <article class="card" data-type="solo" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🎯</div><h3>Reaction Game</h3><p>Test your reflexes.</p></div>
-        <div class="card-actions"><a href="reaction.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
-      </article>
-
-      <article class="card" data-type="solo" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🚀</div><h3>Orbit Boss</h3><p>Dodge, orbit, strike.</p></div>
-        <div class="card-actions"><a href="orbit-boss.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
-      </article>
-
-      <article class="card" data-type="solo" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🟡</div><h3>Pac-Man 3D</h3><p>First-person Pac-Man.</p></div>
-        <div class="card-actions">
-          <a href="pac-man-3d.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
+    <!-- Question Screen -->
+    <div id="game-screen" class="max-w-2xl w-full hidden text-center">
+        <div class="flex items-center justify-between mb-6">
+            <button onclick="goHome()" class="text-slate-400 hover:text-white flex items-center gap-2">
+                ← Back
+            </button>
+            <div id="progress-counter" class="text-slate-400 font-600 bg-slate-800 px-3 py-1 rounded-full text-sm">
+                1 / 8
+            </div>
+            <button onclick="reshuffle()" class="text-indigo-400 hover:text-indigo-300 text-sm flex items-center gap-1">
+                🔄 Reshuffle
+            </button>
         </div>
-      </article>
 
-      <article class="card" data-type="tool" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🔢</div><h3>Counter</h3><p>Simple counter.</p></div>
-        <div class="card-actions"><a href="counter.html" class="btn small primary">Open</a><span class="pill">Tool</span></div>
-      </article>
-
-      <!-- More Solo Games -->
-      <article class="card" data-type="solo" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🎰</div><h3>Slot Machine</h3><p>Try your luck.</p></div>
-        <div class="card-actions"><a href="slot-machine.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
-      </article>
-
-      <article class="card" data-type="solo" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🎯</div><h3>Fidget Roulette</h3><p>Spin and win.</p></div>
-        <div class="card-actions"><a href="fidget-roulette.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
-      </article>
-
-      <article class="card" data-type="solo" data-date="2026-01-22">
-        <div class="card-top"><div class="icon">🧩</div><h3>Tilt Maze Runner</h3><p>Navigate the maze.</p></div>
-        <div class="card-actions"><a href="tilt_maze_runner.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
-      </article>
-
-      <article class="card" data-type="solo" data-date="2025-11-20">
-        <div class="card-top"><div class="icon">👥</div><h3>Multiplayer Test</h3><p>Third-person sandbox.</p></div>
-        <div class="card-actions">
-          <a href="multiplayer.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
+        <div id="current-badge" class="inline-block px-4 py-1 rounded-full text-xs font-700 uppercase tracking-widest mb-4 bg-slate-700 text-indigo-300">
+            Category Name
         </div>
-      </article>
 
+        <div id="question-card" class="main-card question-gradient border-4 border-indigo-500/30 text-white p-8 md:p-12 rounded-[3rem] shadow-2xl min-h-[250px] md:min-h-[300px] flex items-center justify-center question-card-inner">
+            <h2 id="question-text" class="text-2xl md:text-4xl lg:text-5xl font-700 leading-tight">Loading...</h2>
+        </div>
+
+        <div class="mt-8 md:mt-12 space-y-4">
+            <button onclick="nextQuestion()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-5 rounded-2xl font-700 text-xl md:text-2xl shadow-lg transition-all transform active:scale-95">
+                Next Prompt →
+            </button>
+            <p class="text-slate-500 text-sm">Read the question aloud and everyone point to the person they choose!</p>
+        </div>
     </div>
-  </div>
-</section>
 
-</main>
+    <script>
+        const categories = {
+            school: [
+                "Who's more likely to have the neatest handwriting?",
+                "Who's more likely to win the Science Fair?",
+                "Who's more likely to become the principal of this school?",
+                "Who's more likely to forget to bring their lunch?",
+                "Who's more likely to finish a 100-page book in one day?",
+                "Who's more likely to be the first one to raise their hand?",
+                "Who's more likely to decorate their locker with the most stickers?",
+                "Who's more likely to get an A+ on a test they didn't study for?"
+            ],
+            future: [
+                "Who's more likely to become a world-famous YouTuber?",
+                "Who's more likely to invent a robot that does chores?",
+                "Who's more likely to be the first person to live on Mars?",
+                "Who's more likely to design their own video game?",
+                "Who's more likely to write a best-selling adventure novel?",
+                "Who's more likely to own a giant mansion with its own theater?",
+                "Who's more likely to win an Olympic gold medal?",
+                "Who's more likely to become a professional explorer?"
+            ],
+            silly: [
+                "Who's more likely to wear mismatched socks?",
+                "Who's more likely to break out into a dance in public?",
+                "Who's more likely to laugh at a joke that isn't even funny?",
+                "Who's more likely to try to talk to an animal?",
+                "Who's more likely to walk into a room and forget why they were there?",
+                "Who's more likely to set a world record for something weird?",
+                "Who's more likely to spend an hour trying to take the perfect selfie?",
+                "Who's more likely to eat dessert for breakfast every day?"
+            ],
+            travel: [
+                "Who's more likely to get lost in a shopping mall?",
+                "Who's more likely to be the first to try a 100-foot tall roller coaster?",
+                "Who's more likely to fill their suitcase with things they don't need?",
+                "Who's more likely to take a photo of every single meal they eat?",
+                "Who's more likely to make friends with someone in a different country?",
+                "Who's more likely to go bungee jumping or skydiving?",
+                "Who's more likely to become a travel blogger?",
+                "Who's more likely to live in a camper van for a year?"
+            ],
+            dark: [
+  "Who's more likely to fake their own death?",
+  "Who's more likely to sell a kidney on the black market?",
+  "Who's more likely to ghost their entire friend group?",
+  "Who's more likely to rob a bank wearing a clown mask?",
+  "Who's more likely to get arrested for public nudity?",
+  "Who's more likely to have a secret second family?",
+  "Who's more likely to date someone they know is dangerous?",
+  "Who's more likely to die in a bizarre sex accident?",
+  "Who's more likely to poison a family member?",
+  "Who's more likely to keep human remains as a souvenir?",
+  "Who's more likely to join a cult willingly?",
+  "Who's more likely to burn their house down for insurance?",
+  "Who's more likely to blackmail a friend?",
+  "Who's more likely to frame someone for a crime?",
+  "Who's more likely to watch someone drown without helping?",
+  "Who's more likely to have a murder fantasy they act on?",
+  "Who's more likely to sell drugs to kids?",
+  "Who's more likely to fake a terminal illness for attention?",
+  "Who's more likely to dig up a grave?",
+  "Who's more likely to keep a kill list?",
+  "Who's more likely to push someone in front of a train?",
+  "Who's more likely to overdose on purpose?",
+  "Who's more likely to run a dark-web hitman service?",
+  "Who's more likely to torture an animal?",
+  "Who's more likely to stalk an ex for years?",
+  "Who's more likely to kidnap a pet for ransom?",
+  "Who's more likely to commit identity theft on family?",
+  "Who's more likely to crash a funeral for free food?",
+  "Who's more likely to laugh at a suicide note?",
+  "Who's more likely to collect serial killer memorabilia?",
+  "Who's more likely to start a fire in a crowded building?",
+  "Who's more likely to poison a wedding cake?",
+  "Who's more likely to betray everyone for money?",
+  "Who's more likely to fake being a victim in court?",
+  "Who's more likely to sell their soul literally?",
+  "Who's more likely to join an extremist group?",
+  "Who's more likely to sabotage a pregnancy?",
+  "Who's more likely to harvest organs illegally?",
+  "Who's more likely to film themselves committing a crime?",
+  "Who's more likely to enjoy watching executions?",
+  "Who's more likely to strangle someone in their sleep?",
+  "Who's more likely to keep a torture basement?",
+  "Who's more likely to sell nudes of someone without consent?",
+  "Who's more likely to drive drunk on purpose?",
+  "Who's more likely to crash into a school bus?",
+  "Who's more likely to abandon their child?",
+  "Who's more likely to fake a disability for benefits?",
+  "Who's more likely to rob a dying person?",
+  "Who's more likely to push an old person down stairs?",
+  "Who's more likely to poison a pet?",
+  "Who's more likely to start a forest fire for fun?",
+  "Who's more likely to leak revenge porn?",
+  "Who's more likely to dox an entire family?",
+  "Who's more likely to run a scam targeting elderly people?",
+  "Who's more likely to kill for clout?",
+  "Who's more likely to eat roadkill?",
+  "Who's more likely to keep used condoms as trophies?",
+  "Who's more likely to attend their own funeral?",
+  "Who's more likely to fake cancer for GoFundMe money?",
+  "Who's more likely to cut brake lines?",
+  "Who's more likely to suffocate someone with a pillow?",
+  "Who's more likely to sell fake passports?",
+  "Who's more likely to traffic people?",
+  "Who's more likely to enjoy snuff films?",
+  "Who's more likely to castrate someone?",
+  "Who's more likely to burn someone alive?",
+  "Who's more likely to keep a murder scrapbook?",
+  "Who's more likely to poison Halloween candy?",
+  "Who's more likely to stage their own kidnapping?",
+  "Who's more likely to sell their child?",
+  "Who's more likely to sabotage a space launch?",
+  "Who's more likely to bomb a wedding?",
+  "Who's more likely to assassinate a celebrity?",
+  "Who's more likely to eat human flesh?",
+  "Who's more likely to collect teeth from victims?",
+  "Who's more likely to run a torture porn site?",
+  "Who's more likely to drown kittens?",
+  "Who's more likely to spike drinks at a party?",
+  "Who's more likely to commit necrophilia?",
+  "Who's more likely to skin someone alive?",
+  "Who's more likely to start a pandemic for profit?",
+  "Who's more likely to sell fake vaccines?",
+  "Who's more likely to rape and murder?",
+  "Who's more likely to dismember a body?",
+  "Who's more likely to keep body parts in jars?",
+  "Who's more likely to burn a church?",
+  "Who's more likely to execute hostages on livestream?",
+  "Who's more likely to behead someone?",
+  "Who's more likely to run a child trafficking ring?",
+  "Who's more likely to commit mass shooting?",
+  "Who's more likely to poison a water supply?",
+  "Who's more likely to bomb a hospital?",
+  "Who's more likely to commit genocide?",
+  "Who's more likely to sell nuclear secrets?",
+  "Who's more likely to start World War III?",
+  "Who's more likely to nuke a city?",
+  "Who's more likely to become the next Hitler?",
+  "Who's more likely to enjoy the apocalypse?",
+  "Who's more likely to survive by eating people?",
+  "Who's more likely to end humanity?"
+]
+        };
 
-<footer class="site-footer">
-  <div class="container footer-inner">
-    <span>© 2026 Rod Space</span>
-  </div>
-</footer>
+        let currentCategoryName = '';
+        let currentQuestions = [];
+        let currentIndex = 0;
 
-<script>
-  let grid;
-  let currentFilter = "all";
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
 
-  function applyFilter(type) {
-    currentFilter = type;
+        function startCategory(cat) {
+            currentCategoryName = cat;
+            currentQuestions = shuffle([...categories[cat]]);
+            currentIndex = 0;
 
-    [...grid.children].forEach(card => {
-      const t = card.dataset.type;
-      const show =
-        type === "all" ||
-        (type === "solo" && t === "solo") ||
-        (type === "party" && t === "party") ||
-        (type === "tools" && t === "tool");
+            document.getElementById('theme-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            // Lock body scroll only when gaming
+            document.body.style.overflow = "hidden";
+            
+            const badge = document.getElementById('current-badge');
+            badge.innerText = cat.charAt(0).toUpperCase() + cat.slice(1);
+            
+            showQuestion();
+        }
 
-      card.hidden = !show;
-    });
-  }
+        function showQuestion() {
+            const qText = document.getElementById('question-text');
+            const counter = document.getElementById('progress-counter');
+            
+            qText.style.opacity = 0;
+            qText.style.transform = "scale(0.9)";
 
-  function setTypeFilter(type) {
-    applyFilter(type);
-  }
+            setTimeout(() => {
+                qText.innerText = currentQuestions[currentIndex];
+                counter.innerText = `${currentIndex + 1} / ${currentQuestions.length}`;
+                qText.style.opacity = 1;
+                qText.style.transform = "scale(1)";
+            }, 200);
+        }
 
-  function sortCards(mode) {
-    const cards = [...grid.children];
+        function reshuffle() {
+            currentQuestions = shuffle([...currentQuestions]);
+            currentIndex = 0;
+            showQuestion();
+        }
 
-    cards.sort((a, b) =>
-      mode === "az"
-        ? a.querySelector("h3").innerText.localeCompare(
-            b.querySelector("h3").innerText
-          )
-        : new Date(b.dataset.date) - new Date(a.dataset.date)
-    );
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex >= currentQuestions.length) {
+                currentIndex = 0;
+                shuffle(currentQuestions);
+            }
+            
+            const card = document.getElementById('question-card');
+            card.style.transform = "scale(0.96)";
+            setTimeout(() => {
+                card.style.transform = "scale(1)";
+                showQuestion();
+            }, 100);
+        }
 
-    cards.forEach(c => grid.appendChild(c));
-    applyFilter(currentFilter);
-  }
-
-  // default (run after DOM is ready)
-  document.addEventListener("DOMContentLoaded", () => {
-    grid = document.getElementById("projectGrid");
-    sortCards("new");
-    applyFilter("all");
-  });
-</script>
-
+        function goHome() {
+            document.getElementById('theme-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            // Unlock scroll on menu
+            document.body.style.overflow = "auto";
+        }
+    </script>
 </body>
 </html>
