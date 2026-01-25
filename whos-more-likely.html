@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who's More Likely To? - Party Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            /* Allow scrolling by default, will lock via JS if needed */
+            overflow-x: hidden;
+        }
+
+        .main-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .theme-box {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .theme-box:hover {
+            transform: translateY(-8px) scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        .bg-school { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .bg-future { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+        .bg-silly { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .bg-travel { background: linear-gradient(135deg, #10b981 0%, #047857 100%); }
+
+        .question-gradient {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        /* Adjust padding for small screens */
+        @media (max-width: 360px) {
+            .question-card-inner {
+                padding: 2rem !important;
+            }
+            #question-text {
+                font-size: 1.5rem !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <!-- Theme Selection Screen -->
+    <div id="theme-screen" class="max-w-4xl w-full text-center py-10">
+        <h1 class="text-4xl md:text-5xl font-700 mb-4 text-indigo-400">Who's More Likely To?</h1>
+        <p class="text-slate-400 mb-10 text-lg">Pick a theme and discuss your answers out loud!</p>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-slide-up">
+            <div onclick="startCategory('school')" class="theme-box bg-school p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">📚</div>
+                <h3 class="text-2xl font-700">School Life</h3>
+            </div>
+
+            <div onclick="startCategory('future')" class="theme-box bg-future p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">🚀</div>
+                <h3 class="text-2xl font-700">The Future</h3>
+            </div>
+
+            <div onclick="startCategory('silly')" class="theme-box bg-silly p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">😜</div>
+                <h3 class="text-2xl font-700">Silly & Wild</h3>
+            </div>
+
+            <div onclick="startCategory('travel')" class="theme-box bg-travel p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">🌎</div>
+                <h3 class="text-2xl font-700">Adventure</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Screen -->
+    <div id="game-screen" class="max-w-2xl w-full hidden text-center">
+        <div class="flex items-center justify-between mb-6">
+            <button onclick="goHome()" class="text-slate-400 hover:text-white flex items-center gap-2">
+                ← Back
+            </button>
+            <div id="progress-counter" class="text-slate-400 font-600 bg-slate-800 px-3 py-1 rounded-full text-sm">
+                1 / 8
+            </div>
+            <button onclick="reshuffle()" class="text-indigo-400 hover:text-indigo-300 text-sm flex items-center gap-1">
+                🔄 Reshuffle
+            </button>
+        </div>
+
+        <div id="current-badge" class="inline-block px-4 py-1 rounded-full text-xs font-700 uppercase tracking-widest mb-4 bg-slate-700 text-indigo-300">
+            Category Name
+        </div>
+
+        <div id="question-card" class="main-card question-gradient border-4 border-indigo-500/30 text-white p-8 md:p-12 rounded-[3rem] shadow-2xl min-h-[250px] md:min-h-[300px] flex items-center justify-center question-card-inner">
+            <h2 id="question-text" class="text-2xl md:text-4xl lg:text-5xl font-700 leading-tight">Loading...</h2>
+        </div>
+
+        <div class="mt-8 md:mt-12 space-y-4">
+            <button onclick="nextQuestion()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-5 rounded-2xl font-700 text-xl md:text-2xl shadow-lg transition-all transform active:scale-95">
+                Next Prompt →
+            </button>
+            <p class="text-slate-500 text-sm">Read the question aloud and everyone point to the person they choose!</p>
+        </div>
+    </div>
+
+    <script>
+        const categories = {
+            school: [
+                "Who's more likely to have the neatest handwriting?",
+                "Who's more likely to win the Science Fair?",
+                "Who's more likely to become the principal of this school?",
+                "Who's more likely to forget to bring their lunch?",
+                "Who's more likely to finish a 100-page book in one day?",
+                "Who's more likely to be the first one to raise their hand?",
+                "Who's more likely to decorate their locker with the most stickers?",
+                "Who's more likely to get an A+ on a test they didn't study for?"
+            ],
+            future: [
+                "Who's more likely to become a world-famous YouTuber?",
+                "Who's more likely to invent a robot that does chores?",
+                "Who's more likely to be the first person to live on Mars?",
+                "Who's more likely to design their own video game?",
+                "Who's more likely to write a best-selling adventure novel?",
+                "Who's more likely to own a giant mansion with its own theater?",
+                "Who's more likely to win an Olympic gold medal?",
+                "Who's more likely to become a professional explorer?"
+            ],
+            silly: [
+                "Who's more likely to wear mismatched socks?",
+                "Who's more likely to break out into a dance in public?",
+                "Who's more likely to laugh at a joke that isn't even funny?",
+                "Who's more likely to try to talk to an animal?",
+                "Who's more likely to walk into a room and forget why they were there?",
+                "Who's more likely to set a world record for something weird?",
+                "Who's more likely to spend an hour trying to take the perfect selfie?",
+                "Who's more likely to eat dessert for breakfast every day?"
+            ],
+            travel: [
+                "Who's more likely to get lost in a shopping mall?",
+                "Who's more likely to be the first to try a 100-foot tall roller coaster?",
+                "Who's more likely to fill their suitcase with things they don't need?",
+                "Who's more likely to take a photo of every single meal they eat?",
+                "Who's more likely to make friends with someone in a different country?",
+                "Who's more likely to go bungee jumping or skydiving?",
+                "Who's more likely to become a travel blogger?",
+                "Who's more likely to live in a camper van for a year?"
+            ]
+        };
+
+        let currentCategoryName = '';
+        let currentQuestions = [];
+        let currentIndex = 0;
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function startCategory(cat) {
+            currentCategoryName = cat;
+            currentQuestions = shuffle([...categories[cat]]);
+            currentIndex = 0;
+
+            document.getElementById('theme-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            // Lock body scroll only when gaming
+            document.body.style.overflow = "hidden";
+            
+            const badge = document.getElementById('current-badge');
+            badge.innerText = cat.charAt(0).toUpperCase() + cat.slice(1);
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const qText = document.getElementById('question-text');
+            const counter = document.getElementById('progress-counter');
+            
+            qText.style.opacity = 0;
+            qText.style.transform = "scale(0.9)";
+
+            setTimeout(() => {
+                qText.innerText = currentQuestions[currentIndex];
+                counter.innerText = `${currentIndex + 1} / ${currentQuestions.length}`;
+                qText.style.opacity = 1;
+                qText.style.transform = "scale(1)";
+            }, 200);
+        }
+
+        function reshuffle() {
+            currentQuestions = shuffle([...currentQuestions]);
+            currentIndex = 0;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex >= currentQuestions.length) {
+                currentIndex = 0;
+                shuffle(currentQuestions);
+            }
+            
+            const card = document.getElementById('question-card');
+            card.style.transform = "scale(0.96)";
+            setTimeout(() => {
+                card.style.transform = "scale(1)";
+                showQuestion();
+            }, 100);
+        }
+
+        function goHome() {
+            document.getElementById('theme-screen').classList.remove('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            // Unlock scroll on menu
+            document.body.style.overflow = "auto";
+        }
+    </script>
+</body>
+</html>
