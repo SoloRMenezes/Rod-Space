@@ -114,7 +114,7 @@
             background: rgba(0,0,0,0.25);
             padding: 10px 20px;
             border-radius: 100px;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
             display: flex;
             justify-content: center;
@@ -124,7 +124,7 @@
         #play-area {
             display: flex;
             gap: 8px;
-            min-height: 150px;
+            min-height: 110px;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
@@ -257,7 +257,7 @@
             </div>
         </div>
 
-        <div class="input-row">
+        <div class="input-row" id="player-count-row">
             <label class="input-label">Player Count (3-12)</label>
             <input type="number" id="player-input" min="3" max="12" value="3" class="number-input">
         </div>
@@ -269,9 +269,15 @@
 
         <div class="mb-8">
             <label class="input-label mb-2 block">Card Packs</label>
-            <div class="flex items-center gap-3 bg-gray-800 p-3 rounded-xl border border-gray-700">
-                <input type="checkbox" checked disabled class="w-5 h-5 accent-blue-500">
+            <div class="flex flex-col gap-3 bg-gray-800 p-3 rounded-xl border border-gray-700">
+              <label class="flex items-center gap-3">
+                <input type="checkbox" id="pack-main" checked class="w-5 h-5 accent-blue-500">
                 <span class="text-sm font-bold">Main Pack (PG-13)</span>
+              </label>
+              <label class="flex items-center gap-3">
+                <input type="checkbox" id="pack-unhinged" class="w-5 h-5 accent-red-500">
+                <span class="text-sm font-bold text-red-400">Unhinged Pack (18+)</span>
+              </label>
             </div>
         </div>
 
@@ -317,6 +323,9 @@
     <div id="play-area"></div>
 
     <div class="flex gap-2 mb-2">
+        <button id="menu-btn" onclick="backToMenu()" class="bg-gray-700 text-white font-bold py-2 px-6 rounded-full uppercase text-xs">
+          Menu
+        </button>
         <button id="confirm-btn" onclick="confirmSelection()" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Play</button>
         <button id="next-round-btn" onclick="nextRound()" class="bg-yellow-500 text-black font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Continue</button>
         <button id="confirm-winner-btn" onclick="confirmWinner()" class="bg-green-600 text-white font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Confirm Winner</button>
@@ -375,18 +384,247 @@
     }
 
     const prompts = [
-        "The principal banned ____.", "What's that smell?", "I got detention for ____.", "My superpower is ____.", "The new TikTok trend is ____.", "Mom! It's just ____.", "Goku fights ____.", "I fear ____.", "____ for dinner.", "Step 1: ____. Step 2: Profit.", "Doctors recommend ____.", "The Mc____.", "Worst ice cream: ____.", "Slow Wi-Fi is caused by ____.", "Anime betrayal: ____."
+      "The only thing that can stop me is ____.",
+      "My safe word is ____.",
+      "I got banned from the zoo for ____.",
+      "The new iPhone feature is ____.",
+      "My boss caught me ____.",
+      "The real reason I’m single is ____.",
+      "God’s biggest mistake was ____.",
+      "The last thing I said before the lights went out: ____.",
+      "I’m not saying I’m a god, but ____.",
+      "The funeral was awkward because ____.",
+      "My therapist recommends ____.",
+      "The secret ingredient in grandma’s cookies is ____.",
+      "I didn’t go to jail for ____.",
+      "The real reason Santa skips my house is ____.",
+      "My spirit animal is ____.",
+      "The pope just confessed to ____.",
+      "My next tattoo says ____.",
+      "The only thing I regret is ____.",
+      "I survived ____, so I can survive anything.",
+      "The scariest thing in the world is ____.",
+      "My ex is ____.",
+      "The government wants you to believe ____.",
+      "I’m not drunk, I’m ____.",
+      "The reason I’m late is ____.",
+      "My superpower is ____.",
+      "The worst thing I’ve ever eaten is ____.",
+      "I only cry when ____.",
+      "The real reason I’m quitting my job is ____.",
+      "My biggest fear is ____.",
+      "I’m not saying it’s aliens, but ____.",
+      "The worst date ever ended with ____.",
+      "My mom thinks I’m ____.",
+      "The only thing in my fridge is ____.",
+      "I got kicked out of church for ____.",
+      "The next TikTok challenge is ____.",
+      "My favorite way to die is ____.",
+      "The first thing I do after a breakup is ____.",
+      "I’m addicted to ____.",
+      "The only person who understands me is ____.",
+      "My last words will be ____.",
+      "The reason I’m going to hell is ____.",
+      "My guilty pleasure is ____.",
+      "The worst gift I ever got was ____.",
+      "I’m not saying I’m evil, but ____.",
+      "The only way to fix this is ____.",
+      "My spirit guide told me ____.",
+      "The last thing I said before the explosion was ____.",
+      "My biggest secret is ____.",
+      "The reason I’m still here is ____.",
+      "If I could do it all over again, I’d ____."
     ];
 
     const answers = [
-        "A wet sock.", "Three hamsters.", "A screaming goat.", "Kanye West.", "Nicolas Cage.", "Magic beans.", "Shrek.", "A used diaper.", "Eating glue.", "Socks with sandals.", "A potato.", "My search history.", "Darth Vader.", "The mitochondria.", "Stepping on a Lego.", "Glitter.", "A clown.", "Farting.", "Tax evasion.", "A weird rash.", "Just a salad.", "Bees?", "Dad jokes.", "Social anxiety.", "Eating a spider.", "Licking a doorknob.", "The Illuminati.", "Being awkward.", "Using comic sans.", "Rick Astley.", "A dumpster fire.", "TikTok.", "Existential dread.", "A cardboard box.", "Homework.", "Cold pizza."
+      "A live grenade in the confessional.",
+      "Your sister’s nudes.",
+      "Licking the pope’s feet.",
+      "Anal beads shaped like Jesus.",
+      "A full diaper in the punch bowl.",
+      "My ex’s head on a spike.",
+      "The smell of burnt dreams.",
+      "Three clowns in a trench coat.",
+      "A raccoon with rabies.",
+      "Your dad’s secret OnlyFans.",
+      "Eating a live bat.",
+      "A priest with a boner.",
+      "My search history.",
+      "Stepping on a Lego barefoot.",
+      "A used condom in the salad.",
+      "The ghost of my dead goldfish.",
+      "Rick Astley rickrolling my funeral.",
+      "A screaming goat on meth.",
+      "Nicolas Cage in a thong.",
+      "The Illuminati’s secret handshake.",
+      "My mom’s vibrator collection.",
+      "A dumpster fire with feelings.",
+      "Tax evasion in clown makeup.",
+      "A live rat in my pants.",
+      "Licking a doorknob for science.",
+      "The smell of your regret.",
+      "A loaded diaper on the ceiling fan.",
+      "My ex wearing my underwear.",
+      "Three hamsters in a blender.",
+      "Kanye West’s ego.",
+      "A priest with a boner in church.",
+      "Anal beads that still vibrate.",
+      "A clown with a knife."
+    ];
+
+    const unhingedPrompts = [
+      "The only thing that can stop me is ____.",
+      "My safe word is ____.",
+      "I got banned from the zoo for ____.",
+      "The new iPhone feature is ____.",
+      "My boss caught me ____.",
+      "The real reason I’m single is ____.",
+      "God’s biggest mistake was ____.",
+      "The last thing I said before the lights went out: ____.",
+      "I’m not saying I’m a god, but ____.",
+      "The funeral was awkward because ____.",
+      "My therapist recommends ____.",
+      "The secret ingredient in grandma’s cookies is ____.",
+      "I didn’t go to jail for ____.",
+      "The real reason Santa skips my house is ____.",
+      "My spirit animal is ____.",
+      "The pope just confessed to ____.",
+      "My next tattoo says ____.",
+      "The only thing I regret is ____.",
+      "I survived ____, so I can survive anything.",
+      "The scariest thing in the world is ____.",
+      "My ex is ____.",
+      "The government wants you to believe ____.",
+      "I’m not drunk, I’m ____.",
+      "The reason I’m late is ____.",
+      "My superpower is ____.",
+      "The worst thing I’ve ever eaten is ____.",
+      "I only cry when ____.",
+      "The real reason I’m quitting my job is ____.",
+      "My biggest fear is ____.",
+      "I’m not saying it’s aliens, but ____.",
+      "The worst date ever ended with ____.",
+      "My mom thinks I’m ____.",
+      "The only thing in my fridge is ____.",
+      "I got kicked out of church for ____.",
+      "The next TikTok challenge is ____.",
+      "My favorite way to die is ____.",
+      "The first thing I do after a breakup is ____.",
+      "I’m addicted to ____.",
+      "The only person who understands me is ____.",
+      "My last words will be ____.",
+      "The reason I’m going to hell is ____.",
+      "My guilty pleasure is ____.",
+      "The worst gift I ever got was ____.",
+      "I’m not saying I’m evil, but ____.",
+      "The only way to fix this is ____.",
+      "My spirit guide told me ____.",
+      "The last thing I said before the explosion was ____.",
+      "My biggest secret is ____.",
+      "The reason I’m still here is ____.",
+      "If I could do it all over again, I’d ____."
+    ];
+
+    const unhingedAnswers = [
+      "A live grenade in the confessional.",
+      "Your sister’s nudes.",
+      "Licking the pope’s feet.",
+      "Anal beads shaped like Jesus.",
+      "A full diaper in the punch bowl.",
+      "My ex’s head on a spike.",
+      "The smell of burnt dreams.",
+      "Three clowns in a trench coat.",
+      "A raccoon with rabies.",
+      "Your dad’s secret OnlyFans.",
+      "Eating a live bat.",
+      "A priest with a boner.",
+      "My search history.",
+      "Stepping on a Lego barefoot.",
+      "A used condom in the salad.",
+      "The ghost of my dead goldfish.",
+      "Rick Astley rickrolling my funeral.",
+      "A screaming goat on meth.",
+      "Nicolas Cage in a thong.",
+      "The Illuminati’s secret handshake.",
+      "My mom’s vibrator collection.",
+      "A dumpster fire with feelings.",
+      "Tax evasion in clown makeup.",
+      "A live rat in my pants.",
+      "Licking a doorknob for science.",
+      "The smell of your regret.",
+      "A loaded diaper on the ceiling fan.",
+      "My ex wearing my underwear.",
+      "Three hamsters in a blender.",
+      "Kanye West’s ego.",
+      "A priest with a boner in church.",
+      "Anal beads that still vibrate.",
+      "A clown with a knife.",
+      "A nun with a strap-on.",
+      "Your grandma’s secret stash of porn mags.",
+      "A live tarantula in the shower.",
+      "The sound of my soul leaving my body.",
+      "A dildo made of frozen piss.",
+      "Your neighbor’s sex tape on loop.",
+      "The smell of burnt hair and shame.",
+      "A priest confessing his own sins.",
+      "My cat watching me masturbate.",
+      "A human tooth in your soup.",
+      "The pope’s secret OnlyFans.",
+      "My ex’s new boyfriend’s nudes.",
+      "The ghost of Hitler doing the Macarena.",
+      "A used tampon in the Christmas tree.",
+      "My therapist’s private notes on me.",
+      "A clown with a chainsaw.",
+      "The smell of your dad’s feet after a marathon.",
+      "A priest with a foot fetish.",
+      "My search history in a museum.",
+      "A live scorpion in your underwear.",
+      "Your mom’s sex doll collection.",
+      "A fart that lasted three days.",
+      "The Illuminati’s human sacrifice playlist.",
+      "A raccoon eating your face.",
+      "My ex’s new girlfriend’s wedding dress.",
+      "The pope’s favorite porn star.",
+      "A live bee in your urethra.",
+      "Your grandma’s vibrator on the mantle.",
+      "The smell of your soul dying.",
+      "A clown’s dick in the popcorn.",
+      "My search history on a billboard.",
+      "A live rat in the wedding cake.",
+      "The ghost of your dead pet haunting your sex life.",
+      "A used diaper as a scarf.",
+      "Your dad’s secret blow-up doll.",
+      "A priest with a strap-on.",
+      "My ex’s revenge porn.",
+      "A screaming goat in the confessional.",
+      "The smell of burnt rubber and regret.",
+      "A live snake in the toilet.",
+      "Your mom’s vibrator collection on display.",
+      "A clown with a gun.",
+      "The pope’s secret gay lover.",
+      "A live rat in your pants.",
+      "A used condom in the baby food.",
+      "My search history leaked to my boss.",
+      "A priest with a boner during Mass.",
+      "The ghost of your ex haunting your bed.",
+      "A loaded diaper in the punch bowl.",
+      "Your grandma’s secret OnlyFans.",
+      "A clown with a knife in the shower.",
+      "The smell of your dad’s regret.",
+      "My cat’s revenge on my pillow.",
+      "A used tampon in the salad.",
+      "The Illuminati’s secret sex tape.",
+      "A live scorpion in your soup.",
+      "Your mom’s sex doll in the living room.",
+      "A fart that killed a room.",
+      "The pope’s favorite dildo."
     ];
 
     let gameMode = "single", players = [], activePlayerIndex = 0, currentJudgeIndex = 0;
     let currentRound = 1, deckPrompts = [], deckAnswers = [], playedCards = [], selectedIndices = [];
     let blanksRequired = 1, maxRoundsLimit = 5;
     let selectedWinnerIndex = null;
-    const HAND_SIZE = 7;
+    const HAND_SIZE = 5;
 
     // Fisher-Yates Shuffle for better randomness
     function shuffle(array) {
@@ -401,7 +639,20 @@
         gameMode = mode;
         document.getElementById('mode-single').classList.toggle('active', mode === 'single');
         document.getElementById('mode-multi').classList.toggle('active', mode === 'multi');
+
+        const row = document.getElementById('player-count-row');
+        const input = document.getElementById('player-input');
+
+        if (mode === 'single') {
+            row.classList.add('hidden');
+            input.disabled = true;
+        } else {
+            row.classList.remove('hidden');
+            input.disabled = false;
+        }
     }
+
+    setMode(gameMode);
 
     function validateAndStart() {
         const pCount = parseInt(document.getElementById('player-input').value);
@@ -411,13 +662,45 @@
             document.getElementById('menu-error').classList.remove('hidden');
             return;
         }
+        // Card pack selection logic
+        const useMain = document.getElementById('pack-main').checked;
+        const useUnhinged = document.getElementById('pack-unhinged').checked;
+
+        if (!useMain && !useUnhinged) {
+          document.getElementById('menu-error').innerText = "Select at least one card pack";
+          document.getElementById('menu-error').classList.remove('hidden');
+          return;
+        }
+
         maxRoundsLimit = rCount;
-        players = Array.from({ length: pCount }, (_, i) => ({
-            name: gameMode === 'single' ? (i === 0 ? "You" : `Bot ${i}`) : `P${i + 1}`,
-            hand: [], score: 0, isBot: gameMode === 'single' && i !== 0
-        }));
-        deckPrompts = shuffle([...prompts]);
-        deckAnswers = shuffle([...answers]);
+        if (gameMode === 'single') {
+          players = [{
+            name: "You",
+            hand: [],
+            score: 0,
+            isBot: false
+          }];
+        } else {
+          players = Array.from({ length: pCount }, (_, i) => ({
+            name: `P${i + 1}`,
+            hand: [],
+            score: 0,
+            isBot: false
+          }));
+        }
+
+        let promptPool = [];
+        let answerPool = [];
+        if (useMain) {
+          promptPool = promptPool.concat(prompts);
+          answerPool = answerPool.concat(answers);
+        }
+        if (useUnhinged) {
+          promptPool = promptPool.concat(unhingedPrompts);
+          answerPool = answerPool.concat(unhingedAnswers);
+        }
+        deckPrompts = shuffle(promptPool);
+        deckAnswers = shuffle(answerPool);
         players.forEach(p => { for (let i = 0; i < HAND_SIZE; i++) p.hand.push(drawAnswer()); });
         document.getElementById('start-menu').classList.add('hidden');
         startRound();
@@ -442,6 +725,11 @@
     }
 
     function setupPlayerTurn() {
+        if (gameMode === 'single') {
+            document.getElementById('status-msg').innerText = 'Pick your card';
+            renderHand();
+            return;
+        }
         if (activePlayerIndex >= players.length) { startJudging(); return; }
         const p = players[activePlayerIndex];
         if (p.isBot) {
@@ -487,10 +775,23 @@
         selectedIndices = [];
         document.getElementById('confirm-btn').classList.add('hidden');
         document.getElementById('player-hand').innerHTML = '';
-        activePlayerIndex++; setupPlayerTurn();
+
+        if (gameMode === 'single') {
+          document.getElementById('play-area').innerHTML = '';
+          const card = document.createElement('div');
+          card.className = 'card card-white card-winner';
+          card.innerHTML = `<div class="card-text">${playedCards[0].text}</div><div class="card-brand">You</div>`;
+          document.getElementById('play-area').appendChild(card);
+          document.getElementById('next-round-btn').classList.remove('hidden');
+          return;
+        }
+
+        activePlayerIndex++;
+        setupPlayerTurn();
     }
 
     function startJudging() {
+        if (gameMode === 'single') return;
         document.getElementById('player-hand').innerHTML = '';
         document.getElementById('prompt-container').style.opacity = "0.5";
         const judge = players[currentJudgeIndex];
@@ -581,3 +882,22 @@
 </script>
 </body>
 </html>
+    // Menu button logic
+    function backToMenu() {
+      // reset game state (light reset, no reload)
+      players = [];
+      playedCards = [];
+      selectedIndices = [];
+      selectedWinnerIndex = null;
+      currentRound = 1;
+      activePlayerIndex = 0;
+      currentJudgeIndex = 0;
+
+      document.getElementById('game-table').scrollTop = 0;
+      document.getElementById('start-menu').classList.remove('hidden');
+      document.getElementById('overlay').classList.add('hidden');
+      document.getElementById('pass-screen').classList.add('hidden');
+      document.getElementById('player-hand').innerHTML = '';
+      document.getElementById('play-area').innerHTML = '';
+      document.getElementById('status-msg').innerText = '';
+    }
