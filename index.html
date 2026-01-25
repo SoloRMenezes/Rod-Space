@@ -178,7 +178,7 @@
 
 <footer class="site-footer">
   <div class="container footer-inner">
-    <span>© 2025 Rod Space</span>
+    <span>© 2026 Rod Space</span>
   </div>
 </footer>
 
@@ -220,9 +220,11 @@
     applyFilter(currentFilter);
   }
 
-  // default
-  sortCards("new");
-  applyFilter("all");
+  // default (run after DOM is ready)
+  document.addEventListener("DOMContentLoaded", () => {
+    sortCards("new");
+    applyFilter("all");
+  });
 </script>
 
 </body>
