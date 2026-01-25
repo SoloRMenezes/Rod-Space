@@ -183,7 +183,7 @@
 </footer>
 
 <script>
-  const grid = document.getElementById("projectGrid");
+  let grid;
   let currentFilter = "all";
 
   function applyFilter(type) {
@@ -222,6 +222,7 @@
 
   // default (run after DOM is ready)
   document.addEventListener("DOMContentLoaded", () => {
+    grid = document.getElementById("projectGrid");
     sortCards("new");
     applyFilter("all");
   });
