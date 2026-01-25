@@ -114,7 +114,7 @@
             background: rgba(0,0,0,0.25);
             padding: 10px 20px;
             border-radius: 100px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
             display: flex;
             justify-content: center;
@@ -124,11 +124,11 @@
         #play-area {
             display: flex;
             gap: 8px;
-            min-height: 110px;
+            min-height: 70px;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             width: 100%;
         }
 
@@ -137,7 +137,7 @@
             gap: 6px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 5px;
+            margin-top: 2px;
             padding: 10px;
             width: 100%;
             background: rgba(0,0,0,0.2);
@@ -277,6 +277,22 @@
               <label class="flex items-center gap-3">
                 <input type="checkbox" id="pack-unhinged" class="w-5 h-5 accent-red-500">
                 <span class="text-sm font-bold text-red-400">Unhinged Pack (18+)</span>
+              </label>
+              <label class="flex items-center gap-3">
+                <input type="checkbox" id="pack-spicy" class="w-5 h-5 accent-pink-500">
+                <span class="text-sm font-bold text-pink-400">Spicy Pack (18+)</span>
+              </label>
+              <label class="flex items-center gap-3">
+                <input type="checkbox" id="pack-holiday" class="w-5 h-5 accent-green-500">
+                <span class="text-sm font-bold text-green-400">Holiday Pack</span>
+              </label>
+              <label class="flex items-center gap-3">
+                <input type="checkbox" id="pack-school" class="w-5 h-5 accent-yellow-500">
+                <span class="text-sm font-bold text-yellow-400">School Pack</span>
+              </label>
+              <label class="flex items-center gap-3">
+                <input type="checkbox" id="pack-roadtrip" class="w-5 h-5 accent-orange-500">
+                <span class="text-sm font-bold text-orange-400">Road Trip Pack</span>
               </label>
             </div>
         </div>
@@ -620,6 +636,173 @@
       "The pope’s favorite dildo."
     ];
 
+    const spicyPrompts = [
+      "The best part of a one-night stand is ____.",
+      "I moaned when ____.",
+      "My kink is ____.",
+      "The dirtiest thing I’ve done was ____.",
+      "I came so hard when ____.",
+      "The riskiest place we fucked was ____.",
+      "I want to be tied up and ____.",
+      "The hottest thing my ex ever said was ____.",
+      "I’m wet just thinking about ____.",
+      "My safe word should be ____.",
+      "The night I got caught was ____.",
+      "I love it when they ____.",
+      "The toy I can’t live without is ____.",
+      "The biggest dick I’ve ever seen was ____.",
+      "I need someone to ____.",
+      "The best blowjob I’ve given was ____.",
+      "I want to be fucked like ____.",
+      "The dirtiest fantasy I have is ____.",
+      "The moment I knew I was hooked was ____.",
+      "I’d pay good money for ____.",
+      "The hottest porn category is ____.",
+      "I’m into ____ in public.",
+      "The sound of ____ turns me on.",
+      "My guilty pleasure is ____.",
+      "The way they looked when I ____.",
+      "I love it when you ____.",
+      "The best orgasm was from ____.",
+      "I’d let them ____.",
+      "The sexiest part of my body is ____.",
+      "I want to watch ____.",
+      "The first time I tried ____.",
+      "I need a partner who ____.",
+      "The thing I can’t resist is ____.",
+      "The hottest thing in bed is ____.",
+      "I’m turned on by ____.",
+      "The dirtiest text I sent was ____.",
+      "I love being ____.",
+      "The best sex I’ve had was ____.",
+      "I want to be used for ____.",
+      "The kinkiest thing we did was ____.",
+      "I get wet when ____.",
+      "The toy that broke me was ____.",
+      "I need someone to ____.",
+      "The hottest roleplay is ____.",
+      "I love it when they ____.",
+      "The best part of foreplay is ____.",
+      "I want to be choked while ____.",
+      "The dirtiest thing I’ve swallowed is ____.",
+      "I’m addicted to ____.",
+      "The night we went all night was ____."
+    ];
+
+    const spicyAnswers = [
+      "Licking sweat off your ex’s back.",
+      "A threesome with your boss and their spouse.",
+      "Your roommate’s vibrator still buzzing.",
+      "The smell of sex in the office elevator.",
+      "A quickie in the confession booth.",
+      "My nudes on your phone, forever.",
+      "A tongue piercing that never stops.",
+      "Your mom walking in on you mid-stroke.",
+      "Edging for three hours straight.",
+      "A finger in the wrong hole.",
+      "The neighbor’s moans at 3 a.m.",
+      "A butt plug with a tail.",
+      "Sex in the car wash.",
+      "Your ex’s dirty talk on voicemail.",
+      "A strap-on surprise.",
+      "Lube in the microwave.",
+      "A porn star’s signature on your ass.",
+      "The taste of your own sweat.",
+      "A glory hole in the church bathroom.",
+      "Your crush’s nudes from last night.",
+      "A vibrator shaped like a banana.",
+      "Sex with the lights on.",
+      "A creampie in the laundry room.",
+      "Your partner’s secret porn stash.",
+      "A blowjob in the back of an Uber.",
+      "The feeling of being watched.",
+      "A butt plug that vibrates with music.",
+      "Your ex’s sex tape leaking.",
+      "A quickie on the kitchen counter.",
+      "The taste of cum on your tongue."
+    ];
+
+    /* ===== Holiday Pack ===== */
+    const holidayPrompts = [
+      "The family holiday photo was ruined by ____.",
+      "Santa’s sleigh crashed when ____.",
+      "The Christmas tree fell over because ____.",
+      "The holiday dinner started with ____.",
+      "We missed the fireworks because ____.",
+      "The gift exchange ended with ____.",
+      "The snowstorm trapped us with ____.",
+      "We sang carols off-key because ____.",
+      "The Thanksgiving turkey was replaced by ____.",
+      "The holiday lights shorted out when ____."
+    ];
+
+    const holidayAnswers = [
+      "the cat climbing the tree.",
+      "a broken ornament.",
+      "Dad’s terrible jokes.",
+      "the dog eating the wrapping paper.",
+      "a live chicken as a pet.",
+      "the principal’s ugly sweater.",
+      "the snowman melting in the sun.",
+      "a raccoon in the trash.",
+      "the ham catching fire.",
+      "the kids fighting over the last cookie."
+    ];
+
+    /* ===== School Pack ===== */
+    const schoolPrompts = [
+      "The school bus broke down because ____.",
+      "The field trip ended early when ____.",
+      "My teacher said we could bring ____ to class.",
+      "The principal banned ____ from the dance.",
+      "The science fair project was ____.",
+      "The school play featured ____.",
+      "The yearbook photo showed ____.",
+      "The class pet escaped during ____.",
+      "The cafeteria food was replaced by ____.",
+      "Detention lasted longer because ____."
+    ];
+
+    const schoolAnswers = [
+      "the bus driver’s karaoke playlist.",
+      "a bee sting during recess.",
+      "a live chicken as a pet.",
+      "the principal’s bad dance moves.",
+      "a missing tooth on stage.",
+      "a squirrel stealing food.",
+      "the teacher’s bad pun.",
+      "the mascot getting stuck.",
+      "the bus hitting a pothole.",
+      "the kids chanting 'are we there yet?'"
+    ];
+
+    /* ===== Road Trip Pack ===== */
+    const roadTripPrompts = [
+      "We got lost on the way to the beach because ____.",
+      "The car ran out of gas right when ____.",
+      "The road trip playlist was interrupted by ____.",
+      "The only thing in the trunk was ____.",
+      "We camped and woke up to ____.",
+      "The rest stop bathroom had ____.",
+      "The drive home was silent after ____.",
+      "The hotel pool had ____ floating in it.",
+      "The kids kept asking ____.",
+      "The flat tire happened because ____."
+    ];
+
+    const roadTripAnswers = [
+      "the radio playing only polka.",
+      "a flat tire with a spare donut.",
+      "someone’s phone died mid-map.",
+      "a mosquito in the tent.",
+      "the whole family arguing over directions.",
+      "the car’s AC blasting cold air.",
+      "the road trip snacks running out.",
+      "a bird pooping on the picnic.",
+      "a turkey in the passenger seat.",
+      "the snow fort collapsing."
+    ];
+
     let gameMode = "single", players = [], activePlayerIndex = 0, currentJudgeIndex = 0;
     let currentRound = 1, deckPrompts = [], deckAnswers = [], playedCards = [], selectedIndices = [];
     let blanksRequired = 1, maxRoundsLimit = 5;
@@ -665,8 +848,12 @@
         // Card pack selection logic
         const useMain = document.getElementById('pack-main').checked;
         const useUnhinged = document.getElementById('pack-unhinged').checked;
+        const useSpicy = document.getElementById('pack-spicy').checked;
+        const useHoliday = document.getElementById('pack-holiday').checked;
+        const useSchool = document.getElementById('pack-school').checked;
+        const useRoadTrip = document.getElementById('pack-roadtrip').checked;
 
-        if (!useMain && !useUnhinged) {
+        if (!useMain && !useUnhinged && !useSpicy && !useHoliday && !useSchool && !useRoadTrip) {
           document.getElementById('menu-error').innerText = "Select at least one card pack";
           document.getElementById('menu-error').classList.remove('hidden');
           return;
@@ -699,14 +886,44 @@
           promptPool = promptPool.concat(unhingedPrompts);
           answerPool = answerPool.concat(unhingedAnswers);
         }
+        if (useSpicy) {
+          promptPool = promptPool.concat(spicyPrompts);
+          answerPool = answerPool.concat(spicyAnswers);
+        }
+        if (useHoliday) {
+          promptPool = promptPool.concat(holidayPrompts);
+          answerPool = answerPool.concat(holidayAnswers);
+        }
+        if (useSchool) {
+          promptPool = promptPool.concat(schoolPrompts);
+          answerPool = answerPool.concat(schoolAnswers);
+        }
+        if (useRoadTrip) {
+          promptPool = promptPool.concat(roadTripPrompts);
+          answerPool = answerPool.concat(roadTripAnswers);
+        }
         deckPrompts = shuffle(promptPool);
         deckAnswers = shuffle(answerPool);
-        players.forEach(p => { for (let i = 0; i < HAND_SIZE; i++) p.hand.push(drawAnswer()); });
+        deckAnswersBackup = [...deckAnswers];
+        players.forEach(p => { for (let i = 0; i < HAND_SIZE; i++) p.hand.push(drawAnswer(p.hand)); });
         document.getElementById('start-menu').classList.add('hidden');
         startRound();
     }
 
-    function drawAnswer() { return (deckAnswers.length ? deckAnswers : deckAnswers = shuffle([...answers])).pop(); }
+    let deckAnswersBackup = [];
+    function drawAnswer(exclude = []) {
+      let pool = deckAnswers.length ? deckAnswers : (deckAnswers = shuffle([...deckAnswersBackup]));
+      let card;
+      let safety = 0;
+
+      do {
+        card = pool.pop();
+        safety++;
+        if (safety > 200) break;
+      } while (exclude.includes(card));
+
+      return card;
+    }
 
     function startRound() {
         playedCards = []; activePlayerIndex = 0; selectedIndices = [];
@@ -860,7 +1077,7 @@
         selectedWinnerIndex = null;
         document.getElementById('confirm-winner-btn').classList.add('hidden');
         currentRound++; currentJudgeIndex = (currentJudgeIndex + 1) % players.length;
-        players.forEach(p => { while(p.hand.length < HAND_SIZE) p.hand.push(drawAnswer()); });
+        players.forEach(p => { while(p.hand.length < HAND_SIZE) p.hand.push(drawAnswer(p.hand)); });
         startRound();
     }
 
@@ -879,12 +1096,9 @@
         document.getElementById('overlay').classList.remove('hidden');
         document.getElementById('overlay-msg').innerText = `${winner.name} wins with ${winner.score} points!`;
     }
-</script>
-</body>
-</html>
-    // Menu button logic
+
     function backToMenu() {
-      // reset game state (light reset, no reload)
+      // light reset, no reload
       players = [];
       playedCards = [];
       selectedIndices = [];
@@ -893,7 +1107,6 @@
       activePlayerIndex = 0;
       currentJudgeIndex = 0;
 
-      document.getElementById('game-table').scrollTop = 0;
       document.getElementById('start-menu').classList.remove('hidden');
       document.getElementById('overlay').classList.add('hidden');
       document.getElementById('pass-screen').classList.add('hidden');
@@ -901,3 +1114,6 @@
       document.getElementById('play-area').innerHTML = '';
       document.getElementById('status-msg').innerText = '';
     }
+</script>
+</body>
+</html>
