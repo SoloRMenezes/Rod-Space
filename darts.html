@@ -178,7 +178,9 @@
 
         let state = "WAITING"; 
         let posY = 0, posX = 0, dirY = 1, dirX = 1;
-        let speed = 9.0;
+        const BASE_SPEED = 9.0;
+        let speed = BASE_SPEED;
+        let turnCount = 0;
         let darts = [];
 
         function startGame(n) {
@@ -278,11 +280,18 @@
             drawBoard();
 
             darts.forEach(d => {
-                ctx.fillStyle = d.color;
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = d.color;
-                ctx.beginPath(); ctx.arc(d.x, d.y, 7, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = d.color;
+                ctx.lineWidth = 2;
                 ctx.shadowBlur = 0;
+
+                const s = 5; // half-size of cross
+
+                ctx.beginPath();
+                ctx.moveTo(d.x - s, d.y);
+                ctx.lineTo(d.x + s, d.y);
+                ctx.moveTo(d.x, d.y - s);
+                ctx.lineTo(d.x, d.y + s);
+                ctx.stroke();
             });
 
             const actualPlayerIdx = activePlayers[currentPlayerIndex];
@@ -352,7 +361,10 @@
                     currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
                     updateActivePlayerUI();
                     state = "Y_AXIS";
-                    speed += 0.1;
+                    turnCount++;
+                    if (turnCount % 3 === 0) {
+                        speed = Math.min(speed + 0.6, BASE_SPEED * 2);
+                    }
                 }, 2000);
             }
         }
