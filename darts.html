@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Darts</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --accent: #e74c3c;
+            /* Colors from reference image */
+            --p1-red: #ff3e3e;
+            --p2-blue: #3e8bff;
+            --p3-green: #2ecc71;
+            --p4-yellow: #f1c40f;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #startScreen {
+            position: absolute;
+            z-index: 100;
+            background: rgba(13, 17, 23, 0.98);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .player-btn {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            background: #1c2128;
+            border: 2px solid #444;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: 0.2s;
+        }
+
+        .player-btn:hover {
+            background: #30363d;
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
+        }
+
+        canvas {
+            background: radial-gradient(circle, #161b22 0%, #0d1117 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            max-width: 80vw;
+            max-height: 60vh;
+        }
+
+        .corner-score {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            display: none; 
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: 0.3s;
+            z-index: 5;
+            cursor: pointer;
+        }
+
+        .active-p {
+            background: rgba(255, 255, 255, 0.08) !important;
+            filter: brightness(1.3);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        #p1-ui { bottom: 0; left: 0; border-top-right-radius: 100%; border-right: 5px solid var(--p1-red); border-top: 5px solid var(--p1-red); }
+        #p2-ui { bottom: 0; right: 0; border-top-left-radius: 100%; border-left: 5px solid var(--p2-blue); border-top: 5px solid var(--p2-blue); }
+        #p3-ui { top: 0; right: 0; border-bottom-left-radius: 100%; border-left: 5px solid var(--p3-green); border-bottom: 5px solid var(--p3-green); }
+        #p4-ui { top: 0; left: 0; border-bottom-right-radius: 100%; border-right: 5px solid var(--p4-yellow); border-bottom: 5px solid var(--p4-yellow); }
+
+        .p-key { font-size: 0.7rem; opacity: 0.6; margin-bottom: 4px; font-weight: bold; pointer-events: none; }
+        .p-score { font-size: 2.2rem; font-weight: 900; pointer-events: none; }
+
+        .hud { text-align: center; pointer-events: none; z-index: 10; margin-top: -20px; }
+        .last-hit { font-size: 1.4rem; color: #8b949e; height: 1.5em; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px; }
+        .instructions {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border: 1px solid transparent;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="startScreen">
+        <h1 class="title">DARTS</h1>
+        <p style="opacity: 0.7;">SELECT NUMBER OF PLAYERS</p>
+        <div class="btn-group">
+            <button class="player-btn" onclick="startGame(1)">1</button>
+            <button class="player-btn" onclick="startGame(2)">2</button>
+            <button class="player-btn" onclick="startGame(3)">3</button>
+            <button class="player-btn" onclick="startGame(4)">4</button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div id="p4-ui" class="corner-score" onmousedown="cornerClick(3)"><div class="p-key">[Q]</div><div id="score-4" class="p-score">500</div></div>
+        <div id="p3-ui" class="corner-score" onmousedown="cornerClick(2)"><div class="p-key">[P]</div><div id="score-3" class="p-score">500</div></div>
+        <div id="p1-ui" class="corner-score" onmousedown="cornerClick(0)"><div class="p-key">[Z]</div><div id="score-1" class="p-score">500</div></div>
+        <div id="p2-ui" class="corner-score" onmousedown="cornerClick(1)"><div class="p-key">[M]</div><div id="score-2" class="p-score">500</div></div>
+
+        <div class="hud">
+            <div id="lastHitLabel" class="last-hit">READY?</div>
+            <div id="instructionBox" class="instructions">TAP YOUR CORNER</div>
+        </div>
+
+        <canvas id="gameCanvas" width="600" height="600"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const lastHitLabel = document.getElementById('lastHitLabel');
+        const instructionBox = document.getElementById('instructionBox');
+
+        const CENTER = 300;
+        const RADIUS = 285;
+        const NUMBERS = [
+            11, 14, 9, 12, 5,
+            20, 1, 18, 4, 13,
+            6, 10, 15, 2, 17,
+            3, 19, 7, 16, 8
+        ];
+        const DOUBLE_OUTER = 230, DOUBLE_INNER = 215, TRIPLE_OUTER = 145, TRIPLE_INNER = 130, BULL_OUTER = 20, BULL_INNER = 9;
+
+        const START_SCORE = 500;
+        let numPlayers = 1;
+        let currentPlayerIndex = 0; 
+        let activePlayers = []; 
+        let playerScores = [START_SCORE, START_SCORE, START_SCORE, START_SCORE];
+        
+        const playerColors = ['#ff3e3e', '#3e8bff', '#2ecc71', '#f1c40f'];
+        const playerKeys = ['KeyZ', 'KeyM', 'KeyP', 'KeyQ'];
+
+        let state = "WAITING"; 
+        let posY = 0, posX = 0, dirY = 1, dirX = 1;
+        let speed = 9.0;
+        let darts = [];
+
+        function startGame(n) {
+            numPlayers = n;
+            document.getElementById('startScreen').style.display = 'none';
+            
+            if (n === 1) { activePlayers = [0]; } 
+            else if (n === 2) { activePlayers = [0, 2]; } 
+            else if (n === 3) { activePlayers = [0, 1, 2]; } 
+            else { activePlayers = [0, 1, 2, 3]; }
+
+            activePlayers.forEach(pIdx => {
+                const ui = document.getElementById(`p${pIdx+1}-ui`);
+                ui.style.display = 'flex';
+                document.getElementById(`score-${pIdx+1}`).innerText = START_SCORE;
+                playerScores[pIdx] = START_SCORE;
+            });
+
+            currentPlayerIndex = 0;
+            updateActivePlayerUI();
+            state = "Y_AXIS";
+            requestAnimationFrame(update);
+        }
+
+        function updateActivePlayerUI() {
+            const actualPlayerIdx = activePlayers[currentPlayerIndex];
+            
+            for(let i=0; i<4; i++) {
+                const ui = document.getElementById(`p${i+1}-ui`);
+                if (i === actualPlayerIdx) ui.classList.add('active-p');
+                else ui.classList.remove('active-p');
+            }
+
+            instructionBox.style.borderColor = playerColors[actualPlayerIdx];
+            instructionBox.style.color = playerColors[actualPlayerIdx];
+            instructionBox.innerText = `TAP YOUR CORNER`;
+        }
+
+        function drawBoard() {
+            ctx.save();
+            ctx.translate(CENTER, CENTER);
+            ctx.beginPath();
+            ctx.arc(0, 0, RADIUS, 0, Math.PI * 2);
+            ctx.fillStyle = "#0d1117";
+            ctx.fill();
+            ctx.strokeStyle = "#30363d";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            const slice = (Math.PI * 2) / 20;
+            const offset = -Math.PI / 2 - slice / 2;
+
+            for (let i = 0; i < 20; i++) {
+                const angleStart = offset + (i * slice);
+                const angleEnd = angleStart + slice;
+                const isEven = i % 2 === 0;
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, DOUBLE_OUTER, angleStart, angleEnd);
+                ctx.fillStyle = isEven ? '#161b22' : '#f0f0f0';
+                ctx.fill();
+                ctx.strokeStyle = '#30363d';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                drawArc(DOUBLE_INNER, DOUBLE_OUTER, angleStart, angleEnd, isEven ? '#2ecc71' : '#e74c3c');
+                drawArc(TRIPLE_INNER, TRIPLE_OUTER, angleStart, angleEnd, isEven ? '#2ecc71' : '#e74c3c');
+
+                ctx.save();
+                ctx.rotate(angleStart + slice/2);
+                ctx.fillStyle = "white";
+                ctx.font = "bold 26px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(NUMBERS[i], 0, -DOUBLE_OUTER - 20); 
+                ctx.restore();
+            }
+
+            ctx.beginPath(); ctx.arc(0, 0, BULL_OUTER, 0, Math.PI * 2);
+            ctx.fillStyle = "#2ecc71"; ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(0, 0, BULL_INNER, 0, Math.PI * 2);
+            ctx.fillStyle = "#e74c3c"; ctx.fill(); ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawArc(inner, outer, start, end, color) {
+            ctx.beginPath();
+            ctx.arc(0, 0, outer, start, end);
+            ctx.arc(0, 0, inner, end, start, true);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function update(time) {
+            ctx.clearRect(0, 0, 600, 600);
+            drawBoard();
+
+            darts.forEach(d => {
+                ctx.fillStyle = d.color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = d.color;
+                ctx.beginPath(); ctx.arc(d.x, d.y, 7, 0, Math.PI * 2); ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            const actualPlayerIdx = activePlayers[currentPlayerIndex];
+
+            if (state === "Y_AXIS" || state === "X_AXIS") {
+                const color = playerColors[actualPlayerIdx];
+                if (state === "Y_AXIS") {
+                    posY += dirY * speed;
+                    if (posY > 600 || posY < 0) dirY *= -1;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([8, 8]);
+                    ctx.beginPath(); ctx.moveTo(0, posY); ctx.lineTo(600, posY); ctx.stroke();
+                    ctx.setLineDash([]);
+                } else {
+                    ctx.strokeStyle = color + "33";
+                    ctx.beginPath(); ctx.moveTo(0, posY); ctx.lineTo(600, posY); ctx.stroke();
+                    posX += dirX * speed;
+                    if (posX > 600 || posX < 0) dirX *= -1;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([8, 8]);
+                    ctx.beginPath(); ctx.moveTo(posX, 0); ctx.lineTo(posX, 600); ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function cornerClick(playerIdx) {
+            if (state === "WAITING" || state === "COOLDOWN") return;
+            const actualPlayerIdx = activePlayers[currentPlayerIndex];
+            if (playerIdx === actualPlayerIdx) {
+                handleAction();
+            }
+        }
+
+        function handleAction() {
+            const actualPlayerIdx = activePlayers[currentPlayerIndex];
+
+            if (state === "Y_AXIS") {
+                state = "X_AXIS";
+            } 
+            else if (state === "X_AXIS") {
+                state = "COOLDOWN";
+                const scoreData = calculateDartScore(posX, posY);
+                
+                // Subtract points from total
+                playerScores[actualPlayerIdx] = Math.max(0, playerScores[actualPlayerIdx] - scoreData.points);
+                
+                darts.push({x: posX, y: posY, color: playerColors[actualPlayerIdx]});
+                if (darts.length > 12) darts.shift();
+
+                document.getElementById(`score-${actualPlayerIdx+1}`).innerText = playerScores[actualPlayerIdx];
+                lastHitLabel.innerText = scoreData.label;
+                lastHitLabel.style.color = scoreData.points > 0 ? playerColors[actualPlayerIdx] : "#8b949e";
+                
+                if (playerScores[actualPlayerIdx] === 0) {
+                    instructionBox.innerText = "WINNER!";
+                    return; // Stop transitions if someone wins
+                }
+
+                instructionBox.innerText = "WAITING...";
+                
+                setTimeout(() => {
+                    currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
+                    updateActivePlayerUI();
+                    state = "Y_AXIS";
+                    speed += 0.1;
+                }, 2000);
+            }
+        }
+
+        function calculateDartScore(x, y) {
+            const dx = x - CENTER;
+            const dy = y - CENTER;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            // MISS
+            if (dist > DOUBLE_OUTER) {
+                return { points: 0, label: "MISS!" };
+            }
+
+            // Angle in degrees [0..360), 0 = right, clockwise
+            let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            angle = (angle + 360 + 90) % 360; // rotate so TOP = 0°
+
+            // Explicit sector map (matches visual board)
+            const SECTORS = [
+                { from: 351, to: 360, v: 20 }, { from: 0, to: 9, v: 20 },
+                { from: 9, to: 27, v: 1 },
+                { from: 27, to: 45, v: 18 },
+                { from: 45, to: 63, v: 4 },
+                { from: 63, to: 81, v: 13 },
+                { from: 81, to: 99, v: 6 },
+                { from: 99, to: 117, v: 10 },
+                { from: 117, to: 135, v: 15 },
+                { from: 135, to: 153, v: 2 },
+                { from: 153, to: 171, v: 17 },
+                { from: 171, to: 189, v: 3 },
+                { from: 189, to: 207, v: 19 },
+                { from: 207, to: 225, v: 7 },
+                { from: 225, to: 243, v: 16 },
+                { from: 243, to: 261, v: 8 },
+                { from: 261, to: 279, v: 11 },
+                { from: 279, to: 297, v: 14 },
+                { from: 297, to: 315, v: 9 },
+                { from: 315, to: 333, v: 12 },
+                { from: 333, to: 351, v: 5 }
+            ];
+
+            let value = 0;
+            for (const s of SECTORS) {
+                if (angle >= s.from && angle < s.to) {
+                    value = s.v;
+                    break;
+                }
+            }
+
+            // RINGS (distance only)
+            if (dist <= BULL_INNER) return { points: 50, label: "BULL 50" };
+            if (dist <= BULL_OUTER) return { points: 25, label: "BULL 25" };
+            if (dist >= TRIPLE_INNER && dist <= TRIPLE_OUTER) return { points: value * 3, label: `TRIPLE ${value}` };
+            if (dist >= DOUBLE_INNER && dist <= DOUBLE_OUTER) return { points: value * 2, label: `DOUBLE ${value}` };
+
+            return { points: value, label: `SINGLE ${value}` };
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (state === "WAITING" || state === "COOLDOWN") return;
+            const actualPlayerIdx = activePlayers[currentPlayerIndex];
+            if (e.code === playerKeys[actualPlayerIdx]) {
+                handleAction();
+            }
+        });
+    </script>
+</body>
+</html>
