@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Dots & Boxes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --dot-color: #ffffff;
+            --line-idle: #30363d;
+            --p1: #ff3e3e;
+            --p2: #3e8bff;
+            --p3: #2ecc71;
+            --p4: #f1c40f;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Rubik Mono One', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #startScreen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .start-btn {
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            background: #1c2128;
+            border: 2px solid #444;
+            color: white;
+            cursor: pointer;
+            border-radius: 15px;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        #turnIndicator {
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background: rgba(255,255,255,0.05);
+            display: inline-block;
+            transition: color 0.3s;
+        }
+
+        #board-container {
+            position: relative;
+            background: #161b22;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
+        }
+
+        #game {
+            position: relative;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: var(--dot-color);
+            border-radius: 50%;
+            position: absolute;
+            z-index: 20;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .line-hitbox {
+            position: absolute;
+            z-index: 15;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .line-visual {
+            background: var(--line-idle);
+            transition: background 0.2s;
+            pointer-events: none;
+            border-radius: 4px;
+        }
+
+        .line-hitbox:hover .line-visual:not(.taken) {
+            background: #444d56;
+        }
+
+        .line-visual.taken {
+            background: currentColor;
+        }
+
+        .box {
+            position: absolute;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s;
+            transform: scale(0.2);
+            pointer-events: none;
+            border-radius: 4px;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .box.filled {
+            opacity: 0.85;
+            transform: scale(0.96);
+        }
+
+        .scores {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 15px;
+            max-width: 450px;
+            font-size: 0.75rem;
+        }
+
+        .score-pill {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="startScreen">
+        <h1 style="letter-spacing: 6px; font-size: 2rem;">DOTS & BOXES</h1>
+        <p style="font-family: sans-serif; opacity: 0.6; margin-top: -20px;">CHOOSE PLAYER NUMBER</p>
+        <div class="btn-group">
+            <button class="start-btn" onclick="initGame(2)">2</button>
+            <button class="start-btn" onclick="initGame(3)">3</button>
+            <button class="start-btn" onclick="initGame(4)">4</button>
+        </div>
+    </div>
+
+    <div class="game-header">
+        <div id="turnIndicator">READY?</div>
+        <div id="scoreList" class="scores"></div>
+    </div>
+
+    <div id="board-container">
+        <div id="game"></div>
+    </div>
+
+    <script>
+        let dotsCount = 7; // Default for 6x6
+        let spacing = 55;   
+        const LINE_WIDTH = 6;
+        const HITBOX_SIZE = 28; 
+
+        const gameEl = document.getElementById('game');
+        const turnEl = document.getElementById('turnIndicator');
+        const scoreList = document.getElementById('scoreList');
+
+        let numPlayers = 2;
+        let currentPlayer = 0;
+        let playerScores = [];
+        let linesTaken = new Set();
+        let boxesFilled = 0;
+        const playerColors = ['#ff3e3e', '#3e8bff', '#2ecc71', '#f1c40f'];
+
+        function initGame(n) {
+            numPlayers = n;
+            currentPlayer = 0;
+            playerScores = new Array(n).fill(0);
+            linesTaken.clear();
+            boxesFilled = 0;
+
+            // Set grid size based on player count
+            if (n === 2) {
+                dotsCount = 6; // 6 dots = 5x5 squares
+                spacing = 65;  // Slightly larger spacing for smaller grid
+            } else {
+                dotsCount = 7; // 7 dots = 6x6 squares
+                spacing = 55;
+            }
+            
+            document.getElementById('startScreen').style.display = 'none';
+            renderBoard();
+            updateUI();
+        }
+
+        function renderBoard() {
+            gameEl.innerHTML = '';
+            const totalSize = (dotsCount - 1) * spacing;
+            gameEl.style.width = `${totalSize}px`;
+            gameEl.style.height = `${totalSize}px`;
+
+            // 1. Boxes
+            for (let r = 0; r < dotsCount - 1; r++) {
+                for (let c = 0; c < dotsCount - 1; c++) {
+                    const box = document.createElement('div');
+                    box.className = 'box';
+                    box.id = `box-${r}-${c}`;
+                    box.style.top = `${r * spacing + (LINE_WIDTH/2)}px`;
+                    box.style.left = `${c * spacing + (LINE_WIDTH/2)}px`;
+                    box.style.width = `${spacing - LINE_WIDTH}px`;
+                    box.style.height = `${spacing - LINE_WIDTH}px`;
+                    gameEl.appendChild(box);
+                }
+            }
+
+            // 2. Lines
+            for (let r = 0; r < dotsCount; r++) {
+                for (let c = 0; c < dotsCount - 1; c++) createLine(r, c, 'h');
+            }
+            for (let r = 0; r < dotsCount - 1; r++) {
+                for (let c = 0; c < dotsCount; c++) createLine(r, c, 'v');
+            }
+
+            // 3. Dots
+            for (let r = 0; r < dotsCount; r++) {
+                for (let c = 0; c < dotsCount; c++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    dot.style.top = `${r * spacing}px`;
+                    dot.style.left = `${c * spacing}px`;
+                    gameEl.appendChild(dot);
+                }
+            }
+        }
+
+        function createLine(r, c, type) {
+            const hitbox = document.createElement('div');
+            hitbox.className = 'line-hitbox';
+            const key = `${type}-${r}-${c}`;
+            
+            const visual = document.createElement('div');
+            visual.className = 'line-visual';
+            visual.id = `line-${key}`;
+
+            if (type === 'h') {
+                hitbox.style.width = `${spacing}px`;
+                hitbox.style.height = `${HITBOX_SIZE}px`;
+                hitbox.style.top = `${r * spacing - HITBOX_SIZE/2}px`;
+                hitbox.style.left = `${c * spacing}px`;
+                
+                visual.style.width = `${spacing - 10}px`;
+                visual.style.height = `${LINE_WIDTH}px`;
+            } else {
+                hitbox.style.width = `${HITBOX_SIZE}px`;
+                hitbox.style.height = `${spacing}px`;
+                hitbox.style.top = `${r * spacing}px`;
+                hitbox.style.left = `${c * spacing - HITBOX_SIZE/2}px`;
+                
+                visual.style.width = `${LINE_WIDTH}px`;
+                visual.style.height = `${spacing - 10}px`;
+            }
+
+            hitbox.appendChild(visual);
+            hitbox.onclick = () => claimLine(key);
+            gameEl.appendChild(hitbox);
+        }
+
+        function claimLine(key) {
+            if (linesTaken.has(key)) return;
+
+            linesTaken.add(key);
+            const visual = document.getElementById(`line-${key}`);
+            visual.classList.add('taken');
+            visual.style.color = playerColors[currentPlayer];
+
+            let scored = checkBoxes();
+
+            if (!scored) {
+                currentPlayer = (currentPlayer + 1) % numPlayers;
+            }
+
+            updateUI();
+            checkGameOver();
+        }
+
+        function checkBoxes() {
+            let newlyFilled = 0;
+            for (let r = 0; r < dotsCount - 1; r++) {
+                for (let c = 0; c < dotsCount - 1; c++) {
+                    const boxId = `box-${r}-${c}`;
+                    const boxEl = document.getElementById(boxId);
+                    
+                    if (boxEl.classList.contains('filled')) continue;
+
+                    const top = `h-${r}-${c}`;
+                    const bottom = `h-${r+1}-${c}`;
+                    const left = `v-${r}-${c}`;
+                    const right = `v-${r}-${c+1}`;
+
+                    if (linesTaken.has(top) && linesTaken.has(bottom) && 
+                        linesTaken.has(left) && linesTaken.has(right)) {
+                        
+                        boxEl.classList.add('filled');
+                        boxEl.style.backgroundColor = playerColors[currentPlayer];
+                        boxEl.innerText = currentPlayer + 1;
+                        playerScores[currentPlayer]++;
+                        boxesFilled++;
+                        newlyFilled++;
+                    } 
+                }
+            }
+            return newlyFilled > 0;
+        }
+
+        function updateUI() {
+            turnEl.innerText = `PLAYER ${currentPlayer + 1}'S TURN`;
+            turnEl.style.color = playerColors[currentPlayer];
+
+            scoreList.innerHTML = playerScores.map((s, i) => `
+                <div class="score-pill" style="color: ${playerColors[i]}; border-color: ${i === currentPlayer ? playerColors[i] : playerColors[i] + '44'}">
+                    P${i+1}: ${s}
+                </div>
+            `).join('');
+        }
+
+        function checkGameOver() {
+            const totalBoxes = (dotsCount - 1) * (dotsCount - 1);
+            if (boxesFilled === totalBoxes) {
+                const maxScore = Math.max(...playerScores);
+                const winners = playerScores
+                    .map((s, i) => s === maxScore ? i + 1 : null)
+                    .filter(w => w !== null);
+
+                if (winners.length > 1) {
+                    turnEl.innerText = "TIE GAME!";
+                    turnEl.style.color = "white";
+                } else {
+                    turnEl.innerText = `PLAYER ${winners[0]} WINS!`;
+                    turnEl.style.color = playerColors[winners[0] - 1];
+                }
+                
+                setTimeout(() => {
+                    if(confirm("Play again?")) location.reload();
+                }, 1500);
+            }
+        }
+    </script>
+</body>
+</html>
