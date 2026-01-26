@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>THEFT - Local Multiplayer</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --accent-wait: #64748b;
+            --accent-go: #22d3ee;
+            --penalty-red: #ef4444;
+            --p1-color: #f43f5e;
+            --p2-color: #3b82f6;
+            --p3-color: #10b981;
+            --p4-color: #f59e0b;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            touch-action: none;
+        }
+
+        /* Screen Overlays */
+        #setup-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            gap: 1.2rem;
+        }
+        #win-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #win-modal { display: none; background: rgba(15, 23, 42, 0.98); }
+
+        .menu-title {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            margin-bottom: 0.5rem;
+            color: var(--accent-go);
+            text-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .menu-btn {
+            background: var(--card-bg);
+            color: white;
+            border: 2px solid transparent;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border-radius: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .menu-btn:hover {
+            border-color: var(--accent-go);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Responsive Player Quarter-Circle Buttons */
+        .player-zone {
+            position: absolute;
+            width: 35vw;
+            height: 35vw;
+            max-width: 150px;
+            max-height: 150px;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: var(--card-bg);
+            z-index: 50;
+            transition: background-color 0.1s ease, transform 0.1s ease;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .player-zone.active { display: flex; }
+
+        /* Corner Styles */
+        .p1 { bottom: 0; left: 0; border-top-right-radius: 100%; padding-right: 15px; padding-top: 15px; border-right: 4px solid var(--p1-color); border-top: 4px solid var(--p1-color); }
+        .p2 { bottom: 0; right: 0; border-top-left-radius: 100%; padding-left: 15px; padding-top: 15px; border-left: 4px solid var(--p2-color); border-top: 4px solid var(--p2-color); }
+        .p3 { top: 0; right: 0; border-bottom-left-radius: 100%; padding-left: 15px; padding-bottom: 15px; border-left: 4px solid var(--p3-color); border-bottom: 4px solid var(--p3-color); }
+        .p4 { top: 0; left: 0; border-bottom-right-radius: 100%; padding-right: 15px; padding-bottom: 15px; border-right: 4px solid var(--p4-color); border-bottom: 4px solid var(--p4-color); }
+
+        .key-prompt { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; }
+        .score-value { font-size: 2rem; font-weight: 900; }
+
+        .penalty-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(239, 68, 68, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s;
+        }
+
+        .p1 .penalty-overlay { border-top-right-radius: 100%; }
+        .p2 .penalty-overlay { border-top-left-radius: 100%; }
+        .p3 .penalty-overlay { border-bottom-left-radius: 100%; }
+        .p4 .penalty-overlay { border-bottom-right-radius: 100%; }
+        .penalty-active .penalty-overlay { opacity: 1; }
+
+        #game-arena { display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; visibility: hidden; }
+        #status-label { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; color: var(--accent-wait); margin-bottom: 2rem; text-transform: uppercase; transition: all 0.2s ease; }
+
+        .diamond-container {
+            position: relative;
+            width: 30vw; height: 30vw; max-width: 180px; max-height: 180px;
+            display: flex; justify-content: center; align-items: center;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #diamond-svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 25px rgba(0,0,0,0.6)); }
+        .diamond-face { transition: fill 0.3s ease; }
+
+        body.go-state { background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); }
+        body.go-state #status-label { color: var(--accent-go); text-shadow: 0 0 20px var(--accent-go); transform: scale(1.1); }
+        body.go-state .diamond-face { fill: var(--accent-go) !important; }
+
+        @keyframes steal-pop { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+        .steal-animation { animation: steal-pop 0.5s forwards !important; }
+
+        #start-prompt { position: absolute; bottom: 20px; opacity: 0.3; font-size: 0.6rem; letter-spacing: 0.1em; width: 100%; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <!-- Initial Setup Screen -->
+    <div id="setup-screen">
+        <h1 class="menu-title">THEFT</h1>
+        <p style="margin: 0.5rem 0 1.2rem 0; opacity: 0.7;">SELECT PLAYERS</p>
+        <div class="button-group">
+            <button class="menu-btn" onclick="startGame(2)">2</button>
+            <button class="menu-btn" onclick="startGame(3)">3</button>
+            <button class="menu-btn" onclick="startGame(4)">4</button>
+        </div>
+    </div>
+
+    <!-- P1 Bottom Left [Z] -->
+    <div id="zone-1" class="player-zone p1" data-key="z">
+        <div class="key-prompt">[Z]</div>
+        <div id="score-1" class="score-value">0</div>
+        <div class="penalty-overlay">✕</div>
+    </div>
+
+    <!-- P2 Bottom Right [M] -->
+    <div id="zone-2" class="player-zone p2" data-key="m">
+        <div class="key-prompt">[M]</div>
+        <div id="score-2" class="score-value">0</div>
+        <div class="penalty-overlay">✕</div>
+    </div>
+
+    <!-- P3 Top Right [P] -->
+    <div id="zone-3" class="player-zone p3" data-key="p">
+        <div class="key-prompt">[P]</div>
+        <div id="score-3" class="score-value">0</div>
+        <div class="penalty-overlay">✕</div>
+    </div>
+
+    <!-- P4 Top Left [Q] -->
+    <div id="zone-4" class="player-zone p4" data-key="q">
+        <div class="key-prompt">[Q]</div>
+        <div id="score-4" class="score-value">0</div>
+        <div class="penalty-overlay">✕</div>
+    </div>
+
+    <div id="game-arena">
+        <div id="status-label">WAIT</div>
+        <div class="diamond-container" id="diamond-box">
+            <svg id="diamond-svg" viewBox="0 0 100 100">
+                <polygon class="diamond-face" points="30,30 70,30 85,50 50,90 15,50" fill="#334155" stroke="#1e293b" stroke-width="1"/>
+                <polygon class="diamond-face" points="15,50 30,30 50,50" fill="#1e293b" stroke="#1e293b" stroke-width="0.5"/>
+                <polygon class="diamond-face" points="85,50 70,30 50,50" fill="#1e293b" stroke="#1e293b" stroke-width="0.5"/>
+                <polygon class="diamond-face" points="50,90 15,50 50,50" fill="#0f172a" stroke="#1e293b" stroke-width="0.5"/>
+                <polygon class="diamond-face" points="50,90 85,50 50,50" fill="#0f172a" stroke="#1e293b" stroke-width="0.5"/>
+                <polygon class="diamond-face" points="30,30 70,30 50,50" fill="#64748b" stroke="#1e293b" stroke-width="0.5"/>
+            </svg>
+        </div>
+        <div id="start-prompt">TAP YOUR CORNER OR USE KEYS</div>
+    </div>
+
+    <!-- Win Screen -->
+    <div id="win-modal">
+        <h1 id="winner-text">PLAYER 1 WINS!</h1>
+        <button class="menu-btn" onclick="location.reload()">MAIN MENU</button>
+    </div>
+
+    <script>
+        const WIN_SCORE = 5;
+        const PENALTY_DURATION = 2000;
+
+        let isGoSignalActive = false;
+        let roundInProgress = false;
+        let gameActive = false;
+
+        const players = {
+            'z': { id: 1, score: 0, penalized: false, timer: null, active: false },
+            'm': { id: 2, score: 0, penalized: false, timer: null, active: false },
+            'p': { id: 3, score: 0, penalized: false, timer: null, active: false },
+            'q': { id: 4, score: 0, penalized: false, timer: null, active: false }
+        };
+
+        const statusLabel = document.getElementById('status-label');
+        const diamondBox = document.getElementById('diamond-box');
+        const setupScreen = document.getElementById('setup-screen');
+        const gameArena = document.getElementById('game-arena');
+
+        function startGame(count) {
+            setupScreen.style.display = 'none';
+            gameArena.style.visibility = 'visible';
+            gameActive = true;
+
+            // Reset all
+            Object.values(players).forEach(p => p.active = false);
+            document.querySelectorAll('.player-zone').forEach(z => z.classList.remove('active'));
+
+            if (count === 2) {
+                // Diagonal: P1 (Bottom Left) and P3 (Top Right)
+                players['z'].active = true;
+                players['p'].active = true;
+            } else if (count === 3) {
+                // P1, P2, P3
+                players['z'].active = true;
+                players['m'].active = true;
+                players['p'].active = true;
+            } else {
+                // All 4
+                Object.values(players).forEach(p => p.active = true);
+            }
+
+            // Sync visual state
+            Object.values(players).forEach(p => {
+                if (p.active) {
+                    document.getElementById(`zone-${p.id}`).classList.add('active');
+                }
+            });
+
+            prepareRound();
+        }
+
+        function playGoSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.2);
+            } catch(e) {}
+        }
+
+        function playStealSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.15);
+            } catch(e) {}
+        }
+
+        function prepareRound() {
+            if (!gameActive) return;
+
+            roundInProgress = true;
+            isGoSignalActive = false;
+            document.body.classList.remove('go-state');
+            diamondBox.classList.remove('steal-animation');
+            statusLabel.innerText = "WAIT";
+            statusLabel.style.opacity = "1";
+
+            const delay = Math.floor(Math.random() * 4000) + 2500;
+            setTimeout(() => {
+                if (roundInProgress) triggerGoSignal();
+            }, delay);
+        }
+
+        function triggerGoSignal() {
+            isGoSignalActive = true;
+            document.body.classList.add('go-state');
+            statusLabel.innerText = "STEAL!";
+            playGoSound();
+        }
+
+        function handleAction(key) {
+            if (!gameActive || !roundInProgress) return;
+            
+            const player = players[key];
+            if (!player || !player.active) return;
+
+            if (!isGoSignalActive) {
+                penalizePlayer(key);
+            } else if (!player.penalized) {
+                resolveRound(key);
+            }
+        }
+
+        function penalizePlayer(playerKey) {
+            const player = players[playerKey];
+            if (player.penalized) return;
+
+            player.penalized = true;
+            const zone = document.getElementById(`zone-${player.id}`);
+            zone.classList.add('penalty-active');
+
+            if (player.timer) clearTimeout(player.timer);
+            player.timer = setTimeout(() => {
+                player.penalized = false;
+                zone.classList.remove('penalty-active');
+            }, PENALTY_DURATION);
+        }
+
+        function resolveRound(winnerKey) {
+            roundInProgress = false;
+            isGoSignalActive = false;
+            playStealSound();
+            
+            const player = players[winnerKey];
+            player.score++;
+            document.getElementById(`score-${player.id}`).innerText = player.score;
+
+            diamondBox.classList.add('steal-animation');
+            statusLabel.style.opacity = "0";
+
+            if (player.score >= WIN_SCORE) {
+                setTimeout(() => endMatch(player.id), 600);
+            } else {
+                setTimeout(prepareRound, 1000);
+            }
+        }
+
+        function endMatch(winnerId) {
+            gameActive = false;
+            const modal = document.getElementById('win-modal');
+            const winText = document.getElementById('winner-text');
+            const winnerColor = getComputedStyle(document.documentElement).getPropertyValue(`--p${winnerId}-color`);
+            
+            winText.innerText = `PLAYER ${winnerId} WINS!`;
+            winText.style.color = winnerColor;
+            modal.style.display = 'flex';
+        }
+
+        window.addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            handleAction(key);
+        });
+
+        document.querySelectorAll('.player-zone').forEach(zone => {
+            const trigger = (e) => {
+                e.preventDefault();
+                const key = zone.getAttribute('data-key');
+                handleAction(key);
+            };
+            zone.addEventListener('touchstart', trigger, { passive: false });
+            zone.addEventListener('mousedown', trigger);
+        });
+    </script>
+</body>
+</html>
