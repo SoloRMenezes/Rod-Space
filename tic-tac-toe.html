@@ -86,6 +86,22 @@ body {
     color: #2ecc71;
     text-shadow: 0 0 12px rgba(46,204,113,0.6);
 }
+
+.restart {
+    position: absolute;
+    display: none;
+    padding: 14px 28px;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #21262d, #161b22);
+    color: white;
+    font-family: 'Rubik Mono One', system-ui, sans-serif;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+}
+.restart:hover {
+    transform: scale(1.05);
+}
 </style>
 </head>
 <body>
@@ -97,10 +113,12 @@ body {
     <div class="cell"></div><div class="cell"></div><div class="cell"></div>
     <div class="cell"></div><div class="cell"></div><div class="cell"></div>
 </div>
+<button class="restart" id="restartBtn">RESTART</button>
 
 <script>
     const cells = document.querySelectorAll('.cell');
     const status = document.getElementById('status');
+    const restartBtn = document.getElementById('restartBtn');
 
     let board = Array(9).fill(null);
     let current = 'X';
@@ -129,17 +147,7 @@ body {
                 status.classList.add('win');
                 gameOver = true;
 
-                setTimeout(() => {
-                    board = Array(9).fill(null);
-                    cells.forEach(c => {
-                        c.textContent = '';
-                        c.classList.remove('taken');
-                    });
-                    current = 'X';
-                    gameOver = false;
-                    status.classList.remove('win');
-                    status.textContent = 'PLAYER X';
-                }, 5000);
+                restartBtn.style.display = 'block';
 
                 return;
             }
@@ -153,6 +161,19 @@ body {
             current = current === 'X' ? 'O' : 'X';
             status.textContent = `PLAYER ${current}`;
         });
+    });
+
+    restartBtn.addEventListener('click', () => {
+        board = Array(9).fill(null);
+        cells.forEach(c => {
+            c.textContent = '';
+            c.classList.remove('taken', 'x', 'o');
+        });
+        current = 'X';
+        gameOver = false;
+        status.classList.remove('win');
+        status.textContent = 'PLAYER X';
+        restartBtn.style.display = 'none';
     });
 </script>
 
