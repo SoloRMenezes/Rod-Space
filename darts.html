@@ -222,7 +222,7 @@
         const MOON_SPEED = 0.02;
         const BASE_SPEED = 9.0;
         let speed = BASE_SPEED;
-        let turnCount = 0, darts = []; 
+        let darts = []; 
 
         function startGame(n) {
             numPlayers = n;
@@ -366,16 +366,27 @@
                 if (scoreData.points > playerScores[actualPlayerIdx]) bust = true;
                 else playerScores[actualPlayerIdx] -= scoreData.points;
                 darts.push({x: finalPosX, y: finalPosY, color: playerColors[actualPlayerIdx]});
-                if (darts.length > 12) darts.shift();
+                
                 document.getElementById(`score-${actualPlayerIdx+1}`).innerText = playerScores[actualPlayerIdx];
                 if (bust) { lastHitLabel.innerText = "BUST!"; lastHitLabel.style.color = "#e74c3c"; }
                 else { lastHitLabel.innerText = scoreData.label; lastHitLabel.style.color = scoreData.points > 0 ? playerColors[actualPlayerIdx] : "#8b949e"; }
                 if (playerScores[actualPlayerIdx] === 0) { instructionBox.innerText = "WINNER!"; return; }
                 instructionBox.innerText = "WAITING...";
+                
                 setTimeout(() => {
+                    // Check if this was the last player in the round
+                    const isLastPlayerInRound = (currentPlayerIndex === activePlayers.length - 1);
+                    
                     currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
-                    prepareNextThrow(); updateActivePlayerUI(); turnCount++;
-                    if (turnCount % 3 === 0) speed = Math.min(speed + 0.6, BASE_SPEED * 2);
+                    
+                    // A "round" is after everyone throws it once
+                    if (isLastPlayerInRound) {
+                        darts = [];
+                        speed = Math.min(speed + 0.3, BASE_SPEED * 2);
+                    }
+                    
+                    prepareNextThrow(); 
+                    updateActivePlayerUI();
                 }, 500);
             }
         }
