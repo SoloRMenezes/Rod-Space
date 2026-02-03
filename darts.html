@@ -138,10 +138,10 @@
     </div>
 
     <div class="game-container">
-        <div id="p4-ui" class="corner-score" onmousedown="cornerClick(3)"><div class="p-key">[Q]</div><div id="score-4" class="p-score">500</div></div>
-        <div id="p3-ui" class="corner-score" onmousedown="cornerClick(2)"><div class="p-key">[P]</div><div id="score-3" class="p-score">500</div></div>
-        <div id="p1-ui" class="corner-score" onmousedown="cornerClick(0)"><div class="p-key">[Z]</div><div id="score-1" class="p-score">500</div></div>
-        <div id="p2-ui" class="corner-score" onmousedown="cornerClick(1)"><div class="p-key">[M]</div><div id="score-2" class="p-score">500</div></div>
+        <div id="p4-ui" class="corner-score" onmousedown="cornerClick(3)"><div class="p-key">[Q]</div><div id="score-4" class="p-score">300</div></div>
+        <div id="p3-ui" class="corner-score" onmousedown="cornerClick(2)"><div class="p-key">[P]</div><div id="score-3" class="p-score">300</div></div>
+        <div id="p1-ui" class="corner-score" onmousedown="cornerClick(0)"><div class="p-key">[Z]</div><div id="score-1" class="p-score">300</div></div>
+        <div id="p2-ui" class="corner-score" onmousedown="cornerClick(1)"><div class="p-key">[M]</div><div id="score-2" class="p-score">300</div></div>
 
         <div class="hud">
             <div id="lastHitLabel" class="last-hit">READY?</div>
@@ -167,7 +167,7 @@
         ];
         const DOUBLE_OUTER = 230, DOUBLE_INNER = 215, TRIPLE_OUTER = 145, TRIPLE_INNER = 130, BULL_OUTER = 20, BULL_INNER = 9;
 
-        const START_SCORE = 500;
+        const START_SCORE = 300;
         let numPlayers = 1;
         let currentPlayerIndex = 0; 
         let activePlayers = []; 
@@ -340,19 +340,30 @@
                 state = "COOLDOWN";
                 const scoreData = calculateDartScore(posX, posY);
                 
-                // Subtract points from total
-                playerScores[actualPlayerIdx] = Math.max(0, playerScores[actualPlayerIdx] - scoreData.points);
+                // Bust Logic: if points are more than remaining score
+                let bust = false;
+                if (scoreData.points > playerScores[actualPlayerIdx]) {
+                    bust = true;
+                } else {
+                    playerScores[actualPlayerIdx] -= scoreData.points;
+                }
                 
                 darts.push({x: posX, y: posY, color: playerColors[actualPlayerIdx]});
                 if (darts.length > 12) darts.shift();
 
                 document.getElementById(`score-${actualPlayerIdx+1}`).innerText = playerScores[actualPlayerIdx];
-                lastHitLabel.innerText = scoreData.label;
-                lastHitLabel.style.color = scoreData.points > 0 ? playerColors[actualPlayerIdx] : "#8b949e";
+                
+                if (bust) {
+                    lastHitLabel.innerText = "BUST!";
+                    lastHitLabel.style.color = "#e74c3c";
+                } else {
+                    lastHitLabel.innerText = scoreData.label;
+                    lastHitLabel.style.color = scoreData.points > 0 ? playerColors[actualPlayerIdx] : "#8b949e";
+                }
                 
                 if (playerScores[actualPlayerIdx] === 0) {
                     instructionBox.innerText = "WINNER!";
-                    return; // Stop transitions if someone wins
+                    return;
                 }
 
                 instructionBox.innerText = "WAITING...";
