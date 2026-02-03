@@ -104,17 +104,15 @@
             filter: brightness(1.3);
         }
         
-        /* Apply glow to blue, green, yellow only */
         #p2-ui.active-p, #p3-ui.active-p, #p4-ui.active-p {
             box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
         }
         
-        /* Explicitly NO glow for red player */
         #p1-ui.active-p {
             box-shadow: none !important;
         }
 
-        /* Corner styling for individual player UIs and rotating the text */
+        /* Corner styling for individual player UIs */
         #p1-ui { bottom: 0; left: 0; border-top-right-radius: 100%; border-right: 5px solid var(--p1-red); border-top: 5px solid var(--p1-red); }
         #p1-ui .p-score { transform: rotate(45deg); margin-left: -20px; margin-top: 20px; }
 
@@ -128,13 +126,12 @@
         #p4-ui .p-score { transform: rotate(135deg); margin-left: -20px; margin-bottom: 20px; }
 
         .p-score { 
-            font-size: 3.5rem; /* Large font for the score itself */
+            font-size: 3.5rem;
             font-weight: 900; 
             pointer-events: none; 
             letter-spacing: -2px;
         }
 
-        /* Central HUD for game status and hit feedback */
         .hud { text-align: center; pointer-events: none; z-index: 10; margin-top: -20px; }
         .last-hit { font-size: 1.4rem; color: #8b949e; height: 1.5em; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px; }
         .instructions {
@@ -148,20 +145,19 @@
             font-weight: bold;
         }
 
-        /* Secondary canvas for the semi-circle angle picker at the bottom */
+        /* Responsive bar styling */
         #angleCanvas {
             position: absolute;
             bottom: 0px; 
+            width: 100%;
+            height: 150px;
             background: transparent;
-            box-shadow: none;
-            border-radius: 0;
             pointer-events: none;
         }
     </style>
 </head>
 <body onmousedown="globalInput()" ontouchstart="globalInput()">
 
-    <!-- Startup Menu -->
     <div id="startScreen" onmousedown="event.stopPropagation()">
         <h1 class="title">DARTS</h1>
         <p style="opacity: 0.7;">SELECT NUMBER OF PLAYERS</p>
@@ -173,23 +169,19 @@
         </div>
     </div>
 
-    <!-- Main Gameplay Area -->
     <div class="game-container">
-        <!-- Dynamic Player UI Components -->
         <div id="p4-ui" class="corner-score"><div id="score-4" class="p-score">300</div></div>
         <div id="p3-ui" class="corner-score"><div id="score-3" class="p-score">300</div></div>
         <div id="p1-ui" class="corner-score"><div id="score-1" class="p-score">300</div></div>
         <div id="p2-ui" class="corner-score"><div id="score-2" class="p-score">300</div></div>
 
-        <!-- Feedback UI -->
         <div class="hud">
             <div id="lastHitLabel" class="last-hit">READY?</div>
             <div id="instructionBox" class="instructions">CHOOSE ANGLE</div>
         </div>
 
-        <!-- Render Layers -->
         <canvas id="gameCanvas" width="600" height="600"></canvas>
-        <canvas id="angleCanvas" width="600" height="200"></canvas>
+        <canvas id="angleCanvas"></canvas>
     </div>
 
     <script>
@@ -223,6 +215,13 @@
         const BASE_SPEED = 9.0;
         let speed = BASE_SPEED;
         let darts = []; 
+
+        function resizeAngleCanvas() {
+            angleCanvas.width = window.innerWidth;
+            angleCanvas.height = 150;
+        }
+        window.addEventListener('resize', resizeAngleCanvas);
+        resizeAngleCanvas();
 
         function startGame(n) {
             numPlayers = n;
@@ -293,20 +292,29 @@
         }
 
         function drawMoonPicker(color) {
-            actx.clearRect(0, 0, 600, 200);
+            actx.clearRect(0, 0, angleCanvas.width, angleCanvas.height);
             actx.save();
-            const barRadius = 170; const centerY = -50; 
-            actx.translate(300, centerY); 
-            const rad10 = (10 * Math.PI) / 180;
-            const startArc = (Math.PI * 0.25) - rad10;
-            const endArc = (Math.PI * 0.75) + rad10;
+            
+            // Dynamic Radius based on width to keep curvature consistent
+            const barRadius = Math.min(window.innerWidth * 0.45, 300);
+            const centerX = angleCanvas.width / 2;
+            const centerY = - (barRadius * 0.5); // Pivot high so we see the bottom arc
+            
+            actx.translate(centerX, centerY); 
+            
+            // Fixed angle range regardless of device width
+            const startArc = Math.PI * 0.6;
+            const endArc = Math.PI * 0.4; // Reversed arc for bottom sweep
             const angleRange = endArc - startArc;
-            actx.beginPath(); actx.arc(0, 0, barRadius, startArc, endArc);
-            actx.strokeStyle = "rgba(255,255,255,0.12)"; actx.lineWidth = 12; actx.lineCap = "round"; actx.stroke();
+            
+            actx.beginPath(); actx.arc(0, 0, barRadius, startArc, endArc, true);
+            actx.strokeStyle = "rgba(255,255,255,0.12)"; actx.lineWidth = 14; actx.lineCap = "round"; actx.stroke();
+            
             const currentAngle = startArc + (moonAngle * angleRange);
             const marbleX = Math.cos(currentAngle) * barRadius;
             const marbleY = Math.sin(currentAngle) * barRadius;
-            actx.beginPath(); actx.arc(marbleX, marbleY, 9, 0, Math.PI * 2); actx.fillStyle = color; actx.fill();
+            
+            actx.beginPath(); actx.arc(marbleX, marbleY, 10, 0, Math.PI * 2); actx.fillStyle = color; actx.fill();
             actx.restore();
         }
 
@@ -325,7 +333,7 @@
                 if (moonAngle >= 1 || moonAngle <= 0) moonDir *= -1;
                 drawMoonPicker(color);
             } else {
-                actx.clearRect(0, 0, 600, 200);
+                actx.clearRect(0, 0, angleCanvas.width, angleCanvas.height);
             }
             if (state === "AXIS_1" || state === "AXIS_2") {
                 ctx.save(); ctx.translate(CENTER, CENTER); ctx.rotate(scanAngle);
@@ -347,9 +355,9 @@
         function handleAction() {
             const actualPlayerIdx = activePlayers[currentPlayerIndex];
             if (state === "CHOOSE_ANGLE") {
-                const rad10 = (10 * Math.PI) / 180;
-                const startArc = (Math.PI * 0.25) - rad10;
-                const endArc = (Math.PI * 0.75) + rad10;
+                // Calculation matches the draw logic sweep
+                const startArc = Math.PI * 0.6;
+                const endArc = Math.PI * 0.4;
                 const angleRange = endArc - startArc;
                 const currentMarbleAngle = startArc + (moonAngle * angleRange);
                 scanAngle = currentMarbleAngle - (Math.PI / 2); 
@@ -374,12 +382,9 @@
                 instructionBox.innerText = "WAITING...";
                 
                 setTimeout(() => {
-                    // Check if this was the last player in the round
                     const isLastPlayerInRound = (currentPlayerIndex === activePlayers.length - 1);
-                    
                     currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
                     
-                    // A "round" is after everyone throws it once
                     if (isLastPlayerInRound) {
                         darts = [];
                         speed = Math.min(speed + 0.3, BASE_SPEED * 2);
@@ -393,13 +398,8 @@
 
         function calculateDartScore(x, y) {
             const dx = x - CENTER; const dy = y - CENTER; const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            // Check for Bulls-Eye (Center)
             if (dist <= BULL_INNER) return { points: 50, label: "BULL'S EYE" };
-            // Check for Bull (Green Outer Ring)
             if (dist <= BULL_OUTER) return { points: 25, label: "BULL" };
-            
-            // Check for Miss
             if (dist > DOUBLE_OUTER) return { points: 0, label: "MISS!" };
             
             let angle = (Math.atan2(dy, dx) * 180 / Math.PI + 360 + 90) % 360; 
