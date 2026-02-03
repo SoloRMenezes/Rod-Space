@@ -394,11 +394,13 @@
                 else { lastHitLabel.innerText = scoreData.label; lastHitLabel.style.color = scoreData.points > 0 ? playerColors[actualPlayerIdx] : "#8b949e"; }
                 if (playerScores[actualPlayerIdx] === 0) { instructionBox.innerText = "WINNER!"; return; }
                 instructionBox.innerText = "WAITING...";
+                
+                // Reduced cooldown from 1500ms to 1000ms
                 setTimeout(() => {
                     currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
                     prepareNextThrow(); updateActivePlayerUI(); turnCount++;
                     if (turnCount % 3 === 0) speed = Math.min(speed + 0.6, BASE_SPEED * 2);
-                }, 1500);
+                }, 500);
             }
         }
 
