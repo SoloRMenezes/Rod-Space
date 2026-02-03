@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Darts</title>
     <style>
+        /* Color palette and design variables */
         :root {
             --bg: #0d1117;
             --accent: #e74c3c;
-            /* Colors from reference image */
             --p1-red: #ff3e3e;
             --p2-blue: #3e8bff;
             --p3-green: #2ecc71;
@@ -29,6 +29,7 @@
             touch-action: none;
         }
 
+        /* Full-screen overlay for player selection */
         #startScreen {
             position: absolute;
             z-index: 100;
@@ -69,12 +70,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
             width: 100%;
             height: 100%;
             justify-content: center;
         }
 
+        /* The main dartboard canvas */
         canvas {
             background: radial-gradient(circle, #161b22 0%, #0d1117 100%);
             border-radius: 50%;
@@ -83,6 +85,7 @@
             max-height: 60vh;
         }
 
+        /* Player score displays in the screen corners */
         .corner-score {
             position: absolute;
             width: 140px;
@@ -96,12 +99,14 @@
             cursor: pointer;
         }
 
+        /* Highlights the current turn's player */
         .active-p {
             background: rgba(255, 255, 255, 0.08) !important;
             filter: brightness(1.3);
             box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
         }
 
+        /* Corner styling for individual player UIs */
         #p1-ui { bottom: 0; left: 0; border-top-right-radius: 100%; border-right: 5px solid var(--p1-red); border-top: 5px solid var(--p1-red); }
         #p2-ui { bottom: 0; right: 0; border-top-left-radius: 100%; border-left: 5px solid var(--p2-blue); border-top: 5px solid var(--p2-blue); }
         #p3-ui { top: 0; right: 0; border-bottom-left-radius: 100%; border-left: 5px solid var(--p3-green); border-bottom: 5px solid var(--p3-green); }
@@ -110,6 +115,7 @@
         .p-key { font-size: 0.7rem; opacity: 0.6; margin-bottom: 4px; font-weight: bold; pointer-events: none; }
         .p-score { font-size: 2.2rem; font-weight: 900; pointer-events: none; }
 
+        /* Central HUD for game status and hit feedback */
         .hud { text-align: center; pointer-events: none; z-index: 10; margin-top: -20px; }
         .last-hit { font-size: 1.4rem; color: #8b949e; height: 1.5em; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px; }
         .instructions {
@@ -122,10 +128,21 @@
             border: 1px solid transparent;
             font-weight: bold;
         }
+
+        /* Secondary canvas for the semi-circle angle picker at the bottom */
+        #angleCanvas {
+            position: absolute;
+            bottom: 0px; 
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
+    <!-- Startup Menu -->
     <div id="startScreen">
         <h1 class="title">DARTS</h1>
         <p style="opacity: 0.7;">SELECT NUMBER OF PLAYERS</p>
@@ -137,36 +154,43 @@
         </div>
     </div>
 
+    <!-- Main Gameplay Area -->
     <div class="game-container">
+        <!-- Dynamic Player UI Components -->
         <div id="p4-ui" class="corner-score" onmousedown="cornerClick(3)"><div class="p-key">[Q]</div><div id="score-4" class="p-score">300</div></div>
         <div id="p3-ui" class="corner-score" onmousedown="cornerClick(2)"><div class="p-key">[P]</div><div id="score-3" class="p-score">300</div></div>
         <div id="p1-ui" class="corner-score" onmousedown="cornerClick(0)"><div class="p-key">[Z]</div><div id="score-1" class="p-score">300</div></div>
         <div id="p2-ui" class="corner-score" onmousedown="cornerClick(1)"><div class="p-key">[M]</div><div id="score-2" class="p-score">300</div></div>
 
+        <!-- Feedback UI -->
         <div class="hud">
             <div id="lastHitLabel" class="last-hit">READY?</div>
-            <div id="instructionBox" class="instructions">TAP YOUR CORNER</div>
+            <div id="instructionBox" class="instructions">CHOOSE ANGLE</div>
         </div>
 
+        <!-- Render Layers -->
         <canvas id="gameCanvas" width="600" height="600"></canvas>
+        <canvas id="angleCanvas" width="600" height="200"></canvas>
     </div>
 
     <script>
+        // DOM Elements
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const angleCanvas = document.getElementById('angleCanvas');
+        const actx = angleCanvas.getContext('2d');
         const lastHitLabel = document.getElementById('lastHitLabel');
         const instructionBox = document.getElementById('instructionBox');
 
+        // Dartboard Dimensions & Configuration
         const CENTER = 300;
         const RADIUS = 285;
-        const NUMBERS = [
-            11, 14, 9, 12, 5,
-            20, 1, 18, 4, 13,
-            6, 10, 15, 2, 17,
-            3, 19, 7, 16, 8
-        ];
-        const DOUBLE_OUTER = 230, DOUBLE_INNER = 215, TRIPLE_OUTER = 145, TRIPLE_INNER = 130, BULL_OUTER = 20, BULL_INNER = 9;
+        const NUMBERS = [11, 14, 9, 12, 5, 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8];
+        const DOUBLE_OUTER = 230, DOUBLE_INNER = 215;
+        const TRIPLE_OUTER = 145, TRIPLE_INNER = 130;
+        const BULL_OUTER = 20, BULL_INNER = 9;
 
+        // Game State Variables
         const START_SCORE = 300;
         let numPlayers = 1;
         let currentPlayerIndex = 0; 
@@ -177,46 +201,55 @@
         const playerKeys = ['KeyZ', 'KeyM', 'KeyP', 'KeyQ'];
 
         let state = "WAITING"; 
-        let posY = 0, posX = 0, dirY = 1, dirX = 1;
+        let scanOffset1 = 0, scanOffset2 = 0; 
+        let scanDir1 = 1, scanDir2 = 1;      
+        let scanAngle = 0;                  
+        
+        let moonAngle = 0; 
+        let moonDir = 1;
+        const MOON_SPEED = 0.02;
+
         const BASE_SPEED = 9.0;
         let speed = BASE_SPEED;
         let turnCount = 0;
-        let darts = [];
+        let darts = []; 
 
         function startGame(n) {
             numPlayers = n;
             document.getElementById('startScreen').style.display = 'none';
-            
             if (n === 1) { activePlayers = [0]; } 
             else if (n === 2) { activePlayers = [0, 2]; } 
             else if (n === 3) { activePlayers = [0, 1, 2]; } 
             else { activePlayers = [0, 1, 2, 3]; }
-
             activePlayers.forEach(pIdx => {
                 const ui = document.getElementById(`p${pIdx+1}-ui`);
                 ui.style.display = 'flex';
                 document.getElementById(`score-${pIdx+1}`).innerText = START_SCORE;
                 playerScores[pIdx] = START_SCORE;
             });
-
             currentPlayerIndex = 0;
+            prepareNextThrow();
             updateActivePlayerUI();
-            state = "Y_AXIS";
             requestAnimationFrame(update);
+        }
+
+        function prepareNextThrow() {
+            state = "CHOOSE_ANGLE";
+            moonAngle = Math.random(); 
+            scanOffset1 = 0;
+            scanOffset2 = 0;
+            instructionBox.innerText = "SET ANGLE";
         }
 
         function updateActivePlayerUI() {
             const actualPlayerIdx = activePlayers[currentPlayerIndex];
-            
             for(let i=0; i<4; i++) {
                 const ui = document.getElementById(`p${i+1}-ui`);
                 if (i === actualPlayerIdx) ui.classList.add('active-p');
                 else ui.classList.remove('active-p');
             }
-
             instructionBox.style.borderColor = playerColors[actualPlayerIdx];
             instructionBox.style.color = playerColors[actualPlayerIdx];
-            instructionBox.innerText = `TAP YOUR CORNER`;
         }
 
         function drawBoard() {
@@ -229,218 +262,177 @@
             ctx.strokeStyle = "#30363d";
             ctx.lineWidth = 4;
             ctx.stroke();
-
             const slice = (Math.PI * 2) / 20;
             const offset = -Math.PI / 2 - slice / 2;
-
             for (let i = 0; i < 20; i++) {
                 const angleStart = offset + (i * slice);
                 const angleEnd = angleStart + slice;
                 const isEven = i % 2 === 0;
-
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.arc(0, 0, DOUBLE_OUTER, angleStart, angleEnd);
-                ctx.fillStyle = isEven ? '#161b22' : '#f0f0f0';
-                ctx.fill();
-                ctx.strokeStyle = '#30363d';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, DOUBLE_OUTER, angleStart, angleEnd);
+                ctx.fillStyle = isEven ? '#161b22' : '#f0f0f0'; ctx.fill(); ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1; ctx.stroke();
                 drawArc(DOUBLE_INNER, DOUBLE_OUTER, angleStart, angleEnd, isEven ? '#2ecc71' : '#e74c3c');
                 drawArc(TRIPLE_INNER, TRIPLE_OUTER, angleStart, angleEnd, isEven ? '#2ecc71' : '#e74c3c');
-
-                ctx.save();
-                ctx.rotate(angleStart + slice/2);
-                ctx.fillStyle = "white";
-                ctx.font = "bold 26px Arial";
-                ctx.textAlign = "center";
-                ctx.fillText(NUMBERS[i], 0, -DOUBLE_OUTER - 20); 
-                ctx.restore();
+                ctx.save(); ctx.rotate(angleStart + slice/2); ctx.fillStyle = "white"; ctx.font = "bold 26px Arial"; ctx.textAlign = "center";
+                ctx.fillText(NUMBERS[i], 0, -DOUBLE_OUTER - 20); ctx.restore();
             }
-
-            ctx.beginPath(); ctx.arc(0, 0, BULL_OUTER, 0, Math.PI * 2);
-            ctx.fillStyle = "#2ecc71"; ctx.fill(); ctx.stroke();
-            ctx.beginPath(); ctx.arc(0, 0, BULL_INNER, 0, Math.PI * 2);
-            ctx.fillStyle = "#e74c3c"; ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(0, 0, BULL_OUTER, 0, Math.PI * 2); ctx.fillStyle = "#2ecc71"; ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(0, 0, BULL_INNER, 0, Math.PI * 2); ctx.fillStyle = "#e74c3c"; ctx.fill(); ctx.stroke();
             ctx.restore();
         }
 
         function drawArc(inner, outer, start, end, color) {
-            ctx.beginPath();
-            ctx.arc(0, 0, outer, start, end);
-            ctx.arc(0, 0, inner, end, start, true);
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.stroke();
+            ctx.beginPath(); ctx.arc(0, 0, outer, start, end); ctx.arc(0, 0, inner, end, start, true);
+            ctx.fillStyle = color; ctx.fill(); ctx.stroke();
         }
 
-        function update(time) {
+        function drawMoonPicker(color) {
+            actx.clearRect(0, 0, 600, 200);
+            actx.save();
+            
+            const barRadius = 170; 
+            const centerY = -50; 
+            
+            actx.translate(300, centerY); 
+            
+            const rad10 = (10 * Math.PI) / 180;
+            const startArc = (Math.PI * 0.25) - rad10;
+            const endArc = (Math.PI * 0.75) + rad10;
+            const angleRange = endArc - startArc;
+
+            actx.beginPath();
+            actx.arc(0, 0, barRadius, startArc, endArc);
+            actx.strokeStyle = "rgba(255,255,255,0.12)";
+            actx.lineWidth = 12; 
+            actx.lineCap = "round";
+            actx.stroke();
+
+            const currentAngle = startArc + (moonAngle * angleRange);
+            const marbleX = Math.cos(currentAngle) * barRadius;
+            const marbleY = Math.sin(currentAngle) * barRadius;
+
+            actx.beginPath();
+            actx.arc(marbleX, marbleY, 9, 0, Math.PI * 2); 
+            actx.fillStyle = color;
+            actx.fill();
+            actx.restore();
+        }
+
+        function update() {
             ctx.clearRect(0, 0, 600, 600);
             drawBoard();
-
             darts.forEach(d => {
-                ctx.strokeStyle = d.color;
-                ctx.lineWidth = 2;
-                ctx.shadowBlur = 0;
-
-                const s = 5; // half-size of cross
-
-                ctx.beginPath();
-                ctx.moveTo(d.x - s, d.y);
-                ctx.lineTo(d.x + s, d.y);
-                ctx.moveTo(d.x, d.y - s);
-                ctx.lineTo(d.x, d.y + s);
-                ctx.stroke();
+                ctx.strokeStyle = d.color; ctx.lineWidth = 2; const s = 5;
+                ctx.beginPath(); ctx.moveTo(d.x - s, d.y); ctx.lineTo(d.x + s, d.y);
+                ctx.moveTo(d.x, d.y - s); ctx.lineTo(d.x, d.y + s); ctx.stroke();
             });
-
             const actualPlayerIdx = activePlayers[currentPlayerIndex];
-
-            if (state === "Y_AXIS" || state === "X_AXIS") {
-                const color = playerColors[actualPlayerIdx];
-                if (state === "Y_AXIS") {
-                    posY += dirY * speed;
-                    if (posY > 600 || posY < 0) dirY *= -1;
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([8, 8]);
-                    ctx.beginPath(); ctx.moveTo(0, posY); ctx.lineTo(600, posY); ctx.stroke();
-                    ctx.setLineDash([]);
+            const color = playerColors[actualPlayerIdx];
+            if (state === "CHOOSE_ANGLE") {
+                moonAngle += moonDir * MOON_SPEED;
+                if (moonAngle >= 1 || moonAngle <= 0) moonDir *= -1;
+                drawMoonPicker(color);
+            } else {
+                actx.clearRect(0, 0, 600, 200);
+            }
+            if (state === "AXIS_1" || state === "AXIS_2") {
+                ctx.save(); 
+                ctx.translate(CENTER, CENTER); 
+                ctx.rotate(scanAngle);
+                
+                if (state === "AXIS_1") {
+                    // Start with the radial line (perpendicular to the tangent)
+                    scanOffset1 += scanDir1 * speed; if (scanOffset1 > 300 || scanOffset1 < -300) scanDir1 *= -1;
+                    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([8, 8]);
+                    // Vertical line in rotated space = radial line in board space
+                    ctx.beginPath(); ctx.moveTo(scanOffset1, -400); ctx.lineTo(scanOffset1, 400); ctx.stroke();
                 } else {
-                    ctx.strokeStyle = color + "33";
-                    ctx.beginPath(); ctx.moveTo(0, posY); ctx.lineTo(600, posY); ctx.stroke();
-                    posX += dirX * speed;
-                    if (posX > 600 || posX < 0) dirX *= -1;
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([8, 8]);
-                    ctx.beginPath(); ctx.moveTo(posX, 0); ctx.lineTo(posX, 600); ctx.stroke();
-                    ctx.setLineDash([]);
+                    // Radial line is locked, now sweep the depth (horizontal line)
+                    ctx.strokeStyle = color + "33"; ctx.beginPath(); ctx.moveTo(scanOffset1, -400); ctx.lineTo(scanOffset1, 400); ctx.stroke();
+                    scanOffset2 += scanDir2 * speed; if (scanOffset2 > 300 || scanOffset2 < -300) scanDir2 *= -1;
+                    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.setLineDash([8, 8]);
+                    // Horizontal line in rotated space = depth line in board space
+                    ctx.beginPath(); ctx.moveTo(-400, scanOffset2); ctx.lineTo(400, scanOffset2); ctx.stroke();
                 }
+                ctx.restore();
             }
-
             requestAnimationFrame(update);
-        }
-
-        function cornerClick(playerIdx) {
-            if (state === "WAITING" || state === "COOLDOWN") return;
-            const actualPlayerIdx = activePlayers[currentPlayerIndex];
-            if (playerIdx === actualPlayerIdx) {
-                handleAction();
-            }
         }
 
         function handleAction() {
             const actualPlayerIdx = activePlayers[currentPlayerIndex];
-
-            if (state === "Y_AXIS") {
-                state = "X_AXIS";
+            if (state === "CHOOSE_ANGLE") {
+                const rad10 = (10 * Math.PI) / 180;
+                const startArc = (Math.PI * 0.25) - rad10;
+                const endArc = (Math.PI * 0.75) + rad10;
+                const angleRange = endArc - startArc;
+                const currentMarbleAngle = startArc + (moonAngle * angleRange);
+                
+                // Align rotation to the marble
+                scanAngle = currentMarbleAngle - (Math.PI / 2); 
+                
+                state = "AXIS_1"; 
+                instructionBox.innerText = "SET AIM";
+            }
+            else if (state === "AXIS_1") {
+                state = "AXIS_2"; instructionBox.innerText = "SET DEPTH";
             } 
-            else if (state === "X_AXIS") {
+            else if (state === "AXIS_2") {
                 state = "COOLDOWN";
-                const scoreData = calculateDartScore(posX, posY);
-                
-                // Bust Logic: if points are more than remaining score
+                const cos = Math.cos(scanAngle); const sin = Math.sin(scanAngle);
+                // Note: localX is the radial offset (offset1), localY is the depth offset (offset2)
+                const localX = scanOffset1; const localY = scanOffset2;
+                const finalPosX = CENTER + (localX * cos - localY * sin);
+                const finalPosY = CENTER + (localX * sin + localY * cos);
+                const scoreData = calculateDartScore(finalPosX, finalPosY);
                 let bust = false;
-                if (scoreData.points > playerScores[actualPlayerIdx]) {
-                    bust = true;
-                } else {
-                    playerScores[actualPlayerIdx] -= scoreData.points;
-                }
-                
-                darts.push({x: posX, y: posY, color: playerColors[actualPlayerIdx]});
+                if (scoreData.points > playerScores[actualPlayerIdx]) bust = true;
+                else playerScores[actualPlayerIdx] -= scoreData.points;
+                darts.push({x: finalPosX, y: finalPosY, color: playerColors[actualPlayerIdx]});
                 if (darts.length > 12) darts.shift();
-
                 document.getElementById(`score-${actualPlayerIdx+1}`).innerText = playerScores[actualPlayerIdx];
-                
-                if (bust) {
-                    lastHitLabel.innerText = "BUST!";
-                    lastHitLabel.style.color = "#e74c3c";
-                } else {
-                    lastHitLabel.innerText = scoreData.label;
-                    lastHitLabel.style.color = scoreData.points > 0 ? playerColors[actualPlayerIdx] : "#8b949e";
-                }
-                
-                if (playerScores[actualPlayerIdx] === 0) {
-                    instructionBox.innerText = "WINNER!";
-                    return;
-                }
-
+                if (bust) { lastHitLabel.innerText = "BUST!"; lastHitLabel.style.color = "#e74c3c"; }
+                else { lastHitLabel.innerText = scoreData.label; lastHitLabel.style.color = scoreData.points > 0 ? playerColors[actualPlayerIdx] : "#8b949e"; }
+                if (playerScores[actualPlayerIdx] === 0) { instructionBox.innerText = "WINNER!"; return; }
                 instructionBox.innerText = "WAITING...";
-                
                 setTimeout(() => {
                     currentPlayerIndex = (currentPlayerIndex + 1) % activePlayers.length;
-                    updateActivePlayerUI();
-                    state = "Y_AXIS";
-                    turnCount++;
-                    if (turnCount % 3 === 0) {
-                        speed = Math.min(speed + 0.6, BASE_SPEED * 2);
-                    }
-                }, 2000);
+                    prepareNextThrow(); updateActivePlayerUI(); turnCount++;
+                    if (turnCount % 3 === 0) speed = Math.min(speed + 0.6, BASE_SPEED * 2);
+                }, 1500);
             }
         }
 
         function calculateDartScore(x, y) {
-            const dx = x - CENTER;
-            const dy = y - CENTER;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            // MISS
-            if (dist > DOUBLE_OUTER) {
-                return { points: 0, label: "MISS!" };
-            }
-
-            // Angle in degrees [0..360), 0 = right, clockwise
-            let angle = Math.atan2(dy, dx) * 180 / Math.PI;
-            angle = (angle + 360 + 90) % 360; // rotate so TOP = 0°
-
-            // Explicit sector map (matches visual board)
+            const dx = x - CENTER; const dy = y - CENTER; const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > DOUBLE_OUTER) return { points: 0, label: "MISS!" };
+            let angle = Math.atan2(dy, dx) * 180 / Math.PI; angle = (angle + 360 + 90) % 360; 
             const SECTORS = [
                 { from: 351, to: 360, v: 20 }, { from: 0, to: 9, v: 20 },
-                { from: 9, to: 27, v: 1 },
-                { from: 27, to: 45, v: 18 },
-                { from: 45, to: 63, v: 4 },
-                { from: 63, to: 81, v: 13 },
-                { from: 81, to: 99, v: 6 },
-                { from: 99, to: 117, v: 10 },
-                { from: 117, to: 135, v: 15 },
-                { from: 135, to: 153, v: 2 },
-                { from: 153, to: 171, v: 17 },
-                { from: 171, to: 189, v: 3 },
-                { from: 189, to: 207, v: 19 },
-                { from: 207, to: 225, v: 7 },
-                { from: 225, to: 243, v: 16 },
-                { from: 243, to: 261, v: 8 },
-                { from: 261, to: 279, v: 11 },
-                { from: 279, to: 297, v: 14 },
-                { from: 297, to: 315, v: 9 },
-                { from: 315, to: 333, v: 12 },
+                { from: 9, to: 27, v: 1 }, { from: 27, to: 45, v: 18 }, { from: 45, to: 63, v: 4 },
+                { from: 63, to: 81, v: 13 }, { from: 81, to: 99, v: 6 }, { from: 99, to: 117, v: 10 },
+                { from: 117, to: 135, v: 15 }, { from: 135, to: 153, v: 2 }, { from: 153, to: 171, v: 17 },
+                { from: 171, to: 189, v: 3 }, { from: 189, to: 207, v: 19 }, { from: 207, to: 225, v: 7 },
+                { from: 225, to: 243, v: 16 }, { from: 243, to: 261, v: 8 }, { from: 261, to: 279, v: 11 },
+                { from: 279, to: 297, v: 14 }, { from: 297, to: 315, v: 9 }, { from: 315, to: 333, v: 12 },
                 { from: 333, to: 351, v: 5 }
             ];
-
             let value = 0;
-            for (const s of SECTORS) {
-                if (angle >= s.from && angle < s.to) {
-                    value = s.v;
-                    break;
-                }
-            }
-
-            // RINGS (distance only)
+            for (const s of SECTORS) { if (angle >= s.from && angle < s.to) { value = s.v; break; } }
             if (dist <= BULL_INNER) return { points: 50, label: "BULL 50" };
             if (dist <= BULL_OUTER) return { points: 25, label: "BULL 25" };
             if (dist >= TRIPLE_INNER && dist <= TRIPLE_OUTER) return { points: value * 3, label: `TRIPLE ${value}` };
             if (dist >= DOUBLE_INNER && dist <= DOUBLE_OUTER) return { points: value * 2, label: `DOUBLE ${value}` };
-
             return { points: value, label: `SINGLE ${value}` };
+        }
+
+        function cornerClick(playerIdx) {
+            if (state === "WAITING" || state === "COOLDOWN") return;
+            if (playerIdx === activePlayers[currentPlayerIndex]) handleAction();
         }
 
         window.addEventListener('keydown', (e) => {
             if (state === "WAITING" || state === "COOLDOWN") return;
-            const actualPlayerIdx = activePlayers[currentPlayerIndex];
-            if (e.code === playerKeys[actualPlayerIdx]) {
-                handleAction();
-            }
+            if (e.code === playerKeys[activePlayers[currentPlayerIndex]]) handleAction();
         });
     </script>
 </body>
