@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>THEFT - Local Multiplayer</title>
+    <title>THEFT - Overhead Vault</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
+            --bg-color: #020617;
+            --card-bg: rgba(30, 41, 59, 0.8);
             --text-main: #f8fafc;
-            --accent-wait: #64748b;
             --accent-go: #22d3ee;
             --penalty-red: #ef4444;
             --p1-color: #f43f5e;
@@ -34,209 +33,206 @@
             touch-action: none;
         }
 
-        /* Screen Overlays */
-        #setup-screen {
+        /* --- Overhead Perspective Background --- */
+        #vault-room {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            gap: 1.2rem;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            overflow: hidden;
         }
-        #win-modal {
+
+        .floor-grid {
+            position: absolute;
+            width: 200%; height: 200%;
+            top: -50%; left: -50%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 80px 80px;
+            z-index: 2;
+        }
+
+        /* Searchlights - Small, bright, and dispersed */
+        .flashlight {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(
+                circle, 
+                rgba(255, 255, 255, 0.3) 0%, 
+                rgba(255, 255, 255, 0.1) 30%, 
+                rgba(255, 255, 255, 0) 70%
+            );
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+            mix-blend-mode: screen;
+            will-change: transform;
+        }
+
+        /* Pedestal - Further reduced size */
+        .wooden-base {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: 
+                repeating-radial-gradient(circle at 50% 50%, #452c1e 0px, #3a2519 10px, #2d1d14 20px);
+            border: 8px solid #1a120c;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.9),
+                inset 0 0 40px rgba(0,0,0,0.7);
+            z-index: 4;
+        }
+
+        /* Game Arena */
+        #game-arena { 
+            position: relative;
+            z-index: 10; 
+            visibility: hidden; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        .diamond-container {
+            width: 90px; height: 90px;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; 
+            z-index: 50;
+        }
+
+        #diamond-svg { width: 100%; height: 100%; filter: drop-shadow(0 0 10px rgba(0,0,0,0.8)); }
+        .facet { transition: all 0.3s ease; }
+        .facet-base { fill: #2c3e50; }
+        .facet-side { fill: #34495e; }
+        .facet-top { fill: #5d6d7e; }
+        .facet-highlight { fill: rgba(255,255,255,0.2); }
+
+        @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+        .shine { animation: shimmer 3s infinite ease-in-out; }
+
+        body.go-state #diamond-svg { filter: drop-shadow(0 0 40px var(--accent-go)); }
+        body.go-state .facet-base { fill: #22d3ee; }
+        body.go-state .facet-side { fill: #67e8f9; }
+        body.go-state .facet-top { fill: #a5f3fc; }
+        body.go-state .facet-highlight { fill: rgba(255,255,255,0.7); }
+        body.go-state .diamond-container { transform: scale(1.2) rotate(5deg); }
+
+        /* Player Zones */
+        .player-zone {
+            position: absolute;
+            width: 40vw; height: 40vw; max-width: 180px; max-height: 180px;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            background: var(--card-bg); backdrop-filter: blur(8px);
+            z-index: 200; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; overflow: hidden;
+        }
+        .player-zone.active { display: flex; }
+        .p1 { bottom: 0; left: 0; border-top-right-radius: 100%; border-right: 6px solid var(--p1-color); border-top: 6px solid var(--p1-color); }
+        .p2 { bottom: 0; right: 0; border-top-left-radius: 100%; border-left: 6px solid var(--p2-color); border-top: 6px solid var(--p2-color); }
+        .p3 { top: 0; right: 0; border-bottom-left-radius: 100%; border-left: 6px solid var(--p3-color); border-bottom: 6px solid var(--p3-color); }
+        .p4 { top: 0; left: 0; border-bottom-right-radius: 100%; border-right: 6px solid var(--p4-color); border-bottom: 6px solid var(--p4-color); }
+
+        .score-value { font-size: 2.5rem; font-weight: 900; pointer-events: none; }
+        .penalty-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--penalty-red); display: flex; justify-content: center; align-items: center;
+            font-size: 5rem; font-weight: 900; opacity: 0; transition: opacity 0.1s; z-index: 3;
+            pointer-events: none; color: white;
+        }
+        .penalty-active .penalty-overlay { opacity: 1; }
+
+        /* Screens */
+        #setup-screen, #win-modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; gap: 1.2rem;
         }
-
-        #win-modal { display: none; background: rgba(15, 23, 42, 0.98); }
-
-        .menu-title {
-            font-size: 3rem;
-            font-weight: 900;
-            letter-spacing: 0.2em;
-            margin-bottom: 0.5rem;
-            color: var(--accent-go);
-            text-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
+        #win-modal { display: none; background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px); }
+        .menu-title { font-size: 4rem; font-weight: 900; color: var(--accent-go); margin: 0; }
         .menu-btn {
-            background: var(--card-bg);
-            color: white;
-            border: 2px solid transparent;
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            font-weight: 800;
-            border-radius: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: #1e293b; color: white; border: 2px solid rgba(255,255,255,0.1);
+            padding: 1rem 2.5rem; font-size: 1.5rem; font-weight: 800; border-radius: 1rem;
+            cursor: pointer; transition: all 0.2s; min-width: 100px;
         }
 
-        .menu-btn:hover {
-            border-color: var(--accent-go);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        #hand-layer { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; z-index: 300; overflow: hidden; 
         }
-
-        /* Responsive Player Quarter-Circle Buttons */
-        .player-zone {
-            position: absolute;
-            width: 35vw;
-            height: 35vw;
-            max-width: 150px;
-            max-height: 150px;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: var(--card-bg);
-            z-index: 50;
-            transition: background-color 0.1s ease, transform 0.1s ease;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .player-zone.active { display: flex; }
-
-        /* Corner Styles */
-        .p1 { bottom: 0; left: 0; border-top-right-radius: 100%; padding-right: 15px; padding-top: 15px; border-right: 4px solid var(--p1-color); border-top: 4px solid var(--p1-color); }
-        .p2 { bottom: 0; right: 0; border-top-left-radius: 100%; padding-left: 15px; padding-top: 15px; border-left: 4px solid var(--p2-color); border-top: 4px solid var(--p2-color); }
-        .p3 { top: 0; right: 0; border-bottom-left-radius: 100%; padding-left: 15px; padding-bottom: 15px; border-left: 4px solid var(--p3-color); border-bottom: 4px solid var(--p3-color); }
-        .p4 { top: 0; left: 0; border-bottom-right-radius: 100%; padding-right: 15px; padding-bottom: 15px; border-right: 4px solid var(--p4-color); border-bottom: 4px solid var(--p4-color); }
-
-        .key-prompt { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; }
-        .score-value { font-size: 2rem; font-weight: 900; }
-
-        .penalty-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(239, 68, 68, 0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3rem;
-            font-weight: bold;
-            color: white;
-            opacity: 0;
+        .cartoon-hand { 
+            position: absolute; 
+            width: 180px; height: 180px; 
+            transform: translate(-50%, -50%) scale(0); 
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.7));
             pointer-events: none;
-            transition: opacity 0.1s;
         }
-
-        .p1 .penalty-overlay { border-top-right-radius: 100%; }
-        .p2 .penalty-overlay { border-top-left-radius: 100%; }
-        .p3 .penalty-overlay { border-bottom-left-radius: 100%; }
-        .p4 .penalty-overlay { border-bottom-right-radius: 100%; }
-        .penalty-active .penalty-overlay { opacity: 1; }
-
-        #game-arena { display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; visibility: hidden; }
-        #status-label { font-size: 1.5rem; font-weight: 900; letter-spacing: 0.5em; color: var(--accent-wait); margin-bottom: 2rem; text-transform: uppercase; transition: all 0.2s ease; }
-
-        .diamond-container {
-            position: relative;
-            width: 30vw; height: 30vw; max-width: 180px; max-height: 180px;
-            display: flex; justify-content: center; align-items: center;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        #diamond-svg { width: 100%; height: 100%; filter: drop-shadow(0 10px 25px rgba(0,0,0,0.6)); }
-        .diamond-face { transition: fill 0.3s ease; }
-
-        body.go-state { background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); }
-        body.go-state #status-label { color: var(--accent-go); text-shadow: 0 0 20px var(--accent-go); transform: scale(1.1); }
-        body.go-state .diamond-face { fill: var(--accent-go) !important; }
-
-        @keyframes steal-pop { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
-        .steal-animation { animation: steal-pop 0.5s forwards !important; }
-
-        #start-prompt { position: absolute; bottom: 20px; opacity: 0.3; font-size: 0.6rem; letter-spacing: 0.1em; width: 100%; text-align: center; }
     </style>
 </head>
 <body>
 
-    <!-- Initial Setup Screen -->
+    <div id="vault-room">
+        <div class="floor-grid"></div>
+        <div id="lights-layer"></div>
+        <div class="wooden-base"></div>
+    </div>
+
     <div id="setup-screen">
         <h1 class="menu-title">THEFT</h1>
-        <p style="margin: 0.5rem 0 1.2rem 0; opacity: 0.7;">SELECT PLAYERS</p>
-        <div class="button-group">
+        <p style="opacity: 0.6; font-weight: 800; letter-spacing: 2px; margin-bottom: 20px;">CHOOSE CREW SIZE</p>
+        <div class="button-group" style="display: flex; gap: 1rem;">
             <button class="menu-btn" onclick="startGame(2)">2</button>
             <button class="menu-btn" onclick="startGame(3)">3</button>
             <button class="menu-btn" onclick="startGame(4)">4</button>
         </div>
     </div>
 
-    <!-- P1 Bottom Left [Z] -->
-    <div id="zone-1" class="player-zone p1" data-key="z">
-        <div class="key-prompt">[Z]</div>
-        <div id="score-1" class="score-value">0</div>
-        <div class="penalty-overlay">✕</div>
+    <div id="hand-layer">
+        <svg style="display:none">
+            <symbol id="hand-shape" viewBox="0 0 200 200">
+                <path d="M 100,160 C 70,160 50,140 50,110 L 45,60 C 45,50 55,50 55,60 L 60,105 L 65,30 C 65,20 75,20 75,30 L 80,100 L 90,20 C 90,10 100,10 100,20 L 105,100 L 115,30 C 115,20 125,20 125,30 L 130,105 L 140,70 C 140,60 150,60 150,70 L 145,110 C 145,140 130,160 100,160 Z" fill="currentColor" />
+            </symbol>
+        </svg>
+        <div id="active-hand-container"></div>
     </div>
 
-    <!-- P2 Bottom Right [M] -->
-    <div id="zone-2" class="player-zone p2" data-key="m">
-        <div class="key-prompt">[M]</div>
-        <div id="score-2" class="score-value">0</div>
-        <div class="penalty-overlay">✕</div>
-    </div>
-
-    <!-- P3 Top Right [P] -->
-    <div id="zone-3" class="player-zone p3" data-key="p">
-        <div class="key-prompt">[P]</div>
-        <div id="score-3" class="score-value">0</div>
-        <div class="penalty-overlay">✕</div>
-    </div>
-
-    <!-- P4 Top Left [Q] -->
-    <div id="zone-4" class="player-zone p4" data-key="q">
-        <div class="key-prompt">[Q]</div>
-        <div id="score-4" class="score-value">0</div>
-        <div class="penalty-overlay">✕</div>
-    </div>
+    <div id="zone-1" class="player-zone p1" data-key="z"><div id="score-1" class="score-value">0</div><div class="penalty-overlay">✕</div></div>
+    <div id="zone-2" class="player-zone p2" data-key="m"><div id="score-2" class="score-value">0</div><div class="penalty-overlay">✕</div></div>
+    <div id="zone-3" class="player-zone p3" data-key="p"><div id="score-3" class="score-value">0</div><div class="penalty-overlay">✕</div></div>
+    <div id="zone-4" class="player-zone p4" data-key="q"><div id="score-4" class="score-value">0</div><div class="penalty-overlay">✕</div></div>
 
     <div id="game-arena">
-        <div id="status-label">WAIT</div>
         <div class="diamond-container" id="diamond-box">
             <svg id="diamond-svg" viewBox="0 0 100 100">
-                <polygon class="diamond-face" points="30,30 70,30 85,50 50,90 15,50" fill="#334155" stroke="#1e293b" stroke-width="1"/>
-                <polygon class="diamond-face" points="15,50 30,30 50,50" fill="#1e293b" stroke="#1e293b" stroke-width="0.5"/>
-                <polygon class="diamond-face" points="85,50 70,30 50,50" fill="#1e293b" stroke="#1e293b" stroke-width="0.5"/>
-                <polygon class="diamond-face" points="50,90 15,50 50,50" fill="#0f172a" stroke="#1e293b" stroke-width="0.5"/>
-                <polygon class="diamond-face" points="50,90 85,50 50,50" fill="#0f172a" stroke="#1e293b" stroke-width="0.5"/>
-                <polygon class="diamond-face" points="30,30 70,30 50,50" fill="#64748b" stroke="#1e293b" stroke-width="0.5"/>
+                <polygon class="facet facet-base" points="50,10 90,50 50,90 10,50" />
+                <polygon class="facet facet-side" points="50,10 70,30 50,50 30,30" />
+                <polygon class="facet facet-side" points="90,50 70,70 50,50 70,30" />
+                <polygon class="facet facet-side" points="50,90 30,70 50,50 70,70" />
+                <polygon class="facet facet-side" points="10,50 30,30 50,50 30,70" />
+                <polygon class="facet facet-top" points="50,25 75,50 50,75 25,50" />
+                <polygon class="facet facet-highlight shine" points="50,25 62.5,37.5 50,50 37.5,37.5" />
             </svg>
         </div>
-        <div id="start-prompt">TAP YOUR CORNER OR USE KEYS</div>
     </div>
 
-    <!-- Win Screen -->
     <div id="win-modal">
-        <h1 id="winner-text">PLAYER 1 WINS!</h1>
-        <button class="menu-btn" onclick="location.reload()">MAIN MENU</button>
+        <h1 id="winner-text">HEIST COMPLETE!</h1>
+        <button class="menu-btn" onclick="location.reload()">PLAY AGAIN</button>
     </div>
 
     <script>
         const WIN_SCORE = 5;
-        const PENALTY_DURATION = 2000;
-
-        let isGoSignalActive = false;
-        let roundInProgress = false;
-        let gameActive = false;
+        const PENALTY_DURATION = 1500;
+        let isGoSignalActive = false, roundInProgress = false, gameActive = false;
 
         const players = {
             'z': { id: 1, score: 0, penalized: false, timer: null, active: false },
@@ -245,171 +241,176 @@
             'q': { id: 4, score: 0, penalized: false, timer: null, active: false }
         };
 
-        const statusLabel = document.getElementById('status-label');
         const diamondBox = document.getElementById('diamond-box');
         const setupScreen = document.getElementById('setup-screen');
         const gameArena = document.getElementById('game-arena');
+        const activeHandContainer = document.getElementById('active-hand-container');
+        const lightsLayer = document.getElementById('lights-layer');
+
+        function createFlashlights() {
+            // Limited to 4-5 lights at once
+            for(let i=0; i<5; i++) {
+                const f = document.createElement('div');
+                f.className = 'flashlight';
+                // Initialize far off-screen
+                f.style.left = '-300px'; 
+                f.style.top = '-300px';
+                lightsLayer.appendChild(f);
+                // Stagger their initial start times
+                setTimeout(() => animateFlashlight(f), i * 1500);
+            }
+        }
+
+        function animateFlashlight(el) {
+            // Logic to start off-screen and end off-screen
+            const winW = 100; // vw
+            const winH = 100; // vh
+            const padding = 25; // How far off screen to go
+
+            // Choose a side to start on (0:Top, 1:Right, 2:Bottom, 3:Left)
+            const side = Math.floor(Math.random() * 4);
+            let startX, startY, endX, endY;
+
+            switch(side) {
+                case 0: // Top
+                    startX = Math.random() * winW; startY = -padding;
+                    endX = Math.random() * winW; endY = winH + padding;
+                    break;
+                case 1: // Right
+                    startX = winW + padding; startY = Math.random() * winH;
+                    endX = -padding; endY = Math.random() * winH;
+                    break;
+                case 2: // Bottom
+                    startX = Math.random() * winW; startY = winH + padding;
+                    endX = Math.random() * winW; endY = -padding;
+                    break;
+                case 3: // Left
+                    startX = -padding; startY = Math.random() * winH;
+                    endX = winW + padding; endY = Math.random() * winH;
+                    break;
+            }
+
+            const duration = 6000 + Math.random() * 6000;
+
+            el.animate([
+                { transform: `translate(${startX}vw, ${startY}vh)` },
+                { transform: `translate(${endX}vw, ${endY}vh)` }
+            ], {
+                duration: duration,
+                easing: 'linear',
+                fill: 'forwards'
+            }).onfinish = () => animateFlashlight(el);
+        }
+
+        window.onload = createFlashlights;
 
         function startGame(count) {
             setupScreen.style.display = 'none';
             gameArena.style.visibility = 'visible';
             gameActive = true;
-
-            // Reset all
-            Object.values(players).forEach(p => p.active = false);
-            document.querySelectorAll('.player-zone').forEach(z => z.classList.remove('active'));
-
-            if (count === 2) {
-                // Diagonal: P1 (Bottom Left) and P3 (Top Right)
-                players['z'].active = true;
-                players['p'].active = true;
-            } else if (count === 3) {
-                // P1, P2, P3
-                players['z'].active = true;
-                players['m'].active = true;
-                players['p'].active = true;
-            } else {
-                // All 4
-                Object.values(players).forEach(p => p.active = true);
-            }
-
-            // Sync visual state
-            Object.values(players).forEach(p => {
-                if (p.active) {
-                    document.getElementById(`zone-${p.id}`).classList.add('active');
-                }
-            });
-
+            if (count === 2) { players['z'].active = true; players['p'].active = true; }
+            else if (count === 3) { players['z'].active = true; players['m'].active = true; players['p'].active = true; }
+            else { Object.values(players).forEach(p => p.active = true); }
+            Object.values(players).forEach(p => { if (p.active) document.getElementById(`zone-${p.id}`).classList.add('active'); });
             prepareRound();
-        }
-
-        function playGoSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1200, ctx.currentTime);
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.2);
-            } catch(e) {}
-        }
-
-        function playStealSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(440, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.05, ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.15);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.15);
-            } catch(e) {}
         }
 
         function prepareRound() {
             if (!gameActive) return;
-
             roundInProgress = true;
             isGoSignalActive = false;
             document.body.classList.remove('go-state');
-            diamondBox.classList.remove('steal-animation');
-            statusLabel.innerText = "WAIT";
-            statusLabel.style.opacity = "1";
-
-            const delay = Math.floor(Math.random() * 4000) + 2500;
-            setTimeout(() => {
-                if (roundInProgress) triggerGoSignal();
-            }, delay);
+            diamondBox.style.transform = 'translate(0, 0) scale(1)';
+            activeHandContainer.innerHTML = '';
+            setTimeout(() => { if (roundInProgress) triggerGoSignal(); }, Math.random() * 3000 + 1000);
         }
 
         function triggerGoSignal() {
             isGoSignalActive = true;
             document.body.classList.add('go-state');
-            statusLabel.innerText = "STEAL!";
-            playGoSound();
         }
 
         function handleAction(key) {
             if (!gameActive || !roundInProgress) return;
-            
-            const player = players[key];
-            if (!player || !player.active) return;
-
-            if (!isGoSignalActive) {
-                penalizePlayer(key);
-            } else if (!player.penalized) {
-                resolveRound(key);
-            }
+            const p = players[key];
+            if (!p || !p.active) return;
+            if (!isGoSignalActive) penalizePlayer(key);
+            else if (!p.penalized) resolveRound(key);
         }
 
-        function penalizePlayer(playerKey) {
-            const player = players[playerKey];
-            if (player.penalized) return;
-
-            player.penalized = true;
-            const zone = document.getElementById(`zone-${player.id}`);
-            zone.classList.add('penalty-active');
-
-            if (player.timer) clearTimeout(player.timer);
-            player.timer = setTimeout(() => {
-                player.penalized = false;
-                zone.classList.remove('penalty-active');
+        function penalizePlayer(key) {
+            const p = players[key];
+            if (p.penalized) return;
+            p.penalized = true;
+            document.getElementById(`zone-${p.id}`).classList.add('penalty-active');
+            clearTimeout(p.timer);
+            p.timer = setTimeout(() => {
+                p.penalized = false;
+                document.getElementById(`zone-${p.id}`).classList.remove('penalty-active');
             }, PENALTY_DURATION);
         }
 
-        function resolveRound(winnerKey) {
+        function resolveRound(key) {
             roundInProgress = false;
             isGoSignalActive = false;
-            playStealSound();
-            
-            const player = players[winnerKey];
-            player.score++;
-            document.getElementById(`score-${player.id}`).innerText = player.score;
-
-            diamondBox.classList.add('steal-animation');
-            statusLabel.style.opacity = "0";
-
-            if (player.score >= WIN_SCORE) {
-                setTimeout(() => endMatch(player.id), 600);
-            } else {
-                setTimeout(prepareRound, 1000);
-            }
+            const p = players[key];
+            animateHand(p);
+            setTimeout(() => {
+                p.score++;
+                document.getElementById(`score-${p.id}`).innerText = p.score;
+                if (p.score >= WIN_SCORE) setTimeout(() => endMatch(p.id), 500);
+                else setTimeout(prepareRound, 1000);
+            }, 600);
         }
 
-        function endMatch(winnerId) {
+        function animateHand(player) {
+            const winW = window.innerWidth, winH = window.innerHeight;
+            let startX, startY, rotation;
+            switch(player.id) {
+                case 1: startX = 0; startY = winH; rotation = 45; break;
+                case 2: startX = winW; startY = winH; rotation = -45; break;
+                case 3: startX = winW; startY = 0; rotation = -135; break;
+                case 4: startX = 0; startY = 0; rotation = 135; break;
+            }
+            const hand = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            hand.setAttribute("class", "cartoon-hand");
+            hand.innerHTML = `<use href="#hand-shape" />`;
+            hand.style.color = getComputedStyle(document.documentElement).getPropertyValue(`--p${player.id}-color`);
+            hand.style.left = `${startX}px`; hand.style.top = `${startY}px`;
+            activeHandContainer.appendChild(hand);
+            
+            requestAnimationFrame(() => {
+                hand.style.transition = 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                hand.style.left = `50%`; hand.style.top = `50%`;
+                hand.style.transform = `translate(-50%, -50%) scale(1.4) rotate(${rotation}deg)`;
+                setTimeout(() => {
+                    diamondBox.style.transition = 'transform 0.4s cubic-bezier(0.55, 0.055, 0.675, 0.19)';
+                    diamondBox.style.transform = `translate(${(startX-winW/2)*1.1}px, ${(startY-winH/2)*1.1}px) scale(0.1) rotate(${rotation}deg)`;
+                    hand.style.transition = 'all 0.4s cubic-bezier(0.55, 0.055, 0.675, 0.19)';
+                    hand.style.left = `${startX}px`; hand.style.top = `${startY}px`;
+                    hand.style.transform = `translate(-50%, -50%) scale(0.5) rotate(${rotation}deg)`;
+                }, 250);
+            });
+        }
+
+        function endMatch(id) {
             gameActive = false;
             const modal = document.getElementById('win-modal');
-            const winText = document.getElementById('winner-text');
-            const winnerColor = getComputedStyle(document.documentElement).getPropertyValue(`--p${winnerId}-color`);
-            
-            winText.innerText = `PLAYER ${winnerId} WINS!`;
-            winText.style.color = winnerColor;
+            const txt = document.getElementById('winner-text');
+            txt.innerText = `PLAYER ${id} GOT AWAY!`;
+            txt.style.color = getComputedStyle(document.documentElement).getPropertyValue(`--p${id}-color`);
             modal.style.display = 'flex';
         }
 
-        window.addEventListener('keydown', (event) => {
-            const key = event.key.toLowerCase();
-            handleAction(key);
+        window.addEventListener('keydown', e => {
+            const key = e.key.toLowerCase();
+            if (players[key]) handleAction(key);
         });
 
-        document.querySelectorAll('.player-zone').forEach(zone => {
-            const trigger = (e) => {
-                e.preventDefault();
-                const key = zone.getAttribute('data-key');
-                handleAction(key);
-            };
-            zone.addEventListener('touchstart', trigger, { passive: false });
-            zone.addEventListener('mousedown', trigger);
+        document.querySelectorAll('.player-zone').forEach(z => {
+            const key = z.getAttribute('data-key');
+            z.addEventListener('touchstart', e => { e.preventDefault(); handleAction(key); }, {passive: false});
+            z.addEventListener('mousedown', () => handleAction(key));
         });
     </script>
 </body>
