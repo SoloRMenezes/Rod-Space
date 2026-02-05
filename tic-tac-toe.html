@@ -3,12 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tic Tac Toe</title>
+<title>Tic Tac Toe - Neon Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&display=swap" rel="stylesheet">
 <style>
+:root {
+    --bg-color: #05070a;
+    --x-color: #ff3e3e;
+    --o-color: #3e8bff;
+    --win-color: #2ecc71;
+    --accent-1: #6a11cb;
+    --accent-2: #2575fc;
+}
+
 body {
     margin: 0;
-    background: radial-gradient(circle at top, #161b22, #0d1117 60%);
+    background-color: var(--bg-color);
     color: white;
     font-family: system-ui, -apple-system, Segoe UI, sans-serif;
     display: flex;
@@ -16,122 +25,218 @@ body {
     align-items: center;
     height: 100vh;
     flex-direction: column;
+    overflow: hidden;
+    position: relative;
 }
 
+/* --- Dynamic Nebula Background --- */
+.nebula {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(106, 17, 203, 0.4) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(37, 117, 252, 0.4) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 1) 0%, transparent 100%);
+    animation: nebulaShift 10s ease-in-out infinite alternate;
+}
+
+@keyframes nebulaShift {
+    0% { transform: scale(1); filter: hue-rotate(0deg); }
+    100% { transform: scale(1.1); filter: hue-rotate(45deg); }
+}
+
+/* Glassmorphism Grid Overlay */
+.grid-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at center, black, transparent 90%);
+    opacity: 0.5;
+}
+
+/* Floating Light Orbs */
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    z-index: -1;
+    opacity: 0.6;
+    animation: moveOrb 20s infinite linear;
+}
+
+@keyframes moveOrb {
+    0% { transform: translate(0, 0); }
+    33% { transform: translate(30vw, 20vh); }
+    66% { transform: translate(-20vw, 40vh); }
+    100% { transform: translate(0, 0); }
+}
+
+/* --- Game UI --- */
 .status {
-    margin-bottom: 24px;
-    font-size: 1.3rem;
-    letter-spacing: 4px;
-    opacity: 0.9;
-    font-family: 'Rubik Mono One', system-ui, sans-serif;
+    margin-bottom: 32px;
+    font-size: 1.8rem;
+    letter-spacing: 6px;
+    font-family: 'Rubik Mono One', sans-serif;
+    text-shadow: 0 0 20px rgba(255,255,255,0.3);
+    z-index: 5;
+}
+
+.game-container {
+    position: relative;
+    z-index: 5;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 40px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 .game {
     display: grid;
     grid-template-columns: repeat(3, 110px);
     grid-template-rows: repeat(3, 110px);
-    gap: 12px;
+    gap: 16px;
 }
 
 .cell {
-    background: linear-gradient(145deg, #1c2128, #12161c);
+    background: rgba(255, 255, 255, 0.05);
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 5rem;
+    font-size: 4rem;
     cursor: pointer;
     user-select: none;
-    border-radius: 18px;
-    transition: transform 0.15s ease, background 0.15s ease;
-    box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,0.05),
-        0 8px 18px rgba(0,0,0,0.6);
-    font-family: 'Rubik Mono One', system-ui, sans-serif;
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+    font-family: 'Rubik Mono One', sans-serif;
+    position: relative;
 }
 
-.cell:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(145deg, #21262d, #161b22);
+.cell:hover:not(.taken) {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(255,255,255,0.1);
 }
 
-.cell.taken {
-    cursor: default;
-    transform: none;
+.cell:hover:not(.taken)::after {
+    content: var(--current-turn);
+    opacity: 0.2;
 }
 
-.cell.taken:hover {
-    background: linear-gradient(145deg, #1c2128, #12161c);
+.cell.taken { cursor: default; }
+
+.cell.x { color: var(--x-color); text-shadow: 0 0 20px var(--x-color); }
+.cell.o { color: var(--o-color); text-shadow: 0 0 20px var(--o-color); }
+
+.strike {
+    position: absolute;
+    background: var(--win-color);
+    border-radius: 10px;
+    display: none;
+    z-index: 10;
+    box-shadow: 0 0 30px var(--win-color);
 }
 
-.cell:not(.taken):active {
-    transform: scale(0.95);
-}
-
-
-.cell.x {
-    color: #ff3e3e;
-    font-weight: 800;
-    text-shadow: 0 0 10px rgba(255,62,62,0.4);
-}
-
-.cell.o {
-    color: #3e8bff;
-    font-weight: 800;
-    text-shadow: 0 0 10px rgba(62,139,255,0.4);
-}
-
-
-
-.win {
-    color: #2ecc71;
-    text-shadow: 0 0 12px rgba(46,204,113,0.6);
+.win-text {
+    color: var(--win-color) !important;
+    text-shadow: 0 0 30px var(--win-color);
 }
 
 .restart {
-    position: absolute;
-    display: none;
-    padding: 14px 28px;
-    border-radius: 14px;
-    background: linear-gradient(145deg, #21262d, #161b22);
-    color: white;
-    font-family: 'Rubik Mono One', system-ui, sans-serif;
-    letter-spacing: 2px;
+    margin-top: 40px;
+    padding: 18px 36px;
+    border-radius: 20px;
+    background: white;
+    color: black;
+    font-family: 'Rubik Mono One', sans-serif;
+    border: none;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    transition: all 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    z-index: 5;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
-.restart:hover {
-    transform: scale(1.05);
-}
+
+.restart.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+.restart:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(255,255,255,0.2); }
 </style>
 </head>
-<body>
+<body style="--current-turn: 'X'">
+
+<!-- Improved Visual Background -->
+<div class="nebula"></div>
+<div class="grid-overlay"></div>
+<div class="orb" style="width: 400px; height: 400px; background: var(--accent-1); top: -100px; left: -100px;"></div>
+<div class="orb" style="width: 300px; height: 300px; background: var(--accent-2); bottom: -50px; right: -50px; animation-delay: -5s;"></div>
 
 <div class="status" id="status">PLAYER X</div>
 
-<div class="game" id="board">
-    <div class="cell"></div><div class="cell"></div><div class="cell"></div>
-    <div class="cell"></div><div class="cell"></div><div class="cell"></div>
-    <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+<div class="game-container">
+    <div class="strike" id="strike"></div>
+    <div class="game" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
 </div>
-<button class="restart" id="restartBtn">RESTART</button>
+
+<button class="restart" id="restartBtn">PLAY AGAIN</button>
 
 <script>
     const cells = document.querySelectorAll('.cell');
     const status = document.getElementById('status');
     const restartBtn = document.getElementById('restartBtn');
+    const strike = document.getElementById('strike');
 
     let board = Array(9).fill(null);
     let current = 'X';
     let gameOver = false;
 
     const wins = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
+        { combo: [0,1,2], type: 'h', pos: 55 },
+        { combo: [3,4,5], type: 'h', pos: 181 },
+        { combo: [6,7,8], type: 'h', pos: 307 },
+        { combo: [0,3,6], type: 'v', pos: 55 },
+        { combo: [1,4,7], type: 'v', pos: 181 },
+        { combo: [2,5,8], type: 'v', pos: 307 },
+        { combo: [0,4,8], type: 'd1' },
+        { combo: [2,4,6], type: 'd2' }
     ];
 
-    function checkWin(player) {
-        return wins.some(w => w.every(i => board[i] === player));
+    function drawStrike(win) {
+        strike.style.display = 'block';
+        if (win.type === 'h') {
+            strike.style.width = '100%'; strike.style.height = '6px';
+            strike.style.top = `${win.pos}px`; strike.style.left = '0';
+            strike.style.transform = 'none';
+        } else if (win.type === 'v') {
+            strike.style.width = '6px'; strike.style.height = '100%';
+            strike.style.left = `${win.pos}px`; strike.style.top = '0';
+            strike.style.transform = 'none';
+        } else if (win.type === 'd1') {
+            strike.style.width = '140%'; strike.style.height = '6px';
+            strike.style.top = '50%'; strike.style.left = '-20%';
+            strike.style.transform = 'rotate(45deg)';
+        } else if (win.type === 'd2') {
+            strike.style.width = '140%'; strike.style.height = '6px';
+            strike.style.top = '50%'; strike.style.left = '-20%';
+            strike.style.transform = 'rotate(-45deg)';
+        }
     }
 
     cells.forEach((cell, i) => {
@@ -142,23 +247,26 @@ body {
             cell.textContent = current;
             cell.classList.add('taken', current.toLowerCase());
 
-            if (checkWin(current)) {
+            const winningCombo = wins.find(w => w.combo.every(idx => board[idx] === current));
+
+            if (winningCombo) {
                 status.textContent = `PLAYER ${current} WINS`;
-                status.classList.add('win');
+                status.classList.add('win-text');
+                drawStrike(winningCombo);
                 gameOver = true;
-
-                restartBtn.style.display = 'block';
-
+                restartBtn.classList.add('visible');
                 return;
             }
 
             if (!board.includes(null)) {
                 status.textContent = 'DRAW';
                 gameOver = true;
+                restartBtn.classList.add('visible');
                 return;
             }
 
             current = current === 'X' ? 'O' : 'X';
+            document.body.style.setProperty('--current-turn', `'${current}'`);
             status.textContent = `PLAYER ${current}`;
         });
     });
@@ -170,10 +278,12 @@ body {
             c.classList.remove('taken', 'x', 'o');
         });
         current = 'X';
+        document.body.style.setProperty('--current-turn', `'X'`);
         gameOver = false;
-        status.classList.remove('win');
+        status.classList.remove('win-text');
         status.textContent = 'PLAYER X';
-        restartBtn.style.display = 'none';
+        restartBtn.classList.remove('visible');
+        strike.style.display = 'none';
     });
 </script>
 
