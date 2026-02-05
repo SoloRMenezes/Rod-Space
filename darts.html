@@ -7,7 +7,8 @@
     <style>
         /* Color palette and design variables */
         :root {
-            --bg: #0d1117;
+            --bg-dark: #12331a;
+            --bg-light: #1a4424;
             --accent: #e74c3c;
             --p1-red: #ff3e3e;
             --p2-blue: #3e8bff;
@@ -17,7 +18,21 @@
 
         body {
             margin: 0;
-            background-color: var(--bg);
+            /* Vertical Velvet Striped Background */
+            background-color: var(--bg-dark);
+            background-image: 
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 80px,
+                    rgba(0, 0, 0, 0.12) 80px,
+                    rgba(0, 0, 0, 0.12) 160px
+                ),
+                linear-gradient(
+                    to bottom,
+                    var(--bg-light),
+                    var(--bg-dark)
+                );
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -27,13 +42,25 @@
             height: 100vh;
             overflow: hidden;
             touch-action: none;
+            position: relative;
+        }
+
+        /* Velvet Texture Overlay */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
         /* Full-screen overlay for player selection */
         #startScreen {
             position: absolute;
             z-index: 100;
-            background: rgba(13, 17, 23, 0.98);
+            background: rgba(10, 25, 15, 0.96);
             width: 100%;
             height: 100%;
             display: flex;
@@ -41,6 +68,7 @@
             align-items: center;
             justify-content: center;
             gap: 20px;
+            backdrop-filter: blur(12px);
         }
 
         .btn-group {
@@ -51,18 +79,18 @@
         .player-btn {
             padding: 15px 30px;
             font-size: 1.5rem;
-            background: #1c2128;
-            border: 2px solid #444;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 12px;
             transition: 0.2s;
         }
 
         .player-btn:hover {
-            background: #30363d;
+            background: rgba(255, 255, 255, 0.15);
             border-color: white;
-            transform: scale(1.1);
+            transform: translateY(-5px);
         }
 
         .game-container {
@@ -74,18 +102,18 @@
             width: 100%;
             height: 100%;
             justify-content: center;
+            z-index: 1;
         }
 
-        /* The main dartboard canvas */
-        canvas {
-            background: radial-gradient(circle, #161b22 0%, #0d1117 100%);
+        canvas#gameCanvas {
+            background: radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%);
             border-radius: 50%;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             max-width: 80vw;
             max-height: 60vh;
+            border: 10px solid #222;
         }
 
-        /* Player score displays in the screen corners */
         .corner-score {
             position: absolute;
             width: 160px;
@@ -96,56 +124,45 @@
             align-items: center;
             transition: 0.3s;
             z-index: 5;
+            background: rgba(0, 0, 0, 0.15);
         }
 
-        /* Highlights the current turn's player */
         .active-p {
-            background: rgba(255, 255, 255, 0.08) !important;
-            filter: brightness(1.3);
-        }
-        
-        #p2-ui.active-p, #p3-ui.active-p, #p4-ui.active-p {
-            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
-        }
-        
-        #p1-ui.active-p {
-            box-shadow: none !important;
+            background: rgba(255, 255, 255, 0.12) !important;
         }
 
-        /* Corner styling for individual player UIs */
-        #p1-ui { bottom: 0; left: 0; border-top-right-radius: 100%; border-right: 5px solid var(--p1-red); border-top: 5px solid var(--p1-red); }
+        #p1-ui { bottom: 0; left: 0; border-top-right-radius: 100%; border-right: 6px solid var(--p1-red); border-top: 6px solid var(--p1-red); }
         #p1-ui .p-score { transform: rotate(45deg); margin-left: -20px; margin-top: 20px; }
 
-        #p2-ui { bottom: 0; right: 0; border-top-left-radius: 100%; border-left: 5px solid var(--p2-blue); border-top: 5px solid var(--p2-blue); }
+        #p2-ui { bottom: 0; right: 0; border-top-left-radius: 100%; border-left: 6px solid var(--p2-blue); border-top: 6px solid var(--p2-blue); }
         #p2-ui .p-score { transform: rotate(-45deg); margin-right: -20px; margin-top: 20px; }
 
-        #p3-ui { top: 0; right: 0; border-bottom-left-radius: 100%; border-left: 5px solid var(--p3-green); border-bottom: 5px solid var(--p3-green); }
+        #p3-ui { top: 0; right: 0; border-bottom-left-radius: 100%; border-left: 6px solid var(--p3-green); border-bottom: 6px solid var(--p3-green); }
         #p3-ui .p-score { transform: rotate(-135deg); margin-right: -20px; margin-bottom: 20px; }
 
-        #p4-ui { top: 0; left: 0; border-bottom-right-radius: 100%; border-right: 5px solid var(--p4-yellow); border-bottom: 5px solid var(--p4-yellow); }
+        #p4-ui { top: 0; left: 0; border-bottom-right-radius: 100%; border-right: 6px solid var(--p4-yellow); border-bottom: 6px solid var(--p4-yellow); }
         #p4-ui .p-score { transform: rotate(135deg); margin-left: -20px; margin-bottom: 20px; }
 
         .p-score { 
             font-size: 3.5rem;
             font-weight: 900; 
             pointer-events: none; 
-            letter-spacing: -2px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.4);
         }
 
-        .hud { text-align: center; pointer-events: none; z-index: 10; margin-top: -20px; }
-        .last-hit { font-size: 1.4rem; color: #8b949e; height: 1.5em; margin-bottom: 5px; font-weight: bold; letter-spacing: 2px; }
+        .hud { text-align: center; pointer-events: none; z-index: 10; margin-top: -10px; }
+        .last-hit { font-size: 1.6rem; color: #fff; height: 1.5em; margin-bottom: 8px; font-weight: 800; letter-spacing: 2px; }
         .instructions {
-            background: rgba(255,255,255,0.05);
-            padding: 8px 24px;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            background: rgba(0,0,0,0.5);
+            padding: 10px 32px;
+            border-radius: 40px;
+            font-size: 0.85rem;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            border: 1px solid transparent;
+            letter-spacing: 4px;
+            border: 2px solid transparent;
             font-weight: bold;
         }
 
-        /* Responsive bar styling */
         #angleCanvas {
             position: absolute;
             bottom: 0px; 
@@ -159,8 +176,8 @@
 <body onmousedown="globalInput()" ontouchstart="globalInput()">
 
     <div id="startScreen" onmousedown="event.stopPropagation()">
-        <h1 class="title">DARTS</h1>
-        <p style="opacity: 0.7;">SELECT NUMBER OF PLAYERS</p>
+        <h1 class="title" style="font-size: 4.5rem; letter-spacing: 12px; margin-bottom: 10px; font-weight: 900;">DARTS</h1>
+        <p style="opacity: 0.6; letter-spacing: 3px; font-size: 0.9rem;">SELECT PLAYERS</p>
         <div class="btn-group">
             <button class="player-btn" onclick="startGame(1)">1</button>
             <button class="player-btn" onclick="startGame(2)">2</button>
@@ -265,22 +282,35 @@
         function drawBoard() {
             ctx.save();
             ctx.translate(CENTER, CENTER);
+            
             ctx.beginPath(); ctx.arc(0, 0, RADIUS, 0, Math.PI * 2);
-            ctx.fillStyle = "#0d1117"; ctx.fill();
-            ctx.strokeStyle = "#30363d"; ctx.lineWidth = 4; ctx.stroke();
+            ctx.fillStyle = "#0a0a0a"; ctx.fill();
+            ctx.strokeStyle = "#333"; ctx.lineWidth = 4; ctx.stroke();
+            
             const slice = (Math.PI * 2) / 20;
             const offset = -Math.PI / 2 - slice / 2;
+            
             for (let i = 0; i < 20; i++) {
                 const angleStart = offset + (i * slice);
                 const angleEnd = angleStart + slice;
                 const isEven = i % 2 === 0;
+                
                 ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, DOUBLE_OUTER, angleStart, angleEnd);
-                ctx.fillStyle = isEven ? '#161b22' : '#f0f0f0'; ctx.fill(); ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = isEven ? '#111' : '#eee'; ctx.fill(); 
+                ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.stroke();
+                
                 drawArc(DOUBLE_INNER, DOUBLE_OUTER, angleStart, angleEnd, isEven ? '#2ecc71' : '#e74c3c');
                 drawArc(TRIPLE_INNER, TRIPLE_OUTER, angleStart, angleEnd, isEven ? '#2ecc71' : '#e74c3c');
-                ctx.save(); ctx.rotate(angleStart + slice/2); ctx.fillStyle = "white"; ctx.font = "bold 26px Arial"; ctx.textAlign = "center";
-                ctx.fillText(NUMBERS[i], 0, -DOUBLE_OUTER - 20); ctx.restore();
+                
+                ctx.save(); 
+                ctx.rotate(angleStart + slice/2); 
+                ctx.fillStyle = "white"; 
+                ctx.font = "bold 24px Arial"; 
+                ctx.textAlign = "center";
+                ctx.fillText(NUMBERS[i], 0, -DOUBLE_OUTER - 20); 
+                ctx.restore();
             }
+            
             ctx.beginPath(); ctx.arc(0, 0, BULL_OUTER, 0, Math.PI * 2); ctx.fillStyle = "#2ecc71"; ctx.fill(); ctx.stroke();
             ctx.beginPath(); ctx.arc(0, 0, BULL_INNER, 0, Math.PI * 2); ctx.fillStyle = "#e74c3c"; ctx.fill(); ctx.stroke();
             ctx.restore();
@@ -295,39 +325,46 @@
             actx.clearRect(0, 0, angleCanvas.width, angleCanvas.height);
             actx.save();
             
-            // Dynamic Radius based on width to keep curvature consistent
             const barRadius = Math.min(window.innerWidth * 0.45, 300);
             const centerX = angleCanvas.width / 2;
-            const centerY = - (barRadius * 0.5); // Pivot high so we see the bottom arc
+            const centerY = - (barRadius * 0.5); 
             
             actx.translate(centerX, centerY); 
             
-            // Fixed angle range regardless of device width
             const startArc = Math.PI * 0.6;
-            const endArc = Math.PI * 0.4; // Reversed arc for bottom sweep
+            const endArc = Math.PI * 0.4; 
             const angleRange = endArc - startArc;
             
+            // Matte Track
             actx.beginPath(); actx.arc(0, 0, barRadius, startArc, endArc, true);
-            actx.strokeStyle = "rgba(255,255,255,0.12)"; actx.lineWidth = 14; actx.lineCap = "round"; actx.stroke();
+            actx.strokeStyle = "rgba(255,255,255,0.15)"; actx.lineWidth = 10; actx.lineCap = "round"; actx.stroke();
             
             const currentAngle = startArc + (moonAngle * angleRange);
             const marbleX = Math.cos(currentAngle) * barRadius;
             const marbleY = Math.sin(currentAngle) * barRadius;
             
-            actx.beginPath(); actx.arc(marbleX, marbleY, 10, 0, Math.PI * 2); actx.fillStyle = color; actx.fill();
+            // Solid Matte Marble (Clean, no extra rings)
+            actx.beginPath(); actx.arc(marbleX, marbleY, 11, 0, Math.PI * 2); 
+            actx.fillStyle = color; actx.fill();
+            
             actx.restore();
         }
 
         function update() {
             ctx.clearRect(0, 0, 600, 600);
             drawBoard();
+            
             darts.forEach(d => {
-                ctx.strokeStyle = d.color; ctx.lineWidth = 2; const s = 5;
+                ctx.save();
+                ctx.strokeStyle = d.color; ctx.lineWidth = 3; const s = 6;
                 ctx.beginPath(); ctx.moveTo(d.x - s, d.y); ctx.lineTo(d.x + s, d.y);
                 ctx.moveTo(d.x, d.y - s); ctx.lineTo(d.x, d.y + s); ctx.stroke();
+                ctx.restore();
             });
+
             const actualPlayerIdx = activePlayers[currentPlayerIndex];
             const color = playerColors[actualPlayerIdx];
+            
             if (state === "CHOOSE_ANGLE") {
                 moonAngle += moonDir * MOON_SPEED;
                 if (moonAngle >= 1 || moonAngle <= 0) moonDir *= -1;
@@ -335,6 +372,7 @@
             } else {
                 actx.clearRect(0, 0, angleCanvas.width, angleCanvas.height);
             }
+            
             if (state === "AXIS_1" || state === "AXIS_2") {
                 ctx.save(); ctx.translate(CENTER, CENTER); ctx.rotate(scanAngle);
                 if (state === "AXIS_1") {
@@ -355,7 +393,6 @@
         function handleAction() {
             const actualPlayerIdx = activePlayers[currentPlayerIndex];
             if (state === "CHOOSE_ANGLE") {
-                // Calculation matches the draw logic sweep
                 const startArc = Math.PI * 0.6;
                 const endArc = Math.PI * 0.4;
                 const angleRange = endArc - startArc;
@@ -376,8 +413,9 @@
                 darts.push({x: finalPosX, y: finalPosY, color: playerColors[actualPlayerIdx]});
                 
                 document.getElementById(`score-${actualPlayerIdx+1}`).innerText = playerScores[actualPlayerIdx];
-                if (bust) { lastHitLabel.innerText = "BUST!"; lastHitLabel.style.color = "#e74c3c"; }
-                else { lastHitLabel.innerText = scoreData.label; lastHitLabel.style.color = scoreData.points > 0 ? playerColors[actualPlayerIdx] : "#8b949e"; }
+                if (bust) { lastHitLabel.innerText = "BUST!"; lastHitLabel.style.color = "#ff3e3e"; }
+                else { lastHitLabel.innerText = scoreData.label; lastHitLabel.style.color = "#fff"; }
+                
                 if (playerScores[actualPlayerIdx] === 0) { instructionBox.innerText = "WINNER!"; return; }
                 instructionBox.innerText = "WAITING...";
                 
