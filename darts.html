@@ -165,9 +165,9 @@
 
         #angleCanvas {
             position: absolute;
-            bottom: 0px; 
+            bottom: 20px; /* Moved up slightly from 0px */
             width: 100%;
-            height: 150px;
+            height: 180px; /* Height increased to accommodate higher center */
             background: transparent;
             pointer-events: none;
         }
@@ -235,7 +235,7 @@
 
         function resizeAngleCanvas() {
             angleCanvas.width = window.innerWidth;
-            angleCanvas.height = 150;
+            angleCanvas.height = 180;
         }
         window.addEventListener('resize', resizeAngleCanvas);
         resizeAngleCanvas();
@@ -327,7 +327,8 @@
             
             const barRadius = Math.min(window.innerWidth * 0.45, 300);
             const centerX = angleCanvas.width / 2;
-            const centerY = - (barRadius * 0.5); 
+            // Center is set higher up relative to the canvas height to move the arc up
+            const centerY = - (barRadius * 0.4); 
             
             actx.translate(centerX, centerY); 
             
