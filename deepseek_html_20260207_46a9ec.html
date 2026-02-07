@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeyScan | Beyblade Collection & Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes flash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .animate-flash {
+            animation: flash 300ms ease-out forwards;
+        }
+        
+        .scan-top { background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(249, 115, 22, 0.2)); border-color: rgba(239, 68, 68, 0.3); }
+        .scan-middle { background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2)); border-color: rgba(34, 197, 94, 0.3); }
+        .scan-tip { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2)); border-color: rgba(59, 130, 246, 0.3); }
+        .scan-build { background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2)); border-color: rgba(168, 85, 247, 0.3); }
+        
+        .category-attack { background: linear-gradient(135deg, #ef4444, #f97316); color: white; }
+        .category-stamina { background: linear-gradient(135deg, #22c55e, #10b981); color: white; }
+        .category-defense { background: linear-gradient(135deg, #3b82f6, #06b6d4); color: white; }
+        .category-balance { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; }
+        .category-dual { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Camera styles */
+        .camera-mirror {
+            transform: scaleX(-1);
+        }
+        
+        .camera-normal {
+            transform: scaleX(1);
+        }
+        
+        /* Stat colors */
+        .stat-attack { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .stat-stamina { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .stat-defense { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .stat-total { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        
+        /* Builder styles */
+        .builder-slot {
+            transition: all 0.3s ease;
+        }
+        
+        .builder-slot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .builder-slot.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Progress bar */
+        .progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Glow effects */
+        .glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            .mobile-padding {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .mobile-text-sm {
+                font-size: 0.875rem;
+            }
+            
+            .mobile-text-xs {
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Desktop optimizations */
+        @media (min-width: 641px) {
+            .desktop-max-w {
+                max-width: 28rem;
+            }
+            
+            .desktop-shadow {
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white font-sans overflow-x-hidden">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-lg border-b border-white/10 px-4 py-3">
+        <div class="max-w-md mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30 glow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+                        <path d="M5 3v4"></path>
+                        <path d="M19 17v4"></path>
+                        <path d="M3 5h4"></path>
+                        <path d="M17 19h4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
+                        BeyScan
+                    </h1>
+                    <p class="text-xs text-slate-400">Scan • Build • Battle</p>
+                </div>
+            </div>
+            
+            <button id="viewCollectionBtn" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors" title="View Collection">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="pt-20 pb-6 px-4 max-w-md mx-auto desktop-max-w">
+        <!-- Main Menu View -->
+        <div id="menuView" class="space-y-8 fade-in">
+            <!-- Hero Section -->
+            <div class="text-center space-y-4">
+                <div class="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center shadow-2xl shadow-purple-500/30 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                        <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path>
+                        <path d="M5 3v4"></path>
+                        <path d="M19 17v4"></path>
+                        <path d="M3 5h4"></path>
+                        <path d="M17 19h4"></path>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Welcome to BeyScan</h2>
+                <p class="text-slate-400">Scan your Beyblade parts, build combos, and track your collection</p>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-4 gap-2">
+                <div class="p-3 rounded-xl bg-white/5 text-center">
+                    <div class="text-2xl font-bold text-purple-400" id="menuTotalCount">0</div>
+                    <div class="text-xs text-slate-400 uppercase mt-1">Total</div>
+                </div>
+                <div class="p-3 rounded-xl bg-white/5 text-center">
+                    <div class="text-2xl font-bold text-red-400" id="menuTopCount">0</div>
+                    <div class="text-xs text-slate-400 uppercase mt-1">Top</div>
+                </div>
+                <div class="p-3 rounded-xl bg-white/5 text-center">
+                    <div class="text-2xl font-bold text-green-400" id="menuMiddleCount">0</div>
+                    <div class="text-xs text-slate-400 uppercase mt-1">Mid</div>
+                </div>
+                <div class="p-3 rounded-xl bg-white/5 text-center">
+                    <div class="text-2xl font-bold text-blue-400" id="menuTipCount">0</div>
+                    <div class="text-xs text-slate-400 uppercase mt-1">Tip</div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="space-y-3">
+                <button id="scanBtn" class="w-full p-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold text-lg hover:opacity-90 transition-opacity active:scale-95 flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+                        <circle cx="12" cy="13" r="3"></circle>
+                    </svg>
+                    <span>Scan New Part</span>
+                </button>
+                
+                <button id="buildBtn" class="w-full p-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold text-lg hover:opacity-90 transition-opacity active:scale-95 flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2 2 7l10 5 10-5-10-5Z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                    <span>Build Combo</span>
+                </button>
+                
+                <button id="collectionBtn" class="w-full p-4 rounded-xl bg-gradient-to-r from-slate-700 to-slate-600 text-white font-bold text-lg hover:opacity-90 transition-opacity active:scale-95 flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    <span>View Collection</span>
+                </button>
+            </div>
+            
+            <!-- Recent Builds -->
+            <div id="recentBuildsSection" class="hidden">
+                <h3 class="text-lg font-bold text-slate-300 mb-3">Recent Builds</h3>
+                <div id="recentBuilds" class="space-y-2">
+                    <!-- Recent builds will be added here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Camera View -->
+        <div id="cameraView" class="space-y-6 fade-in hidden">
+            <!-- Camera Preview -->
+            <div class="relative rounded-2xl overflow-hidden bg-slate-800 shadow-2xl shadow-black/50 desktop-shadow">
+                <video id="cameraVideo" autoplay playsinline muted class="w-full h-[60vh] object-cover bg-slate-900"></video>
+                
+                <!-- Flash effect -->
+                <div id="flashEffect" class="absolute inset-0 bg-white animate-flash hidden"></div>
+                
+                <!-- Camera error message -->
+                <div id="cameraError" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 hidden">
+                    <div class="w-16 h-16 mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-400">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-white mb-2">Camera Access Required</h3>
+                    <p class="text-slate-300 text-center px-6 mb-4" id="cameraErrorText">Please allow camera access to use the scanner feature.</p>
+                    <button id="retryCameraBtn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium hover:opacity-90 transition-opacity">
+                        Retry Camera
+                    </button>
+                </div>
+                
+                <!-- Overlay -->
+                <div class="absolute inset-0 pointer-events-none">
+                    <!-- Center guide -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <div class="w-24 h-24 border-2 border-white/30 rounded-lg">
+                            <div class="absolute top-1/2 left-0 right-0 h-px bg-white/20"></div>
+                            <div class="absolute left-1/2 top-0 bottom-0 w-px bg-white/20"></div>
+                        </div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white/70 rounded-full"></div>
+                    </div>
+                    
+                    <!-- Type indicator -->
+                    <div class="absolute top-4 left-1/2 -translate-x-1/2">
+                        <div id="scanTypeIndicator" class="px-4 py-1.5 rounded-full scan-top border border-white/30">
+                            <span class="text-xs font-bold text-white tracking-wider">TOP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Type Selection -->
+            <div class="grid grid-cols-3 gap-2">
+                <button data-type="Top" class="scan-type-btn flex flex-col items-center justify-center p-3 rounded-xl transition-all scan-top border border-white/30 scale-105">
+                    <span class="text-lg mb-1">◆</span>
+                    <span class="text-xs font-medium mobile-text-xs">Top</span>
+                    <span class="text-[10px] text-slate-400 mt-1 mobile-text-xs">Energy Layer</span>
+                </button>
+                <button data-type="Middle" class="scan-type-btn flex flex-col items-center justify-center p-3 rounded-xl transition-all bg-white/5 hover:bg-white/10">
+                    <span class="text-lg mb-1">◎</span>
+                    <span class="text-xs font-medium mobile-text-xs">Middle</span>
+                    <span class="text-[10px] text-slate-400 mt-1 mobile-text-xs">Forge Disc</span>
+                </button>
+                <button data-type="Tip" class="scan-type-btn flex flex-col items-center justify-center p-3 rounded-xl transition-all bg-white/5 hover:bg-white/10">
+                    <span class="text-lg mb-1">▼</span>
+                    <span class="text-xs font-medium mobile-text-xs">Tip</span>
+                    <span class="text-[10px] text-slate-400 mt-1 mobile-text-xs">Performance Tip</span>
+                </button>
+            </div>
+            
+            <!-- Capture Button -->
+            <div class="flex justify-center pt-4">
+                <button id="captureBtn" class="relative group">
+                    <div class="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 blur-xl opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                    <div class="relative w-20 h-20 rounded-full bg-slate-900 border-4 border-white/10 flex items-center justify-center transition-transform group-active:scale-95">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center shadow-inner">
+                            <div class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm"></div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="flex justify-between items-center">
+                <button id="backToMenuBtn" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 flex items-center gap-2 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                    <span class="text-sm">Back</span>
+                </button>
+                <p class="text-center text-sm text-slate-400 mobile-text-sm">
+                    Tap button or press SPACE to capture
+                </p>
+            </div>
+        </div>
+
+        <!-- Review View -->
+        <div id="reviewView" class="space-y-6 hidden">
+            <div class="flex items-center gap-3">
+                <button id="backToCameraBtn" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <h2 class="text-xl font-bold mobile-text-sm">Review Photo</h2>
+            </div>
+            
+            <div class="rounded-2xl overflow-hidden bg-slate-800 shadow-xl desktop-shadow">
+                <img id="capturedImage" alt="Captured" class="w-full h-[60vh] object-cover">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <button id="retakeBtn" class="py-4 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center gap-2 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                        <path d="M3 3v5h5"></path>
+                    </svg>
+                    <span class="font-medium text-slate-300 mobile-text-sm">Retake</span>
+                </button>
+                <button id="continueBtn" class="py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span class="font-bold text-white mobile-text-sm">Continue</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Form View -->
+        <div id="formView" class="space-y-6 hidden">
+            <div class="flex items-center gap-3">
+                <button id="backToReviewBtn" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <h2 class="text-xl font-bold mobile-text-sm">Add Details</h2>
+            </div>
+            
+            <!-- Image Preview -->
+            <div class="relative rounded-2xl overflow-hidden bg-slate-800 desktop-shadow">
+                <img id="formImage" alt="Preview" class="w-full h-40 object-cover">
+                <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-slate-900 to-transparent">
+                    <div id="formTypeBadge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full scan-top border border-white/30">
+                        <span class="text-xs font-bold text-white">Top</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Name Input -->
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-2 mobile-text-sm">
+                    Part Name
+                </label>
+                <input type="text" id="partName" placeholder="e.g. Storm Pegasus, Diablo Nemesis..." class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-purple-500/50 focus:outline-none transition-colors text-white placeholder:text-slate-500 mobile-text-sm">
+            </div>
+            
+            <!-- Stats with total counter -->
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-sm font-medium text-slate-300 mobile-text-sm">
+                        Stats (Max 13 Total)
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">Total:</span>
+                        <span id="totalStatValue" class="text-sm font-bold text-purple-400">9</span>
+                        <span class="text-xs text-slate-500">/13</span>
+                    </div>
+                </div>
+                
+                <!-- Total progress bar -->
+                <div class="progress-bar mb-4">
+                    <div id="totalStatBar" class="progress-fill stat-total" style="width: 69%"></div>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Attack -->
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium w-20 mobile-text-sm">Attack</span>
+                        <div class="flex-1 flex gap-1">
+                            <button data-stat="attack" data-value="1" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                            <button data-stat="attack" data-value="2" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                            <button data-stat="attack" data-value="3" class="stat-btn flex-1 h-10 rounded-lg bg-red-500"></button>
+                            <button data-stat="attack" data-value="4" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                            <button data-stat="attack" data-value="5" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                        </div>
+                        <span class="w-6 text-center font-bold text-red-400 mobile-text-sm" id="attackValue">3</span>
+                    </div>
+                    
+                    <!-- Stamina -->
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"></path>
+                                <path d="M9.6 4.6A2 2 0 1 1 11 8H2"></path>
+                                <path d="M12.6 19.4A2 2 0 1 0 14 16H2"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium w-20 mobile-text-sm">Stamina</span>
+                        <div class="flex-1 flex gap-1">
+                            <button data-stat="stamina" data-value="1" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                            <button data-stat="stamina" data-value="2" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                            <button data-stat="stamina" data-value="3" class="stat-btn flex-1 h-10 rounded-lg bg-green-500"></button>
+                            <button data-stat="stamina" data-value="4" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                            <button data-stat="stamina" data-value="5" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                        </div>
+                        <span class="w-6 text-center font-bold text-green-400 mobile-text-sm" id="staminaValue">3</span>
+                    </div>
+                    
+                    <!-- Defense -->
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-sm font-medium w-20 mobile-text-sm">Defense</span>
+                        <div class="flex-1 flex gap-1">
+                            <button data-stat="defense" data-value="1" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                            <button data-stat="defense" data-value="2" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                            <button data-stat="defense" data-value="3" class="stat-btn flex-1 h-10 rounded-lg bg-blue-500"></button>
+                            <button data-stat="defense" data-value="4" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                            <button data-stat="defense" data-value="5" class="stat-btn flex-1 h-10 rounded-lg bg-white/5 hover:bg-white/10"></button>
+                        </div>
+                        <span class="w-6 text-center font-bold text-blue-400 mobile-text-sm" id="defenseValue">3</span>
+                    </div>
+                </div>
+                
+                <!-- Stat warning -->
+                <div id="statWarning" class="mt-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm hidden">
+                    ⚠️ Maximum total stats is 13. Reduce some stats to continue.
+                </div>
+            </div>
+            
+            <!-- Category Preview -->
+            <div class="p-4 rounded-xl bg-white/5 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-slate-300 mobile-text-sm">Part Category</p>
+                        <p class="text-xs text-slate-500 mobile-text-xs">Based on highest stats</p>
+                    </div>
+                    <div id="categoryBadge" class="flex items-center gap-2 px-4 py-2 rounded-full category-attack">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <span class="text-sm font-bold text-white mobile-text-sm" id="categoryText">Attack</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Save Button -->
+            <button id="saveBtn" class="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold text-lg hover:opacity-90 transition-opacity active:scale-95 mobile-text-sm" disabled>
+                Save to Collection
+            </button>
+        </div>
+
+        <!-- Collection View -->
+        <div id="collectionView" class="space-y-6 hidden">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button id="backFromCollectionBtn" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <div>
+                        <h2 class="text-xl font-bold mobile-text-sm">My Collection</h2>
+                        <p id="collectionCount" class="text-sm text-slate-400 mobile-text-sm">0 items</p>
+                    </div>
+                </div>
+                <button id="newScanFromCollectionBtn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-medium hover:opacity-90 transition-opacity mobile-text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline mr-2">
+                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+                        <circle cx="12" cy="13" r="3"></circle>
+                    </svg>
+                    New Scan
+                </button>
+            </div>
+            
+            <!-- Filter Tabs -->
+            <div class="flex space-x-1 bg-white/5 rounded-xl p-1">
+                <button data-filter="all" class="filter-btn flex-1 py-2 rounded-lg text-sm font-medium transition-all bg-purple-600 text-white">
+                    All
+                </button>
+                <button data-filter="Top" class="filter-btn flex-1 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    Top
+                </button>
+                <button data-filter="Middle" class="filter-btn flex-1 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    Middle
+                </button>
+                <button data-filter="Tip" class="filter-btn flex-1 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
+                    Tip
+                </button>
+            </div>
+            
+            <!-- Collection Items -->
+            <div id="collectionContainer" class="grid grid-cols-2 gap-3 custom-scrollbar max-h-[60vh] overflow-y-auto">
+                <!-- Items will be added here dynamically -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyCollectionState" class="text-center py-12">
+                <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white/5 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
+                        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                        <path d="m3.3 7 8.7 5 8.7-5"></path>
+                        <path d="M12 22V12"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-slate-300 mb-2 mobile-text-sm">No Parts Yet</h3>
+                <p class="text-slate-500 mb-6 mobile-text-sm">Start scanning your Beyblade parts!</p>
+                <button id="startScanFromEmptyBtn" class="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-medium hover:opacity-90 transition-opacity mobile-text-sm">
+                    Scan Your First Part
+                </button>
+            </div>
+        </div>
+
+        <!-- Builder View -->
+        <div id="builderView" class="space-y-6 hidden">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button id="backFromBuilderBtn" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <div>
+                        <h2 class="text-xl font-bold mobile-text-sm">Build Combo</h2>
+                        <p class="text-sm text-slate-400 mobile-text-sm">Combine parts to create a Beyblade</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Builder Slots -->
+            <div class="space-y-6">
+                <!-- Top Slot -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-medium text-slate-300 mobile-text-sm">Top Layer</h3>
+                        <span class="text-xs text-slate-500">Select from collection</span>
+                    </div>
+                    <div id="topSlot" class="builder-slot min-h-32 rounded-2xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-white/10 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500 mb-2">
+                            <path d="M12 2 2 7l10 5 10-5-10-5Z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                        <span class="text-sm text-slate-400">Tap to select Top</span>
+                        <span class="text-xs text-slate-500 mt-1">Required</span>
+                    </div>
+                </div>
+                
+                <!-- Middle Slot -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-medium text-slate-300 mobile-text-sm">Middle Disc</h3>
+                        <span class="text-xs text-slate-500">Select from collection</span>
+                    </div>
+                    <div id="middleSlot" class="builder-slot min-h-32 rounded-2xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-white/10 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500 mb-2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span class="text-sm text-slate-400">Tap to select Middle</span>
+                        <span class="text-xs text-slate-500 mt-1">Required</span>
+                    </div>
+                </div>
+                
+                <!-- Tip Slot -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-medium text-slate-300 mobile-text-sm">Tip/Driver</h3>
+                        <span class="text-xs text-slate-500">Select from collection</span>
+                    </div>
+                    <div id="tipSlot" class="builder-slot min-h-32 rounded-2xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center p-4 cursor-pointer hover:bg-white/10 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500 mb-2">
+                            <path d="M12 2v20"></path>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                        <span class="text-sm text-slate-400">Tap to select Tip</span>
+                        <span class="text-xs text-slate-500 mt-1">Required</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Build Stats -->
+            <div id="buildStats" class="p-4 rounded-2xl bg-white/5 border border-white/10 hidden">
+                <h3 class="text-lg font-bold text-slate-300 mb-4 mobile-text-sm">Combo Stats</h3>
+                
+                <!-- Total Stats -->
+                <div class="space-y-4">
+                    <!-- Attack -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm text-slate-300">Attack</span>
+                            <span class="text-lg font-bold text-red-400" id="buildAttackValue">0</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="buildAttackBar" class="progress-fill stat-attack" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stamina -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm text-slate-300">Stamina</span>
+                            <span class="text-lg font-bold text-green-400" id="buildStaminaValue">0</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="buildStaminaBar" class="progress-fill stat-stamina" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Defense -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm text-slate-300">Defense</span>
+                            <span class="text-lg font-bold text-blue-400" id="buildDefenseValue">0</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="buildDefenseBar" class="progress-fill stat-defense" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Build Category -->
+                <div class="mt-6 p-3 rounded-xl bg-white/5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-slate-300 mobile-text-sm">Build Type</p>
+                            <p class="text-xs text-slate-500 mobile-text-xs">Based on combined stats</p>
+                        </div>
+                        <div id="buildCategoryBadge" class="flex items-center gap-2 px-4 py-2 rounded-full category-balance">
+                            <span class="text-sm font-bold text-white mobile-text-sm" id="buildCategoryText">Balance</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Save Build Button -->
+                <button id="saveBuildBtn" class="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold text-lg hover:opacity-90 transition-opacity active:scale-95 mobile-text-sm">
+                    Save This Build
+                </button>
+            </div>
+            
+            <!-- Empty Build State -->
+            <div id="emptyBuildState" class="text-center py-12">
+                <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-white/5 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600">
+                        <path d="M12 2 2 7l10 5 10-5-10-5Z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-slate-300 mb-2 mobile-text-sm">Build a Combo</h3>
+                <p class="text-slate-500 mb-6 mobile-text-sm">Select parts from your collection to build a Beyblade combo</p>
+            </div>
+        </div>
+        
+        <!-- Hidden canvas for capture -->
+        <canvas id="captureCanvas" class="hidden"></canvas>
+    </main>
+
+    <!-- Part Selection Modal -->
+    <div id="partSelectionModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-white/10 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white">Select a <span id="modalPartType">Top</span></h3>
+                <button id="closeModalBtn" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Parts List -->
+            <div id="modalPartsList" class="flex-1 overflow-y-auto custom-scrollbar p-4">
+                <!-- Parts will be added here -->
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-white/10">
+                <button id="clearSelectionBtn" class="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-colors">
+                    Clear Selection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let currentView = 'menu';
+        let selectedType = 'Top';
+        let capturedImage = '';
+        let isCapturing = false;
+        let collection = [];
+        let builds = [];
+        let stats = { attack: 3, stamina: 3, defense: 3 };
+        let cameraStream = null;
+        let isCameraReady = false;
+        let isMobileDevice = false;
+        let usingFrontCamera = false;
+        
+        // Builder State
+        let selectedParts = {
+            Top: null,
+            Middle: null,
+            Tip: null
+        };
+        let currentModalType = 'Top';
+
+        // DOM Elements
+        const elements = {
+            // Views
+            menuView: document.getElementById('menuView'),
+            cameraView: document.getElementById('cameraView'),
+            reviewView: document.getElementById('reviewView'),
+            formView: document.getElementById('formView'),
+            collectionView: document.getElementById('collectionView'),
+            builderView: document.getElementById('builderView'),
+            
+            // Menu elements
+            menuTotalCount: document.getElementById('menuTotalCount'),
+            menuTopCount: document.getElementById('menuTopCount'),
+            menuMiddleCount: document.getElementById('menuMiddleCount'),
+            menuTipCount: document.getElementById('menuTipCount'),
+            recentBuildsSection: document.getElementById('recentBuildsSection'),
+            recentBuilds: document.getElementById('recentBuilds'),
+            
+            // Camera elements
+            cameraVideo: document.getElementById('cameraVideo'),
+            flashEffect: document.getElementById('flashEffect'),
+            cameraError: document.getElementById('cameraError'),
+            cameraErrorText: document.getElementById('cameraErrorText'),
+            scanTypeIndicator: document.getElementById('scanTypeIndicator'),
+            
+            // Form elements
+            capturedImage: document.getElementById('capturedImage'),
+            formImage: document.getElementById('formImage'),
+            formTypeBadge: document.getElementById('formTypeBadge'),
+            categoryBadge: document.getElementById('categoryBadge'),
+            categoryText: document.getElementById('categoryText'),
+            partName: document.getElementById('partName'),
+            totalStatValue: document.getElementById('totalStatValue'),
+            totalStatBar: document.getElementById('totalStatBar'),
+            statWarning: document.getElementById('statWarning'),
+            saveBtn: document.getElementById('saveBtn'),
+            
+            // Collection elements
+            collectionCount: document.getElementById('collectionCount'),
+            collectionContainer: document.getElementById('collectionContainer'),
+            emptyCollectionState: document.getElementById('emptyCollectionState'),
+            
+            // Builder elements
+            topSlot: document.getElementById('topSlot'),
+            middleSlot: document.getElementById('middleSlot'),
+            tipSlot: document.getElementById('tipSlot'),
+            buildStats: document.getElementById('buildStats'),
+            buildAttackValue: document.getElementById('buildAttackValue'),
+            buildStaminaValue: document.getElementById('buildStaminaValue'),
+            buildDefenseValue: document.getElementById('buildDefenseValue'),
+            buildAttackBar: document.getElementById('buildAttackBar'),
+            buildStaminaBar: document.getElementById('buildStaminaBar'),
+            buildDefenseBar: document.getElementById('buildDefenseBar'),
+            buildCategoryBadge: document.getElementById('buildCategoryBadge'),
+            buildCategoryText: document.getElementById('buildCategoryText'),
+            emptyBuildState: document.getElementById('emptyBuildState'),
+            saveBuildBtn: document.getElementById('saveBuildBtn'),
+            
+            // Modal elements
+            partSelectionModal: document.getElementById('partSelectionModal'),
+            modalPartType: document.getElementById('modalPartType'),
+            modalPartsList: document.getElementById('modalPartsList'),
+            
+            // Canvas
+            captureCanvas: document.getElementById('captureCanvas')
+        };
+
+        // Initialize app
+        function initApp() {
+            console.log('Initializing BeyScan...');
+            
+            // Load data
+            loadCollection();
+            loadBuilds();
+            updateMenuStats();
+            updateRecentBuilds();
+            
+            // Setup event listeners
+            initEventListeners();
+            
+            // Initialize UI state
+            updateScanType('Top');
+            updateTotalStats();
+            updateCategoryPreview();
+            
+            console.log('BeyScan initialized successfully');
+        }
+
+        // View switching
+        function switchView(view) {
+            currentView = view;
+            
+            // Hide all views
+            elements.menuView.classList.add('hidden');
+            elements.cameraView.classList.add('hidden');
+            elements.reviewView.classList.add('hidden');
+            elements.formView.classList.add('hidden');
+            elements.collectionView.classList.add('hidden');
+            elements.builderView.classList.add('hidden');
+            
+            // Show selected view
+            switch(view) {
+                case 'menu':
+                    elements.menuView.classList.remove('hidden');
+                    updateMenuStats();
+                    updateRecentBuilds();
+                    break;
+                case 'camera':
+                    elements.cameraView.classList.remove('hidden');
+                    if (!isCameraReady) {
+                        initCamera();
+                    }
+                    break;
+                case 'review':
+                    elements.reviewView.classList.remove('hidden');
+                    break;
+                case 'form':
+                    elements.formView.classList.remove('hidden');
+                    updateCategoryPreview();
+                    break;
+                case 'collection':
+                    elements.collectionView.classList.remove('hidden');
+                    loadCollection();
+                    break;
+                case 'builder':
+                    elements.builderView.classList.remove('hidden');
+                    updateBuilderUI();
+                    break;
+            }
+        }
+
+        // Initialize camera
+        async function initCamera() {
+            try {
+                console.log('Initializing camera...');
+                
+                // Stop existing stream
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    cameraStream = null;
+                }
+                
+                // Hide error message
+                elements.cameraError.classList.add('hidden');
+                
+                // Detect device type
+                isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                // Choose camera facing mode
+                const facingMode = isMobileDevice ? 'environment' : 'user';
+                usingFrontCamera = !isMobileDevice;
+                
+                console.log(`Using ${facingMode} camera on ${isMobileDevice ? 'mobile' : 'desktop'}`);
+                
+                // Get camera stream
+                const constraints = {
+                    video: {
+                        facingMode: facingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+                
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                cameraStream = stream;
+                elements.cameraVideo.srcObject = stream;
+                isCameraReady = true;
+                
+                // Update camera transform
+                if (!isMobileDevice && usingFrontCamera) {
+                    elements.cameraVideo.classList.add('camera-mirror');
+                } else {
+                    elements.cameraVideo.classList.remove('camera-mirror');
+                }
+                
+            } catch (err) {
+                console.error('Camera error:', err);
+                showCameraError('Camera access denied or unavailable');
+            }
+        }
+
+        // Show camera error
+        function showCameraError(message) {
+            elements.cameraErrorText.textContent = message;
+            elements.cameraError.classList.remove('hidden');
+            isCameraReady = false;
+        }
+
+        // Capture photo
+        function capturePhoto() {
+            if (!isCameraReady || isCapturing) return;
+            
+            isCapturing = true;
+            elements.flashEffect.classList.remove('hidden');
+            
+            setTimeout(() => {
+                try {
+                    const video = elements.cameraVideo;
+                    const canvas = elements.captureCanvas;
+                    
+                    if (!video.videoWidth || !video.videoHeight) {
+                        throw new Error('Video not ready');
+                    }
+                    
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Clear canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Flip back if using front camera on desktop
+                    if (!isMobileDevice && usingFrontCamera) {
+                        ctx.translate(canvas.width, 0);
+                        ctx.scale(-1, 1);
+                    }
+                    
+                    // Draw video frame
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    // Convert to data URL
+                    capturedImage = canvas.toDataURL('image/jpeg', 0.85);
+                    
+                    // Update preview images
+                    elements.capturedImage.src = capturedImage;
+                    elements.formImage.src = capturedImage;
+                    
+                } catch (err) {
+                    console.error('Capture error:', err);
+                    alert('Failed to capture photo. Please try again.');
+                } finally {
+                    elements.flashEffect.classList.add('hidden');
+                    isCapturing = false;
+                    switchView('review');
+                }
+            }, 300);
+        }
+
+        // Update scan type
+        function updateScanType(type) {
+            selectedType = type;
+            
+            // Update indicator
+            elements.scanTypeIndicator.className = `px-4 py-1.5 rounded-full scan-${type.toLowerCase()} border border-white/30`;
+            elements.scanTypeIndicator.innerHTML = `<span class="text-xs font-bold text-white tracking-wider">${type.toUpperCase()}</span>`;
+            
+            // Update form badge
+            elements.formTypeBadge.className = `inline-flex items-center gap-2 px-3 py-1.5 rounded-full scan-${type.toLowerCase()} border border-white/30`;
+            elements.formTypeBadge.innerHTML = `<span class="text-xs font-bold text-white">${type}</span>`;
+            
+            // Update buttons
+            document.querySelectorAll('.scan-type-btn').forEach(btn => {
+                if (btn.dataset.type === type) {
+                    btn.classList.add('scale-105', 'border', 'border-white/30');
+                    btn.classList.remove('bg-white/5', 'hover:bg-white/10');
+                    btn.className = btn.className.replace(/scan-\w+/g, '');
+                    btn.classList.add(`scan-${type.toLowerCase()}`);
+                } else {
+                    btn.classList.remove('scale-105', 'border', 'border-white/30');
+                    btn.classList.remove(/scan-\w+/g);
+                    btn.classList.add('bg-white/5', 'hover:bg-white/10');
+                }
+            });
+        }
+
+        // Update stats with validation
+        function updateStat(stat, value) {
+            // Calculate new total
+            const newTotal = Object.entries(stats).reduce((total, [key, val]) => {
+                return total + (key === stat ? value : val);
+            }, 0);
+            
+            // Check if total exceeds 13
+            if (newTotal > 13) {
+                elements.statWarning.classList.remove('hidden');
+                elements.saveBtn.disabled = true;
+                return;
+            }
+            
+            // Update stat
+            stats[stat] = value;
+            
+            // Update display
+            document.getElementById(`${stat}Value`).textContent = value;
+            
+            // Update buttons
+            document.querySelectorAll(`[data-stat="${stat}"]`).forEach(btn => {
+                const btnValue = parseInt(btn.dataset.value);
+                btn.className = btn.className.replace(/bg-\w+-\d+|bg-white\/\d+|hover:bg-white\/\d+/g, '');
+                
+                if (btnValue <= value) {
+                    const colors = {
+                        attack: 'bg-red-500',
+                        stamina: 'bg-green-500',
+                        defense: 'bg-blue-500'
+                    };
+                    btn.classList.add(colors[stat]);
+                } else {
+                    btn.classList.add('bg-white/5', 'hover:bg-white/10');
+                }
+            });
+            
+            // Update total and category
+            updateTotalStats();
+            updateCategoryPreview();
+            
+            // Hide warning if shown
+            elements.statWarning.classList.add('hidden');
+            elements.saveBtn.disabled = false;
+        }
+
+        // Update total stats
+        function updateTotalStats() {
+            const total = stats.attack + stats.stamina + stats.defense;
+            elements.totalStatValue.textContent = total;
+            
+            // Update progress bar (max 13)
+            const percentage = Math.min(100, (total / 13) * 100);
+            elements.totalStatBar.style.width = `${percentage}%`;
+            
+            // Update button state
+            elements.saveBtn.disabled = total > 13;
+        }
+
+        // Update category preview with dual category support
+        function updateCategoryPreview() {
+            const max = Math.max(stats.attack, stats.stamina, stats.defense);
+            const maxStats = [];
+            
+            if (stats.attack === max) maxStats.push('Attack');
+            if (stats.stamina === max) maxStats.push('Stamina');
+            if (stats.defense === max) maxStats.push('Defense');
+            
+            let category = 'Balance';
+            let categoryClass = 'category-balance';
+            let categoryIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>';
+            
+            if (maxStats.length === 1) {
+                category = maxStats[0];
+                categoryClass = `category-${category.toLowerCase()}`;
+                
+                // Set icon based on category
+                if (category === 'Attack') {
+                    categoryIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>';
+                } else if (category === 'Stamina') {
+                    categoryIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"></path><path d="M9.6 4.6A2 2 0 1 1 11 8H2"></path><path d="M12.6 19.4A2 2 0 1 0 14 16H2"></path></svg>';
+                } else if (category === 'Defense') {
+                    categoryIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>';
+                }
+            } else if (maxStats.length >= 2) {
+                category = 'Dual-Type';
+                categoryClass = 'category-dual';
+                categoryIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M12 2 2 7l10 5 10-5-10-5Z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>';
+            }
+            
+            // Update badge
+            elements.categoryBadge.className = `flex items-center gap-2 px-4 py-2 rounded-full ${categoryClass}`;
+            elements.categoryText.textContent = category;
+            elements.categoryBadge.innerHTML = categoryIcon + `<span class="text-sm font-bold text-white">${category}</span>`;
+        }
+
+        // Save part to collection
+        function saveToCollection() {
+            const name = elements.partName.value || `Unnamed ${selectedType}`;
+            
+            // Determine category with dual support
+            const max = Math.max(stats.attack, stats.stamina, stats.defense);
+            const maxStats = [];
+            if (stats.attack === max) maxStats.push('Attack');
+            if (stats.stamina === max) maxStats.push('Stamina');
+            if (stats.defense === max) maxStats.push('Defense');
+            
+            let category = 'Balance';
+            if (maxStats.length === 1) {
+                category = maxStats[0];
+            } else if (maxStats.length >= 2) {
+                category = 'Dual-Type';
+            }
+            
+            const newItem = {
+                id: Date.now().toString(),
+                name: name,
+                type: selectedType,
+                category: category,
+                stats: { ...stats },
+                image: capturedImage,
+                createdAt: Date.now()
+            };
+            
+            collection.unshift(newItem);
+            saveCollection();
+            
+            // Reset form
+            elements.partName.value = '';
+            stats = { attack: 3, stamina: 3, defense: 3 };
+            updateStat('attack', 3);
+            updateStat('stamina', 3);
+            updateStat('defense', 3);
+            
+            // Show success message
+            alert(`✅ ${name} saved to collection!`);
+            
+            // Return to menu
+            switchView('menu');
+        }
+
+        // Delete item
+        function deleteItem(id) {
+            if (confirm('Delete this part from your collection?')) {
+                // Remove from collection
+                collection = collection.filter(item => item.id !== id);
+                
+                // Remove from any builds
+                builds = builds.filter(build => 
+                    build.top.id !== id && 
+                    build.middle.id !== id && 
+                    build.tip.id !== id
+                );
+                
+                // Clear selection if this part was selected in builder
+                Object.keys(selectedParts).forEach(type => {
+                    if (selectedParts[type] && selectedParts[type].id === id) {
+                        selectedParts[type] = null;
+                    }
+                });
+                
+                // Save data
+                saveCollection();
+                saveBuilds();
+                
+                // Update UI
+                loadCollection();
+                updateBuilderUI();
+                updateMenuStats();
+                updateRecentBuilds();
+            }
+        }
+
+        // Update menu stats
+        function updateMenuStats() {
+            elements.menuTotalCount.textContent = collection.length;
+            elements.menuTopCount.textContent = collection.filter(item => item.type === 'Top').length;
+            elements.menuMiddleCount.textContent = collection.filter(item => item.type === 'Middle').length;
+            elements.menuTipCount.textContent = collection.filter(item => item.type === 'Tip').length;
+            
+            // Show/hide recent builds section
+            if (builds.length > 0) {
+                elements.recentBuildsSection.classList.remove('hidden');
+            } else {
+                elements.recentBuildsSection.classList.add('hidden');
+            }
+        }
+
+        // Update recent builds
+        function updateRecentBuilds() {
+            elements.recentBuilds.innerHTML = '';
+            
+            // Show last 3 builds
+            const recent = builds.slice(0, 3);
+            
+            recent.forEach(build => {
+                const buildElement = document.createElement('div');
+                buildElement.className = 'p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors cursor-pointer';
+                
+                // Calculate total stats
+                const totalAttack = build.top.stats.attack + build.middle.stats.attack + build.tip.stats.attack;
+                const totalStamina = build.top.stats.stamina + build.middle.stats.stamina + build.tip.stats.stamina;
+                const totalDefense = build.top.stats.defense + build.middle.stats.defense + build.tip.stats.defense;
+                
+                // Determine category
+                const max = Math.max(totalAttack, totalStamina, totalDefense);
+                const maxStats = [];
+                if (totalAttack === max) maxStats.push('Attack');
+                if (totalStamina === max) maxStats.push('Stamina');
+                if (totalDefense === max) maxStats.push('Defense');
+                
+                let category = 'Balance';
+                if (maxStats.length === 1) category = maxStats[0];
+                else if (maxStats.length >= 2) category = 'Dual';
+                
+                buildElement.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-bold text-sm">${build.name}</h4>
+                        <span class="text-xs px-2 py-1 rounded-full ${category === 'Dual' ? 'bg-yellow-500/20 text-yellow-400' : category === 'Attack' ? 'bg-red-500/20 text-red-400' : category === 'Stamina' ? 'bg-green-500/20 text-green-400' : category === 'Defense' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}">
+                            ${category}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-4 text-xs text-slate-400">
+                        <span class="text-red-400">⚔️ ${totalAttack}</span>
+                        <span class="text-green-400">🌀 ${totalStamina}</span>
+                        <span class="text-blue-400">🛡️ ${totalDefense}</span>
+                    </div>
+                `;
+                
+                elements.recentBuilds.appendChild(buildElement);
+            });
+        }
+
+        // Load collection from localStorage
+        function loadCollection() {
+            const saved = localStorage.getItem('beyscan-collection');
+            collection = saved ? JSON.parse(saved) : [];
+            
+            // Update UI
+            elements.collectionCount.textContent = `${collection.length} items`;
+            
+            if (collection.length === 0) {
+                elements.emptyCollectionState.classList.remove('hidden');
+                elements.collectionContainer.innerHTML = '';
+            } else {
+                elements.emptyCollectionState.classList.add('hidden');
+                renderCollection('all');
+            }
+        }
+
+        // Save collection to localStorage
+        function saveCollection() {
+            localStorage.setItem('beyscan-collection', JSON.stringify(collection));
+            updateMenuStats();
+        }
+
+        // Load builds from localStorage
+        function loadBuilds() {
+            const saved = localStorage.getItem('beyscan-builds');
+            builds = saved ? JSON.parse(saved) : [];
+        }
+
+        // Save builds to localStorage
+        function saveBuilds() {
+            localStorage.setItem('beyscan-builds', JSON.stringify(builds));
+        }
+
+        // Render collection with filter
+        function renderCollection(filter = 'all') {
+            elements.collectionContainer.innerHTML = '';
+            
+            const filteredItems = filter === 'all' 
+                ? collection 
+                : collection.filter(item => item.type === filter);
+            
+            filteredItems.forEach((item, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.className = `group relative rounded-xl overflow-hidden bg-slate-800 fade-in`;
+                itemElement.style.animationDelay = `${index * 50}ms`;
+                
+                itemElement.innerHTML = `
+                    <div class="aspect-square">
+                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-70"></div>
+                    <button class="delete-btn absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" data-id="${item.id}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="absolute bottom-0 left-0 right-0 p-3">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-medium text-slate-300">${item.type}</span>
+                            <span class="text-xs px-2 py-1 rounded-full ${item.category === 'Dual-Type' ? 'bg-yellow-500/20 text-yellow-400' : item.category === 'Attack' ? 'bg-red-500/20 text-red-400' : item.category === 'Stamina' ? 'bg-green-500/20 text-green-400' : item.category === 'Defense' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}">
+                                ${item.category}
+                            </span>
+                        </div>
+                        <h3 class="font-semibold text-sm truncate">${item.name}</h3>
+                        <div class="flex gap-3 mt-2 text-xs text-slate-400">
+                            <span class="text-red-400">A:${item.stats.attack}</span>
+                            <span class="text-green-400">S:${item.stats.stamina}</span>
+                            <span class="text-blue-400">D:${item.stats.defense}</span>
+                        </div>
+                    </div>
+                `;
+                
+                elements.collectionContainer.appendChild(itemElement);
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteItem(btn.dataset.id);
+                });
+            });
+        }
+
+        // Update builder UI
+        function updateBuilderUI() {
+            // Update slot contents
+            updateBuilderSlot('Top');
+            updateBuilderSlot('Middle');
+            updateBuilderSlot('Tip');
+            
+            // Check if all parts are selected
+            const allSelected = selectedParts.Top && selectedParts.Middle && selectedParts.Tip;
+            
+            if (allSelected) {
+                elements.buildStats.classList.remove('hidden');
+                elements.emptyBuildState.classList.add('hidden');
+                calculateBuildStats();
+            } else {
+                elements.buildStats.classList.add('hidden');
+                elements.emptyBuildState.classList.remove('hidden');
+            }
+        }
+
+        // Update builder slot
+        function updateBuilderSlot(type) {
+            const slot = elements[`${type.toLowerCase()}Slot`];
+            const part = selectedParts[type];
+            
+            if (part) {
+                slot.innerHTML = `
+                    <div class="w-full h-full flex flex-col">
+                        <div class="flex-1 relative rounded-lg overflow-hidden mb-2">
+                            <img src="${part.image}" alt="${part.name}" class="w-full h-full object-cover">
+                            <div class="absolute top-1 right-1 px-2 py-1 rounded-full bg-black/60 backdrop-blur-sm">
+                                <span class="text-xs font-bold text-white">${type}</span>
+                            </div>
+                        </div>
+                        <h4 class="font-bold text-sm truncate">${part.name}</h4>
+                        <div class="flex gap-2 mt-1 text-xs text-slate-400">
+                            <span class="text-red-400">A${part.stats.attack}</span>
+                            <span class="text-green-400">S${part.stats.stamina}</span>
+                            <span class="text-blue-400">D${part.stats.defense}</span>
+                        </div>
+                    </div>
+                `;
+                slot.classList.add('selected');
+            } else {
+                slot.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500 mb-2">
+                        ${type === 'Top' ? '<path d="M12 2 2 7l10 5 10-5-10-5Z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path>' :
+                          type === 'Middle' ? '<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle>' :
+                          '<path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>'}
+                    </svg>
+                    <span class="text-sm text-slate-400">Tap to select ${type}</span>
+                    <span class="text-xs text-slate-500 mt-1">Required</span>
+                `;
+                slot.classList.remove('selected');
+            }
+        }
+
+        // Calculate build stats
+        function calculateBuildStats() {
+            if (!selectedParts.Top || !selectedParts.Middle || !selectedParts.Tip) return;
+            
+            // Calculate totals (scaled to 10)
+            const totalAttack = Math.min(10, Math.round(
+                (selectedParts.Top.stats.attack + selectedParts.Middle.stats.attack + selectedParts.Tip.stats.attack) * (10/15)
+            ));
+            const totalStamina = Math.min(10, Math.round(
+                (selectedParts.Top.stats.stamina + selectedParts.Middle.stats.stamina + selectedParts.Tip.stats.stamina) * (10/15)
+            ));
+            const totalDefense = Math.min(10, Math.round(
+                (selectedParts.Top.stats.defense + selectedParts.Middle.stats.defense + selectedParts.Tip.stats.defense) * (10/15)
+            ));
+            
+            // Update UI
+            elements.buildAttackValue.textContent = totalAttack;
+            elements.buildStaminaValue.textContent = totalStamina;
+            elements.buildDefenseValue.textContent = totalDefense;
+            
+            elements.buildAttackBar.style.width = `${totalAttack * 10}%`;
+            elements.buildStaminaBar.style.width = `${totalStamina * 10}%`;
+            elements.buildDefenseBar.style.width = `${totalDefense * 10}%`;
+            
+            // Determine category with dual support
+            const max = Math.max(totalAttack, totalStamina, totalDefense);
+            const maxStats = [];
+            if (totalAttack === max) maxStats.push('Attack');
+            if (totalStamina === max) maxStats.push('Stamina');
+            if (totalDefense === max) maxStats.push('Defense');
+            
+            let category = 'Balance';
+            let categoryClass = 'category-balance';
+            
+            if (maxStats.length === 1) {
+                category = maxStats[0];
+                categoryClass = `category-${category.toLowerCase()}`;
+            } else if (maxStats.length >= 2) {
+                category = 'Dual-Type';
+                categoryClass = 'category-dual';
+            }
+            
+            elements.buildCategoryBadge.className = `flex items-center gap-2 px-4 py-2 rounded-full ${categoryClass}`;
+            elements.buildCategoryText.textContent = category;
+        }
+
+        // Save build
+        function saveBuild() {
+            if (!selectedParts.Top || !selectedParts.Middle || !selectedParts.Tip) {
+                alert('Please select all three parts first!');
+                return;
+            }
+            
+            const name = prompt('Enter a name for this build:', 
+                `${selectedParts.Top.name} + ${selectedParts.Middle.name} + ${selectedParts.Tip.name}`);
+            
+            if (!name) return;
+            
+            const newBuild = {
+                id: Date.now().toString(),
+                name: name,
+                top: selectedParts.Top,
+                middle: selectedParts.Middle,
+                tip: selectedParts.Tip,
+                createdAt: Date.now()
+            };
+            
+            builds.unshift(newBuild);
+            saveBuilds();
+            
+            // Clear selection
+            selectedParts = { Top: null, Middle: null, Tip: null };
+            
+            // Show success and return to menu
+            alert(`✅ Build "${name}" saved!`);
+            switchView('menu');
+        }
+
+        // Open part selection modal
+        function openPartSelectionModal(type) {
+            currentModalType = type;
+            elements.modalPartType.textContent = type;
+            
+            // Filter parts by type
+            const filteredParts = collection.filter(item => item.type === type);
+            
+            // Update modal list
+            elements.modalPartsList.innerHTML = '';
+            
+            if (filteredParts.length === 0) {
+                elements.modalPartsList.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-slate-400">No ${type} parts in your collection yet.</p>
+                        <p class="text-sm text-slate-500 mt-2">Scan some parts first!</p>
+                    </div>
+                `;
+            } else {
+                filteredParts.forEach(part => {
+                    const partElement = document.createElement('div');
+                    partElement.className = `p-3 rounded-xl mb-2 cursor-pointer transition-colors ${selectedParts[type] && selectedParts[type].id === part.id ? 'bg-purple-500/20 border border-purple-500/30' : 'bg-white/5 hover:bg-white/10'}`;
+                    partElement.dataset.id = part.id;
+                    
+                    partElement.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                                <img src="${part.image}" alt="${part.name}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm truncate">${part.name}</h4>
+                                <div class="flex gap-3 mt-1 text-xs text-slate-400">
+                                    <span class="text-red-400">A:${part.stats.attack}</span>
+                                    <span class="text-green-400">S:${part.stats.stamina}</span>
+                                    <span class="text-blue-400">D:${part.stats.defense}</span>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-xs px-2 py-1 rounded-full ${part.category === 'Dual-Type' ? 'bg-yellow-500/20 text-yellow-400' : part.category === 'Attack' ? 'bg-red-500/20 text-red-400' : part.category === 'Stamina' ? 'bg-green-500/20 text-green-400' : part.category === 'Defense' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}">
+                                        ${part.category}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    partElement.addEventListener('click', () => {
+                        selectedParts[type] = part;
+                        elements.partSelectionModal.classList.add('hidden');
+                        updateBuilderUI();
+                    });
+                    
+                    elements.modalPartsList.appendChild(partElement);
+                });
+            }
+            
+            // Show modal
+            elements.partSelectionModal.classList.remove('hidden');
+        }
+
+        // Event Listeners
+        function initEventListeners() {
+            // Menu buttons
+            document.getElementById('scanBtn').addEventListener('click', () => switchView('camera'));
+            document.getElementById('buildBtn').addEventListener('click', () => switchView('builder'));
+            document.getElementById('collectionBtn').addEventListener('click', () => switchView('collection'));
+            document.getElementById('viewCollectionBtn').addEventListener('click', () => switchView('collection'));
+            
+            // Camera navigation
+            document.getElementById('backToMenuBtn').addEventListener('click', () => switchView('menu'));
+            document.getElementById('backToCameraBtn').addEventListener('click', () => switchView('camera'));
+            document.getElementById('retakeBtn').addEventListener('click', () => switchView('camera'));
+            document.getElementById('continueBtn').addEventListener('click', () => switchView('form'));
+            document.getElementById('backToReviewBtn').addEventListener('click', () => switchView('review'));
+            
+            // Collection navigation
+            document.getElementById('backFromCollectionBtn').addEventListener('click', () => switchView('menu'));
+            document.getElementById('newScanFromCollectionBtn').addEventListener('click', () => switchView('camera'));
+            document.getElementById('startScanFromEmptyBtn').addEventListener('click', () => switchView('camera'));
+            
+            // Builder navigation
+            document.getElementById('backFromBuilderBtn').addEventListener('click', () => switchView('menu'));
+            
+            // Form actions
+            document.getElementById('saveBtn').addEventListener('click', saveToCollection);
+            document.getElementById('saveBuildBtn').addEventListener('click', saveBuild);
+            
+            // Camera actions
+            document.getElementById('captureBtn').addEventListener('click', capturePhoto);
+            document.getElementById('retryCameraBtn').addEventListener('click', initCamera);
+            
+            // Scan type buttons
+            document.querySelectorAll('.scan-type-btn').forEach(btn => {
+                btn.addEventListener('click', () => updateScanType(btn.dataset.type));
+            });
+            
+            // Stat buttons
+            document.querySelectorAll('.stat-btn').forEach(btn => {
+                btn.addEventListener('click', () => updateStat(btn.dataset.stat, parseInt(btn.dataset.value)));
+            });
+            
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const filter = btn.dataset.filter;
+                    
+                    // Update active button
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        if (b.dataset.filter === filter) {
+                            b.classList.add('bg-purple-600', 'text-white');
+                            b.classList.remove('text-slate-400', 'hover:text-white');
+                        } else {
+                            b.classList.remove('bg-purple-600', 'text-white');
+                            b.classList.add('text-slate-400', 'hover:text-white');
+                        }
+                    });
+                    
+                    // Apply filter
+                    renderCollection(filter);
+                });
+            });
+            
+            // Builder slot clicks
+            elements.topSlot.addEventListener('click', () => openPartSelectionModal('Top'));
+            elements.middleSlot.addEventListener('click', () => openPartSelectionModal('Middle'));
+            elements.tipSlot.addEventListener('click', () => openPartSelectionModal('Tip'));
+            
+            // Modal actions
+            document.getElementById('closeModalBtn').addEventListener('click', () => {
+                elements.partSelectionModal.classList.add('hidden');
+            });
+            
+            document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+                selectedParts[currentModalType] = null;
+                elements.partSelectionModal.classList.add('hidden');
+                updateBuilderUI();
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && currentView === 'camera' && isCameraReady) {
+                    e.preventDefault();
+                    capturePhoto();
+                }
+                if (e.code === 'Escape' && !elements.partSelectionModal.classList.contains('hidden')) {
+                    elements.partSelectionModal.classList.add('hidden');
+                }
+            });
+            
+            // Page visibility
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    cameraStream = null;
+                    isCameraReady = false;
+                }
+            });
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
