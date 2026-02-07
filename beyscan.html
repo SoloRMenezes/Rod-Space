@@ -144,6 +144,16 @@
             transition: transform 0.2s;
         }
         .edit-btn:active { transform: scale(0.9); }
+
+        /* Combo Triangle Layout */
+        .combo-triangle {
+            display: grid;
+            grid-template-areas: 
+                "top top"
+                "mid tip";
+            gap: 4px;
+            height: 96px;
+        }
     </style>
 </head>
 <body class="flex justify-center p-0 select-none">
@@ -289,7 +299,7 @@
                     <div><div id="combo-defense" class="text-xl font-header font-black text-green-500">1.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Avg Defense</div></div>
                 </div>
             </div>
-            <button onclick="saveCombo()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm text-white">Save Combo</button>
+            <button onclick="saveCombo()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm text-white">Save Build</button>
         </section>
 
         <!-- COLLECTION VIEW (VAULT) -->
@@ -302,7 +312,7 @@
             <div class="space-y-4 mb-6">
                 <div class="flex bg-slate-950/80 p-1 rounded-2xl border border-white/5">
                     <button onclick="setCollectionTab('Parts')" id="tab-parts" class="nav-pill active flex-1 py-2 text-[9px] font-black uppercase rounded-xl">Parts</button>
-                    <button onclick="setCollectionTab('Combos')" id="tab-combos" class="nav-pill flex-1 py-2 text-[9px] font-black uppercase rounded-xl text-slate-500">Combos</button>
+                    <button onclick="setCollectionTab('Combos')" id="tab-combos" class="nav-pill flex-1 py-2 text-[9px] font-black uppercase rounded-xl text-slate-500">Builds</button>
                 </div>
 
                 <div class="relative">
@@ -391,7 +401,6 @@
             capturedImage = canvas.toDataURL('image/png');
             document.getElementById('details-preview-img').src = capturedImage;
             
-            // Default stats for new part (Must start at 1)
             stats = { attack: 1, stamina: 1, defense: 1 };
             editingPartIndex = null;
             document.getElementById('part-name-input').value = '';
@@ -417,7 +426,6 @@
 
         function handleStatClick(type, value) {
             const currentTotal = getPointsSpent();
-            // Minimum is 1, so if they try to click 0 (unlikely with UI) or click current value, reset to 1
             const newValue = Math.max(1, value);
             const difference = newValue - stats[type];
             
@@ -438,7 +446,6 @@
                 for(let i=1; i<=5; i++) {
                     const isActive = stats[type] >= i;
                     const activeClass = isActive ? 'active-'+type : '';
-                    
                     const canIncrease = (spent + 1 <= MAX_POINTS);
                     const isInactive = !isActive && !canIncrease;
                     
@@ -491,14 +498,12 @@
                 }
             });
 
-            // Lab Assembly: Everything out of 5 and make it an avg
             const keys = ['attack', 'stamina', 'defense'];
             keys.forEach(key => {
                 const partsInBuild = Object.values(currentBuild).filter(p => p !== null);
                 let avg = 1.0;
                 if (partsInBuild.length > 0) {
                     const sum = partsInBuild.reduce((acc, p) => acc + p.stats[key], 0);
-                    // Minimum avg of 1.0 if at least one part exists
                     avg = Math.max(1, sum / partsInBuild.length).toFixed(1);
                 }
                 document.getElementById(`combo-${key}`).textContent = avg;
@@ -551,7 +556,7 @@
         function saveCombo() {
             if (!currentBuild.Top || !currentBuild.Middle || !currentBuild.Tip) return;
             
-            const name = `COMBO-${Date.now().toString().slice(-4)}`;
+            const name = `BUILD-${Date.now().toString().slice(-4)}`;
             const sumAttack = currentBuild.Top.stats.attack + currentBuild.Middle.stats.attack + currentBuild.Tip.stats.attack;
             const sumStamina = currentBuild.Top.stats.stamina + currentBuild.Middle.stats.stamina + currentBuild.Tip.stats.stamina;
             const sumDefense = currentBuild.Top.stats.defense + currentBuild.Middle.stats.defense + currentBuild.Tip.stats.defense;
@@ -612,7 +617,6 @@
                     if (matchesSearch && matchesType) {
                         grid.innerHTML += `
                             <div class="glass-card rounded-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-                                <!-- Edit button ONLY appears here in the Vault -->
                                 <button onclick="event.stopPropagation(); editPart(${index})" class="edit-btn">
                                     <i data-lucide="edit-3" class="w-3 h-3"></i>
                                 </button>
@@ -627,19 +631,36 @@
             } else {
                 combos.filter(c => c.name.toLowerCase().includes(searchTerm)).forEach(c => {
                     grid.innerHTML += `
-                        <div class="glass-card rounded-2xl p-3 flex flex-col gap-2 animate-in fade-in zoom-in duration-300">
-                            <div class="text-[10px] font-bold text-white truncate">${c.name}</div>
-                            <div class="grid grid-cols-3 gap-1">
-                                <div class="text-center"><div class="text-[10px] font-header text-blue-500">${c.stats.attack}</div><div class="text-[6px] uppercase text-slate-500">ATK</div></div>
-                                <div class="text-center"><div class="text-[10px] font-header text-yellow-500">${c.stats.stamina}</div><div class="text-[6px] uppercase text-slate-500">STA</div></div>
-                                <div class="text-center"><div class="text-[10px] font-header text-green-500">${c.stats.defense}</div><div class="text-[6px] uppercase text-slate-500">DEF</div></div>
+                        <div class="glass-card rounded-2xl p-2 flex flex-col gap-2 animate-in fade-in zoom-in duration-300">
+                            <!-- Triangle Part Preview -->
+                            <div class="combo-triangle">
+                                <div style="grid-area: top" class="rounded-lg overflow-hidden border border-white/10 bg-slate-900">
+                                    <img src="${c.parts.Top.image}" class="w-full h-full object-cover">
+                                </div>
+                                <div style="grid-area: mid" class="rounded-lg overflow-hidden border border-white/10 bg-slate-900">
+                                    <img src="${c.parts.Middle.image}" class="w-full h-full object-cover">
+                                </div>
+                                <div style="grid-area: tip" class="rounded-lg overflow-hidden border border-white/10 bg-slate-900">
+                                    <img src="${c.parts.Tip.image}" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                            
+                            <div class="px-1">
+                                <div class="text-[10px] font-bold text-white truncate mb-2">${c.name}</div>
+                                <div class="grid grid-cols-3 gap-1">
+                                    <div class="text-center"><div class="text-[9px] font-header text-blue-500">${c.stats.attack}</div><div class="text-[6px] uppercase text-slate-500">ATK</div></div>
+                                    <div class="text-center"><div class="text-[9px] font-header text-yellow-500">${c.stats.stamina}</div><div class="text-[6px] uppercase text-slate-500">STA</div></div>
+                                    <div class="text-center"><div class="text-[9px] font-header text-green-500">${c.stats.defense}</div><div class="text-[6px] uppercase text-slate-500">DEF</div></div>
+                                </div>
                             </div>
                         </div>`;
                 });
             }
+
             if (grid.innerHTML === '') {
                 grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-500 text-[10px] font-bold uppercase tracking-widest">Vault is Empty</div>`;
             }
+
             lucide.createIcons();
         }
 
@@ -650,7 +671,9 @@
             document.getElementById(`btn-${type.toLowerCase()}`).classList.add('border-blue-500');
         }
 
-        window.onload = () => lucide.createIcons();
+        window.onload = () => {
+            lucide.createIcons();
+        };
     </script>
 </body>
 </html>
