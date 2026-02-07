@@ -7,12 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&family=Exo+2:ital,wght@1,900&display=swap');
         
         :root {
             --primary: #3b82f6;
-            --secondary: #0ea5e9;
-            --accent: #22d3ee;
+            --secondary: #eab308;
+            --accent: #22c55e;
             --bg-dark: #020617;
         }
 
@@ -21,118 +21,176 @@
             background: var(--bg-dark);
             background-image: 
                 radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.1), transparent),
-                radial-gradient(circle at 0% 100%, rgba(14, 165, 233, 0.05), transparent);
+                radial-gradient(circle at 0% 100%, rgba(234, 179, 8, 0.05), transparent);
             min-height: 100vh;
             color: white;
+            margin: 0;
             overflow-x: hidden;
         }
 
+        /* --- SPLASH SCREEN STYLES --- */
+        #splash-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #0a0a0c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1), opacity 0.5s ease;
+        }
+
+        #splash-screen.hidden-splash {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .beyblade-container {
+            position: relative;
+            text-align: center;
+            perspective: 1000px;
+        }
+
+        .beyblade-title {
+            font-family: 'Exo 2', sans-serif;
+            font-size: clamp(4rem, 15vw, 8rem);
+            text-transform: uppercase;
+            font-weight: 900;
+            font-style: italic;
+            position: relative;
+            display: inline-block;
+            letter-spacing: -4px;
+            line-height: 1;
+            background: linear-gradient(to bottom, #fff 0%, #a0a0a0 45%, #404040 50%, #808080 55%, #fff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+            -webkit-text-stroke: 2px #000;
+        }
+
+        .beyblade-title::before {
+            content: 'BEYSCAN';
+            position: absolute; left: 0; top: 0; z-index: -1;
+            -webkit-text-stroke: 12px #0033aa; color: #0033aa;
+        }
+
+        .beyblade-title::after {
+            content: 'BEYSCAN';
+            position: absolute; left: 0; top: 0; z-index: -2;
+            -webkit-text-stroke: 22px #ffcc00; color: #ffcc00;
+            clip-path: polygon(0% 0%, 100% 0%, 95% 50%, 100% 100%, 0% 100%, 5% 50%);
+        }
+
+        .btn-start {
+            margin-top: 4rem;
+            padding: 1.25rem 4rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.1rem;
+            letter-spacing: 0.2em;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 12px;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+        }
+
+        .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 60px rgba(59, 130, 246, 0.6); background: #3b82f6; }
+
+        /* --- APP STYLES --- */
         .font-header { font-family: 'Orbitron', sans-serif; }
-
-        .glass-card {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        .glass-card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .btn-main-scan { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 0 30px rgba(59, 130, 246, 0.3); }
+        .nav-pill.active { background: var(--primary); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); color: white !important; }
+        
+        /* Filter Pill Styles */
+        .filter-pill { 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 9999px; 
+            font-size: 9px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8;
+            transition: all 0.2s ease;
         }
-
-        .btn-main-scan {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .btn-main-scan:active { transform: scale(0.95); }
-
-        .nav-pill {
-            transition: all 0.3s ease;
-        }
-        .nav-pill.active {
+        .filter-pill.active {
             background: var(--primary);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-            color: white !important;
+            color: white;
+            border-color: var(--primary);
         }
 
+        .stat-block { width: 40px; height: 6px; border-radius: 2px; background: rgba(255,255,255,0.05); cursor: pointer; }
+        .stat-block.active-attack { background: #3b82f6; box-shadow: 0 0 8px #3b82f6; }
+        .stat-block.active-stamina { background: #eab308; box-shadow: 0 0 8px #eab308; }
+        .stat-block.active-defense { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .part-slot {
-            transition: all 0.2s ease;
-            border: 2px dashed rgba(255,255,255,0.1);
-        }
-        .part-slot.selected {
-            border: 2px solid var(--primary);
-            background: rgba(59, 130, 246, 0.1);
-        }
-
-        .stat-block {
-            width: 40px;
-            height: 24px;
-            border-radius: 4px;
-            background: rgba(255,255,255,0.05);
-            cursor: pointer;
-        }
-        .stat-block.active-attack { background: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
-        .stat-block.active-stamina { background: #22d3ee; box-shadow: 0 0 10px rgba(34, 211, 238, 0.3); }
-        .stat-block.active-defense { background: #6366f1; box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); }
     </style>
 </head>
 <body class="flex justify-center p-0 select-none">
 
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <div class="beyblade-container">
+            <h1 class="beyblade-title">BEYSCAN</h1>
+            <div class="text-[#ffcc00] font-header tracking-[0.5em] text-[10px] mt-4 italic opacity-80">OPTICAL ANALYSIS SYSTEM</div>
+        </div>
+        <button class="btn-start text-white" onclick="dismissSplash()">Initialize</button>
+    </div>
+
+    <!-- Main App Content -->
     <div class="w-full max-w-md min-h-screen flex flex-col">
         
-        <!-- 1. HOME VIEW -->
+        <!-- HOME VIEW -->
         <section id="home-view" class="view flex flex-col p-6 animate-in fade-in duration-500">
-            <!-- Header -->
             <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h1 class="font-header text-2xl font-black tracking-tighter text-white">BEY<span class="text-blue-500">SCAN</span></h1>
-                </div>
-                <div class="w-10 h-10 rounded-full border border-slate-700 flex items-center justify-center bg-slate-900 overflow-hidden">
-                    <i data-lucide="user" class="w-5 h-5 text-slate-400"></i>
-                </div>
+                <h1 class="font-header text-2xl font-black tracking-tighter text-white">BEY<span class="text-blue-500">SCAN</span></h1>
+                <div class="w-10 h-10 rounded-full border border-slate-700 flex items-center justify-center bg-slate-900"><i data-lucide="user" class="w-5 h-5 text-slate-400"></i></div>
             </div>
 
-            <!-- Hangar Inventory Dashboard -->
             <div class="glass-card rounded-[2rem] p-6 mb-8 border-blue-500/10">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Hangar Inventory</p>
-                
                 <div class="grid grid-cols-3 gap-3">
                     <div class="bg-slate-950/50 p-4 rounded-2xl border border-white/5 flex flex-col items-center">
-                        <div class="text-[8px] font-black text-blue-400 uppercase mb-2">Tops</div>
+                        <div class="text-[8px] font-black text-blue-500 uppercase mb-1">Tops</div>
                         <div class="text-3xl font-header font-black" id="count-top">0</div>
                     </div>
                     <div class="bg-slate-950/50 p-4 rounded-2xl border border-white/5 flex flex-col items-center">
-                        <div class="text-[8px] font-black text-cyan-400 uppercase mb-2">Mids</div>
+                        <div class="text-[8px] font-black text-yellow-500 uppercase mb-1">Mids</div>
                         <div class="text-3xl font-header font-black" id="count-middle">0</div>
                     </div>
                     <div class="bg-slate-950/50 p-4 rounded-2xl border border-white/5 flex flex-col items-center">
-                        <div class="text-[8px] font-black text-indigo-400 uppercase mb-2">Tips</div>
+                        <div class="text-[8px] font-black text-green-500 uppercase mb-1">Tips</div>
                         <div class="text-3xl font-header font-black" id="count-tip">0</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Actions -->
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="showView('scanner-view'); startCamera();" class="btn-main-scan col-span-2 py-8 rounded-[2.5rem] flex flex-col items-center justify-center gap-3 group">
-                    <div class="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
-                        <i data-lucide="scan" class="w-7 h-7 text-white"></i>
-                    </div>
-                    <span class="font-header font-bold text-sm tracking-widest">INITIATE SCAN</span>
+                <button onclick="showView('scanner-view'); startCamera();" class="btn-main-scan col-span-2 py-8 rounded-[2.5rem] flex flex-col items-center justify-center gap-3">
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center border border-white/20"><i data-lucide="scan" class="w-6 h-6 text-white"></i></div>
+                    <span class="font-header font-bold text-xs tracking-widest text-white">INITIATE SCAN</span>
                 </button>
-                
-                <button onclick="showView('builder-view')" class="glass-card py-6 rounded-3xl flex flex-col items-center gap-2 border-blue-500/10 hover:bg-white/5 transition-colors">
+                <button onclick="showView('builder-view')" class="glass-card py-6 rounded-3xl flex flex-col items-center gap-2">
                     <i data-lucide="wrench" class="w-6 h-6 text-blue-400"></i>
                     <span class="text-[10px] font-bold uppercase tracking-widest text-slate-300">Lab</span>
                 </button>
-
-                <button onclick="showView('collection-view')" class="glass-card py-6 rounded-3xl flex flex-col items-center gap-2 border-cyan-500/10 hover:bg-white/5 transition-colors">
-                    <i data-lucide="database" class="w-6 h-6 text-cyan-400"></i>
+                <button onclick="showView('collection-view')" class="glass-card py-6 rounded-3xl flex flex-col items-center gap-2">
+                    <i data-lucide="database" class="w-6 h-6 text-yellow-400"></i>
                     <span class="text-[10px] font-bold uppercase tracking-widest text-slate-300">Vault</span>
                 </button>
             </div>
         </section>
 
-        <!-- 2. SCANNER VIEW -->
+        <!-- SCANNER VIEW -->
         <section id="scanner-view" class="view hidden flex-col p-6">
             <div class="flex items-center gap-4 mb-6">
                 <button onclick="showView('home-view')" class="p-2 bg-slate-800 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
@@ -146,11 +204,11 @@
                 </button>
                 <button onclick="setScanPart('Middle')" class="scan-part-btn glass-card rounded-2xl p-3 flex flex-col items-center gap-1" id="btn-middle">
                     <i data-lucide="aperture" class="w-5 h-5 text-slate-500"></i>
-                    <span class="text-[9px] font-bold uppercase text-slate-500">Mid</span>
+                    <span class="text-[9px] font-bold uppercase">Mid</span>
                 </button>
                 <button onclick="setScanPart('Tip')" class="scan-part-btn glass-card rounded-2xl p-3 flex flex-col items-center gap-1" id="btn-tip">
                     <i data-lucide="triangle" class="w-5 h-5 rotate-180 text-slate-500"></i>
-                    <span class="text-[9px] font-bold uppercase text-slate-500">Tip</span>
+                    <span class="text-[9px] font-bold uppercase">Tip</span>
                 </button>
             </div>
 
@@ -171,19 +229,7 @@
             </div>
         </section>
 
-        <!-- 3. REVIEW VIEW -->
-        <section id="review-view" class="view hidden flex-col items-center p-6">
-            <h3 class="font-header text-sm font-bold mb-6 tracking-widest">CAPTURE CONFIRMED</h3>
-            <div class="w-full aspect-square bg-slate-900 rounded-[2rem] overflow-hidden mb-8 border border-white/10 shadow-2xl">
-                <img id="capture-review" src="" alt="Capture" class="w-full h-full object-cover scale-x-[-1]">
-            </div>
-            <div class="w-full grid grid-cols-2 gap-4">
-                <button onclick="showView('scanner-view')" class="bg-slate-800 py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest">Discard</button>
-                <button onclick="showView('details-view')" class="btn-main-scan py-4 rounded-2xl font-bold uppercase text-[10px] tracking-widest text-white">Analyze</button>
-            </div>
-        </section>
-
-        <!-- 4. DETAILS VIEW -->
+        <!-- DETAILS VIEW -->
         <section id="details-view" class="view hidden flex-col p-6">
             <h3 class="font-header text-xs font-bold uppercase tracking-widest mb-6 text-blue-400">Analysis Results</h3>
             <div class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden mb-6 border border-white/10">
@@ -192,95 +238,77 @@
                     <span id="details-part-tag" class="bg-blue-600 text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-wider">Top</span>
                 </div>
             </div>
-            <div class="space-y-6 mb-10">
-                <div class="space-y-2">
-                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Designation</p>
-                    <input id="part-name-input" type="text" placeholder="Enter part name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:border-blue-500 outline-none">
-                </div>
-                <div class="space-y-5" id="stat-controls"></div>
+            <div class="space-y-6 mb-10" id="stat-controls"></div>
+            <div class="mt-auto">
+                <input id="part-name-input" type="text" placeholder="Enter part name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-sm mb-4 outline-none text-white">
+                <button onclick="savePart()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm text-white">Save to Vault</button>
             </div>
-            <button onclick="savePart()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-[0.2em] text-sm">Save to Vault</button>
         </section>
 
-        <!-- 5. BUILDER VIEW -->
+        <!-- BUILDER VIEW -->
         <section id="builder-view" class="view hidden flex-col p-6">
             <div class="flex items-center gap-4 mb-6">
                 <button onclick="showView('home-view')" class="p-2 bg-slate-800 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
                 <h3 class="font-header text-xs font-bold uppercase tracking-widest">Lab Assembly</h3>
             </div>
-
             <div class="glass-card rounded-[2rem] p-8 mb-6 flex flex-col items-center">
                 <div class="flex items-center justify-center gap-2 mb-10 w-full">
-                    <div id="slot-Top" onclick="openPartPicker('Top')" class="part-slot w-24 h-24 rounded-full flex items-center justify-center cursor-pointer overflow-hidden bg-slate-950/50">
-                        <i data-lucide="circle-dot" class="w-10 h-10 text-slate-700"></i>
-                    </div>
+                    <div id="slot-Top" onclick="openPartPicker('Top')" class="w-20 h-20 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden"><i data-lucide="circle-dot" class="w-8 h-8 text-slate-700"></i></div>
                     <div class="w-4 h-[1px] bg-slate-800"></div>
-                    <div id="slot-Middle" onclick="openPartPicker('Middle')" class="part-slot w-16 h-16 rounded-full flex items-center justify-center cursor-pointer overflow-hidden bg-slate-950/50">
-                        <i data-lucide="aperture" class="w-6 h-6 text-slate-700"></i>
-                    </div>
+                    <div id="slot-Middle" onclick="openPartPicker('Middle')" class="w-14 h-14 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden"><i data-lucide="aperture" class="w-6 h-6 text-slate-700"></i></div>
                     <div class="w-4 h-[1px] bg-slate-800"></div>
-                    <div id="slot-Tip" onclick="openPartPicker('Tip')" class="part-slot w-12 h-12 rounded-xl flex items-center justify-center cursor-pointer overflow-hidden bg-slate-950/50">
-                        <i data-lucide="triangle" class="w-4 h-4 text-slate-700 rotate-180"></i>
-                    </div>
+                    <div id="slot-Tip" onclick="openPartPicker('Tip')" class="w-12 h-12 rounded-xl border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden"><i data-lucide="triangle" class="w-4 h-4 text-slate-700 rotate-180"></i></div>
                 </div>
-
-                <div class="w-full grid grid-cols-3 gap-6 text-center border-t border-white/5 pt-8">
-                    <div>
-                        <div id="combo-attack" class="text-xl font-header font-black text-blue-400">0.0</div>
-                        <div class="text-[8px] uppercase text-slate-500 font-bold tracking-widest mt-1">ATK</div>
-                    </div>
-                    <div>
-                        <div id="combo-stamina" class="text-xl font-header font-black text-cyan-400">0.0</div>
-                        <div class="text-[8px] uppercase text-slate-500 font-bold tracking-widest mt-1">STA</div>
-                    </div>
-                    <div>
-                        <div id="combo-defense" class="text-xl font-header font-black text-indigo-400">0.0</div>
-                        <div class="text-[8px] uppercase text-slate-500 font-bold tracking-widest mt-1">DEF</div>
-                    </div>
+                <div class="w-full grid grid-cols-3 gap-4 text-center">
+                    <div><div id="combo-attack" class="text-xl font-header font-black text-blue-500">0.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Attack</div></div>
+                    <div><div id="combo-stamina" class="text-xl font-header font-black text-yellow-500">0.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Stamina</div></div>
+                    <div><div id="combo-defense" class="text-xl font-header font-black text-green-500">0.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Defense</div></div>
                 </div>
             </div>
-
-            <div class="space-y-4">
-                <input id="combo-name-input" type="text" placeholder="Combo designation..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-xs outline-none focus:border-blue-500">
-                <button onclick="saveCombo()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm">Save Combo</button>
-            </div>
+            <button onclick="saveCombo()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm text-white">Save Combo</button>
         </section>
 
-        <!-- 6. COLLECTION VIEW -->
+        <!-- COLLECTION VIEW -->
         <section id="collection-view" class="view hidden flex-col p-6">
-            <div class="flex items-center gap-4 mb-6">
+            <div class="flex items-center gap-4 mb-4">
                 <button onclick="showView('home-view')" class="p-2 bg-slate-800 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
                 <h3 class="font-header text-xs font-bold uppercase tracking-widest">Vault</h3>
             </div>
-            
-            <div class="flex bg-slate-950/80 p-1 rounded-2xl mb-6 border border-white/5">
-                <button onclick="setCollectionTab('Parts')" id="tab-parts" class="nav-pill active flex-1 py-2 text-[9px] font-black uppercase tracking-wider rounded-xl">Parts</button>
-                <button onclick="setCollectionTab('Combos')" id="tab-combos" class="nav-pill flex-1 py-2 text-[9px] font-black uppercase tracking-wider rounded-xl text-slate-500">Combos</button>
-            </div>
 
-            <div id="parts-filter-controls" class="space-y-4 mb-6">
-                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                    <button onclick="setPartSubFilter('All')" class="sub-filter-btn px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-wider bg-blue-600" data-filter="All">All</button>
-                    <button onclick="setPartSubFilter('Top')" class="sub-filter-btn px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-wider bg-slate-800 text-slate-400" data-filter="Top">Tops</button>
-                    <button onclick="setPartSubFilter('Middle')" class="sub-filter-btn px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-wider bg-slate-800 text-slate-400" data-filter="Middle">Mids</button>
-                    <button onclick="setPartSubFilter('Tip')" class="sub-filter-btn px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-wider bg-slate-800 text-slate-400" data-filter="Tip">Tips</button>
+            <!-- Search & Filters -->
+            <div class="space-y-4 mb-6">
+                <!-- Tabs -->
+                <div class="flex bg-slate-950/80 p-1 rounded-2xl border border-white/5">
+                    <button onclick="setCollectionTab('Parts')" id="tab-parts" class="nav-pill active flex-1 py-2 text-[9px] font-black uppercase rounded-xl">Parts</button>
+                    <button onclick="setCollectionTab('Combos')" id="tab-combos" class="nav-pill flex-1 py-2 text-[9px] font-black uppercase rounded-xl text-slate-500">Combos</button>
+                </div>
+
+                <!-- Search Input -->
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
+                    <input id="vault-search" type="text" placeholder="Search by name..." oninput="handleFilterChange()" class="w-full bg-slate-900/50 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white focus:border-blue-500 outline-none transition-all">
+                </div>
+
+                <!-- Type Filters (Only for Parts) -->
+                <div id="part-filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    <button onclick="setTypeFilter('all')" class="type-filter-btn filter-pill active" id="filter-all">All</button>
+                    <button onclick="setTypeFilter('Top')" class="type-filter-btn filter-pill" id="filter-top">Tops</button>
+                    <button onclick="setTypeFilter('Middle')" class="type-filter-btn filter-pill" id="filter-middle">Mids</button>
+                    <button onclick="setTypeFilter('Tip')" class="type-filter-btn filter-pill" id="filter-tip">Tips</button>
                 </div>
             </div>
 
-            <div id="collection-grid" class="grid grid-cols-2 gap-4 pb-20"></div>
+            <div id="collection-grid" class="grid grid-cols-2 gap-4 pb-20 overflow-y-auto no-scrollbar"></div>
         </section>
 
-        <!-- Part Picker Modal -->
-        <div id="part-picker-modal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center px-4">
-            <div class="w-full max-w-sm glass-card rounded-[2.5rem] border border-white/10 p-6 max-h-[70vh] flex flex-col">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-header text-xs font-bold uppercase tracking-widest" id="picker-title">Database</h3>
-                    <button onclick="closePartPicker()" class="p-2 bg-slate-800 rounded-full"><i data-lucide="x" class="w-4 h-4"></i></button>
-                </div>
-                <div id="picker-list" class="space-y-4 overflow-y-auto no-scrollbar"></div>
-            </div>
-        </div>
+    </div>
 
+    <!-- Part Picker Modal -->
+    <div id="part-picker-modal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6">
+        <div class="w-full glass-card rounded-[2.5rem] p-6 max-h-[70vh] flex flex-col">
+            <div class="flex justify-between mb-6"><h3 class="font-header text-xs font-bold uppercase">Select Part</h3><button onclick="closePartPicker()"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+            <div id="picker-list" class="space-y-3 overflow-y-auto no-scrollbar"></div>
+        </div>
     </div>
 
     <script>
@@ -291,12 +319,14 @@
         let selectedPartType = 'Top';
         let collection = []; 
         let combos = [];     
-        let stats = { attack: 0, stamina: 0, defense: 0 };
-        const MAX_TOTAL = 13;
-
-        let currentTab = 'Parts'; 
-        let currentSubFilter = 'All'; 
+        let stats = { attack: 1, stamina: 1, defense: 1 };
         let currentBuild = { Top: null, Middle: null, Tip: null };
+        let currentCollectionTab = 'Parts';
+        let currentTypeFilter = 'all';
+
+        function dismissSplash() {
+            document.getElementById('splash-screen').classList.add('hidden-splash');
+        }
 
         function showView(viewId) {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -310,211 +340,208 @@
             }
 
             if (viewId === 'home-view') updateHomeUI();
-            if (viewId === 'details-view') renderDetailsView();
-            if (viewId === 'collection-view') renderCollection();
-            if (viewId === 'builder-view') updateComboPreview();
+            if (viewId === 'details-view') renderDetailsStats();
+            if (viewId === 'collection-view') {
+                resetFilters();
+                renderCollection();
+            }
         }
 
         async function startCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 document.getElementById('video-preview').srcObject = stream;
-                setScanPart(selectedPartType);
             } catch (err) { console.error(err); }
         }
 
         function takePhoto() {
             const video = document.getElementById('video-preview');
             const canvas = document.getElementById('capture-canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
-            ctx.drawImage(video, 0, 0);
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
             capturedImage = canvas.toDataURL('image/png');
-            document.getElementById('capture-review').src = capturedImage;
-            showView('review-view');
-        }
-
-        function setScanPart(type) {
-            selectedPartType = type;
-            document.querySelectorAll('.scan-part-btn').forEach(b => {
-                b.classList.remove('border-blue-500');
-                b.querySelector('i').classList.replace('text-blue-400', 'text-slate-500');
-                b.querySelector('span').classList.replace('text-white', 'text-slate-500');
-            });
-            const btn = document.getElementById(`btn-${type.toLowerCase()}`);
-            btn.classList.add('border-blue-500');
-            btn.querySelector('i').classList.replace('text-slate-500', 'text-blue-400');
-            btn.querySelector('span').classList.replace('text-slate-500', 'text-white');
-            
-            const guide = document.getElementById('camera-guide');
-            guide.className = 'absolute border-2 border-dashed border-blue-400/40 shadow-[0_0_0_999px_rgba(2,6,23,0.7)] transition-all duration-300';
-            if (type === 'Top') guide.classList.add('w-[75%]', 'h-[75%]', 'rounded-full');
-            else if (type === 'Middle') guide.classList.add('w-[50%]', 'h-[50%]', 'rounded-full');
-            else if (type === 'Tip') guide.classList.add('w-[45%]', 'h-[45%]', 'rounded-2xl');
-        }
-
-        function renderDetailsView() {
             document.getElementById('details-preview-img').src = capturedImage;
-            document.getElementById('details-part-tag').textContent = selectedPartType;
-            renderDetailsStats();
+            showView('details-view');
         }
 
         function renderDetailsStats() {
             const container = document.getElementById('stat-controls');
             container.innerHTML = '';
             ['attack', 'stamina', 'defense'].forEach(type => {
-                const row = document.createElement('div');
-                row.className = 'space-y-2';
                 let blocks = '';
                 for(let i=1; i<=5; i++) {
                     const active = stats[type] >= i ? 'active-'+type : '';
-                    blocks += `<div class="stat-block flex-1 h-1.5 rounded-sm ${active}" onclick="setStatVal('${type}', ${i})"></div>`;
+                    blocks += `<div class="stat-block flex-1 ${active}" onclick="stats['${type}']=${i}; renderDetailsStats()"></div>`;
                 }
-                row.innerHTML = `
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-[8px] font-black uppercase text-slate-500 tracking-widest">${type}</span>
-                        <span class="text-[10px] font-bold text-slate-400">${stats[type]}/5</span>
-                    </div>
-                    <div class="flex gap-1.5 w-full">${blocks}</div>
-                `;
-                container.appendChild(row);
+                container.innerHTML += `
+                    <div class="space-y-2">
+                        <div class="flex justify-between uppercase text-[8px] font-black text-slate-500"><span>${type}</span><span>${stats[type]}/5</span></div>
+                        <div class="flex gap-2">${blocks}</div>
+                    </div>`;
             });
         }
 
-        function setStatVal(type, val) {
-            const total = Object.entries(stats).reduce((a, [k, v]) => a + (k === type ? val : v), 0);
-            if (total <= MAX_TOTAL) {
-                stats[type] = val;
-                renderDetailsStats();
-            }
-        }
-
         function savePart() {
-            const name = document.getElementById('part-name-input').value || `${selectedPartType}-${Math.floor(Math.random()*999)}`;
-            collection.push({ id: Date.now(), name, type: selectedPartType, image: capturedImage, stats: {...stats} });
-            stats = { attack: 0, stamina: 0, defense: 0 };
+            const name = document.getElementById('part-name-input').value || `PART-${Date.now()}`;
+            collection.push({ name, type: selectedPartType, image: capturedImage, stats: {...stats} });
+            stats = { attack: 1, stamina: 1, defense: 1 };
             document.getElementById('part-name-input').value = '';
             showView('home-view');
         }
 
+        function saveCombo() {
+            if (!currentBuild.Top || !currentBuild.Middle || !currentBuild.Tip) return;
+            const name = `COMBO-${Date.now()}`;
+            const totalStats = {
+                attack: ((currentBuild.Top.stats.attack + currentBuild.Middle.stats.attack + currentBuild.Tip.stats.attack)/3).toFixed(1),
+                stamina: ((currentBuild.Top.stats.stamina + currentBuild.Middle.stats.stamina + currentBuild.Tip.stats.stamina)/3).toFixed(1),
+                defense: ((currentBuild.Top.stats.defense + currentBuild.Middle.stats.defense + currentBuild.Tip.stats.defense)/3).toFixed(1)
+            };
+            combos.push({ name, parts: {...currentBuild}, stats: totalStats });
+            currentBuild = { Top: null, Middle: null, Tip: null };
+            updateBuildUI();
+            showView('home-view');
+        }
+
         function updateHomeUI() {
-            const counts = { Top: 0, Middle: 0, Tip: 0 };
-            collection.forEach(p => counts[p.type]++);
+            document.getElementById('count-top').textContent = collection.filter(p => p.type === 'Top').length;
+            document.getElementById('count-middle').textContent = collection.filter(p => p.type === 'Middle').length;
+            document.getElementById('count-tip').textContent = collection.filter(p => p.type === 'Tip').length;
+        }
+
+        function setCollectionTab(tab) {
+            currentCollectionTab = tab;
+            document.getElementById('tab-parts').classList.toggle('active', tab === 'Parts');
+            document.getElementById('tab-parts').classList.toggle('text-slate-500', tab !== 'Parts');
+            document.getElementById('tab-combos').classList.toggle('active', tab === 'Combos');
+            document.getElementById('tab-combos').classList.toggle('text-slate-500', tab !== 'Combos');
             
-            document.getElementById('count-top').textContent = counts.Top;
-            document.getElementById('count-middle').textContent = counts.Middle;
-            document.getElementById('count-tip').textContent = counts.Tip;
-            lucide.createIcons();
+            // Toggle visibility of part-specific filters
+            document.getElementById('part-filters').style.display = tab === 'Parts' ? 'flex' : 'none';
+            
+            renderCollection();
+        }
+
+        function setTypeFilter(type) {
+            currentTypeFilter = type;
+            document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`filter-${type.toLowerCase()}`).classList.add('active');
+            renderCollection();
+        }
+
+        function handleFilterChange() {
+            renderCollection();
+        }
+
+        function resetFilters() {
+            document.getElementById('vault-search').value = '';
+            currentTypeFilter = 'all';
+            document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('filter-all').classList.add('active');
         }
 
         function renderCollection() {
             const grid = document.getElementById('collection-grid');
+            const searchTerm = document.getElementById('vault-search').value.toLowerCase();
             grid.innerHTML = '';
-            if (currentTab === 'Parts') {
-                document.getElementById('parts-filter-controls').classList.remove('hidden');
-                let filtered = currentSubFilter === 'All' ? collection : collection.filter(p => p.type === currentSubFilter);
-                filtered.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'glass-card rounded-3xl overflow-hidden border border-white/5';
-                    card.innerHTML = `
-                        <div class="h-24 w-full bg-slate-800 relative"><img src="${item.image}" class="w-full h-full object-cover grayscale"></div>
-                        <div class="p-3">
-                            <div class="text-[10px] font-bold truncate mb-2">${item.name}</div>
-                            <div class="flex justify-between">
-                                <span class="text-[7px] font-black text-blue-400">A:${item.stats.attack}</span>
-                                <span class="text-[7px] font-black text-cyan-400">S:${item.stats.stamina}</span>
-                                <span class="text-[7px] font-black text-indigo-400">D:${item.stats.defense}</span>
+            
+            if (currentCollectionTab === 'Parts') {
+                const filteredParts = collection.filter(p => {
+                    const matchesSearch = p.name.toLowerCase().includes(searchTerm);
+                    const matchesType = currentTypeFilter === 'all' || p.type === currentTypeFilter;
+                    return matchesSearch && matchesType;
+                });
+
+                if (filteredParts.length === 0) {
+                    grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-500 text-[10px] font-bold uppercase tracking-widest">No matching parts found</div>`;
+                }
+
+                filteredParts.forEach(p => {
+                    grid.innerHTML += `
+                        <div class="glass-card rounded-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+                            <img src="${p.image}" class="h-24 w-full object-cover">
+                            <div class="p-3">
+                                <div class="text-[10px] font-bold truncate text-white mb-1">${p.name}</div>
+                                <div class="text-[8px] font-bold text-blue-500 uppercase">${p.type}</div>
                             </div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
+                        </div>`;
                 });
             } else {
-                document.getElementById('parts-filter-controls').classList.add('hidden');
-                combos.forEach(combo => {
-                    const card = document.createElement('div');
-                    card.className = 'glass-card rounded-3xl overflow-hidden border border-blue-500/20';
-                    card.innerHTML = `
-                        <div class="h-24 w-full bg-slate-800"><img src="${combo.parts.Top.image}" class="w-full h-full object-cover"></div>
-                        <div class="p-3">
-                            <div class="text-[10px] font-bold truncate mb-1">${combo.name}</div>
-                            <div class="flex justify-between pt-2 border-t border-white/5">
-                                <span class="text-[8px] font-bold text-blue-400">${combo.stats.attack}</span>
-                                <span class="text-[8px] font-bold text-cyan-400">${combo.stats.stamina}</span>
-                                <span class="text-[8px] font-bold text-indigo-400">${combo.stats.defense}</span>
+                const filteredCombos = combos.filter(c => c.name.toLowerCase().includes(searchTerm));
+
+                if (filteredCombos.length === 0) {
+                    grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-500 text-[10px] font-bold uppercase tracking-widest">No matching combos found</div>`;
+                }
+
+                filteredCombos.forEach(c => {
+                    grid.innerHTML += `
+                        <div class="glass-card rounded-2xl p-3 flex flex-col gap-2 animate-in fade-in zoom-in duration-300">
+                            <div class="text-[10px] font-bold text-white truncate">${c.name}</div>
+                            <div class="grid grid-cols-3 gap-1">
+                                <div class="text-center"><div class="text-[10px] font-header text-blue-500">${c.stats.attack}</div><div class="text-[6px] uppercase text-slate-500">ATK</div></div>
+                                <div class="text-center"><div class="text-[10px] font-header text-yellow-500">${c.stats.stamina}</div><div class="text-[6px] uppercase text-slate-500">STA</div></div>
+                                <div class="text-center"><div class="text-[10px] font-header text-green-500">${c.stats.defense}</div><div class="text-[6px] uppercase text-slate-500">DEF</div></div>
                             </div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
+                        </div>`;
                 });
             }
-            lucide.createIcons();
         }
 
-        function setCollectionTab(mode) {
-            currentTab = mode;
-            document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
-            document.getElementById(`tab-${mode.toLowerCase()}`).classList.add('active');
-            renderCollection();
-        }
-
-        function setPartSubFilter(type) {
-            currentSubFilter = type;
-            document.querySelectorAll('.sub-filter-btn').forEach(btn => {
-                const active = btn.getAttribute('data-filter') === type;
-                btn.className = `sub-filter-btn px-4 py-2 rounded-full text-[8px] font-black uppercase tracking-wider ${active ? 'bg-blue-600' : 'bg-slate-800 text-slate-400'}`;
-            });
-            renderCollection();
+        function setScanPart(type) {
+            selectedPartType = type;
+            document.getElementById('details-part-tag').textContent = type;
+            document.querySelectorAll('.scan-part-btn').forEach(b => b.classList.remove('border-blue-500'));
+            document.getElementById(`btn-${type.toLowerCase()}`).classList.add('border-blue-500');
         }
 
         function openPartPicker(type) {
             const modal = document.getElementById('part-picker-modal');
             const list = document.getElementById('picker-list');
-            document.getElementById('picker-title').textContent = `${type} REGISTRY`;
             list.innerHTML = '';
+            const filtered = collection.filter(p => p.type === type);
+            
+            if (filtered.length === 0) {
+                list.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs font-bold uppercase tracking-widest">No ${type} Parts Scanned</div>`;
+            } else {
+                filtered.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'glass-card p-3 rounded-xl flex items-center gap-3 cursor-pointer hover:bg-white/5';
+                    item.innerHTML = `<img src="${p.image}" class="w-10 h-10 rounded-full object-cover"> <div class="text-[10px] font-bold text-white">${p.name}</div>`;
+                    item.onclick = () => { currentBuild[type] = p; updateBuildUI(); modal.classList.add('hidden'); };
+                    list.appendChild(item);
+                });
+            }
             modal.classList.remove('hidden');
-            collection.filter(p => p.type === type).forEach(part => {
-                const div = document.createElement('div');
-                div.className = `glass-card p-3 rounded-2xl border flex items-center gap-4 cursor-pointer border-white/5`;
-                div.innerHTML = `
-                    <img src="${part.image}" class="w-10 h-10 rounded-lg object-cover">
-                    <div class="flex-1 text-[10px] font-bold uppercase">${part.name}</div>
-                `;
-                div.onclick = () => { currentBuild[type] = part; closePartPicker(); updateComboPreview(); };
-                list.appendChild(div);
+        }
+
+        function updateBuildUI() {
+            Object.entries(currentBuild).forEach(([type, p]) => {
+                const slot = document.getElementById(`slot-${type}`);
+                if(p) {
+                    slot.innerHTML = `<img src="${p.image}" class="w-full h-full object-cover">`;
+                    slot.classList.remove('border-dashed');
+                } else {
+                    const icon = type === 'Top' ? 'circle-dot' : type === 'Middle' ? 'aperture' : 'triangle';
+                    const rot = type === 'Tip' ? 'rotate-180' : '';
+                    slot.innerHTML = `<i data-lucide="${icon}" class="w-8 h-8 text-slate-700 ${rot}"></i>`;
+                    slot.classList.add('border-dashed');
+                }
             });
+            
+            let active = Object.values(currentBuild).filter(v => v);
+            if(active.length === 3) {
+                document.getElementById('combo-attack').textContent = ((parseFloat(currentBuild.Top.stats.attack) + parseFloat(currentBuild.Middle.stats.attack) + parseFloat(currentBuild.Tip.stats.attack))/3).toFixed(1);
+                document.getElementById('combo-stamina').textContent = ((parseFloat(currentBuild.Top.stats.stamina) + parseFloat(currentBuild.Middle.stats.stamina) + parseFloat(currentBuild.Tip.stats.stamina))/3).toFixed(1);
+                document.getElementById('combo-defense').textContent = ((parseFloat(currentBuild.Top.stats.defense) + parseFloat(currentBuild.Middle.stats.defense) + parseFloat(currentBuild.Tip.stats.defense)/3)).toFixed(1);
+            } else {
+                document.getElementById('combo-attack').textContent = '0.0';
+                document.getElementById('combo-stamina').textContent = '0.0';
+                document.getElementById('combo-defense').textContent = '0.0';
+            }
             lucide.createIcons();
         }
 
         function closePartPicker() { document.getElementById('part-picker-modal').classList.add('hidden'); }
-
-        function updateComboPreview() {
-            ['Top', 'Middle', 'Tip'].forEach(type => {
-                const slot = document.getElementById(`slot-${type}`);
-                if (currentBuild[type]) {
-                    slot.innerHTML = `<img src="${currentBuild[type].image}" class="w-full h-full object-cover">`;
-                    slot.classList.add('selected');
-                }
-            });
-            let active = Object.values(currentBuild).filter(p => p).length;
-            const t = Object.values(currentBuild).reduce((acc, p) => { if(p){acc.a+=p.stats.attack; acc.s+=p.stats.stamina; acc.d+=p.stats.defense;} return acc;}, {a:0,s:0,d:0});
-            document.getElementById('combo-attack').textContent = active ? (t.a/active).toFixed(1) : "0.0";
-            document.getElementById('combo-stamina').textContent = active ? (t.s/active).toFixed(1) : "0.0";
-            document.getElementById('combo-defense').textContent = active ? (t.d/active).toFixed(1) : "0.0";
-        }
-
-        function saveCombo() {
-            const name = document.getElementById('combo-name-input').value;
-            if (!name || !currentBuild.Top || !currentBuild.Middle || !currentBuild.Tip) return;
-            const t = Object.values(currentBuild).reduce((acc, p) => { acc.a+=p.stats.attack; acc.s+=p.stats.stamina; acc.d+=p.stats.defense; return acc;}, {a:0,s:0,d:0});
-            combos.push({ id: Date.now(), name, parts: {...currentBuild}, stats: { attack: (t.a/3).toFixed(1), stamina: (t.s/3).toFixed(1), defense: (t.d/3).toFixed(1) } });
-            currentBuild = { Top: null, Middle: null, Tip: null };
-            document.getElementById('combo-name-input').value = '';
-            showView('collection-view');
-            setCollectionTab('Combos');
-        }
     </script>
 </body>
 </html>
