@@ -104,11 +104,10 @@
 
         /* --- APP STYLES --- */
         .font-header { font-family: 'Orbitron', sans-serif; }
-        .glass-card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); position: relative; }
         .btn-main-scan { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 0 30px rgba(59, 130, 246, 0.3); }
         .nav-pill.active { background: var(--primary); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); color: white !important; }
         
-        /* Filter Pill Styles */
         .filter-pill { 
             padding: 0.25rem 0.75rem; 
             border-radius: 9999px; 
@@ -120,19 +119,31 @@
             color: #94a3b8;
             transition: all 0.2s ease;
         }
-        .filter-pill.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
+        .filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .stat-block { width: 40px; height: 6px; border-radius: 2px; background: rgba(255,255,255,0.05); cursor: pointer; }
+        .stat-block { width: 40px; height: 6px; border-radius: 2px; background: rgba(255,255,255,0.05); cursor: pointer; transition: all 0.2s; }
         .stat-block.active-attack { background: #3b82f6; box-shadow: 0 0 8px #3b82f6; }
         .stat-block.active-stamina { background: #eab308; box-shadow: 0 0 8px #eab308; }
         .stat-block.active-defense { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        .stat-block.inactive { opacity: 0.2; cursor: not-allowed; }
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .edit-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            padding: 8px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            transition: transform 0.2s;
+        }
+        .edit-btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="flex justify-center p-0 select-none">
@@ -216,7 +227,7 @@
                 <video id="video-preview" class="w-full h-full object-cover scale-x-[-1]" autoplay playsinline></video>
                 <canvas id="capture-canvas" class="hidden"></canvas>
                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div id="camera-guide" class="border-2 border-dashed border-white/40 shadow-[0_0_0_999px_rgba(0,0,0,0.7)]"></div>
+                    <div id="camera-guide" class="w-64 h-64 border-2 border-dashed border-white/40 shadow-[0_0_0_999px_rgba(0,0,0,0.7)] rounded-full"></div>
                 </div>
             </div>
 
@@ -229,7 +240,7 @@
             </div>
         </section>
 
-        <!-- DETAILS VIEW -->
+        <!-- DETAILS VIEW (ANALYSIS) -->
         <section id="details-view" class="view hidden flex-col p-6">
             <h3 class="font-header text-xs font-bold uppercase tracking-widest mb-6 text-blue-400">Analysis Results</h3>
             <div class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden mb-6 border border-white/10">
@@ -238,14 +249,21 @@
                     <span id="details-part-tag" class="bg-blue-600 text-[9px] px-3 py-1 rounded-full font-black uppercase tracking-wider">Top</span>
                 </div>
             </div>
+            
+            <div class="flex justify-between items-center mb-4 px-2">
+                <span class="text-[10px] font-black uppercase tracking-tighter text-slate-400">Tuning Budget (Min 1 per stat)</span>
+                <span id="points-remaining" class="font-header text-lg text-white">0 / 11</span>
+            </div>
+
             <div class="space-y-6 mb-10" id="stat-controls"></div>
+            
             <div class="mt-auto">
-                <input id="part-name-input" type="text" placeholder="Enter part name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-sm mb-4 outline-none text-white">
-                <button onclick="savePart()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm text-white">Save to Vault</button>
+                <input id="part-name-input" type="text" placeholder="Enter part name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-sm mb-4 outline-none text-white focus:border-blue-500">
+                <button id="save-part-btn" onclick="savePart()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm text-white transition-opacity">Save to Vault</button>
             </div>
         </section>
 
-        <!-- BUILDER VIEW -->
+        <!-- BUILDER VIEW (LAB) -->
         <section id="builder-view" class="view hidden flex-col p-6">
             <div class="flex items-center gap-4 mb-6">
                 <button onclick="showView('home-view')" class="p-2 bg-slate-800 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
@@ -253,43 +271,45 @@
             </div>
             <div class="glass-card rounded-[2rem] p-8 mb-6 flex flex-col items-center">
                 <div class="flex items-center justify-center gap-2 mb-10 w-full">
-                    <div id="slot-Top" onclick="openPartPicker('Top')" class="w-20 h-20 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden"><i data-lucide="circle-dot" class="w-8 h-8 text-slate-700"></i></div>
+                    <div id="slot-Top" onclick="openPartPicker('Top')" class="relative w-24 h-24 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden">
+                        <i data-lucide="circle-dot" class="w-8 h-8 text-slate-700"></i>
+                    </div>
                     <div class="w-4 h-[1px] bg-slate-800"></div>
-                    <div id="slot-Middle" onclick="openPartPicker('Middle')" class="w-14 h-14 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden"><i data-lucide="aperture" class="w-6 h-6 text-slate-700"></i></div>
+                    <div id="slot-Middle" onclick="openPartPicker('Middle')" class="relative w-16 h-16 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden">
+                        <i data-lucide="aperture" class="w-6 h-6 text-slate-700"></i>
+                    </div>
                     <div class="w-4 h-[1px] bg-slate-800"></div>
-                    <div id="slot-Tip" onclick="openPartPicker('Tip')" class="w-12 h-12 rounded-xl border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden"><i data-lucide="triangle" class="w-4 h-4 text-slate-700 rotate-180"></i></div>
+                    <div id="slot-Tip" onclick="openPartPicker('Tip')" class="relative w-14 h-14 rounded-xl border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden">
+                        <i data-lucide="triangle" class="w-4 h-4 text-slate-700 rotate-180"></i>
+                    </div>
                 </div>
                 <div class="w-full grid grid-cols-3 gap-4 text-center">
-                    <div><div id="combo-attack" class="text-xl font-header font-black text-blue-500">0.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Attack</div></div>
-                    <div><div id="combo-stamina" class="text-xl font-header font-black text-yellow-500">0.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Stamina</div></div>
-                    <div><div id="combo-defense" class="text-xl font-header font-black text-green-500">0.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Defense</div></div>
+                    <div><div id="combo-attack" class="text-xl font-header font-black text-blue-500">1.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Avg Attack</div></div>
+                    <div><div id="combo-stamina" class="text-xl font-header font-black text-yellow-500">1.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Avg Stamina</div></div>
+                    <div><div id="combo-defense" class="text-xl font-header font-black text-green-500">1.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Avg Defense</div></div>
                 </div>
             </div>
             <button onclick="saveCombo()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm text-white">Save Combo</button>
         </section>
 
-        <!-- COLLECTION VIEW -->
+        <!-- COLLECTION VIEW (VAULT) -->
         <section id="collection-view" class="view hidden flex-col p-6">
             <div class="flex items-center gap-4 mb-4">
                 <button onclick="showView('home-view')" class="p-2 bg-slate-800 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
                 <h3 class="font-header text-xs font-bold uppercase tracking-widest">Vault</h3>
             </div>
 
-            <!-- Search & Filters -->
             <div class="space-y-4 mb-6">
-                <!-- Tabs -->
                 <div class="flex bg-slate-950/80 p-1 rounded-2xl border border-white/5">
                     <button onclick="setCollectionTab('Parts')" id="tab-parts" class="nav-pill active flex-1 py-2 text-[9px] font-black uppercase rounded-xl">Parts</button>
                     <button onclick="setCollectionTab('Combos')" id="tab-combos" class="nav-pill flex-1 py-2 text-[9px] font-black uppercase rounded-xl text-slate-500">Combos</button>
                 </div>
 
-                <!-- Search Input -->
                 <div class="relative">
                     <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"></i>
                     <input id="vault-search" type="text" placeholder="Search by name..." oninput="handleFilterChange()" class="w-full bg-slate-900/50 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white focus:border-blue-500 outline-none transition-all">
                 </div>
 
-                <!-- Type Filters (Only for Parts) -->
                 <div id="part-filters" class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     <button onclick="setTypeFilter('all')" class="type-filter-btn filter-pill active" id="filter-all">All</button>
                     <button onclick="setTypeFilter('Top')" class="type-filter-btn filter-pill" id="filter-top">Tops</button>
@@ -306,26 +326,31 @@
     <!-- Part Picker Modal -->
     <div id="part-picker-modal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6">
         <div class="w-full glass-card rounded-[2.5rem] p-6 max-h-[70vh] flex flex-col">
-            <div class="flex justify-between mb-6"><h3 class="font-header text-xs font-bold uppercase">Select Part</h3><button onclick="closePartPicker()"><i data-lucide="x" class="w-5 h-5"></i></button></div>
+            <div class="flex justify-between mb-6">
+                <h3 class="font-header text-xs font-bold uppercase">Select Part</h3>
+                <button onclick="closePartPicker()"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
             <div id="picker-list" class="space-y-3 overflow-y-auto no-scrollbar"></div>
         </div>
     </div>
 
     <script>
-        lucide.createIcons();
-
         let stream = null;
         let capturedImage = null;
         let selectedPartType = 'Top';
         let collection = []; 
         let combos = [];     
         let stats = { attack: 1, stamina: 1, defense: 1 };
+        const MAX_POINTS = 11;
+        
         let currentBuild = { Top: null, Middle: null, Tip: null };
         let currentCollectionTab = 'Parts';
         let currentTypeFilter = 'all';
+        let editingPartIndex = null;
 
         function dismissSplash() {
             document.getElementById('splash-screen').classList.add('hidden-splash');
+            lucide.createIcons();
         }
 
         function showView(viewId) {
@@ -345,33 +370,80 @@
                 resetFilters();
                 renderCollection();
             }
+            if (viewId === 'builder-view') updateBuildUI();
+            
+            lucide.createIcons();
         }
 
         async function startCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                 document.getElementById('video-preview').srcObject = stream;
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Camera error:", err); }
         }
 
         function takePhoto() {
             const video = document.getElementById('video-preview');
             const canvas = document.getElementById('capture-canvas');
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth; 
+            canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
             capturedImage = canvas.toDataURL('image/png');
             document.getElementById('details-preview-img').src = capturedImage;
+            
+            // Default stats for new part (Must start at 1)
+            stats = { attack: 1, stamina: 1, defense: 1 };
+            editingPartIndex = null;
+            document.getElementById('part-name-input').value = '';
+            
             showView('details-view');
+        }
+
+        function editPart(index) {
+            const part = collection[index];
+            editingPartIndex = index;
+            selectedPartType = part.type;
+            stats = { ...part.stats };
+            capturedImage = part.image;
+            document.getElementById('details-preview-img').src = capturedImage;
+            document.getElementById('details-part-tag').textContent = part.type;
+            document.getElementById('part-name-input').value = part.name;
+            showView('details-view');
+        }
+
+        function getPointsSpent() {
+            return stats.attack + stats.stamina + stats.defense;
+        }
+
+        function handleStatClick(type, value) {
+            const currentTotal = getPointsSpent();
+            // Minimum is 1, so if they try to click 0 (unlikely with UI) or click current value, reset to 1
+            const newValue = Math.max(1, value);
+            const difference = newValue - stats[type];
+            
+            if (currentTotal + difference <= MAX_POINTS) {
+                stats[type] = newValue;
+                renderDetailsStats();
+            }
         }
 
         function renderDetailsStats() {
             const container = document.getElementById('stat-controls');
+            const spent = getPointsSpent();
+            document.getElementById('points-remaining').textContent = `${spent} / ${MAX_POINTS}`;
+            
             container.innerHTML = '';
             ['attack', 'stamina', 'defense'].forEach(type => {
                 let blocks = '';
                 for(let i=1; i<=5; i++) {
-                    const active = stats[type] >= i ? 'active-'+type : '';
-                    blocks += `<div class="stat-block flex-1 ${active}" onclick="stats['${type}']=${i}; renderDetailsStats()"></div>`;
+                    const isActive = stats[type] >= i;
+                    const activeClass = isActive ? 'active-'+type : '';
+                    
+                    const canIncrease = (spent + 1 <= MAX_POINTS);
+                    const isInactive = !isActive && !canIncrease;
+                    
+                    blocks += `<div class="stat-block flex-1 ${activeClass} ${isInactive ? 'inactive' : ''}" 
+                                    onclick="handleStatClick('${type}', ${i})"></div>`;
                 }
                 container.innerHTML += `
                     <div class="space-y-2">
@@ -382,24 +454,116 @@
         }
 
         function savePart() {
-            const name = document.getElementById('part-name-input').value || `PART-${Date.now()}`;
-            collection.push({ name, type: selectedPartType, image: capturedImage, stats: {...stats} });
-            stats = { attack: 1, stamina: 1, defense: 1 };
-            document.getElementById('part-name-input').value = '';
+            const inputVal = document.getElementById('part-name-input').value.trim();
+            let name = inputVal;
+            
+            if (!name) {
+                const count = collection.filter(p => p.type === selectedPartType).length + 1;
+                name = `${selectedPartType} — ${count}`;
+            }
+
+            const partData = { 
+                name, 
+                type: selectedPartType, 
+                image: capturedImage, 
+                stats: {...stats} 
+            };
+
+            if (editingPartIndex !== null) {
+                collection[editingPartIndex] = partData;
+            } else {
+                collection.push(partData);
+            }
+            
             showView('home-view');
+        }
+
+        function updateBuildUI() {
+            ['Top', 'Middle', 'Tip'].forEach(type => {
+                const slot = document.getElementById(`slot-${type}`);
+                if (currentBuild[type]) {
+                    slot.innerHTML = `<img src="${currentBuild[type].image}" class="w-full h-full object-cover">`;
+                    slot.classList.remove('border-dashed');
+                } else {
+                    const icons = { 'Top': 'circle-dot', 'Middle': 'aperture', 'Tip': 'triangle' };
+                    slot.innerHTML = `<i data-lucide="${icons[type]}" class="w-8 h-8 text-slate-700 ${type === 'Tip' ? 'rotate-180' : ''}"></i>`;
+                    slot.classList.add('border-dashed');
+                }
+            });
+
+            // Lab Assembly: Everything out of 5 and make it an avg
+            const keys = ['attack', 'stamina', 'defense'];
+            keys.forEach(key => {
+                const partsInBuild = Object.values(currentBuild).filter(p => p !== null);
+                let avg = 1.0;
+                if (partsInBuild.length > 0) {
+                    const sum = partsInBuild.reduce((acc, p) => acc + p.stats[key], 0);
+                    // Minimum avg of 1.0 if at least one part exists
+                    avg = Math.max(1, sum / partsInBuild.length).toFixed(1);
+                }
+                document.getElementById(`combo-${key}`).textContent = avg;
+            });
+            lucide.createIcons();
+        }
+
+        function openPartPicker(type) {
+            const modal = document.getElementById('part-picker-modal');
+            const list = document.getElementById('picker-list');
+            list.innerHTML = '';
+            
+            const parts = collection.filter(p => p.type === type);
+            if (parts.length === 0) {
+                list.innerHTML = `<div class="text-center py-10 text-slate-500 text-xs font-bold uppercase">No ${type} parts in Vault</div>`;
+            }
+
+            parts.forEach((p) => {
+                const item = document.createElement('div');
+                item.className = 'glass-card p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-white/5';
+                item.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1" onclick="selectPartForBuild('${type}', '${p.name}')">
+                        <img src="${p.image}" class="w-12 h-12 rounded-lg object-cover">
+                        <div>
+                            <div class="text-[10px] font-bold text-white">${p.name}</div>
+                            <div class="flex gap-2 text-[7px] text-slate-400 mt-1 uppercase">
+                                <span>A: ${p.stats.attack}</span>
+                                <span>S: ${p.stats.stamina}</span>
+                                <span>D: ${p.stats.defense}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                list.appendChild(item);
+            });
+            
+            modal.classList.remove('hidden');
+        }
+
+        function selectPartForBuild(type, name) {
+            const part = collection.find(p => p.name === name);
+            currentBuild[type] = part;
+            closePartPicker();
+            updateBuildUI();
+        }
+
+        function closePartPicker() {
+            document.getElementById('part-picker-modal').classList.add('hidden');
         }
 
         function saveCombo() {
             if (!currentBuild.Top || !currentBuild.Middle || !currentBuild.Tip) return;
-            const name = `COMBO-${Date.now()}`;
-            const totalStats = {
-                attack: ((currentBuild.Top.stats.attack + currentBuild.Middle.stats.attack + currentBuild.Tip.stats.attack)/3).toFixed(1),
-                stamina: ((currentBuild.Top.stats.stamina + currentBuild.Middle.stats.stamina + currentBuild.Tip.stats.stamina)/3).toFixed(1),
-                defense: ((currentBuild.Top.stats.defense + currentBuild.Middle.stats.defense + currentBuild.Tip.stats.defense)/3).toFixed(1)
+            
+            const name = `COMBO-${Date.now().toString().slice(-4)}`;
+            const sumAttack = currentBuild.Top.stats.attack + currentBuild.Middle.stats.attack + currentBuild.Tip.stats.attack;
+            const sumStamina = currentBuild.Top.stats.stamina + currentBuild.Middle.stats.stamina + currentBuild.Tip.stats.stamina;
+            const sumDefense = currentBuild.Top.stats.defense + currentBuild.Middle.stats.defense + currentBuild.Tip.stats.defense;
+
+            const comboStats = {
+                attack: (sumAttack / 3).toFixed(1),
+                stamina: (sumStamina / 3).toFixed(1),
+                defense: (sumDefense / 3).toFixed(1)
             };
-            combos.push({ name, parts: {...currentBuild}, stats: totalStats });
+
+            combos.push({ name, parts: {...currentBuild}, stats: comboStats });
             currentBuild = { Top: null, Middle: null, Tip: null };
-            updateBuildUI();
             showView('home-view');
         }
 
@@ -415,10 +579,7 @@
             document.getElementById('tab-parts').classList.toggle('text-slate-500', tab !== 'Parts');
             document.getElementById('tab-combos').classList.toggle('active', tab === 'Combos');
             document.getElementById('tab-combos').classList.toggle('text-slate-500', tab !== 'Combos');
-            
-            // Toggle visibility of part-specific filters
             document.getElementById('part-filters').style.display = tab === 'Parts' ? 'flex' : 'none';
-            
             renderCollection();
         }
 
@@ -429,9 +590,7 @@
             renderCollection();
         }
 
-        function handleFilterChange() {
-            renderCollection();
-        }
+        function handleFilterChange() { renderCollection(); }
 
         function resetFilters() {
             document.getElementById('vault-search').value = '';
@@ -446,34 +605,27 @@
             grid.innerHTML = '';
             
             if (currentCollectionTab === 'Parts') {
-                const filteredParts = collection.filter(p => {
+                collection.forEach((p, index) => {
                     const matchesSearch = p.name.toLowerCase().includes(searchTerm);
                     const matchesType = currentTypeFilter === 'all' || p.type === currentTypeFilter;
-                    return matchesSearch && matchesType;
-                });
-
-                if (filteredParts.length === 0) {
-                    grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-500 text-[10px] font-bold uppercase tracking-widest">No matching parts found</div>`;
-                }
-
-                filteredParts.forEach(p => {
-                    grid.innerHTML += `
-                        <div class="glass-card rounded-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-                            <img src="${p.image}" class="h-24 w-full object-cover">
-                            <div class="p-3">
-                                <div class="text-[10px] font-bold truncate text-white mb-1">${p.name}</div>
-                                <div class="text-[8px] font-bold text-blue-500 uppercase">${p.type}</div>
-                            </div>
-                        </div>`;
+                    
+                    if (matchesSearch && matchesType) {
+                        grid.innerHTML += `
+                            <div class="glass-card rounded-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+                                <!-- Edit button ONLY appears here in the Vault -->
+                                <button onclick="event.stopPropagation(); editPart(${index})" class="edit-btn">
+                                    <i data-lucide="edit-3" class="w-3 h-3"></i>
+                                </button>
+                                <img src="${p.image}" class="h-24 w-full object-cover">
+                                <div class="p-3">
+                                    <div class="text-[10px] font-bold truncate text-white mb-1">${p.name}</div>
+                                    <div class="text-[8px] font-bold text-blue-500 uppercase">${p.type}</div>
+                                </div>
+                            </div>`;
+                    }
                 });
             } else {
-                const filteredCombos = combos.filter(c => c.name.toLowerCase().includes(searchTerm));
-
-                if (filteredCombos.length === 0) {
-                    grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-500 text-[10px] font-bold uppercase tracking-widest">No matching combos found</div>`;
-                }
-
-                filteredCombos.forEach(c => {
+                combos.filter(c => c.name.toLowerCase().includes(searchTerm)).forEach(c => {
                     grid.innerHTML += `
                         <div class="glass-card rounded-2xl p-3 flex flex-col gap-2 animate-in fade-in zoom-in duration-300">
                             <div class="text-[10px] font-bold text-white truncate">${c.name}</div>
@@ -485,6 +637,10 @@
                         </div>`;
                 });
             }
+            if (grid.innerHTML === '') {
+                grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-500 text-[10px] font-bold uppercase tracking-widest">Vault is Empty</div>`;
+            }
+            lucide.createIcons();
         }
 
         function setScanPart(type) {
@@ -494,54 +650,7 @@
             document.getElementById(`btn-${type.toLowerCase()}`).classList.add('border-blue-500');
         }
 
-        function openPartPicker(type) {
-            const modal = document.getElementById('part-picker-modal');
-            const list = document.getElementById('picker-list');
-            list.innerHTML = '';
-            const filtered = collection.filter(p => p.type === type);
-            
-            if (filtered.length === 0) {
-                list.innerHTML = `<div class="text-center py-8 text-slate-500 text-xs font-bold uppercase tracking-widest">No ${type} Parts Scanned</div>`;
-            } else {
-                filtered.forEach(p => {
-                    const item = document.createElement('div');
-                    item.className = 'glass-card p-3 rounded-xl flex items-center gap-3 cursor-pointer hover:bg-white/5';
-                    item.innerHTML = `<img src="${p.image}" class="w-10 h-10 rounded-full object-cover"> <div class="text-[10px] font-bold text-white">${p.name}</div>`;
-                    item.onclick = () => { currentBuild[type] = p; updateBuildUI(); modal.classList.add('hidden'); };
-                    list.appendChild(item);
-                });
-            }
-            modal.classList.remove('hidden');
-        }
-
-        function updateBuildUI() {
-            Object.entries(currentBuild).forEach(([type, p]) => {
-                const slot = document.getElementById(`slot-${type}`);
-                if(p) {
-                    slot.innerHTML = `<img src="${p.image}" class="w-full h-full object-cover">`;
-                    slot.classList.remove('border-dashed');
-                } else {
-                    const icon = type === 'Top' ? 'circle-dot' : type === 'Middle' ? 'aperture' : 'triangle';
-                    const rot = type === 'Tip' ? 'rotate-180' : '';
-                    slot.innerHTML = `<i data-lucide="${icon}" class="w-8 h-8 text-slate-700 ${rot}"></i>`;
-                    slot.classList.add('border-dashed');
-                }
-            });
-            
-            let active = Object.values(currentBuild).filter(v => v);
-            if(active.length === 3) {
-                document.getElementById('combo-attack').textContent = ((parseFloat(currentBuild.Top.stats.attack) + parseFloat(currentBuild.Middle.stats.attack) + parseFloat(currentBuild.Tip.stats.attack))/3).toFixed(1);
-                document.getElementById('combo-stamina').textContent = ((parseFloat(currentBuild.Top.stats.stamina) + parseFloat(currentBuild.Middle.stats.stamina) + parseFloat(currentBuild.Tip.stats.stamina))/3).toFixed(1);
-                document.getElementById('combo-defense').textContent = ((parseFloat(currentBuild.Top.stats.defense) + parseFloat(currentBuild.Middle.stats.defense) + parseFloat(currentBuild.Tip.stats.defense)/3)).toFixed(1);
-            } else {
-                document.getElementById('combo-attack').textContent = '0.0';
-                document.getElementById('combo-stamina').textContent = '0.0';
-                document.getElementById('combo-defense').textContent = '0.0';
-            }
-            lucide.createIcons();
-        }
-
-        function closePartPicker() { document.getElementById('part-picker-modal').classList.add('hidden'); }
+        window.onload = () => lucide.createIcons();
     </script>
 </body>
 </html>
