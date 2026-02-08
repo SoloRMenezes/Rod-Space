@@ -290,10 +290,14 @@
 
         <!-- BUILDER VIEW (LAB) -->
         <section id="builder-view" class="view hidden flex-col p-6">
-            <div class="flex items-center gap-4 mb-6">
-                <button onclick="showView('home-view')" class="p-2 bg-slate-800 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
-                <h3 class="font-header text-xs font-bold uppercase tracking-widest">Lab Assembly</h3>
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-4">
+                    <button onclick="showView('home-view')" class="p-2 bg-slate-800 rounded-full"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                    <h3 class="font-header text-xs font-bold uppercase tracking-widest">Lab Assembly</h3>
+                </div>
+                <button onclick="resetBuild()" class="text-[8px] font-bold text-slate-500 uppercase tracking-widest border border-slate-800 px-3 py-1 rounded-full">Reset</button>
             </div>
+
             <div class="glass-card rounded-[2rem] p-8 mb-6 flex flex-col items-center">
                 <div class="flex items-center justify-center gap-2 mb-10 w-full">
                     <div id="slot-Top" onclick="openPartPicker('Top')" class="relative w-24 h-24 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-slate-950/50 overflow-hidden">
@@ -314,7 +318,13 @@
                     <div><div id="combo-defense" class="text-xl font-header font-black text-green-500">1.0</div><div class="text-[7px] text-slate-500 font-bold uppercase tracking-widest">Avg Defense</div></div>
                 </div>
             </div>
-            <button onclick="saveCombo()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm text-white">Save Build</button>
+
+            <div class="mt-auto">
+                <input id="combo-name-input" type="text" placeholder="Enter build name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-4 text-sm mb-4 outline-none text-white focus:border-blue-500">
+                <button onclick="saveCombo()" class="btn-main-scan w-full py-5 rounded-2xl font-bold uppercase tracking-widest text-sm text-white">
+                    <span id="save-combo-label">Save Build</span>
+                </button>
+            </div>
         </section>
 
         <!-- COLLECTION VIEW (VAULT) -->
@@ -389,6 +399,7 @@
         let currentCollectionTab = 'Parts';
         let currentTypeFilter = 'all';
         let editingPartIndex = null;
+        let editingComboIndex = null;
 
         // --- APP LOGIC ---
         function dismissSplash() {
@@ -460,6 +471,23 @@
                 renderCollection();
                 updateHomeUI();
             }
+        }
+
+        function editCombo(index) {
+            const combo = combos[index];
+            editingComboIndex = index;
+            currentBuild = { ...combo.parts };
+            document.getElementById('combo-name-input').value = combo.name;
+            document.getElementById('save-combo-label').textContent = "Update Build";
+            showView('builder-view');
+        }
+
+        function resetBuild() {
+            currentBuild = { Top: null, Middle: null, Tip: null };
+            editingComboIndex = null;
+            document.getElementById('combo-name-input').value = '';
+            document.getElementById('save-combo-label').textContent = "Save Build";
+            updateBuildUI();
         }
 
         function deleteCombo(index) {
@@ -605,9 +633,13 @@
         }
 
         function saveCombo() {
-            if (!currentBuild.Top || !currentBuild.Middle || !currentBuild.Tip) return;
+            if (!currentBuild.Top || !currentBuild.Middle || !currentBuild.Tip) {
+                return;
+            }
             
-            const name = `BUILD-${Date.now().toString().slice(-4)}`;
+            const nameInput = document.getElementById('combo-name-input').value.trim();
+            const name = nameInput || `BUILD-${Date.now().toString().slice(-4)}`;
+            
             const sumAttack = currentBuild.Top.stats.attack + currentBuild.Middle.stats.attack + currentBuild.Tip.stats.attack;
             const sumStamina = currentBuild.Top.stats.stamina + currentBuild.Middle.stats.stamina + currentBuild.Tip.stats.stamina;
             const sumDefense = currentBuild.Top.stats.defense + currentBuild.Middle.stats.defense + currentBuild.Tip.stats.defense;
@@ -618,9 +650,16 @@
                 defense: (sumDefense / 3).toFixed(1)
             };
 
-            combos.push({ name, parts: {...currentBuild}, stats: comboStats });
+            const comboData = { name, parts: {...currentBuild}, stats: comboStats };
+
+            if (editingComboIndex !== null) {
+                combos[editingComboIndex] = comboData;
+            } else {
+                combos.push(comboData);
+            }
+            
             saveToStorage();
-            currentBuild = { Top: null, Middle: null, Tip: null };
+            resetBuild();
             showView('home-view');
         }
 
@@ -690,6 +729,9 @@
                             <div class="glass-card rounded-2xl p-2 flex flex-col gap-2 animate-in fade-in zoom-in duration-300">
                                 <button onclick="event.stopPropagation(); deleteCombo(${index})" class="delete-btn">
                                     <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); editCombo(${index})" class="edit-btn">
+                                    <i data-lucide="edit-3" class="w-3 h-3"></i>
                                 </button>
                                 
                                 <div class="combo-triangle">
