@@ -373,17 +373,22 @@
         // --- STORAGE LOGIC ---
         const DB_KEY_PARTS = 'beyscan_collection';
         const DB_KEY_COMBOS = 'beyscan_builds';
+        const DB_KEY_COUNTER = 'beyscan_build_counter';
 
         function loadFromStorage() {
             const savedParts = localStorage.getItem(DB_KEY_PARTS);
             const savedCombos = localStorage.getItem(DB_KEY_COMBOS);
+            const savedCounter = localStorage.getItem(DB_KEY_COUNTER);
+            
             if (savedParts) collection = JSON.parse(savedParts);
             if (savedCombos) combos = JSON.parse(savedCombos);
+            if (savedCounter) buildCounter = parseInt(savedCounter);
         }
 
         function saveToStorage() {
             localStorage.setItem(DB_KEY_PARTS, JSON.stringify(collection));
             localStorage.setItem(DB_KEY_COMBOS, JSON.stringify(combos));
+            localStorage.setItem(DB_KEY_COUNTER, buildCounter.toString());
         }
 
         // --- GLOBAL STATE ---
@@ -392,6 +397,7 @@
         let selectedPartType = 'Top';
         let collection = []; 
         let combos = [];     
+        let buildCounter = 1;
         let stats = { attack: 1, stamina: 1, defense: 1 };
         const MAX_POINTS = 11;
         
@@ -638,7 +644,18 @@
             }
             
             const nameInput = document.getElementById('combo-name-input').value.trim();
-            const name = nameInput || `BUILD-${Date.now().toString().slice(-4)}`;
+            let name = nameInput;
+            
+            if (!name) {
+                // Formatting build counter to 0001 format
+                const paddedCount = buildCounter.toString().padStart(4, '0');
+                name = `BUILD-${paddedCount}`;
+                
+                // Only increment the counter if we used it for a new build
+                if (editingComboIndex === null) {
+                    buildCounter++;
+                }
+            }
             
             const sumAttack = currentBuild.Top.stats.attack + currentBuild.Middle.stats.attack + currentBuild.Tip.stats.attack;
             const sumStamina = currentBuild.Top.stats.stamina + currentBuild.Middle.stats.stamina + currentBuild.Tip.stats.stamina;
