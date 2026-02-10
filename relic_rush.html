@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Relic Rush</title>
+    <style>
+        :root {
+            --primary: #ffd700;
+            --secondary: #4a5568;
+            --accent: #ffffff;
+            --bg: #0f0f12;
+            --card-bg: #1a1a1f;
+            --border: #2d2d35;
+            --enemy-red: #ff4d4d;
+        }
+
+        body {
+            margin: 0;
+            background: #000;
+            color: #eee;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #game-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: var(--bg);
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+        }
+        canvas { display: block; }
+        
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 10, 15, 0.98);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100; text-align: center; padding: 20px; box-sizing: border-box;
+        }
+
+        #xp-bar-container { position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #222; }
+        #xp-bar-fill { width: 0%; height: 100%; background: var(--primary); transition: width 0.2s; }
+        #hp-bar-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 220px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; border: 1px solid #333; }
+        #hp-bar-fill { width: 100%; height: 100%; background: #e53e3e; transition: width 0.1s; }
+        #stats-hud { position: absolute; top: 18px; left: 20px; font-size: 11px; font-weight: 800; color: #718096; text-transform: uppercase; letter-spacing: 2px; }
+        #crystal-display { position: absolute; top: 16px; right: 20px; font-size: 18px; font-weight: bold; color: var(--primary); }
+
+        #shop-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-height: 420px; overflow-y: auto; padding: 10px; width: 100%; }
+        .shop-card { background: var(--card-bg); padding: 18px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+        .shop-card:hover { border-color: var(--primary); background: #22222a; }
+        .shop-card h3 { margin: 0; font-size: 14px; color: var(--primary); text-transform: uppercase; }
+        .shop-card .cost { margin-top: 10px; font-size: 14px; color: var(--primary); font-weight: 800; }
+
+        button { background: var(--primary); border: none; padding: 14px 36px; font-size: 14px; font-weight: 800; border-radius: 4px; cursor: pointer; color: #000; text-transform: uppercase; transition: 0.2s; margin: 8px; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2); }
+        .btn-alt { background: transparent; border: 1px solid var(--border); color: #fff; }
+
+        .title { font-size: 42px; color: var(--primary); margin-bottom: 25px; font-weight: 900; letter-spacing: 6px; text-transform: uppercase; }
+        .upgrade-card { background: var(--card-bg); padding: 25px; border-radius: 8px; cursor: pointer; width: 190px; border: 1px solid var(--border); transition: 0.2s; }
+        .upgrade-card:hover { border-color: var(--primary); transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui-layer">
+        <div id="xp-bar-container"><div id="xp-bar-fill"></div></div>
+        <div id="hp-bar-container"><div id="hp-bar-fill"></div></div>
+        <div id="stats-hud">RELIC_RUNNER // LVL <span id="lvl-val">1</span> // KILLS <span id="kills-val">0</span></div>
+        <div id="crystal-display">💰 <span id="crystal-val">0</span></div>
+        
+        <div id="start-screen" class="overlay">
+            <h1 class="title">RELIC<br>RUSH</h1>
+            <div style="display: flex;">
+                <button onclick="startGame()">Start Expedition</button>
+                <button class="btn-alt" onclick="openShop()">Upgrade Hub</button>
+            </div>
+        </div>
+
+        <div id="shop-screen" class="overlay" style="display:none;">
+            <h2 style="color: var(--primary); margin-bottom: 20px; text-transform: uppercase;">Augmentation Hub</h2>
+            <div id="shop-options"></div>
+            <button onclick="closeShop()" class="btn-alt" style="margin-top: 20px;">Return to Surface</button>
+        </div>
+
+        <div id="upgrade-screen" class="overlay" style="display:none;">
+            <h2 style="color:var(--primary); margin-bottom: 25px; text-transform: uppercase;">Relic Selection</h2>
+            <div id="upgrade-options" style="display: flex; gap: 20px;"></div>
+        </div>
+
+        <div id="game-over" class="overlay" style="display:none;">
+            <h1 style="color: #e53e3e; font-size: 42px; text-transform: uppercase;">Expedition Failed</h1>
+            <p id="final-stats" style="margin-bottom: 30px;"></p>
+            <button onclick="location.reload()">New Run</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 800; canvas.height = 600;
+
+const xpFill = document.getElementById('xp-bar-fill');
+const hpFill = document.getElementById('hp-bar-fill');
+const lvlVal = document.getElementById('lvl-val');
+const killsVal = document.getElementById('kills-val');
+const crystalVal = document.getElementById('crystal-val');
+
+let persistent = {
+    crystals: parseInt(localStorage.getItem('ss_crystals')) || 0,
+    upgrades: JSON.parse(localStorage.getItem('ss_upgrades')) || {
+        hp: 0, speed: 0, damage: 0, range: 0, rate: 0, 
+        crit: 0, luck: 0, armor: 0, regen: 0, 
+        xpBoost: 0, startSaw: 0, startGold: 0,
+        bulletSize: 0, bulletSpeed: 0, dodge: 0
+    }
+};
+
+const shopItems = [
+    { key: 'hp', title: 'Hardened Hull', desc: '+15 Max health.', baseCost: 50, limit: 10 },
+    { key: 'damage', title: 'Aether Charge', desc: '+5% Output damage.', baseCost: 60, limit: 10 },
+    { key: 'speed', title: 'Nitro Boost', desc: '+4% Move speed.', baseCost: 40, limit: 10 },
+    { key: 'rate', title: 'Rapid Cycle', desc: '+5% Fire rate.', baseCost: 75, limit: 10 },
+    { key: 'range', title: 'Relic Magnet', desc: '+15% Pickup range.', baseCost: 30, limit: 10 },
+    { key: 'crit', title: 'Precision Lens', desc: '+3% Critical chance.', baseCost: 100, limit: 8 },
+    { key: 'armor', title: 'Plated Armor', desc: '+3% Damage reduction.', baseCost: 80, limit: 10 },
+    { key: 'regen', title: 'Nano Repairs', desc: 'Regen 0.15 HP/sec.', baseCost: 120, limit: 5 },
+    { key: 'xpBoost', title: 'Scholar Kit', desc: '+8% XP gain.', baseCost: 60, limit: 10 },
+    { key: 'bulletSize', title: 'Heavy Slugs', desc: '+10% Bullet size.', baseCost: 90, limit: 5 },
+    { key: 'bulletSpeed', title: 'Sonic Wave', desc: '+10% Bullet speed.', baseCost: 70, limit: 5 },
+    { key: 'startSaw', title: 'Orbit Drone', desc: 'Start with 1 Sawblade.', baseCost: 800, limit: 1 },
+    { key: 'startGold', title: 'Seed Fund', desc: 'Start with bonus Coins.', baseCost: 150, limit: 5 },
+    { key: 'dodge', title: 'Reflex Sync', desc: '+2% Dodge chance.', baseCost: 150, limit: 5 },
+    { key: 'luck', title: 'Golden Compass', desc: 'Better skill rarity.', baseCost: 200, limit: 3 }
+];
+
+let gameActive = false;
+let frameCount = 0;
+let kills = 0;
+let level = 1;
+let xp = 0;
+let xpToNext = 100;
+
+const camera = { x: 0, y: 0 };
+let player = {};
+const enemies = [];
+const bullets = [];
+const enemyBullets = [];
+const gems = [];
+const particles = [];
+const keys = {};
+
+window.addEventListener('keydown', e => keys[e.code] = true);
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+function updateCrystalUI() {
+    crystalVal.innerText = persistent.crystals;
+    localStorage.setItem('ss_crystals', persistent.crystals);
+}
+
+function getUpgradeCost(item) {
+    const currentLvl = persistent.upgrades[item.key] || 0;
+    return Math.floor(item.baseCost * Math.pow(1.65, currentLvl));
+}
+
+function openShop() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('shop-screen').style.display = 'flex';
+    renderShop();
+}
+
+function renderShop() {
+    const container = document.getElementById('shop-options');
+    container.innerHTML = '';
+    const itemsForDisplay = shopItems.map(item => ({ ...item, lvl: persistent.upgrades[item.key] || 0, cost: getUpgradeCost(item), isMax: (persistent.upgrades[item.key] || 0) >= item.limit }));
+    itemsForDisplay.sort((a, b) => (a.isMax === b.isMax) ? a.cost - b.cost : (a.isMax ? 1 : -1));
+
+    itemsForDisplay.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'shop-card';
+        card.innerHTML = `<div><h3>${item.title}</h3><span class="lvl">LVL ${item.lvl}/${item.limit}</span><p>${item.desc}</p></div><div class="cost">${item.isMax ? 'MAXED' : '💰 ' + item.cost}</div>`;
+        if (!item.isMax) card.onclick = () => { if (persistent.crystals >= item.cost) { persistent.crystals -= item.cost; persistent.upgrades[item.key]++; updateCrystalUI(); localStorage.setItem('ss_upgrades', JSON.stringify(persistent.upgrades)); renderShop(); } };
+        else card.style.opacity = '0.5';
+        container.appendChild(card);
+    });
+}
+
+function closeShop() { document.getElementById('shop-screen').style.display = 'none'; document.getElementById('start-screen').style.display = 'flex'; }
+
+function applyPersistentStats() {
+    const u = persistent.upgrades;
+    player = {
+        worldX: 0, worldY: 0, size: 18,
+        speed: 3.2 * (1 + (u.speed || 0) * 0.04),
+        hp: 100 + (u.hp || 0) * 15, maxHp: 100 + (u.hp || 0) * 15,
+        fireRate: 35 * (1 - (u.rate || 0) * 0.05), fireTimer: 0,
+        bulletSpeed: 8 * (1 + (u.bulletSpeed || 0) * 0.1), bulletSize: 6,
+        bulletDamage: 30 * (1 + (u.damage || 0) * 0.05), bulletCount: 1,
+        pickupRange: 85 * (1 + (u.range || 0) * 0.15),
+        shield: (u.armor || 0) * 3, dodge: (u.dodge || 0) * 0.02,
+        lifesteal: 0, critChance: (u.crit || 0) * 0.03, regen: (u.regen || 0) * 0.15,
+        xpMult: 1 + (u.xpBoost || 0) * 0.08,
+        orbitSaws: (u.startSaw || 0), orbitAngle: 0,
+        facing: 1, animFrame: 0
+    };
+    if (u.startGold > 0) { persistent.crystals += u.startGold * 5; updateCrystalUI(); }
+}
+
+const skills = [
+    { id: 'dmg', rarity: 'common', title: 'Overclock', desc: '+25% DMG', effect: () => player.bulletDamage *= 1.25 },
+    { id: 'spd', rarity: 'common', title: 'Thrusters', desc: '+15% Speed', effect: () => player.speed *= 1.15 },
+    { id: 'rate', rarity: 'common', title: 'Rapid Fire', desc: '+20% Fire Rate', effect: () => player.fireRate *= 0.8 },
+    { id: 'mag', rarity: 'rare', title: 'Magnetism', desc: '+50% Range', effect: () => player.pickupRange *= 1.5 },
+    { id: 'multi', rarity: 'rare', title: 'Twin Shot', desc: '+1 Projectile', effect: () => player.bulletCount++ },
+    { id: 'saw', rarity: 'legendary', title: 'Sawblade', desc: 'Add orbiting blade', effect: () => player.orbitSaws++ },
+    { id: 'vamp', rarity: 'legendary', title: 'Siphon', desc: 'Heal on 5th kill', effect: () => player.lifesteal += 0.2 }
+];
+
+function spawnEnemy() {
+    if (!gameActive) return;
+    const angle = Math.random() * Math.PI * 2;
+    const spawnX = player.worldX + Math.cos(angle) * 500;
+    const spawnY = player.worldY + Math.sin(angle) * 500;
+    const diff = 1 + (level * 0.15);
+    
+    // Spawn Ranged Enemy after level 5, higher chance as levels increase
+    const isRanged = level >= 5 && Math.random() < Math.min(0.4, (level - 4) * 0.05);
+    
+    enemies.push({
+        worldX: spawnX, worldY: spawnY, 
+        hp: (isRanged ? 30 : 50) * diff, 
+        maxHp: (isRanged ? 30 : 50) * diff,
+        speed: (isRanged ? 1.0 : 1.6 + Math.random() * 0.6), 
+        size: isRanged ? 16 : 14, 
+        hitCooldown: 0, 
+        type: isRanged ? 'ranged' : 'melee',
+        shootTimer: Math.random() * 100,
+        flash: 0
+    });
+}
+
+function spawnParticle(x, y, color, size = 3) {
+    particles.push({ x, y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 1, color, size });
+}
+
+function update() {
+    let dx = 0, dy = 0;
+    if (keys['ArrowUp'] || keys['KeyW']) dy -= 1;
+    if (keys['ArrowDown'] || keys['KeyS']) dy += 1;
+    if (keys['ArrowLeft'] || keys['KeyA']) { dx -= 1; player.facing = -1; }
+    if (keys['ArrowRight'] || keys['KeyD']) { dx += 1; player.facing = 1; }
+    
+    if (dx !== 0 || dy !== 0) {
+        const mag = Math.sqrt(dx*dx + dy*dy);
+        player.worldX += (dx/mag) * player.speed;
+        player.worldY += (dy/mag) * player.speed;
+        player.animFrame += 0.15;
+    }
+    camera.x = player.worldX - canvas.width / 2;
+    camera.y = player.worldY - canvas.height / 2;
+
+    if (player.hp < player.maxHp) player.hp += player.regen / 60;
+
+    // Player Shooting
+    player.fireTimer++;
+    if (player.fireTimer >= player.fireRate) {
+        let nearest = null; let minDist = 450;
+        enemies.forEach(e => {
+            const d = Math.hypot(e.worldX - player.worldX, e.worldY - player.worldY);
+            if (d < minDist) { minDist = d; nearest = e; }
+        });
+        if (nearest) {
+            player.fireTimer = 0;
+            const angleBase = Math.atan2(nearest.worldY - player.worldY, nearest.worldX - player.worldX);
+            for (let i = 0; i < player.bulletCount; i++) {
+                const angle = angleBase + (i - (player.bulletCount-1)/2) * 0.15;
+                bullets.push({ worldX: player.worldX, worldY: player.worldY, vx: Math.cos(angle) * player.bulletSpeed, vy: Math.sin(angle) * player.bulletSpeed, life: 70, damage: player.bulletDamage * (Math.random() < player.critChance ? 2.5 : 1) });
+            }
+        }
+    }
+
+    // Update Particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.03;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+
+    // Bullet Logic
+    for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i]; b.worldX += b.vx; b.worldY += b.vy; b.life--;
+        enemies.forEach((e, j) => {
+            if (Math.hypot(b.worldX - e.worldX, b.worldY - e.worldY) < e.size + player.bulletSize) {
+                e.hp -= b.damage; e.flash = 5; b.life = 0;
+                spawnParticle(e.worldX, e.worldY, varToHex('--primary'));
+                if (e.hp <= 0) onKill(e, j);
+            }
+        });
+        if (b.life <= 0) bullets.splice(i, 1);
+    }
+
+    // Enemy Bullet Logic
+    for (let i = enemyBullets.length - 1; i >= 0; i--) {
+        const b = enemyBullets[i]; b.x += b.vx; b.y += b.vy; b.life--;
+        if (Math.hypot(b.x - player.worldX, b.y - player.worldY) < player.size) {
+            takeDamage(8); b.life = 0;
+        }
+        if (b.life <= 0) enemyBullets.splice(i, 1);
+    }
+
+    player.orbitAngle += 0.06;
+    enemies.forEach((e, idx) => {
+        const dist = Math.hypot(player.worldY - e.worldY, player.worldX - e.worldX);
+        const a = Math.atan2(player.worldY - e.worldY, player.worldX - e.worldX);
+        
+        // Ranged movement logic (keep distance)
+        if (e.type === 'ranged') {
+            if (dist > 300) { e.worldX += Math.cos(a) * e.speed; e.worldY += Math.sin(a) * e.speed; }
+            else if (dist < 200) { e.worldX -= Math.cos(a) * e.speed; e.worldY -= Math.sin(a) * e.speed; }
+            
+            e.shootTimer++;
+            if (e.shootTimer > 120) {
+                e.shootTimer = 0;
+                enemyBullets.push({ x: e.worldX, y: e.worldY, vx: Math.cos(a) * 4, vy: Math.sin(a) * 4, life: 150 });
+            }
+        } else {
+            e.worldX += Math.cos(a) * e.speed; e.worldY += Math.sin(a) * e.speed;
+        }
+
+        if (player.orbitSaws > 0) {
+            for (let i = 0; i < player.orbitSaws; i++) {
+                const sa = player.orbitAngle + (i * Math.PI * 2 / player.orbitSaws);
+                const sx = player.worldX + Math.cos(sa) * 75; const sy = player.worldY + Math.sin(sa) * 75;
+                if (Math.hypot(e.worldX - sx, e.worldY - sy) < e.size + 12) {
+                    if (e.hitCooldown <= 0) { e.hp -= (player.bulletDamage * 0.4); e.hitCooldown = 12; e.flash = 5; if (e.hp <= 0) { onKill(e, idx); return; } }
+                }
+            }
+        }
+        if (e.hitCooldown > 0) e.hitCooldown--;
+        if (e.flash > 0) e.flash--;
+
+        if (dist < player.size + e.size) takeDamage(0.6);
+    });
+
+    for (let i = gems.length - 1; i >= 0; i--) {
+        const g = gems[i]; const d = Math.hypot(g.worldX - player.worldX, g.worldY - player.worldY);
+        if (d < player.pickupRange) {
+            const a = Math.atan2(player.worldY - g.worldY, player.worldX - g.worldX);
+            g.worldX += Math.cos(a) * 9; g.worldY += Math.sin(a) * 9;
+            if (d < 12) {
+                xp += g.val * player.xpMult; gems.splice(i, 1);
+                if (xp >= xpToNext) { xp -= xpToNext; level++; xpToNext *= 1.25; lvlVal.innerText = level; handleLevelUp(); }
+            }
+        }
+    }
+    
+    xpFill.style.width = (xp / xpToNext * 100) + '%';
+    hpFill.style.width = Math.max(0, (player.hp / player.maxHp * 100)) + '%';
+}
+
+function takeDamage(amt) {
+    if (Math.random() < player.dodge) return;
+    player.hp -= amt * (1 - player.shield / 100);
+    if (player.hp <= 0) gameOver();
+}
+
+function onKill(e, idx) {
+    kills++; killsVal.innerText = kills;
+    persistent.crystals += Math.random() < 0.35 ? 1 : 0;
+    updateCrystalUI();
+    if (player.lifesteal > 0 && kills % 5 === 0) player.hp = Math.min(player.maxHp, player.hp + 2);
+    for(let i=0; i<5; i++) spawnParticle(e.worldX, e.worldY, e.type === 'ranged' ? '#ff4d4d' : '#4a5568');
+    gems.push({ worldX: e.worldX, worldY: e.worldY, val: 25 });
+    enemies.splice(idx, 1);
+}
+
+function drawPlayer(x, y) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(player.facing, 1);
+    const bob = Math.sin(player.animFrame) * 3;
+    // Legs
+    ctx.fillStyle = '#2d2d35'; ctx.fillRect(-8, 5 + bob/2, 5, 8); ctx.fillRect(3, 5 - bob/2, 5, 8);
+    // Body
+    ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.roundRect(-10, -12 + bob, 20, 18, 4); ctx.fill();
+    // Eye
+    ctx.fillStyle = '#000'; ctx.fillRect(4, -8 + bob, 4, 6);
+    // Glow
+    ctx.shadowBlur = 10; ctx.shadowColor = '#ffd700';
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(-10, -12+bob, 20, 18);
+    ctx.restore();
+}
+
+function drawEnemy(e) {
+    const x = e.worldX - camera.x; const y = e.worldY - camera.y;
+    ctx.save(); ctx.translate(x, y);
+    if (e.flash > 0) ctx.filter = 'brightness(3)';
+    
+    if (e.type === 'ranged') {
+        // Ranged: Red Core, Floating Bits
+        ctx.fillStyle = '#ff4d4d'; ctx.beginPath(); ctx.arc(0, 0, 10, 0, 7); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+        // Orbitals
+        for(let i=0; i<3; i++) {
+            const a = frameCount*0.1 + (i*Math.PI*2/3);
+            ctx.fillStyle = '#ff4d4d'; ctx.fillRect(Math.cos(a)*18-2, Math.sin(a)*18-2, 4, 4);
+        }
+    } else {
+        // Melee: Industrial Sphere
+        ctx.fillStyle = '#4a5568'; ctx.beginPath(); ctx.arc(0, 0, 12, 0, 7); ctx.fill();
+        ctx.strokeStyle = '#2d2d35'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#e53e3e'; ctx.fillRect(4, -2, 4, 4); // Eye
+    }
+    ctx.restore();
+}
+
+function draw() {
+    ctx.fillStyle = '#0f0f12'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#1a1a20'; ctx.lineWidth = 1;
+    for (let x = -camera.x % 100; x < canvas.width; x += 100) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+    for (let y = -camera.y % 100; y < canvas.height; y += 100) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+
+    gems.forEach(g => { ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.arc(g.worldX - camera.x, g.worldY - camera.y, 4, 0, 7); ctx.fill(); });
+    particles.forEach(p => { ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x - camera.x, p.y - camera.y, p.size, 0, 7); ctx.fill(); }); ctx.globalAlpha = 1;
+    bullets.forEach(b => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(b.worldX - camera.x, b.worldY - camera.y, 6, 0, 7); ctx.fill(); });
+    enemyBullets.forEach(b => { ctx.fillStyle = '#ff4d4d'; ctx.beginPath(); ctx.arc(b.x - camera.x, b.y - camera.y, 5, 0, 7); ctx.fill(); });
+    enemies.forEach(drawEnemy);
+
+    const px = player.worldX - camera.x; const py = player.worldY - camera.y;
+    for (let i = 0; i < player.orbitSaws; i++) {
+        const sa = player.orbitAngle + (i * Math.PI * 2 / player.orbitSaws);
+        const sx = px + Math.cos(sa) * 75; const sy = py + Math.sin(sa) * 75;
+        ctx.fillStyle = '#ffd700'; ctx.beginPath();
+        for(let j=0; j<10; j++) { const ra = (j * Math.PI * 2 / 10) + (frameCount * 0.15); const r = j%2===0 ? 12 : 6; ctx.lineTo(sx + Math.cos(ra)*r, sy + Math.sin(ra)*r); }
+        ctx.fill();
+    }
+    drawPlayer(px, py);
+}
+
+function varToHex(v) { return v === '--primary' ? '#ffd700' : '#fff'; }
+function startGame() { applyPersistentStats(); document.getElementById('start-screen').style.display = 'none'; gameActive = true; requestAnimationFrame(gameLoop); }
+function handleLevelUp() { gameActive = false; document.getElementById('upgrade-screen').style.display = 'flex'; const container = document.getElementById('upgrade-options'); container.innerHTML = ''; const luck = (persistent.upgrades.luck || 0) * 8; const choices = []; while(choices.length < 3) { const roll = Math.random() * 100 + luck; let rarity = roll > 92 ? 'legendary' : (roll > 70 ? 'rare' : 'common'); let pool = skills.filter(s => s.rarity === rarity); if(!pool.length) pool = skills.filter(s => s.rarity === 'common'); const s = pool[Math.floor(Math.random() * pool.length)]; if(!choices.includes(s)) choices.push(s); } choices.forEach(opt => { const card = document.createElement('div'); card.className = `upgrade-card`; card.innerHTML = `<div style="font-size:10px; color:var(--primary);">${opt.rarity.toUpperCase()}</div><h3>${opt.title}</h3><p>${opt.desc}</p>`; card.onclick = () => { opt.effect(); document.getElementById('upgrade-screen').style.display = 'none'; gameActive = true; requestAnimationFrame(gameLoop); }; container.appendChild(card); }); }
+function gameOver() { gameActive = false; document.getElementById('game-over').style.display = 'flex'; document.getElementById('final-stats').innerText = `Expedition ended at Level ${level} // ${kills} Relics Recovered`; updateCrystalUI(); }
+function gameLoop() { if (!gameActive) return; update(); draw(); frameCount++; if (frameCount % Math.max(10, 50 - level * 2) === 0) spawnEnemy(); requestAnimationFrame(gameLoop); }
+updateCrystalUI(); draw();
+</script>
+</body>
+</html>
