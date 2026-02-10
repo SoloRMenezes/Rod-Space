@@ -13,6 +13,7 @@
             --card-bg: #1a1a1f;
             --border: #2d2d35;
             --enemy-red: #ff4d4d;
+            --boom-orange: #ff8c00;
         }
 
         body {
@@ -25,19 +26,105 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            touch-action: none;
         }
+
         #game-container {
             position: relative;
-            width: 800px;
-            height: 600px;
+            width: 100vw;
+            height: 100vh;
+            max-width: 800px;
+            max-height: 600px;
             background: var(--bg);
-            border: 3px solid var(--border);
-            border-radius: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
         }
-        canvas { display: block; }
+
+        canvas { 
+            display: block; 
+            width: 100%; 
+            height: 100%; 
+            image-rendering: pixelated;
+        }
         
+        /* UI LAYOUT FIXES */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #xp-bar-container { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 4px; 
+            background: rgba(0,0,0,0.5); 
+        }
+
+        #xp-bar-fill { 
+            width: 0%; 
+            height: 100%; 
+            background: var(--primary); 
+            transition: width 0.2s; 
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        #top-hud {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        #stats-hud { 
+            font-size: 10px; 
+            font-weight: 800; 
+            color: #718096; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            background: rgba(15, 15, 18, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        #hp-bar-container { 
+            width: 150px; 
+            height: 8px; 
+            background: #222; 
+            border-radius: 4px; 
+            overflow: hidden; 
+            border: 1px solid #333; 
+        }
+
+        #hp-bar-fill { 
+            width: 100%; 
+            height: 100%; 
+            background: #e53e3e; 
+            transition: width 0.1s; 
+        }
+
+        #crystal-display { 
+            font-size: 14px; 
+            font-weight: bold; 
+            color: var(--primary); 
+            background: rgba(15, 15, 18, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
         .overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -45,28 +132,23 @@
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
             z-index: 100; text-align: center; padding: 20px; box-sizing: border-box;
+            pointer-events: auto;
         }
 
-        #xp-bar-container { position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: #222; }
-        #xp-bar-fill { width: 0%; height: 100%; background: var(--primary); transition: width 0.2s; }
-        #hp-bar-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 220px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; border: 1px solid #333; }
-        #hp-bar-fill { width: 100%; height: 100%; background: #e53e3e; transition: width 0.1s; }
-        #stats-hud { position: absolute; top: 18px; left: 20px; font-size: 11px; font-weight: 800; color: #718096; text-transform: uppercase; letter-spacing: 2px; }
-        #crystal-display { position: absolute; top: 16px; right: 20px; font-size: 18px; font-weight: bold; color: var(--primary); }
-
-        #shop-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-height: 420px; overflow-y: auto; padding: 10px; width: 100%; }
-        .shop-card { background: var(--card-bg); padding: 18px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border); transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+        #shop-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; max-height: 70vh; overflow-y: auto; padding: 10px; width: 100%; }
+        .shop-card { background: var(--card-bg); padding: 12px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
         .shop-card:hover { border-color: var(--primary); background: #22222a; }
-        .shop-card h3 { margin: 0; font-size: 14px; color: var(--primary); text-transform: uppercase; }
-        .shop-card .cost { margin-top: 10px; font-size: 14px; color: var(--primary); font-weight: 800; }
+        .shop-card h3 { margin: 0; font-size: 12px; color: var(--primary); text-transform: uppercase; }
+        .shop-card p { font-size: 10px; margin: 5px 0; color: #a0aec0; }
+        .shop-card .cost { margin-top: 5px; font-size: 12px; color: var(--primary); font-weight: 800; }
 
-        button { background: var(--primary); border: none; padding: 14px 36px; font-size: 14px; font-weight: 800; border-radius: 4px; cursor: pointer; color: #000; text-transform: uppercase; transition: 0.2s; margin: 8px; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2); }
+        button { background: var(--primary); border: none; padding: 12px 24px; font-size: 12px; font-weight: 800; border-radius: 4px; cursor: pointer; color: #000; text-transform: uppercase; transition: 0.2s; margin: 5px; }
+        button:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2); }
         .btn-alt { background: transparent; border: 1px solid var(--border); color: #fff; }
 
-        .title { font-size: 42px; color: var(--primary); margin-bottom: 25px; font-weight: 900; letter-spacing: 6px; text-transform: uppercase; }
-        .upgrade-card { background: var(--card-bg); padding: 25px; border-radius: 8px; cursor: pointer; width: 190px; border: 1px solid var(--border); transition: 0.2s; }
-        .upgrade-card:hover { border-color: var(--primary); transform: scale(1.05); }
+        .title { font-size: 32px; color: var(--primary); margin-bottom: 20px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; line-height: 1; }
+        .upgrade-card { background: var(--card-bg); padding: 15px; border-radius: 6px; cursor: pointer; width: 160px; border: 1px solid var(--border); transition: 0.2s; }
+        .upgrade-card:hover { border-color: var(--primary); transform: translateY(-5px); }
     </style>
 </head>
 <body>
@@ -76,32 +158,36 @@
     
     <div id="ui-layer">
         <div id="xp-bar-container"><div id="xp-bar-fill"></div></div>
-        <div id="hp-bar-container"><div id="hp-bar-fill"></div></div>
-        <div id="stats-hud">RELIC_RUNNER // LVL <span id="lvl-val">1</span> // KILLS <span id="kills-val">0</span></div>
-        <div id="crystal-display">💰 <span id="crystal-val">0</span></div>
+        
+        <div id="top-hud">
+            <div id="stats-hud">LVL <span id="lvl-val">1</span> // KILLS <span id="kills-val">0</span></div>
+            <div id="hp-bar-container"><div id="hp-bar-fill"></div></div>
+            <div id="crystal-display">💰 <span id="crystal-val">0</span></div>
+        </div>
         
         <div id="start-screen" class="overlay">
             <h1 class="title">RELIC<br>RUSH</h1>
             <div style="display: flex;">
                 <button onclick="startGame()">Start Expedition</button>
-                <button class="btn-alt" onclick="openShop()">Upgrade Hub</button>
+                <button class="btn-alt" onclick="openShop()">Upgrades</button>
             </div>
+            <p style="font-size: 10px; color: #4a5568; margin-top: 20px;">WASD TO MOVE // AUTO-AIM ENGAGED</p>
         </div>
 
         <div id="shop-screen" class="overlay" style="display:none;">
-            <h2 style="color: var(--primary); margin-bottom: 20px; text-transform: uppercase;">Augmentation Hub</h2>
+            <h2 style="color: var(--primary); margin-bottom: 15px; text-transform: uppercase; font-size: 18px;">Augmentation Hub</h2>
             <div id="shop-options"></div>
-            <button onclick="closeShop()" class="btn-alt" style="margin-top: 20px;">Return to Surface</button>
+            <button onclick="closeShop()" class="btn-alt" style="margin-top: 15px;">Return</button>
         </div>
 
         <div id="upgrade-screen" class="overlay" style="display:none;">
-            <h2 style="color:var(--primary); margin-bottom: 25px; text-transform: uppercase;">Relic Selection</h2>
-            <div id="upgrade-options" style="display: flex; gap: 20px;"></div>
+            <h2 style="color:var(--primary); margin-bottom: 20px; text-transform: uppercase; font-size: 18px;">Relic Selected</h2>
+            <div id="upgrade-options" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;"></div>
         </div>
 
         <div id="game-over" class="overlay" style="display:none;">
-            <h1 style="color: #e53e3e; font-size: 42px; text-transform: uppercase;">Expedition Failed</h1>
-            <p id="final-stats" style="margin-bottom: 30px;"></p>
+            <h1 style="color: #e53e3e; font-size: 32px; text-transform: uppercase;">Failed</h1>
+            <p id="final-stats" style="margin-bottom: 20px; font-size: 14px;"></p>
             <button onclick="location.reload()">New Run</button>
         </div>
     </div>
@@ -110,6 +196,7 @@
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+// Fix internal resolution
 canvas.width = 800; canvas.height = 600;
 
 const xpFill = document.getElementById('xp-bar-fill');
@@ -190,7 +277,7 @@ function renderShop() {
     itemsForDisplay.forEach(item => {
         const card = document.createElement('div');
         card.className = 'shop-card';
-        card.innerHTML = `<div><h3>${item.title}</h3><span class="lvl">LVL ${item.lvl}/${item.limit}</span><p>${item.desc}</p></div><div class="cost">${item.isMax ? 'MAXED' : '💰 ' + item.cost}</div>`;
+        card.innerHTML = `<div><h3>${item.title}</h3><p>${item.desc}</p></div><div class="cost">${item.isMax ? 'MAXED' : '💰 ' + item.cost}</div>`;
         if (!item.isMax) card.onclick = () => { if (persistent.crystals >= item.cost) { persistent.crystals -= item.cost; persistent.upgrades[item.key]++; updateCrystalUI(); localStorage.setItem('ss_upgrades', JSON.stringify(persistent.upgrades)); renderShop(); } };
         else card.style.opacity = '0.5';
         container.appendChild(card);
@@ -235,24 +322,34 @@ function spawnEnemy() {
     const spawnY = player.worldY + Math.sin(angle) * 500;
     const diff = 1 + (level * 0.15);
     
-    // Spawn Ranged Enemy after level 5, higher chance as levels increase
-    const isRanged = level >= 5 && Math.random() < Math.min(0.4, (level - 4) * 0.05);
+    // Level 25+ Seeker Drone
+    const isSeeker = level >= 25 && Math.random() < 0.15;
+    const isRanged = !isSeeker && level >= 5 && Math.random() < Math.min(0.4, (level - 4) * 0.05);
     
     enemies.push({
         worldX: spawnX, worldY: spawnY, 
-        hp: (isRanged ? 30 : 50) * diff, 
-        maxHp: (isRanged ? 30 : 50) * diff,
-        speed: (isRanged ? 1.0 : 1.6 + Math.random() * 0.6), 
-        size: isRanged ? 16 : 14, 
+        hp: (isSeeker ? 120 : (isRanged ? 30 : 50)) * diff, 
+        maxHp: (isSeeker ? 120 : (isRanged ? 30 : 50)) * diff,
+        speed: isSeeker ? player.speed * 1.5 : (isRanged ? 1.0 : 1.6 + Math.random() * 0.6), 
+        size: isSeeker ? 20 : (isRanged ? 16 : 14), 
         hitCooldown: 0, 
-        type: isRanged ? 'ranged' : 'melee',
+        type: isSeeker ? 'seeker' : (isRanged ? 'ranged' : 'melee'),
         shootTimer: Math.random() * 100,
+        chargeTimer: 0,
+        isCharging: false,
         flash: 0
     });
 }
 
 function spawnParticle(x, y, color, size = 3) {
     particles.push({ x, y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 1, color, size });
+}
+
+function createExplosion(x, y) {
+    for(let i=0; i<20; i++) {
+        spawnParticle(x, y, '#ff8c00', 4 + Math.random() * 6);
+        spawnParticle(x, y, '#ff4d4d', 2 + Math.random() * 4);
+    }
 }
 
 function update() {
@@ -273,7 +370,6 @@ function update() {
 
     if (player.hp < player.maxHp) player.hp += player.regen / 60;
 
-    // Player Shooting
     player.fireTimer++;
     if (player.fireTimer >= player.fireRate) {
         let nearest = null; let minDist = 450;
@@ -291,26 +387,23 @@ function update() {
         }
     }
 
-    // Update Particles
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.03;
         if (p.life <= 0) particles.splice(i, 1);
     }
 
-    // Bullet Logic
     for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i]; b.worldX += b.vx; b.worldY += b.vy; b.life--;
         enemies.forEach((e, j) => {
             if (Math.hypot(b.worldX - e.worldX, b.worldY - e.worldY) < e.size + player.bulletSize) {
                 e.hp -= b.damage; e.flash = 5; b.life = 0;
-                spawnParticle(e.worldX, e.worldY, varToHex('--primary'));
+                spawnParticle(e.worldX, e.worldY, '#ffd700');
                 if (e.hp <= 0) onKill(e, j);
             }
         });
         if (b.life <= 0) bullets.splice(i, 1);
     }
 
-    // Enemy Bullet Logic
     for (let i = enemyBullets.length - 1; i >= 0; i--) {
         const b = enemyBullets[i]; b.x += b.vx; b.y += b.vy; b.life--;
         if (Math.hypot(b.x - player.worldX, b.y - player.worldY) < player.size) {
@@ -320,15 +413,27 @@ function update() {
     }
 
     player.orbitAngle += 0.06;
-    enemies.forEach((e, idx) => {
+    for (let idx = enemies.length - 1; idx >= 0; idx--) {
+        const e = enemies[idx];
         const dist = Math.hypot(player.worldY - e.worldY, player.worldX - e.worldX);
         const a = Math.atan2(player.worldY - e.worldY, player.worldX - e.worldX);
         
-        // Ranged movement logic (keep distance)
-        if (e.type === 'ranged') {
+        if (e.type === 'seeker') {
+            if (!e.isCharging) {
+                e.worldX += Math.cos(a) * e.speed; e.worldY += Math.sin(a) * e.speed;
+                if (dist < 80) { e.isCharging = true; e.chargeTimer = 180; }
+            } else {
+                e.chargeTimer--;
+                if (e.chargeTimer <= 0) {
+                    createExplosion(e.worldX, e.worldY);
+                    if (dist < 120) takeDamage(player.maxHp / 5);
+                    enemies.splice(idx, 1);
+                    continue;
+                }
+            }
+        } else if (e.type === 'ranged') {
             if (dist > 300) { e.worldX += Math.cos(a) * e.speed; e.worldY += Math.sin(a) * e.speed; }
             else if (dist < 200) { e.worldX -= Math.cos(a) * e.speed; e.worldY -= Math.sin(a) * e.speed; }
-            
             e.shootTimer++;
             if (e.shootTimer > 120) {
                 e.shootTimer = 0;
@@ -343,15 +448,15 @@ function update() {
                 const sa = player.orbitAngle + (i * Math.PI * 2 / player.orbitSaws);
                 const sx = player.worldX + Math.cos(sa) * 75; const sy = player.worldY + Math.sin(sa) * 75;
                 if (Math.hypot(e.worldX - sx, e.worldY - sy) < e.size + 12) {
-                    if (e.hitCooldown <= 0) { e.hp -= (player.bulletDamage * 0.4); e.hitCooldown = 12; e.flash = 5; if (e.hp <= 0) { onKill(e, idx); return; } }
+                    if (e.hitCooldown <= 0) { e.hp -= (player.bulletDamage * 0.4); e.hitCooldown = 12; e.flash = 5; if (e.hp <= 0) { onKill(e, idx); break; } }
                 }
             }
         }
         if (e.hitCooldown > 0) e.hitCooldown--;
         if (e.flash > 0) e.flash--;
 
-        if (dist < player.size + e.size) takeDamage(0.6);
-    });
+        if (dist < player.size + e.size && e.type !== 'seeker') takeDamage(0.6);
+    }
 
     for (let i = gems.length - 1; i >= 0; i--) {
         const g = gems[i]; const d = Math.hypot(g.worldX - player.worldX, g.worldY - player.worldY);
@@ -380,7 +485,7 @@ function onKill(e, idx) {
     persistent.crystals += Math.random() < 0.35 ? 1 : 0;
     updateCrystalUI();
     if (player.lifesteal > 0 && kills % 5 === 0) player.hp = Math.min(player.maxHp, player.hp + 2);
-    for(let i=0; i<5; i++) spawnParticle(e.worldX, e.worldY, e.type === 'ranged' ? '#ff4d4d' : '#4a5568');
+    for(let i=0; i<5; i++) spawnParticle(e.worldX, e.worldY, e.type === 'seeker' ? '#ff8c00' : (e.type === 'ranged' ? '#ff4d4d' : '#4a5568'));
     gems.push({ worldX: e.worldX, worldY: e.worldY, val: 25 });
     enemies.splice(idx, 1);
 }
@@ -388,13 +493,9 @@ function onKill(e, idx) {
 function drawPlayer(x, y) {
     ctx.save(); ctx.translate(x, y); ctx.scale(player.facing, 1);
     const bob = Math.sin(player.animFrame) * 3;
-    // Legs
     ctx.fillStyle = '#2d2d35'; ctx.fillRect(-8, 5 + bob/2, 5, 8); ctx.fillRect(3, 5 - bob/2, 5, 8);
-    // Body
     ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.roundRect(-10, -12 + bob, 20, 18, 4); ctx.fill();
-    // Eye
     ctx.fillStyle = '#000'; ctx.fillRect(4, -8 + bob, 4, 6);
-    // Glow
     ctx.shadowBlur = 10; ctx.shadowColor = '#ffd700';
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(-10, -12+bob, 20, 18);
     ctx.restore();
@@ -405,20 +506,30 @@ function drawEnemy(e) {
     ctx.save(); ctx.translate(x, y);
     if (e.flash > 0) ctx.filter = 'brightness(3)';
     
-    if (e.type === 'ranged') {
-        // Ranged: Red Core, Floating Bits
+    if (e.type === 'seeker') {
+        if (e.isCharging) {
+            const shake = Math.sin(frameCount * 0.5) * 4;
+            ctx.translate(shake, shake);
+            ctx.fillStyle = '#ff4d4d';
+            ctx.shadowBlur = 15; ctx.shadowColor = '#ff0000';
+        } else {
+            ctx.fillStyle = '#ff8c00';
+        }
+        ctx.beginPath(); 
+        ctx.moveTo(0, -15); ctx.lineTo(15, 0); ctx.lineTo(0, 15); ctx.lineTo(-15, 0);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    } else if (e.type === 'ranged') {
         ctx.fillStyle = '#ff4d4d'; ctx.beginPath(); ctx.arc(0, 0, 10, 0, 7); ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-        // Orbitals
         for(let i=0; i<3; i++) {
             const a = frameCount*0.1 + (i*Math.PI*2/3);
             ctx.fillStyle = '#ff4d4d'; ctx.fillRect(Math.cos(a)*18-2, Math.sin(a)*18-2, 4, 4);
         }
     } else {
-        // Melee: Industrial Sphere
         ctx.fillStyle = '#4a5568'; ctx.beginPath(); ctx.arc(0, 0, 12, 0, 7); ctx.fill();
         ctx.strokeStyle = '#2d2d35'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = '#e53e3e'; ctx.fillRect(4, -2, 4, 4); // Eye
+        ctx.fillStyle = '#e53e3e'; ctx.fillRect(4, -2, 4, 4);
     }
     ctx.restore();
 }
@@ -446,10 +557,9 @@ function draw() {
     drawPlayer(px, py);
 }
 
-function varToHex(v) { return v === '--primary' ? '#ffd700' : '#fff'; }
 function startGame() { applyPersistentStats(); document.getElementById('start-screen').style.display = 'none'; gameActive = true; requestAnimationFrame(gameLoop); }
 function handleLevelUp() { gameActive = false; document.getElementById('upgrade-screen').style.display = 'flex'; const container = document.getElementById('upgrade-options'); container.innerHTML = ''; const luck = (persistent.upgrades.luck || 0) * 8; const choices = []; while(choices.length < 3) { const roll = Math.random() * 100 + luck; let rarity = roll > 92 ? 'legendary' : (roll > 70 ? 'rare' : 'common'); let pool = skills.filter(s => s.rarity === rarity); if(!pool.length) pool = skills.filter(s => s.rarity === 'common'); const s = pool[Math.floor(Math.random() * pool.length)]; if(!choices.includes(s)) choices.push(s); } choices.forEach(opt => { const card = document.createElement('div'); card.className = `upgrade-card`; card.innerHTML = `<div style="font-size:10px; color:var(--primary);">${opt.rarity.toUpperCase()}</div><h3>${opt.title}</h3><p>${opt.desc}</p>`; card.onclick = () => { opt.effect(); document.getElementById('upgrade-screen').style.display = 'none'; gameActive = true; requestAnimationFrame(gameLoop); }; container.appendChild(card); }); }
-function gameOver() { gameActive = false; document.getElementById('game-over').style.display = 'flex'; document.getElementById('final-stats').innerText = `Expedition ended at Level ${level} // ${kills} Relics Recovered`; updateCrystalUI(); }
+function gameOver() { gameActive = false; document.getElementById('game-over').style.display = 'flex'; document.getElementById('final-stats').innerText = `Level ${level} reached // ${kills} Kills`; updateCrystalUI(); }
 function gameLoop() { if (!gameActive) return; update(); draw(); frameCount++; if (frameCount % Math.max(10, 50 - level * 2) === 0) spawnEnemy(); requestAnimationFrame(gameLoop); }
 updateCrystalUI(); draw();
 </script>
