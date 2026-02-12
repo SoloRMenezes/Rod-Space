@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side Quests</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --text-main: #0f172a;
+            --text-sub: #334155;
+            --text-mute: #64748b;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-border: #ffffff;
+            --primary-blue: #2563eb;
+            --primary-hover: #1d4ed8;
+            --shadow: rgba(15, 23, 42, 0.08);
+            --accent: #3b82f6;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+            --text-main: #f8fafc;
+            --text-sub: #e2e8f0;
+            --text-mute: #94a3b8;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary-blue: #3b82f6;
+            --primary-hover: #60a5fa;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --accent: #60a5fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.5s ease;
+            overflow-x: hidden;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(8px);
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-main);
+        }
+
+        /* Start Screen */
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .start-screen h1 {
+            font-size: clamp(3em, 10vw, 5em);
+            margin: 0;
+            font-weight: 900;
+            background: linear-gradient(to bottom right, var(--text-main), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+        }
+
+        .start-screen p {
+            font-size: 1.2em;
+            color: var(--text-mute);
+            margin: 10px 0 0;
+            font-weight: 500;
+        }
+
+        #questBox {
+            margin-top: 60px;
+            padding: 20px 48px;
+            font-size: 1.1em;
+            background: var(--primary-blue);
+            color: #ffffff;
+            border: none;
+            border-radius: 100px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 260px;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+            letter-spacing: 0.02em;
+        }
+
+        #questBox:hover {
+            background: var(--primary-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.5);
+        }
+
+        /* Quest Screen */
+        .quest-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 80px 24px;
+            width: 100%;
+            max-width: 700px;
+            min-height: 100vh;
+        }
+
+        .quest-header {
+            margin-bottom: 40px;
+        }
+
+        .quest-header h2 {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .quest-header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        #quest {
+            font-size: 1.25em;
+            line-height: 1.7;
+            padding: 48px;
+            border: 1px solid var(--card-border);
+            border-radius: 32px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            width: 100%;
+            min-height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 50px var(--shadow);
+            color: var(--text-sub);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        #quest::before {
+            content: '“';
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            font-size: 4em;
+            font-family: serif;
+            opacity: 0.1;
+            color: var(--accent);
+        }
+
+        .daily-note {
+            font-size: 0.9em;
+            color: var(--text-mute);
+            margin-top: 32px;
+            max-width: 400px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .back-btn {
+            margin-top: 40px;
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-mute);
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            color: var(--text-main);
+            background: var(--card-bg);
+        }
+        
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .quest-screen {
+            animation: reveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .sun-icon { display: none; }
+        [data-theme="dark"] .sun-icon { display: block; }
+        [data-theme="dark"] .moon-icon { display: none; }
+    </style>
+</head>
+<body>
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+        <svg class="moon-icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+        </svg>
+        <svg class="sun-icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+        </svg>
+    </button>
+
+    <div class="start-screen" id="startScreen">
+        <h1>Side Quests</h1>
+        <p>Stop Auto-Pilot. One mission at a time.</p>
+        <button id="questBox" onclick="startQuests()">Unlock Today's Quest</button>
+    </div>
+
+    <div class="quest-screen" id="questScreen">
+        <div class="quest-header">
+            <h2>Current Objective</h2>
+            <h1 id="dateHeader">Today's Mission</h1>
+        </div>
+        <div id="quest">Loading your mission...</div>
+        <div class="daily-note">A new side quest unlocks automatically every 24 hours. Good luck, explorer.</div>
+        <button class="back-btn" onclick="location.reload()">Back Home</button>
+    </div>
+
+    <script>
+        const quests = [
+            "Bike the full Ribeira de Quarteira loop trail (start near marina, follow the river inland via paths), find the quietest spot where the water's clearest, sit 15 min counting fish or birds.",
+            "Ride to the pine forest trails behind Vilamoura (off the main paths, like near Rocha Baixinha or Várzeas), hunt for the oldest/most twisted pine tree – take a pic, give it a dumb name.",
+            "Cycle the backstreets behind the marina (not the tourist front – the residential alleys with laundry hanging), spot 5 different types of street art/graffiti/tags, rank them by chaos level.",
+            "Go to Praia da Falésia via the less-used inland paths (avoid the main boardwalk), climb a low cliff section (safe spot), yell your current IB stress level at the sea – max volume.",
+            "Bike to Quarteira's old fishing harbor at dawn/dusk (not the tourist side), watch for the one fisherman who always has the weirdest catch – invent a full backstory for it.",
+            "Explore the perimeter of the golf courses on public paths (no entering fairways), find 3 abandoned golf balls, build a tiny pyramid with them somewhere hidden.",
+            "Ride the coastal path toward Rocha Baixinha, stop at every single viewpoint bench, do 10 push-ups facing the water each time – total reps by end.",
+            "Hunt for the 'secret' small coves along Falésia (walk bike down short paths if needed), find one with zero people, leave a rock message for the next person (keep it positive/weird).",
+            "Cycle inland toward Boliqueime direction on quiet roads (parallel to Ribeira), count how many orange trees you pass with fruit still on – bonus if you spot roadside sellers (don't buy, just observe).",
+            "At night, bike the quiet marina backstreets, people-watch from shadows for 20 min, write down 5 overheard Portuguese phrases or accents you catch.",
+            "Ride to the bridge area near Quarteira-Vilamoura border, stand there, challenge yourself to balance on one foot longest while staring at the water – beat your PB next ride.",
+            "Find a hidden bench or overlook in the pine areas (locals know spots off the main trails), no-phone zone for 20 min, think up one new sidequest idea for yourself.",
+            "Bike loop around Quarteira old town market area (early morning empty vibes), smell-rank the fish stalls without stopping – weirdest smell wins.",
+            "Cycle to a random quiet residential street in Vilamoura, do slow-motion bike tricks (figure-8s, tight turns) until a local notices and reacts (or doesn't).",
+            "Explore the lesser-used paths near Cerro da Vila ruins (outside the main site), find overgrown Roman-ish stones/fragments, sketch one quick.",
+            "Ride the full marina-to-Quarteira coastal path at night (lights on bike), count street lamps that are out/broken – report mentally as 'Vilamoura chaos points'.",
+            "Go far along Falésia cliffs path (bike as far as possible), find the erosion spot that looks most like a face/animal – name it, take proof pic.",
+            "Bike to a spot with flamingos if you can reach Ria Formosa edges (nearby paths), try to get one to look your way by making quiet bird calls – fail gloriously.",
+            "Invent a 'bike symphony': ride slow, hum a tune matching your pedal rhythm, change it every 100m on a long straight path.",
+            "End any ride by finding the most random object on the ground (bottle cap, feather, whatever), turn it into 'treasure' and hide it for someone else to find next day.",
+"Bike the full Ribeira de Quarteira loop trail, find the clearest water spot, sit 15 min counting fish/birds together (or race who spots more).",
+    "Ride to pine forest trails (Rocha Baixinha/Várzeas area), hunt for the most twisted/old pine – name it together, take group pic with it.",
+    "Cycle backstreets behind marina (residential alleys), spot 5 different graffiti/tags – rank them by chaos level as a group vote.",
+    "Explore golf course perimeter (public paths only), find 3 abandoned golf balls – build tiny pyramid somewhere hidden, take pic as proof.",
+    "Ride coastal path to Rocha Baixinha, stop at each viewpoint bench – do 10 push-ups each facing sea (total reps per person, compare at end).",
+    "Hunt secret small coves along Falésia (bike + short walk), find empty one – leave positive/weird rock message for next person (group brainstorm message).",
+    "Cycle inland toward Boliqueime on quiet roads, count orange trees with fruit – bonus: spot roadside sellers (no buy, just observe and discuss weirdest setup).",
+    "Find hidden bench/overlook in pine areas, no-phone zone 20 min – each think up one new sidequest idea, share at end.",
+    "Bike loop around Quarteira old town market (early morning), smell-rank fish stalls without stopping – group decides weirdest smell winner.",
+    "Explore lesser-used paths near Cerro da Vila ruins, find overgrown Roman stones/fragments – quick group sketch of the coolest one.",
+    "Go far along Falésia cliffs path (bike max), find erosion that looks like face/animal – name it together, take proof pic.",
+    "Bike to Ria Formosa edges (if reachable), try quiet bird calls to get flamingo attention – laugh at fails, count how many look your way.",
+    "End any ride: find most random ground object (cap, feather, etc.), turn into “treasure” – hide it creatively for someone else to find.",
+    "Bike race: marina to Quarteira bridge and back – slowest time buys bragging rights (or loser does next quest first).",
+    "Group photo challenge: ride together, each take turns capturing 3 “Vilamoura secret spots” no tourist would notice – vote best set.",
+    "Sound map: ride a quiet path, stop every 500m, record 10 sec ambient sound (waves, birds, wind) – later compare who got coolest one.",
+    "Bike scavenger: make list of 5 specific things (orange flower, blue boat, weird sign, etc.) – first to photo all wins.",
+    "Sunset timer: ride to best viewpoint, time how long you can stay silent watching sunset together (no phones, no talking)."
+        ];
+
+        // Theme Management
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        }
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            setTheme(savedTheme);
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            setTheme('dark');
+        }
+
+        function getDailyQuest() {
+            const today = new Date().toDateString();
+            let seed = 0;
+            for (let i = 0; i < today.length; i++) {
+                seed += today.charCodeAt(i);
+            }
+            const index = seed % quests.length;
+            return quests[index];
+        }
+
+        function startQuests() {
+            const now = new Date();
+            const options = { month: 'long', day: 'numeric' };
+            document.getElementById('dateHeader').innerText = now.toLocaleDateString(undefined, options);
+            
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('questScreen').style.display = 'flex';
+            document.getElementById('quest').innerText = getDailyQuest();
+        }
+    </script>
+</body>
+</html>
