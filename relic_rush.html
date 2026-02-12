@@ -14,6 +14,7 @@
             --border: #2d2d35;
             --enemy-red: #ff4d4d;
             --boom-orange: #ff8c00;
+            --laser-gold: #fbbf24;
         }
 
         body {
@@ -49,7 +50,6 @@
             image-rendering: pixelated;
         }
         
-        /* UI LAYOUT FIXES */
         #ui-layer {
             position: absolute;
             top: 0;
@@ -149,6 +149,31 @@
         .title { font-size: 32px; color: var(--primary); margin-bottom: 20px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; line-height: 1; }
         .upgrade-card { background: var(--card-bg); padding: 15px; border-radius: 6px; cursor: pointer; width: 160px; border: 1px solid var(--border); transition: 0.2s; }
         .upgrade-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+
+        #joystick-base {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: none;
+            pointer-events: none;
+            z-index: 5;
+        }
+        #joystick-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -156,6 +181,8 @@
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
     
+    <div id="joystick-base"><div id="joystick-knob"></div></div>
+
     <div id="ui-layer">
         <div id="xp-bar-container"><div id="xp-bar-fill"></div></div>
         
@@ -171,7 +198,7 @@
                 <button onclick="startGame()">Start Expedition</button>
                 <button class="btn-alt" onclick="openShop()">Upgrades</button>
             </div>
-            <p style="font-size: 10px; color: #4a5568; margin-top: 20px;">WASD TO MOVE // AUTO-AIM ENGAGED</p>
+            <p style="font-size: 10px; color: #4a5568; margin-top: 20px;">DRAG OR HOLD MOUSE TO MOVE // AUTO-AIM ENGAGED</p>
         </div>
 
         <div id="shop-screen" class="overlay" style="display:none;">
@@ -196,7 +223,6 @@
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-// Fix internal resolution
 canvas.width = 800; canvas.height = 600;
 
 const xpFill = document.getElementById('xp-bar-fill');
@@ -205,6 +231,7 @@ const lvlVal = document.getElementById('lvl-val');
 const killsVal = document.getElementById('kills-val');
 const crystalVal = document.getElementById('crystal-val');
 
+// PERSISTENCE
 let persistent = {
     crystals: parseInt(localStorage.getItem('ss_crystals')) || 0,
     upgrades: JSON.parse(localStorage.getItem('ss_upgrades')) || {
@@ -219,7 +246,7 @@ const shopItems = [
     { key: 'hp', title: 'Hardened Hull', desc: '+15 Max health.', baseCost: 50, limit: 10 },
     { key: 'damage', title: 'Aether Charge', desc: '+5% Output damage.', baseCost: 60, limit: 10 },
     { key: 'speed', title: 'Nitro Boost', desc: '+4% Move speed.', baseCost: 40, limit: 10 },
-    { key: 'rate', title: 'Rapid Cycle', desc: '+5% Fire rate.', baseCost: 75, limit: 10 },
+    { key: 'rate', title: 'Rapid Reloads', desc: '+5% Fire rate.', baseCost: 75, limit: 10 },
     { key: 'range', title: 'Relic Magnet', desc: '+15% Pickup range.', baseCost: 30, limit: 10 },
     { key: 'crit', title: 'Precision Lens', desc: '+3% Critical chance.', baseCost: 100, limit: 8 },
     { key: 'armor', title: 'Plated Armor', desc: '+3% Damage reduction.', baseCost: 80, limit: 10 },
@@ -229,10 +256,11 @@ const shopItems = [
     { key: 'bulletSpeed', title: 'Sonic Wave', desc: '+10% Bullet speed.', baseCost: 70, limit: 5 },
     { key: 'startSaw', title: 'Orbit Drone', desc: 'Start with 1 Sawblade.', baseCost: 800, limit: 1 },
     { key: 'startGold', title: 'Seed Fund', desc: 'Start with bonus Coins.', baseCost: 150, limit: 5 },
-    { key: 'dodge', title: 'Reflex Sync', desc: '+2% Dodge chance.', baseCost: 150, limit: 5 },
+    { key: 'dodge', title: 'Assisted Reflexes', desc: '+2% Dodge chance.', baseCost: 150, limit: 5 },
     { key: 'luck', title: 'Golden Compass', desc: 'Better skill rarity.', baseCost: 200, limit: 3 }
 ];
 
+// STATE
 let gameActive = false;
 let frameCount = 0;
 let kills = 0;
@@ -247,10 +275,70 @@ const bullets = [];
 const enemyBullets = [];
 const gems = [];
 const particles = [];
-const keys = {};
+const activeLasers = [];
 
-window.addEventListener('keydown', e => keys[e.code] = true);
-window.addEventListener('keyup', e => keys[e.code] = false);
+// INPUT HANDLING
+let inputState = {
+    isDown: false,
+    x: 0,
+    y: 0,
+    moveX: 0,
+    moveY: 0
+};
+
+function handleInputStart(e) {
+    if (e.target.closest('button') || e.target.closest('.shop-card') || e.target.closest('.upgrade-card')) return;
+    inputState.isDown = true;
+    updateInputPos(e);
+}
+
+function handleInputMove(e) {
+    if (!inputState.isDown) return;
+    updateInputPos(e);
+}
+
+function handleInputEnd() {
+    inputState.isDown = false;
+    inputState.moveX = 0;
+    inputState.moveY = 0;
+}
+
+function updateInputPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches ? e.touches[0] : e;
+    const clientX = touch.clientX - rect.left;
+    const clientY = touch.clientY - rect.top;
+    
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    inputState.x = clientX * scaleX;
+    inputState.y = clientY * scaleY;
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    const dx = inputState.x - centerX;
+    const dy = inputState.y - centerY;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > 10) { 
+        const mag = Math.min(dist, 100) / 100; 
+        inputState.moveX = (dx / dist) * mag;
+        inputState.moveY = (dy / dist) * mag;
+        player.facing = dx > 0 ? 1 : -1;
+    } else {
+        inputState.moveX = 0;
+        inputState.moveY = 0;
+    }
+}
+
+window.addEventListener('mousedown', handleInputStart);
+window.addEventListener('mousemove', handleInputMove);
+window.addEventListener('mouseup', handleInputEnd);
+window.addEventListener('touchstart', (e) => { e.preventDefault(); handleInputStart(e); }, {passive: false});
+window.addEventListener('touchmove', (e) => { e.preventDefault(); handleInputMove(e); }, {passive: false});
+window.addEventListener('touchend', handleInputEnd);
 
 function updateCrystalUI() {
     crystalVal.innerText = persistent.crystals;
@@ -300,7 +388,11 @@ function applyPersistentStats() {
         lifesteal: 0, critChance: (u.crit || 0) * 0.03, regen: (u.regen || 0) * 0.15,
         xpMult: 1 + (u.xpBoost || 0) * 0.08,
         orbitSaws: (u.startSaw || 0), orbitAngle: 0,
-        facing: 1, animFrame: 0
+        facing: 1, animFrame: 0,
+        // LASER SKILL STATE
+        laserLevel: 0,
+        laserCooldown: 7000,
+        lastLaserTime: 0
     };
     if (u.startGold > 0) { persistent.crystals += u.startGold * 5; updateCrystalUI(); }
 }
@@ -312,7 +404,23 @@ const skills = [
     { id: 'mag', rarity: 'rare', title: 'Magnetism', desc: '+50% Range', effect: () => player.pickupRange *= 1.5 },
     { id: 'multi', rarity: 'rare', title: 'Twin Shot', desc: '+1 Projectile', effect: () => player.bulletCount++ },
     { id: 'saw', rarity: 'legendary', title: 'Sawblade', desc: 'Add orbiting blade', effect: () => player.orbitSaws++ },
-    { id: 'vamp', rarity: 'legendary', title: 'Siphon', desc: 'Heal on 5th kill', effect: () => player.lifesteal += 0.2 }
+    { id: 'vamp', rarity: 'legendary', title: 'Siphon', desc: 'Heal on 5th kill', effect: () => player.lifesteal += 0.2 },
+    { 
+        id: 'laser', 
+        rarity: 'legendary', 
+        title: 'Nova Laser', 
+        desc: 'Orbital strike strike every 5-7s', 
+        effect: () => {
+            if (player.laserLevel === 0) {
+                player.laserLevel = 1;
+                player.laserCooldown = 6000;
+                player.lastLaserTime = Date.now();
+            } else {
+                player.laserLevel++;
+                player.laserCooldown = Math.max(1000, player.laserCooldown - 1000);
+            }
+        }
+    }
 ];
 
 function spawnEnemy() {
@@ -322,7 +430,6 @@ function spawnEnemy() {
     const spawnY = player.worldY + Math.sin(angle) * 500;
     const diff = 1 + (level * 0.15);
     
-    // Level 25+ Seeker Drone
     const isSeeker = level >= 25 && Math.random() < 0.15;
     const isRanged = !isSeeker && level >= 5 && Math.random() < Math.min(0.4, (level - 4) * 0.05);
     
@@ -352,24 +459,43 @@ function createExplosion(x, y) {
     }
 }
 
+function fireLaser() {
+    if (player.laserLevel <= 0 || enemies.length === 0) return;
+    let nearest = null; let minDist = 600;
+    enemies.forEach(e => {
+        const d = Math.hypot(e.worldX - player.worldX, e.worldY - player.worldY);
+        if (d < minDist) { minDist = d; nearest = e; }
+    });
+    if (nearest) {
+        activeLasers.push({
+            worldX: nearest.worldX, worldY: nearest.worldY,
+            life: 40, maxLife: 40, radius: 60 + player.laserLevel * 10
+        });
+        const lRadius = 60 + player.laserLevel * 10;
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const e = enemies[i];
+            const dist = Math.hypot(e.worldX - nearest.worldX, e.worldY - nearest.worldY);
+            if (dist < lRadius + e.size) {
+                e.hp -= (player.bulletDamage * 5); e.flash = 10;
+                if (e.hp <= 0) onKill(e, i);
+            }
+        }
+    }
+}
+
 function update() {
-    let dx = 0, dy = 0;
-    if (keys['ArrowUp'] || keys['KeyW']) dy -= 1;
-    if (keys['ArrowDown'] || keys['KeyS']) dy += 1;
-    if (keys['ArrowLeft'] || keys['KeyA']) { dx -= 1; player.facing = -1; }
-    if (keys['ArrowRight'] || keys['KeyD']) { dx += 1; player.facing = 1; }
-    
-    if (dx !== 0 || dy !== 0) {
-        const mag = Math.sqrt(dx*dx + dy*dy);
-        player.worldX += (dx/mag) * player.speed;
-        player.worldY += (dy/mag) * player.speed;
+    if (inputState.moveX !== 0 || inputState.moveY !== 0) {
+        player.worldX += inputState.moveX * player.speed;
+        player.worldY += inputState.moveY * player.speed;
         player.animFrame += 0.15;
     }
+
     camera.x = player.worldX - canvas.width / 2;
     camera.y = player.worldY - canvas.height / 2;
 
     if (player.hp < player.maxHp) player.hp += player.regen / 60;
 
+    // Shooting
     player.fireTimer++;
     if (player.fireTimer >= player.fireRate) {
         let nearest = null; let minDist = 450;
@@ -387,11 +513,28 @@ function update() {
         }
     }
 
+    // Laser Logic
+    if (player.laserLevel > 0) {
+        const now = Date.now();
+        if (now - player.lastLaserTime > player.laserCooldown) {
+            fireLaser();
+            player.lastLaserTime = now;
+        }
+    }
+
+    // Particles
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.03;
         if (p.life <= 0) particles.splice(i, 1);
     }
 
+    // Lasers update
+    for (let i = activeLasers.length - 1; i >= 0; i--) {
+        activeLasers[i].life--;
+        if (activeLasers[i].life <= 0) activeLasers.splice(i, 1);
+    }
+
+    // Bullets
     for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i]; b.worldX += b.vx; b.worldY += b.vy; b.life--;
         enemies.forEach((e, j) => {
@@ -404,6 +547,7 @@ function update() {
         if (b.life <= 0) bullets.splice(i, 1);
     }
 
+    // Enemy Bullets
     for (let i = enemyBullets.length - 1; i >= 0; i--) {
         const b = enemyBullets[i]; b.x += b.vx; b.y += b.vy; b.life--;
         if (Math.hypot(b.x - player.worldX, b.y - player.worldY) < player.size) {
@@ -412,6 +556,7 @@ function update() {
         if (b.life <= 0) enemyBullets.splice(i, 1);
     }
 
+    // Enemies
     player.orbitAngle += 0.06;
     for (let idx = enemies.length - 1; idx >= 0; idx--) {
         const e = enemies[idx];
@@ -454,10 +599,10 @@ function update() {
         }
         if (e.hitCooldown > 0) e.hitCooldown--;
         if (e.flash > 0) e.flash--;
-
         if (dist < player.size + e.size && e.type !== 'seeker') takeDamage(0.6);
     }
 
+    // Gems
     for (let i = gems.length - 1; i >= 0; i--) {
         const g = gems[i]; const d = Math.hypot(g.worldX - player.worldX, g.worldY - player.worldY);
         if (d < player.pickupRange) {
@@ -544,6 +689,20 @@ function draw() {
     particles.forEach(p => { ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x - camera.x, p.y - camera.y, p.size, 0, 7); ctx.fill(); }); ctx.globalAlpha = 1;
     bullets.forEach(b => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(b.worldX - camera.x, b.worldY - camera.y, 6, 0, 7); ctx.fill(); });
     enemyBullets.forEach(b => { ctx.fillStyle = '#ff4d4d'; ctx.beginPath(); ctx.arc(b.x - camera.x, b.y - camera.y, 5, 0, 7); ctx.fill(); });
+    
+    // Draw Lasers
+    activeLasers.forEach(l => {
+        const op = l.life / l.maxLife;
+        const lx = l.worldX - camera.x; const ly = l.worldY - camera.y;
+        const grad = ctx.createRadialGradient(lx, ly, 0, lx, ly, l.radius);
+        grad.addColorStop(0, `rgba(255, 215, 0, ${op})`);
+        grad.addColorStop(0.5, `rgba(255, 140, 0, ${op * 0.4})`);
+        grad.addColorStop(1, `rgba(255, 0, 0, 0)`);
+        ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(lx, ly, l.radius, 0, 7); ctx.fill();
+        ctx.strokeStyle = `rgba(255, 255, 255, ${op})`; ctx.lineWidth = 4 * op;
+        ctx.beginPath(); ctx.moveTo(lx, ly - 800); ctx.lineTo(lx, ly); ctx.stroke();
+    });
+
     enemies.forEach(drawEnemy);
 
     const px = player.worldX - camera.x; const py = player.worldY - camera.y;
@@ -555,13 +714,81 @@ function draw() {
         ctx.fill();
     }
     drawPlayer(px, py);
+
+    if (inputState.isDown && gameActive) {
+        ctx.beginPath(); ctx.strokeStyle = "rgba(255, 215, 0, 0.2)"; ctx.setLineDash([5, 5]);
+        ctx.moveTo(canvas.width / 2, canvas.height / 2); ctx.lineTo(inputState.x, inputState.y);
+        ctx.stroke(); ctx.setLineDash([]);
+    }
 }
 
-function startGame() { applyPersistentStats(); document.getElementById('start-screen').style.display = 'none'; gameActive = true; requestAnimationFrame(gameLoop); }
-function handleLevelUp() { gameActive = false; document.getElementById('upgrade-screen').style.display = 'flex'; const container = document.getElementById('upgrade-options'); container.innerHTML = ''; const luck = (persistent.upgrades.luck || 0) * 8; const choices = []; while(choices.length < 3) { const roll = Math.random() * 100 + luck; let rarity = roll > 92 ? 'legendary' : (roll > 70 ? 'rare' : 'common'); let pool = skills.filter(s => s.rarity === rarity); if(!pool.length) pool = skills.filter(s => s.rarity === 'common'); const s = pool[Math.floor(Math.random() * pool.length)]; if(!choices.includes(s)) choices.push(s); } choices.forEach(opt => { const card = document.createElement('div'); card.className = `upgrade-card`; card.innerHTML = `<div style="font-size:10px; color:var(--primary);">${opt.rarity.toUpperCase()}</div><h3>${opt.title}</h3><p>${opt.desc}</p>`; card.onclick = () => { opt.effect(); document.getElementById('upgrade-screen').style.display = 'none'; gameActive = true; requestAnimationFrame(gameLoop); }; container.appendChild(card); }); }
-function gameOver() { gameActive = false; document.getElementById('game-over').style.display = 'flex'; document.getElementById('final-stats').innerText = `Level ${level} reached // ${kills} Kills`; updateCrystalUI(); }
-function gameLoop() { if (!gameActive) return; update(); draw(); frameCount++; if (frameCount % Math.max(10, 50 - level * 2) === 0) spawnEnemy(); requestAnimationFrame(gameLoop); }
-updateCrystalUI(); draw();
+function startGame() { 
+    applyPersistentStats(); 
+    document.getElementById('start-screen').style.display = 'none'; 
+    gameActive = true; 
+    requestAnimationFrame(gameLoop); 
+}
+
+function handleLevelUp() { 
+    gameActive = false; 
+    document.getElementById('upgrade-screen').style.display = 'flex'; 
+    const container = document.getElementById('upgrade-options'); 
+    container.innerHTML = ''; 
+    const luck = (persistent.upgrades.luck || 0) * 8; 
+    const choices = []; 
+    
+    // Filter out Laser if it's at max level (1s cooldown)
+    let availableSkills = [...skills];
+    if (player.laserLevel >= 6 || (player.laserLevel > 0 && player.laserCooldown <= 1000)) {
+        availableSkills = availableSkills.filter(s => s.id !== 'laser');
+    }
+
+    while(choices.length < 3) { 
+        const roll = Math.random() * 100 + luck; 
+        let rarity = roll > 92 ? 'legendary' : (roll > 70 ? 'rare' : 'common'); 
+        let pool = availableSkills.filter(s => s.rarity === rarity); 
+        if(!pool.length) pool = availableSkills.filter(s => s.rarity === 'common'); 
+        const s = pool[Math.floor(Math.random() * pool.length)]; 
+        if(!choices.includes(s)) choices.push(s); 
+    } 
+
+    choices.forEach(opt => { 
+        const card = document.createElement('div'); 
+        card.className = `upgrade-card`; 
+        let displayDesc = opt.desc;
+        if (opt.id === 'laser') {
+            const nextCD = player.laserLevel === 0 ? 6 : (player.laserCooldown / 1000) - 1;
+            displayDesc = `Strike every ${nextCD}s`;
+        }
+        card.innerHTML = `<div style="font-size:10px; color:var(--primary);">${opt.rarity.toUpperCase()}</div><h3>${opt.title}</h3><p>${displayDesc}</p>`; 
+        card.onclick = () => { 
+            opt.effect(); 
+            document.getElementById('upgrade-screen').style.display = 'none'; 
+            gameActive = true; 
+            requestAnimationFrame(gameLoop); 
+        }; 
+        container.appendChild(card); 
+    }); 
+}
+
+function gameOver() { 
+    gameActive = false; 
+    document.getElementById('game-over').style.display = 'flex'; 
+    document.getElementById('final-stats').innerText = `Level ${level} reached // ${kills} Kills`; 
+    updateCrystalUI(); 
+}
+
+function gameLoop() { 
+    if (!gameActive) return; 
+    update(); 
+    draw(); 
+    frameCount++; 
+    if (frameCount % Math.max(10, 50 - level * 2) === 0) spawnEnemy(); 
+    requestAnimationFrame(gameLoop); 
+}
+
+updateCrystalUI(); 
+draw();
 </script>
 </body>
 </html>
