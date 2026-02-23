@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sling Champ - Deluxe Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        :root {
+            --primary: #ff4757;
+            --secondary: #2ed573;
+            --accent: #ffa502;
+            --bg-top: #4facfe;
+            --bg-bottom: #00f2fe;
+            --star-gold: #f1c40f;
+            --wood: #d38d5f;
+            --wood-dark: #a0522d;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+        }
+        canvas { display: block; cursor: crosshair; }
+        
+        #game-ui, #start-menu, #level-menu, #shop-menu, #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        #game-ui {
+            pointer-events: none;
+            padding: 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 25px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            pointer-events: auto;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .score-display { font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        .menu-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .menu-screen h1 {
+            font-size: 82px;
+            color: white;
+            text-shadow: 0 10px 0px rgba(0,0,0,0.1), 0 15px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 900;
+            letter-spacing: -2px;
+        }
+
+        .btn-large {
+            padding: 18px 60px;
+            font-size: 28px;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            background: var(--secondary);
+            color: white;
+            font-weight: 900;
+            box-shadow: 0 10px 0px #26ae60, 0 15px 30px rgba(0,0,0,0.2);
+            transition: all 0.1s;
+            margin: 15px;
+            min-width: 280px;
+        }
+
+        .btn-large:active { transform: translateY(5px); box-shadow: 0 5px 0px #26ae60; }
+        .btn-large.secondary { background: var(--accent); box-shadow: 0 10px 0px #e67e22; }
+        .btn-large.shop-btn { background: #9b59b6; box-shadow: 0 10px 0px #8e44ad; }
+
+        #shop-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 200px);
+            gap: 20px;
+            margin: 20px;
+        }
+
+        .shop-item {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 4px solid transparent;
+            color: #333;
+        }
+
+        .shop-item.active { border-color: var(--secondary); background: #e8f8f5; }
+        .shop-item .preview-icon { font-size: 40px; margin-bottom: 10px; }
+        .shop-item .price { font-weight: 900; color: #d35400; margin-top: 10px; }
+
+        #level-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            gap: 20px;
+        }
+
+        .level-btn {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            font-weight: 900;
+            cursor: pointer;
+            color: #333;
+            box-shadow: 0 8px 0px #ddd;
+        }
+
+        .level-btn.locked { opacity: 0.5; cursor: not-allowed; background: #ccc; box-shadow: 0 8px 0px #999; }
+
+        #overlay {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.85);
+            z-index: 200;
+            color: white;
+        }
+        
+        .star-container { font-size: 64px; color: var(--star-gold); margin: 20px; letter-spacing: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Start Screen -->
+    <div id="start-menu" class="menu-screen">
+        <h1>SLING CHAMP</h1>
+        <div style="color: white; font-weight: 900; margin-bottom: 20px; font-size: 24px; background: rgba(0,0,0,0.3); padding: 5px 20px; border-radius: 20px;">⭐ TOTAL STARS: <span id="total-stars-display">0</span></div>
+        <button class="btn-large" onclick="showLevelMenu()">PLAY</button>
+        <button class="btn-large shop-btn" onclick="showShop()">BIRD SHOP</button>
+    </div>
+
+    <!-- Shop Screen -->
+    <div id="shop-menu" class="menu-screen" style="display: none;">
+        <h1>BIRD SHOP</h1>
+        <div id="shop-grid">
+            <div class="shop-item" id="item-basic" onclick="selectBird('basic')">
+                <div class="preview-icon">🔴</div>
+                <strong>Red Bird</strong><br><small>Classic Fighter</small>
+                <div class="price">OWNED</div>
+            </div>
+            <div class="shop-item" id="item-fast" onclick="buyBird('fast', 5)">
+                <div class="preview-icon">⚡</div>
+                <strong>Swift Bird</strong><br><small>High Velocity</small>
+                <div class="price" id="price-fast">⭐ 5</div>
+            </div>
+            <div class="shop-item" id="item-bomb" onclick="buyBird('bomb', 10)">
+                <div class="preview-icon">💣</div>
+                <strong>Blast Bird</strong><br><small>Big Explosion</small>
+                <div class="price" id="price-bomb">⭐ 10</div>
+            </div>
+            <div class="shop-item" id="item-heavy" onclick="buyBird('heavy', 15)">
+                <div class="preview-icon">⬛</div>
+                <strong>Iron Bird</strong><br><small>Massive Damage</small>
+                <div class="price" id="price-heavy">⭐ 15</div>
+            </div>
+        </div>
+        <button class="btn-large" onclick="showStartMenu()">BACK</button>
+    </div>
+
+    <!-- Level Selection Screen -->
+    <div id="level-menu" class="menu-screen" style="display: none;">
+        <h1>SELECT LEVEL</h1>
+        <div id="level-grid"></div>
+        <button class="btn-large" onclick="showStartMenu()">BACK</button>
+    </div>
+
+    <!-- Game HUD -->
+    <div id="game-ui">
+        <div class="stats-card">
+            <div id="level-text" style="font-weight: 900;">LEVEL 1</div>
+        </div>
+        <div class="stats-card">
+            <div class="score-display">BIRDS: <span id="launches-count">1</span> / 3</div>
+        </div>
+    </div>
+
+    <!-- Results Overlay -->
+    <div id="overlay">
+        <h2 id="overlay-title" style="font-size: 48px; margin: 0;">LEVEL CLEAR!</h2>
+        <div class="star-container" id="overlay-stars"></div>
+        <div id="result-message" style="margin-bottom: 20px; font-weight: 600;"></div>
+        <button id="next-btn" class="btn-large" onclick="nextLevel()">NEXT LEVEL</button>
+        <button class="btn-large secondary" onclick="showLevelMenu()">MENU</button>
+    </div>
+
+    <script>
+        const { Engine, Render, Runner, Bodies, Composite, Constraint, Mouse, MouseConstraint, Events, Vector, World } = Matter;
+
+        const engine = Engine.create();
+        const runner = Runner.create();
+        let render, bird, slingshot, mouseConstraint;
+        
+        let isLaunched = false, birdInSling = false, isAiming = false;
+        let currentLevel = 1, shotsUsed = 1;
+        let isSimulationMode = true;
+        
+        let totalStars = parseInt(localStorage.getItem('slingStars')) || 0;
+        let unlockedLevels = parseInt(localStorage.getItem('slingChampUnlocked')) || 1;
+        let ownedBirds = JSON.parse(localStorage.getItem('ownedBirds')) || ['basic'];
+        let activeBirdType = localStorage.getItem('activeBird') || 'basic';
+
+        let particles = [], clouds = [];
+        
+        const GROUND_Y = window.innerHeight - 40;
+        const SLING_ANCHOR = { x: 250, y: GROUND_Y - 140 };
+        const MAX_PULL = 100;
+
+        const birdConfigs = {
+            basic: { color: '#ff4757', speedMult: 1, mass: 1, radius: 18, model: 'classic' },
+            fast: { color: '#f1c40f', speedMult: 1.6, mass: 0.8, radius: 16, model: 'triangle' },
+            bomb: { color: '#2f3542', speedMult: 0.9, mass: 1.5, radius: 24, model: 'bomb' },
+            heavy: { color: '#747d8c', speedMult: 0.8, mass: 3.5, radius: 26, model: 'heavy' }
+        };
+
+        // Initialize clouds
+        for(let i=0; i<6; i++) {
+            clouds.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * (window.innerHeight * 0.4),
+                speed: 0.2 + Math.random() * 0.5,
+                scale: 0.5 + Math.random() * 0.8
+            });
+        }
+
+        function showStartMenu() {
+            hideAll();
+            isSimulationMode = true;
+            document.getElementById('start-menu').style.display = 'flex';
+            document.getElementById('total-stars-display').innerText = totalStars;
+            runSimulation();
+        }
+
+        function showLevelMenu() {
+            hideAll();
+            const grid = document.getElementById('level-grid');
+            grid.innerHTML = '';
+            for(let i=1; i<=3; i++) {
+                const btn = document.createElement('div');
+                btn.className = `level-btn ${i > unlockedLevels ? 'locked' : ''}`;
+                btn.innerText = i;
+                if(i <= unlockedLevels) btn.onclick = () => startGame(i);
+                grid.appendChild(btn);
+            }
+            document.getElementById('level-menu').style.display = 'flex';
+        }
+
+        function showShop() {
+            hideAll();
+            document.getElementById('shop-menu').style.display = 'flex';
+            updateShopUI();
+        }
+
+        function hideAll() {
+            ['start-menu', 'level-menu', 'shop-menu', 'game-ui', 'overlay'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+        }
+
+        function updateShopUI() {
+            Object.keys(birdConfigs).forEach(type => {
+                const item = document.getElementById(`item-${type}`);
+                const priceLabel = document.getElementById(`price-${type}`);
+                if (item && ownedBirds.includes(type)) {
+                    item.classList.toggle('active', activeBirdType === type);
+                    if(priceLabel) priceLabel.innerText = "OWNED";
+                }
+            });
+        }
+
+        function buyBird(type, price) {
+            if (ownedBirds.includes(type)) {
+                selectBird(type);
+                return;
+            }
+            if (totalStars >= price) {
+                totalStars -= price;
+                ownedBirds.push(type);
+                localStorage.setItem('slingStars', totalStars);
+                localStorage.setItem('ownedBirds', JSON.stringify(ownedBirds));
+                selectBird(type);
+                updateShopUI();
+                document.getElementById('total-stars-display').innerText = totalStars;
+            }
+        }
+
+        function selectBird(type) {
+            if (ownedBirds.includes(type)) {
+                activeBirdType = type;
+                localStorage.setItem('activeBird', type);
+                updateShopUI();
+            }
+        }
+
+        function init() {
+            render = Render.create({
+                element: document.body,
+                engine: engine,
+                options: { width: window.innerWidth, height: window.innerHeight, wireframes: false, background: 'transparent' }
+            });
+            Render.run(render);
+            Runner.run(runner, engine);
+            
+            setupPhysicsListeners();
+            showStartMenu();
+        }
+
+        function setupPhysicsListeners() {
+            Events.on(engine, 'collisionStart', (e) => {
+                e.pairs.forEach(pair => {
+                    const { bodyA, bodyB } = pair;
+                    if(bodyA.label === 'pig' || bodyB.label === 'pig') {
+                        const pig = bodyA.label === 'pig' ? bodyA : bodyB;
+                        const other = bodyA === pig ? bodyB : bodyA;
+                        let damage = Vector.magnitude(other.velocity);
+                        if(damage > 3.5) poof(pig, '#ffffff');
+                    }
+                });
+            });
+
+            Events.on(engine, 'afterUpdate', () => {
+                if(isLaunched && bird.position.x > SLING_ANCHOR.x + 20) {
+                    if(slingshot && slingshot.bodyB) {
+                        Composite.remove(engine.world, slingshot);
+                        slingshot = null;
+                        birdInSling = false;
+                        
+                        // Handle Explosive Bird logic on launch if needed
+                        if(activeBirdType === 'bomb') {
+                           setTimeout(() => { if(bird) explode(bird.position); }, 2000);
+                        }
+                    }
+                }
+
+                // Check for out of bounds
+                if(isLaunched && (bird.position.y > window.innerHeight + 100 || bird.position.x > window.innerWidth + 100 || Vector.magnitude(bird.velocity) < 0.1)) {
+                    setTimeout(() => {
+                        if(isLaunched) {
+                            isLaunched = false;
+                            checkNextTurn();
+                        }
+                    }, 1000);
+                }
+                
+                // Keep bird within pull radius while aiming
+                if(isAiming && birdInSling) {
+                    const dist = Vector.magnitude(Vector.sub(bird.position, SLING_ANCHOR));
+                    if(dist > MAX_PULL) {
+                        const angle = Math.atan2(bird.position.y - SLING_ANCHOR.y, bird.position.x - SLING_ANCHOR.x);
+                        Matter.Body.setPosition(bird, {
+                            x: SLING_ANCHOR.x + Math.cos(angle) * MAX_PULL,
+                            y: SLING_ANCHOR.y + Math.sin(angle) * MAX_PULL
+                        });
+                    }
+                }
+            });
+
+            if (!init.renderHooked) {
+                Events.on(render, 'afterRender', () => {
+                    const ctx = render.context;
+                    drawClouds(ctx);
+                    drawSling(ctx);
+                    drawCustom(ctx);
+                    updateParticles(ctx);
+                });
+                init.renderHooked = true;
+            }
+        }
+
+        function setupWorld() {
+            Composite.clear(engine.world);
+            const ground = Bodies.rectangle(window.innerWidth/2, GROUND_Y + 40, window.innerWidth, 80, { 
+                isStatic: true, 
+                label: 'ground', 
+                render: { fillStyle: '#2ed573' } 
+            });
+            Composite.add(engine.world, [ground]);
+
+            if(!isSimulationMode) {
+                const mouse = Mouse.create(render.canvas);
+                mouseConstraint = MouseConstraint.create(engine, { 
+                    mouse: mouse, 
+                    constraint: { stiffness: 0.1, render: { visible: false } } 
+                });
+                Composite.add(engine.world, mouseConstraint);
+
+                Events.on(mouseConstraint, 'startdrag', (e) => {
+                    if(e.body === bird && birdInSling) isAiming = true;
+                });
+
+                Events.on(mouseConstraint, 'enddrag', (e) => {
+                    if(e.body === bird && birdInSling) {
+                        isAiming = false;
+                        isLaunched = true;
+                        // Manual fling calculation because constraint stiffness might not be enough
+                        const config = birdConfigs[activeBirdType];
+                        const delta = Vector.sub(SLING_ANCHOR, bird.position);
+                        const forceMult = 0.16 * config.speedMult;
+                        Matter.Body.setVelocity(bird, Vector.mult(delta, forceMult));
+                    }
+                });
+            }
+        }
+
+        function runSimulation() {
+            setupWorld();
+            const x = window.innerWidth * 0.7;
+            const y = GROUND_Y;
+            loadStructure(x, y);
+            
+            setTimeout(() => {
+                if(!isSimulationMode) return;
+                createBird();
+                attachBird();
+                Matter.Body.setPosition(bird, {x: SLING_ANCHOR.x - 80, y: SLING_ANCHOR.y + 40});
+                setTimeout(() => {
+                    if(!isSimulationMode) return;
+                    isLaunched = true;
+                    if(slingshot) Composite.remove(engine.world, slingshot);
+                    const config = birdConfigs[activeBirdType];
+                    Matter.Body.setVelocity(bird, {x: 12 * config.speedMult, y: -8});
+                    setTimeout(() => { if(isSimulationMode) runSimulation(); }, 6000);
+                }, 500);
+            }, 1000);
+        }
+
+        function startGame(lvl) {
+            isSimulationMode = false;
+            currentLevel = lvl;
+            hideAll();
+            document.getElementById('game-ui').style.display = 'flex';
+            document.getElementById('level-text').innerText = "LEVEL " + lvl;
+            resetLevel();
+        }
+
+        function resetLevel() {
+            setupWorld();
+            shotsUsed = 1;
+            document.getElementById('launches-count').innerText = "1";
+            loadLevelData(currentLevel);
+            createBird();
+            attachBird();
+        }
+
+        function loadStructure(x, y) {
+            const items = [
+                makeBlock(x-50, y-50, 20, 100), makeBlock(x+50, y-50, 20, 100), makeBlock(x, y-110, 140, 20),
+                makePig(x, y-40),
+                makeBlock(x, y-170, 100, 20), makePig(x, y-140)
+            ];
+            Composite.add(engine.world, items);
+        }
+
+        function loadLevelData(lvl) {
+            const x = window.innerWidth * 0.8;
+            const y = GROUND_Y;
+            if(lvl === 1) {
+                Composite.add(engine.world, [
+                    makeBlock(x-40, y-50, 20, 100), makeBlock(x+40, y-50, 20, 100), makeBlock(x, y-110, 120, 20), makePig(x, y-40)
+                ]);
+            } else if(lvl === 2) {
+                Composite.add(engine.world, [
+                    makeBlock(x-60, y-50, 20, 100), makeBlock(x+60, y-50, 20, 100), makeBlock(x, y-110, 160, 20), 
+                    makeBlock(x-30, y-160, 20, 80), makeBlock(x+30, y-160, 20, 80), makeBlock(x, y-210, 100, 20),
+                    makePig(x, y-40), makePig(x, y-150)
+                ]);
+            } else {
+                Composite.add(engine.world, [
+                    makeBlock(x-80, y-50, 20, 100), makeBlock(x+80, y-50, 20, 100), makeBlock(x, y-110, 200, 20),
+                    makeBlock(x-40, y-160, 20, 80), makeBlock(x+40, y-160, 20, 80), makeBlock(x, y-210, 120, 20),
+                    makePig(x-50, y-40), makePig(x+50, y-40), makePig(x, y-150), makePig(x, y-240)
+                ]);
+            }
+        }
+
+        function createBird() {
+            const config = birdConfigs[activeBirdType];
+            bird = Bodies.circle(SLING_ANCHOR.x, SLING_ANCHOR.y, config.radius, {
+                label: 'bird', 
+                density: 0.005 * config.mass, 
+                frictionAir: 0.005, 
+                restitution: 0.4
+            });
+            Composite.add(engine.world, bird);
+        }
+
+        function attachBird() {
+            slingshot = Constraint.create({ 
+                pointA: SLING_ANCHOR, 
+                bodyB: bird, 
+                stiffness: 0.15, 
+                length: 2,
+                render: { visible: false }
+            });
+            Composite.add(engine.world, slingshot);
+            birdInSling = true; 
+            isLaunched = false;
+        }
+
+        function drawClouds(ctx) {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            clouds.forEach(c => {
+                c.x += c.speed;
+                if(c.x > window.innerWidth + 100) c.x = -150;
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                ctx.scale(c.scale, c.scale);
+                ctx.beginPath();
+                ctx.arc(0, 0, 30, 0, Math.PI*2);
+                ctx.arc(30, -10, 25, 0, Math.PI*2);
+                ctx.arc(60, 0, 30, 0, Math.PI*2);
+                ctx.arc(30, 10, 25, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function drawSling(ctx) {
+            // Wood Base
+            ctx.strokeStyle = '#4b2c20'; ctx.lineWidth = 12; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(SLING_ANCHOR.x, SLING_ANCHOR.y + 10); ctx.lineTo(SLING_ANCHOR.x, GROUND_Y); ctx.stroke();
+            
+            if(birdInSling) {
+                const config = birdConfigs[activeBirdType];
+                const pullX = bird.position.x;
+                const pullY = bird.position.y;
+                
+                // Back Band
+                ctx.strokeStyle = '#301c14'; ctx.lineWidth = 5;
+                ctx.beginPath(); ctx.moveTo(SLING_ANCHOR.x + 10, SLING_ANCHOR.y); ctx.lineTo(pullX, pullY); ctx.stroke();
+                
+                // Leather Pouch
+                ctx.fillStyle = '#6d4c41';
+                ctx.beginPath();
+                ctx.arc(pullX, pullY, config.radius + 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Front Band
+                ctx.strokeStyle = '#301c14'; ctx.lineWidth = 5;
+                ctx.beginPath(); ctx.moveTo(SLING_ANCHOR.x - 10, SLING_ANCHOR.y); ctx.lineTo(pullX, pullY); ctx.stroke();
+            }
+        }
+
+        function drawBirdModel(ctx, config) {
+            const r = config.radius;
+            switch(config.model) {
+                case 'classic':
+                    // Body
+                    ctx.fillStyle = config.color; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+                    // Belly
+                    ctx.fillStyle = '#f5f5f5'; ctx.beginPath(); ctx.arc(0, r*0.4, r*0.8, Math.PI*0.8, Math.PI*0.2, true); ctx.fill();
+                    // Beak
+                    ctx.fillStyle = '#ffa502'; ctx.beginPath(); ctx.moveTo(r*0.6, 0); ctx.lineTo(r*1.2, r*0.2); ctx.lineTo(r*0.6, r*0.4); ctx.closePath(); ctx.fill();
+                    // Eyes
+                    ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(r*0.2, -r*0.2, r*0.3, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(r*0.3, -r*0.2, r*0.1, 0, Math.PI*2); ctx.fill();
+                    break;
+                case 'triangle':
+                    ctx.fillStyle = config.color; ctx.beginPath();
+                    ctx.moveTo(0, -r*1.2); ctx.lineTo(-r, r); ctx.lineTo(r, r); ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = '#ffa502'; ctx.beginPath(); ctx.moveTo(r*0.3, 0); ctx.lineTo(r*1.3, r*0.3); ctx.lineTo(r*0.3, r*0.6); ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(r*0.1, 0, r*0.3, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(r*0.2, 0, r*0.1, 0, Math.PI*2); ctx.fill();
+                    break;
+                case 'bomb':
+                    ctx.fillStyle = '#2f3542'; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+                    // Fuse
+                    ctx.fillStyle = '#ff4757'; ctx.fillRect(-2, -r*1.2, 4, r*0.4);
+                    // Marks
+                    ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(r*0.4, -r*0.4, r*0.4, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(r*0.5, -r*0.4, r*0.15, 0, Math.PI*2); ctx.fill();
+                    break;
+                case 'heavy':
+                    ctx.fillStyle = '#747d8c'; ctx.beginPath(); ctx.roundRect(-r, -r, r*2, r*2, 8); ctx.fill();
+                    ctx.strokeStyle = '#2f3542'; ctx.lineWidth = 3; ctx.strokeRect(-r, -r, r*2, r*2);
+                    ctx.fillStyle = '#f5f5f5'; ctx.beginPath(); ctx.arc(r*0.3, -r*0.3, r*0.3, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(r*0.4, -r*0.3, r*0.1, 0, Math.PI*2); ctx.fill();
+                    break;
+            }
+        }
+
+        function drawCustom(ctx) {
+            const bodies = Composite.allBodies(engine.world);
+            bodies.forEach(b => {
+                ctx.save(); ctx.translate(b.position.x, b.position.y); ctx.rotate(b.angle);
+                if(b.label === 'bird') {
+                    drawBirdModel(ctx, birdConfigs[activeBirdType]);
+                } else if(b.label === 'pig') {
+                    ctx.fillStyle = '#2ed573'; ctx.beginPath(); ctx.arc(0,0,20,0,Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#1eb157'; ctx.beginPath(); ctx.ellipse(0, 5, 10, 6, 0, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(-8, -5, 6, 0, Math.PI*2); ctx.arc(8, -5, 6, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(-8, -5, 2.5, 0, Math.PI*2); ctx.arc(8, -5, 2.5, 0, Math.PI*2); ctx.fill();
+                } else if(b.label === 'block') {
+                    ctx.fillStyle = 'var(--wood)'; ctx.strokeStyle = 'var(--wood-dark)'; ctx.lineWidth = 2;
+                    ctx.fillRect(-b.w/2, -b.h/2, b.w, b.h); ctx.strokeRect(-b.w/2, -b.h/2, b.w, b.h);
+                }
+                ctx.restore();
+            });
+        }
+
+        function explode(pos) {
+            for(let i=0; i<30; i++) particles.push({ x: pos.x, y: pos.y, vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20, life: 1, color: '#ff4757', size: Math.random()*15+5 });
+            const targets = Composite.allBodies(engine.world).filter(b => b.label === 'pig' || b.label === 'block');
+            targets.forEach(t => {
+                const dist = Vector.magnitude(Vector.sub(t.position, pos));
+                if(dist < 200) {
+                    const force = Vector.mult(Vector.normalise(Vector.sub(t.position, pos)), 0.5);
+                    Matter.Body.applyForce(t, t.position, force);
+                    if(t.label === 'pig' && dist < 120) poof(t, '#ffffff');
+                }
+            });
+            if (bird && activeBirdType === 'bomb') World.remove(engine.world, bird);
+        }
+
+        function poof(body, color) {
+            for(let i=0; i<12; i++) particles.push({ x: body.position.x, y: body.position.y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 1, color: color, size: Math.random()*6+2 });
+            World.remove(engine.world, body);
+        }
+
+        function updateParticles(ctx) {
+            for(let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+                ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function checkNextTurn() {
+            if(isSimulationMode) return;
+            const pigs = Composite.allBodies(engine.world).filter(b => b.label === 'pig');
+            if(pigs.length === 0) showResults(true);
+            else if(shotsUsed < 3) { 
+                shotsUsed++; 
+                document.getElementById('launches-count').innerText = shotsUsed; 
+                resetBird(); 
+            }
+            else showResults(false);
+        }
+
+        function showResults(win) {
+            const overlay = document.getElementById('overlay');
+            const title = document.getElementById('overlay-title');
+            const starsContainer = document.getElementById('overlay-stars');
+            const msg = document.getElementById('result-message');
+            const nextBtn = document.getElementById('next-btn');
+
+            overlay.style.display = 'flex';
+            if(win) {
+                title.innerText = "LEVEL CLEAR!";
+                let stars = Math.max(1, 4 - shotsUsed);
+                totalStars += stars;
+                localStorage.setItem('slingStars', totalStars);
+                if(currentLevel === unlockedLevels && unlockedLevels < 3) {
+                    unlockedLevels++;
+                    localStorage.setItem('slingChampUnlocked', unlockedLevels);
+                }
+                starsContainer.innerHTML = '⭐'.repeat(stars) + '<span style="opacity:0.2">' + '⭐'.repeat(3-stars) + '</span>';
+                msg.innerText = `Efficiency: ${stars} Stars!`;
+                nextBtn.style.display = 'block';
+            } else {
+                title.innerText = "GAME OVER";
+                starsContainer.innerHTML = '<span style="opacity:0.2">⭐⭐⭐</span>';
+                msg.innerText = "The pigs won this round.";
+                nextBtn.style.display = 'none';
+            }
+        }
+
+        function nextLevel() { 
+            currentLevel = Math.min(3, currentLevel + 1); 
+            startGame(currentLevel); 
+            document.getElementById('overlay').style.display='none'; 
+        }
+
+        function resetBird() {
+            if (bird) World.remove(engine.world, bird);
+            createBird(); attachBird();
+        }
+
+        function makePig(x, y) { return Bodies.circle(x, y, 20, { label: 'pig', friction: 0.1, restitution: 0.4 }); }
+        function makeBlock(x, y, w, h) { const b = Bodies.rectangle(x, y, w, h, { label: 'block', friction: 0.5 }); b.w = w; b.h = h; return b; }
+
+        window.addEventListener('load', init);
+        window.addEventListener('resize', () => {
+            if(render) {
+                render.canvas.width = window.innerWidth;
+                render.canvas.height = window.innerHeight;
+            }
+        });
+    </script>
+</body>
+</html>
