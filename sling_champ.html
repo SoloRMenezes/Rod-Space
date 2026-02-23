@@ -122,8 +122,11 @@
 
         #level-grid {
             display: grid;
-            grid-template-columns: repeat(3, 120px);
+            grid-template-columns: repeat(5, 120px);
+            grid-template-rows: repeat(3, 120px);
             gap: 20px;
+            justify-content: center;
+            align-items: center;
         }
 
         .level-btn {
@@ -197,18 +200,43 @@
     <!-- Level Selection Screen -->
     <div id="level-menu" class="menu-screen" style="display: none;">
         <h1>SELECT LEVEL</h1>
-        <div id="level-grid"></div>
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div id="level-grid"></div>
+            <div style="margin-top: 20px; display: flex; gap: 16px; align-items: center;">
+                <button id="prev-page-btn" class="btn-large secondary" style="min-width:100px; padding: 10px 0;" onclick="prevLevelPage()">&lt;</button>
+                <span id="level-page-indicator" style="color:white; font-size: 22px; font-weight: 600; min-width: 90px; text-align: center;"></span>
+                <button id="next-page-btn" class="btn-large secondary" style="min-width:100px; padding: 10px 0;" onclick="nextLevelPage()">&gt;</button>
+            </div>
+        </div>
         <button class="btn-large" onclick="showStartMenu()">BACK</button>
     </div>
 
     <!-- Game HUD -->
-    <div id="game-ui">
+    <div id="game-ui" style="display: none;">
         <div class="stats-card">
             <div id="level-text" style="font-weight: 900;">LEVEL 1</div>
         </div>
         <div class="stats-card">
             <div class="score-display">BIRDS: <span id="launches-count">1</span> / 3</div>
         </div>
+        <!-- Pause Button -->
+        <button id="pause-btn" title="Pause" style="
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.18);
+            color: #fff;
+            font-size: 30px;
+            font-weight: bold;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            cursor: pointer;
+            z-index: 20;
+            pointer-events: auto;
+        ">&#10073;&#10073;</button>
     </div>
 
     <!-- Results Overlay -->
@@ -218,6 +246,26 @@
         <div id="result-message" style="margin-bottom: 20px; font-weight: 600;"></div>
         <button id="next-btn" class="btn-large" onclick="nextLevel()">NEXT LEVEL</button>
         <button class="btn-large secondary" onclick="showLevelMenu()">MENU</button>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div id="pause-overlay" style="
+        display: none;
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8);
+        z-index: 300;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+    ">
+        <h2 style="font-size: 54px; margin-bottom: 24px;">PAUSED</h2>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <button id="resume-btn" class="btn-large" style="min-width: 260px;">RESUME</button>
+            <button id="retry-btn" class="btn-large secondary" style="min-width: 260px;">RETRY</button>
+            <button id="quit-btn" class="btn-large" style="background: #e74c3c; box-shadow: 0 10px 0px #c0392b; min-width: 260px;">QUIT</button>
+        </div>
     </div>
 
     <script>
@@ -230,6 +278,7 @@
         let isLaunched = false, birdInSling = false, isAiming = false;
         let currentLevel = 1, shotsUsed = 1;
         let isSimulationMode = true;
+        let isPaused = false;
         
         let totalStars = parseInt(localStorage.getItem('slingStars')) || 0;
         let unlockedLevels = parseInt(localStorage.getItem('slingChampUnlocked')) || 1;
@@ -265,26 +314,67 @@
             document.getElementById('start-menu').style.display = 'flex';
             document.getElementById('total-stars-display').innerText = totalStars;
             runSimulation();
+            // Ensure pause overlay is hidden and paused state is off
+            hidePauseOverlay();
+            setPaused(false);
         }
+
+        // --- Level Pagination State ---
+        let levelPage = 0; // 0-based index
+        const LEVELS_PER_PAGE = 15; // 3x5 grid
+        const LEVELS_TOTAL = 50;
 
         function showLevelMenu() {
             hideAll();
+            levelPage = 0;
+            renderLevelPage();
+            document.getElementById('level-menu').style.display = 'flex';
+            // Ensure pause overlay is hidden and paused state is off
+            hidePauseOverlay();
+            setPaused(false);
+        }
+
+        function renderLevelPage() {
             const grid = document.getElementById('level-grid');
             grid.innerHTML = '';
-            for(let i=1; i<=3; i++) {
+            const start = levelPage * LEVELS_PER_PAGE + 1;
+            const end = Math.min(start + LEVELS_PER_PAGE - 1, LEVELS_TOTAL);
+            for(let i = start; i <= end; i++) {
                 const btn = document.createElement('div');
                 btn.className = `level-btn ${i > unlockedLevels ? 'locked' : ''}`;
                 btn.innerText = i;
                 if(i <= unlockedLevels) btn.onclick = () => startGame(i);
                 grid.appendChild(btn);
             }
-            document.getElementById('level-menu').style.display = 'flex';
+            // Update pagination controls
+            const totalPages = Math.ceil(LEVELS_TOTAL / LEVELS_PER_PAGE);
+            document.getElementById('level-page-indicator').innerText = `Page ${levelPage+1} / ${totalPages}`;
+            document.getElementById('prev-page-btn').disabled = (levelPage === 0);
+            document.getElementById('next-page-btn').disabled = (levelPage >= totalPages - 1);
+        }
+
+        function nextLevelPage() {
+            const totalPages = Math.ceil(LEVELS_TOTAL / LEVELS_PER_PAGE);
+            if (levelPage < totalPages - 1) {
+                levelPage++;
+                renderLevelPage();
+            }
+        }
+
+        function prevLevelPage() {
+            if (levelPage > 0) {
+                levelPage--;
+                renderLevelPage();
+            }
         }
 
         function showShop() {
             hideAll();
             document.getElementById('shop-menu').style.display = 'flex';
             updateShopUI();
+            // Ensure pause overlay is hidden and paused state is off
+            hidePauseOverlay();
+            setPaused(false);
         }
 
         function hideAll() {
@@ -292,6 +382,7 @@
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
             });
+            hidePauseOverlay();
         }
 
         function updateShopUI() {
@@ -342,6 +433,10 @@
             showStartMenu();
         }
 
+        // --- Trajectory drawing state ---
+        let trajectoryAlpha = 1;
+        let showTrajectory = false;
+
         function setupPhysicsListeners() {
             Events.on(engine, 'collisionStart', (e) => {
                 e.pairs.forEach(pair => {
@@ -369,8 +464,10 @@
                     }
                 }
 
-                // Check for out of bounds
-                if(isLaunched && (bird.position.y > window.innerHeight + 100 || bird.position.x > window.innerWidth + 100 || Vector.magnitude(bird.velocity) < 0.1)) {
+                // Check for out of bounds and count as a win if bird goes off-screen
+                if (isLaunched && (bird.position.y > window.innerHeight + 100 || bird.position.x > window.innerWidth + 100)) {
+                    showResults(true); // Count as a win
+                } else if(isLaunched && Vector.magnitude(bird.velocity) < 0.1) {
                     setTimeout(() => {
                         if(isLaunched) {
                             isLaunched = false;
@@ -390,6 +487,35 @@
                         });
                     }
                 }
+
+                // Trajectory drawing state logic
+                if (isAiming && birdInSling) {
+                    showTrajectory = true;
+                    trajectoryAlpha = 1;
+                } else if (isLaunched && bird) {
+                    showTrajectory = true;
+                    // Trajectory remains fully visible after launch until bird slows down
+                    trajectoryAlpha = 1;
+                    // Start fading trajectory only when bird slows down significantly
+                    if (Vector.magnitude(bird.velocity) < 1) {
+                        if (trajectoryAlpha > 0) {
+                            trajectoryAlpha -= 0.03;
+                            if (trajectoryAlpha <= 0) {
+                                trajectoryAlpha = 0;
+                                showTrajectory = false;
+                            }
+                        }
+                    }
+                } else {
+                    // When not launched or aiming, fade the trajectory out
+                    if (showTrajectory && trajectoryAlpha > 0) {
+                        trajectoryAlpha -= 0.03;
+                        if (trajectoryAlpha <= 0) {
+                            trajectoryAlpha = 0;
+                            showTrajectory = false;
+                        }
+                    }
+                }
             });
 
             if (!init.renderHooked) {
@@ -399,9 +525,66 @@
                     drawSling(ctx);
                     drawCustom(ctx);
                     updateParticles(ctx);
+                    // Draw trajectory if enabled (while aiming or after launch)
+                    if (showTrajectory && bird) {
+                        drawTrajectory(ctx, trajectoryAlpha);
+                    }
                 });
                 init.renderHooked = true;
             }
+        }
+
+        // Draw a dashed trajectory line for the bird (while aiming and after launch)
+        function drawTrajectory(ctx, alpha = 1) {
+            if (!bird) return;
+            const steps = 50;
+            const deltaTime = 0.1;
+            let trajectory = [];
+            let birdCopy;
+            if (isAiming && birdInSling) {
+                // During aiming, predict the trajectory based on pull vector
+                const delta = Vector.sub(SLING_ANCHOR, bird.position);
+                const distance = Vector.magnitude(delta);
+                const config = birdConfigs[activeBirdType];
+                const forceMult = 0.16 * config.speedMult;
+                const force = Vector.mult(delta, forceMult / distance);
+                const vx = force.x * distance * 1.5;
+                const vy = force.y * distance * 1.5;
+                birdCopy = {
+                    x: bird.position.x,
+                    y: bird.position.y,
+                    vx: vx,
+                    vy: vy
+                };
+            } else if (isLaunched && bird.velocity) {
+                // After launch, use actual velocity and position
+                birdCopy = {
+                    x: bird.position.x,
+                    y: bird.position.y,
+                    vx: bird.velocity.x,
+                    vy: bird.velocity.y
+                };
+            } else {
+                return;
+            }
+            for (let i = 0; i < steps; i++) {
+                birdCopy.x += birdCopy.vx * deltaTime;
+                birdCopy.y += birdCopy.vy * deltaTime;
+                birdCopy.vy += 0.1; // Gravity effect
+                trajectory.push({ x: birdCopy.x, y: birdCopy.y });
+            }
+            ctx.save();
+            ctx.setLineDash([5, 10]);
+            ctx.beginPath();
+            ctx.moveTo(trajectory[0].x, trajectory[0].y);
+            for (let i = 1; i < trajectory.length; i++) {
+                ctx.lineTo(trajectory[i].x, trajectory[i].y);
+            }
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 * alpha})`;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
         }
 
         function setupWorld() {
@@ -421,19 +604,47 @@
                 });
                 Composite.add(engine.world, mouseConstraint);
 
+                // --- Cancel launch if bird is dragged back near center ---
+                let birdReturnedToCenter = false;
                 Events.on(mouseConstraint, 'startdrag', (e) => {
-                    if(e.body === bird && birdInSling) isAiming = true;
+                    if (e.body === bird && birdInSling) {
+                        isAiming = true;
+                        trajectoryAlpha = 1; // Show trajectory while aiming
+                        showTrajectory = true;
+                        birdReturnedToCenter = false;
+                    }
                 });
 
                 Events.on(mouseConstraint, 'enddrag', (e) => {
-                    if(e.body === bird && birdInSling) {
-                        isAiming = false;
-                        isLaunched = true;
-                        // Manual fling calculation because constraint stiffness might not be enough
-                        const config = birdConfigs[activeBirdType];
-                        const delta = Vector.sub(SLING_ANCHOR, bird.position);
-                        const forceMult = 0.16 * config.speedMult;
-                        Matter.Body.setVelocity(bird, Vector.mult(delta, forceMult));
+                    if (e.body === bird && birdInSling) {
+                        const distToCenter = Vector.magnitude(Vector.sub(bird.position, SLING_ANCHOR));
+                        if (distToCenter < MAX_PULL / 2) {
+                            birdReturnedToCenter = true;
+                        }
+
+                        if (!birdReturnedToCenter) {
+                            isAiming = false;
+                            isLaunched = true;
+                            // Manual fling calculation using normalized direction and force multiplier
+                            const delta = Vector.sub(SLING_ANCHOR, bird.position);
+                            const distance = Vector.magnitude(delta);
+                            const forceMult = 0.16 * birdConfigs[activeBirdType].speedMult;
+                            const force = Vector.mult(delta, forceMult / distance);
+                            Matter.Body.setVelocity(bird, Vector.mult(force, distance * 1.5));
+
+                            if (slingshot) {
+                                Composite.remove(engine.world, slingshot);
+                                slingshot = null;
+                                birdInSling = false;
+                            }
+                            // Show trajectory after launch
+                            showTrajectory = true;
+                            trajectoryAlpha = 1;
+                        } else {
+                            // Reset bird's position if returned to center
+                            Matter.Body.setPosition(bird, { x: SLING_ANCHOR.x, y: SLING_ANCHOR.y });
+                            birdInSling = true;
+                        }
                     }
                 });
             }
@@ -467,6 +678,22 @@
             hideAll();
             document.getElementById('game-ui').style.display = 'flex';
             document.getElementById('level-text').innerText = "LEVEL " + lvl;
+            // Camera zoom out after level 30
+            if (render) {
+                if (lvl > 30) {
+                    render.options.hasCustomZoom = true;
+                    render.options.pixelRatio = 0.7;
+                    render.canvas.style.transform = "scale(0.7)";
+                    render.canvas.style.transformOrigin = "top left";
+                } else {
+                    render.options.hasCustomZoom = false;
+                    render.options.pixelRatio = 1;
+                    render.canvas.style.transform = "";
+                    render.canvas.style.transformOrigin = "";
+                }
+            }
+            hidePauseOverlay();
+            setPaused(false);
             resetLevel();
         }
 
@@ -489,25 +716,126 @@
         }
 
         function loadLevelData(lvl) {
-            const x = window.innerWidth * 0.8;
+            const x = window.innerWidth * (lvl > 30 ? 0.7 : 0.8);
             const y = GROUND_Y;
+            // Progressive difficulty settings
+            let numPigs = 1 + Math.floor((lvl-1) / 3);
+            let numBlocks = 3 + Math.floor((lvl-1) * 1.5);
+            if (numPigs > 8) numPigs = 8 + Math.floor((lvl-30)/5); // More pigs after 30
+            if (numBlocks > 20) numBlocks = 20 + Math.floor((lvl-30)/2);
+            // For first 3 levels, keep original
             if(lvl === 1) {
                 Composite.add(engine.world, [
                     makeBlock(x-40, y-50, 20, 100), makeBlock(x+40, y-50, 20, 100), makeBlock(x, y-110, 120, 20), makePig(x, y-40)
                 ]);
+                // Add a thin plank on top for demo
+                Composite.add(engine.world, [makeThinPlank(x, y-140, 120, 8, 0)]);
+                return;
             } else if(lvl === 2) {
                 Composite.add(engine.world, [
                     makeBlock(x-60, y-50, 20, 100), makeBlock(x+60, y-50, 20, 100), makeBlock(x, y-110, 160, 20), 
                     makeBlock(x-30, y-160, 20, 80), makeBlock(x+30, y-160, 20, 80), makeBlock(x, y-210, 100, 20),
                     makePig(x, y-40), makePig(x, y-150)
                 ]);
-            } else {
+                // Add a thin plank and a metal part
+                Composite.add(engine.world, [
+                    makeThinPlank(x, y-240, 100, 8, Math.PI/12),
+                    makeMetalPart(x+50, y-110, 40, 18, Math.PI/8)
+                ]);
+                return;
+            } else if(lvl === 3) {
                 Composite.add(engine.world, [
                     makeBlock(x-80, y-50, 20, 100), makeBlock(x+80, y-50, 20, 100), makeBlock(x, y-110, 200, 20),
                     makeBlock(x-40, y-160, 20, 80), makeBlock(x+40, y-160, 20, 80), makeBlock(x, y-210, 120, 20),
                     makePig(x-50, y-40), makePig(x+50, y-40), makePig(x, y-150), makePig(x, y-240)
                 ]);
+                // Add a TNT block in the middle
+                Composite.add(engine.world, [makeTNT(x, y-170)]);
+                return;
             }
+            // After level 10, introduce terrain
+            if(lvl > 10) {
+                // Add hills (static polygonal terrain)
+                const hillW = 220 + (lvl-10)*8;
+                const hillH = 60 + (lvl-10)*2;
+                Composite.add(engine.world, [
+                    Bodies.rectangle(x-220, y+15, hillW, hillH, { isStatic: true, angle: -0.18, render: { fillStyle: "#8eea7e" }, label: "terrain" }),
+                    Bodies.rectangle(x+220, y+10, hillW*0.7, hillH*0.8, { isStatic: true, angle: 0.13, render: { fillStyle: "#b2e672" }, label: "terrain" })
+                ]);
+                // Moving platform after level 20
+                if(lvl > 20) {
+                    let plat = Bodies.rectangle(x, y-180, 120, 20, { isStatic: true, label: "platform", render: { fillStyle: "#e67e22" } });
+                    Composite.add(engine.world, [plat]);
+                    // Animate platform (moves up/down)
+                    let t = 0;
+                    Events.on(engine, 'beforeUpdate', function movePlat() {
+                        if(!plat.isStatic) return;
+                        t += 0.02 + 0.003 * (lvl-20);
+                        Matter.Body.setPosition(plat, { x: x, y: y-180 + Math.sin(t) * 40 });
+                    });
+                }
+                // Add obstacles (triangle blocks) after lvl 25
+                if(lvl > 25) {
+                    for(let i=0;i<Math.min(3,Math.floor((lvl-25)/5)+1);i++) {
+                        let obs = Bodies.polygon(x-100+80*i, y-80-60*i, 3, 35, { isStatic: true, angle: Math.random()*Math.PI, label: "obstacle", render: { fillStyle: "#a0522d" } });
+                        Composite.add(engine.world, [obs]);
+                    }
+                }
+            }
+            // Progressive structure generation
+            // Place blocks in a tower, wider and taller with level
+            let blocks = [];
+            let pigs = [];
+            let specials = [];
+            let baseW = 80 + lvl*4;
+            let blockH = 80 + Math.floor(lvl/3)*10;
+            let nFloors = 2 + Math.floor(lvl/5);
+            let nCols = 2 + Math.floor(lvl/8);
+            let blockW = Math.max(20, Math.floor(baseW / nCols));
+            for(let floor=0; floor<nFloors; floor++) {
+                for(let col=0; col<nCols; col++) {
+                    let bx = x - baseW/2 + col*blockW + blockW/2;
+                    let by = y-40 - floor*blockH;
+                    // Alternate between block, thin plank, and metal part for variety
+                    if ((floor+col)%6 === 0 && lvl > 6) {
+                        specials.push(makeThinPlank(bx, by, blockW, 8, Math.random()*Math.PI/10));
+                    } else if ((floor+col)%7 === 0 && lvl > 10) {
+                        specials.push(makeMetalPart(bx, by, blockW, 20, Math.random()*Math.PI/10));
+                    } else if ((floor+col)%8 === 0 && lvl > 12) {
+                        specials.push(makeTNT(bx, by));
+                    } else {
+                        blocks.push(makeBlock(bx, by, blockW, 40));
+                    }
+                }
+            }
+            // Add some horizontal thin planks and metal parts
+            for(let i=0; i<Math.floor(nFloors/2); i++) {
+                if ((i+nFloors)%3 === 0 && lvl > 7) {
+                    specials.push(makeThinPlank(x, y-70-i*blockH*2, baseW, 8, 0));
+                } else if ((i+nFloors)%4 === 0 && lvl > 14) {
+                    specials.push(makeMetalPart(x, y-70-i*blockH*2, baseW, 14, 0));
+                } else {
+                    blocks.push(makeBlock(x, y-70-i*blockH*2, baseW, 18));
+                }
+            }
+            // Add pigs on random floors/positions
+            for(let i=0; i<numPigs; i++) {
+                let pigFloor = Math.floor(Math.random() * nFloors);
+                let pigCol = Math.floor(Math.random() * nCols);
+                let px = x - baseW/2 + pigCol*blockW + blockW/2;
+                let py = y-40 - pigFloor*blockH - 20;
+                pigs.push(makePig(px, py));
+            }
+            // Add TNT blocks for levels > 5, more for higher levels
+            if (lvl > 5) {
+                let tntCount = Math.max(1, Math.floor(lvl/10));
+                for(let i=0; i<tntCount; i++) {
+                    let tx = x - baseW/2 + Math.random()*baseW;
+                    let ty = y-40 - Math.floor(Math.random()*nFloors)*blockH;
+                    specials.push(makeTNT(tx, ty));
+                }
+            }
+            Composite.add(engine.world, blocks.concat(pigs).concat(specials));
         }
 
         function createBird() {
@@ -630,22 +958,89 @@
                 } else if(b.label === 'block') {
                     ctx.fillStyle = 'var(--wood)'; ctx.strokeStyle = 'var(--wood-dark)'; ctx.lineWidth = 2;
                     ctx.fillRect(-b.w/2, -b.h/2, b.w, b.h); ctx.strokeRect(-b.w/2, -b.h/2, b.w, b.h);
+                } else if(b.label === 'thinplank') {
+                    ctx.save();
+                    ctx.globalAlpha = 0.85;
+                    ctx.fillStyle = '#e0b07a';
+                    ctx.strokeStyle = '#a0522d';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(-b.w/2, -b.h/2, b.w, b.h);
+                    ctx.strokeRect(-b.w/2, -b.h/2, b.w, b.h);
+                    ctx.restore();
+                } else if(b.label === 'metal') {
+                    ctx.save();
+                    ctx.globalAlpha = 0.92;
+                    let grad = ctx.createLinearGradient(-b.w/2, 0, b.w/2, 0);
+                    grad.addColorStop(0, '#888');
+                    grad.addColorStop(1, '#bbb');
+                    ctx.fillStyle = grad;
+                    ctx.strokeStyle = '#444';
+                    ctx.lineWidth = 2.5;
+                    ctx.fillRect(-b.w/2, -b.h/2, b.w, b.h);
+                    ctx.strokeRect(-b.w/2, -b.h/2, b.w, b.h);
+                    // bolts
+                    ctx.fillStyle = '#666';
+                    for(let i=0;i<2;i++) {
+                        ctx.beginPath(); ctx.arc(-b.w/2+(i+1)*b.w/3, -b.h/2+3, 3, 0, Math.PI*2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(-b.w/2+(i+1)*b.w/3, b.h/2-3, 3, 0, Math.PI*2); ctx.fill();
+                    }
+                    ctx.restore();
+                } else if(b.label === 'tnt') {
+                    ctx.save();
+                    ctx.globalAlpha = 1;
+                    // body
+                    ctx.fillStyle = '#c0392b';
+                    ctx.fillRect(-b.w/2, -b.h/2, b.w, b.h);
+                    ctx.strokeStyle = '#731c14'; ctx.lineWidth = 3;
+                    ctx.strokeRect(-b.w/2, -b.h/2, b.w, b.h);
+                    // label
+                    ctx.fillStyle = 'white';
+                    ctx.font = `bold ${b.h*0.7}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.save();
+                    ctx.rotate(-Math.PI/32);
+                    ctx.fillText('TNT', 0, 0);
+                    ctx.restore();
+                    // fuse
+                    ctx.strokeStyle = '#f5e642';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -b.h/2);
+                    ctx.lineTo(0, -b.h/2-10);
+                    ctx.stroke();
+                    ctx.restore();
                 }
                 ctx.restore();
             });
         }
 
         function explode(pos) {
-            for(let i=0; i<30; i++) particles.push({ x: pos.x, y: pos.y, vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20, life: 1, color: '#ff4757', size: Math.random()*15+5 });
-            const targets = Composite.allBodies(engine.world).filter(b => b.label === 'pig' || b.label === 'block');
+            // Explosion particles
+            for(let i=0; i<38; i++) particles.push({ x: pos.x, y: pos.y, vx: (Math.random()-0.5)*22, vy: (Math.random()-0.5)*22, life: 1, color: '#ff4757', size: Math.random()*15+5 });
+            // Affect nearby objects: pigs, blocks, thinplanks, metal, tnt (chain)
+            const targets = Composite.allBodies(engine.world).filter(b =>
+                b.label === 'pig' || b.label === 'block' || b.label === 'thinplank' || b.label === 'metal' || b.label === 'tnt'
+            );
             targets.forEach(t => {
                 const dist = Vector.magnitude(Vector.sub(t.position, pos));
-                if(dist < 200) {
-                    const force = Vector.mult(Vector.normalise(Vector.sub(t.position, pos)), 0.5);
+                if(dist < 220) {
+                    const forceMag = 0.6 * (1 - dist/220);
+                    const force = Vector.mult(Vector.normalise(Vector.sub(t.position, pos)), forceMag);
                     Matter.Body.applyForce(t, t.position, force);
-                    if(t.label === 'pig' && dist < 120) poof(t, '#ffffff');
+                    // Destroy pigs in blast radius
+                    if(t.label === 'pig' && dist < 130) poof(t, '#ffffff');
+                    // Chain reaction for TNT
+                    if(t.label === 'tnt' && dist < 100 && !t.hasExploded) {
+                        t.hasExploded = true;
+                        setTimeout(() => {
+                            explode(t.position);
+                            World.remove(engine.world, t);
+                        }, 80+Math.random()*120);
+                    }
                 }
             });
+            // Remove the exploding TNT/bird
             if (bird && activeBirdType === 'bomb') World.remove(engine.world, bird);
         }
 
@@ -685,18 +1080,20 @@
             const nextBtn = document.getElementById('next-btn');
 
             overlay.style.display = 'flex';
+            hidePauseOverlay();
+            setPaused(false);
             if(win) {
                 title.innerText = "LEVEL CLEAR!";
                 let stars = Math.max(1, 4 - shotsUsed);
                 totalStars += stars;
                 localStorage.setItem('slingStars', totalStars);
-                if(currentLevel === unlockedLevels && unlockedLevels < 3) {
+                if(currentLevel === unlockedLevels && unlockedLevels < 50) {
                     unlockedLevels++;
                     localStorage.setItem('slingChampUnlocked', unlockedLevels);
                 }
                 starsContainer.innerHTML = '⭐'.repeat(stars) + '<span style="opacity:0.2">' + '⭐'.repeat(3-stars) + '</span>';
                 msg.innerText = `Efficiency: ${stars} Stars!`;
-                nextBtn.style.display = 'block';
+                nextBtn.style.display = (currentLevel < 50) ? 'block' : 'none';
             } else {
                 title.innerText = "GAME OVER";
                 starsContainer.innerHTML = '<span style="opacity:0.2">⭐⭐⭐</span>';
@@ -705,10 +1102,10 @@
             }
         }
 
-        function nextLevel() { 
-            currentLevel = Math.min(3, currentLevel + 1); 
-            startGame(currentLevel); 
-            document.getElementById('overlay').style.display='none'; 
+        function nextLevel() {
+            currentLevel = Math.min(50, currentLevel + 1);
+            startGame(currentLevel);
+            document.getElementById('overlay').style.display='none';
         }
 
         function resetBird() {
@@ -718,6 +1115,123 @@
 
         function makePig(x, y) { return Bodies.circle(x, y, 20, { label: 'pig', friction: 0.1, restitution: 0.4 }); }
         function makeBlock(x, y, w, h) { const b = Bodies.rectangle(x, y, w, h, { label: 'block', friction: 0.5 }); b.w = w; b.h = h; return b; }
+        function makeThinPlank(x, y, w, h, angle) {
+            const b = Bodies.rectangle(x, y, w, h, {
+                label: 'thinplank',
+                friction: 0.35,
+                restitution: 0.18,
+                angle: angle || 0,
+                density: 0.001
+            });
+            b.w = w; b.h = h;
+            return b;
+        }
+        function makeMetalPart(x, y, w, h, angle) {
+            const b = Bodies.rectangle(x, y, w, h, {
+                label: 'metal',
+                friction: 0.32,
+                restitution: 0.08,
+                angle: angle || 0,
+                density: 0.005
+            });
+            b.w = w; b.h = h;
+            return b;
+        }
+        function makeTNT(x, y) {
+            const b = Bodies.rectangle(x, y, 34, 34, {
+                label: 'tnt',
+                friction: 0.32,
+                restitution: 0.2,
+                density: 0.004,
+                isSensor: false
+            });
+            b.w = 34; b.h = 34;
+            b.isTNT = true;
+            b.hasExploded = false;
+            return b;
+        }
+
+        // TNT collision/explosion logic
+        Events.on(engine, 'collisionStart', function TNTExplosionHandler(e) {
+            e.pairs.forEach(pair => {
+                let a = pair.bodyA, b = pair.bodyB;
+                // TNT explodes when hit by bird, block, plank, metal, pig, or another tnt
+                let tnt, other;
+                if (a.label === 'tnt' && !a.hasExploded) { tnt = a; other = b; }
+                else if (b.label === 'tnt' && !b.hasExploded) { tnt = b; other = a; }
+                if (tnt && !tnt.hasExploded) {
+                    // Only explode if hit by something with moderate speed
+                    let impactVel = Math.max(
+                        Vector.magnitude(other.velocity || {x:0,y:0}),
+                        Vector.magnitude(tnt.velocity || {x:0,y:0})
+                    );
+                    if (impactVel > 2.5 || other.label === 'bird' || other.label === 'block' || other.label === 'thinplank' || other.label === 'metal' || other.label === 'pig' || other.label === 'tnt') {
+                        tnt.hasExploded = true;
+                        setTimeout(() => {
+                            explode(tnt.position);
+                            World.remove(engine.world, tnt);
+                        }, 80+Math.random()*120);
+                    }
+                }
+            });
+        });
+
+        // --- PAUSE FUNCTIONALITY ---
+        function setPaused(paused) {
+            if (isPaused === paused) return;
+            isPaused = paused;
+            if (paused) {
+                runner.enabled = false;
+                // Pause Matter.js updates by stopping runner (but keep rendering for overlay)
+                runner.isPaused = true;
+            } else {
+                runner.enabled = true;
+                runner.isPaused = false;
+            }
+        }
+
+        function showPauseOverlay() {
+            setPaused(true);
+            document.getElementById('pause-overlay').style.display = 'flex';
+        }
+        function hidePauseOverlay() {
+            document.getElementById('pause-overlay').style.display = 'none';
+            setPaused(false);
+        }
+
+        // Pause button event
+        window.addEventListener('DOMContentLoaded', function() {
+            // Pause button
+            const pauseBtn = document.getElementById('pause-btn');
+            if (pauseBtn) {
+                pauseBtn.onclick = function() {
+                    if (!isSimulationMode && !isPaused) showPauseOverlay();
+                };
+            }
+            // Pause overlay buttons
+            const resumeBtn = document.getElementById('resume-btn');
+            const retryBtn = document.getElementById('retry-btn');
+            const quitBtn = document.getElementById('quit-btn');
+            if (resumeBtn) resumeBtn.onclick = () => { hidePauseOverlay(); };
+            if (retryBtn) retryBtn.onclick = () => {
+                hidePauseOverlay();
+                resetLevel();
+            };
+            if (quitBtn) quitBtn.onclick = () => {
+                hidePauseOverlay();
+                showLevelMenu();
+            };
+        });
+
+        // Prevent game updates while paused
+        (function patchRunner() {
+            // Patch the runner to not update engine when paused
+            const oldTick = runner.tick;
+            runner.tick = function(engineArg, delta, correction) {
+                if (isPaused) return;
+                return oldTick.call(this, engineArg, delta, correction);
+            };
+        })();
 
         window.addEventListener('load', init);
         window.addEventListener('resize', () => {
