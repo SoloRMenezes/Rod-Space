@@ -93,13 +93,23 @@
                     </div>
 
                     <!-- Rating Buttons -->
-                    <div class="space-y-4">
-                        <p class="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">Rate your recall</p>
-                        <div class="grid grid-cols-4 gap-3">
-                            <button @click="handleRating('again')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-rose-500 hover:text-white shadow-sm active:scale-95">Again</button>
-                            <button @click="handleRating('hard')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-orange-400 hover:text-white shadow-sm active:scale-95">Hard</button>
-                            <button @click="handleRating('good')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-emerald-500 hover:text-white shadow-sm active:scale-95">Good</button>
-                            <button @click="handleRating('easy')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-sky-600 hover:text-white shadow-sm active:scale-95">Easy</button>
+                    <div class="space-y-6">
+                        <div class="space-y-4">
+                            <p class="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">Rate your recall</p>
+                            <div class="grid grid-cols-4 gap-3">
+                                <button @click="handleRating('again')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-rose-500 hover:text-white shadow-sm active:scale-95">Again</button>
+                                <button @click="handleRating('hard')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-orange-400 hover:text-white shadow-sm active:scale-95">Hard</button>
+                                <button @click="handleRating('good')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-emerald-500 hover:text-white shadow-sm active:scale-95">Good</button>
+                                <button @click="handleRating('easy')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-sky-600 hover:text-white shadow-sm active:scale-95">Easy</button>
+                            </div>
+                        </div>
+
+                        <!-- Undo Button -->
+                        <div class="flex justify-center">
+                            <button v-if="lastCardState" @click="undoLast" class="flex items-center gap-2 px-6 py-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all text-xs font-bold uppercase tracking-widest">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+                                Undo Last Rating
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -111,6 +121,10 @@
                     </div>
                     <h2 class="text-xl font-semibold text-slate-800 mb-2">Mastered!</h2>
                     <p class="text-slate-400 text-sm font-medium">All current kanji have been reviewed.</p>
+                    <button v-if="lastCardState" @click="undoLast" class="mt-6 flex items-center gap-2 px-6 py-2 mx-auto rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all text-xs font-bold uppercase tracking-widest">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+                        Undo Last
+                    </button>
                 </div>
             </main>
 
@@ -162,6 +176,7 @@
                 const step = ref(0);
                 const currentIndex = ref(0);
                 const vocab = ref([]);
+                const lastCardState = ref(null); // To store history for undo
                 
                 // Form state
                 const newJp = ref('');
@@ -246,7 +261,7 @@
                 onMounted(() => {
                     const saved = localStorage.getItem(APP_ID);
                     if (saved) {
-                        vocab.ref = JSON.parse(saved);
+                        vocab.value = JSON.parse(saved);
                     } else {
                         vocab.value = initialData.map(item => ({
                             ...item,
@@ -281,6 +296,12 @@
                     const card = currentCard.value;
                     const target = vocab.value[card.originalIndex];
 
+                    // Save snapshot for undo before modifying
+                    lastCardState.value = {
+                        originalIndex: card.originalIndex,
+                        data: JSON.parse(JSON.stringify(target))
+                    };
+
                     let newInterval = target.interval || 0;
                     let newEase = target.ease || 2.5;
 
@@ -305,11 +326,21 @@
                     save();
                     step.value = 0;
                     
-                    if (dueCards.value.length <= 1) {
-                        currentIndex.value = 0;
-                    } else if (currentIndex.value >= dueCards.value.length - 1) {
-                        currentIndex.value = 0;
-                    }
+                    // We don't advance currentIndex because the card leaves the due list
+                    // Just reset it to stay at the front of the new due list
+                    currentIndex.value = 0;
+                };
+
+                const undoLast = () => {
+                    if (!lastCardState.value) return;
+                    
+                    const { originalIndex, data } = lastCardState.value;
+                    vocab.value[originalIndex] = data;
+                    save();
+                    
+                    lastCardState.value = null;
+                    step.value = 0;
+                    currentIndex.value = 0;
                 };
 
                 const addWord = () => {
@@ -333,8 +364,8 @@
 
                 return {
                     view, step, vocab, dueCards, currentCard,
-                    newJp, newKana, newEn,
-                    handleNextStep, handleRating, addWord, deleteWord
+                    newJp, newKana, newEn, lastCardState,
+                    handleNextStep, handleRating, undoLast, addWord, deleteWord
                 };
             }
         }).mount('#app');
