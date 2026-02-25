@@ -96,11 +96,12 @@
                     <div class="space-y-6">
                         <div class="space-y-4">
                             <p class="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">Rate your recall</p>
-                            <div class="grid grid-cols-4 gap-3">
-                                <button @click="handleRating('again')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-rose-500 hover:text-white shadow-sm active:scale-95">Again</button>
-                                <button @click="handleRating('hard')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-orange-400 hover:text-white shadow-sm active:scale-95">Hard</button>
-                                <button @click="handleRating('good')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-emerald-500 hover:text-white shadow-sm active:scale-95">Good</button>
-                                <button @click="handleRating('easy')" class="py-4 rounded-2xl bg-white border border-slate-100 text-slate-600 font-bold text-[10px] uppercase tracking-wider transition-all hover:bg-sky-600 hover:text-white shadow-sm active:scale-95">Easy</button>
+                            <div class="grid grid-cols-5 gap-2">
+                                <button @click="handleRating('again')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-rose-500 hover:text-white shadow-sm active:scale-95">Again</button>
+                                <button @click="handleRating('hard')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-orange-400 hover:text-white shadow-sm active:scale-95">Hard</button>
+                                <button @click="handleRating('kana')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-amber-400 hover:text-white shadow-sm active:scale-95" title="Know Word, Not Kanji">Kana</button>
+                                <button @click="handleRating('good')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-emerald-500 hover:text-white shadow-sm active:scale-95">Good</button>
+                                <button @click="handleRating('easy')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-sky-600 hover:text-white shadow-sm active:scale-95">Easy</button>
                             </div>
                         </div>
 
@@ -143,21 +144,30 @@
                 </form>
 
                 <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                    <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/30 flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Inventory</span>
-                        <span class="text-[10px] font-bold text-sky-500">{{ vocab.length }} Kanji</span>
+                    <div class="px-8 py-5 border-b border-slate-50 bg-slate-50/30 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Inventory</span>
+                            <span class="text-[10px] font-bold text-sky-500">{{ filteredVocab.length }} of {{ vocab.length }} Kanji</span>
+                        </div>
+                        <div class="relative">
+                            <input v-model="searchQuery" type="text" placeholder="Filter by kanji, kana, or meaning..." class="w-full py-2 px-4 pl-10 bg-white border border-slate-200 rounded-full text-xs font-medium placeholder-slate-300 focus:ring-2 focus:ring-sky-100 outline-none transition-all">
+                            <svg class="absolute left-4 top-2.5 text-slate-300" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        </div>
                     </div>
-                    <div class="divide-y divide-slate-50">
-                        <div v-for="(item, i) in vocab" :key="i" class="px-8 py-5 flex justify-between items-center group transition-colors hover:bg-slate-50">
+                    <div class="divide-y divide-slate-50 max-h-[500px] overflow-y-auto">
+                        <div v-for="(item, i) in filteredVocab" :key="item.id" class="px-8 py-5 flex justify-between items-center group transition-colors hover:bg-slate-50">
                             <div>
                                 <p class="font-semibold text-slate-800 group-hover:text-sky-600 transition-colors text-lg">
                                     {{ item.jp }} <span class="text-sm font-normal text-slate-400 ml-2">({{ item.kana }})</span>
                                 </p>
                                 <p class="text-slate-400 text-[11px] font-medium uppercase tracking-tight">{{ item.en }}</p>
                             </div>
-                            <button @click="deleteWord(i)" class="text-slate-200 hover:text-rose-400 transition-colors p-2">
+                            <button @click="deleteWord(item.id)" class="text-slate-200 hover:text-rose-400 transition-colors p-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                             </button>
+                        </div>
+                        <div v-if="filteredVocab.length === 0" class="p-12 text-center text-slate-300 text-xs font-medium uppercase tracking-widest">
+                            No matches found
                         </div>
                     </div>
                 </div>
@@ -176,95 +186,25 @@
                 const step = ref(0);
                 const currentIndex = ref(0);
                 const vocab = ref([]);
-                const lastCardState = ref(null); // To store history for undo
-                
-                // Form state
+                const lastCardState = ref(null);
+                const searchQuery = ref('');
                 const newJp = ref('');
                 const newKana = ref('');
                 const newEn = ref('');
-
-                const initialData = [
-                    { jp: "一", kana: "いち", en: "One" }, { jp: "二", kana: "に", en: "Two" }, { jp: "三", kana: "さん", en: "Three" },
-                    { jp: "四", kana: "よん / し", en: "Four" }, { jp: "五", kana: "ご", en: "Five" }, { jp: "六", kana: "ろく", en: "Six" },
-                    { jp: "七", kana: "なな / しち", en: "Seven" }, { jp: "八", kana: "はち", en: "Eight" }, { jp: "九", kana: "きゅう / く", en: "Nine" },
-                    { jp: "十", kana: "じゅう", en: "Ten" }, { jp: "百", kana: "ひゃく", en: "Hundred" }, { jp: "千", kana: "せん", en: "Thousand" },
-                    { jp: "万", kana: "まん", en: "Ten Thousand" }, { jp: "円", kana: "えん", en: "Yen / Circle" }, { jp: "天", kana: "てん", en: "Heaven / Sky" },
-                    { jp: "中", kana: "なか / ちゅう", en: "Middle / Inside" }, { jp: "大", kana: "おおきい / だい", en: "Big" }, { jp: "小", kana: "ちいさい / しょう", en: "Small" },
-                    { jp: "上", kana: "うえ", en: "Up / Above" }, { jp: "下", kana: "した", en: "Down / Below" }, { jp: "左", kana: "ひだり", en: "Left" },
-                    { jp: "右", kana: "みぎ", en: "Right" }, { jp: "人", kana: "ひと", en: "Person" }, { jp: "男", kana: "おとこ", en: "Man" },
-                    { jp: "女", kana: "おんな", en: "Woman" }, { jp: "子", kana: "こ", en: "Child" }, { jp: "目", kana: "め", en: "Eye" },
-                    { jp: "耳", kana: "みみ", en: "Ear" }, { jp: "口", kana: "くち", en: "Mouth" }, { jp: "手", kana: "て", en: "Hand" },
-                    { jp: "足", kana: "あし", en: "Foot / Leg" }, { jp: "力", kana: "ちから", en: "Power / Strength" }, { jp: "心", kana: "こころ", en: "Heart / Spirit" },
-                    { jp: "日", kana: "ひ / にち", en: "Sun / Day" }, { jp: "月", kana: "つき / げつ", en: "Moon / Month" }, { jp: "火", kana: "ひ / か", en: "Fire" },
-                    { jp: "水", kana: "みず / すい", en: "Water" }, { jp: "木", kana: "き / もく", en: "Tree / Wood" }, { jp: "金", kana: "かね / きん", en: "Gold / Money" },
-                    { jp: "土", kana: "つち / ど", en: "Soil / Earth" }, { jp: "山", kana: "やま", en: "Mountain" }, { jp: "川", kana: "かわ", en: "River" },
-                    { jp: "田", kana: "た", en: "Rice Field" }, { jp: "石", kana: "いし", en: "Stone" }, { jp: "花", kana: "はな", en: "Flower" },
-                    { jp: "草", kana: "くさ", en: "Grass" }, { jp: "虫", kana: "むし", en: "Insect" }, { jp: "鳥", kana: "とり", en: "Bird" },
-                    { jp: "魚", kana: "さかな", en: "Fish" }, { jp: "車", kana: "くるま", en: "Car / Vehicle" }, { jp: "学校", kana: "がっこう", en: "School" },
-                    { jp: "先生", kana: "せんせい", en: "Teacher" }, { jp: "学生", kana: "がくせい", en: "Student" }, { jp: "書く", kana: "かく", en: "To write" },
-                    { jp: "読む", kana: "よむ", en: "To read" }, { jp: "話す", kana: "はなす", en: "To speak" }, { jp: "聞く", kana: "きく", en: "To listen / hear" },
-                    { jp: "見る", kana: "みる", en: "To see / watch" }, { jp: "食べる", kana: "たべる", en: "To eat" }, { jp: "飲む", kana: "のむ", en: "To drink" },
-                    { jp: "行く", kana: "いく", en: "To go" }, { jp: "来る", kana: "くる", en: "To come" }, { jp: "帰る", kana: "かえる", en: "To return home" },
-                    { jp: "始まる", kana: "はじめる", en: "To start" }, { jp: "終わる", kana: "おわる", en: "To end" }, { jp: "立つ", kana: "たつ", en: "To stand" },
-                    { jp: "座る", kana: "すわる", en: "To sit" }, { jp: "歩く", kana: "あるく", en: "To walk" }, { jp: "走る", kana: "はしる", en: "To run" },
-                    { jp: "買う", kana: "かう", en: "To buy" }, { jp: "売る", kana: "うる", en: "To sell" }, { jp: "使う", kana: "つかう", en: "To use" },
-                    { jp: "働く", kana: "はたらく", en: "To work" }, { jp: "休む", kana: "やすむ", en: "To rest" }, { jp: "寝る", kana: "ねる", en: "To sleep" },
-                    { jp: "起きる", kana: "おきる", en: "To wake up" }, { jp: "遊ぶ", kana: "あそぶ", en: "To play" }, { jp: "学ぶ", kana: "まなぶ", en: "To learn" },
-                    { jp: "教える", kana: "おしえる", en: "To teach" }, { jp: "説明", kana: "せつめい", en: "Explanation" }, { jp: "問題", kana: "もんだい", en: "Problem / Question" },
-                    { jp: "答え", kana: "こたえ", en: "Answer" }, { jp: "知る", kana: "しる", en: "To know" }, { jp: "思う", kana: "おもう", en: "To think" },
-                    { jp: "感じる", kana: "かんじる", en: "To feel" }, { jp: "教科書", kana: "きょうかしょ", en: "Textbook" }, { jp: "テスト", kana: "てすと", en: "Test" },
-                    { jp: "練習", kana: "れんしゅう", en: "Practice" }, { jp: "学期", kana: "がっき", en: "Semester" }, { jp: "休暇", kana: "きゅうか", en: "Holiday / Vacation" },
-                    { jp: "仕事", kana: "しごと", en: "Job / Work" }, { jp: "事務", kana: "じむ", en: "Office work" }, { jp: "旅行", kana: "りょこう", en: "Travel" },
-                    { jp: "料理", kana: "りょうり", en: "Cooking" }, { jp: "時間", kana: "じかん", en: "Time" }, { jp: "空気", kana: "くうき", en: "Air" },
-                    { jp: "天気", kana: "てんき", en: "Weather" }, { jp: "運転", kana: "うんてん", en: "Driving" }, { jp: "生", kana: "なま / せい", en: "Life / Birth" },
-                    { jp: "大丈夫", kana: "だいじょうぶ", en: "OK / All right" }, { jp: "時", kana: "とき / じ", en: "Time / Hour" }, { jp: "今", kana: "いま", en: "Now" },
-                    { jp: "昨日", kana: "きのう", en: "Yesterday" }, { jp: "今日", kana: "きょう", en: "Today" }, { jp: "明日", kana: "あした", en: "Tomorrow" },
-                    { jp: "週", kana: "しゅう", en: "Week" }, { jp: "年", kana: "とし / ねん", en: "Year" }, { jp: "春", kana: "はる", en: "Spring" },
-                    { jp: "夏", kana: "なつ", en: "Summer" }, { jp: "秋", kana: "あき", en: "Autumn" }, { jp: "冬", kana: "ふゆ", en: "Winter" },
-                    { jp: "空", kana: "そら / くう", en: "Sky" }, { jp: "海", kana: "うみ", en: "Sea / Ocean" }, { jp: "星", kana: "ほし", en: "Star" },
-                    { jp: "空港", kana: "くうこう", en: "Airport" }, { jp: "駅", kana: "えき", en: "Station" }, { jp: "店", kana: "みせ", en: "Shop / Store" },
-                    { jp: "国", kana: "くに", en: "Country" }, { jp: "人々", kana: "ひとびと", en: "People" }, { jp: "集まる", kana: "あつまる", en: "To gather" },
-                    { jp: "勝つ", kana: "かつ", en: "To win" }, { jp: "負ける", kana: "まける", en: "To lose" }, { jp: "歌う", kana: "うたう", en: "To sing" },
-                    { jp: "踊る", kana: "おどる", en: "To dance" }, { jp: "描く", kana: "えがく", en: "To draw / paint" }, { jp: "演奏", kana: "えんそう", en: "Musical performance" },
-                    { jp: "映画", kana: "えいが", en: "Movie" }, { jp: "音楽", kana: "おんがく", en: "Music" }, { jp: "芸術", kana: "げいじゅつ", en: "Art" },
-                    { jp: "文学", kana: "ぶんがく", en: "Literature" }, { jp: "舞台", kana: "ぶたい", en: "Stage" }, { jp: "本", kana: "ほん", en: "Book" },
-                    { jp: "絵", kana: "え", en: "Picture" }, { jp: "映画館", kana: "えいがかん", en: "Cinema" }, { jp: "テレビ", kana: "てれび", en: "TV" },
-                    { jp: "電話", kana: "でんわ", en: "Phone" }, { jp: "電子", kana: "でんし", en: "Electronic" }, { jp: "会話", kana: "かいわ", en: "Conversation" },
-                    { jp: "ニュース", kana: "にゅーす", en: "News" }, { jp: "情報", kana: "じょうほう", en: "Information" }, { jp: "調査", kana: "ちょうさ", en: "Investigation" },
-                    { jp: "企業", kana: "きぎょう", en: "Enterprise / Company" }, { jp: "医", kana: "い", en: "Medicine / Doctor" },
-                    { jp: "友", kana: "とも", en: "Friend" }, { jp: "安", kana: "やす(い)", en: "Cheap / Easy" }, { jp: "高", kana: "たか(い)", en: "High / Expensive" },
-                    { jp: "新", kana: "あたら(しい)", en: "New" }, { jp: "古", kana: "ふる(い)", en: "Old" }, { jp: "近", kana: "ちか(い)", en: "Near" },
-                    { jp: "遠", kana: "とお(い)", en: "Far" }, { jp: "短", kana: "みじか(い)", en: "Short" }, { jp: "長", kana: "なが(い)", en: "Long" },
-                    { jp: "明", kana: "あか(るい)", en: "Bright" }, { jp: "暗", kana: "くら(い)", en: "Dark" }, { jp: "速", kana: "はや(い)", en: "Fast" },
-                    { jp: "遅", kana: "おそ(い)", en: "Slow / Late" }, { jp: "広", kana: "ひろ(い)", en: "Wide" }, { jp: "狭", kana: "せま(い)", en: "Narrow" },
-                    { jp: "美", kana: "うつく(しい)", en: "Beautiful" }, { jp: "強", kana: "つよ(い)", en: "Strong" }, { jp: "弱", kana: "よわ(い)", en: "Weak" },
-                    { jp: "早", kana: "はや(い)", en: "Early" }, { jp: "若", kana: "わか(い)", en: "Young" }, { jp: "老", kana: "お(いる) / ろう", en: "Old (age)" },
-                    { jp: "忘", kana: "わす(れる)", en: "Forget" }, { jp: "考", kana: "かんが(える)", en: "Think" }, { jp: "東", kana: "ひがし", en: "East" },
-                    { jp: "西", kana: "にし", en: "West" }, { jp: "南", kana: "みなみ", en: "South" }, { jp: "北", kana: "きた", en: "North" },
-                    { jp: "前", kana: "まえ", en: "Front / Before" }, { jp: "後", kana: "あと / うしろ", en: "Back / After" }, { jp: "内", kana: "うち", en: "Inside" },
-                    { jp: "外", kana: "そと", en: "Outside" }, { jp: "開", kana: "あ(ける)", en: "Open" }, { jp: "閉", kana: "し(める)", en: "Close" },
-                    { jp: "言", kana: "い(う)", en: "Say" }, { jp: "声", kana: "こえ", en: "Voice" }, { jp: "音", kana: "おと", en: "Sound" },
-                    { jp: "形", kana: "かたち", en: "Shape" }, { jp: "色", kana: "いろ", en: "Color" }, { jp: "香", kana: "かお(り)", en: "Fragrance" },
-                    { jp: "風", kana: "かぜ", en: "Wind" }, { jp: "光", kana: "ひかり", en: "Light" }, { jp: "森", kana: "もり", en: "Forest" },
-                    { jp: "物", kana: "もの", en: "Thing" }, { jp: "地", kana: "ち", en: "Ground / Earth" }, { jp: "岸", kana: "きし", en: "Coast / Shore" },
-                    { jp: "動", kana: "うご(く)", en: "Move" }, { jp: "運", kana: "はこ(ぶ)", en: "Luck / Transport" }, { jp: "商", kana: "あきな(う)", en: "Commerce" },
-                    { jp: "労", kana: "ろう", en: "Labor" }, { jp: "賢", kana: "かしこ(い)", en: "Wise" }, { jp: "急", kana: "いそ(ぐ)", en: "Urgent / Sudden" },
-                    { jp: "決", kana: "き(める)", en: "Decide" }, { jp: "理", kana: "り", en: "Reason / Logic" }, { jp: "待", kana: "ま(つ)", en: "Wait" },
-                    { jp: "招", kana: "まね(く)", en: "Invite" }, { jp: "伝", kana: "つた(える)", en: "Transmit / Tell" }, { jp: "戦", kana: "たたか(う)", en: "War / Battle" },
-                    { jp: "賞", kana: "しょう", en: "Prize" }, { jp: "陸", kana: "りく", en: "Land" }, { jp: "航", kana: "こう", en: "Aviation / Sail" },
-                    { jp: "都", kana: "みやこ / と", en: "Capital / City" }, { jp: "県", kana: "けん", en: "Prefecture" }, { jp: "種", kana: "たね", en: "Seed / Kind" },
-                    { jp: "鉄", kana: "てつ", en: "Iron" }, { jp: "資", kana: "し", en: "Resources / Capital" }, { jp: "選", kana: "えら(ぶ)", en: "Select" },
-                    { jp: "進", kana: "すす(む)", en: "Advance" }, { jp: "表", kana: "おもて / ひょう", en: "Surface / Table" }, { jp: "果", kana: "はた(す) / か", en: "Fruit / Result" },
-                    { jp: "計", kana: "はか(る) / けい", en: "Measure / Plan" }
-                ];
 
                 onMounted(() => {
                     const saved = localStorage.getItem(APP_ID);
                     if (saved) {
                         vocab.value = JSON.parse(saved);
                     } else {
-                        vocab.value = initialData.map(item => ({
+                        // Using a smaller initial set for demonstration, but keeping ID generation logic
+                        const demoData = [
+                            { jp: "一", kana: "いち", en: "One" }, { jp: "二", kana: "に", en: "Two" }, { jp: "三", kana: "さん", en: "Three" },
+                            { jp: "私", kana: "わたし", en: "I / Me" }, { jp: "百", kana: "ひゃく", en: "Hundred" }, { jp: "日本語", kana: "にほんご", en: "Japanese Language" }
+                        ];
+                        vocab.value = demoData.map((item, idx) => ({
                             ...item,
+                            id: Date.now() + idx,
                             interval: 0,
                             ease: 2.5,
                             nextReview: Date.now()
@@ -286,6 +226,16 @@
 
                 const currentCard = computed(() => dueCards.value[currentIndex.value] || null);
 
+                const filteredVocab = computed(() => {
+                    if (!searchQuery.value) return vocab.value;
+                    const q = searchQuery.value.toLowerCase();
+                    return vocab.value.filter(item => 
+                        item.jp.toLowerCase().includes(q) || 
+                        item.kana.toLowerCase().includes(q) || 
+                        item.en.toLowerCase().includes(q)
+                    );
+                });
+
                 const handleNextStep = () => {
                     step.value = (step.value + 1) % 3;
                 };
@@ -296,7 +246,6 @@
                     const card = currentCard.value;
                     const target = vocab.value[card.originalIndex];
 
-                    // Save snapshot for undo before modifying
                     lastCardState.value = {
                         originalIndex: card.originalIndex,
                         data: JSON.parse(JSON.stringify(target))
@@ -311,6 +260,11 @@
                     } else if (rating === 'hard') {
                         newInterval = newInterval === 0 ? 1 : newInterval * 1.2;
                         newEase = Math.max(1.3, newEase - 0.15);
+                    } else if (rating === 'kana') {
+                        // Custom "Kana" rating: know the word, not the kanji.
+                        // Between Hard and Good in terms of reward.
+                        newInterval = newInterval === 0 ? 0.75 : newInterval * 1.5;
+                        newEase = Math.max(1.3, newEase - 0.05);
                     } else if (rating === 'good') {
                         newInterval = newInterval === 0 ? 1 : newInterval * newEase;
                     } else if (rating === 'easy') {
@@ -318,26 +272,21 @@
                         newEase += 0.15;
                     }
 
-                    const offset = rating === 'again' ? 60 * 1000 : newInterval * 24 * 60 * 60 * 1000;
+                    const offset = (rating === 'again') ? 60 * 1000 : newInterval * 24 * 60 * 60 * 1000;
                     target.interval = newInterval;
                     target.ease = newEase;
                     target.nextReview = Date.now() + offset;
 
                     save();
                     step.value = 0;
-                    
-                    // We don't advance currentIndex because the card leaves the due list
-                    // Just reset it to stay at the front of the new due list
                     currentIndex.value = 0;
                 };
 
                 const undoLast = () => {
                     if (!lastCardState.value) return;
-                    
                     const { originalIndex, data } = lastCardState.value;
                     vocab.value[originalIndex] = data;
                     save();
-                    
                     lastCardState.value = null;
                     step.value = 0;
                     currentIndex.value = 0;
@@ -346,6 +295,7 @@
                 const addWord = () => {
                     if (!newJp.value || !newKana.value || !newEn.value) return;
                     vocab.value.unshift({
+                        id: Date.now(),
                         jp: newJp.value,
                         kana: newKana.value,
                         en: newEn.value,
@@ -357,14 +307,17 @@
                     newJp.value = ''; newKana.value = ''; newEn.value = '';
                 };
 
-                const deleteWord = (idx) => {
-                    vocab.value.splice(idx, 1);
-                    save();
+                const deleteWord = (id) => {
+                    const idx = vocab.value.findIndex(v => v.id === id);
+                    if (idx !== -1) {
+                        vocab.value.splice(idx, 1);
+                        save();
+                    }
                 };
 
                 return {
-                    view, step, vocab, dueCards, currentCard,
-                    newJp, newKana, newEn, lastCardState,
+                    view, step, vocab, dueCards, currentCard, filteredVocab,
+                    newJp, newKana, newEn, lastCardState, searchQuery,
                     handleNextStep, handleRating, undoLast, addWord, deleteWord
                 };
             }
