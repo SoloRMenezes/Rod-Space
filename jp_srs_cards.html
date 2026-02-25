@@ -261,6 +261,29 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Backup Controls -->
+                    <div class="p-6 bg-slate-50/50 border-t border-slate-100">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="relative group">
+                                <button @click="showExportMenu = !showExportMenu" class="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 py-3 rounded-xl text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:border-sky-300 hover:text-sky-600 transition-all">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                    Export Deck
+                                </button>
+                                <!-- Export Dropdown -->
+                                <div v-if="showExportMenu" class="absolute bottom-full left-0 w-full mb-2 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden animate-in slide-in-from-bottom-2 duration-200 z-10">
+                                    <button @click="exportData('clean')" class="w-full px-4 py-3 text-left text-[10px] font-bold text-slate-600 uppercase hover:bg-slate-50 border-b border-slate-50">Clean Deck (Words Only)</button>
+                                    <button @click="exportData('full')" class="w-full px-4 py-3 text-left text-[10px] font-bold text-slate-600 uppercase hover:bg-slate-50">Full Backup (With Mastery)</button>
+                                </div>
+                            </div>
+
+                            <button @click="$refs.fileInput.click()" class="flex items-center justify-center gap-2 bg-white border border-slate-200 py-3 rounded-xl text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:border-emerald-300 hover:text-emerald-600 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                Restore
+                            </button>
+                            <input type="file" ref="fileInput" @change="importData" class="hidden" accept=".json">
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -282,6 +305,7 @@
                 const newJp = ref('');
                 const newKana = ref('');
                 const newEn = ref('');
+                const showExportMenu = ref(false);
 
                 // Quiz State
                 const quizActive = ref(false);
@@ -408,11 +432,9 @@
                         const prompt = item.jp;
                         const answer = quizType === 'kana' ? item.kana : item.en;
                         
-                        // Generate wrong choices from the rest of the deck
                         const pool = vocab.value.filter(v => v.id !== item.id);
                         const shuffledPool = pool.sort(() => 0.5 - Math.random());
                         
-                        // Get unique wrong choices (in case some items have identical meanings)
                         const wrongChoices = [];
                         for (let p of shuffledPool) {
                             const val = quizType === 'kana' ? p.kana : p.en;
@@ -422,7 +444,6 @@
                             if (wrongChoices.length >= 3) break;
                         }
                         
-                        // Ensure we have 4 choices total
                         const finalChoices = [answer, ...wrongChoices].sort(() => 0.5 - Math.random());
 
                         return {
@@ -488,12 +509,70 @@
                     }
                 };
 
+                // Export & Import Logic
+                const exportData = (mode) => {
+                    let dataToExport;
+                    if (mode === 'clean') {
+                        dataToExport = vocab.value.map(item => ({
+                            jp: item.jp,
+                            kana: item.kana,
+                            en: item.en
+                        }));
+                    } else {
+                        dataToExport = vocab.value;
+                    }
+
+                    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `kanji-deck-${mode}-${new Date().toISOString().split('T')[0]}.json`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    showExportMenu.value = false;
+                };
+
+                const importData = (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const imported = JSON.parse(e.target.result);
+                            if (!Array.isArray(imported)) throw new Error('Invalid format');
+
+                            // Sanitize and ensure IDs exist
+                            const processed = imported.map((item, idx) => ({
+                                id: item.id || (Date.now() + idx),
+                                jp: item.jp || '',
+                                kana: item.kana || '',
+                                en: item.en || '',
+                                interval: item.interval || 0,
+                                ease: item.ease || 2.5,
+                                mastery: item.mastery || 0,
+                                nextReview: item.nextReview || Date.now()
+                            }));
+
+                            if (confirm(`Import ${processed.length} items? This will replace your current deck.`)) {
+                                vocab.value = processed;
+                                save();
+                            }
+                        } catch (err) {
+                            alert('Error reading file. Please ensure it is a valid Kanji Master JSON export.');
+                        }
+                        event.target.value = ''; // Reset input
+                    };
+                    reader.readAsText(file);
+                };
+
                 return {
                     view, step, vocab, dueCards, currentCard, filteredVocab,
                     newJp, newKana, newEn, lastCardState, searchQuery,
                     quizActive, quizCount, quizQuestions, quizProgress, quizScore, quizResults,
+                    showExportMenu,
                     handleNextStep, handleRating, undoLast, addWord, deleteWord, 
-                    startQuiz, submitQuizAnswer
+                    startQuiz, submitQuizAnswer, exportData, importData
                 };
             }
         }).mount('#app');
