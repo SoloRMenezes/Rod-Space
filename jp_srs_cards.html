@@ -96,13 +96,26 @@
                     <!-- Rating Buttons -->
                     <div class="space-y-6">
                         <div class="space-y-4">
-                            <p class="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">Rate your recall</p>
+                            <p class="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                {{ step < 2 ? 'View meaning to rate recall' : 'Rate your recall' }}
+                            </p>
                             <div class="grid grid-cols-5 gap-2">
-                                <button @click="handleRating('again')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-rose-500 hover:text-white shadow-sm active:scale-95">Again</button>
-                                <button @click="handleRating('hard')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-orange-400 hover:text-white shadow-sm active:scale-95">Hard</button>
-                                <button @click="handleRating('kana')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-amber-400 hover:text-white shadow-sm active:scale-95" title="Know Word, Not Kanji">Kana</button>
-                                <button @click="handleRating('good')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-emerald-500 hover:text-white shadow-sm active:scale-95">Good</button>
-                                <button @click="handleRating('easy')" class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-sky-600 hover:text-white shadow-sm active:scale-95">Easy</button>
+                                <button @click="handleRating('again')" :disabled="step < 2" 
+                                    :class="step < 2 ? 'opacity-20 cursor-not-allowed bg-slate-100' : 'bg-white hover:bg-rose-500 hover:text-white'"
+                                    class="py-4 rounded-xl border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all shadow-sm active:scale-95">Again</button>
+                                
+                                <button @click="handleRating('hard')" :disabled="step < 2"
+                                    :class="step < 2 ? 'opacity-20 cursor-not-allowed bg-slate-100' : 'bg-white hover:bg-orange-400 hover:text-white'"
+                                    class="py-4 rounded-xl border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all shadow-sm active:scale-95">Hard</button>
+                                
+                                <button @click="handleRating('kana')" 
+                                    class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-amber-400 hover:text-white shadow-sm active:scale-95" title="Know Word, Not Kanji">Kana</button>
+                                
+                                <button @click="handleRating('good')" 
+                                    class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-emerald-500 hover:text-white shadow-sm active:scale-95">Good</button>
+                                
+                                <button @click="handleRating('easy')" 
+                                    class="py-4 rounded-xl bg-white border border-slate-100 text-slate-600 font-bold text-[9px] uppercase tracking-wider transition-all hover:bg-sky-600 hover:text-white shadow-sm active:scale-95">Easy</button>
                             </div>
                         </div>
 
@@ -147,6 +160,7 @@
                     <button @click="startQuiz" :disabled="vocab.length < 4" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold text-sm tracking-tight active:scale-95 transition-all shadow-lg disabled:opacity-50">
                         {{ vocab.length < 4 ? 'Need at least 4 items' : 'Start Quiz' }}
                     </button>
+                    <p v-if="vocab.length < 4" class="text-center text-[10px] text-rose-500 font-bold uppercase">Add at least 4 items to the deck first!</p>
                 </div>
 
                 <!-- Active Quiz -->
@@ -169,7 +183,7 @@
                         <button v-for="(choice, idx) in quizQuestions[quizProgress].choices" 
                             :key="idx"
                             @click="submitQuizAnswer(choice)"
-                            class="w-full bg-white border border-slate-100 py-5 px-6 rounded-2xl text-left font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 transition-all active:scale-[0.99]">
+                            class="w-full bg-white border border-slate-100 py-5 px-6 rounded-2xl text-left font-medium text-slate-700 hover:border-sky-300 hover:bg-sky-50 transition-all active:scale-[0.99] group">
                             <div class="flex items-center gap-4">
                                 <span class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-400 group-hover:bg-sky-100">{{ String.fromCharCode(65 + idx) }}</span>
                                 <span class="text-lg">{{ choice }}</span>
@@ -329,6 +343,10 @@
                 const handleRating = (rating) => {
                     if (!currentCard.value) return;
                     
+                    if ((rating === 'again' || rating === 'hard') && step.value < 2) {
+                        return;
+                    }
+                    
                     const card = currentCard.value;
                     const target = vocab.value[card.originalIndex];
 
@@ -378,6 +396,8 @@
 
                 // Quiz Logic
                 const startQuiz = () => {
+                    if (vocab.value.length < 4) return;
+                    
                     const count = Math.min(quizCount.value, vocab.value.length);
                     const shuffled = [...vocab.value].sort(() => 0.5 - Math.random());
                     const selected = shuffled.slice(0, count);
@@ -388,19 +408,29 @@
                         const prompt = item.jp;
                         const answer = quizType === 'kana' ? item.kana : item.en;
                         
-                        // Generate wrong choices
+                        // Generate wrong choices from the rest of the deck
                         const pool = vocab.value.filter(v => v.id !== item.id);
                         const shuffledPool = pool.sort(() => 0.5 - Math.random());
-                        const wrongChoices = shuffledPool.slice(0, 3).map(v => quizType === 'kana' ? v.kana : v.en);
                         
-                        const choices = [answer, ...wrongChoices].sort(() => 0.5 - Math.random());
+                        // Get unique wrong choices (in case some items have identical meanings)
+                        const wrongChoices = [];
+                        for (let p of shuffledPool) {
+                            const val = quizType === 'kana' ? p.kana : p.en;
+                            if (val !== answer && !wrongChoices.includes(val)) {
+                                wrongChoices.push(val);
+                            }
+                            if (wrongChoices.length >= 3) break;
+                        }
+                        
+                        // Ensure we have 4 choices total
+                        const finalChoices = [answer, ...wrongChoices].sort(() => 0.5 - Math.random());
 
                         return {
                             id: item.id,
                             type: quizType,
                             prompt,
                             answer,
-                            choices
+                            choices: finalChoices
                         };
                     });
 
@@ -416,10 +446,8 @@
 
                     if (choice === currentQ.answer) {
                         quizScore.value++;
-                        // Increase mastery: +5% for correct
                         target.mastery = Math.min(100, (target.mastery || 0) + 5);
                     } else {
-                        // Decrease mastery: -10% for wrong
                         target.mastery = Math.max(0, (target.mastery || 0) - 10);
                     }
 
