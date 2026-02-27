@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Canvas Drift Pro</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #87CEEB; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+        
+        /* Overlay Systems */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        h1 { color: white; font-size: 48px; margin-bottom: 30px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+        .btn {
+            background: white; color: black; border: none;
+            padding: 15px 40px; margin: 10px; font-size: 20px; font-weight: bold;
+            border-radius: 50px; cursor: pointer; width: 250px;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .btn:hover { transform: scale(1.05); background: #eee; }
+
+        /* Game UI */
+        #game-ui {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: none;
+        }
+
+        #turbo-container {
+            position: absolute;
+            top: 20px; left: 20px;
+            width: 200px;
+        }
+        .ui-label { color: white; font-size: 12px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 2px black; }
+        #turbo-bar-bg { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); }
+        #turbo-bar { width: 100%; height: 100%; background: #00f2ff; transition: width 0.1s; }
+
+        #speed-container {
+            position: absolute;
+            bottom: 30px; left: 30px;
+            color: white; text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+        }
+        #speed-val { font-size: 64px; font-weight: 900; }
+        #speed-unit { font-size: 24px; margin-left: 5px; opacity: 0.8; }
+
+        #home-btn {
+            position: absolute;
+            top: 20px; right: 20px;
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #home-btn:hover { transform: scale(1.1); background: white; }
+        #home-btn svg { width: 28px; height: 28px; fill: #333; }
+
+        /* Screens */
+        .hidden { display: none !important; }
+        
+        #skin-picker { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; }
+        .colors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
+        .color-btn { width: 50px; height: 50px; border-radius: 10px; border: 3px solid transparent; cursor: pointer; }
+        .color-btn:hover { border-color: white; }
+
+        #keybinds-screen { color: white; background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; text-align: left; line-height: 2; }
+    </style>
+</head>
+<body>
+
+    <!-- Main Menu -->
+    <div id="main-menu" class="overlay">
+        <h1>DRIFT PRO</h1>
+        <button class="btn" onclick="startGame()">START</button>
+        <button class="btn" onclick="showScreen('skin-picker')">CUSTOMIZE</button>
+        <button class="btn" onclick="showScreen('keybinds-screen')">KEYBINDS</button>
+    </div>
+
+    <!-- Customize Screen -->
+    <div id="skin-picker" class="overlay hidden">
+        <h2 style="color: white">CHOOSE COLOR</h2>
+        <div class="colors">
+            <div class="color-btn" style="background: #ff0000;" onclick="setCarColor(0xff0000)"></div>
+            <div class="color-btn" style="background: #ff8800;" onclick="setCarColor(0xff8800)"></div>
+            <div class="color-btn" style="background: #00ff00;" onclick="setCarColor(0x00ff00)"></div>
+            <div class="color-btn" style="background: #00ccff;" onclick="setCarColor(0x00ccff)"></div>
+            <div class="color-btn" style="background: #ffff00;" onclick="setCarColor(0xffff00)"></div>
+            <div class="color-btn" style="background: #ffffff;" onclick="setCarColor(0xffffff)"></div>
+            <div class="color-btn" style="background: #888888;" onclick="setCarColor(0x888888)"></div>
+            <div class="color-btn" style="background: #ff00ff;" onclick="setCarColor(0xff00ff)"></div>
+            <div class="color-btn" style="background: #8800ff;" onclick="setCarColor(0x8800ff)"></div>
+        </div>
+        <button class="btn" style="margin-top: 20px" onclick="showScreen('main-menu')">BACK</button>
+    </div>
+
+    <!-- Keybinds Screen -->
+    <div id="keybinds-screen" class="overlay hidden">
+        <h2>CONTROLS</h2>
+        <div><b>WASD / ARROWS:</b> DRIVE & STEER</div>
+        <div><b>SPACE:</b> TURBO BOOST</div>
+        <div><b>SHIFT:</b> FREELOOK (SHIFT LOCK)</div>
+        <button class="btn" style="margin-top: 20px" onclick="showScreen('main-menu')">BACK</button>
+    </div>
+
+    <!-- In-Game UI -->
+    <div id="game-ui">
+        <div id="turbo-container">
+            <div class="ui-label">TURBO</div>
+            <div id="turbo-bar-bg">
+                <div id="turbo-bar"></div>
+            </div>
+        </div>
+
+        <div id="speed-container">
+            <span id="speed-val">0</span><span id="speed-unit">KM/H</span>
+        </div>
+
+        <button id="home-btn" onclick="backToMenu()" title="Back to Menu">
+            <svg viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // --- Texture Generators ---
+        function createAsphaltTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#333'; ctx.fillRect(0, 0, 512, 512);
+            for (let i = 0; i < 5000; i++) {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.2})`;
+                ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+            }
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 10; ctx.strokeRect(5, 5, 502, 502);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(50, 50);
+            return tex;
+        }
+
+        function createBuildingTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#444'; ctx.fillRect(0, 0, 128, 128);
+            ctx.fillStyle = '#ffd700';
+            for(let y = 10; y < 120; y += 20) {
+                for(let x = 10; x < 120; x += 25) {
+                    if(Math.random() > 0.3) ctx.fillRect(x, y, 15, 12);
+                }
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        // --- Setup Scene ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
+        scene.fog = new THREE.Fog(0x87CEEB, 20, 150);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+        sun.position.set(50, 100, 50);
+        scene.add(sun);
+
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(1000, 1000),
+            new THREE.MeshLambertMaterial({ map: createAsphaltTexture() })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        scene.add(ground);
+
+        const buildings = [];
+        const bTex = createBuildingTexture();
+        function createCity() {
+            for(let i = 0; i < 120; i++) {
+                const w = 5 + Math.random() * 5;
+                const d = 5 + Math.random() * 5;
+                const h = 10 + Math.random() * 40;
+                const mat = new THREE.MeshLambertMaterial({ map: bTex.clone() });
+                mat.map.repeat.set(1, h/5);
+                const box = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+                let x = (Math.random() - 0.5) * 600;
+                let z = (Math.random() - 0.5) * 600;
+                if (Math.abs(x) < 20 && Math.abs(z) < 20) { x += 30; z += 30; }
+                box.position.set(x, h/2, z);
+                scene.add(box);
+                buildings.push({ 
+                    x, z, 
+                    minX: x - w/2, maxX: x + w/2, 
+                    minZ: z - d/2, maxZ: z + d/2 
+                });
+            }
+        }
+        createCity();
+
+        // --- Car ---
+        const carGroup = new THREE.Group();
+        const carBodyMat = new THREE.MeshPhongMaterial({ color: 0x00ccff, shininess: 100 });
+        const carBody = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 2.8), carBodyMat);
+        carBody.position.y = 0.5;
+        carGroup.add(carBody);
+
+        const carCabin = new THREE.Mesh(
+            new THREE.BoxGeometry(1.1, 0.5, 1.3),
+            new THREE.MeshPhongMaterial({ color: 0x111111 })
+        );
+        carCabin.position.set(0, 1, -0.2);
+        carGroup.add(carCabin);
+        scene.add(carGroup);
+
+        // --- Game State ---
+        let isGameRunning = false;
+        let velocity = new THREE.Vector3();
+        let currentSpeed = 0;
+        let turboAmount = 100;
+        let freelookRotation = 0;
+        const keys = {};
+
+        window.addEventListener('keydown', (e) => keys[e.code] = true);
+        window.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        // UI Handlers
+        const speedVal = document.getElementById('speed-val');
+        const turboBar = document.getElementById('turbo-bar');
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.overlay').forEach(s => s.classList.add('hidden'));
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function startGame() {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('game-ui').style.display = 'block';
+            isGameRunning = true;
+        }
+
+        function backToMenu() {
+            isGameRunning = false;
+            document.getElementById('game-ui').style.display = 'none';
+            showScreen('main-menu');
+            // Reset state
+            currentSpeed = 0;
+            velocity.set(0,0,0);
+            carGroup.position.set(0,0,0);
+            carGroup.rotation.y = 0;
+        }
+
+        function setCarColor(color) {
+            carBodyMat.color.setHex(color);
+            showScreen('main-menu');
+        }
+
+        // --- Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!isGameRunning) {
+                // Menu Background Rotation
+                carGroup.rotation.y += 0.005;
+                camera.position.set(10, 5, 10);
+                camera.lookAt(carGroup.position);
+            } else {
+                const isFwd = keys['KeyW'] || keys['ArrowUp'];
+                const isBwd = keys['KeyS'] || keys['ArrowDown'];
+                const isL = keys['KeyA'] || keys['ArrowLeft'];
+                const isR = keys['KeyD'] || keys['ArrowRight'];
+                const isTurbo = keys['Space'] && turboAmount > 0;
+                const isShiftLock = keys['ShiftLeft'] || keys['ShiftRight'];
+
+                if (isFwd) currentSpeed += (isTurbo ? 0.018 : 0.009);
+                if (isBwd) currentSpeed -= 0.006;
+                currentSpeed *= 0.985;
+
+                if (isTurbo) turboAmount -= 1.2;
+                else if (turboAmount < 100) turboAmount += 0.25;
+
+                const turnFactor = 0.045 * Math.min(Math.abs(currentSpeed) * 5, 1);
+                if (isL) carGroup.rotation.y += turnFactor;
+                if (isR) carGroup.rotation.y -= turnFactor;
+
+                const heading = new THREE.Vector3(0, 0, 1).applyQuaternion(carGroup.quaternion);
+                const targetVel = heading.clone().multiplyScalar(currentSpeed);
+                velocity.lerp(targetVel, 0.08);
+
+                let nextPos = carGroup.position.clone().add(velocity);
+                const carRadius = 1.0; 
+
+                for(let b of buildings) {
+                    if(nextPos.x + carRadius > b.minX && nextPos.x - carRadius < b.maxX &&
+                       nextPos.z + carRadius > b.minZ && nextPos.z - carRadius < b.maxZ) {
+                        const overlapX = Math.min(nextPos.x + carRadius - b.minX, b.maxX - (nextPos.x - carRadius));
+                        const overlapZ = Math.min(nextPos.z + carRadius - b.minZ, b.maxZ - (nextPos.z - carRadius));
+                        if (overlapX < overlapZ) {
+                            velocity.x = 0;
+                            nextPos.x = carGroup.position.x;
+                        } else {
+                            velocity.z = 0;
+                            nextPos.z = carGroup.position.z;
+                        }
+                        currentSpeed *= 0.95;
+                    }
+                }
+                carGroup.position.copy(nextPos);
+
+                if (!isShiftLock) freelookRotation = carGroup.rotation.y;
+                const camOffset = new THREE.Vector3(0, 5, -10).applyQuaternion(
+                    new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), freelookRotation)
+                );
+                camera.position.lerp(carGroup.position.clone().add(camOffset), 0.1);
+                camera.lookAt(carGroup.position.clone().add(new THREE.Vector3(0, 1, 0)));
+
+                speedVal.innerText = Math.floor(Math.abs(currentSpeed) * 450);
+                turboBar.style.width = turboAmount + '%';
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.setCarColor = setCarColor;
+        animate();
+    </script>
+</body>
+</html>
