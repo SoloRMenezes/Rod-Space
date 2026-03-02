@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nextbot Escape - Chase Edition</title>
+    <title>Nextbot Escape - High Speed Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
@@ -16,6 +16,24 @@
             pointer-events: none;
             user-select: none;
             z-index: 5;
+        }
+        #stopwatch-container {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+            z-index: 5;
+        }
+        #stopwatch {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #ffff00;
+            font-size: 24px;
+            font-weight: bold;
+            border: 1px solid #444;
         }
         #crosshair {
             position: absolute;
@@ -67,9 +85,13 @@
 <body>
 
     <div id="overlay">
-        <h1 style="color: white; margin-bottom: 20px;">NEXTBOT BROWSER</h1>
+        <h1 style="color: white; margin-bottom: 20px;">NEXTBOT BROWSER: OVERDRIVE</h1>
         <button id="start-btn">ENTER THE MAZE</button>
         <p style="color: #888; margin-top: 15px;">Use WASD to Move | Mouse to Look</p>
+    </div>
+
+    <div id="stopwatch-container">
+        <div id="stopwatch">TIME: 0.00s</div>
     </div>
 
     <div id="ui">
@@ -86,41 +108,52 @@
 
     <script>
         let scene, camera, renderer, clock;
+        let startTime = 0;
+        let gameActive = false;
+
         let player = {
-            speed: 0.18,
+            speed: 0.32, // Increased from 0.18
+            velocity: new THREE.Vector3(),
+            friction: 0.9, // Higher for better control at high speeds
             isLocked: false,
             sensitivity: 0.003,
             verticalVelocity: 0,
             isJumping: false,
-            jumpStrength: 0.15,
-            gravity: 0.008,
+            jumpStrength: 0.22, // Increased
+            gravity: 0.012, // Increased for snappier jumping
             height: 1.7
         };
+
         let bot = {
             mesh: null,
-            baseSpeed: 0.14,
-            chaseSpeed: 0.21,
-            currentSpeed: 0.14,
+            baseSpeed: 0.24, // Increased
+            chaseSpeed: 0.38, // Increased (faster than player's base speed!)
+            slowSpeed: 0.16, // Half of player's new speed
+            currentSpeed: 0.24,
             active: false,
             losTimer: 0,
-            isChasing: false
+            isChasing: false,
+            isSlowed: false,
+            slowExpiration: 0
         };
+
         let walls = [];
         let keys = {};
         const startBtn = document.getElementById('start-btn');
         const overlay = document.getElementById('overlay');
         const crosshair = document.getElementById('crosshair');
         const warningUI = document.getElementById('warning');
+        const stopwatchUI = document.getElementById('stopwatch');
 
         let audioCtx, oscillator, gainNode;
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0a0a);
-            scene.fog = new THREE.FogExp2(0x0a0a0a, 0.1);
+            scene.background = new THREE.Color(0x050505);
+            scene.fog = new THREE.FogExp2(0x050505, 0.08);
 
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, player.height, 5); // Start slightly away from center to avoid wall spawn
+            camera = new THREE.PerspectiveCamera(85, window.innerWidth / window.innerHeight, 0.1, 1000); // Wider FOV for speed
+            camera.position.set(0, player.height, 45); // Start at the edge
             camera.rotation.order = 'YXZ'; 
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -128,10 +161,10 @@
             renderer.setPixelRatio(window.devicePixelRatio);
             document.body.appendChild(renderer.domElement);
 
-            const ambient = new THREE.AmbientLight(0xffffff, 0.1);
+            const ambient = new THREE.AmbientLight(0xffffff, 0.05);
             scene.add(ambient);
             
-            const flashlight = new THREE.SpotLight(0xffffff, 2, 50, Math.PI / 3, 0.5);
+            const flashlight = new THREE.SpotLight(0xffffff, 2.5, 60, Math.PI / 3, 0.5);
             camera.add(flashlight);
             flashlight.position.set(0, 0, 0);
             flashlight.target.position.set(0, 0, -1);
@@ -142,16 +175,13 @@
             createNextbot();
 
             clock = new THREE.Clock();
+            startTime = Date.now();
+            gameActive = true;
             
             window.addEventListener('resize', onWindowResize, false);
             
-            // Listeners for key presses
-            window.addEventListener('keydown', (e) => { 
-                keys[e.code] = true; 
-            });
-            window.addEventListener('keyup', (e) => { 
-                keys[e.code] = false; 
-            });
+            window.addEventListener('keydown', (e) => { keys[e.code] = true; });
+            window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mousedown', () => {
@@ -167,13 +197,11 @@
             const canvas = document.createElement('canvas');
             canvas.width = 512; canvas.height = 512;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ccbb88';
+            ctx.fillStyle = '#222';
             ctx.fillRect(0, 0, 512, 512);
-            ctx.strokeStyle = '#aa9966';
-            ctx.lineWidth = 2;
-            for(let i = 0; i < 512; i += 32) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 512); ctx.stroke();
-            }
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(0, 0, 512, 512);
             const tex = new THREE.CanvasTexture(canvas);
             tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
             return tex;
@@ -183,20 +211,18 @@
             const canvas = document.createElement('canvas');
             canvas.width = 256; canvas.height = 256;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#443322';
+            ctx.fillStyle = '#111';
             ctx.fillRect(0, 0, 256, 256);
-            for(let i = 0; i < 2000; i++) {
-                ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.2})`;
-                ctx.fillRect(Math.random()*256, Math.random()*256, 1, 1);
-            }
+            ctx.strokeStyle = '#222';
+            ctx.strokeRect(0, 0, 256, 256);
             const tex = new THREE.CanvasTexture(canvas);
             tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
             return tex;
         }
 
         function createMaze() {
-            const size = 120;
-            const h = 5;
+            const size = 150;
+            const h = 7;
             const wallTex = createWallTexture();
             const floorTex = createFloorTexture();
             
@@ -205,27 +231,45 @@
             floor.rotation.x = -Math.PI/2;
             scene.add(floor);
 
-            const ceil = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({ color: 0x111111, side: THREE.BackSide }));
+            const ceil = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide }));
             ceil.rotation.x = Math.PI/2; ceil.position.y = h;
             scene.add(ceil);
 
-            // Perimeter
+            // Boundaries
             addWall(0, h/2, -size/2, size, h, 0, wallTex);
             addWall(0, h/2, size/2, size, h, Math.PI, wallTex);
             addWall(size/2, h/2, 0, size, h, -Math.PI/2, wallTex);
             addWall(-size/2, h/2, 0, size, h, Math.PI/2, wallTex);
 
-            const wallBlocks = [
-                {x: -20, z: -20, w: 20, d: 5},
-                {x: 20, z: -20, w: 20, d: 5},
-                {x: -20, z: 20, w: 20, d: 5},
-                {x: 20, z: 20, w: 20, d: 5},
-                {x: 0, z: -10, w: 10, d: 2},
-                {x: -35, z: 0, w: 5, d: 30},
-                {x: 35, z: 0, w: 5, d: 30},
+            // Redesigned: Corridors leading to a central open space
+            // Central open arena is roughly from -15 to 15 on X and Z
+            const mazeBlocks = [
+                // Inner perimeter walls (leaving 4 main openings)
+                {x: -25, z: -25, w: 20, d: 2}, // Top left corridor wall
+                {x: 25, z: -25, w: 20, d: 2},  // Top right corridor wall
+                {x: -25, z: 25, w: 20, d: 2},  // Bottom left corridor wall
+                {x: 25, z: 25, w: 20, d: 2},   // Bottom right corridor wall
+                
+                // Vertical corridors
+                {x: -15, z: -40, w: 2, d: 30},
+                {x: 15, z: -40, w: 2, d: 30},
+                {x: -15, z: 40, w: 2, d: 30},
+                {x: 15, z: 40, w: 2, d: 30},
+                
+                // Horizontal corridors
+                {x: -40, z: -15, w: 30, d: 2},
+                {x: 40, z: -15, w: 30, d: 2},
+                {x: -40, z: 15, w: 30, d: 2},
+                {x: 40, z: 15, w: 30, d: 2},
+
+                // Outer zig-zags to force corridor movement
+                {x: 0, z: -60, w: 40, d: 2},
+                {x: 0, z: 60, w: 40, d: 2},
+                {x: -60, z: 0, w: 2, d: 40},
+                {x: 60, z: 0, w: 2, d: 40},
             ];
 
-            wallBlocks.forEach(b => {
+            mazeBlocks.forEach(b => {
                 const geom = new THREE.BoxGeometry(b.w, h, b.d);
                 const m = new THREE.Mesh(geom, new THREE.MeshPhongMaterial({ map: wallTex }));
                 m.position.set(b.x, h/2, b.z);
@@ -252,8 +296,8 @@
             ctx.beginPath(); ctx.arc(176, 100, 30, 0, Math.PI*2); ctx.fill();
             ctx.beginPath(); ctx.ellipse(128, 190, 60, 40, 0, 0, Math.PI*2); ctx.fill();
             const tex = new THREE.CanvasTexture(canvas);
-            bot.mesh = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 3.5), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
-            bot.mesh.position.set(45, 1.75, 45);
+            bot.mesh = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+            bot.mesh.position.set(0, 2, 0); // Start in the middle (open space)
             scene.add(bot.mesh);
             bot.active = true;
         }
@@ -286,28 +330,34 @@
             if (keys['KeyA'] || keys['ArrowLeft']) inputX -= 1;
             if (keys['KeyD'] || keys['ArrowRight']) inputX += 1;
 
+            const angle = camera.rotation.y;
+            const sideAngle = angle + Math.PI / 2;
+
+            const targetDir = new THREE.Vector3(0, 0, 0);
             if (inputX !== 0 || inputZ !== 0) {
-                // Calculate movement direction relative to camera rotation
-                const angle = camera.rotation.y;
-                const sideAngle = angle + Math.PI / 2;
-
-                const moveX = (Math.sin(angle) * inputZ) + (Math.sin(sideAngle) * inputX);
-                const moveZ = (Math.cos(angle) * inputZ) + (Math.cos(sideAngle) * inputX);
-
-                const movement = new THREE.Vector3(moveX, 0, moveZ).normalize().multiplyScalar(player.speed);
-                
-                const oldPos = camera.position.clone();
-                
-                // Check X movement
-                camera.position.x += movement.x;
-                if (checkCollision()) camera.position.x = oldPos.x;
-                
-                // Check Z movement
-                camera.position.z += movement.z;
-                if (checkCollision()) camera.position.z = oldPos.z;
+                targetDir.x = (Math.sin(angle) * inputZ) + (Math.sin(sideAngle) * inputX);
+                targetDir.z = (Math.cos(angle) * inputZ) + (Math.cos(sideAngle) * inputX);
+                targetDir.normalize();
             }
 
-            // Gravity/Jumping
+            // Snappier acceleration for faster game
+            player.velocity.x += targetDir.x * 0.05;
+            player.velocity.z += targetDir.z * 0.05;
+            player.velocity.multiplyScalar(player.friction);
+
+            const currentHozSpeed = Math.sqrt(player.velocity.x**2 + player.velocity.z**2);
+            if (currentHozSpeed > player.speed) {
+                player.velocity.multiplyScalar(player.speed / currentHozSpeed);
+            }
+
+            const oldPos = camera.position.clone();
+            
+            camera.position.x += player.velocity.x;
+            if (checkCollision()) { camera.position.x = oldPos.x; player.velocity.x = 0; }
+            
+            camera.position.z += player.velocity.z;
+            if (checkCollision()) { camera.position.z = oldPos.z; player.velocity.z = 0; }
+
             if (keys['Space'] && !player.isJumping) {
                 player.verticalVelocity = player.jumpStrength;
                 player.isJumping = true;
@@ -327,7 +377,7 @@
         function checkCollision() {
             for (let w of walls) {
                 const box = new THREE.Box3().setFromObject(w);
-                box.expandByScalar(0.4); // Player radius
+                box.expandByScalar(0.45); 
                 if (box.containsPoint(camera.position)) return true;
             }
             return false;
@@ -347,25 +397,45 @@
             const dist = camera.position.distanceTo(bot.mesh.position);
             document.getElementById('dist').innerText = Math.round(dist);
 
-            if (dist < 1.7) {
+            if (dist < 1.8) {
+                gameActive = false;
                 document.getElementById('status').innerText = "STATUS: ELIMINATED";
+                document.getElementById('status').style.color = "#ff0000";
                 bot.active = false;
-                setTimeout(() => location.reload(), 2000);
+                const finalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+                stopwatchUI.innerText = `FINAL SCORE: ${finalTime}s`;
+                setTimeout(() => location.reload(), 3000);
             }
 
             const hasLOS = checkLOS();
+            
+            if (bot.isChasing && !hasLOS && !bot.isSlowed) {
+                bot.isSlowed = true;
+                bot.slowExpiration = Date.now() + 3000;
+            }
+
+            if (bot.isSlowed && Date.now() > bot.slowExpiration) {
+                bot.isSlowed = false;
+            }
+
             if (hasLOS) {
                 bot.losTimer += 1/60;
-                if (bot.losTimer > 1.5) {
+                if (bot.losTimer > 1.0) { // Slightly faster reaction
                     bot.isChasing = true;
-                    bot.currentSpeed = bot.chaseSpeed;
                     warningUI.style.display = 'block';
                 }
             } else {
                 bot.losTimer = 0;
                 bot.isChasing = false;
-                bot.currentSpeed = bot.baseSpeed;
                 warningUI.style.display = 'none';
+            }
+
+            if (bot.isSlowed) {
+                bot.currentSpeed = bot.slowSpeed;
+            } else if (bot.isChasing) {
+                bot.currentSpeed = bot.chaseSpeed;
+            } else {
+                bot.currentSpeed = bot.baseSpeed;
             }
 
             const dir = new THREE.Vector3().subVectors(camera.position, bot.mesh.position);
@@ -374,16 +444,21 @@
             bot.mesh.lookAt(camera.position.x, bot.mesh.position.y, camera.position.z);
 
             if (gainNode) {
-                const vol = Math.max(0, 1 - (dist / 35));
-                gainNode.gain.setTargetAtTime(vol * 0.3, audioCtx.currentTime, 0.1);
-                oscillator.frequency.setTargetAtTime(60 + (800 / (dist + 1)), audioCtx.currentTime, 0.1);
+                const vol = Math.max(0, 1 - (dist / 40));
+                gainNode.gain.setTargetAtTime(vol * 0.4, audioCtx.currentTime, 0.1);
+                const pitch = bot.isSlowed ? 40 : (bot.isChasing ? 140 : 70);
+                oscillator.frequency.setTargetAtTime(pitch + (1000 / (dist + 1)), audioCtx.currentTime, 0.1);
             }
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            updatePlayer();
-            updateBot();
+            if (gameActive) {
+                updatePlayer();
+                updateBot();
+                const currentTime = ((Date.now() - startTime) / 1000).toFixed(2);
+                stopwatchUI.innerText = `TIME: ${currentTime}s`;
+            }
             renderer.render(scene, camera);
         }
 
