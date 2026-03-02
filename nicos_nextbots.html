@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nextbot Escape - High Speed Edition</title>
+    <title>Nextbot Escape - Shift Lock Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
@@ -39,12 +39,13 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 10px;
-            height: 10px;
-            border: 2px solid white;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             display: none;
+            z-index: 10;
         }
         #instructions {
             position: absolute;
@@ -53,6 +54,7 @@
             text-align: center;
             color: #aaa;
             font-size: 14px;
+            pointer-events: none;
         }
         #overlay {
             position: fixed;
@@ -62,7 +64,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 10;
+            z-index: 100;
         }
         #warning {
             color: #ff4444;
@@ -85,9 +87,9 @@
 <body>
 
     <div id="overlay">
-        <h1 style="color: white; margin-bottom: 20px;">NEXTBOT BROWSER: OVERDRIVE</h1>
-        <button id="start-btn">ENTER THE MAZE</button>
-        <p style="color: #888; margin-top: 15px;">Use WASD to Move | Mouse to Look</p>
+        <h1 style="color: white; margin-bottom: 20px;">NEXTBOT BROWSER</h1>
+        <button id="start-btn">START GAME</button>
+        <p style="color: #888; margin-top: 15px;">WASD to Move | SHIFT to Toggle Lock | SPACE to Jump</p>
     </div>
 
     <div id="stopwatch-container">
@@ -97,13 +99,13 @@
     <div id="ui">
         <h2 id="status">STATUS: SURVIVING</h2>
         <p>BOT DISTANCE: <span id="dist">0</span>m</p>
-        <p id="warning">LINE OF SIGHT DETECTED! TURN CORNERS!</p>
+        <p id="warning">LINE OF SIGHT DETECTED!</p>
     </div>
     
     <div id="crosshair"></div>
 
     <div id="instructions">
-        WASD/ARROWS to move | SPACE to jump | CLICK to lock mouse
+        WASD to move | <b>SHIFT to Lock/Unlock Mouse</b> | SPACE to jump
     </div>
 
     <script>
@@ -112,23 +114,23 @@
         let gameActive = false;
 
         let player = {
-            speed: 0.32, // Increased from 0.18
+            speed: 0.32, // Constant speed (no momentum)
             velocity: new THREE.Vector3(),
-            friction: 0.9, // Higher for better control at high speeds
+            friction: 0.9,
             isLocked: false,
-            sensitivity: 0.003,
+            sensitivity: 0.002,
             verticalVelocity: 0,
             isJumping: false,
-            jumpStrength: 0.22, // Increased
-            gravity: 0.012, // Increased for snappier jumping
+            jumpStrength: 0.22,
+            gravity: 0.012,
             height: 1.7
         };
 
         let bot = {
             mesh: null,
-            baseSpeed: 0.24, // Increased
-            chaseSpeed: 0.38, // Increased (faster than player's base speed!)
-            slowSpeed: 0.16, // Half of player's new speed
+            baseSpeed: 0.24, // Constant speeds (no momentum)
+            chaseSpeed: 0.38,
+            slowSpeed: 0.16,
             currentSpeed: 0.24,
             active: false,
             losTimer: 0,
@@ -147,13 +149,99 @@
 
         let audioCtx, oscillator, gainNode;
 
+        // Wall material: use a seamless wall texture (generated or loaded)
+        function createWallMaterial() {
+            // You can use a generated canvas or an image URL for a brick/plaster wall look.
+            // Here, we generate a simple brick pattern using canvas for seamless tiling.
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            // Base plaster color
+            ctx.fillStyle = '#b9ab8c';
+            ctx.fillRect(0, 0, 256, 256);
+            // Add subtle noise for texture
+            for (let i = 0; i < 4000; i++) {
+                const alpha = Math.random() * 0.15 + 0.04;
+                ctx.fillStyle = `rgba(120,110,90,${alpha})`;
+                ctx.fillRect(Math.random()*256, Math.random()*256, 1, 1);
+            }
+            // Draw simple bricks
+            ctx.strokeStyle = '#8d7a5b';
+            ctx.lineWidth = 3;
+            const brickH = 32, brickW = 64;
+            for (let y = 0; y < 256; y += brickH) {
+                // Offset every other row
+                const offset = (Math.floor(y/brickH) % 2) * (brickW/2);
+                for (let x = -brickW; x < 256; x += brickW) {
+                    ctx.strokeRect(x+offset, y, brickW, brickH);
+                }
+            }
+            // Optionally add a few random stains
+            for (let i = 0; i < 8; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random()*256, Math.random()*256, Math.random()*12+7, 0, Math.PI*2);
+                ctx.fillStyle = `rgba(90,80,60,${Math.random()*0.18+0.07})`;
+                ctx.fill();
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(4, 2); // Tile the wall texture horizontally and vertically
+            return new THREE.MeshPhongMaterial({
+                map: tex,
+                shininess: 6,
+                specular: new THREE.Color(0x333333)
+            });
+        }
+
+        function createFloorTexture() {
+            // Higher resolution and more random dots for more detail
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#6e6345';
+            ctx.fillRect(0, 0, 1024, 1024);
+            for(let i=0; i<40000; i++) {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.2})`;
+                ctx.fillRect(Math.random()*1024, Math.random()*1024, 2, 2);
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+        // Toggle fullscreen mode
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                if (document.body.requestFullscreen) {
+                    document.body.requestFullscreen();
+                } else if (document.body.webkitRequestFullscreen) { /* Safari */
+                    document.body.webkitRequestFullscreen();
+                } else if (document.body.msRequestFullscreen) { /* IE11 */
+                    document.body.msRequestFullscreen();
+                }
+            }
+        }
+
+        function createCeilingTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#dcdcdc';
+            ctx.fillRect(0, 0, 512, 512);
+            ctx.strokeStyle = '#999';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(0, 0, 512, 512);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x050505);
-            scene.fog = new THREE.FogExp2(0x050505, 0.08);
+            scene.fog = new THREE.FogExp2(0x0a0a05, 0.07);
 
-            camera = new THREE.PerspectiveCamera(85, window.innerWidth / window.innerHeight, 0.1, 1000); // Wider FOV for speed
-            camera.position.set(0, player.height, 45); // Start at the edge
+            camera = new THREE.PerspectiveCamera(85, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, player.height, 45);
             camera.rotation.order = 'YXZ'; 
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -161,14 +249,9 @@
             renderer.setPixelRatio(window.devicePixelRatio);
             document.body.appendChild(renderer.domElement);
 
-            const ambient = new THREE.AmbientLight(0xffffff, 0.05);
+            // Brighter ambient lighting for the whole map
+            const ambient = new THREE.AmbientLight(0xffffff, 0.34);
             scene.add(ambient);
-            
-            const flashlight = new THREE.SpotLight(0xffffff, 2.5, 60, Math.PI / 3, 0.5);
-            camera.add(flashlight);
-            flashlight.position.set(0, 0, 0);
-            flashlight.target.position.set(0, 0, -1);
-            camera.add(flashlight.target);
             scene.add(camera);
 
             createMaze();
@@ -180,106 +263,168 @@
             
             window.addEventListener('resize', onWindowResize, false);
             
-            window.addEventListener('keydown', (e) => { keys[e.code] = true; });
-            window.addEventListener('keyup', (e) => { keys[e.code] = false; });
-
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mousedown', () => {
-                if (!player.isLocked && overlay.style.display === 'none') {
-                    document.body.requestPointerLock();
+            window.addEventListener('keydown', (e) => { 
+                keys[e.code] = true; 
+                // Shift Lock Toggle logic
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                    if (overlay.style.display === 'none') {
+                        if (document.pointerLockElement === document.body) {
+                            document.exitPointerLock();
+                        } else { 
+                            document.body.requestPointerLock();
+                        }
+                    }
                 }
             });
+            
+            window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+            document.addEventListener('mousemove', onMouseMove);
             
             animate();
         }
 
-        function createWallTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#222';
-            ctx.fillRect(0, 0, 512, 512);
-            ctx.strokeStyle = '#444';
-            ctx.lineWidth = 4;
-            ctx.strokeRect(0, 0, 512, 512);
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            return tex;
-        }
-
-        function createFloorTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256; canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#111';
-            ctx.fillRect(0, 0, 256, 256);
-            ctx.strokeStyle = '#222';
-            ctx.strokeRect(0, 0, 256, 256);
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            return tex;
-        }
-
+        // --- Begin Larger, More Intricate Maze Layout ---
         function createMaze() {
-            const size = 150;
+            // Maze layout: '#' = wall, 'P' = player spawn, 'B' = bot spawn, ' ' = empty
+            // This layout is larger, more intricate, with many intersections, loops, and dynamic pathing.
+            // All paths are interconnected with very few dead ends and plenty of interesting routes.
+            // 27 rows x 33 columns, each cell 3.5 units.
+            const MAZE = [
+    "#############################################",
+    "#     #         #     #       #     #     # #",
+    "# # # # ##### # # # # # ### # # # # # # # # #",
+    "# #   #     # #   #   #   #   #   #   #   # #",
+    "# # ### ### # ##### ### # ##### # ##### # # #",
+    "# # #   #   #     #   # #   # # #   # #   # #",
+    "# # # # # ##### # # # # # # # # # # # ##### #",
+    "# # # # #     # # # # # #   # # # #     #   #",
+    "# # # # ##### # # # # ##### # # # ##### # # #",
+    "# # # # #   #   # # #     #   #   #   # # # #",
+    "# # # # # # ##### ##### # ##### # # # # # # #",
+    "#   #   # #   #   #   # #   # # # #   #   # #",
+    "# # ### # # # # # # # # ### # # # ##### ### #",
+    "# #   # #   # # #   # #   # # # #   #   #   #",
+    "# ### # ##### # ##### # # # # # # # # # ### #",
+    "#   # #   #   #     # # # # # # # # # #   # #",
+    "# # # ### # ##### # # # # # # # # # ##### # #",
+    "# # #   # #     # # #   #   #   #     #   # #",
+    "# # # # # ##### # ##### # ##### ##### # ### #",
+    "# # # # #   #   #     # #   #   #   # #   # #",
+    "# ### # ### # ##### # # # # # # # # # # # # #",
+    "#   #   #   #     # #   # # #   # #   #   # #",
+    "# # ##### # # ### # ##### # # # # ##### ### #",
+    "# #     # # #   # #     # # # # #   #   #   #",
+    "# ##### # # ### # # ### # # # ##### # # # # #",
+    "#   #   #   #   #   #   #   #     #   #   # #",
+    "#############################################",
+    // Add a few more rows for dynamic pathing and intersections
+    "# # # #   #   # # #   # #   # # #   # #   # #",
+    "#   # ### # # #   # # #   # #   # # # ### # #",
+    "# #   #   #   # #   # # # # # #   #   #   # #",
+    "# ### # ### # # ### # # ##### # # ### # ### #",
+    "#   #   #   # #   #   #     # #   #   #   # #",
+    "#############################################",
+    // Central hub with player and bot spawns at different intersections
+    "# #   #   #   #   #   #   #   #   #   #   # #",
+    "# # # # # # # # # # # # # # # # # # # # # # #",
+    "#   #   #   # P #   #   #   #   # B #   #   #",
+    "# # # # # # # # # # # # # # # # # # # # # # #",
+    "#   #   #   #   #   #   #   #   #   #   #   #",
+    "#############################################"
+];
+            // Each cell size in world units
+            const cellSize = 3.5;
             const h = 7;
-            const wallTex = createWallTexture();
+            const wallMat = createWallMaterial();
             const floorTex = createFloorTexture();
-            
-            floorTex.repeat.set(size/2, size/2);
-            const floor = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshPhongMaterial({ map: floorTex }));
-            floor.rotation.x = -Math.PI/2;
+            const ceilTex = createCeilingTexture();
+            // Floor
+            const width = MAZE[0].length * cellSize;
+            const depth = MAZE.length * cellSize;
+            floorTex.repeat.set(width / 7.5, depth / 7.5);
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(width, depth),
+                new THREE.MeshPhongMaterial({
+                    map: floorTex,
+                    shininess: 5,
+                    specular: new THREE.Color(0x333333)
+                })
+            );
+            floor.rotation.x = -Math.PI / 2;
             scene.add(floor);
-
-            const ceil = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide }));
-            ceil.rotation.x = Math.PI/2; ceil.position.y = h;
+            // Ceiling
+            ceilTex.repeat.set(width / 7.5, depth / 7.5);
+            const ceil = new THREE.Mesh(
+                new THREE.PlaneGeometry(width, depth),
+                new THREE.MeshPhongMaterial({
+                    map: ceilTex,
+                    side: THREE.BackSide,
+                    shininess: 10,
+                    specular: new THREE.Color(0x555555)
+                })
+            );
+            ceil.rotation.x = Math.PI / 2;
+            ceil.position.y = h;
             scene.add(ceil);
-
-            // Boundaries
-            addWall(0, h/2, -size/2, size, h, 0, wallTex);
-            addWall(0, h/2, size/2, size, h, Math.PI, wallTex);
-            addWall(size/2, h/2, 0, size, h, -Math.PI/2, wallTex);
-            addWall(-size/2, h/2, 0, size, h, Math.PI/2, wallTex);
-
-            // Redesigned: Corridors leading to a central open space
-            // Central open arena is roughly from -15 to 15 on X and Z
-            const mazeBlocks = [
-                // Inner perimeter walls (leaving 4 main openings)
-                {x: -25, z: -25, w: 20, d: 2}, // Top left corridor wall
-                {x: 25, z: -25, w: 20, d: 2},  // Top right corridor wall
-                {x: -25, z: 25, w: 20, d: 2},  // Bottom left corridor wall
-                {x: 25, z: 25, w: 20, d: 2},   // Bottom right corridor wall
-                
-                // Vertical corridors
-                {x: -15, z: -40, w: 2, d: 30},
-                {x: 15, z: -40, w: 2, d: 30},
-                {x: -15, z: 40, w: 2, d: 30},
-                {x: 15, z: 40, w: 2, d: 30},
-                
-                // Horizontal corridors
-                {x: -40, z: -15, w: 30, d: 2},
-                {x: 40, z: -15, w: 30, d: 2},
-                {x: -40, z: 15, w: 30, d: 2},
-                {x: 40, z: 15, w: 30, d: 2},
-
-                // Outer zig-zags to force corridor movement
-                {x: 0, z: -60, w: 40, d: 2},
-                {x: 0, z: 60, w: 40, d: 2},
-                {x: -60, z: 0, w: 2, d: 40},
-                {x: 60, z: 0, w: 2, d: 40},
-            ];
-
-            mazeBlocks.forEach(b => {
-                const geom = new THREE.BoxGeometry(b.w, h, b.d);
-                const m = new THREE.Mesh(geom, new THREE.MeshPhongMaterial({ map: wallTex }));
-                m.position.set(b.x, h/2, b.z);
-                scene.add(m);
-                walls.push(m);
-            });
+            // Place maze objects
+            let playerSpawns = [];
+            let botSpawns = [];
+            for (let row = 0; row < MAZE.length; row++) {
+                for (let col = 0; col < MAZE[row].length; col++) {
+                    const ch = MAZE[row][col];
+                    // Convert to world coordinates (centered at 0,0)
+                    const x = (col - MAZE[0].length / 2 + 0.5) * cellSize;
+                    const z = (row - MAZE.length / 2 + 0.5) * cellSize;
+                    if (ch === "#") {
+                        // Wall block
+                        const geom = new THREE.BoxGeometry(cellSize, h, cellSize);
+                        const m = new THREE.Mesh(geom, wallMat.clone());
+                        m.position.set(x, h / 2, z);
+                        scene.add(m);
+                        walls.push(m);
+                    }
+                    if (ch === "P") {
+                        playerSpawns.push({x, z});
+                    }
+                    if (ch === "B") {
+                        botSpawns.push({x, z});
+                    }
+                }
+            }
+            // Set player spawn (first in list or fallback)
+            if (camera) {
+                if (playerSpawns.length > 0) {
+                    camera.position.set(playerSpawns[0].x, player.height, playerSpawns[0].z);
+                } else {
+                    camera.position.set(0, player.height, 0);
+                }
+            }
+            // Set bot spawn (first in list or fallback)
+            if (bot && bot.mesh) {
+                if (botSpawns.length > 0) {
+                    bot.mesh.position.set(botSpawns[0].x, 2, botSpawns[0].z);nigger
+                } else {
+                    bot.mesh.position.set(0, 2, 0);
+                }
+            }
         }
+        // --- End Larger, More Intricate Maze Layout ---
 
-        function addWall(x, y, z, w, h, ry, tex) {
-            const wall = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshPhongMaterial({ map: tex }));
+        function addWall(x, y, z, w, h, ry, mat) {
+            // Use a plane geometry and ensure the wall texture tiles properly.
+            const geom = new THREE.PlaneGeometry(w, h);
+            // If using a texture, adjust UVs to tile based on wall size (so bricks are consistent)
+            if (mat.map) {
+                // Set UVs to repeat by wall size, assuming 4 repeats horizontally per 150 units
+                const uvAttr = geom.attributes.uv;
+                for (let i = 0; i < uvAttr.count; i++) {
+                    const u = uvAttr.getX(i) * (w / 32); // 4 repeats per 128 units (~32 units per repeat)
+                    const v = uvAttr.getY(i) * (h / 7);  // 2 repeats per 14 units (~7 units per repeat)
+                    uvAttr.setXY(i, u, v);
+                }
+                uvAttr.needsUpdate = true;
+            }
+            const wall = new THREE.Mesh(geom, mat.clone());
             wall.position.set(x, y, z);
             wall.rotation.y = ry;
             scene.add(wall);
@@ -297,7 +442,8 @@
             ctx.beginPath(); ctx.ellipse(128, 190, 60, 40, 0, 0, Math.PI*2); ctx.fill();
             const tex = new THREE.CanvasTexture(canvas);
             bot.mesh = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
-            bot.mesh.position.set(0, 2, 0); // Start in the middle (open space)
+            // Spawn bot at a position in the maze (south-east intersection)
+            bot.mesh.position.set(30, 2, 30);
             scene.add(bot.mesh);
             bot.active = true;
         }
@@ -317,52 +463,62 @@
 
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
+            // Adjust FOV for full-screen or small windows for better gameplay
+            // Wide windows: lower FOV; tall/narrow: higher FOV
+            let aspect = window.innerWidth / window.innerHeight;
+            if (aspect > 1.5) {
+                camera.fov = 80;
+            } else if (aspect < 1) {
+                camera.fov = 100;
+            } else {
+                camera.fov = 90;
+            }
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
         function updatePlayer() {
-            let inputX = 0;
-            let inputZ = 0;
-
+            // Movement input
+            let inputX = 0, inputZ = 0;
             if (keys['KeyW'] || keys['ArrowUp']) inputZ -= 1;
             if (keys['KeyS'] || keys['ArrowDown']) inputZ += 1;
             if (keys['KeyA'] || keys['ArrowLeft']) inputX -= 1;
             if (keys['KeyD'] || keys['ArrowRight']) inputX += 1;
 
+            // Calculate target movement direction in world space (relative to camera yaw)
             const angle = camera.rotation.y;
             const sideAngle = angle + Math.PI / 2;
-
-            const targetDir = new THREE.Vector3(0, 0, 0);
+            let targetDir = new THREE.Vector3(0, 0, 0);
             if (inputX !== 0 || inputZ !== 0) {
                 targetDir.x = (Math.sin(angle) * inputZ) + (Math.sin(sideAngle) * inputX);
                 targetDir.z = (Math.cos(angle) * inputZ) + (Math.cos(sideAngle) * inputX);
                 targetDir.normalize();
             }
 
-            // Snappier acceleration for faster game
-            player.velocity.x += targetDir.x * 0.05;
-            player.velocity.z += targetDir.z * 0.05;
-            player.velocity.multiplyScalar(player.friction);
+            // No momentum - just set velocity directly
+            player.velocity.x = targetDir.x * player.speed;
+            player.velocity.z = targetDir.z * player.speed;
 
-            const currentHozSpeed = Math.sqrt(player.velocity.x**2 + player.velocity.z**2);
-            if (currentHozSpeed > player.speed) {
-                player.velocity.multiplyScalar(player.speed / currentHozSpeed);
-            }
-
+            // --- Begin collision detection for X and Z axes separately ---
             const oldPos = camera.position.clone();
-            
             camera.position.x += player.velocity.x;
-            if (checkCollision()) { camera.position.x = oldPos.x; player.velocity.x = 0; }
-            
+            if (checkCollision()) {
+                camera.position.x = oldPos.x;
+                player.velocity.x = 0;
+            }
             camera.position.z += player.velocity.z;
-            if (checkCollision()) { camera.position.z = oldPos.z; player.velocity.z = 0; }
+            if (checkCollision()) {
+                camera.position.z = oldPos.z;
+                player.velocity.z = 0;
+            }
+            // --- End collision detection for X and Z axes ---
 
+            // Jump logic
             if (keys['Space'] && !player.isJumping) {
                 player.verticalVelocity = player.jumpStrength;
                 player.isJumping = true;
             }
-
+            // Gravity and vertical collision (floor only)
             if (player.isJumping || camera.position.y > player.height) {
                 player.verticalVelocity -= player.gravity;
                 camera.position.y += player.verticalVelocity;
@@ -374,11 +530,25 @@
             }
         }
 
+        // Improved collision: prevent player from going through walls by checking a small bounding box around the player
         function checkCollision() {
+            // Player bounding box (cylinder approximation)
+            const playerRadius = 0.45;
+            const playerHeight = player.height;
+            const pos = camera.position;
+            // We'll use a bounding box centered at camera position (XZ), and between y = 0 and y = player.height
+            const playerBox = new THREE.Box3(
+                new THREE.Vector3(pos.x - playerRadius, 0, pos.z - playerRadius),
+                new THREE.Vector3(pos.x + playerRadius, playerHeight, pos.z + playerRadius)
+            );
             for (let w of walls) {
-                const box = new THREE.Box3().setFromObject(w);
-                box.expandByScalar(0.45); 
-                if (box.containsPoint(camera.position)) return true;
+                // For each wall, get its bounding box
+                const wallBox = new THREE.Box3().setFromObject(w);
+                // Only check overlap in XZ and up to player height
+                // If the bounding boxes intersect, that's a collision
+                if (playerBox.intersectsBox(wallBox)) {
+                    return true;
+                }
             }
             return false;
         }
@@ -392,6 +562,125 @@
             return intersects.length === 0;
         }
 
+        // --- BEGIN A* PATHFINDING BOT LOGIC ---
+        // Grid settings for pathfinding
+        const gridCellSize = 2; // Each cell is 2x2 world units
+        const gridHalfSize = 75; // Maze is 150x150, so half is 75
+        // Convert world position to grid coordinate
+        function worldToGrid(pos) {
+            return {
+                x: Math.floor((pos.x + gridHalfSize) / gridCellSize),
+                z: Math.floor((pos.z + gridHalfSize) / gridCellSize)
+            };
+        }
+        // Convert grid coordinate to world position (center of cell)
+        function gridToWorld(cell) {
+            return new THREE.Vector3(
+                cell.x * gridCellSize - gridHalfSize + gridCellSize / 2,
+                2,
+                cell.z * gridCellSize - gridHalfSize + gridCellSize / 2
+            );
+        }
+        // Build grid with wall info
+        function buildGrid() {
+            const cells = [];
+            const gridSize = Math.floor((gridHalfSize * 2) / gridCellSize);
+            for (let x = 0; x < gridSize; x++) {
+                cells[x] = [];
+                for (let z = 0; z < gridSize; z++) {
+                    // Center of cell
+                    const worldPos = gridToWorld({x, z});
+                    // Make a small box at this position to check for collision
+                    let solid = false;
+                    const cellBox = new THREE.Box3(
+                        new THREE.Vector3(worldPos.x - gridCellSize/2 + 0.1, 0, worldPos.z - gridCellSize/2 + 0.1),
+                        new THREE.Vector3(worldPos.x + gridCellSize/2 - 0.1, 4, worldPos.z + gridCellSize/2 - 0.1)
+                    );
+                    for (let w of walls) {
+                        const wallBox = new THREE.Box3().setFromObject(w);
+                        if (cellBox.intersectsBox(wallBox)) {
+                            solid = true;
+                            break;
+                        }
+                    }
+                    cells[x][z] = {solid: solid};
+                }
+            }
+            return {cells: cells, size: gridSize};
+        }
+        // A* algorithm
+        function astar(grid, start, goal) {
+            const dirs = [
+                {dx: 1, dz: 0}, {dx: -1, dz: 0}, {dx: 0, dz: 1}, {dx: 0, dz: -1},
+                {dx: 1, dz: 1}, {dx: -1, dz: 1}, {dx: 1, dz: -1}, {dx: -1, dz: -1}
+            ];
+            const open = [];
+            const closed = new Set();
+            function hash(c) { return `${c.x},${c.z}`; }
+            open.push({
+                x: start.x, z: start.z, g: 0,
+                h: Math.abs(goal.x - start.x) + Math.abs(goal.z - start.z),
+                parent: null
+            });
+            while (open.length > 0) {
+                // Get node with lowest f=g+h
+                open.sort((a, b) => (a.g + a.h) - (b.g + b.h));
+                const current = open.shift();
+                if (current.x === goal.x && current.z === goal.z) {
+                    // Reconstruct path
+                    const path = [];
+                    let node = current;
+                    while (node) {
+                        path.push({x: node.x, z: node.z});
+                        node = node.parent;
+                    }
+                    path.reverse();
+                    return path;
+                }
+                closed.add(hash(current));
+                for (let d of dirs) {
+                    const nx = current.x + d.dx;
+                    const nz = current.z + d.dz;
+                    if (
+                        nx < 0 || nz < 0 || nx >= grid.size || nz >= grid.size ||
+                        grid.cells[nx][nz].solid
+                    ) continue;
+                    // Diagonal: skip if either axis neighbor is solid (no corner cutting)
+                    if (Math.abs(d.dx) + Math.abs(d.dz) === 2) {
+                        if (
+                            grid.cells[nx][current.z].solid ||
+                            grid.cells[current.x][nz].solid
+                        ) continue;
+                    }
+                    const neighborHash = `${nx},${nz}`;
+                    if (closed.has(neighborHash)) continue;
+                    // If already in open with lower g, skip
+                    const existing = open.find(n => n.x === nx && n.z === nz);
+                    const gCost = current.g + ((Math.abs(d.dx) + Math.abs(d.dz)) === 2 ? 1.4 : 1);
+                    if (existing) {
+                        if (gCost < existing.g) {
+                            existing.g = gCost;
+                            existing.parent = current;
+                        }
+                        continue;
+                    }
+                    open.push({
+                        x: nx, z: nz,
+                        g: gCost,
+                        h: Math.abs(goal.x - nx) + Math.abs(goal.z - nz),
+                        parent: current
+                    });
+                }
+            }
+            return null;
+        }
+
+        // Store grid and path for the bot
+        let botGrid = null;
+        let botPath = [];
+        let botPathIdx = 0;
+        let botPathTimer = 0; // For path recalculation
+
         function updateBot() {
             if (!bot.active) return;
             const dist = camera.position.distanceTo(bot.mesh.position);
@@ -402,25 +691,19 @@
                 document.getElementById('status').innerText = "STATUS: ELIMINATED";
                 document.getElementById('status').style.color = "#ff0000";
                 bot.active = false;
-                const finalTime = ((Date.now() - startTime) / 1000).toFixed(2);
-                stopwatchUI.innerText = `FINAL SCORE: ${finalTime}s`;
                 setTimeout(() => location.reload(), 3000);
             }
 
             const hasLOS = checkLOS();
-            
             if (bot.isChasing && !hasLOS && !bot.isSlowed) {
                 bot.isSlowed = true;
                 bot.slowExpiration = Date.now() + 3000;
             }
-
-            if (bot.isSlowed && Date.now() > bot.slowExpiration) {
-                bot.isSlowed = false;
-            }
+            if (bot.isSlowed && Date.now() > bot.slowExpiration) bot.isSlowed = false;
 
             if (hasLOS) {
                 bot.losTimer += 1/60;
-                if (bot.losTimer > 1.0) { // Slightly faster reaction
+                if (bot.losTimer > 1.0) {
                     bot.isChasing = true;
                     warningUI.style.display = 'block';
                 }
@@ -430,17 +713,175 @@
                 warningUI.style.display = 'none';
             }
 
-            if (bot.isSlowed) {
-                bot.currentSpeed = bot.slowSpeed;
-            } else if (bot.isChasing) {
-                bot.currentSpeed = bot.chaseSpeed;
-            } else {
-                bot.currentSpeed = bot.baseSpeed;
+            bot.currentSpeed = bot.isSlowed ? bot.slowSpeed : (bot.isChasing ? bot.chaseSpeed : bot.baseSpeed);
+
+            // --- A* Pathfinding movement ---
+            // Build grid once (or if not built)
+            if (!botGrid) botGrid = buildGrid();
+
+            // Recalculate path every 0.4s or if path is empty/invalid
+            botPathTimer += 1/60;
+            const botCell = worldToGrid(bot.mesh.position);
+            const playerCell = worldToGrid(camera.position);
+            let needRepath = false;
+            if (
+                !botPath ||
+                botPath.length < 2 ||
+                botPathTimer > 0.4 ||
+                botPathIdx >= botPath.length ||
+                Math.abs(botPath[botPath.length-1].x - playerCell.x) > 1 ||
+                Math.abs(botPath[botPath.length-1].z - playerCell.z) > 1
+            ) {
+                needRepath = true;
+            }
+            if (needRepath) {
+                botPath = astar(botGrid, botCell, playerCell) || [];
+                botPathIdx = 0;
+                botPathTimer = 0;
             }
 
-            const dir = new THREE.Vector3().subVectors(camera.position, bot.mesh.position);
-            dir.y = 0; dir.normalize();
-            bot.mesh.position.addScaledVector(dir, bot.currentSpeed);
+            // --- Enhanced movement/collision logic ---
+            let moveTarget = null;
+            let prevPos = bot.mesh.position.clone();
+            let botMoved = false;
+            let botStuck = false;
+            let botSlowFrames = 0;
+            // Store previous bot position to detect if stuck
+            if (!bot._prevPositions) bot._prevPositions = [];
+            bot._prevPositions.push(prevPos.clone());
+            if (bot._prevPositions.length > 10) bot._prevPositions.shift();
+
+            // Helper: check bot collision with walls
+            function botCheckCollision(pos, botRadius, botHeight) {
+                const botBox = new THREE.Box3(
+                    new THREE.Vector3(pos.x - botRadius, 0, pos.z - botRadius),
+                    new THREE.Vector3(pos.x + botRadius, botHeight, pos.z + botRadius)
+                );
+                for (let w of walls) {
+                    const wallBox = new THREE.Box3().setFromObject(w);
+                    if (botBox.intersectsBox(wallBox)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            // Helper: attempt to move bot with small offsets if stuck
+            function tryBotMoveWithOffset(moveVec, botRadius, botHeight) {
+                // Try regular move first
+                const oldPos = bot.mesh.position.clone();
+                let moved = false;
+                // Try X
+                bot.mesh.position.x += moveVec.x;
+                if (botCheckCollision(bot.mesh.position, botRadius, botHeight)) {
+                    bot.mesh.position.x = oldPos.x;
+                    // Try Z only if X failed
+                    bot.mesh.position.z += moveVec.z;
+                    if (botCheckCollision(bot.mesh.position, botRadius, botHeight)) {
+                        bot.mesh.position.z = oldPos.z;
+                    } else {
+                        moved = true;
+                    }
+                } else {
+                    // X movement succeeded, try Z movement
+                    bot.mesh.position.z += moveVec.z;
+                    if (botCheckCollision(bot.mesh.position, botRadius, botHeight)) {
+                        bot.mesh.position.z = oldPos.z;
+                        moved = true;
+                    } else {
+                        moved = true;
+                    }
+                }
+                // If not moved, try small offsets to break free
+                if (!moved) {
+                    // Try a small random offset in X/Z direction (±0.12 units)
+                    let offsets = [
+                        [0.12, 0], [-0.12, 0], [0, 0.12], [0, -0.12],
+                        [0.08, 0.08], [-0.08, 0.08], [0.08, -0.08], [-0.08, -0.08]
+                    ];
+                    for (let [ox, oz] of offsets) {
+                        bot.mesh.position.x += ox;
+                        bot.mesh.position.z += oz;
+                        if (!botCheckCollision(bot.mesh.position, botRadius, botHeight)) {
+                            moved = true;
+                            break;
+                        }
+                        bot.mesh.position.x -= ox;
+                        bot.mesh.position.z -= oz;
+                    }
+                }
+                return moved;
+            }
+
+            // Helper: check if bot is stuck (has barely moved over last 10 frames)
+            function isBotStuck() {
+                if (bot._prevPositions.length < 8) return false;
+                let movedDist = 0;
+                for (let i = 1; i < bot._prevPositions.length; ++i) {
+                    movedDist += bot._prevPositions[i].distanceTo(bot._prevPositions[i-1]);
+                }
+                // If moved less than 0.18 units over last 10 frames, consider stuck
+                return movedDist < 0.18;
+            }
+
+            const botRadius = 1.7;
+            const botHeight = 4;
+
+            // --- Main movement logic without momentum ---
+            if (botPath && botPath.length > 1 && botPathIdx < botPath.length) {
+                // Move toward the next waypoint in the path
+                let nextCell = botPath[botPathIdx + 1] || botPath[botPathIdx];
+                let nextPos = gridToWorld(nextCell);
+                // Calculate target movement direction and desired velocity
+                let dir = new THREE.Vector3().subVectors(nextPos, bot.mesh.position);
+                dir.y = 0;
+                let distToWaypoint = dir.length();
+                if (distToWaypoint > 0.001) dir.normalize();
+                let moveVec = dir.clone().multiplyScalar(Math.min(bot.currentSpeed, distToWaypoint));
+                botMoved = tryBotMoveWithOffset(moveVec, botRadius, botHeight);
+                // If reached the target waypoint (within 0.7), update botPathIdx to next
+                if (bot.mesh.position.distanceTo(nextPos) < 0.7 && botPathIdx + 1 < botPath.length) {
+                    botPathIdx++;
+                }
+                moveTarget = nextPos;
+            } else {
+                // No valid path: chase player directly until new path calculated
+                let target = camera.position.clone();
+                target.y = 2;
+                let dir = new THREE.Vector3().subVectors(target, bot.mesh.position);
+                dir.y = 0;
+                let distToPlayer = dir.length();
+                if (distToPlayer > 0.001) dir.normalize();
+                let moveVec = dir.clone().multiplyScalar(Math.min(bot.currentSpeed, distToPlayer));
+                botMoved = tryBotMoveWithOffset(moveVec, botRadius, botHeight);
+                moveTarget = target;
+            }
+
+            // --- Fallback: If bot is stuck, try to back up or choose a new direction ---
+            if (!botMoved || isBotStuck()) {
+                // Try moving back a bit
+                let backupVec = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.25,
+                    0,
+                    (Math.random() - 0.5) * 0.25
+                );
+                // Try to move opposite to the last movement direction if possible
+                if (moveTarget) {
+                    let awayDir = new THREE.Vector3().subVectors(bot.mesh.position, moveTarget).setY(0).normalize();
+                    if (awayDir.length() > 0) backupVec = awayDir.multiplyScalar(0.22 + Math.random() * 0.1);
+                }
+                tryBotMoveWithOffset(backupVec, botRadius, botHeight);
+                // Optionally, try to jitter to a new random direction
+                let jitterVec = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.28,
+                    0,
+                    (Math.random() - 0.5) * 0.28
+                );
+                tryBotMoveWithOffset(jitterVec, botRadius, botHeight);
+                // Force path recalculation next frame
+                botPathTimer = 1.0;
+            }
+
             bot.mesh.lookAt(camera.position.x, bot.mesh.position.y, camera.position.z);
 
             if (gainNode) {
@@ -450,10 +891,90 @@
                 oscillator.frequency.setTargetAtTime(pitch + (1000 / (dist + 1)), audioCtx.currentTime, 0.1);
             }
         }
+        // --- END A* PATHFINDING BOT LOGIC ---
+
+        // --- Flashlight code removed: ambient lighting is now brighter for the whole map ---
+
+        // --- PAUSE FUNCTIONALITY ---
+        let isPaused = false;
+
+        // Pause menu HTML
+        const pauseMenu = document.createElement('div');
+        pauseMenu.id = 'pause-menu';
+        pauseMenu.style.position = 'fixed';
+        pauseMenu.style.top = '0';
+        pauseMenu.style.left = '0';
+        pauseMenu.style.width = '100vw';
+        pauseMenu.style.height = '100vh';
+        pauseMenu.style.background = 'rgba(0,0,0,0.85)';
+        pauseMenu.style.display = 'none';
+        pauseMenu.style.flexDirection = 'column';
+        pauseMenu.style.justifyContent = 'center';
+        pauseMenu.style.alignItems = 'center';
+        pauseMenu.style.zIndex = '200';
+        pauseMenu.innerHTML = `
+            <h1 style="color:white;margin-bottom:30px;">PAUSED</h1>
+            <button id="resume-btn" style="margin-bottom:18px;">RESUME</button>
+            <button id="reset-btn" style="margin-bottom:18px;">RESET</button>
+            <button id="mainmenu-btn">MAIN MENU</button>
+        `;
+        document.body.appendChild(pauseMenu);
+
+        function showPauseMenu() {
+            pauseMenu.style.display = 'flex';
+        }
+        function hidePauseMenu() {
+            pauseMenu.style.display = 'none';
+        }
+
+        // Pause/resume/reset/main menu button logic
+        pauseMenu.querySelector('#resume-btn').onclick = function() {
+            isPaused = false;
+            hidePauseMenu();
+            // Restore pointer lock if previously locked
+            if (player.isLocked) {
+                document.body.requestPointerLock();
+            }
+        };
+        pauseMenu.querySelector('#reset-btn').onclick = function() {
+            location.reload();
+        };
+        pauseMenu.querySelector('#mainmenu-btn').onclick = function() {
+            // Show overlay, reset game state
+            overlay.style.display = 'flex';
+            hidePauseMenu();
+            isPaused = false;
+            gameActive = false;
+            // Remove canvas and reset everything
+            if (renderer && renderer.domElement && renderer.domElement.parentNode)
+                renderer.domElement.parentNode.removeChild(renderer.domElement);
+            // Remove event listeners if needed (not strictly necessary on reload)
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyP' && overlay.style.display === 'none') {
+                // Toggle pause
+                if (!isPaused) {
+                    isPaused = true;
+                    showPauseMenu();
+                    // Release pointer lock if locked
+                    if (document.pointerLockElement === document.body) {
+                        document.exitPointerLock();
+                    }
+                } else {
+                    isPaused = false;
+                    hidePauseMenu();
+                    // Restore pointer lock if previously locked
+                    if (player.isLocked) {
+                        document.body.requestPointerLock();
+                    }
+                }
+            }
+        });
 
         function animate() {
             requestAnimationFrame(animate);
-            if (gameActive) {
+            if (gameActive && !isPaused) {
                 updatePlayer();
                 updateBot();
                 const currentTime = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -464,6 +985,8 @@
 
         startBtn.onclick = () => {
             overlay.style.display = 'none';
+            // Enter fullscreen mode on start
+            toggleFullscreen();
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             oscillator = audioCtx.createOscillator();
             gainNode = audioCtx.createGain();
