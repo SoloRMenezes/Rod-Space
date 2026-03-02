@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nextbot Escape - Chase Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-shadow: 2px 2px 0px #000;
+            pointer-events: none;
+            user-select: none;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+        }
+        #overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        #warning {
+            color: #ff4444;
+            font-weight: bold;
+            display: none;
+            margin-top: 10px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            background: #ff0000;
+            color: white;
+            border: none;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="overlay">
+        <h1 style="color: white; margin-bottom: 20px;">NEXTBOT BROWSER</h1>
+        <button id="start-btn">ENTER THE MAZE</button>
+        <p style="color: #888; margin-top: 15px;">Press SHIFT to lock/unlock camera</p>
+    </div>
+
+    <div id="ui">
+        <h2 id="status">STATUS: SURVIVING</h2>
+        <p>BOT DISTANCE: <span id="dist">0</span>m</p>
+        <p id="warning">LINE OF SIGHT DETECTED! TURN CORNERS!</p>
+    </div>
+    
+    <div id="crosshair"></div>
+
+    <div id="instructions">
+        WASD/ARROWS to move | SPACE to jump | SHIFT to Shift Lock | BREAK LINE OF SIGHT TO SLOW BOT
+    </div>
+
+    <script>
+        let scene, camera, renderer, clock;
+        let player = {
+            speed: 0.18,
+            isLocked: false,
+            sensitivity: 0.004,
+            verticalVelocity: 0,
+            isJumping: false,
+            jumpStrength: 0.15,
+            gravity: 0.008,
+            height: 1.7
+        };
+        let bot = {
+            mesh: null,
+            baseSpeed: 0.14,
+            chaseSpeed: 0.21,
+            currentSpeed: 0.14,
+            active: false,
+            losTimer: 0,
+            isChasing: false
+        };
+        let walls = [];
+        let keys = {};
+        const startBtn = document.getElementById('start-btn');
+        const overlay = document.getElementById('overlay');
+        const crosshair = document.getElementById('crosshair');
+        const warningUI = document.getElementById('warning');
+
+        let audioCtx, oscillator, gainNode;
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a0a);
+            scene.fog = new THREE.FogExp2(0x0a0a0a, 0.1);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, player.height, 0); 
+            camera.rotation.order = 'YXZ'; 
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.1);
+            scene.add(ambient);
+            
+            const flashlight = new THREE.SpotLight(0xffffff, 2, 50, Math.PI / 3, 0.5);
+            camera.add(flashlight);
+            flashlight.position.set(0, 0, 0);
+            flashlight.target.position.set(0, 0, -1);
+            camera.add(flashlight.target);
+            scene.add(camera);
+
+            createMaze();
+            createNextbot();
+
+            clock = new THREE.Clock();
+            
+            window.addEventListener('resize', onWindowResize, false);
+            document.addEventListener('keydown', (e) => { 
+                keys[e.code] = true;
+                if(e.code === 'ShiftLeft' || e.code === 'ShiftRight') toggleLock();
+            });
+            document.addEventListener('keyup', (e) => keys[e.code] = false);
+            document.addEventListener('mousemove', onMouseMove);
+            
+            animate();
+        }
+
+        // Texture Generators
+        function createWallTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            // Base yellowish wallpaper
+            ctx.fillStyle = '#ccbb88';
+            ctx.fillRect(0, 0, 512, 512);
+            
+            // Add grungy "wallpaper" pattern
+            ctx.strokeStyle = '#aa9966';
+            ctx.lineWidth = 2;
+            for(let i = 0; i < 512; i += 32) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, 512);
+                ctx.stroke();
+            }
+            
+            // Add some "stains" for depth
+            for(let i = 0; i < 50; i++) {
+                ctx.fillStyle = `rgba(80, 60, 20, ${Math.random() * 0.1})`;
+                ctx.beginPath();
+                ctx.arc(Math.random()*512, Math.random()*512, Math.random()*40, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function createFloorTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            // Old carpet look
+            ctx.fillStyle = '#443322';
+            ctx.fillRect(0, 0, 256, 256);
+            
+            // Grain/noise
+            for(let i = 0; i < 5000; i++) {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.2})`;
+                ctx.fillRect(Math.random()*256, Math.random()*256, 1, 1);
+            }
+            
+            // Darker tile-ish patterns
+            ctx.strokeStyle = '#332211';
+            ctx.strokeRect(0, 0, 256, 256);
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function createMaze() {
+            const size = 120;
+            const h = 5;
+
+            const wallTex = createWallTexture();
+            const floorTex = createFloorTexture();
+            
+            // Floor
+            floorTex.repeat.set(size/2, size/2);
+            const floorGeom = new THREE.PlaneGeometry(size, size);
+            const floor = new THREE.Mesh(floorGeom, new THREE.MeshPhongMaterial({ map: floorTex }));
+            floor.rotation.x = -Math.PI/2;
+            scene.add(floor);
+
+            // Ceiling (Fluorescent light tiles)
+            const ceilCanvas = document.createElement('canvas');
+            ceilCanvas.width = 256; ceilCanvas.height = 256;
+            const cCtx = ceilCanvas.getContext('2d');
+            cCtx.fillStyle = '#222'; cCtx.fillRect(0,0,256,256);
+            cCtx.strokeStyle = '#444'; cCtx.strokeRect(20,20,216,216);
+            cCtx.fillStyle = '#333'; cCtx.fillRect(40,40,176,176);
+            const ceilTex = new THREE.CanvasTexture(ceilCanvas);
+            ceilTex.wrapS = ceilTex.wrapT = THREE.RepeatWrapping;
+            ceilTex.repeat.set(size/4, size/4);
+
+            const ceil = new THREE.Mesh(floorGeom, new THREE.MeshBasicMaterial({ map: ceilTex, side: THREE.BackSide }));
+            ceil.rotation.x = Math.PI/2; ceil.position.y = h;
+            scene.add(ceil);
+
+            // Perimeter Walls
+            addWall(0, h/2, -size/2, size, h, 0, wallTex);
+            addWall(0, h/2, size/2, size, h, Math.PI, wallTex);
+            addWall(size/2, h/2, 0, size, h, -Math.PI/2, wallTex);
+            addWall(-size/2, h/2, 0, size, h, Math.PI/2, wallTex);
+
+            // Internal Maze Blocks
+            const wallBlocks = [
+                {x: -20, z: -20, w: 20, d: 5},
+                {x: 20, z: -20, w: 20, d: 5},
+                {x: -20, z: 20, w: 20, d: 5},
+                {x: 20, z: 20, w: 20, d: 5},
+                {x: 0, z: 0, w: 10, d: 10},
+                {x: -35, z: 0, w: 5, d: 30},
+                {x: 35, z: 0, w: 5, d: 30},
+            ];
+
+            wallBlocks.forEach(b => {
+                const geom = new THREE.BoxGeometry(b.w, h, b.d);
+                // Create unique texture offset for each block so they look different
+                const blockMat = new THREE.MeshPhongMaterial({ map: wallTex.clone() });
+                blockMat.map.repeat.set(b.w/2, h/2);
+                const m = new THREE.Mesh(geom, blockMat);
+                m.position.set(b.x, h/2, b.z);
+                scene.add(m);
+                walls.push(m);
+            });
+        }
+
+        function addWall(x, y, z, w, h, ry, tex) {
+            const geom = new THREE.PlaneGeometry(w, h);
+            const wallTex = tex.clone();
+            wallTex.repeat.set(w/2, h/2);
+            const wall = new THREE.Mesh(geom, new THREE.MeshPhongMaterial({ map: wallTex }));
+            wall.position.set(x, y, z);
+            wall.rotation.y = ry;
+            scene.add(wall);
+            walls.push(wall);
+        }
+
+        function createNextbot() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'white'; ctx.fillRect(0,0,256,256);
+            ctx.fillStyle = 'black';
+            ctx.beginPath(); ctx.arc(80, 100, 30, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(176, 100, 30, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(128, 190, 60, 40, 0, 0, Math.PI*2); ctx.fill();
+            
+            const tex = new THREE.CanvasTexture(canvas);
+            const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+            bot.mesh = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 3.5), mat);
+            bot.mesh.position.set(40, 1.75, 40);
+            scene.add(bot.mesh);
+            bot.active = true;
+        }
+
+        function toggleLock() {
+            if (!player.isLocked) document.body.requestPointerLock();
+            else document.exitPointerLock();
+        }
+
+        document.addEventListener('pointerlockchange', () => {
+            player.isLocked = (document.pointerLockElement === document.body);
+            crosshair.style.display = player.isLocked ? 'block' : 'none';
+        });
+
+        function onMouseMove(event) {
+            if (player.isLocked) {
+                camera.rotation.y -= event.movementX * player.sensitivity;
+                let pitch = camera.rotation.x - event.movementY * player.sensitivity;
+                camera.rotation.x = Math.max(-Math.PI/2.1, Math.min(Math.PI/2.1, pitch));
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function updatePlayer() {
+            let iX = 0, iZ = 0;
+            if (keys['KeyW'] || keys['ArrowUp']) iZ -= 1;
+            if (keys['KeyS'] || keys['ArrowDown']) iZ += 1;
+            if (keys['KeyA'] || keys['ArrowLeft']) iX -= 1;
+            if (keys['KeyD'] || keys['ArrowRight']) iX += 1;
+
+            if (iX !== 0 || iZ !== 0) {
+                const move = new THREE.Vector3(iX, 0, iZ).normalize();
+                if (player.isLocked) move.applyAxisAngle(new THREE.Vector3(0, 1, 0), camera.rotation.y);
+                
+                const oldPos = camera.position.clone();
+                camera.position.addScaledVector(move, player.speed);
+
+                walls.forEach(w => {
+                    const box = new THREE.Box3().setFromObject(w);
+                    // Add slight padding to collision box
+                    box.expandByScalar(0.4);
+                    if (box.containsPoint(camera.position)) camera.position.copy(oldPos);
+                });
+            }
+
+            if (keys['Space'] && !player.isJumping) {
+                player.verticalVelocity = player.jumpStrength;
+                player.isJumping = true;
+            }
+
+            if (player.isJumping || camera.position.y > player.height) {
+                player.verticalVelocity -= player.gravity;
+                camera.position.y += player.verticalVelocity;
+                if (camera.position.y <= player.height) {
+                    camera.position.y = player.height;
+                    player.verticalVelocity = 0;
+                    player.isJumping = false;
+                }
+            }
+        }
+
+        function checkLOS() {
+            const start = bot.mesh.position.clone();
+            const end = camera.position.clone();
+            const direction = new THREE.Vector3().subVectors(end, start).normalize();
+            const distance = start.distanceTo(end);
+            const raycaster = new THREE.Raycaster(start, direction, 0, distance);
+            const intersects = raycaster.intersectObjects(walls);
+            return intersects.length === 0;
+        }
+
+        function updateBot() {
+            if (!bot.active) return;
+
+            const dir = new THREE.Vector3().subVectors(camera.position, bot.mesh.position);
+            dir.y = 0; 
+            const dist = dir.length();
+            document.getElementById('dist').innerText = Math.round(dist);
+
+            if (dist < 1.7) {
+                document.getElementById('status').innerText = "STATUS: ELIMINATED";
+                document.getElementById('status').style.color = "red";
+                bot.active = false;
+                setTimeout(() => location.reload(), 2000);
+            }
+
+            const hasLOS = checkLOS();
+            if (hasLOS) {
+                bot.losTimer += 1/60;
+                if (bot.losTimer > 2.0) {
+                    bot.isChasing = true;
+                    bot.currentSpeed = bot.chaseSpeed;
+                    warningUI.style.display = 'block';
+                }
+            } else {
+                bot.losTimer = 0;
+                bot.isChasing = false;
+                bot.currentSpeed = bot.baseSpeed;
+                warningUI.style.display = 'none';
+            }
+
+            dir.normalize();
+            bot.mesh.position.addScaledVector(dir, bot.currentSpeed);
+            bot.mesh.lookAt(camera.position.x, bot.mesh.position.y, camera.position.z);
+
+            if (gainNode) {
+                const vol = Math.max(0, 1 - (dist / 40));
+                gainNode.gain.setTargetAtTime(vol * 0.35, audioCtx.currentTime, 0.1);
+                const pitchMod = bot.isChasing ? 200 : 0;
+                oscillator.frequency.setTargetAtTime(50 + pitchMod + (1000 / (dist + 0.5)), audioCtx.currentTime, 0.1);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updatePlayer();
+            updateBot();
+            renderer.render(scene, camera);
+        }
+
+        startBtn.onclick = () => {
+            overlay.style.display = 'none';
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+            oscillator.type = 'sawtooth';
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+
+            init();
+            toggleLock();
+        };
+
+    </script>
+</body>
+</html>
