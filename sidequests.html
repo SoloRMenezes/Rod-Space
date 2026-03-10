@@ -134,6 +134,29 @@
             box-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.5);
         }
 
+        /* Updated Skills Button Styling */
+        #skillsBox {
+            margin-top: 20px;
+            padding: 20px 48px;
+            font-size: 1.1em;
+            background: var(--primary-blue);
+            color: #ffffff;
+            border: none;
+            border-radius: 100px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 260px;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
+            letter-spacing: 0.02em;
+        }
+
+        #skillsBox:hover {
+            background: var(--primary-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.5);
+        }
+
         /* Quest Screen */
         .quest-screen {
             display: none;
@@ -250,16 +273,17 @@
         <h1>Side Quests</h1>
         <p>Stop Auto-Pilot. One mission at a time.</p>
         <button id="questBox" onclick="startQuests()">Unlock Today's Quest</button>
+        <button id="skillsBox" onclick="startSkills()">Unlock Today's Skill</button>
     </div>
 
     <div class="quest-screen" id="questScreen">
         <div class="quest-header">
-            <h2>Current Objective</h2>
+            <h2 id="objectiveHeader">Current Objective</h2>
             <h1 id="dateHeader">Today's Mission</h1>
         </div>
         <div id="quest">Loading your mission...</div>
-        <div class="daily-note">A new side quest unlocks automatically every 24 hours. Good luck, explorer.</div>
-        <button class="back-btn" onclick="location.reload()">Back Home</button>
+        <div class="daily-note" id="dailyNote">A new side quest unlocks automatically every 24 hours. Good luck, explorer.</div>
+        <button class="back-btn" onclick="goBackHome()">Back Home</button>
     </div>
 
     <script>
@@ -371,10 +395,169 @@ function startQuests() {
     const now = new Date();
     const options = { month: 'long', day: 'numeric' };
     document.getElementById('dateHeader').innerText = now.toLocaleDateString(undefined, options);
-    
     document.getElementById('startScreen').style.display = 'none';
     document.getElementById('questScreen').style.display = 'flex';
     document.getElementById('quest').innerText = getDailyQuest();
+    document.getElementById('objectiveHeader').innerText = "Current Objective";
+    document.getElementById('dateHeader').style.fontSize = "2.5em";
+    document.getElementById('dailyNote').innerText = "A new side quest unlocks automatically every 24 hours. Good luck, explorer.";
+    // Remove any skills-specific state
+    document.getElementById('learntBtn')?.remove();
+}
+
+// --- Skills Feature ---
+const skills = [
+    "Learn to juggle 3 objects (start with rolled up socks or balls).",
+    "Learn the basics of origami: fold a paper crane or frog.",
+    "Learn a simple card trick and perform it for someone.",
+    "Learn to whistle loudly using your fingers.",
+    "Learn to tie a bowline knot and explain its use.",
+    "Learn to balance a broom or stick vertically on your palm for 30 seconds.",
+    "Learn to write your name in Morse code.",
+    "Learn to do a basic coin flip and catch with one hand.",
+    "Learn to spin a book or notebook on your finger for 10 seconds.",
+    "Learn to solve a Rubik's Cube (or just one side).",
+    "Learn to make a paper airplane that flies at least 5 meters.",
+    "Learn to shuffle a deck of cards with the bridge finish.",
+    "Learn to do a wall handstand (hold for 10 seconds).",
+    "Learn to balance on one foot with eyes closed for 30 seconds.",
+    "Learn to do a forward roll safely on grass or soft surface.",
+    "Learn to recite the NATO phonetic alphabet (Alpha, Bravo, Charlie, ...).",
+    "Learn to tie your shoes with the 'Ian Knot' (fastest shoelace knot).",
+    "Learn to do a basic yoga pose (tree, warrior, or downward dog).",
+    "Learn to clap rhythm patterns (e.g., 3-3-2 or 4-4 time).",
+    "Learn to draw a simple cartoon character from memory.",
+    "Learn to snap your fingers with both hands.",
+    "Learn to touch your toes with straight legs (stretch safely).",
+    "Learn to count to 10 in a new language.",
+    "Learn to do a two-finger push-up (knees allowed).",
+    "Learn to fold a T-shirt in under 5 seconds (Japanese method).",
+    "Learn to make a shadow animal with your hands and a flashlight.",
+    "Learn to balance a spoon on your nose for 10 seconds.",
+    "Learn to do a basic beatbox rhythm.",
+    "Learn to do a squat jump and land softly 10 times.",
+    "Learn to identify 3 local plants or trees by leaf shape.",
+    "Learn to do a plank for 1 minute with good form.",
+    "Learn to make a friendship bracelet or simple knot bracelet.",
+    "Learn to do a 'magic' disappearing coin trick.",
+    "Learn to recite a short poem or tongue-twister from memory.",
+    "Learn to spin a pencil around your thumb.",
+    "Learn to do a basic self-massage (shoulders or hands).",
+    "Learn to throw and catch a ball with your non-dominant hand 10 times.",
+    "Learn to draw a map of your neighborhood from memory.",
+    "Learn to do a standing long jump and measure your distance.",
+    "Learn to toss a playing card into a cup from 1 meter away.",
+    "Learn to balance a stack of 5 coins on your elbow and catch them.",
+    "Learn to do a safe backward roll or backward somersault (on grass).",
+    "Learn to make a simple musical instrument (shaker, drum, etc).",
+    "Learn to identify 3 constellations in the night sky.",
+    "Learn to mimic 3 bird calls or animal sounds.",
+    "Learn to do 10 push-ups with perfect form.",
+    "Learn to draw a self-portrait (cartoon or realistic).",
+    "Learn to do a basic magic knot for joining two ropes.",
+    "Learn to spin in place 10 times without getting dizzy.",
+];
+
+function getDailySkillIndex() {
+    // Use a similar approach as quests: fixed skill per day, rotates through skills
+    const skillDateKey = 'lastSkillDate';
+    const skillIdxKey = 'lastSkillIdx';
+    const today = new Date();
+    const todayStr = today.getFullYear() + '-' +
+        String(today.getMonth() + 1).padStart(2, '0') + '-' +
+        String(today.getDate()).padStart(2, '0');
+    let savedDate = localStorage.getItem(skillDateKey);
+    let savedIdx = localStorage.getItem(skillIdxKey);
+    if (savedDate === todayStr && savedIdx !== null && !isNaN(Number(savedIdx))) {
+        return Number(savedIdx);
+    }
+    // Rotate through skills in order
+    let idx = 0;
+    if (savedIdx !== null && !isNaN(Number(savedIdx))) {
+        idx = (Number(savedIdx) + 1) % skills.length;
+    }
+    localStorage.setItem(skillDateKey, todayStr);
+    localStorage.setItem(skillIdxKey, idx);
+    // Reset learnt status for the new day
+    localStorage.removeItem('skillLearnt_' + todayStr);
+    return idx;
+}
+
+function startSkills() {
+    const now = new Date();
+    const options = { month: 'long', day: 'numeric' };
+    document.getElementById('dateHeader').innerText = now.toLocaleDateString(undefined, options) + " – Skill";
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('questScreen').style.display = 'flex';
+    document.getElementById('objectiveHeader').innerText = "Skill Challenge";
+    document.getElementById('dateHeader').style.fontSize = "2em";
+    document.getElementById('dailyNote').innerText = "A new skill challenge unlocks every 24 hours. Can you master them all?";
+    renderSkillAndButton();
+}
+
+function renderSkillAndButton() {
+    const skillIdx = getDailySkillIndex();
+    const today = new Date();
+    const todayStr = today.getFullYear() + '-' +
+        String(today.getMonth() + 1).padStart(2, '0') + '-' +
+        String(today.getDate()).padStart(2, '0');
+    const skillText = skills[skillIdx];
+    const questDiv = document.getElementById('quest');
+    // Only show skill text in the grey box
+    questDiv.innerText = skillText;
+    // Remove any previous button/message outside quest box
+    document.getElementById('learntBtn')?.remove();
+    const dailyNote = document.getElementById('dailyNote');
+    // Remove any previous congrats message outside quest box
+    Array.from(document.querySelectorAll('.skill-complete-msg')).forEach(el => el.remove());
+    // Add "Mark as Learnt" button (or message) below the grey box, above the daily note
+    if (!localStorage.getItem('skillLearnt_' + todayStr)) {
+        const btn = document.createElement('button');
+        btn.id = 'learntBtn';
+        btn.innerText = "Mark Skill as Learnt";
+        btn.style.marginTop = "32px";
+        btn.style.padding = "14px 38px";
+        btn.style.background = "var(--primary-blue)";
+        btn.style.color = "#fff";
+        btn.style.border = "none";
+        btn.style.borderRadius = "100px";
+        btn.style.fontWeight = "700";
+        btn.style.fontSize = "1em";
+        btn.style.cursor = "pointer";
+        btn.onclick = markSkillLearnt;
+        // Insert button just before the dailyNote
+        dailyNote.parentNode.insertBefore(btn, dailyNote);
+    } else {
+        // Already learnt: show a congrats message
+        const doneMsg = document.createElement('div');
+        doneMsg.className = "skill-complete-msg";
+        doneMsg.innerText = "✅ Skill completed! Well done.";
+        doneMsg.style.marginTop = "32px";
+        doneMsg.style.color = "var(--accent)";
+        doneMsg.style.fontWeight = "700";
+        doneMsg.style.fontSize = "1.1em";
+        // Insert message just before the dailyNote
+        dailyNote.parentNode.insertBefore(doneMsg, dailyNote);
+    }
+}
+
+function markSkillLearnt() {
+    const today = new Date();
+    const todayStr = today.getFullYear() + '-' +
+        String(today.getMonth() + 1).padStart(2, '0') + '-' +
+        String(today.getDate()).padStart(2, '0');
+    localStorage.setItem('skillLearnt_' + todayStr, '1');
+    renderSkillAndButton();
+}
+
+function goBackHome() {
+    // Remove skill button/message if any (outside the quest box)
+    document.getElementById('learntBtn')?.remove();
+    Array.from(document.querySelectorAll('.skill-complete-msg')).forEach(el => el.remove());
+    // Reset quest text
+    document.getElementById('quest').innerText = "Loading your mission...";
+    document.getElementById('questScreen').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'flex';
 }
     </script>
 </body>
