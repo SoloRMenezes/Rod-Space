@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAA Calculus Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="w-full max-w-xl bg-white rounded-3xl shadow-xl overflow-hidden border">
+        <!-- Header -->
+        <div class="p-6 bg-white border-b flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="p-1.5 gradient-bg rounded-lg text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m5 15 7-7 7 7"/></svg>
+                </div>
+                <span class="font-bold tracking-tight">Calculus Trainer</span>
+            </div>
+            <select id="topic-selector" onchange="changeTopic()" class="text-sm border rounded-lg px-2 py-1 bg-slate-50 outline-none">
+                <option value="Power Rule">Power Rule</option>
+                <option value="Chain Rule">Chain Rule</option>
+                <option value="Indefinite Integrals">Indefinite Integrals</option>
+                <option value="Definite Integrals">Definite Integrals</option>
+            </select>
+        </div>
+
+        <!-- Question Area -->
+        <div id="quiz-container" class="p-8 space-y-6">
+            <div class="space-y-2">
+                <div id="topic-label" class="text-indigo-600 text-xs font-bold uppercase tracking-widest">Power Rule</div>
+                <h2 id="question-text" class="text-2xl font-bold min-h-[3rem]">Loading...</h2>
+            </div>
+
+            <div class="space-y-4">
+                <input type="text" id="answer-input" autocomplete="off" placeholder="e.g. 15x^2" 
+                    class="w-full p-4 text-lg border rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                
+                <div id="feedback-area" class="hidden rounded-2xl p-4 text-sm font-medium"></div>
+                <div id="solution-area" class="hidden rounded-2xl p-4 text-sm bg-slate-50 border border-slate-200 leading-relaxed"></div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex flex-wrap gap-3 pt-4 border-t">
+                <button onclick="changeTopic()" class="px-4 py-3 text-slate-500 hover:text-slate-800 font-bold text-sm">Back</button>
+                <div class="flex-1"></div>
+                <button id="skip-btn" onclick="loadNewQuestion()" class="px-5 py-3 border border-slate-300 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition">Skip</button>
+                <button id="submit-btn" onclick="checkAnswer()" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition">Enter</button>
+                <button id="next-btn" onclick="loadNewQuestion()" class="hidden px-8 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition">Next</button>
+                <!-- <button id="step-btn" onclick="getAIEducation()" class="hidden px-5 py-3 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition">See Steps</button> -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; 
+        let currentQuestionObj = null;
+        let currentTopic = "Power Rule";
+
+        const allQuestions = [
+            // First 10 original questions
+            { topic: "Power Rule", q: "Derivative of 5x^3", a: ["15x^2", "15x squared"] },
+            { topic: "Power Rule", q: "Derivative of x^4 - 6x", a: ["4x^3 - 6", "4x cubed minus 6"] },
+            { topic: "Power Rule", q: "Derivative of 10", a: ["0", "zero"] },
+            { topic: "Power Rule", q: "Derivative of 1/x", a: ["-1/x^2", "-x^-2"] },
+            { topic: "Chain Rule", q: "Derivative of (2x + 1)^3", a: ["6(2x+1)^2", "6(2x + 1)^2"] },
+            { topic: "Chain Rule", q: "Derivative of sin(3x)", a: ["3cos(3x)", "3 cos(3x)"] },
+            { topic: "Indefinite Integrals", q: "Integrate 4x^3", a: ["x^4+c", "x^4 + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate cos(x)", a: ["sin(x)+c", "sin(x) + c"] },
+            { topic: "Definite Integrals", q: "Integrate 2x from x=0 to x=3", a: ["9"] },
+            { topic: "Definite Integrals", q: "Integrate 3 from x=1 to x=5", a: ["12"] },
+            // 90 additional questions, varied by topic
+            // Power Rule
+            { topic: "Power Rule", q: "Derivative of x^5", a: ["5x^4", "5x to the fourth"] },
+            { topic: "Power Rule", q: "Derivative of 7x^2", a: ["14x", "14x to the first"] },
+            { topic: "Power Rule", q: "Derivative of x^7 + 2x^3", a: ["7x^6 + 6x^2"] },
+            { topic: "Power Rule", q: "Derivative of x", a: ["1"] },
+            { topic: "Power Rule", q: "Derivative of 12x^4", a: ["48x^3"] },
+            { topic: "Power Rule", q: "Derivative of x^2 + x + 1", a: ["2x + 1"] },
+            { topic: "Power Rule", q: "Derivative of -3x^3", a: ["-9x^2"] },
+            { topic: "Power Rule", q: "Derivative of 8x^2 - 5x", a: ["16x - 5"] },
+            { topic: "Power Rule", q: "Derivative of x^8", a: ["8x^7"] },
+            { topic: "Power Rule", q: "Derivative of 2x^6 + x^3", a: ["12x^5 + 3x^2"] },
+            { topic: "Power Rule", q: "Derivative of 1", a: ["0", "zero"] },
+            { topic: "Power Rule", q: "Derivative of 4x^0", a: ["0"] },
+            { topic: "Power Rule", q: "Derivative of x^-2", a: ["-2x^-3", "-2/x^3"] },
+            { topic: "Power Rule", q: "Derivative of 6x^4 + 2x", a: ["24x^3 + 2"] },
+            { topic: "Power Rule", q: "Derivative of 9x^2 + 3", a: ["18x"] },
+            { topic: "Power Rule", q: "Derivative of x^3 - x", a: ["3x^2 - 1"] },
+            { topic: "Power Rule", q: "Derivative of 2x^2 + 5x + 3", a: ["4x + 5"] },
+            { topic: "Power Rule", q: "Derivative of 0", a: ["0"] },
+            { topic: "Power Rule", q: "Derivative of x^-1", a: ["-x^-2", "-1/x^2"] },
+            { topic: "Power Rule", q: "Derivative of 2x^-3", a: ["-6x^-4", "-6/x^4"] },
+            // Chain Rule
+            { topic: "Chain Rule", q: "Derivative of (x^2 + 1)^4", a: ["8x(x^2+1)^3"] },
+            { topic: "Chain Rule", q: "Derivative of cos(5x)", a: ["-5sin(5x)", "-5 sin(5x)"] },
+            { topic: "Chain Rule", q: "Derivative of e^(2x)", a: ["2e^(2x)"] },
+            { topic: "Chain Rule", q: "Derivative of ln(4x)", a: ["1/x", "1/(4x)*4", "1/(x)"] },
+            { topic: "Chain Rule", q: "Derivative of (3x-1)^2", a: ["6(3x-1)"] },
+            { topic: "Chain Rule", q: "Derivative of tan(2x)", a: ["2sec^2(2x)", "2 sec^2(2x)"] },
+            { topic: "Chain Rule", q: "Derivative of sqrt(5x)", a: ["5/(2sqrt(5x))"] },
+            { topic: "Chain Rule", q: "Derivative of (x^3 + 2)^5", a: ["15x^2(x^3+2)^4"] },
+            { topic: "Chain Rule", q: "Derivative of sin(x^2)", a: ["2xcos(x^2)", "2x cos(x^2)"] },
+            { topic: "Chain Rule", q: "Derivative of e^(x^2)", a: ["2xe^(x^2)", "2x e^(x^2)"] },
+            { topic: "Chain Rule", q: "Derivative of (5x+4)^3", a: ["15(5x+4)^2"] },
+            { topic: "Chain Rule", q: "Derivative of cos(7x)", a: ["-7sin(7x)", "-7 sin(7x)"] },
+            { topic: "Chain Rule", q: "Derivative of ln(2x+1)", a: ["2/(2x+1)"] },
+            { topic: "Chain Rule", q: "Derivative of (x^2-3x)^4", a: ["4(x^2-3x)^3(2x-3)"] },
+            { topic: "Chain Rule", q: "Derivative of sin(4x+2)", a: ["4cos(4x+2)", "4 cos(4x+2)"] },
+            { topic: "Chain Rule", q: "Derivative of (2x-5)^6", a: ["12(2x-5)^5"] },
+            { topic: "Chain Rule", q: "Derivative of e^(3x+1)", a: ["3e^(3x+1)"] },
+            { topic: "Chain Rule", q: "Derivative of tan(5x)", a: ["5sec^2(5x)", "5 sec^2(5x)"] },
+            { topic: "Chain Rule", q: "Derivative of (x^2+1)^7", a: ["14x(x^2+1)^6"] },
+            { topic: "Chain Rule", q: "Derivative of ln(x^3)", a: ["3/x"] },
+            // Indefinite Integrals
+            { topic: "Indefinite Integrals", q: "Integrate x^2", a: ["(1/3)x^3+c", "x^3/3+c", "x^3/3 + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 6x", a: ["3x^2+c", "3x^2 + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate x", a: ["(1/2)x^2+c", "x^2/2+c", "x^2/2 + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 2x^3", a: ["(1/2)x^4+c", "x^4/2+c", "x^4/2 + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate sin(x)", a: ["-cos(x)+c", "-cos(x) + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate e^x", a: ["e^x+c", "e^x + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 7", a: ["7x+c", "7x + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate x^5", a: ["(1/6)x^6+c", "x^6/6+c", "x^6/6 + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 1/x", a: ["ln|x|+c", "ln(x)+c", "ln|x| + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate x^-2", a: ["-x^-1+c", "-1/x+c", "-1/x + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 3x^2 + 2x", a: ["x^3 + x^2 + c", "x^3+x^2+c"] },
+            { topic: "Indefinite Integrals", q: "Integrate cos(2x)", a: ["(1/2)sin(2x)+c", "sin(2x)/2+c", "sin(2x)/2 + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 5x^4", a: ["x^5+c", "x^5 + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 1", a: ["x+c", "x + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate -4x^2", a: ["-4/3x^3+c", "-4x^3/3+c", "-4x^3/3 + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate sec^2(x)", a: ["tan(x)+c", "tan(x) + c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 2x + 3", a: ["x^2 + 3x + c", "x^2+3x+c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 4x^3 + 2x", a: ["x^4 + x^2 + c", "x^4+x^2+c"] },
+            { topic: "Indefinite Integrals", q: "Integrate 0", a: ["c", "constant"] },
+            { topic: "Indefinite Integrals", q: "Integrate e^(2x)", a: ["(1/2)e^(2x)+c", "e^(2x)/2+c", "e^(2x)/2 + c"] },
+            // Definite Integrals
+            { topic: "Definite Integrals", q: "Integrate x from x=0 to x=2", a: ["2"] },
+            { topic: "Definite Integrals", q: "Integrate x^2 from x=1 to x=3", a: ["26/3", "8.666", "8.67"] },
+            { topic: "Definite Integrals", q: "Integrate 4 from x=0 to x=2", a: ["8"] },
+            { topic: "Definite Integrals", q: "Integrate 2x from x=1 to x=4", a: ["15"] },
+            { topic: "Definite Integrals", q: "Integrate x^3 from x=0 to x=2", a: ["4"] },
+            { topic: "Definite Integrals", q: "Integrate 5x^2 from x=1 to x=3", a: ["130/3", "43.333", "43.33"] },
+            { topic: "Definite Integrals", q: "Integrate 6 from x=2 to x=5", a: ["18"] },
+            { topic: "Definite Integrals", q: "Integrate 2x+1 from x=0 to x=2", a: ["6"] },
+            { topic: "Definite Integrals", q: "Integrate x^4 from x=1 to x=2", a: ["31/5", "6.2"] },
+            { topic: "Definite Integrals", q: "Integrate 3x^2 from x=0 to x=1", a: ["1"] },
+            { topic: "Definite Integrals", q: "Integrate x from x=2 to x=4", a: ["6"] },
+            { topic: "Definite Integrals", q: "Integrate 8 from x=0 to x=1", a: ["8"] },
+            { topic: "Definite Integrals", q: "Integrate x^2+2 from x=0 to x=2", a: ["14/3", "4.666", "4.67"] },
+            { topic: "Definite Integrals", q: "Integrate 10x from x=1 to x=3", a: ["40"] },
+            { topic: "Definite Integrals", q: "Integrate x^3+1 from x=0 to x=2", a: ["10"] },
+            { topic: "Definite Integrals", q: "Integrate 2x^2 from x=1 to x=2", a: ["14/3", "4.666", "4.67"] },
+            { topic: "Definite Integrals", q: "Integrate 3x from x=0 to x=4", a: ["24"] },
+            { topic: "Definite Integrals", q: "Integrate x^2 from x=0 to x=4", a: ["64/3", "21.333", "21.33"] },
+            { topic: "Definite Integrals", q: "Integrate 5 from x=2 to x=5", a: ["15"] },
+            { topic: "Definite Integrals", q: "Integrate 7x from x=1 to x=2", a: ["10.5", "21/2"] },
+            // Additional Power Rule (to balance topics)
+            { topic: "Power Rule", q: "Derivative of x^10", a: ["10x^9"] },
+            { topic: "Power Rule", q: "Derivative of 3x^7", a: ["21x^6"] },
+            { topic: "Power Rule", q: "Derivative of 2x^3 - 5x^2", a: ["6x^2 - 10x"] },
+            { topic: "Power Rule", q: "Derivative of x^0", a: ["0"] },
+            { topic: "Power Rule", q: "Derivative of -x^2", a: ["-2x"] },
+            { topic: "Power Rule", q: "Derivative of 4x^3 + 6x^2", a: ["12x^2 + 12x"] },
+            { topic: "Power Rule", q: "Derivative of 7x^5", a: ["35x^4"] },
+            { topic: "Power Rule", q: "Derivative of x^4", a: ["4x^3"] },
+            { topic: "Power Rule", q: "Derivative of 5x^2 - x", a: ["10x - 1"] },
+            { topic: "Power Rule", q: "Derivative of 12x", a: ["12"] }
+        ];
+
+        let questionQueue = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function changeTopic() {
+            // Do nothing, no topic selection needed
+        }
+
+        function loadNewQuestion() {
+            const feedback = document.getElementById('feedback-area');
+            const solution = document.getElementById('solution-area');
+            const submitBtn = document.getElementById('submit-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const skipBtn = document.getElementById('skip-btn');
+            const input = document.getElementById('answer-input');
+
+            feedback.className = "hidden rounded-2xl p-4 text-sm font-medium";
+            solution.classList.add('hidden');
+            solution.innerHTML = "";
+            submitBtn.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+            skipBtn.classList.remove('hidden');
+            input.value = "";
+            input.disabled = false;
+
+            if (questionQueue.length === 0) {
+                questionQueue = allQuestions.slice();
+                shuffleArray(questionQueue);
+            }
+            currentQuestionObj = questionQueue.pop();
+
+            document.getElementById('question-text').innerText = currentQuestionObj.q;
+            input.focus();
+        }
+
+        function checkAnswer() {
+            const input = document.getElementById('answer-input');
+            const userInput = input.value.toLowerCase().replace(/\s+/g, '').trim();
+            const feedback = document.getElementById('feedback-area');
+            const submitBtn = document.getElementById('submit-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            feedback.classList.remove('hidden');
+            
+            const isCorrect = currentQuestionObj.a.some(validAns => {
+                const normalizedValid = validAns.toLowerCase().replace(/\s+/g, '').trim();
+                return userInput === normalizedValid;
+            });
+
+            if (isCorrect) {
+                feedback.className = "rounded-2xl p-4 text-sm font-medium bg-green-100 text-green-700 border border-green-200";
+                feedback.innerHTML = `<strong>Correct!</strong> Great work.`;
+                submitBtn.classList.add('hidden');
+                nextBtn.classList.remove('hidden');
+                input.disabled = true;
+            } else {
+                feedback.className = "rounded-2xl p-4 text-sm font-medium bg-rose-100 text-rose-700 border border-rose-200";
+                feedback.innerHTML = `<strong>Incorrect.</strong> Need a hand?`;
+            }
+        }
+
+
+
+        // Enter key listeners
+        document.getElementById('answer-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                if (!document.getElementById('next-btn').classList.contains('hidden')) {
+                    loadNewQuestion();
+                } else {
+                    checkAnswer();
+                }
+            }
+        });
+
+        window.onload = () => {
+            questionQueue = allQuestions.slice();
+            shuffleArray(questionQueue);
+            loadNewQuestion();
+        };
+    </script>
+</body>
+</html>
