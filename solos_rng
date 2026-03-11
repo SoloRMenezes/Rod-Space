@@ -999,15 +999,20 @@ function save() {
         const sortedPool = getSortedLootPool();
         const colMap = {};
         state.collection.forEach(item => { colMap[item.name] = item; });
+        // Use forEach as provided in instruction for card click handler
         sortedPool.forEach((item, i) => {
             const owned = !!colMap[item.name];
             const div = document.createElement('div');
             div.className = 'inv-slot';
             if (owned) {
                 div.innerHTML = `${item.emoji}<span class="rarity-${item.rarity}">#${parseInt(item.name.split('#')[1])}</span>`;
-                div.onclick = function(e) { e.stopPropagation(); openCollectionModal(i); };
                 div.style.cursor = 'pointer';
                 div.title = item.name;
+                div.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const colIndex = state.collection.findIndex(c => c.name === item.name);
+                    if (colIndex !== -1) openCollectionModal(colIndex);
+                });
             } else {
                 div.innerHTML = `<span style="font-size:2.2rem; color:#27272a;">?</span><span class="rarity-${item.rarity}">#${parseInt(item.name.split('#')[1])}</span>`;
                 div.onclick = null;
