@@ -39,14 +39,14 @@
             animation: slideUp 0.5s ease-out forwards;
         }
 
-        .bg-school { background: linear-gradient(135deg, #701a75 0%, #4a044e 100%); } /* dark magenta */
-        .bg-future { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); } /* navy / tech blue */
-        .bg-silly { background: linear-gradient(135deg, #f97316 0%, #c2410c 100%); } /* orange */
-        .bg-travel { background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); } /* sky blue */
-.bg-dark { background: linear-gradient(135deg, #581c87 0%, #2e1065 100%); } /* dark purple */
-.bg-weird { background: linear-gradient(135deg, #166534 0%, #064e3b 100%); } /* forest green */
-        .bg-freaky-new { background: linear-gradient(135deg, #ff007f 0%, #8b008b 100%); } /* vibrant pink to dark magenta */
-
+        .bg-dark { background: linear-gradient(135deg, #581c87 0%, #2e1065 100%); } /* dark purple */
+        .bg-weird { background: linear-gradient(135deg, #166534 0%, #064e3b 100%); } /* forest green */
+        .bg-freaky-teens { background: linear-gradient(135deg, #ff6ec7 0%, #ff1493 100%); } /* pink gradient */
+        .bg-freaky { background: linear-gradient(135deg, #8b5cf6 0%, #9333ea 100%); } /* purple gradient */
+        .bg-school { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); } /* blue gradient */
+        .bg-future { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); } /* red-orange gradient */
+        .bg-silly { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); } /* orange gradient */
+        .bg-travel { background: linear-gradient(135deg, #10b981 0%, #059669 100%); } /* green gradient */
 
         .question-gradient {
             background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -95,15 +95,18 @@
                 <h3 class="text-2xl font-700">Dark</h3>
             </div>
 
-            <div onclick="startCategory('freaky')" class="theme-box bg-freaky-new p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+            <div onclick="startCategory('freaky')" class="theme-box bg-freaky p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
                 <div class="text-4xl mb-3">👻</div>
                 <h3 class="text-2xl font-700">Freaky</h3>
             </div>
-            
-<div onclick="startCategory('weirdFantasies')" class="theme-box bg-weird p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
-    <div class="text-4xl mb-3">🌀</div>
-    <h3 class="text-2xl font-700">Weird Fantasies</h3>
-</div>
+            <div onclick="startFreakyTeens()" class="theme-box bg-freaky-teens p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">😈</div>
+                <h3 class="text-2xl font-700">Freaky Teens</h3>
+            </div>
+            <div onclick="startCategory('weirdFantasies')" class="theme-box bg-weird p-8 rounded-[2rem] shadow-xl flex flex-col items-center justify-center min-h-[180px]">
+                <div class="text-4xl mb-3">🌀</div>
+                <h3 class="text-2xl font-700">Weird Fantasies</h3>
+            </div>
         </div>
     </div>
 
@@ -449,7 +452,7 @@
   "Who's more likely to survive by eating people?",
   "Who's more likely to end humanity?"
 ],
-weirdFantasies: [
+        weirdFantasies: [
   "Who's more likely to dream of being a giant’s pet?",
   "Who's more likely to fantasize about living inside a painting?",
   "Who's more likely to want to swap bodies with their pet?",
@@ -502,7 +505,7 @@ weirdFantasies: [
   "Who's more likely to dream of being a talking fridge?",
   "Who's more likely to fantasize about having a tail that tells jokes?"
 ],
-freaky: [
+        freaky: [
   "Who’s more likely to get arrested for public nudity on a dare?",
   "Who’s more likely to send unsolicited nudes to the wrong group chat?",
   "Who’s more likely to hook up with someone in a public bathroom?",
@@ -592,6 +595,105 @@ freaky: [
 ],
         };
 
+ const nuclearFreakyTeenQuestions = [
+  "Who’s most likely to hump their mattress so hard they wake up with rug burn on their inner thighs?",
+  "Who’s most likely to edge for 45 minutes straight then cry because they can’t finish?",
+  "Who’s most likely to record themselves moaning their crush’s full government name and almost post it?",
+  "Who’s most likely to shove a pillow between their legs during class and pretend it’s just for comfort?",
+  "Who’s most likely to Google ‘can your dick/clit fall off from too much edging’ at 4 a.m.?",
+  "Who’s most likely to get so wet/hard from a single neck kiss in a dream they wake up soaked?",
+  "Who’s most likely to practice deep-throating a hairbrush handle and gag on camera by accident?",
+  "Who’s most likely to confess they’ve cum/had a ruined orgasm just from nipple twisting alone?",
+  "Who’s most likely to sniff their own used underwear after a long day and get instantly hard/wet?",
+  "Who’s most likely to have a dedicated ‘shame sock’ for cleanup that’s seen war crimes?",
+  "Who’s most likely to fantasize about their crush pissing on them and immediately feel guilty?",
+  "Who’s most likely to try anal fingering with just spit and regret every life choice?",
+  "Who’s most likely to moan ‘daddy/mommy’ out loud while alone and scare their pet?",
+  "Who’s most likely to have 47 tabs open of ‘how to squirt for beginners’ tutorials?",
+  "Who’s most likely to get rock-hard/soaked thinking about being stepped on barefoot?",
+  "Who’s most likely to hump the arm of the couch while parents are in the next room?",
+  "Who’s most likely to accidentally send a voice note of heavy breathing labeled ‘homework help’?",
+  "Who’s most likely to edge using only their hoodie strings rubbing against them?",
+  "Who’s most likely to confess they’ve licked their own fingers after touching themselves?",
+  "Who’s most likely to Google ‘is it normal to get off to being degraded by AI’?",
+  "Who’s most likely to have practiced riding a pillow like it’s cowgirl while watching edits?",
+  "Who’s most likely to get turned on by the smell of their own sweat after PE?",
+  "Who’s most likely to try choking themselves with a belt and panic-blackmail themselves?",
+  "Who’s most likely to admit they’ve humped their backpack strap on the bus ride home?",
+  "Who’s most likely to have a hidden folder called ‘research’ full of their own nude attempts?",
+  "Who’s most likely to fantasize about being tied up with school ties and left edged for hours?",
+  "Who’s most likely to moan into their fist so loud the neighbors think someone’s dying?",
+  "Who’s most likely to Google ‘prostate milking for beginners’ and bookmark it forever?",
+  "Who’s most likely to get off just from someone saying ‘you’re such a slut’ in a joking tone?",
+  "Who’s most likely to try temperature play by rubbing ice on their nipples until they hurt?",
+  "Who’s most likely to confess they’ve dry-humped their gaming mouse pad at 3 a.m.?",
+  "Who’s most likely to record fake orgasm sounds and use them as alarm tones by accident?",
+  "Who’s most likely to have fantasized about their crush spitting in their mouth?",
+  "Who’s most likely to edge in the shower until the water runs cold and they’re shaking?",
+  "Who’s most likely to admit they get hard/wet from the thought of public humiliation?",
+  "Who’s most likely to have tried sounding their urethra with a q-tip and screamed?",
+  "Who’s most likely to hump their bedpost while FaceTiming friends with camera off?",
+  "Who’s most likely to Google ‘can you break your clit/dick from too much rubbing’?",
+  "Who’s most likely to confess they’ve licked their screen after zooming on a thirst pic?",
+  "Who’s most likely to practice gagging on their fingers while staring at themselves?",
+  "Who’s most likely to get turned on by the idea of being collared like a pet?",
+  "Who’s most likely to have a secret note app full of ‘punishment ideas for myself’?",
+  "Who’s most likely to admit they’ve cum from just grinding on a phone in their pocket?",
+  "Who’s most likely to try nipple clamps with binder clips and instantly regret it?",
+  "Who’s most likely to fantasize about being forced to edge in front of a mirror?",
+  "Who’s most likely to moan their teacher’s name while humping a stuffed animal?",
+  "Who’s most likely to Google ‘how to make your ass clap solo’ for no reason?",
+  "Who’s most likely to confess they’ve sniffed their crush’s gym shirt in lost & found?",
+  "Who’s most likely to edge for so long their legs cramp and they fall off the bed?",
+  "Who’s most likely to have practiced begging out loud for an imaginary dom?",
+  "Who’s most likely to admit they get off thinking about being used as furniture?",
+  "Who’s most likely to try figging with hot sauce packets and cry for 20 minutes?",
+  "Who’s most likely to have a voice memo labeled ‘for science’ of them whimpering?",
+  "Who’s most likely to fantasize about their crush making them lick their shoes?",
+  "Who’s most likely to hump their desk leg during online class on mute?",
+  "Who’s most likely to Google ‘is it weird to get horny from foot sweat’?",
+  "Who’s most likely to confess they’ve edged using only pillow friction for a week?",
+  "Who’s most likely to admit they’ve tasted their own precum/slick ‘out of curiosity’?",
+  "Who’s most likely to try breath play by holding their nose while edging?",
+  "Who’s most likely to have fantasized about being leashed and walked around their room?",
+  "Who’s most likely to get turned on by the sound of their own slapping flesh?",
+  "Who’s most likely to confess they’ve grinded on a textbook during study hall?",
+  "Who’s most likely to Google ‘can you train yourself to cum on command’?",
+  "Who’s most likely to admit they moan louder when they imagine being watched?",
+  "Who’s most likely to have tried anal with a marker cap and panicked removal?",
+  "Who’s most likely to fantasize about being degraded in voice notes from their crush?",
+  "Who’s most likely to edge until they’re leaking and then stop just to suffer?",
+  "Who’s most likely to confess they’ve humped their laundry pile for extra smell?",
+  "Who’s most likely to practice crying sexy tears in the mirror for the aesthetic?",
+  "Who’s most likely to get hard/wet thinking about being slapped across the face?",
+  "Who’s most likely to admit they’ve used their electric toothbrush on low for vibes?",
+  "Who’s most likely to Google ‘how to deepthroat without throwing up’ daily?",
+  "Who’s most likely to confess they get off to the idea of being owned?",
+  "Who’s most likely to try spanking themselves with a ruler and leave marks?",
+  "Who’s most likely to have a playlist of degradation audios renamed ‘lofi beats’?",
+  "Who’s most likely to fantasize about their crush stepping on their throat?",
+  "Who’s most likely to edge in the school bathroom stall and almost get caught?",
+  "Who’s most likely to admit they’ve licked their fingers after touching their ass?",
+  "Who’s most likely to confess they’ve humped their phone case while on call?",
+  "Who’s most likely to Google ‘is it normal to cum from pain alone’?",
+  "Who’s most likely to practice submissive poses on all fours in their room?",
+  "Who’s most likely to get turned on by the thought of being caged like an animal?",
+  "Who’s most likely to admit they’ve edged for hours just to feel pathetic?",
+  "Who’s most likely to have tried hot wax from a candle on their thighs?",
+  "Who’s most likely to confess they moan into their pillow begging for mercy?",
+  "Who’s most likely to fantasize about being forced to watch themselves get off?",
+  "Who’s most likely to Google ‘orgasm torture methods solo’ and regret everything?",
+  "Who’s most likely to admit they’ve used hair ties as makeshift cock rings?",
+  "Who’s most likely to get hard/wet from being called worthless in their head?",
+  "Who’s most likely to confess they’ve humped their steering wheel in parked car?",
+  "Who’s most likely to try sounding with a straw and immediately abort mission?",
+  "Who’s most likely to have a secret finsta full of their own ‘degraded’ selfies?",
+  "Who’s most likely to edge until sunrise then go to school dead inside?",
+  "Who’s most likely to admit they get off thinking about being blackmailed?",
+  "Who’s most likely to confess they’ve practiced choking sounds for no reason?",
+  "Who’s most likely to read this entire list and then go ruin themselves immediately?"
+];
+
         let currentCategoryName = '';
         let currentQuestions = [];
         let currentIndex = 0;
@@ -665,6 +767,24 @@ freaky: [
             // Unlock scroll on menu
             document.body.style.overflow = "auto";
         }
+    // Add startFreakyTeens function for the Freaky Teens category
+    function startFreakyTeens() {
+        currentCategoryName = 'Freaky Teens';
+        currentQuestions = shuffle([...nuclearFreakyTeenQuestions]);
+        currentIndex = 0;
+
+        document.getElementById('theme-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        
+        document.body.style.overflow = "hidden";
+
+        const badge = document.getElementById('current-badge');
+        badge.innerText = currentCategoryName;
+        
+        showQuestion();
+    }
     </script>
 </body>
 </html>
+
+ 
