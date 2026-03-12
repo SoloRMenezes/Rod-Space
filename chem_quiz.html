@@ -8,9 +8,10 @@
     <style>
         .quiz-container { max-width: 800px; margin: 2rem auto; }
         .option-btn { transition: all 0.2s; border: 2px solid #e2e8f0; }
-        .option-btn:hover { border-color: #3b82f6; background-color: #eff6ff; }
-        .correct { background-color: #def7ec !important; border-color: #057a55 !important; }
-        .incorrect { background-color: #fde8e8 !important; border-color: #9b1c1c !important; }
+        .option-btn:hover:not(:disabled) { border-color: #3b82f6; background-color: #eff6ff; }
+        .selected { border-color: #3b82f6 !important; background-color: #ebf5ff !important; ring: 2px; ring-color: #3b82f6; }
+        .correct { background-color: #def7ec !important; border-color: #057a55 !important; color: #03543f; }
+        .incorrect { background-color: #fde8e8 !important; border-color: #9b1c1c !important; color: #9b1c1c; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen p-4 font-sans text-slate-900">
@@ -25,14 +26,19 @@
             <div class="text-right">
                 <span id="progress" class="text-sm font-medium text-slate-600">Question 1/68</span>
                 <div class="w-32 h-2 bg-slate-200 rounded-full mt-1">
-                    <div id="progress-bar" class="h-full bg-blue-600 rounded-full" style="width: 0%"></div>
+                    <div id="progress-bar" class="h-full bg-blue-600 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
         </div>
 
+        <!-- Progress Notice -->
+        <div id="save-notice" class="hidden mb-4 p-2 bg-blue-50 text-blue-700 text-xs rounded text-center font-medium">
+            Progress automatically saved.
+        </div>
+
         <!-- Question Section -->
         <div id="quiz-content">
-            <h2 id="question-text" class="text-xl font-semibold mb-6">Loading question...</h2>
+            <h2 id="question-text" class="text-xl font-semibold mb-6 leading-relaxed">Loading question...</h2>
             
             <div id="options-grid" class="grid gap-3 mb-8">
                 <!-- Options injected here -->
@@ -42,9 +48,15 @@
                 <p id="feedback-text" class="font-medium"></p>
             </div>
 
-            <div class="flex justify-between items-center">
-                <button id="hint-btn" class="text-blue-600 text-sm font-medium hover:underline">Need a hint?</button>
-                <button id="next-btn" class="hidden bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">Next Question</button>
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="space-x-4">
+                    <button id="hint-btn" class="text-blue-600 text-sm font-medium hover:underline">Need a hint?</button>
+                    <button id="reset-progress-btn" class="text-slate-400 text-sm font-medium hover:text-red-500 transition-colors">Reset Progress</button>
+                </div>
+                <div class="flex gap-2">
+                    <button id="confirm-btn" class="hidden bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-700 shadow-md">Confirm Answer</button>
+                    <button id="next-btn" class="hidden bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 shadow-md">Next Question</button>
+                </div>
             </div>
         </div>
 
@@ -53,7 +65,7 @@
             <h2 class="text-4xl font-bold text-slate-800 mb-4">Quiz Complete!</h2>
             <div class="text-6xl font-bold text-blue-600 mb-6" id="final-score">0/68</div>
             <p class="text-slate-600 mb-8" id="result-message"></p>
-            <button onclick="location.reload()" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition">Restart Quiz</button>
+            <button id="restart-btn" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">Restart Quiz</button>
         </div>
     </div>
 
@@ -132,6 +144,9 @@
         let currentIdx = 0;
         let score = 0;
         let canAnswer = true;
+        let selectedIdx = null;
+
+        const STORAGE_KEY = 'ib_chem_quiz_progress_v2';
 
         const topicEl = document.getElementById('topic-label');
         const qTextEl = document.getElementById('question-text');
@@ -139,14 +154,43 @@
         const progressEl = document.getElementById('progress');
         const progressBtn = document.getElementById('progress-bar');
         const nextBtn = document.getElementById('next-btn');
+        const confirmBtn = document.getElementById('confirm-btn');
         const feedbackEl = document.getElementById('feedback');
         const feedbackText = document.getElementById('feedback-text');
         const hintBtn = document.getElementById('hint-btn');
+        const saveNotice = document.getElementById('save-notice');
+        const resetBtn = document.getElementById('reset-progress-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        function init() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const data = JSON.parse(saved);
+                currentIdx = data.currentIdx || 0;
+                score = data.score || 0;
+                
+                if (currentIdx >= quizData.length) {
+                    showResults();
+                    return;
+                }
+                
+                saveNotice.classList.remove('hidden');
+                setTimeout(() => saveNotice.classList.add('hidden'), 3000);
+            }
+            loadQuestion();
+        }
+
+        function saveProgress() {
+            const data = { currentIdx: currentIdx, score: score };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
 
         function loadQuestion() {
             const data = quizData[currentIdx];
             canAnswer = true;
+            selectedIdx = null;
             nextBtn.classList.add('hidden');
+            confirmBtn.classList.add('hidden');
             feedbackEl.classList.add('hidden');
             
             topicEl.textContent = data.t;
@@ -157,7 +201,7 @@
             optionsEl.innerHTML = '';
             data.o.forEach((opt, i) => {
                 const btn = document.createElement('button');
-                btn.className = 'option-btn p-4 rounded-lg text-left font-medium';
+                btn.className = 'option-btn p-4 rounded-lg text-left font-medium outline-none';
                 btn.textContent = opt;
                 btn.onclick = () => selectOption(i);
                 optionsEl.appendChild(btn);
@@ -166,23 +210,38 @@
 
         function selectOption(index) {
             if (!canAnswer) return;
+            
+            selectedIdx = index;
+            const buttons = optionsEl.querySelectorAll('button');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            buttons[index].classList.add('selected');
+            
+            confirmBtn.classList.remove('hidden');
+        }
+
+        confirmBtn.onclick = () => {
+            if (selectedIdx === null || !canAnswer) return;
             canAnswer = false;
             
             const data = quizData[currentIdx];
             const buttons = optionsEl.querySelectorAll('button');
+            confirmBtn.classList.add('hidden');
             
-            if (index === data.a) {
-                buttons[index].classList.add('correct');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+
+            if (selectedIdx === data.a) {
+                buttons[selectedIdx].classList.add('correct');
                 score++;
-                showFeedback("Correct!", "green");
+                showFeedback("Correct!", "emerald");
             } else {
-                buttons[index].classList.add('incorrect');
+                buttons[selectedIdx].classList.add('incorrect');
                 buttons[data.a].classList.add('correct');
-                showFeedback("Incorrect. The correct answer is highlighted.", "red");
+                showFeedback(`Incorrect. The correct answer was: ${data.o[data.a]}`, "red");
             }
 
+            saveProgress();
             nextBtn.classList.remove('hidden');
-        }
+        };
 
         function showFeedback(text, color) {
             feedbackEl.classList.remove('hidden');
@@ -194,6 +253,7 @@
         nextBtn.onclick = () => {
             currentIdx++;
             if (currentIdx < quizData.length) {
+                saveProgress();
                 loadQuestion();
             } else {
                 showResults();
@@ -202,10 +262,29 @@
 
         hintBtn.onclick = () => {
             const hint = quizData[currentIdx].h || "Think about the core concept of this sub-topic!";
-            alert(hint);
+            const originalText = hintBtn.textContent;
+            hintBtn.textContent = hint;
+            hintBtn.classList.add('text-amber-600');
+            setTimeout(() => {
+                hintBtn.textContent = originalText;
+                hintBtn.classList.remove('text-amber-600');
+            }, 5000);
+        };
+
+        resetBtn.onclick = () => {
+            if(confirm("Are you sure you want to reset all progress?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        };
+
+        restartBtn.onclick = () => {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
         };
 
         function showResults() {
+            saveProgress();
             document.getElementById('quiz-content').classList.add('hidden');
             document.getElementById('results-content').classList.remove('hidden');
             document.getElementById('final-score').textContent = `${score}/${quizData.length}`;
@@ -217,7 +296,7 @@
             document.getElementById('result-message').textContent = msg;
         }
 
-        loadQuestion();
+        init();
     </script>
 </body>
 </html>
