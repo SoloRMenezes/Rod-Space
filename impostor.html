@@ -10,39 +10,34 @@
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
+            background-color: #020617; 
             color: #f8fafc;
             touch-action: manipulation;
         }
 
         .glass {
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .modal-overlay {
+            background: rgba(2, 6, 23, 0.95);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .card-reveal {
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-        }
-
-        .is-flipped {
-            transform: rotateY(180deg);
         }
 
         .animate-pulse-slow {
-            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation: pulse 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.5)); }
+            50% { opacity: .4; filter: drop-shadow(0 0 2px rgba(34, 211, 238, 0.2)); }
         }
 
-        .backface-hidden {
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -51,19 +46,19 @@
         <!-- Main Menu -->
         <div id="setup-screen" class="space-y-6">
             <div class="text-center space-y-2">
-                <h1 class="text-5xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400">IMPOSTOR</h1>
-                <p class="text-slate-400">Don't let them find you out.</p>
+                <h1 class="text-6xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 via-indigo-400 to-purple-500">
+                    IMPOSTOR
+                </h1>
+                <p class="text-slate-400 font-medium tracking-wide italic">"Trust no one."</p>
             </div>
 
-            <div class="glass p-6 rounded-2xl space-y-4">
-                <!-- Name Entry Section -->
+            <div class="glass p-6 rounded-3xl space-y-5 shadow-2xl border border-white/5">
                 <div class="space-y-2">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500">Add Players</label>
+                    <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 ml-1">Crew Members</label>
                     <div class="flex gap-2">
-                        <input type="text" id="name-input" placeholder="Enter name..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 outline-none transition-all">
-                        <button onclick="addPlayer()" class="bg-slate-700 hover:bg-slate-600 px-4 rounded-lg font-bold text-sm transition-colors">ADD</button>
+                        <input type="text" id="name-input" placeholder="Player name..." class="flex-1 bg-slate-900 border border-slate-700/50 rounded-xl p-3 text-sm focus:ring-2 focus:ring-cyan-500 outline-none transition-all placeholder:text-slate-600">
+                        <button onclick="addPlayer()" class="bg-indigo-600 hover:bg-indigo-500 px-5 rounded-xl font-bold text-sm transition-all active:scale-90 text-white">ADD</button>
                     </div>
-                    <!-- Player Chip List -->
                     <div id="player-chips" class="flex flex-wrap gap-2 pt-2 min-h-[40px]">
                         <p id="no-players-msg" class="text-slate-600 text-xs italic">No players added yet.</p>
                     </div>
@@ -71,83 +66,105 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Impostors</label>
-                        <select id="impostor-count" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm">
+                        <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2 ml-1">Impostors</label>
+                        <select id="impostor-count" class="w-full bg-slate-900 border border-slate-700/50 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 text-slate-200">
                             <option value="1">1 Impostor</option>
                             <option value="2">2 Impostors</option>
                             <option value="3">3 Impostors</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Theme</label>
-                        <select id="theme-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm">
+                        <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-2 ml-1">Theme</label>
+                        <select id="theme-select" class="w-full bg-slate-900 border border-slate-700/50 rounded-xl p-3 text-sm outline-none focus:border-indigo-500 text-slate-200">
                             <option value="food">Food & Drinks</option>
                             <option value="places">Famous Places</option>
                             <option value="objects">Everyday Objects</option>
                             <option value="animals">Animals</option>
                             <option value="jobs">Professions</option>
                             <option value="tech">Tech & Gadgets</option>
-                            <option value="media">Media & Entertainment</option>
-                            <option value="transport">Vehicles</option>
-                            <option value="clothing">Clothing</option>
+                            <option value="media">Movies/Games</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-3 p-2">
-                    <input type="checkbox" id="impostor-hint" class="w-5 h-5 accent-red-500">
-                    <label for="impostor-hint" class="text-sm text-slate-300">Give Impostor a category hint?</label>
+                <div class="flex items-center space-x-3 p-2 group">
+                    <input type="checkbox" id="impostor-hint" class="w-5 h-5 accent-cyan-400 rounded cursor-pointer">
+                    <label for="impostor-hint" class="text-sm text-slate-400 cursor-pointer group-hover:text-slate-200 transition-colors">Give Impostor a category hint?</label>
                 </div>
 
-                <button onclick="startGame()" class="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-to-red-400 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-900/20 transform active:scale-95 transition-all">
-                    START GAME
+                <button onclick="startGame()" class="w-full bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-black py-4 rounded-2xl shadow-xl shadow-cyan-900/20 transform active:scale-[0.98] transition-all tracking-widest text-sm">
+                    START SESSION
                 </button>
             </div>
         </div>
 
-        <!-- Reveal Words Screen -->
-        <div id="reveal-screen" class="hidden space-y-6 text-center">
-            <h2 class="text-xl font-bold text-slate-300">Pass the device</h2>
-            
-            <div id="reveal-card-container" class="relative h-80 w-full flex items-center justify-center">
-                <!-- Card content injected here -->
+        <!-- Role Select Menu -->
+        <div id="role-select-screen" class="hidden space-y-6 text-center">
+            <div class="glass p-8 rounded-3xl border-2 border-cyan-500/10 shadow-2xl relative">
+                <h2 class="text-3xl font-black mb-2 uppercase tracking-tight text-cyan-400">ASSIGNMENTS</h2>
+                <p class="text-slate-400 mb-8 text-xs leading-relaxed uppercase tracking-wider">Tap your name to reveal role</p>
+                
+                <div class="grid grid-cols-2 gap-3 mb-4" id="role-grid-display">
+                    <!-- Player Role Buttons -->
+                </div>
             </div>
 
-            <p id="player-turn-label" class="text-lg font-medium text-red-400"></p>
-            <p class="text-xs text-slate-500">Tap the card to see your role, then tap again to hide it and pass to the next player.</p>
+            <button id="begin-gameplay-btn" disabled onclick="showGameplayScreen()" class="w-full bg-white text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed font-black py-4 rounded-2xl shadow-xl transform active:scale-[0.98] transition-all tracking-widest text-sm">
+                START GAME
+            </button>
+        </div>
+
+        <!-- Role Modal (Confirm -> View) -->
+        <div id="role-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 modal-overlay">
+            <div id="confirm-view-content" class="bg-slate-900 border border-slate-700 w-full max-w-xs rounded-[2.5rem] p-10 text-center shadow-2xl">
+                <p class="text-slate-300 font-bold mb-6 text-lg" id="confirm-text">Are you [Name]?</p>
+                <div class="flex flex-col gap-3">
+                    <button onclick="revealRoleNow()" class="w-full py-4 bg-cyan-500 text-slate-900 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-cyan-900/20">CONFIRM</button>
+                    <button onclick="closeRoleOverlay()" class="w-full py-4 bg-slate-800 text-slate-400 rounded-2xl font-bold text-xs uppercase tracking-widest">CANCEL</button>
+                </div>
+            </div>
+
+            <div id="actual-role-content" class="hidden bg-slate-100 w-full max-w-xs rounded-[2.5rem] p-10 text-center shadow-2xl">
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-6">Secret File</p>
+                <div id="role-text-body">
+                    <!-- Injected Role Content -->
+                </div>
+                <button onclick="closeRoleOverlay()" class="mt-10 w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-xs uppercase tracking-widest">DONE</button>
+            </div>
         </div>
 
         <!-- Gameplay Screen -->
         <div id="gameplay-screen" class="hidden space-y-6 text-center">
-            <div class="glass p-8 rounded-2xl border-2 border-red-500/20">
-                <h2 class="text-3xl font-black mb-4 uppercase tracking-tight">Game On!</h2>
-                <p class="text-slate-400 mb-6 text-sm">Take turns giving clues. Discuss, then vote on who the Impostor is!</p>
+            <div class="glass p-8 rounded-3xl border-2 border-cyan-500/10 shadow-2xl">
+                <h2 class="text-2xl font-black mb-1 uppercase tracking-tight text-cyan-400">INVESTIGATIONS</h2>
+                <div id="turn-order-banner" class="mb-6 p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 text-indigo-300 font-bold text-sm">
+                    <!-- Turn order injected here -->
+                </div>
                 
-                <div class="grid grid-cols-2 gap-2 text-sm" id="player-list-display">
+                <div class="grid grid-cols-2 gap-2 text-sm" id="gameplay-player-list">
                     <!-- Players list -->
                 </div>
             </div>
 
-            <button onclick="triggerCountdown()" class="w-full bg-white text-slate-900 font-bold py-4 rounded-xl shadow-xl transform active:scale-95 transition-all">
-                REVEAL IMPOSTOR
+            <button onclick="triggerCountdown()" class="w-full bg-white text-slate-900 font-black py-4 rounded-2xl shadow-xl transform active:scale-[0.98] transition-all tracking-widest text-sm">
+                VOTE / REVEAL
             </button>
         </div>
 
         <!-- Final Reveal Screen -->
         <div id="final-screen" class="hidden flex flex-col items-center justify-center space-y-8 py-10">
-            <div id="countdown-display" class="text-9xl font-black text-red-500 hidden">3</div>
+            <div id="countdown-display" class="text-9xl font-black text-cyan-400 hidden">3</div>
             
             <div id="results-display" class="hidden space-y-6 w-full text-center">
                 <h2 class="text-4xl font-extrabold text-white">THE IMPOSTOR WAS...</h2>
-                <div id="impostor-names" class="text-5xl font-black text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">
+                <div id="impostor-names" class="text-5xl font-black text-cyan-400 drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]"></div>
+                <div id="chaos-tag" class="hidden text-fuchsia-400 font-bold text-xl uppercase animate-bounce">Chaos Mode! Everyone was an impostor!</div>
+                <div class="glass p-5 rounded-2xl border border-white/5">
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">Secret Word</p>
+                    <p id="final-word" class="text-3xl font-black text-white uppercase tracking-widest"></p>
                 </div>
-                <div id="chaos-tag" class="hidden text-orange-400 font-bold text-xl uppercase animate-bounce">Chaos Mode! Everyone was an impostor!</div>
-                <div class="glass p-4 rounded-xl">
-                    <p class="text-slate-400 text-sm mb-1">The Word Was:</p>
-                    <p id="final-word" class="text-2xl font-bold text-green-400 uppercase tracking-widest"></p>
-                </div>
-                <button onclick="resetGame()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-all">
-                    PLAY AGAIN
+                <button onclick="resetGame()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-2xl transition-all active:scale-95">
+                    REPLAY
                 </button>
             </div>
         </div>
@@ -157,27 +174,19 @@
         const STORAGE_KEY = 'impostor_game_players';
 
         const wordPools = {
-            food: ["Pizza", "Sushi", "Burger", "Ice Cream", "Taco", "Pasta", "Croissant", "Chocolate", "Avocado", "Pancake", "Ramen", "Steak", "Sandwich", "Salad", "Fries", "Donut", "Bagel", "Curry", "Soup", "Waffles", "Smoothie", "Coffee", "Tea", "Muffin", "Burrito", "Hot Dog", "Lobster", "Cheese", "Yogurt", "Sausage", "Sashimi"],
-            places: ["Paris", "Tokyo", "London", "New York", "Egypt", "Grand Canyon", "Great Wall", "Moon", "Amazon Rain Forest", "Hollywood", "Rome", "Sydney", "Beijing", "Rio de Janeiro", "Venice", "Machu Picchu", "Niagara Falls", "Dubai", "Santorini", "Bali", "Kyoto", "Cairo", "Istanbul", "Los Angeles", "Las Vegas", "Mount Everest", "Sahara Desert", "Niagara", "Prague", "Barcelona", "Angkor Wat"],
-            objects: ["Toaster", "Umbrella", "Bicycle", "Headphones", "Telescope", "Hammer", "Clock", "Camera", "Guitar", "Mirror", "Laptop", "Phone", "Wallet", "Keys", "Chair", "Table", "Pen", "Notebook", "Backpack", "Shoes", "Glasses", "Watch", "Pillow", "Blanket", "Lamp", "Fan", "Bottle", "Mug", "Scissors", "Calculator"],
-            animals: ["Lion", "Penguin", "Giraffe", "Elephant", "Octopus", "Eagle", "Sloth", "Kangaroo", "Dolphin", "Cheetah", "Tiger", "Zebra", "Bear", "Wolf", "Fox", "Owl", "Parrot", "Snake", "Crocodile", "Whale", "Shark", "Frog", "Rabbit", "Deer", "Monkey", "Seal", "Otter", "Peacock", "Horse", "Buffalo"],
-            jobs: ["Doctor", "Astronaut", "Chef", "Firefighter", "Artist", "Detective", "Pilot", "Teacher", "Scientist", "Farmer", "Engineer", "Musician", "Lawyer", "Nurse", "Actor", "Writer", "Photographer", "Architect", "Police Officer", "Plumber", "Electrician", "Carpenter", "Soldier", "Designer", "Therapist", "Coach", "Dancer", "Politician", "Judge", "Explorer"],
-            tech: ["Apple Inc", "Samsung", "Microsoft", "Sony", "DJI", "GoPro", "Fitbit", "Oculus", "Razer", "Kindle", "Smartphone", "Laptop", "Tablet", "Drone", "Smartwatch", "Printer", "VR Headset", "Router", "Microphone", "Camera", "Speaker", "Keyboard", "Mouse", "Projector", "Smart TV", "Earbuds", "Gaming Console", "Charger", "Hard Drive", "Monitor"],
-            media: ["Disney", "Netflix", "Marvel", "Nintendo", "HBO", "Spotify", "Twitch", "Pixar", "Warner Bros", "EA Games", "Movies", "TV Shows", "Video Games", "Books", "Anime", "Music Genres", "Comics", "Podcasts", "Theatre", "YouTube Channels", "Cartoons", "Musicals", "Web Series", "Reality Shows", "Documentaries", "Graphic Novels", "Manga", "Film Festivals", "Concerts", "Awards Shows"],
-            transport: ["Bugatti", "Mercedes-Benz", "Tesla", "Ferrari", "Lamborghini", "Porsche", "Rolls-Royce", "BMW", "Audi", "Ducati", "Car", "Train", "Airplane", "Bicycle", "Boat", "Subway", "Scooter", "Helicopter", "Spaceship", "Skateboard", "Motorcycle", "Bus", "Tram", "Yacht", "Jet", "Ferry", "Hot Air Balloon", "Snowmobile", "Segway", "Golf Cart"],
-            clothing: ["Nike", "Adidas", "Timberland", "Gucci", "Prada", "Louis Vuitton", "Converse", "Puma", "Reebok", "The North Face", "Hat", "Shoes", "Dress", "Jacket", "Gloves", "Scarf", "Sunglasses", "Belt", "Watch", "Socks", "T-Shirt", "Pants", "Skirt", "Hoodie", "Boots", "Tie", "Earrings", "Necklace", "Bracelet", "Ring"]
+            food: ["Pizza", "Sushi", "Burger", "Ice Cream", "Taco", "Pasta", "Croissant", "Chocolate", "Avocado", "Ramen", "Steak", "Burrito", "Waffles", "Donut", "Curry"],
+            places: ["Paris", "Tokyo", "London", "New York", "Egypt", "Grand Canyon", "Great Wall", "Moon", "Hollywood", "Rome", "Venice", "Dubai", "Bali", "Kyoto"],
+            objects: ["Toaster", "Umbrella", "Bicycle", "Headphones", "Telescope", "Hammer", "Clock", "Camera", "Guitar", "Mirror", "Laptop", "Phone", "Backpack", "Watch"],
+            animals: ["Lion", "Penguin", "Giraffe", "Elephant", "Octopus", "Eagle", "Sloth", "Kangaroo", "Dolphin", "Cheetah", "Tiger", "Fox", "Panda", "Koala"],
+            jobs: ["Doctor", "Astronaut", "Chef", "Firefighter", "Artist", "Detective", "Pilot", "Teacher", "Scientist", "Farmer", "Musician", "Lawyer", "Nurse", "Athlete"],
+            tech: ["Apple", "Samsung", "Microsoft", "Smartphone", "Laptop", "Drone", "VR Headset", "AI", "Robot", "Bitcoin", "Internet"],
+            media: ["Disney", "Netflix", "Marvel", "Nintendo", "Anime", "Movies", "Video Games", "Comics", "Star Wars", "Harry Potter", "Minecraft", "Fortnite"]
         };
 
-        // Initialize players from localStorage if they exist
         let currentPlayers = [];
         const savedPlayers = localStorage.getItem(STORAGE_KEY);
         if (savedPlayers) {
-            try {
-                currentPlayers = JSON.parse(savedPlayers);
-            } catch (e) {
-                console.error("Failed to parse saved players", e);
-                currentPlayers = [];
-            }
+            try { currentPlayers = JSON.parse(savedPlayers); } catch (e) { currentPlayers = []; }
         }
 
         let gameState = {
@@ -185,17 +194,13 @@
             impostorIndices: [],
             secretWord: "",
             theme: "",
-            currentIndex: 0,
-            isRevealed: false,
-            isChaosMode: false
+            viewedPlayers: new Set(),
+            isChaosMode: false,
+            lastClickedIndex: -1
         };
 
-        // Run on load to show saved players
-        window.onload = () => {
-            renderPlayerChips();
-        };
+        window.onload = () => renderPlayerChips();
 
-        // UI Listeners
         document.getElementById('name-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addPlayer();
         });
@@ -207,18 +212,12 @@
         function addPlayer() {
             const input = document.getElementById('name-input');
             const name = input.value.trim();
-            
             if (!name) return;
-
-            // Case-insensitive duplicate check
-            const nameExists = currentPlayers.some(p => p.toLowerCase() === name.toLowerCase());
-            
-            if (nameExists) {
-                input.classList.add('border-red-500');
-                setTimeout(() => input.classList.remove('border-red-500'), 1000);
+            if (currentPlayers.some(p => p.toLowerCase() === name.toLowerCase())) {
+                input.classList.add('border-fuchsia-500');
+                setTimeout(() => input.classList.remove('border-fuchsia-500'), 1000);
                 return;
             }
-
             currentPlayers.push(name);
             input.value = '';
             saveToStorage();
@@ -238,31 +237,30 @@
                 return;
             }
             container.innerHTML = currentPlayers.map(name => `
-                <div class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm flex items-center gap-2 border border-red-500/30 animate-in fade-in zoom-in duration-200">
+                <div class="bg-indigo-500/10 text-indigo-300 px-3 py-1.5 rounded-xl text-xs flex items-center gap-2 border border-indigo-500/20 animate-in fade-in zoom-in duration-200">
                     ${name}
-                    <button onclick="removePlayer('${name}')" class="hover:text-white transition-colors">&times;</button>
+                    <button onclick="removePlayer('${name}')" class="hover:text-white transition-colors p-1">&times;</button>
                 </div>
             `).join('');
         }
 
         function showScreen(screenId) {
-            ['setup-screen', 'reveal-screen', 'gameplay-screen', 'final-screen'].forEach(id => {
+            ['setup-screen', 'role-select-screen', 'gameplay-screen', 'final-screen'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(screenId).classList.remove('hidden');
         }
 
         function startGame() {
-            const impostorCountSetting = parseInt(document.getElementById('impostor-count').value);
+            const impCountSetting = parseInt(document.getElementById('impostor-count').value);
             const themeKey = document.getElementById('theme-select').value;
             
             if (currentPlayers.length < 3) {
-                alert("Add at least 3 players to start!");
+                alert("At least 3 players required!");
                 return;
             }
-
-            if (impostorCountSetting >= currentPlayers.length - 1) {
-                alert("Too many impostors! You need more regular players.");
+            if (impCountSetting >= currentPlayers.length - 1) {
+                alert("Too many impostors for this player count.");
                 return;
             }
 
@@ -270,97 +268,112 @@
             const secretWord = pool[Math.floor(Math.random() * pool.length)];
             const themeName = document.getElementById('theme-select').options[document.getElementById('theme-select').selectedIndex].text;
 
-            const isChaosMode = Math.random() < 0.20;
-            let impostorIndices = [];
+            const isChaosMode = Math.random() < 0.10; 
+            let impIndices = [];
 
             if (isChaosMode) {
-                impostorIndices = currentPlayers.map((_, i) => i);
+                impIndices = currentPlayers.map((_, i) => i);
             } else {
                 let poolIndices = currentPlayers.map((_, i) => i);
-                for(let i = 0; i < impostorCountSetting; i++) {
+                for(let i = 0; i < impCountSetting; i++) {
                     const randIndex = Math.floor(Math.random() * poolIndices.length);
-                    impostorIndices.push(poolIndices.splice(randIndex, 1)[0]);
+                    impIndices.push(poolIndices.splice(randIndex, 1)[0]);
                 }
             }
 
             gameState = {
                 players: [...currentPlayers],
-                impostorIndices,
+                impostorIndices: impIndices,
                 secretWord,
                 theme: themeName,
-                currentIndex: 0,
-                isRevealed: false,
-                isChaosMode
+                viewedPlayers: new Set(),
+                isChaosMode,
+                lastClickedIndex: -1
             };
 
-            setupRevealCard();
-            showScreen('reveal-screen');
+            renderRoleSelect();
+            showScreen('role-select-screen');
         }
 
-        function setupRevealCard() {
-            const container = document.getElementById('reveal-card-container');
-            const turnLabel = document.getElementById('player-turn-label');
-            const currentPlayer = gameState.players[gameState.currentIndex];
-            
-            turnLabel.innerText = `Turn: ${currentPlayer}`;
-            
-            container.innerHTML = `
-                <div onclick="handleCardClick()" class="card-reveal w-64 h-80 cursor-pointer ${gameState.isRevealed ? 'is-flipped' : ''}">
-                    <div class="absolute inset-0 glass rounded-3xl flex flex-col items-center justify-center p-6 backface-hidden border-2 border-red-500/30">
-                        <div class="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
-                            <svg class="w-10 h-10 text-red-500 animate-pulse-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        </div>
-                        <p class="font-bold text-xl tracking-widest">TAP TO REVEAL</p>
-                        <p class="text-slate-500 text-sm mt-2 text-center uppercase">Pass to ${currentPlayer}</p>
-                    </div>
-                    <div class="absolute inset-0 bg-white rounded-3xl flex flex-col items-center justify-center p-6 [transform:rotateY(180deg)] backface-hidden text-slate-900 shadow-2xl">
-                        <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Secret Role</p>
-                        <div class="text-center">
-                            ${getRoleHTML()}
-                        </div>
-                        <p class="text-xs text-slate-400 mt-8 font-medium">TAP TO HIDE & PASS</p>
-                    </div>
-                </div>
-            `;
+        function renderRoleSelect() {
+            const grid = document.getElementById('role-grid-display');
+            grid.innerHTML = gameState.players.map((name, i) => `
+                <button 
+                    id="player-btn-${i}"
+                    onclick="viewRolePrompt(${i})" 
+                    class="bg-slate-900/80 hover:bg-slate-800 border-2 border-slate-700/50 p-4 rounded-2xl text-slate-300 font-bold transition-all transform active:scale-95 flex items-center justify-between"
+                >
+                    <span class="truncate pr-2">${name}</span>
+                    <div id="check-${i}" class="w-2 h-2 rounded-full bg-slate-700"></div>
+                </button>
+            `).join('');
+            document.getElementById('begin-gameplay-btn').disabled = true;
         }
 
-        function getRoleHTML() {
-            const isImpostor = gameState.impostorIndices.includes(gameState.currentIndex);
+        function viewRolePrompt(index) {
+            gameState.lastClickedIndex = index;
+            document.getElementById('confirm-text').innerText = `Are you ${gameState.players[index]}?`;
+            
+            document.getElementById('confirm-view-content').classList.remove('hidden');
+            document.getElementById('actual-role-content').classList.add('hidden');
+            document.getElementById('role-overlay').classList.remove('hidden');
+        }
+
+        function revealRoleRole() {} // placeholder
+
+        function revealRoleNow() {
+            const index = gameState.lastClickedIndex;
+            const isImpostor = gameState.impostorIndices.includes(index);
             const giveHint = document.getElementById('impostor-hint').checked;
+            const textBody = document.getElementById('role-text-body');
             
             if (isImpostor) {
-                return `
-                    <h3 class="text-4xl font-black text-red-600 mb-2">IMPOSTOR</h3>
-                    ${giveHint ? `<p class="text-sm text-slate-600 italic">Hint: The theme is ${gameState.theme}</p>` : `<p class="text-sm text-slate-600">You don't know the word!</p>`}
+                textBody.innerHTML = `
+                    <h3 class="text-4xl font-black text-indigo-600 mb-2 tracking-tight italic">IMPOSTOR</h3>
+                    ${giveHint ? `<p class="text-xs text-slate-500 font-medium">Topic: <span class="text-indigo-500 font-bold">${gameState.theme}</span></p>` : `<p class="text-xs text-slate-400">Try to figure out the word!</p>`}
                 `;
             } else {
-                return `
-                    <h3 class="text-4xl font-black text-slate-900 mb-1 leading-tight">${gameState.secretWord.toUpperCase()}</h3>
-                    <p class="text-sm font-semibold text-green-600">INNOCENT</p>
+                textBody.innerHTML = `
+                    <h3 class="text-3xl font-black text-slate-900 mb-1 leading-tight tracking-tight">${gameState.secretWord.toUpperCase()}</h3>
+                    <p class="text-xs font-bold text-cyan-600 uppercase tracking-widest">Innocent</p>
                 `;
+            }
+
+            document.getElementById('confirm-view-content').classList.add('hidden');
+            document.getElementById('actual-role-content').classList.remove('hidden');
+            
+            // Mark as viewed
+            gameState.viewedPlayers.add(index);
+            const check = document.getElementById(`check-${index}`);
+            check.classList.remove('bg-slate-700');
+            check.classList.add('bg-cyan-400', 'shadow-[0_0_8px_rgba(34,211,238,0.8)]');
+
+            if (gameState.viewedPlayers.size === gameState.players.length) {
+                document.getElementById('begin-gameplay-btn').disabled = false;
             }
         }
 
-        function handleCardClick() {
-            if (!gameState.isRevealed) {
-                gameState.isRevealed = true;
-                document.querySelector('.card-reveal').classList.add('is-flipped');
-            } else {
-                gameState.isRevealed = false;
-                gameState.currentIndex++;
-                if (gameState.currentIndex >= gameState.players.length) {
-                    startGameplay();
-                } else {
-                    setupRevealCard();
-                }
-            }
+        function closeRoleOverlay() {
+            document.getElementById('role-overlay').classList.add('hidden');
         }
 
-        function startGameplay() {
+        function showGameplayScreen() {
             showScreen('gameplay-screen');
-            const display = document.getElementById('player-list-display');
+            
+            // Determine turn order
+            const starterIdx = Math.floor(Math.random() * gameState.players.length);
+            const direction = Math.random() > 0.5 ? "Clockwise ↻" : "Counter-Clockwise ↺";
+            const starterName = gameState.players[starterIdx];
+
+            document.getElementById('turn-order-banner').innerHTML = `
+                <div class="text-[10px] uppercase tracking-widest text-indigo-400 mb-1">Turn Sequence</div>
+                <div class="text-xl font-black text-white">${starterName} Starts</div>
+                <div class="text-xs text-cyan-400 mt-1">${direction}</div>
+            `;
+
+            const display = document.getElementById('gameplay-player-list');
             display.innerHTML = gameState.players.map(p => `
-                <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700">${p}</div>
+                <div class="bg-indigo-500/5 p-4 rounded-2xl border border-indigo-500/10 font-bold text-slate-300">${p}</div>
             `).join('');
         }
 
@@ -373,7 +386,6 @@
 
             let count = 3;
             cd.innerText = count;
-
             const interval = setInterval(() => {
                 count--;
                 if (count <= 0) {
@@ -382,7 +394,7 @@
                 } else {
                     cd.innerText = count;
                 }
-            }, 1000);
+            }, 800);
         }
 
         function showResults() {
@@ -399,7 +411,6 @@
                 document.getElementById('impostor-names').innerText = names;
                 chaosTag.classList.add('hidden');
             }
-            
             document.getElementById('final-word').innerText = gameState.secretWord;
         }
 
