@@ -1,4 +1,4 @@
-d<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -66,7 +66,7 @@ d<!doctype html>
 
 <header class="site-header">
   <a href="#" class="brand">
-    <img src="assets/logo.svg" width="28" height="28" />
+    <img src="assets/logo.svg" width="28" height="28" onerror="this.src='https://via.placeholder.com/28'" />
     <span>Rod Space</span>
   </a>
 </header>
@@ -90,13 +90,13 @@ d<!doctype html>
       <h2>Projects & Experiments</h2>
 
       <div class="project-controls">
-        <select class="control-select" onchange="setTypeFilter(this.value)">
-          <option value="all">All</option>
+        <select id="filterType" class="control-select" onchange="applyFiltersAndSort()">
+          <option value="all">All Types</option>
           <option value="solo">Solo Games</option>
           <option value="party">Party Games</option>
-          <option value="tools">Tools</option>
+          <option value="tool">Tools</option>
         </select>
-        <select class="control-select" onchange="sortCards(this.value)">
+        <select id="sortBy" class="control-select" onchange="applyFiltersAndSort()">
           <option value="new">Newest</option>
           <option value="az">A–Z</option>
         </select>
@@ -127,12 +127,12 @@ d<!doctype html>
         <div class="card-actions"><a href="whos-more-likely.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
       </article>
 
-            <article class="card" data-type="party" data-date="2026-01-26">
+      <article class="card" data-type="party" data-date="2026-01-26">
         <div class="card-top"><div class="icon">🏆</div><h3>Side Quests</h3><p>Break Routines</p></div>
         <div class="card-actions"><a href="sidequests.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
       </article>
 
- <article class="card" data-type="party" data-date="2026-01-26">
+      <article class="card" data-type="party" data-date="2026-01-26">
         <div class="card-top"><div class="icon">🔫</div><h3>Darts</h3><p>Test Your Percision</p></div>
         <div class="card-actions"><a href="darts.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
       </article>
@@ -168,7 +168,7 @@ d<!doctype html>
         <div class="card-actions"><a href="solos_rng.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
       
-            <article class="card" data-type="solo" data-date="2025-11-20">
+      <article class="card" data-type="solo" data-date="2025-11-20">
         <div class="card-top"><div class="icon">🏎️</div><h3>3D Drift Racer</h3><p>Dont Crash</p></div>
         <div class="card-actions">
           <a href="3d_drift_racer.html" class="btn small primary">Play</a>
@@ -176,7 +176,7 @@ d<!doctype html>
         </div>
       </article>
 
-                  <article class="card" data-type="solo" data-date="2025-11-20">
+      <article class="card" data-type="solo" data-date="2025-11-20">
         <div class="card-top"><div class="icon">🌏</div><h3>Planet Architect</h3><p>Build your world</p></div>
         <div class="card-actions">
           <a href="planet_architect.html" class="btn small primary">Play</a>
@@ -197,7 +197,7 @@ d<!doctype html>
         </div>
       </article>
 
-            <article class="card" data-type="solo" data-date="2026-01-22">
+      <article class="card" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🤖</div><h3>Nico's Nextbots</h3><p>RUN!!!</p></div>
         <div class="card-actions">
           <a href="nicos_nextbots.html" class="btn small primary">Play</a>
@@ -205,7 +205,7 @@ d<!doctype html>
         </div>
       </article>
 
-            <article class="card" data-type="solo" data-date="2026-01-22">
+      <article class="card" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🐥</div><h3>Sling Champ</h3><p>Throw Birds Around</p></div>
         <div class="card-actions"><a href="sling_champ.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
       </article>
@@ -251,48 +251,44 @@ d<!doctype html>
 </footer>
 
 <script>
-  let grid;
-  let currentFilter = "all";
+  /**
+   * Main function to handle both filtering and sorting simultaneously.
+   * This ensures that when you sort, filters are preserved, and vice versa.
+   */
+  function applyFiltersAndSort() {
+    const grid = document.getElementById("projectGrid");
+    const filterType = document.getElementById("filterType").value;
+    const sortBy = document.getElementById("sortBy").value;
+    const cards = Array.from(grid.children);
 
-  function applyFilter(type) {
-    currentFilter = type;
-
-    [...grid.children].forEach(card => {
-      const t = card.dataset.type;
-      const show =
-        type === "all" ||
-        (type === "solo" && t === "solo") ||
-        (type === "party" && t === "party") ||
-        (type === "tools" && t === "tool");
-
-      card.hidden = !show;
+    // 1. Filter Logic
+    cards.forEach(card => {
+      const type = card.dataset.type;
+      const isVisible = (filterType === "all" || type === filterType);
+      card.style.display = isVisible ? "" : "none";
     });
+
+    // 2. Sort Logic
+    cards.sort((a, b) => {
+      if (sortBy === "az") {
+        const titleA = a.querySelector("h3").textContent.trim().toLowerCase();
+        const titleB = b.querySelector("h3").textContent.trim().toLowerCase();
+        return titleA.localeCompare(titleB);
+      } else {
+        // Sort by date (Newest first)
+        const dateA = new Date(a.dataset.date || 0);
+        const dateB = new Date(b.dataset.date || 0);
+        return dateB - dateA;
+      }
+    });
+
+    // 3. Re-append sorted cards to the DOM
+    cards.forEach(card => grid.appendChild(card));
   }
 
-  function setTypeFilter(type) {
-    applyFilter(type);
-  }
-
-  function sortCards(mode) {
-    const cards = [...grid.children];
-
-    cards.sort((a, b) =>
-      mode === "az"
-        ? a.querySelector("h3").innerText.localeCompare(
-            b.querySelector("h3").innerText
-          )
-        : new Date(b.dataset.date) - new Date(a.dataset.date)
-    );
-
-    cards.forEach(c => grid.appendChild(c));
-    applyFilter(currentFilter);
-  }
-
-  // default (run after DOM is ready)
+  // Initialize on load
   document.addEventListener("DOMContentLoaded", () => {
-    grid = document.getElementById("projectGrid");
-    sortCards("new");
-    applyFilter("all");
+    applyFiltersAndSort();
   });
 </script>
 
