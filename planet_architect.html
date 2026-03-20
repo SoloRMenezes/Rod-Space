@@ -64,6 +64,7 @@
         .upgrade-card {
             border-left: 3px solid var(--gold);
             background: rgba(255, 255, 255, 0.5);
+            transition: opacity 0.3s ease;
         }
 
         .nav-btn {
@@ -152,6 +153,7 @@
                 <div class="flex items-center justify-between border-b border-amber-900 mb-2 pb-1 text-[10px] md:text-xs">
                     <div class="font-mythic uppercase text-amber-900 px-2 font-bold">Records of Creation</div>
                     <div class="flex gap-4 italic opacity-70">
+                        <div>Click: <span id="click-display" class="font-bold text-amber-900">1</span></div>
                         <div>Crit: <span id="crit-display" class="font-bold text-amber-700">0</span>%</div>
                         <div>Rate: <span id="auto-rate" class="font-bold text-amber-900">0</span> / sec</div>
                     </div>
@@ -225,6 +227,7 @@
             essence: 0,
             totalEssence: 0,
             autoRate: 0,
+            clickPower: 1,
             critChance: 0,
             eraIndex: 0,
             upgradesOwned: {},
@@ -252,6 +255,7 @@
         ];
 
         const upgrades = [
+            { id: 'focus', name: "Focus", cost: 10, baseClick: 1.2, desc: "Concentrated thought. (x1.2 Click Power)", type: 'click' },
             { id: 'gravity', name: "Gravity", cost: 10, baseYield: 1, desc: "Clump dust. (+1 Essence/sec)", type: 'auto' },
             { id: 'impacts', name: "Impacts", cost: 75, baseCrit: 0.5, desc: "Lethal luck. (+0.5% Crit Chance, x3 Multiplier)", type: 'crit' },
             { id: 'core', name: "Iron Core", cost: 400, baseYield: 20, desc: "Magnetic shield. (+20 Essence/sec)", type: 'auto' },
@@ -279,6 +283,7 @@
         // UI Selectors
         const essenceEl = document.getElementById('essence-display');
         const autoRateEl = document.getElementById('auto-rate');
+        const clickDisplayEl = document.getElementById('click-display');
         const critDisplayEl = document.getElementById('crit-display');
         const upgradeContainer = document.getElementById('upgrade-container');
         const collectBtn = document.getElementById('collect-btn');
@@ -373,16 +378,23 @@
         function calculateRates() {
             let rate = 0;
             let crit = 0;
+            let clickMult = 1;
+
             upgrades.forEach(upg => {
                 const count = state.upgradesOwned[upg.id] || 0;
                 if (upg.type === 'auto') rate += upg.baseYield * count;
                 if (upg.type === 'crit') crit += upg.baseCrit * count;
+                if (upg.type === 'click') clickMult *= Math.pow(upg.baseClick, count);
             });
             
             rate = rate * (1 + (state.permanentUpgrades.productionBoost * 0.1));
             
+            let eraPower = 1 + (state.eraIndex * 5);
+            let finalClick = eraPower * clickMult * (1 + (state.permanentUpgrades.clickPower * 0.2));
+            
             state.autoRate = rate;
             state.critChance = crit;
+            state.clickPower = Math.max(1, Math.floor(finalClick));
         }
 
         function renderAchievements() {
@@ -449,12 +461,13 @@
                 state.essence = 0;
                 state.autoRate = 0;
                 state.critChance = 0;
+                state.clickPower = 1;
                 state.upgradesOwned = {};
                 state.eraIndex = 0;
                 
                 calculateRates();
                 addLog(`Performed Rebirth. Gained ${reward} Aether.`);
-                saveGame(); // Save immediately on rebirth
+                saveGame();
                 setView('home');
                 updateUI();
             }
@@ -471,6 +484,7 @@
             essenceEl.innerText = formatNum(state.essence);
             autoRateEl.innerText = formatNum(state.autoRate);
             critDisplayEl.innerText = state.critChance.toFixed(1);
+            clickDisplayEl.innerText = formatNum(state.clickPower);
 
             let currentEra = 0;
             for(let i = eras.length - 1; i >= 0; i--) {
@@ -486,6 +500,7 @@
                 eraNameEl.innerText = eras[currentEra].name;
                 eraDescEl.innerText = eras[currentEra].desc;
                 addLog(`NEW ERA: ${eras[currentEra].name}`);
+                calculateRates(); 
             }
 
             upgrades.forEach(upg => {
@@ -493,7 +508,8 @@
                 const cost = getCost(upg);
                 const count = state.upgradesOwned[upg.id] || 0;
 
-                if (state.totalEssence >= cost || count > 0) {
+                // RULE: Only show if current essence is enough to buy it OR if we already own some
+                if (state.essence >= cost || count > 0) {
                     card.classList.remove('hidden');
                     document.getElementById(`count-${upg.id}`).innerText = `x${count}`;
                     document.getElementById(`cost-${upg.id}`).innerText = formatNum(cost);
@@ -520,21 +536,19 @@
         }
 
         collectBtn.addEventListener('click', (e) => {
-            let basePower = 1 + (state.eraIndex * 5);
-            basePower = basePower * (1 + (state.permanentUpgrades.clickPower * 0.2));
+            let power = state.clickPower;
             
             const isCrit = (Math.random() * 100) < state.critChance;
-            if (isCrit) basePower *= 3;
+            if (isCrit) power *= 3;
             
-            state.essence += basePower;
-            state.totalEssence += basePower;
+            state.essence += power;
+            state.totalEssence += power;
             
             const rect = collectBtn.getBoundingClientRect();
             spawnParticle(rect.left + Math.random()*rect.width, rect.top, isCrit);
             updateUI();
         });
 
-        // Ticking loop
         function tick() {
             const now = Date.now();
             const delta = (now - state.lastTick) / 1000;
@@ -549,7 +563,6 @@
             requestAnimationFrame(tick);
         }
 
-        // Auto-save interval (every 5 seconds)
         setInterval(saveGame, 5000);
 
         loadGame();
