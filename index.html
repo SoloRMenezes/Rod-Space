@@ -59,6 +59,36 @@
       gap: 6px;
       align-items: center;
     }
+
+    /* Favorite Button Styles */
+    .fav-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 4px;
+      transition: transform 0.2s ease, color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+    }
+
+    .fav-btn:hover {
+      transform: scale(1.2);
+      color: #ff4b4b;
+    }
+
+    .fav-btn.active {
+      color: #ff4b4b;
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
   </style>
 </head>
 
@@ -92,6 +122,7 @@
       <div class="project-controls">
         <select id="filterType" class="control-select" onchange="applyFiltersAndSort()">
           <option value="all">All Types</option>
+          <option value="favs">Favorites</option>
           <option value="solo">Solo Games</option>
           <option value="party">Party Games</option>
           <option value="tool">Tools</option>
@@ -106,140 +137,221 @@
     <div class="grid" id="projectGrid">
 
       <!-- Tools -->
-      <article class="card" data-type="tool" data-date="2026-01-22">
+      <article class="card" data-id="beyscan" data-type="tool" data-date="2026-01-22">
         <div class="card-top"><div class="icon">⚔️</div><h3>BeyScan</h3><p>Track Your Collection</p></div>
-        <div class="card-actions"><a href="beyscan.html" class="btn small primary">Open</a><span class="pill">Tool</span></div>
+        <div class="card-actions">
+          <a href="beyscan.html" class="btn small primary">Open</a>
+          <span class="pill">Tool</span>
+          <button class="fav-btn" onclick="toggleFavorite('beyscan')">❤</button>
+        </div>
       </article>
       
-      <article class="card" data-type="tool" data-date="2026-01-22">
+      <article class="card" data-id="piano" data-type="tool" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🎹</div><h3>Virtual Piano</h3><p>Playable keyboard</p></div>
-        <div class="card-actions"><a href="piano.html" class="btn small primary">Open</a><span class="pill">Tool</span></div>
+        <div class="card-actions">
+          <a href="piano.html" class="btn small primary">Open</a>
+          <span class="pill">Tool</span>
+          <button class="fav-btn" onclick="toggleFavorite('piano')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="tool" data-date="2026-01-22">
+      <article class="card" data-id="counter" data-type="tool" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🔢</div><h3>Counter</h3><p>Simple counter</p></div>
-        <div class="card-actions"><a href="counter.html" class="btn small primary">Open</a><span class="pill">Tool</span></div>
+        <div class="card-actions">
+          <a href="counter.html" class="btn small primary">Open</a>
+          <span class="pill">Tool</span>
+          <button class="fav-btn" onclick="toggleFavorite('counter')">❤</button>
+        </div>
       </article>
 
       <!-- Party Games -->
-      <article class="card" data-type="party" data-date="2026-02-26">
+      <article class="card" data-id="whos-more-likely" data-type="party" data-date="2026-02-26">
         <div class="card-top"><div class="icon">🤔</div><h3>Who's More Likely To?</h3><p>Destroy Friendships</p></div>
-        <div class="card-actions"><a href="whos-more-likely.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+        <div class="card-actions">
+          <a href="whos-more-likely.html" class="btn small primary">Play</a>
+          <span class="pill">Party</span>
+          <button class="fav-btn" onclick="toggleFavorite('whos-more-likely')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="party" data-date="2026-03-20">
+      <article class="card" data-id="impostor" data-type="party" data-date="2026-03-20">
         <div class="card-top"><div class="icon">🤔</div><h3>Impostor</h3><p>Don't Get Caught</p></div>
-        <div class="card-actions"><a href="impostor.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+        <div class="card-actions">
+          <a href="impostor.html" class="btn small primary">Play</a>
+          <span class="pill">Party</span>
+          <button class="fav-btn" onclick="toggleFavorite('impostor')">❤</button>
+        </div>
       </article>
       
-      <article class="card" data-type="party" data-date="2026-02-2">
+      <article class="card" data-id="sidequests" data-type="party" data-date="2026-02-2">
         <div class="card-top"><div class="icon">🏆</div><h3>Side Quests</h3><p>Break Routines</p></div>
-        <div class="card-actions"><a href="sidequests.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+        <div class="card-actions">
+          <a href="sidequests.html" class="btn small primary">Play</a>
+          <span class="pill">Party</span>
+          <button class="fav-btn" onclick="toggleFavorite('sidequests')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="party" data-date="2026-01-26">
+      <article class="card" data-id="darts" data-type="party" data-date="2026-01-26">
         <div class="card-top"><div class="icon">🔫</div><h3>Darts</h3><p>Test Your Percision</p></div>
-        <div class="card-actions"><a href="darts.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+        <div class="card-actions">
+          <a href="darts.html" class="btn small primary">Play</a>
+          <span class="pill">Party</span>
+          <button class="fav-btn" onclick="toggleFavorite('darts')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="party" data-date="2026-01-26">
+      <article class="card" data-id="tic-tac-toe" data-type="party" data-date="2026-01-26">
         <div class="card-top"><div class="icon">❌⭕️</div><h3>Tic Tac Toe</h3><p>The Classic</p></div>
-        <div class="card-actions"><a href="tic-tac-toe.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+        <div class="card-actions">
+          <a href="tic-tac-toe.html" class="btn small primary">Play</a>
+          <span class="pill">Party</span>
+          <button class="fav-btn" onclick="toggleFavorite('tic-tac-toe')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="party" data-date="2026-01-26">
+      <article class="card" data-id="dots-boxes" data-type="party" data-date="2026-01-26">
         <div class="card-top"><div class="icon">📦</div><h3>Dots & Boxes</h3><p>Challenge Your Mind</p></div>
-        <div class="card-actions"><a href="dots&boxes.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+        <div class="card-actions">
+          <a href="dots&boxes.html" class="btn small primary">Play</a>
+          <span class="pill">Party</span>
+          <button class="fav-btn" onclick="toggleFavorite('dots-boxes')">❤</button>
+        </div>
       </article>
       
-      <article class="card" data-type="party" data-date="2026-01-26">
+      <article class="card" data-id="theft" data-type="party" data-date="2026-01-26">
         <div class="card-top"><div class="icon">🥷🏿</div><h3>Theft</h3><p>Rob The Louvre</p></div>
-        <div class="card-actions"><a href="theft.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+        <div class="card-actions">
+          <a href="theft.html" class="btn small primary">Play</a>
+          <span class="pill">Party</span>
+          <button class="fav-btn" onclick="toggleFavorite('theft')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="party" data-date="2026-01-25">
+      <article class="card" data-id="cards-against" data-type="party" data-date="2026-01-25">
         <div class="card-top"><div class="icon">🃏</div><h3>Cards Against Boredom</h3><p>Cards Against Humanity With No Copy Right</p></div>
-        <div class="card-actions"><a href="cards-against-boredom.html" class="btn small primary">Play</a><span class="pill">Party</span></div>
+        <div class="card-actions">
+          <a href="cards-against-boredom.html" class="btn small primary">Play</a>
+          <span class="pill">Party</span>
+          <button class="fav-btn" onclick="toggleFavorite('cards-against')">❤</button>
+        </div>
       </article>
 
       <!-- Games -->
-      <article class="card" data-type="solo" data-date="2026-01-22">
+      <article class="card" data-id="reaction" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🔄</div><h3>Reaction Game</h3><p>Test your reflexes.</p></div>
-        <div class="card-actions"><a href="reaction.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="reaction.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+          <button class="fav-btn" onclick="toggleFavorite('reaction')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2026-01-22">
+      <article class="card" data-id="solos-rng" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🎲</div><h3>Solo's RNG</h3><p>Roll Rare Cards</p></div>
-        <div class="card-actions"><a href="solos_rng.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="solos_rng.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+          <button class="fav-btn" onclick="toggleFavorite('solos-rng')">❤</button>
+        </div>
       </article>
       
-      <article class="card" data-type="solo" data-date="2026-3-1">
+      <article class="card" data-id="3d-drift" data-type="solo" data-date="2026-3-1">
         <div class="card-top"><div class="icon">🏎️</div><h3>3D Drift Racer</h3><p>Dont Crash</p></div>
         <div class="card-actions">
           <a href="3d_drift_racer.html" class="btn small primary">Play</a>
           <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
+          <button class="fav-btn" onclick="toggleFavorite('3d-drift')">❤</button>
         </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2026-3-20">
+      <article class="card" data-id="planet-architect" data-type="solo" data-date="2026-3-20">
         <div class="card-top"><div class="icon">🌏</div><h3>Planet Architect</h3><p>Build your world</p></div>
         <div class="card-actions">
           <a href="planet_architect.html" class="btn small primary">Play</a>
           <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
+          <button class="fav-btn" onclick="toggleFavorite('planet-architect')">❤</button>
         </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2026-01-22">
+      <article class="card" data-id="orbit-boss" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🚀</div><h3>Orbit Boss</h3><p>Dodge, orbit, strike.</p></div>
-        <div class="card-actions"><a href="orbit-boss.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="orbit-boss.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+          <button class="fav-btn" onclick="toggleFavorite('orbit-boss')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2026-01-22">
+      <article class="card" data-id="pac-man-3d" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🟡</div><h3>Pac-Man 3D</h3><p>First-person Pac-Man.</p></div>
         <div class="card-actions">
           <a href="pac-man-3d.html" class="btn small primary">Play</a>
           <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
+          <button class="fav-btn" onclick="toggleFavorite('pac-man-3d')">❤</button>
         </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2026-03-11">
+      <article class="card" data-id="nicos-nextbots" data-type="solo" data-date="2026-03-11">
         <div class="card-top"><div class="icon">🤖</div><h3>Nico's Nextbots</h3><p>RUN!!!</p></div>
         <div class="card-actions">
           <a href="nicos_nextbots.html" class="btn small primary">Play</a>
           <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
+          <button class="fav-btn" onclick="toggleFavorite('nicos-nextbots')">❤</button>
         </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2026-03-12">
+      <article class="card" data-id="sling-champ" data-type="solo" data-date="2026-03-12">
         <div class="card-top"><div class="icon">🐥</div><h3>Sling Champ</h3><p>Throw Birds Around</p></div>
-        <div class="card-actions"><a href="sling_champ.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="sling_champ.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+          <button class="fav-btn" onclick="toggleFavorite('sling-champ')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2026-02-22">
+      <article class="card" data-id="relic-rush" data-type="solo" data-date="2026-02-22">
         <div class="card-top"><div class="icon">💀</div><h3>Relic Rush</h3><p>Survive</p></div>
-        <div class="card-actions"><a href="relic_rush.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="relic_rush.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+          <button class="fav-btn" onclick="toggleFavorite('relic-rush')">❤</button>
+        </div>
       </article>
       
-      <article class="card" data-type="solo" data-date="2026-01-22">
+      <article class="card" data-id="slot-machine" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🎰</div><h3>Slot Machine</h3><p>Try your luck.</p></div>
-        <div class="card-actions"><a href="slot-machine.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="slot-machine.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+          <button class="fav-btn" onclick="toggleFavorite('slot-machine')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2026-01-22">
+      <article class="card" data-id="fidget-roulette" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🎯</div><h3>Fidget Roulette</h3><p>Spin and win.</p></div>
-        <div class="card-actions"><a href="fidget-roulette.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="fidget-roulette.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+          <button class="fav-btn" onclick="toggleFavorite('fidget-roulette')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2026-01-22">
+      <article class="card" data-id="tilt-maze" data-type="solo" data-date="2026-01-22">
         <div class="card-top"><div class="icon">🧩</div><h3>Tilt Maze Runner</h3><p>Navigate the maze.</p></div>
-        <div class="card-actions"><a href="tilt_maze_runner.html" class="btn small primary">Play</a><span class="pill">Game</span></div>
+        <div class="card-actions">
+          <a href="tilt_maze_runner.html" class="btn small primary">Play</a>
+          <span class="pill">Game</span>
+          <button class="fav-btn" onclick="toggleFavorite('tilt-maze')">❤</button>
+        </div>
       </article>
 
-      <article class="card" data-type="solo" data-date="2025-11-20">
+      <article class="card" data-id="multiplayer-test" data-type="solo" data-date="2025-11-20">
         <div class="card-top"><div class="icon">👥</div><h3>Multiplayer Test</h3><p>Third-person sandbox.</p></div>
         <div class="card-actions">
           <a href="multiplayer.html" class="btn small primary">Play</a>
           <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
+          <button class="fav-btn" onclick="toggleFavorite('multiplayer-test')">❤</button>
         </div>
       </article>
 
@@ -256,9 +368,45 @@
 </footer>
 
 <script>
+  // State for favorites
+  let favorites = JSON.parse(localStorage.getItem('rod_space_favs')) || [];
+
   /**
-   * Main function to handle both filtering and sorting simultaneously.
-   * This ensures that when you sort, filters are preserved, and vice versa.
+   * Toggles a project's favorite status.
+   */
+  function toggleFavorite(id) {
+    const index = favorites.indexOf(id);
+    if (index > -1) {
+      favorites.splice(index, 1);
+    } else {
+      favorites.push(id);
+    }
+    localStorage.setItem('rod_space_favs', JSON.stringify(favorites));
+    updateFavButtons();
+    
+    // If we are currently viewing only favorites, re-filter to remove un-favorited item
+    if (document.getElementById("filterType").value === "favs") {
+      applyFiltersAndSort();
+    }
+  }
+
+  /**
+   * Updates the visual state of all heart buttons.
+   */
+  function updateFavButtons() {
+    document.querySelectorAll('.card').forEach(card => {
+      const id = card.dataset.id;
+      const btn = card.querySelector('.fav-btn');
+      if (favorites.includes(id)) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
+  /**
+   * Main function to handle filtering, favorites, and sorting simultaneously.
    */
   function applyFiltersAndSort() {
     const grid = document.getElementById("projectGrid");
@@ -269,7 +417,17 @@
     // 1. Filter Logic
     cards.forEach(card => {
       const type = card.dataset.type;
-      const isVisible = (filterType === "all" || type === filterType);
+      const id = card.dataset.id;
+      let isVisible = false;
+
+      if (filterType === "all") {
+        isVisible = true;
+      } else if (filterType === "favs") {
+        isVisible = favorites.includes(id);
+      } else {
+        isVisible = (type === filterType);
+      }
+
       card.style.display = isVisible ? "" : "none";
     });
 
@@ -293,6 +451,7 @@
 
   // Initialize on load
   document.addEventListener("DOMContentLoaded", () => {
+    updateFavButtons();
     applyFiltersAndSort();
   });
 </script>
