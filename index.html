@@ -60,6 +60,42 @@
       align-items: center;
     }
 
+    /* Card Layout for Pinning */
+    .card {
+      position: relative;
+    }
+
+    /* Pin Button Styles */
+    .pin-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border: none;
+      color: rgba(255, 255, 255, 0.3);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+
+    .pin-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #8fc0e3;
+    }
+
+    .pin-btn.active {
+      color: #8fc0e3;
+      background: rgba(143, 192, 227, 0.2);
+      transform: rotate(-45deg);
+    }
+
     /* Favorite Button Styles */
     .fav-btn {
       background: none;
@@ -88,6 +124,27 @@
       display: flex;
       align-items: center;
       width: 100%;
+    }
+    
+    /* Pinned Section Divider */
+    .pinned-divider {
+      grid-column: 1 / -1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 20px 0;
+      display: none;
+    }
+
+    .pinned-label {
+      grid-column: 1 / -1;
+      text-align: left;
+      font-size: 0.8rem;
+      color: #8fc0e3;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+      display: none;
+      font-weight: 700;
     }
   </style>
 </head>
@@ -135,9 +192,11 @@
     </div>
 
     <div class="grid" id="projectGrid">
+      <div id="pinnedLabel" class="pinned-label">📌 Pinned Projects</div>
 
       <!-- Tools -->
       <article class="card" data-id="beyscan" data-type="tool" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('beyscan')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">⚔️</div><h3>BeyScan</h3><p>Track Your Collection</p></div>
         <div class="card-actions">
           <a href="beyscan.html" class="btn small primary">Open</a>
@@ -147,6 +206,7 @@
       </article>
       
       <article class="card" data-id="piano" data-type="tool" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('piano')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🎹</div><h3>Virtual Piano</h3><p>Playable keyboard</p></div>
         <div class="card-actions">
           <a href="piano.html" class="btn small primary">Open</a>
@@ -156,6 +216,7 @@
       </article>
 
       <article class="card" data-id="counter" data-type="tool" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('counter')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🔢</div><h3>Counter</h3><p>Simple counter</p></div>
         <div class="card-actions">
           <a href="counter.html" class="btn small primary">Open</a>
@@ -166,6 +227,7 @@
 
       <!-- Party Games -->
       <article class="card" data-id="whos-more-likely" data-type="party" data-date="2026-02-26">
+        <button class="pin-btn" onclick="togglePin('whos-more-likely')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🤔</div><h3>Who's More Likely To?</h3><p>Destroy Friendships</p></div>
         <div class="card-actions">
           <a href="whos-more-likely.html" class="btn small primary">Play</a>
@@ -175,6 +237,7 @@
       </article>
 
       <article class="card" data-id="impostor" data-type="party" data-date="2026-03-20">
+        <button class="pin-btn" onclick="togglePin('impostor')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🤔</div><h3>Impostor</h3><p>Don't Get Caught</p></div>
         <div class="card-actions">
           <a href="impostor.html" class="btn small primary">Play</a>
@@ -184,6 +247,7 @@
       </article>
       
       <article class="card" data-id="sidequests" data-type="party" data-date="2026-02-2">
+        <button class="pin-btn" onclick="togglePin('sidequests')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🏆</div><h3>Side Quests</h3><p>Break Routines</p></div>
         <div class="card-actions">
           <a href="sidequests.html" class="btn small primary">Play</a>
@@ -193,6 +257,7 @@
       </article>
 
       <article class="card" data-id="darts" data-type="party" data-date="2026-01-26">
+        <button class="pin-btn" onclick="togglePin('darts')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🔫</div><h3>Darts</h3><p>Test Your Percision</p></div>
         <div class="card-actions">
           <a href="darts.html" class="btn small primary">Play</a>
@@ -202,6 +267,7 @@
       </article>
 
       <article class="card" data-id="tic-tac-toe" data-type="party" data-date="2026-01-26">
+        <button class="pin-btn" onclick="togglePin('tic-tac-toe')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">❌⭕️</div><h3>Tic Tac Toe</h3><p>The Classic</p></div>
         <div class="card-actions">
           <a href="tic-tac-toe.html" class="btn small primary">Play</a>
@@ -211,6 +277,7 @@
       </article>
 
       <article class="card" data-id="dots-boxes" data-type="party" data-date="2026-01-26">
+        <button class="pin-btn" onclick="togglePin('dots-boxes')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">📦</div><h3>Dots & Boxes</h3><p>Challenge Your Mind</p></div>
         <div class="card-actions">
           <a href="dots&boxes.html" class="btn small primary">Play</a>
@@ -220,6 +287,7 @@
       </article>
       
       <article class="card" data-id="theft" data-type="party" data-date="2026-01-26">
+        <button class="pin-btn" onclick="togglePin('theft')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🥷🏿</div><h3>Theft</h3><p>Rob The Louvre</p></div>
         <div class="card-actions">
           <a href="theft.html" class="btn small primary">Play</a>
@@ -229,6 +297,7 @@
       </article>
 
       <article class="card" data-id="cards-against" data-type="party" data-date="2026-01-25">
+        <button class="pin-btn" onclick="togglePin('cards-against')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🃏</div><h3>Cards Against Boredom</h3><p>Cards Against Humanity With No Copy Right</p></div>
         <div class="card-actions">
           <a href="cards-against-boredom.html" class="btn small primary">Play</a>
@@ -239,6 +308,7 @@
 
       <!-- Games -->
       <article class="card" data-id="reaction" data-type="solo" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('reaction')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🔄</div><h3>Reaction Game</h3><p>Test your reflexes.</p></div>
         <div class="card-actions">
           <a href="reaction.html" class="btn small primary">Play</a>
@@ -248,6 +318,7 @@
       </article>
 
       <article class="card" data-id="solos-rng" data-type="solo" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('solos-rng')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🎲</div><h3>Solo's RNG</h3><p>Roll Rare Cards</p></div>
         <div class="card-actions">
           <a href="solos_rng.html" class="btn small primary">Play</a>
@@ -257,6 +328,7 @@
       </article>
       
       <article class="card" data-id="3d-drift" data-type="solo" data-date="2026-3-1">
+        <button class="pin-btn" onclick="togglePin('3d-drift')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🏎️</div><h3>3D Drift Racer</h3><p>Dont Crash</p></div>
         <div class="card-actions">
           <a href="3d_drift_racer.html" class="btn small primary">Play</a>
@@ -266,6 +338,7 @@
       </article>
 
       <article class="card" data-id="planet-architect" data-type="solo" data-date="2026-3-20">
+        <button class="pin-btn" onclick="togglePin('planet-architect')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🌏</div><h3>Planet Architect</h3><p>Build your world</p></div>
         <div class="card-actions">
           <a href="planet_architect.html" class="btn small primary">Play</a>
@@ -275,6 +348,7 @@
       </article>
 
       <article class="card" data-id="orbit-boss" data-type="solo" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('orbit-boss')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🚀</div><h3>Orbit Boss</h3><p>Dodge, orbit, strike.</p></div>
         <div class="card-actions">
           <a href="orbit-boss.html" class="btn small primary">Play</a>
@@ -284,6 +358,7 @@
       </article>
 
       <article class="card" data-id="pac-man-3d" data-type="solo" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('pac-man-3d')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🟡</div><h3>Pac-Man 3D</h3><p>First-person Pac-Man.</p></div>
         <div class="card-actions">
           <a href="pac-man-3d.html" class="btn small primary">Play</a>
@@ -293,6 +368,7 @@
       </article>
 
       <article class="card" data-id="nicos-nextbots" data-type="solo" data-date="2026-03-11">
+        <button class="pin-btn" onclick="togglePin('nicos-nextbots')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🤖</div><h3>Nico's Nextbots</h3><p>RUN!!!</p></div>
         <div class="card-actions">
           <a href="nicos_nextbots.html" class="btn small primary">Play</a>
@@ -302,6 +378,7 @@
       </article>
 
       <article class="card" data-id="sling-champ" data-type="solo" data-date="2026-03-12">
+        <button class="pin-btn" onclick="togglePin('sling-champ')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🐥</div><h3>Sling Champ</h3><p>Throw Birds Around</p></div>
         <div class="card-actions">
           <a href="sling_champ.html" class="btn small primary">Play</a>
@@ -311,6 +388,7 @@
       </article>
 
       <article class="card" data-id="relic-rush" data-type="solo" data-date="2026-02-22">
+        <button class="pin-btn" onclick="togglePin('relic-rush')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">💀</div><h3>Relic Rush</h3><p>Survive</p></div>
         <div class="card-actions">
           <a href="relic_rush.html" class="btn small primary">Play</a>
@@ -320,6 +398,7 @@
       </article>
       
       <article class="card" data-id="slot-machine" data-type="solo" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('slot-machine')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🎰</div><h3>Slot Machine</h3><p>Try your luck.</p></div>
         <div class="card-actions">
           <a href="slot-machine.html" class="btn small primary">Play</a>
@@ -329,6 +408,7 @@
       </article>
 
       <article class="card" data-id="fidget-roulette" data-type="solo" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('fidget-roulette')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🎯</div><h3>Fidget Roulette</h3><p>Spin and win.</p></div>
         <div class="card-actions">
           <a href="fidget-roulette.html" class="btn small primary">Play</a>
@@ -338,6 +418,7 @@
       </article>
 
       <article class="card" data-id="tilt-maze" data-type="solo" data-date="2026-01-22">
+        <button class="pin-btn" onclick="togglePin('tilt-maze')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🧩</div><h3>Tilt Maze Runner</h3><p>Navigate the maze.</p></div>
         <div class="card-actions">
           <a href="tilt_maze_runner.html" class="btn small primary">Play</a>
@@ -347,6 +428,7 @@
       </article>
 
       <article class="card" data-id="multiplayer-test" data-type="solo" data-date="2025-11-20">
+        <button class="pin-btn" onclick="togglePin('multiplayer-test')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">👥</div><h3>Multiplayer Test</h3><p>Third-person sandbox.</p></div>
         <div class="card-actions">
           <a href="multiplayer.html" class="btn small primary">Play</a>
@@ -355,6 +437,7 @@
         </div>
       </article>
 
+      <div id="gridDivider" class="pinned-divider"></div>
     </div>
   </div>
 </section>
@@ -368,8 +451,45 @@
 </footer>
 
 <script>
-  // State for favorites
+  // State for favorites and pins
   let favorites = JSON.parse(localStorage.getItem('rod_space_favs')) || [];
+  let pinned = JSON.parse(localStorage.getItem('rod_space_pins')) || [];
+
+  /**
+   * Toggles a project's pin status (max 3).
+   */
+  function togglePin(id) {
+    const index = pinned.indexOf(id);
+    if (index > -1) {
+      pinned.splice(index, 1);
+    } else {
+      if (pinned.length >= 3) {
+        // Notification instead of alert
+        showToast("You can only pin up to 3 projects!");
+        return;
+      }
+      pinned.push(id);
+    }
+    localStorage.setItem('rod_space_pins', JSON.stringify(pinned));
+    applyFiltersAndSort();
+  }
+
+  function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.background = '#8fc0e3';
+    toast.style.color = '#020617';
+    toast.style.padding = '10px 20px';
+    toast.style.borderRadius = '10px';
+    toast.style.zIndex = '1000';
+    toast.style.fontWeight = 'bold';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
 
   /**
    * Toggles a project's favorite status.
@@ -382,39 +502,53 @@
       favorites.push(id);
     }
     localStorage.setItem('rod_space_favs', JSON.stringify(favorites));
-    updateFavButtons();
+    updateUIStates();
     
-    // If we are currently viewing only favorites, re-filter to remove un-favorited item
     if (document.getElementById("filterType").value === "favs") {
       applyFiltersAndSort();
     }
   }
 
   /**
-   * Updates the visual state of all favorite buttons.
+   * Updates visual states for all buttons.
    */
-  function updateFavButtons() {
+  function updateUIStates() {
     document.querySelectorAll('.card').forEach(card => {
       const id = card.dataset.id;
-      const btn = card.querySelector('.fav-btn');
+      const favBtn = card.querySelector('.fav-btn');
+      const pinBtn = card.querySelector('.pin-btn');
+      
       if (favorites.includes(id)) {
-        btn.classList.add('active');
+        favBtn.classList.add('active');
       } else {
-        btn.classList.remove('active');
+        favBtn.classList.remove('active');
+      }
+
+      if (pinned.includes(id)) {
+        pinBtn.classList.add('active');
+      } else {
+        pinBtn.classList.remove('active');
       }
     });
   }
 
   /**
-   * Main function to handle filtering, favorites, and sorting simultaneously.
+   * Main function to handle filtering, pinning, and sorting.
    */
   function applyFiltersAndSort() {
     const grid = document.getElementById("projectGrid");
     const filterType = document.getElementById("filterType").value;
     const sortBy = document.getElementById("sortBy").value;
-    const cards = Array.from(grid.children);
+    const cards = Array.from(grid.querySelectorAll('.card'));
+    const label = document.getElementById("pinnedLabel");
+    const divider = document.getElementById("gridDivider");
 
-    // 1. Filter Logic
+    updateUIStates();
+
+    // 1. Filter and separate pinned vs unpinned
+    const pinnedCards = [];
+    const regularCards = [];
+
     cards.forEach(card => {
       const type = card.dataset.type;
       const id = card.dataset.id;
@@ -429,29 +563,52 @@
       }
 
       card.style.display = isVisible ? "" : "none";
+
+      if (isVisible) {
+        if (pinned.includes(id)) {
+          pinnedCards.push(card);
+        } else {
+          regularCards.push(card);
+        }
+      }
     });
 
-    // 2. Sort Logic
-    cards.sort((a, b) => {
+    // 2. Sort Logic for regular cards
+    const sortFn = (a, b) => {
       if (sortBy === "az") {
         const titleA = a.querySelector("h3").textContent.trim().toLowerCase();
         const titleB = b.querySelector("h3").textContent.trim().toLowerCase();
         return titleA.localeCompare(titleB);
       } else {
-        // Sort by date (Newest first)
         const dateA = new Date(a.dataset.date || 0);
         const dateB = new Date(b.dataset.date || 0);
         return dateB - dateA;
       }
-    });
+    };
 
-    // 3. Re-append sorted cards to the DOM
-    cards.forEach(card => grid.appendChild(card));
+    pinnedCards.sort(sortFn);
+    regularCards.sort(sortFn);
+
+    // 3. Update DOM structure
+    // Keep the header label and divider in the correct spots
+    grid.innerHTML = ""; 
+    grid.appendChild(label);
+
+    if (pinnedCards.length > 0) {
+      label.style.display = "block";
+      divider.style.display = "block";
+      pinnedCards.forEach(c => grid.appendChild(c));
+      grid.appendChild(divider);
+    } else {
+      label.style.display = "none";
+      divider.style.display = "none";
+    }
+
+    regularCards.forEach(c => grid.appendChild(c));
   }
 
   // Initialize on load
   document.addEventListener("DOMContentLoaded", () => {
-    updateFavButtons();
     applyFiltersAndSort();
   });
 </script>
