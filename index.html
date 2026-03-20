@@ -152,12 +152,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      width: 100%;
     }
     
     .version-tag {
       font-size: 0.75rem;
-      opacity: 0.5;
+      opacity: 0.6;
       font-family: monospace;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -207,7 +209,7 @@
     <div class="grid" id="projectGrid">
       <div id="pinnedLabel" class="pinned-label">📌 Pinned Projects</div>
 
-      <!-- Tools -->
+      <!-- Projects -->
       <article class="card" data-id="beyscan" data-type="tool" data-date="2026-01-22">
         <button class="pin-btn" onclick="togglePin('beyscan')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">⚔️</div><h3>BeyScan</h3><p>Track Your Collection</p></div>
@@ -238,7 +240,6 @@
         </div>
       </article>
 
-      <!-- Party Games -->
       <article class="card" data-id="whos-more-likely" data-type="party" data-date="2026-02-26">
         <button class="pin-btn" onclick="togglePin('whos-more-likely')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🤔</div><h3>Who's More Likely To?</h3><p>Destroy Friendships</p></div>
@@ -319,7 +320,6 @@
         </div>
       </article>
 
-      <!-- Games -->
       <article class="card" data-id="reaction" data-type="solo" data-date="2026-01-22">
         <button class="pin-btn" onclick="togglePin('reaction')" title="Pin up to 3">📌</button>
         <div class="card-top"><div class="icon">🔄</div><h3>Reaction Game</h3><p>Test your reflexes.</p></div>
@@ -465,6 +465,12 @@
 </footer>
 
 <script>
+  // Initial card references to prevent losing them during innerHTML clears
+  const originalCards = Array.from(document.querySelectorAll('.card'));
+  const grid = document.getElementById("projectGrid");
+  const pinnedLabel = document.getElementById("pinnedLabel");
+  const gridDivider = document.getElementById("gridDivider");
+
   // State for favorites and pins
   let favorites = JSON.parse(localStorage.getItem('rod_space_favs')) || [];
   let pinned = JSON.parse(localStorage.getItem('rod_space_pins')) || [];
@@ -478,7 +484,6 @@
       pinned.splice(index, 1);
     } else {
       if (pinned.length >= 3) {
-        // Notification instead of alert
         showToast("You can only pin up to 3 projects!");
         return;
       }
@@ -500,14 +505,16 @@
     toast.style.borderRadius = '10px';
     toast.style.zIndex = '1000';
     toast.style.fontWeight = 'bold';
+    toast.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.5)';
     toast.textContent = msg;
     document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => toast.remove(), 500);
+    }, 2500);
   }
 
-  /**
-   * Toggles a project's favorite status.
-   */
   function toggleFavorite(id) {
     const index = favorites.indexOf(id);
     if (index > -1) {
@@ -523,11 +530,8 @@
     }
   }
 
-  /**
-   * Updates visual states for all buttons.
-   */
   function updateUIStates() {
-    document.querySelectorAll('.card').forEach(card => {
+    originalCards.forEach(card => {
       const id = card.dataset.id;
       const favBtn = card.querySelector('.fav-btn');
       const pinBtn = card.querySelector('.pin-btn');
@@ -546,48 +550,27 @@
     });
   }
 
-  /**
-   * Main function to handle filtering, pinning, and sorting.
-   */
   function applyFiltersAndSort() {
-    const grid = document.getElementById("projectGrid");
     const filterType = document.getElementById("filterType").value;
     const sortBy = document.getElementById("sortBy").value;
-    const cards = Array.from(grid.querySelectorAll('.card'));
-    const label = document.getElementById("pinnedLabel");
-    const divider = document.getElementById("gridDivider");
-
+    
     updateUIStates();
 
-    // 1. Filter and separate pinned vs unpinned
-    const pinnedCards = [];
-    const regularCards = [];
-
-    cards.forEach(card => {
+    // 1. Filter and separate
+    const filteredCards = originalCards.filter(card => {
       const type = card.dataset.type;
       const id = card.dataset.id;
-      let isVisible = false;
-
-      if (filterType === "all") {
-        isVisible = true;
-      } else if (filterType === "favs") {
-        isVisible = favorites.includes(id);
-      } else {
-        isVisible = (type === filterType);
-      }
-
-      card.style.display = isVisible ? "" : "none";
-
-      if (isVisible) {
-        if (pinned.includes(id)) {
-          pinnedCards.push(card);
-        } else {
-          regularCards.push(card);
-        }
-      }
+      
+      let isMatch = false;
+      if (filterType === "all") isMatch = true;
+      else if (filterType === "favs") isMatch = favorites.includes(id);
+      else isMatch = (type === filterType);
+      
+      card.style.display = isMatch ? "" : "none";
+      return isMatch;
     });
 
-    // 2. Sort Logic for regular cards
+    // 2. Sort Logic
     const sortFn = (a, b) => {
       if (sortBy === "az") {
         const titleA = a.querySelector("h3").textContent.trim().toLowerCase();
@@ -600,28 +583,26 @@
       }
     };
 
-    pinnedCards.sort(sortFn);
-    regularCards.sort(sortFn);
+    const pinnedCards = filteredCards.filter(c => pinned.includes(c.dataset.id)).sort(sortFn);
+    const regularCards = filteredCards.filter(c => !pinned.includes(c.dataset.id)).sort(sortFn);
 
-    // 3. Update DOM structure
-    // Keep the header label and divider in the correct spots
+    // 3. Clear and Rebuild DOM carefully
     grid.innerHTML = ""; 
-    grid.appendChild(label);
+    grid.appendChild(pinnedLabel);
 
     if (pinnedCards.length > 0) {
-      label.style.display = "block";
-      divider.style.display = "block";
+      pinnedLabel.style.display = "block";
       pinnedCards.forEach(c => grid.appendChild(c));
-      grid.appendChild(divider);
+      grid.appendChild(gridDivider);
+      gridDivider.style.display = "block";
     } else {
-      label.style.display = "none";
-      divider.style.display = "none";
+      pinnedLabel.style.display = "none";
+      gridDivider.style.display = "none";
     }
 
     regularCards.forEach(c => grid.appendChild(c));
   }
 
-  // Initialize on load
   document.addEventListener("DOMContentLoaded", () => {
     applyFiltersAndSort();
   });
