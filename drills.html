@@ -48,7 +48,8 @@
         
         .container { width: 100%; max-width: 500px; position: relative; }
         
-        h1 { margin: 60px 0 20px 0; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); }
+        h1 { margin: 60px 0 10px 0; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); }
+        .subtitle { color: var(--text-muted); margin-bottom: 25px; font-size: 0.9rem; }
         
         .theme-switch-wrapper {
             position: absolute;
@@ -189,23 +190,26 @@
         .nav-btn { flex: 1; padding: 18px; border-radius: 15px; border: none; cursor: pointer; background: var(--accent); color: white; font-weight: bold; font-size: 1rem; }
         .nav-btn.secondary { background: var(--text-muted); }
 
-        .sport-menu { display: flex; flex-direction: column; gap: 15px; width: 100%; margin-top: 20px; }
+        .sport-menu { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-top: 10px; }
+        .menu-label { text-align: left; font-weight: bold; margin-top: 15px; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
+        
         .sport-option { 
-            padding: 25px; 
+            padding: 20px 25px; 
             border-radius: 20px; 
             border: none; 
             background: var(--card-bg); 
             font-weight: 800; 
-            font-size: 1.3rem; 
+            font-size: 1.2rem; 
             cursor: pointer; 
             color: var(--text-main);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             transition: all 0.2s;
             border: 1px solid var(--border);
         }
+        .sport-option.warm-up-btn { border-left: 5px solid var(--success); }
         .sport-option:active { transform: scale(0.97); opacity: 0.8; }
         .sport-option span { font-size: 1.5rem; }
 
@@ -226,8 +230,14 @@
         </div>
 
         <div id="menu-view" class="view active">
-            <h1>Sports Project Drills</h1>
+            <h1>Drill Center</h1>
+            <p class="subtitle">Select a routine to begin</p>
+            
             <div class="sport-menu">
+                <div class="menu-label">Preparation</div>
+                <button class="sport-option warm-up-btn" onclick="setSport('Warm Up')">Warm Ups 🏃‍♂️ <span>›</span></button>
+
+                <div class="menu-label">Sport Drills</div>
                 <button class="sport-option" onclick="setSport('Basketball')">Basketball 🏀 <span>›</span></button>
                 <button class="sport-option" onclick="setSport('Football')">Football ⚽ <span>›</span></button>
                 <button class="sport-option" onclick="setSport('Volleyball')">Volleyball 🏐 <span>›</span></button>
@@ -249,8 +259,9 @@
                     <button class="timer-btn reset-btn" onclick="resetTimer()">RESET</button>
                 </div>
                 <div style="display: flex; justify-content: center; gap: 8px;">
+                    <button class="timer-btn preset-btn" onclick="setTimer(1)">01m</button>
+                    <button class="timer-btn preset-btn" onclick="setTimer(2)">02m</button>
                     <button class="timer-btn preset-btn" onclick="setTimer(5)">05m</button>
-                    <button class="timer-btn preset-btn" onclick="setTimer(10)">10m</button>
                 </div>
             </div>
 
@@ -267,16 +278,19 @@
 
             <div id="end-content" style="display: none;">
                 <div class="card">
-                    <div id="sport-subtitle">Session Complete</div>
-                    <p id="drill-text">You have finished all 50 drills for this sport!</p>
+                    <div id="sport-subtitle">Routine Complete</div>
+                    <p id="drill-text">Great job! You've finished this section.</p>
                 </div>
-                <button class="end-btn" onclick="resetDrills()">Restart from Drill 1</button>
+                <button class="end-btn" onclick="resetDrills()">Restart Section</button>
             </div>
         </div>
     </div>
 
     <script>
         const drills = {
+            "Warm Up": [
+                "Jumping Jacks – 40 reps", "High Knees – 1 min", "Butt Kicks – 1 min", "Jump Rope – 1 min", "Arm Circles (forward) – 1 min", "Arm Circles (backward) – 1 min", "Shoulder Shrugs – 20 reps", "Neck Rotations – 10 each direction", "Neck Tilts – 10 each side", "Torso Twists – 30 reps", "Hip Circles – 10 each direction", "Side Bends – 15 each side", "Standing Quad Stretch – 10 each leg", "Standing Hamstring Stretch – 10 each leg", "Calf Raises – 20 reps", "Toe Touches – 15 reps", "Knee Hugs – 10 each leg", "Walking Lunges – 20 steps", "Side Lunges – 10 each side", "Forward Lunges – 10 each leg", "Reverse Lunges – 10 each leg", "Step-ups – 15 each leg", "Skipping in Place – 1 min", "Carioca (grapevine) – 20 steps each side", "Side Shuffles – 1 min", "Jog in Place – 1 min", "Heel-Toe Walks – 20 steps", "Lateral Leg Swings – 10 each leg", "Forward Leg Swings – 10 each leg", "Backward Leg Swings – 10 each leg", "Ankle Rotations – 10 each ankle", "Wrist Rotations – 10 each wrist", "Finger Stretches – 10 reps", "Cat-Cow Stretch – 10 reps", "Standing Hip Flexor Stretch – 10 each leg", "Standing Figure-Four Stretch – 10 each leg", "Dynamic Hamstring Kicks – 10 each leg", "Side Plank Rotations – 10 each side", "Plank Shoulder Taps – 20 taps", "Arm Swings Across Chest – 15 reps", "Torso Windmills – 10 reps", "Inchworms – 8 reps", "Mountain Climbers – 1 min", "Slow Burpees – 8 reps", "Jump Squats – 10 reps", "Glute Bridges – 15 reps", "Standing Calf Stretch (dynamic) – 10 each leg", "Marching in Place – 1 min", "Side Kicks – 10 each leg", "Forward Kicks – 10 each leg"
+            ],
             Football: [
                 "Slalom through cones", "Zig-zag dribble", "Left-foot dribble only", "Right-foot dribble only", "Weak-foot dribble", "Dribble around markers in a circle", "Speed dribble in straight line", "Stop-and-go dribble", "Drag-back turns", "Cruyff turns", "1v1 shadow dribbling", "Change-of-pace dribble", "Roll-over step dribble", "Toe-tap quick control", "Dribble and pass to wall", "Wall passes – short", "Wall passes – long", "Passing in triangle", "Passing with weak foot", "One-touch passing", "Two-touch passing", "Passing on the move", "Pass to moving target", "Give-and-go wall pass", "Passing accuracy into marked zone", "Spot shooting (5 points in goal)", "Power shots", "Accuracy shots to corners", "Shooting with weak foot", "Volleying at goal", "Half-volley shots", "Shooting on the move", "Finishing under pressure (wall or cone defenders)", "Foot juggling", "Thigh juggling", "Head juggling", "Juggle + trap", "Juggle + pass to wall", "Juggle and move forward 5 meters", "Juggle and shoot", "Ladder footwork", "Cone side shuffles", "Sprint-stop-sprint", "Backward dribble", "Change-of-direction sprint", "Reaction drill with ball drops", "Quick feet on spot", "Jumping over cones with ball control", "Shuttle runs with dribble", "Mini obstacle course"
             ],
@@ -323,24 +337,23 @@
                 const gainNode = context.createGain();
                 oscillator.type = 'sine';
                 oscillator.frequency.setValueAtTime(880, context.currentTime); 
-                oscillator.frequency.exponentialRampToValueAtTime(440, context.currentTime + 0.5);
                 gainNode.gain.setValueAtTime(0.1, context.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
                 oscillator.connect(gainNode);
                 gainNode.connect(context.destination);
                 oscillator.start();
                 oscillator.stop(context.currentTime + 0.5);
-            } catch (e) { console.error("Audio failed", e); }
+            } catch (e) {}
         }
 
         function saveProgress() {
-            const progress = JSON.parse(localStorage.getItem('drill_progress_v2') || '{}');
+            const progress = JSON.parse(localStorage.getItem('drill_progress_v3') || '{}');
             progress[currentSport] = currentIndex;
-            localStorage.setItem('drill_progress_v2', JSON.stringify(progress));
+            localStorage.setItem('drill_progress_v3', JSON.stringify(progress));
         }
 
         function loadProgress() {
-            const progress = JSON.parse(localStorage.getItem('drill_progress_v2') || '{}');
+            const progress = JSON.parse(localStorage.getItem('drill_progress_v3') || '{}');
             return progress[currentSport] || 0;
         }
 
@@ -357,7 +370,7 @@
             document.getElementById('session-view').classList.add('active');
             document.getElementById('session-header').innerText = sport;
             updateDisplay();
-            setTimer(5);
+            setTimer(sport === 'Warm Up' ? 1 : 5);
         }
 
         function changeDrill(step) {
@@ -376,16 +389,16 @@
         }
 
         function updateDisplay() {
-            const sportDrills = drills[currentSport];
-            const isEnd = currentIndex >= sportDrills.length;
+            const list = drills[currentSport];
+            const isEnd = currentIndex >= list.length;
             if (isEnd) {
                 document.getElementById('drill-content').style.display = 'none';
                 document.getElementById('end-content').style.display = 'block';
             } else {
                 document.getElementById('drill-content').style.display = 'block';
                 document.getElementById('end-content').style.display = 'none';
-                document.getElementById('sport-subtitle').innerText = `DRILL ${currentIndex + 1} / ${sportDrills.length}`;
-                document.getElementById('drill-text').innerText = sportDrills[currentIndex];
+                document.getElementById('sport-subtitle').innerText = `${currentSport === 'Warm Up' ? 'STEP' : 'DRILL'} ${currentIndex + 1} / ${list.length}`;
+                document.getElementById('drill-text').innerText = list[currentIndex];
             }
         }
 
@@ -404,10 +417,6 @@
                 } else {
                     stopTimer();
                     playAlarm();
-                    document.getElementById('timer-display').style.color = 'var(--danger)';
-                    setTimeout(() => {
-                        document.getElementById('timer-display').style.color = 'var(--text-main)';
-                    }, 3000);
                 }
             }, 1000);
         }
