@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Project Drills</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: rgba(0,0,0,0.05);
+            --toggle-bg: #e2e8f0;
+        }
+
+        [data-theme="dark"] {
+            --primary: #f1f5f9;
+            --accent: #60a5fa;
+            --success: #34d399;
+            --danger: #f87171;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: rgba(255,255,255,0.1);
+            --toggle-bg: #334155;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s, transform 0.2s; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            text-align: center; 
+            padding: 20px; 
+            background: var(--bg); 
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container { width: 100%; max-width: 500px; position: relative; }
+        
+        h1 { margin: 60px 0 20px 0; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); }
+        
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 10px;
+            right: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 34px;
+            position: relative;
+            width: 60px;
+        }
+
+        .theme-switch input { display: none; }
+
+        .slider {
+            background-color: var(--toggle-bg);
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6px;
+        }
+
+        .slider:before {
+            background-color: white;
+            bottom: 4px;
+            content: "";
+            height: 26px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 26px;
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .slider svg { width: 14px; height: 14px; fill: #facc15; }
+        .slider .moon-icon { fill: #f1f5f9; }
+
+        .session-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .back-arrow {
+            position: absolute;
+            left: 0;
+            background: none;
+            border: none;
+            font-size: 2.5rem;
+            cursor: pointer;
+            color: var(--text-main);
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        .session-title {
+            margin: 0;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .view { display: none; width: 100%; }
+        .view.active { display: block; animation: fadeIn 0.3s ease-in; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 40px 20px; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            margin-bottom: 20px; 
+            min-height: 220px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            border: 1px solid var(--border);
+        }
+        #sport-subtitle { font-size: 0.85rem; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; font-weight: 800; letter-spacing: 1px; }
+        #drill-text { font-size: 1.5rem; font-weight: 700; color: var(--text-main); line-height: 1.3; margin: 0; }
+
+        .timer-box {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        #timer-display { font-family: 'Courier New', Courier, monospace; font-size: 3rem; font-weight: bold; color: var(--text-main); margin-bottom: 15px; }
+        .timer-controls { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        .timer-btn { border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+        .timer-btn:active { transform: scale(0.95); }
+        .start-btn { background: var(--success); color: white; }
+        .stop-btn { background: var(--danger); color: white; }
+        .reset-btn { background: var(--text-muted); color: white; }
+        .preset-btn { background: var(--bg); color: var(--text-main); border: 1px solid var(--border); }
+
+        .sound-toggle {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0.6;
+        }
+        .sound-toggle.muted { opacity: 0.2; }
+
+        .nav-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .nav-btn { flex: 1; padding: 18px; border-radius: 15px; border: none; cursor: pointer; background: var(--accent); color: white; font-weight: bold; font-size: 1rem; }
+        .nav-btn.secondary { background: var(--text-muted); }
+
+        .sport-menu { display: flex; flex-direction: column; gap: 15px; width: 100%; margin-top: 20px; }
+        .sport-option { 
+            padding: 25px; 
+            border-radius: 20px; 
+            border: none; 
+            background: var(--card-bg); 
+            font-weight: 800; 
+            font-size: 1.3rem; 
+            cursor: pointer; 
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+        .sport-option:active { transform: scale(0.97); opacity: 0.8; }
+        .sport-option span { font-size: 1.5rem; }
+
+        .end-btn { background: var(--success); width: 100%; padding: 20px; border-radius: 15px; border: none; color: white; font-weight: bold; font-size: 1.2rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="theme-switch-wrapper">
+            <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" onchange="toggleTheme()" />
+                <div class="slider">
+                    <svg class="sun-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-12.37c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.38.39-1.02 0-1.41zM6.21 16.7c-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.38-.38.38-1.02 0-1.41z"/></svg>
+                    <svg class="moon-icon" viewBox="0 0 24 24"><path d="M12.1 2.9C10.1 2.9 8.1 3.5 6.5 4.7 4.1 6.5 2.7 9.3 2.7 12.3c0 5.2 4.2 9.4 9.4 9.4 3 0 5.8-1.4 7.6-3.8 1.2-1.6 1.8-3.6 1.8-5.6 0-.3 0-.7-.1-1-.1-.5-.4-.9-.9-1.1-.4-.1-.9 0-1.2.4-.6.7-1.4 1.2-2.3 1.5-1 .3-2 .4-3 .2-2.1-.4-3.8-2-4.2-4.1-.3-1.4-.1-2.8.5-4 .2-.3.2-.7 0-1-.2-.4-.6-.7-1-.7z"/></svg>
+                </div>
+            </label>
+        </div>
+
+        <div id="menu-view" class="view active">
+            <h1>Sports Project Drills</h1>
+            <div class="sport-menu">
+                <button class="sport-option" onclick="setSport('Basketball')">Basketball 🏀 <span>›</span></button>
+                <button class="sport-option" onclick="setSport('Football')">Football ⚽ <span>›</span></button>
+                <button class="sport-option" onclick="setSport('Volleyball')">Volleyball 🏐 <span>›</span></button>
+            </div>
+        </div>
+
+        <div id="session-view" class="view">
+            <div class="session-nav">
+                <button class="back-arrow" onclick="showMenu()">‹</button>
+                <h1 id="session-header" class="session-title">Session</h1>
+            </div>
+
+            <div class="timer-box">
+                <button id="sound-btn" class="sound-toggle" onclick="toggleSound()">🔊</button>
+                <div id="timer-display">05:00</div>
+                <div class="timer-controls">
+                    <button class="timer-btn start-btn" onclick="startTimer()">START</button>
+                    <button class="timer-btn stop-btn" onclick="stopTimer()">STOP</button>
+                    <button class="timer-btn reset-btn" onclick="resetTimer()">RESET</button>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 8px;">
+                    <button class="timer-btn preset-btn" onclick="setTimer(5)">05m</button>
+                    <button class="timer-btn preset-btn" onclick="setTimer(10)">10m</button>
+                </div>
+            </div>
+
+            <div id="drill-content">
+                <div class="card">
+                    <div id="sport-subtitle">DRILL 1/50</div>
+                    <p id="drill-text">Loading...</p>
+                </div>
+                <div class="nav-group">
+                    <button class="nav-btn secondary" onclick="changeDrill(-1)">← Back</button>
+                    <button class="nav-btn" onclick="changeDrill(1)">Next →</button>
+                </div>
+            </div>
+
+            <div id="end-content" style="display: none;">
+                <div class="card">
+                    <div id="sport-subtitle">Session Complete</div>
+                    <p id="drill-text">You have finished all 50 drills for this sport!</p>
+                </div>
+                <button class="end-btn" onclick="resetDrills()">Restart from Drill 1</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const drills = {
+            Football: [
+                "Slalom through cones", "Zig-zag dribble", "Left-foot dribble only", "Right-foot dribble only", "Weak-foot dribble", "Dribble around markers in a circle", "Speed dribble in straight line", "Stop-and-go dribble", "Drag-back turns", "Cruyff turns", "1v1 shadow dribbling", "Change-of-pace dribble", "Roll-over step dribble", "Toe-tap quick control", "Dribble and pass to wall", "Wall passes – short", "Wall passes – long", "Passing in triangle", "Passing with weak foot", "One-touch passing", "Two-touch passing", "Passing on the move", "Pass to moving target", "Give-and-go wall pass", "Passing accuracy into marked zone", "Spot shooting (5 points in goal)", "Power shots", "Accuracy shots to corners", "Shooting with weak foot", "Volleying at goal", "Half-volley shots", "Shooting on the move", "Finishing under pressure (wall or cone defenders)", "Foot juggling", "Thigh juggling", "Head juggling", "Juggle + trap", "Juggle + pass to wall", "Juggle and move forward 5 meters", "Juggle and shoot", "Ladder footwork", "Cone side shuffles", "Sprint-stop-sprint", "Backward dribble", "Change-of-direction sprint", "Reaction drill with ball drops", "Quick feet on spot", "Jumping over cones with ball control", "Shuttle runs with dribble", "Mini obstacle course"
+            ],
+            Basketball: [
+                "Stationary right-hand dribble", "Stationary left-hand dribble", "Crossover dribble", "Behind-the-back dribble", "Spin move dribble", "Between-the-legs dribble", "Speed dribble straight line", "Zig-zag dribble", "Cone slalom dribble", "Dribble and stop", "Weak-hand only dribble", "Two-ball dribbling", "Dribble and pivot", "Dribble and shoot", "Reaction dribble (coach signals)", "Chest pass to partner", "Bounce pass", "Overhead pass", "Wall passing", "One-touch passing", "Passing while moving", "Pass & move pattern", "Give-and-go passing", "Target passing through hoops/cones", "Accuracy passing challenge", "Layups right side", "Layups left side", "Spot shooting (set positions)", "Free throws", "Bank shots", "Jump shots", "Catch & shoot", "Pull-up jumpers", "Shooting under pressure (timed)", "Shooting off dribble", "Pivot drills", "Defensive slides", "Ladder quick-feet", "Cone agility shuffles", "Jump-stop drills", "Backward slides", "Side-to-side shuffle + touch cones", "Close-out drill", "Reaction step drill", "Change-of-direction sprint", "Tip drills off wall", "Catch rebound & pass", "Overhead catch drills", "Quick hand reaction drill", "Hand-eye coordination (toss & catch)"
+            ],
+            Volleyball: [
+                "Underhand serve", "Overhand serve", "Target zones – left/right", "Target zones – deep/short", "Jump serve approach", "Serve accuracy challenge", "Serve power vs control", "Weak-hand serve", "Serve & move to ready position", "Rapid-fire serving", "Wall passes", "Partner bump passing", "Moving bump drills", "Short-distance bump", "Long-distance bump", "Accuracy bump into target area", "Reaction bump (coach tosses)", "Low-ball bump drill", "High-ball bump drill", "Bump + move to new spot", "Wall sets", "Partner sets", "Stationary sets", "Moving sets", "Overhead target sets", "Quick-release sets", "Jump sets", "Weak-hand sets", "Reaction sets (coach tosses irregular)", "Setting + step to spot", "Approach jump drills", "Arm swing mechanics", "Contact point accuracy", "Spiking over wall/net", "Weak-hand spike", "Jump spike from stationary", "Jump spike after approach", "Spike + step back to ready", "Spiking into target zones", "Spike timing with tossed ball", "Lateral shuffles", "Quick step forward/backward", "Drop-step for defense", "Reaction to coach signals", "Dig low ball", "Dig high ball", "Shuffle to target cone", "Jump & land mechanics", "Quick stance changes", "Movement drill with set/serve reaction"
+            ]
+        };
+
+        let currentSport = "";
+        let currentIndex = 0;
+        let timerInterval;
+        let timeLeft = 300;
+        let soundEnabled = true;
+
+        function toggleTheme() {
+            const checkbox = document.getElementById('checkbox');
+            const target = checkbox.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('theme', target);
+        }
+
+        function initTheme() {
+            const saved = localStorage.getItem('theme');
+            const theme = saved === 'dark' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.getElementById('checkbox').checked = (theme === 'dark');
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            btn.innerText = soundEnabled ? '🔊' : '🔇';
+            btn.classList.toggle('muted', !soundEnabled);
+        }
+
+        function playAlarm() {
+            if (!soundEnabled) return;
+            try {
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, context.currentTime); 
+                oscillator.frequency.exponentialRampToValueAtTime(440, context.currentTime + 0.5);
+                gainNode.gain.setValueAtTime(0.1, context.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5);
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+                oscillator.start();
+                oscillator.stop(context.currentTime + 0.5);
+            } catch (e) { console.error("Audio failed", e); }
+        }
+
+        function saveProgress() {
+            const progress = JSON.parse(localStorage.getItem('drill_progress_v2') || '{}');
+            progress[currentSport] = currentIndex;
+            localStorage.setItem('drill_progress_v2', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const progress = JSON.parse(localStorage.getItem('drill_progress_v2') || '{}');
+            return progress[currentSport] || 0;
+        }
+
+        function showMenu() {
+            stopTimer();
+            document.getElementById('session-view').classList.remove('active');
+            document.getElementById('menu-view').classList.add('active');
+        }
+
+        function setSport(sport) {
+            currentSport = sport;
+            currentIndex = loadProgress();
+            document.getElementById('menu-view').classList.remove('active');
+            document.getElementById('session-view').classList.add('active');
+            document.getElementById('session-header').innerText = sport;
+            updateDisplay();
+            setTimer(5);
+        }
+
+        function changeDrill(step) {
+            if (!currentSport) return;
+            let nextIndex = currentIndex + step;
+            if (nextIndex < 0) return;
+            currentIndex = nextIndex;
+            updateDisplay();
+            saveProgress();
+        }
+
+        function resetDrills() {
+            currentIndex = 0;
+            saveProgress();
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const sportDrills = drills[currentSport];
+            const isEnd = currentIndex >= sportDrills.length;
+            if (isEnd) {
+                document.getElementById('drill-content').style.display = 'none';
+                document.getElementById('end-content').style.display = 'block';
+            } else {
+                document.getElementById('drill-content').style.display = 'block';
+                document.getElementById('end-content').style.display = 'none';
+                document.getElementById('sport-subtitle').innerText = `DRILL ${currentIndex + 1} / ${sportDrills.length}`;
+                document.getElementById('drill-text').innerText = sportDrills[currentIndex];
+            }
+        }
+
+        function setTimer(minutes) {
+            stopTimer();
+            timeLeft = minutes * 60;
+            updateTimerDisplay();
+        }
+
+        function startTimer() {
+            if (timerInterval) return;
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    stopTimer();
+                    playAlarm();
+                    document.getElementById('timer-display').style.color = 'var(--danger)';
+                    setTimeout(() => {
+                        document.getElementById('timer-display').style.color = 'var(--text-main)';
+                    }, 3000);
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function resetTimer() {
+            stopTimer();
+            timeLeft = 300; 
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timer-display').innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        window.onload = initTheme;
+    </script>
+</body>
+</html>
