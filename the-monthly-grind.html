@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Monthly Grind</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .boustrophedon-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            background-color: #cbd5e1;
+            gap: 1px;
+            border: 1px solid #cbd5e1;
+        }
+        .square {
+            aspect-ratio: 1 / 1;
+            background-color: white;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            overflow: hidden;
+        }
+        .player-token {
+            width: 24px;
+            height: 24px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+        .die-face {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.25rem;
+        }
+        @keyframes dice-roll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(0.9); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .rolling {
+            animation: dice-roll 0.6s infinite linear;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 p-2 sm:p-4 text-slate-900 font-sans">
+
+    <!-- Player Selection Screen -->
+    <div id="selection-screen" class="fixed inset-0 bg-slate-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center space-y-6">
+            <div class="flex justify-center text-indigo-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-800">The Monthly Grind</h1>
+            <p class="text-slate-500">A turn-based survival game for teens.</p>
+            
+            <div id="resume-container" class="hidden pb-4 border-b border-slate-100">
+                <button onclick="resumeGame()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xl shadow-lg transition-all active:scale-95 mb-2">Continue Last Game</button>
+                <p class="text-xs text-slate-400 font-medium">Or start a fresh session below:</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="startGame(1)" class="py-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl font-bold text-xl border-2 border-indigo-200 transition-all active:scale-95">1 Player</button>
+                <button onclick="startGame(2)" class="py-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl font-bold text-xl border-2 border-indigo-200 transition-all active:scale-95">2 Players</button>
+                <button onclick="startGame(3)" class="py-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl font-bold text-xl border-2 border-indigo-200 transition-all active:scale-95">3 Players</button>
+                <button onclick="startGame(4)" class="py-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl font-bold text-xl border-2 border-indigo-200 transition-all active:scale-95">4 Players</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game UI -->
+    <div id="game-ui" class="max-w-5xl mx-auto space-y-4 hidden">
+        
+        <!-- Player Dashboards -->
+        <div id="dashboards" class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+            <!-- Dynamic Injection -->
+        </div>
+
+        <!-- Action Bar -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-200">
+            <div id="status-message" class="text-lg font-bold px-4 py-2 rounded-xl bg-slate-100 text-slate-700">
+                Waiting for turn...
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex gap-2">
+                    <div id="die-1" class="die-face">1</div>
+                    <div id="die-2" class="die-face">1</div>
+                </div>
+                <button id="roll-btn" onclick="rollDice()" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-black text-lg flex items-center gap-2 transition-all active:scale-95 shadow-lg hover:bg-indigo-700 disabled:opacity-50">
+                    <svg id="dice-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M12 12h.01"/><path d="M16 16h.01"/><path d="M8 8h.01"/><path d="M16 8h.01"/><path d="M8 16h.01"/></svg>
+                    ROLL
+                </button>
+            </div>
+        </div>
+
+        <!-- Board -->
+        <div class="bg-slate-200 p-1 sm:p-2 rounded-2xl shadow-2xl overflow-hidden">
+            <div id="board" class="boustrophedon-grid">
+                <!-- Board Squares injected here -->
+            </div>
+        </div>
+
+        <button onclick="clearSaveAndRestart()" class="text-slate-400 text-xs font-bold hover:text-indigo-600 transition-colors uppercase tracking-widest">
+            Reset Game / Change Players
+        </button>
+    </div>
+
+    <script>
+        const BOARD_SIZE = 60;
+        const STARTING_CASH = 20;
+        const GAME_OVER_LIMIT = -250;
+        const LOOP_BONUS = 20;
+        const SAVE_KEY = 'monthly_grind_save_v1';
+
+        const PLAYER_CONFIG = [
+            { color: 'indigo', text: 'text-indigo-600', bg: 'bg-indigo-100', ring: 'ring-indigo-500', border: 'border-indigo-500' },
+            { color: 'rose', text: 'text-rose-600', bg: 'bg-rose-100', ring: 'ring-rose-500', border: 'border-rose-500' },
+            { color: 'emerald', text: 'text-emerald-600', bg: 'bg-emerald-100', ring: 'ring-emerald-500', border: 'border-emerald-500' },
+            { color: 'amber', text: 'text-amber-600', bg: 'bg-amber-100', ring: 'ring-amber-500', border: 'border-amber-500' }
+        ];
+
+        const teenEvents = [
+            { name: "Iced Coffee", impact: -7 },
+            { name: "Found Change", impact: 5 },
+            { name: "Movie Ticket", impact: -15 },
+            { name: "Chore Money", impact: 20 },
+            { name: "Snacks", impact: -10 },
+            { name: "Birthday!", impact: 0, special: 'birthday' },
+            { name: "New Game", impact: -30 },
+            { name: "Sold Craft", impact: 15 },
+            { name: "Bus Fare", impact: -5 },
+            { name: "Pizza Night", impact: -12 },
+            { name: "Dog Walking", impact: 18 },
+            { name: "Lost $10", impact: -10 },
+            { name: "Babysitting", impact: 30 },
+            { name: "App Purchase", impact: -8 }
+        ];
+
+        const fillerEvents = [
+            "Nice Day", "Took a Nap", "Read a Book", "Homework", "Video Games", 
+            "Cleaned Room", "Sunset Walk", "Doodling", "Music Jam", "Call with Mom",
+            "Chilling", "Daydreaming", "Watching TV", "Snack Time", "Cool Breeze",
+            "Petting Dog", "Watering Plant", "Organizing", "Baking Cookies", "Old Photos",
+            "Washed Car", "Art Class", "Skating", "Park Picnic", "Bird Watching"
+        ];
+
+        let players = [];
+        let turn = 0;
+        let isRolling = false;
+        let squareData = {};
+
+        // Load check on startup
+        window.onload = () => {
+            const savedData = localStorage.getItem(SAVE_KEY);
+            if (savedData) {
+                document.getElementById('resume-container').classList.remove('hidden');
+            }
+        };
+
+        function saveGame() {
+            const gameState = {
+                players,
+                turn,
+                squareData
+            };
+            localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+        }
+
+        function resumeGame() {
+            const savedData = localStorage.getItem(SAVE_KEY);
+            if (!savedData) return;
+
+            const gameState = JSON.parse(savedData);
+            players = gameState.players;
+            turn = gameState.turn;
+            squareData = gameState.squareData;
+
+            document.getElementById('selection-screen').classList.add('hidden');
+            document.getElementById('game-ui').classList.remove('hidden');
+            
+            updateUI();
+            updateStatus(`${players[turn].name}'s Turn (Resumed)`, turn);
+        }
+
+        function clearSaveAndRestart() {
+            if (confirm("Are you sure you want to reset? This will delete your current progress.")) {
+                localStorage.removeItem(SAVE_KEY);
+                location.reload();
+            }
+        }
+
+        function generateBoard() {
+            squareData = {
+                1: { name: "START", impact: 0, type: 'start' },
+                60: { name: "GOAL", impact: 0, type: 'start' }
+            };
+
+            let indices = [];
+            for (let i = 2; i < BOARD_SIZE; i++) indices.push(i);
+            
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+
+            const activeCount = 40;
+            const activeIndices = indices.slice(0, activeCount);
+            const fillerIndices = indices.slice(activeCount);
+
+            activeIndices.forEach(idx => {
+                const rand = Math.random();
+                if (rand < 0.1) {
+                    const isShortcut = Math.random() > 0.5;
+                    const jumpTo = isShortcut ? Math.min(60, idx + 8) : Math.max(1, idx - 8);
+                    squareData[idx] = { 
+                        name: isShortcut ? "Shortcut!" : "Oops!", 
+                        impact: isShortcut ? 10 : -10, 
+                        jump: jumpTo, 
+                        type: isShortcut ? 'shortcut' : 'setback' 
+                    };
+                } else {
+                    squareData[idx] = { ...teenEvents[Math.floor(Math.random() * teenEvents.length)] };
+                }
+            });
+
+            fillerIndices.forEach(idx => {
+                squareData[idx] = { 
+                    name: fillerEvents[Math.floor(Math.random() * fillerEvents.length)], 
+                    impact: 0 
+                };
+            });
+        }
+
+        function startGame(count) {
+            generateBoard();
+            players = Array.from({ length: count }, (_, i) => ({
+                id: i,
+                name: `Player ${i + 1}`,
+                cash: STARTING_CASH,
+                position: 1,
+                months: 0,
+                isOut: false
+            }));
+
+            document.getElementById('selection-screen').classList.add('hidden');
+            document.getElementById('game-ui').classList.remove('hidden');
+            
+            saveGame(); // Save initial state
+            updateUI();
+            updateStatus(`Player 1's Turn!`, 0);
+        }
+
+        function updateStatus(msg, playerIdx) {
+            const status = document.getElementById('status-message');
+            status.innerText = msg;
+            status.className = `text-lg font-bold px-4 py-2 rounded-xl ${PLAYER_CONFIG[playerIdx].bg} ${PLAYER_CONFIG[playerIdx].text}`;
+        }
+
+        function rollDice() {
+            if (isRolling) return;
+            isRolling = true;
+            
+            const btn = document.getElementById('roll-btn');
+            const icon = document.getElementById('dice-icon');
+            btn.disabled = true;
+            icon.classList.add('rolling');
+
+            setTimeout(() => {
+                const d1 = Math.floor(Math.random() * 6) + 1;
+                const d2 = Math.floor(Math.random() * 6) + 1;
+                const total = d1 + d2;
+                
+                document.getElementById('die-1').innerText = d1;
+                document.getElementById('die-2').innerText = d2;
+                
+                icon.classList.remove('rolling');
+                movePlayerAnimated(total);
+            }, 600);
+        }
+
+        async function movePlayerAnimated(steps) {
+            const p = players[turn];
+            let currentSteps = 0;
+            let monthInc = 0;
+
+            // Animated step-by-step movement
+            while (currentSteps < steps) {
+                currentSteps++;
+                p.position++;
+                
+                if (p.position > BOARD_SIZE) {
+                    p.position = 1;
+                    monthInc++;
+                    p.cash += LOOP_BONUS;
+                }
+                
+                updateUI();
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+
+            const square = squareData[p.position] || { name: "Just a day", impact: 0 };
+            
+            let birthdayCash = 0;
+            if (square.special === 'birthday' && players.length > 1) {
+                players.forEach(other => {
+                    if (other.id !== p.id && !other.isOut) {
+                        other.cash -= 5;
+                        birthdayCash += 5;
+                    }
+                });
+            }
+
+            p.cash += (square.impact || 0) + birthdayCash;
+            p.months += monthInc;
+
+            let msg = `${p.name} landed on ${square.name}.`;
+            if (square.special === 'birthday') {
+                msg = `🎂 It's ${p.name}'s Birthday! Everyone gave them $5.`;
+            } else if (square.impact !== 0) {
+                msg += ` (${square.impact > 0 ? '+' : ''}$${square.impact})`;
+            }
+            
+            if (monthInc > 0) msg = `🎉 Passed Start ${monthInc > 1 ? monthInc + ' times' : ''}! ` + msg;
+
+            if (square.jump) {
+                updateStatus(msg + " Jumping...", turn);
+                await new Promise(resolve => setTimeout(resolve, 800));
+                p.position = square.jump;
+                updateUI();
+            }
+
+            players.forEach(pl => {
+                if (!pl.isOut && pl.cash <= GAME_OVER_LIMIT) {
+                    pl.isOut = true;
+                }
+            });
+
+            updateStatus(msg, turn);
+            updateUI();
+
+            setTimeout(() => {
+                let nextTurn = (turn + 1) % players.length;
+                let findCount = 0;
+                while (players[nextTurn].isOut && findCount < players.length) {
+                    nextTurn = (nextTurn + 1) % players.length;
+                    findCount++;
+                }
+
+                if (findCount >= players.length || (players.filter(pl => !pl.isOut).length === 1 && players.length > 1)) {
+                    const winner = players.find(pl => !pl.isOut);
+                    updateStatus(`🏆 GAME OVER! ${winner ? winner.name + ' wins!' : 'Everyone broke!'}`, winner ? winner.id : 0);
+                    document.getElementById('roll-btn').disabled = true;
+                    localStorage.removeItem(SAVE_KEY); // Clear save on game over
+                } else {
+                    turn = nextTurn;
+                    saveGame(); // SAVE after move is complete and turn changes
+                    updateStatus(`${players[turn].name}'s Turn!`, turn);
+                    document.getElementById('roll-btn').disabled = false;
+                    isRolling = false;
+                }
+            }, 1200);
+        }
+
+        function updateUI() {
+            const dashContainer = document.getElementById('dashboards');
+            dashContainer.innerHTML = players.map((p, i) => `
+                <div class="bg-white p-3 rounded-2xl shadow-sm border-2 transition-all ${turn === i ? PLAYER_CONFIG[i].border + ' scale-105 shadow-md' : 'border-transparent opacity-70'} ${p.isOut ? 'grayscale opacity-30' : ''}">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="p-1.5 rounded-lg ${PLAYER_CONFIG[i].bg} ${PLAYER_CONFIG[i].text}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <span class="font-bold text-sm">${p.name} ${p.isOut ? '(OUT)' : ''}</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <div class="text-[10px] text-slate-400 font-bold uppercase">Balance</div>
+                            <div class="text-lg font-black ${p.cash < 0 ? 'text-red-600' : 'text-green-600'}">$${p.cash}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase">Month</div>
+                            <div class="text-lg font-black text-slate-700">${p.months}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            const boardContainer = document.getElementById('board');
+            boardContainer.innerHTML = '';
+            for (let row = 5; row >= 0; row--) {
+                for (let col = 0; col < 10; col++) {
+                    let num = (row % 2 === 1) ? (row * 10) + (10 - col) : (row * 10) + (col + 1);
+                    const data = squareData[num];
+                    const playersHere = players.filter(p => p.position === num && !p.isOut);
+                    
+                    const cell = document.createElement('div');
+                    cell.className = 'square border border-slate-200';
+                    if (num === 1) cell.classList.add('bg-green-50');
+
+                    let content = `<span class="absolute top-0.5 left-0.5 text-slate-300 text-[8px] sm:text-[10px]">${num}</span>`;
+                    
+                    content += `<div class="flex flex-wrap justify-center gap-0.5 z-10">`;
+                    playersHere.forEach(p => {
+                        content += `<div class="player-token ${PLAYER_CONFIG[p.id].bg} ${PLAYER_CONFIG[p.id].text} ${PLAYER_CONFIG[p.id].ring} ring-2 ring-offset-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>`;
+                    });
+                    content += `</div>`;
+
+                    if (data) {
+                        content += `<div class="text-center px-1 leading-tight mt-1">
+                            <div class="font-bold truncate text-[8px] sm:text-[10px] text-slate-700">${data.name}</div>
+                            <div class="text-[8px] sm:text-[10px] font-bold ${data.impact < 0 ? 'text-red-500' : 'text-green-600'}">
+                                ${data.special === 'birthday' ? 'Gift Time!' : (data.impact !== 0 ? (data.impact > 0 ? '+' : '') + '$' + data.impact : '')}
+                            </div>
+                        </div>`;
+                    }
+
+                    if (data?.jump) {
+                        const isShortcut = data.jump > num;
+                        content += `<div class="absolute bottom-0.5 right-0.5 ${isShortcut ? 'text-blue-400' : 'text-red-400'}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${isShortcut ? '<path d="m7 7 10 10M17 7v10H7"/>' : '<path d="M7 17 17 7M7 7h10v10"/>'}</svg>
+                        </div>`;
+                    }
+
+                    cell.innerHTML = content;
+                    boardContainer.appendChild(cell);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
