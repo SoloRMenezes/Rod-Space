@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truth or Dare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --secondary: #db2777;
+            --border: rgba(255, 255, 255, 0.8);
+            --inner-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            --outer-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --border: rgba(255, 255, 255, 0.1);
+            --inner-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+            --outer-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.4s ease;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 2.5rem 1.5rem;
+            box-shadow: var(--outer-shadow);
+            box-shadow: var(--outer-shadow), var(--inner-shadow);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .screen { display: none; }
+        .screen.active { 
+            display: flex; 
+            flex-direction: column; 
+            animation: fadeIn 0.4s ease-out; 
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { font-size: 1.75rem; font-weight: 800; margin: 0 0 0.5rem; letter-spacing: -0.03em; }
+        .subtitle { color: var(--text-muted); margin-bottom: 2rem; font-size: 0.9rem; font-weight: 500; }
+
+        .theme-toggle {
+            position: absolute;
+            top: -60px;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            box-shadow: var(--outer-shadow);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .cat-item {
+            background: rgba(128, 128, 128, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cat-item:hover {
+            background: rgba(128, 128, 128, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .cat-item .icon { font-size: 1.75rem; margin-bottom: 8px; }
+        .cat-item .label { font-weight: 700; font-size: 0.85rem; }
+
+        .btn-stack { margin-top: 1rem; display: flex; flex-direction: column; gap: 10px; }
+
+        .btn {
+            border: none;
+            border-radius: 16px;
+            padding: 1rem;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-truth { background: var(--primary); color: white; }
+        .btn-dare { background: var(--secondary); color: white; }
+        .btn-ghost { 
+            background: transparent; 
+            border: 1px solid var(--border); 
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+        .btn-ghost:hover { color: var(--text-main); background: rgba(128, 128, 128, 0.05); }
+
+        .prompt-box {
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: 24px;
+            background: rgba(128, 128, 128, 0.04);
+            margin: 1.5rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .type-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            padding: 4px 12px;
+            border-radius: 10px;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .prompt-content { font-size: 1.15rem; font-weight: 600; line-height: 1.5; }
+
+        .meta { margin-top: 2rem; font-size: 0.8rem; color: var(--text-muted); }
+        .reset-btn { color: var(--secondary); cursor: pointer; text-decoration: underline; margin-top: 8px; display: inline-block; }
+
+        /* Modal */
+        #modal-wrap {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        #modal-wrap.show { display: flex; }
+
+        .modal {
+            background: var(--bg-color);
+            border-radius: 24px;
+            padding: 2rem;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <button class="theme-toggle" id="theme-switcher">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+
+        <div class="main-card">
+            <!-- Main Menu -->
+            <div id="view-menu" class="screen active">
+                <h1>Truth or Dare</h1>
+                <p class="subtitle">Select a category to play</p>
+                <div class="category-grid" id="category-grid"></div>
+                <div class="meta">
+                    <span id="stat-count">0 cards played</span><br>
+                    <span class="reset-btn" onclick="askReset()">Reset Data</span>
+                </div>
+            </div>
+
+            <!-- Selection View -->
+            <div id="view-choice" class="screen">
+                <h2 id="view-cat-title" style="margin-bottom:0">Category</h2>
+                <p class="subtitle">Pick your side</p>
+                <div class="btn-stack">
+                    <button class="btn btn-truth" onclick="revealTask('truth')">Truth</button>
+                    <button class="btn btn-dare" onclick="revealTask('dare')">Dare</button>
+                    <button class="btn btn-ghost" onclick="goHome()">Back to Menu</button>
+                </div>
+            </div>
+
+            <!-- Task View -->
+            <div id="view-task" class="screen">
+                <div class="prompt-box">
+                    <div id="task-tag" class="type-tag">TRUTH</div>
+                    <div id="task-text" class="prompt-content">Prompt text here...</div>
+                </div>
+                <div class="btn-stack">
+                    <button class="btn btn-truth" onclick="goBackToChoice()">Next Player</button>
+                    <button class="btn btn-ghost" onclick="goHome()">Finish Session</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation -->
+    <div id="modal-wrap">
+        <div class="modal">
+            <h3 style="margin-top:0">Clear Progress?</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">This will allow all previously used prompts to appear again.</p>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn btn-truth" onclick="confirmReset()">Clear History</button>
+                <button class="btn btn-ghost" style="margin:0" onclick="hideModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// === 500 PROMPTS - 50 TRUTH + 50 DARE PER CATEGORY (Virgin-Friendly & Gender-Neutral) ===
+
+const DATABASE = {
+    random: {
+        truth: [
+            "What's the last lie you told and why?",
+            "What's the most embarrassing thing you've done on a date?",
+            "Who in this room do you find the most attractive?",
+            "What's your biggest ick in a potential partner?",
+            "Have you ever had a crush on someone in this group?",
+            "What's the pettiest thing you've ever done to someone?",
+            "Do you have a crush on someone?",
+            "What's the weirdest thing you've ever searched on your phone at 2 AM?",
+            "What's one secret you've never told anyone in this room?",
+            "What's the most awkward text you've ever sent by accident?",
+            "If you could swap lives with one person here for a full day, who would it be and why?",
+            "If you could only eat one food for the rest of your life, what would it be?",
+            "What's your most irrational fear?",
+            "What's the weirdest thing you've done in public?",
+            "If you were invisible for a day, what's the first thing you'd do?",
+            "Have you ever had a paranormal experience?",
+            "What's a talent you wish you had?",
+            "What's the most random fact you know?",
+            "If you could time travel, where and when would you go?",
+            "What's your guilty pleasure?",
+            "What's the most spontaneous thing you've ever done?",
+            "If you could have dinner with any celebrity, who would it be?",
+            "What's the silliest thing you believed as a child?",
+            "Have you ever pretended to be sick to get out of something?",
+            "What's the most random thing in your bag or pocket right now?",
+            "What's your favorite meme?",
+            "If you could instantly master any skill, what would it be?",
+            "What's the most useless thing you know how to do?",
+            "What's the most random compliment you've received?",
+            "If you could switch lives with an animal for a day, which would you pick?",
+            "What's the weirdest thing you've ever eaten?",
+            "What's the most random text you've received?",
+            "If you had to be stuck in a TV show for a month, which one?",
+            "What's the most random item in your room?",
+            "If you could invent a new color, what would you call it?",
+            "What's the silliest goal you've set for yourself?",
+            "What's the most random dream you've had?",
+            "If you could have any superpower, but only for a day, what?",
+            "What's the most random thing you've overheard?",
+            "If you could swap voices with someone, who?",
+            "What's the most random thing you've googled?",
+            "If you could teleport anywhere right now, where?",
+            "What's the most random thing you've done out of boredom?",
+            "If you had to eat only one cuisine forever, which?",
+            "What's the most random thing you've purchased?",
+            "If you could be any character from fiction, who?",
+            "What's the most random thing you've drawn or doodled?",
+            "If you could rename yourself, what?",
+            "What's the most random thing you've said in your sleep?",
+            "If you could have a random animal as a pet, which?",
+            "What's the longest you've gone without brushing your teeth?"
+        ],
+        dare: [
+            "Do your best impression of the person to your left until someone guesses who it is.",
+            "Let the group send one text from your phone to anyone they want (you have to hit send).",
+            "Speak in a ridiculous accent for the next 3 rounds.",
+            "Let someone in the group style your hair however they want and keep it for the rest of the game.",
+            "Do 15 push-ups while singing your favorite song loudly.",
+            "Smell the armpit of the person on your right.",
+            "Post a silly selfie to your Instagram story right now (no deleting for 24 hours).",
+            "Try to lick your own elbow (or make a dramatic attempt).",
+            "Give a 30-second stand-up comedy routine about your life.",
+            "Swap one item of clothing with the person next to you for the next two rounds.",
+            "Speak only in animal noises for the next round.",
+            "Do your best robot dance for 20 seconds.",
+            "Balance a random object on your head for one full round.",
+            "Let someone draw a mustache on your face with a marker.",
+            "Act out a scene from a random movie chosen by the group.",
+            "Try to juggle three random objects.",
+            "Do your best impression of a famous celebrity until someone guesses.",
+            "Let the group pick an emoji and you must act it out.",
+            "Recite the alphabet backwards as fast as possible.",
+            "Pretend to be a cat for the next 2 minutes.",
+            "Do a silly walk around the room.",
+            "Try to touch your nose with your tongue.",
+            "Speak in rhymes until your next turn.",
+            "Let someone else redo your hairstyle.",
+            "Make up a new handshake with the person to your right.",
+            "Act like you’re on a cooking show and describe making a sandwich.",
+            "Let the group pick a word you must shout every time someone claps.",
+            "Pretend to be a statue for one minute.",
+            "Make your best animal impression and keep it for the next round.",
+            "Do your best impression of a baby learning to walk.",
+            "Balance on one foot with your eyes closed for 30 seconds.",
+            "Let someone else send a random emoji to your last contact.",
+            "Say the next three things you say in a whisper.",
+            "Do a dramatic reading of the last text you received.",
+            "Let someone in the group pick a random dare for you.",
+            "Try to keep a straight face while everyone tries to make you laugh.",
+            "Pretend to be a famous influencer for the next round.",
+            "Make up a song about the last thing you ate.",
+            "Let the group pick a silly nickname for you for the rest of the game.",
+            "Do your best impression of your favorite animal.",
+            "Dance with no music for 30 seconds.",
+            "Act like a superhero with a ridiculous power.",
+            "Let someone else post something random to your story.",
+            "Speak only using song lyrics for the next round.",
+            "Do your best impression of a cartoon character.",
+            "Let the group pick a tongue-twister for you to say 5 times fast.",
+            "Act like you just won the lottery.",
+            "Let someone else choose an outfit for you from the room.",
+            "Create a random handshake with everyone in the group.",
+            "Do the chicken dance for 45 seconds."
+        ]
+    },
+
+    fun: {
+        truth: [
+            "What's the funniest thing that happened to you this month?",
+            "If you were an animal, what would you be and why?",
+            "What's your most useless talent?",
+            "What's the best prank you've ever pulled or had pulled on you?",
+            "What's your guilty pleasure song or movie that you’d be embarrassed to admit?",
+            "What's the weirdest food combination you actually love?",
+            "Do you have a crush on someone?",
+            "Have you ever walked in on your parents doing something awkward?",
+            "What's the cringiest thing you've said while trying to flirt?",
+            "What's your most bizarre nickname and how did you get it?",
+            "If you could only eat one meal for the rest of your life, what would it be?",
+            "What's the silliest thing you've done for a dare?",
+            "If you could have any animal as a pet, what would it be?",
+            "What's the weirdest thing you've done in your sleep?",
+            "If you could swap places with anyone for a day, who?",
+            "What's the most random thing you've laughed at?",
+            "If you could be a character in any movie, who?",
+            "What's your favorite joke?",
+            "What's the most fun you've had in the last week?",
+            "If you could invent a holiday, what would it celebrate?",
+            "What's the weirdest thing you've worn?",
+            "If you could have a superpower, what would it be?",
+            "What's the funniest nickname you've given someone?",
+            "If you could eat dessert for breakfast, what would it be?",
+            "What's the most unusual talent you wish you had?",
+            "If you could be any age forever, what would you pick?",
+            "What's the funniest thing you've seen online?",
+            "If you could only use one emoji for a week, which?",
+            "What's the best joke you know by heart?",
+            "If you could prank anyone, who would it be?",
+            "What's a silly rumor you've heard about yourself?",
+            "If you could teleport anywhere right now, where?",
+            "What's the most random thing you've collected?",
+            "If you could only eat one snack forever, what?",
+            "What's the funniest face you can make?",
+            "If you could be a fly on the wall, where?",
+            "What's the weirdest dream you've ever had?",
+            "If you could sing like anyone, who would it be?",
+            "What's the silliest thing you've done for attention?",
+            "If you could switch names with someone, who?",
+            "What's the funniest thing your pet has done?",
+            "If you could have any job for a week, what?",
+            "What's the most random compliment you've received?",
+            "If you could live in any cartoon, which?",
+            "What's the most fun game you've played?",
+            "If you could make any law, what would it be?",
+            "What's the weirdest thing you've ever eaten?",
+            "If you could be a food, what would you be?",
+            "What's the most random dance move you know?",
+            "If you could swap lives with a celebrity, who?"
+        ],
+        dare: [
+            "Act like a dramatic news reporter announcing the most ridiculous version of your day.",
+            "Try to juggle three random items the group chooses.",
+            "Make up a 20-second rap about the person to your right.",
+            "Speak only in questions for the next two rounds.",
+            "Do your best celebrity impression for 30 seconds.",
+            "Try to stand on one leg with your eyes closed for 30 seconds.",
+            "Let the group draw something silly on your arm with a pen.",
+            "Sing the chorus of a song but in the voice of a cartoon character.",
+            "Dance like nobody's watching for a full minute.",
+            "Recreate your best (or worst) dance move from middle school.",
+            "Pretend to be a chicken until your next turn.",
+            "Do your best evil villain laugh.",
+            "Do a limbo using a random object as the bar.",
+            "Let someone else style your hair in a silly way.",
+            "Speak in a made-up language for the next round.",
+            "Act out your favorite movie scene.",
+            "Give a weather report about the room you're in.",
+            "Do your best impression of a famous singer.",
+            "Make up a handshake with the person to your left.",
+            "Try to balance a book on your head for 30 seconds.",
+            "Do a silly dance every time someone claps until your next turn.",
+            "Let the group pick an animal for you to impersonate.",
+            "Speak in rhymes until your next turn.",
+            "Pretend you're a robot for one minute.",
+            "Try to whistle a song chosen by the group.",
+            "Act like you just won the lottery.",
+            "Do your best impression of a baby animal.",
+            "Let someone else pick a random dare for you.",
+            "Make up a commercial for a random object in the room.",
+            "Do your best runway walk.",
+            "Pretend to be a statue for one minute.",
+            "Let someone else post a silly story to your social media.",
+            "Speak only in song lyrics for the next round.",
+            "Try to keep a straight face while everyone else tries to make you laugh.",
+            "Do your best impression of a cartoon character.",
+            "Let the group pick a silly nickname for you for the rest of the game.",
+            "Create a handshake with everyone in the group.",
+            "Do your best impression of a sports commentator.",
+            "Pretend you're a famous chef and describe making cereal.",
+            "Let someone else choose an outfit for you from what's in the room.",
+            "Balance a spoon on your nose for as long as you can.",
+            "Speak only in animal noises for the next round.",
+            "Do your best impression of a superhero.",
+            "Let the group pick a tongue-twister for you to say five times fast.",
+            "Act like you're on a cooking show for one minute.",
+            "Pretend to be a famous influencer for the next round.",
+            "Make up a song about the last thing you ate.",
+            "Let someone else pick a random object for you to dance with.",
+            "Do the Macarena perfectly.",
+            "Sing 'Happy Birthday' in 5 different accents."
+        ]
+    },
+
+    weird: {
+        truth: [
+            "What's the most unhinged thing you've ever done at 3 AM?",
+            "Have you ever tasted your own sweat on purpose?",
+            "If your life was a horror movie, what would be the dumbest way you die?",
+            "What's the weirdest thing you've ever done with your bare feet?",
+            "Have you ever named an object in your house and talked to it regularly?",
+            "What's the most cursed search history entry you have right now?",
+            "If you could replace one of your body parts with something completely random, what would it be?",
+            "Have you ever licked something off the floor or ground?",
+            "What's the strangest conspiracy theory you secretly believe (even a little)?",
+            "If you woke up tomorrow with an extra limb, where would you want it and what would you do with it first?",
+            "Do you have a crush on someone?",
+            "What's the weirdest thing you've ever eaten on purpose?",
+            "Have you ever talked to your food before eating it?",
+            "If you could smell like any object, what would it be?",
+            "What's the strangest dream you've had that felt real?",
+            "Have you ever collected something bizarre?",
+            "What's the weirdest habit you have when no one's watching?",
+            "If your pet could talk, what embarrassing thing would it say about you?",
+            "Have you ever pretended an inanimate object was alive?",
+            "What's the most unusual place you've fallen asleep?",
+            "If you had to fight one animal bare-handed, which?",
+            "What's the weirdest thing you've googled at 4 AM?",
+            "Have you ever worn clothes inside out on purpose?",
+            "What's the strangest sound you can make with your body?",
+            "If you could live in any fictional world, which weird one?",
+            "Have you ever named your toes or fingers?",
+            "What's the most cursed thing in your camera roll?",
+            "If you were a ghost, how would you prank the living?",
+            "Have you ever tasted something just because it looked weird?",
+            "What's the weirdest compliment you've ever received?",
+            "If your life had a soundtrack, what weird song would play now?",
+            "Have you ever had a conversation with yourself in the mirror?",
+            "What's the strangest fear you have about everyday objects?",
+            "If you could swap bodies with an animal for a day, which?",
+            "Have you ever made up a language or code with friends?",
+            "What's the weirdest thing you've kept as a souvenir?",
+            "If you had to eat one non-food item, what?",
+            "Have you ever danced with your reflection?",
+            "What's the most bizarre coincidence that's happened to you?",
+            "If you could invent a new weird holiday, what?",
+            "Have you ever licked a battery or something metallic?",
+            "What's the strangest thing you've whispered to a stranger?",
+            "If your shadow could talk, what secrets would it spill?",
+            "Have you ever pretended to be a different species?",
+            "What's the weirdest texture you've enjoyed touching?",
+            "If you woke up as the opposite gender, what's first?",
+            "Have you ever collected weird sounds or noises?",
+            "What's the most unexplainable thing that's happened to you?",
+            "If you could have any weird superpower, what?",
+            "Have you ever smelled something just to see if it's bad?"
+        ],
+        dare: [
+            "Lick the bottom of your shoe (or dramatically pretend if it's too gross).",
+            "Talk to your own reflection like it's a therapy session for 30 seconds.",
+            "Smell every person's feet in the room and rank them from best to worst.",
+            "Pretend you're a possessed doll for the next full round.",
+            "Eat a spoonful of whatever condiment is in the fridge without making a face.",
+            "Walk around the room backwards while making dinosaur noises.",
+            "Let the group choose one item in the room for you to French kiss.",
+            "Bark like a dog every time someone says your name for the next two rounds.",
+            "Try to fit as many marshmallows in your mouth as possible while saying 'I'm a weird little creature'.",
+            "Act out how you would seduce an alien if they landed in the room right now.",
+            "Talk like a robot for the next 3 rounds.",
+            "Pretend you're a haunted doll for one full round.",
+            "Lick the floor for 5 seconds.",
+            "Eat a raw onion like an apple.",
+            "Let someone pour milk on your head.",
+            "French kiss your own armpit.",
+            "Let the group smear something gross on your face.",
+            "Eat toothpaste straight from the tube.",
+            "Bark and crawl like a dog for 45 seconds.",
+            "Pretend you're a time traveler from the future.",
+            "Walk like a crab around the room.",
+            "Make weird animal noises every 10 seconds for a minute.",
+            "Let the group choose something for you to put in your pants.",
+            "Act like a glitchy video game character.",
+            "Let someone draw a weird face on your stomach.",
+            "Speak only in whispers while shouting random words.",
+            "Pretend you're allergic to the floor.",
+            "Try to communicate only with gestures for one round.",
+            "Act like gravity is different for you.",
+            "Make up a weird ritual and perform it.",
+            "Pretend your chair is a spaceship.",
+            "Act like a broken record repeating one phrase weirdly.",
+            "Pretend you're a mirror reflecting everyone.",
+            "Try to balance random objects on your head.",
+            "Act like you're communicating with aliens via dance.",
+            "Pretend you're a zombie learning to dance.",
+            "Make animal sounds while trying to tell a story.",
+            "Let the group style you as a weird creature.",
+            "Pretend to be a weather reporter in a storm.",
+            "Try to speak backwards for 20 seconds.",
+            "Act like you're in a horror movie trailer.",
+            "Make the weirdest noise you can for 10 seconds.",
+            "Act out being a sentient piece of furniture.",
+            "Pretend to be a broken vending machine.",
+            "Let someone blindfold you and guess what they're holding.",
+            "Walk in slow motion like in a movie.",
+            "Pretend your hands are puppets arguing.",
+            "Act like a plant growing towards the sun.",
+            "Pretend to be a detective investigating the room.",
+            "Sing a song but replace words with weird sounds."
+        ]
+    },
+
+    embarrassing: {
+        truth: [
+            "What's the cringiest thing you did as a kid that still haunts you?",
+            "Do you have a crush on someone?",
+            "Have you ever waved at someone thinking they were waving at you, but they weren't?",
+            "What's the most awkward thing you've ever said to a crush?",
+            "Have you ever had a major wardrobe malfunction in public?",
+            "What's the most embarrassing photo or video of you that exists?",
+            "Have you ever peed yourself as an adult?",
+            "What's the dumbest thing you've done to impress someone?",
+            "Have you ever accidentally liked an old post while stalking someone's profile?",
+            "What's the most embarrassing thing you've googled?",
+            "Have you ever sent a text to the wrong person that was meant to be a secret?",
+            "What's the most embarrassing thing your parents have caught you doing?",
+            "Have you ever pooped your pants as a teenager or adult?",
+            "Have you ever been caught masturbating by family?",
+            "Have you ever had a public fart that everyone heard?",
+            "Have you ever walked around with toilet paper stuck to your shoe all day?",
+            "Have you ever cried in public for a stupid reason?",
+            "What's the cringiest DM you've ever sent?",
+            "Have you ever been rejected publicly in a humiliating way?",
+            "What's the worst haircut you've ever paid for?",
+            "Have you ever had diarrhea in public and barely made it?",
+            "Have you ever been caught picking your nose and eating it?",
+            "What's the most embarrassing thing your ex told people about you?",
+            "Have you ever farted loudly during a silent moment?",
+            "Have you ever sent a risky text to the wrong person?",
+            "What's the cringiest way you've tried to get someone's attention?",
+            "Have you ever had food stuck in your teeth during an important moment?",
+            "What's the most humiliating rejection story you have?",
+            "What's the silliest fear that embarrassed you publicly?",
+            "Have you ever been caught talking to your pet like a baby in front of people?",
+            "What's the most embarrassing thing you've done on a video call?",
+            "Have you ever forgotten someone's name mid-conversation?",
+            "What's the cringiest compliment you've ever given?",
+            "Have you ever tripped while trying to look cool?",
+            "What's the most embarrassing thing you've said in class or a meeting?",
+            "Have you ever had a public speaking meltdown?",
+            "What's the silliest reason you've been grounded?",
+            "Have you ever accidentally liked your own post?",
+            "What's the most embarrassing thing you've done while sleeping over?",
+            "Have you ever waved at a stranger thinking it was a friend?",
+            "What's the worst photo bomb you've been in?",
+            "Have you ever sent a voice note you regretted immediately?",
+            "What's the most embarrassing thing you've bought online?",
+            "Have you ever been caught with your fly down all day?",
+            "What's the cringiest thing you've posted and immediately regretted?",
+            "Have you ever been publicly shamed by your parents in front of friends?",
+            "What's the most awkward thing you've done while trying to be cool?",
+            "Have you ever had someone point out your BO in public?",
+            "What's the worst thing you've done while blackout drunk?"
+        ],
+        dare: [
+            "Show the group the most embarrassing photo in your camera roll right now.",
+            "Let the group give you a ridiculous makeover with whatever they have.",
+            "Sing a song with a mouthful of water without spilling (or try dramatically).",
+            "Do your most awkward dance move in front of everyone for 20 seconds.",
+            "Draw a self-portrait with your eyes closed and show it to the group.",
+            "Call a friend or family member and sing 'Happy Birthday' to them right now.",
+            "Read the last text you sent out loud in the most dramatic voice possible.",
+            "Let someone tickle you for 20 seconds while you try not to laugh.",
+            "Wear your socks on your hands for the next two rounds.",
+            "Recreate your most embarrassing moment as dramatically as possible.",
+            "Let the group read your last 10 messages with your crush out loud.",
+            "Post your most embarrassing photo on your story right now.",
+            "Call your mom and tell her you love her in the most cringy baby voice.",
+            "Read your search history from the last week out loud.",
+            "Let someone give you a wedgie and leave it there.",
+            "Wear your pants backwards for the rest of the game.",
+            "Let the group rate your dancing after you do the worst dance possible.",
+            "Cry on command while everyone watches and rates how real it looks.",
+            "Let the group choose an embarrassing status for you to post.",
+            "Do the worm dance across the room.",
+            "Sing 'Baby Shark' at full volume.",
+            "Let someone slap your butt lightly once.",
+            "Pretend to propose to a random object dramatically.",
+            "Do 20 squats while moaning every time you go down (funny moan).",
+            "Let the group make you do the chicken dance.",
+            "Read your most recent search history out loud.",
+            "Let someone draw on your face with marker.",
+            "Wear your underwear on the outside of your pants for 2 rounds.",
+            "Call a family member and confess a fake embarrassing secret.",
+            "Do the most embarrassing dance you know for 45 seconds.",
+            "Let the group pick who you have to text something cringy to.",
+            "Pretend to be a bad stand-up comedian for one minute.",
+            "Let someone give you a temporary tattoo with marker.",
+            "Sing everything you say for the next round in a high voice.",
+            "Let the group style your hair into something ridiculous.",
+            "Do your best impression of a baby crying.",
+            "Let the group rate your flirting skills after a demo.",
+            "Pretend you're a telemarketer selling something weird.",
+            "Recite a nursery rhyme dramatically like Shakespeare.",
+            "Let the group give you an embarrassing nickname for the game.",
+            "Dance with a broom or mop as your partner.",
+            "Pretend to be a bad magician failing tricks.",
+            "Sing a love song to an inanimate object.",
+            "Wear your shirt backwards for the next round.",
+            "Pretend you're giving a TED talk on something silly.",
+            "Act out your most awkward childhood memory.",
+            "Let someone blindfold you and guess voices.",
+            "Do the floss dance as embarrassingly as possible.",
+            "Pretend you're a news reporter with bad news.",
+            "Let the group choose a silly walk you must do."
+        ]
+    },
+
+    sus: {
+        truth: [
+            "What’s the kinkiest fantasy you’ve ever had?",
+            "What’s your wildest sexual fantasy you haven’t told anyone?",
+            "Have you ever wanted a threesome?",
+            "What’s the most public place you’ve imagined doing something sexual?",
+            "What’s the most intense fantasy orgasm you’ve imagined?",
+            "Have you ever had a crush on someone you just met?",
+            "What’s your favorite type of porn and why?",
+            "Have you ever been caught masturbating?",
+            "What’s a sexual act you’re secretly curious to try one day?",
+            "Who in this group do you think would be the best in bed?",
+            "Have you ever sent (or almost sent) a nude to the wrong person?",
+            "What’s your favorite body part on yourself? On others?",
+            "Have you ever wanted to film yourself doing something sexual?",
+            "What’s the dirtiest thought you’ve had about someone in this room?",
+            "What’s something sexual you regret thinking about?",
+            "What’s the most adventurous place you’ve fantasized about hooking up?",
+            "Have you ever fantasized about having sex outdoors?",
+            "What’s your biggest turn-on that you’re embarrassed to admit?",
+            "Have you ever fantasized about a teacher, boss, or authority figure?",
+            "What’s the hottest dream you’ve ever had?",
+            "Have you ever imagined role-playing in bed? What scenario?",
+            "What’s the weirdest thing that’s turned you on?",
+            "Have you ever wanted to join the mile-high club?",
+            "What’s the longest you’ve gone without any sexual activity?",
+            "Have you ever had a crush on a friend’s partner?",
+            "What’s the most times you’ve masturbated in a single day?",
+            "Have you ever imagined using food during sex?",
+            "What’s something sexual you’re dying to try but haven’t yet?",
+            "Have you ever paid for porn or OnlyFans?",
+            "What’s your favorite thing you’ve imagined someone doing to you?",
+            "What’s the most taboo person you’ve ever masturbated to?",
+            "Have you ever gotten aroused thinking about someone while hanging out with them?",
+            "What’s the riskiest place you’ve ever masturbated?",
+            "Have you ever faked sexual confidence when you had no experience?",
+            "Do you get turned on by the idea of someone taking your virginity?",
+            "What’s the sluttiest fantasy you’ve had about someone connected to this group?",
+            "Have you ever lied about your body count or sexual experience?",
+            "Have you ever been rejected sexually and still masturbated to that person later?",
+            "What’s the most fucked up age gap you’ve fantasized about?",
+            "Have you ever sent or wanted to send nudes?",
+            "Have you ever watched porn while texting someone you like?",
+            "Have you ever had a threesome fantasy involving two people you know?",
+            "What’s the dirtiest text you’ve ever sent or wanted to send?",
+            "Have you ever masturbated in your parents’ bed?",
+            "Have you ever almost been caught masturbating by family?",
+            "What’s the most degrading porn category you secretly enjoy?",
+            "Have you ever used someone’s social media photos as masturbation material?",
+            "What’s the one sexual secret that would make everyone look at you differently?",
+            "Have you ever fantasized about a friend’s sibling?"
+        ],
+        dare: [
+            "Give someone in the group a lap dance for 30 seconds (clothes stay on).",
+            "Let someone in the group send a flirty text to your crush from your phone.",
+            "Remove an article of clothing (can be an accessory if you want).",
+            "Let the group choose a body part for someone to kiss (clothed).",
+            "Demonstrate your sexiest moan for everyone.",
+            "Show the group your favorite imagined position (with clothes on, using pillows if needed).",
+            "Let someone draw something naughty on you with a marker (somewhere safe).",
+            "Send a dirty emoji to the last person you messaged.",
+            "Act out a striptease for 20 seconds (keep underwear on).",
+            "Let the group dare you to say something dirty to someone of their choice.",
+            "Switch an item of clothing with someone for the next round.",
+            "Let someone whisper their dirtiest fantasy in your ear and keep a straight face.",
+            "Do your best fake orgasm impression—loudly.",
+            "Let the group pick a body part for you to show (within reason).",
+            "Kiss the person to your right on the neck.",
+            "Perform a slow, sensual dance to a song chosen by the group.",
+            "Let someone blindfold you and feed you something mysterious.",
+            "Call or voice message someone and say something flirty or spicy.",
+            "Let the group pick a word you must say seductively every time it’s mentioned.",
+            "Read the last flirty or spicy message you sent or received (or improvise if none).",
+            "Let someone write something on your body with lipstick or marker.",
+            "Act out your favorite fantasy using only facial expressions and gestures.",
+            "Swap shirts with someone for the next two rounds.",
+            "Let the group choose a dare for you that you must complete with your eyes closed.",
+            "Lick or kiss someone’s hand or cheek.",
+            "Let someone send a random flirty DM from your social media.",
+            "Describe, in detail, your hottest fantasy (keep it fun).",
+            "Let someone tie your hands together for the next round.",
+            "Whisper something dirty in the ear of the person across from you.",
+            "Moan seductively every time someone says your name for the next 2 rounds.",
+            "Let the group rate how good you think you’d be in bed.",
+            "Grind on a pillow or chair for 20 seconds while everyone watches.",
+            "Stay shirtless for the next 3 rounds.",
+            "Pretend to have an orgasm dramatically for 10 seconds.",
+            "Send a shirtless selfie to the person the group chooses.",
+            "Moan the name of your crush seductively 5 times.",
+            "Let someone pour something cold on your chest while you moan.",
+            "Describe the last time you masturbated in detail.",
+            "Let the group choose an embarrassing porn confession you must read out loud.",
+            "Let someone write 'Horny Virgin' on your chest with marker.",
+            "Grind against the floor like you’re having sex for 15 seconds.",
+            "Admit the last person you masturbated thinking about by name.",
+            "Text someone you like 'I’m so horny right now' and show the group.",
+            "Stay in just your underwear for the next 3 rounds.",
+            "Let the group rate how long they think you’d last your first time.",
+            "Pretend to go down on a pillow for 20 seconds.",
+            "Admit the weirdest kink or fantasy you have.",
+            "Text your biggest crush 'I want you to take my virginity' and show it.",
+            "Let the group pick any sexual dare they want (within reason)."
+        ]
+    }
+};
+
+// Initialize used cards
+const CATEGORY_KEYS = Object.keys(DATABASE);
+let usedCards = JSON.parse(localStorage.getItem('td_v3_data')) || {};
+CATEGORY_KEYS.forEach(key => {
+    if (!usedCards[key]) usedCards[key] = [];
+});
+
+let currentCatKey = '';
+
+function navigate(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+}
+
+function startCat(key) {
+    if (key === 'sus') {
+        const code = prompt('Enter code to access this category:');
+        if (code !== '67676767') {
+            alert('Incorrect code. Access denied.');
+            return;
+        }
+    }
+    currentCatKey = key;
+    document.getElementById('view-cat-title').innerText = key.charAt(0).toUpperCase() + key.slice(1);
+    navigate('choice');
+}
+
+function revealTask(type) {
+    const list = DATABASE[currentCatKey][type];
+    const fresh = list.filter(p => !usedCards[currentCatKey].includes(p));
+   
+    let selection;
+    const tag = document.getElementById('task-tag');
+    tag.style.background = type === 'truth' ? 'var(--primary)' : 'var(--secondary)';
+    tag.innerText = type.toUpperCase();
+   
+    if (fresh.length === 0) {
+        selection = "All cards in this category used! Reset progress to play again.";
+        tag.style.background = "#94a3b8";
+    } else {
+        selection = fresh[Math.floor(Math.random() * fresh.length)];
+        usedCards[currentCatKey].push(selection);
+        localStorage.setItem('td_v3_data', JSON.stringify(usedCards));
+    }
+    document.getElementById('task-text').innerText = selection;
+    updateUI();
+    navigate('task');
+}
+
+function goBackToChoice() { navigate('choice'); }
+function goHome() { navigate('menu'); }
+
+function updateUI() {
+    let total = 0;
+    Object.values(usedCards).forEach(arr => { if (Array.isArray(arr)) total += arr.length; });
+    document.getElementById('stat-count').innerText = `${total} cards played`;
+}
+
+function askReset() { document.getElementById('modal-wrap').classList.add('show'); }
+function hideModal() { document.getElementById('modal-wrap').classList.remove('show'); }
+function confirmReset() {
+    usedCards = {};
+    CATEGORY_KEYS.forEach(key => { usedCards[key] = []; });
+    localStorage.removeItem('td_v3_data');
+    updateUI();
+    hideModal();
+}
+
+const themeBtn = document.getElementById('theme-switcher');
+function applyTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('td_theme_v3', theme);
+}
+themeBtn.onclick = () => {
+    const current = document.body.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+};
+
+window.onload = () => {
+    const saved = localStorage.getItem('td_theme_v3') || 'light';
+    applyTheme(saved);
+    updateUI();
+};
+
+const CATEGORY_ICONS = {
+    random: '🎲',
+    fun: '✨',
+    weird: '🌀',
+    embarrassing: '😅',
+    sus: '🔥'
+};
+
+function renderCategories() {
+    const grid = document.getElementById('category-grid');
+    grid.innerHTML = '';
+    Object.keys(DATABASE).forEach(key => {
+        const div = document.createElement('div');
+        div.className = 'cat-item';
+        div.onclick = () => startCat(key);
+        div.innerHTML = `<span class="icon">${CATEGORY_ICONS[key] || '❓'}</span>
+                         <span class="label">${key.charAt(0).toUpperCase() + key.slice(1)}</span>`;
+        grid.appendChild(div);
+    });
+}
+renderCategories();
+</script>
+</body>
+</html>
