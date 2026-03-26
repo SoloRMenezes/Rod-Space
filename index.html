@@ -550,6 +550,7 @@
       pinned.push(id);
     }
     localStorage.setItem('rod_space_pins', JSON.stringify(pinned));
+    updateUIStates();
     applyFiltersAndSort();
   }
 
@@ -584,10 +585,7 @@
     }
     localStorage.setItem('rod_space_favs', JSON.stringify(favorites));
     updateUIStates();
-    
-    if (document.getElementById("filterType").value === "favs") {
-      applyFiltersAndSort();
-    }
+    applyFiltersAndSort();
   }
 
   function updateUIStates() {
@@ -595,7 +593,7 @@
       const id = card.dataset.id;
       const favBtn = card.querySelector('.fav-btn');
       const pinBtn = card.querySelector('.pin-btn');
-      
+
       if (favorites.includes(id)) {
         favBtn.classList.add('active');
       } else {
