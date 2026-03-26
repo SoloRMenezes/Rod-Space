@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Would You Rather</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            touch-action: manipulation;
+            overflow: hidden;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-enter {
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from { transform: scale(0.9) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .option-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .option-btn:active {
+            transform: scale(0.97);
+            background: rgba(99, 102, 241, 0.1);
+            border-color: #6366f1;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- HOME SCREEN -->
+    <div id="home" class="screen active w-full max-w-sm flex-col text-center space-y-8">
+        <div class="space-y-1">
+            <h1 class="text-5xl font-black tracking-tighter gradient-text leading-tight uppercase">Would You<br>Rather</h1>
+        </div>
+
+        <div class="space-y-3">
+            <button onclick="startGame('social')" class="w-full py-4 px-6 rounded-2xl glass border-l-4 border-l-indigo-500 text-left flex items-center justify-between group active:scale-95 transition-all">
+                <span class="font-bold text-lg">Social Nightmares</span>
+                <span id="badge-social" class="text-indigo-400 text-[10px] font-black italic">200 COMBOS</span>
+            </button>
+            <button onclick="startGame('powers')" class="w-full py-4 px-6 rounded-2xl glass border-l-4 border-l-purple-500 text-left flex items-center justify-between group active:scale-95 transition-all">
+                <span class="font-bold text-lg">Useless Powers</span>
+                <span id="badge-powers" class="text-purple-400 text-[10px] font-black italic">200 COMBOS</span>
+            </button>
+            <button onclick="startGame('struggles')" class="w-full py-4 px-6 rounded-2xl glass border-l-4 border-l-pink-500 text-left flex items-center justify-between group active:scale-95 transition-all">
+                <span class="font-bold text-lg">Daily Pain</span>
+                <span id="badge-struggles" class="text-pink-400 text-[10px] font-black italic">200 COMBOS</span>
+            </button>
+            <button onclick="startGame('firsttime')" class="w-full py-4 px-6 rounded-2xl glass border-l-4 border-l-green-500 text-left flex items-center justify-between group active:scale-95 transition-all">
+                <span class="font-bold text-lg">First Time</span>
+                <span id="badge-firsttime" class="text-green-400 text-[10px] font-black italic">200 COMBOS</span>
+            </button>
+            <button onclick="startGame('18plus')" class="w-full py-4 px-6 rounded-2xl glass border-l-4 border-l-red-500 text-left flex items-center justify-between group active:scale-95 transition-all">
+                <span class="font-bold text-lg">18+</span>
+                <span id="badge-18plus" class="text-red-400 text-[10px] font-black italic">0 / 19900 PAIRS</span>
+            </button>
+        </div>
+        
+        <button onclick="clearHistory()" class="text-slate-600 text-[9px] uppercase tracking-widest font-bold hover:text-slate-400 transition-colors">Reset All Combinations</button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game" class="screen w-full max-w-sm flex-col">
+        <div class="flex items-center justify-between mb-4 px-2">
+            <button onclick="goHome()" class="flex items-center gap-1.5 text-[10px] font-black tracking-widest text-slate-400 uppercase hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Menu
+            </button>
+            <div id="counter" class="text-[12px] font-black tracking-widest text-slate-500 italic">1 / 190</div>
+        </div>
+
+        <div id="question-card" class="glass rounded-[28px] p-5 shadow-2xl relative">
+            <div id="category-tag" class="text-[9px] font-black tracking-[0.2em] text-center text-slate-500 uppercase mb-4 tracking-widest">CATEGORY</div>
+
+            <div class="flex flex-col gap-3">
+                <!-- Option A -->
+                <button onclick="handleVote()" class="option-btn w-full min-h-[140px] flex flex-col items-center justify-center p-5 rounded-xl border-2 border-slate-700/50 bg-slate-800/40 text-center">
+                    <span id="label-top" class="text-[8px] font-black text-indigo-400 mb-2 tracking-widest uppercase">OPTION A</span>
+                    <h2 id="text-top" class="text-lg font-bold leading-snug">...</h2>
+                </button>
+
+                <!-- VS Divider -->
+                <div class="flex items-center gap-3 py-1 opacity-20">
+                    <div class="h-[1px] flex-1 bg-slate-500"></div>
+                    <span class="font-black italic text-[10px]">OR</span>
+                    <div class="h-[1px] flex-1 bg-slate-500"></div>
+                </div>
+
+                <!-- Option B -->
+                <button onclick="handleVote()" class="option-btn w-full min-h-[140px] flex flex-col items-center justify-center p-5 rounded-xl border-2 border-slate-700/50 bg-slate-800/40 text-center">
+                    <span id="label-bottom" class="text-[8px] font-black text-purple-400 mb-2 tracking-widest uppercase">OPTION B</span>
+                    <h2 id="text-bottom" class="text-lg font-bold leading-snug">...</h2>
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center">
+            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.15em]">Tap choice to continue</p>
+        </div>
+    </div>
+
+    <script>
+        const gameData = {
+            "social": {
+                "name": "Social Nightmares",
+                "options": [
+                    "Say everything you think out loud", "Never be able to speak again",
+                    "Accidentally like an ex's old photo", "Text a roast to the person you are roasting",
+                    "Always smell like a wet dog", "Always smell like rotting onions",
+                    "High-five everyone you meet", "Announce whenever you have to pee",
+                    "Only be able to whisper", "Only be able to shout",
+                    "Wear a clown suit to a funeral", "Wear a wedding dress to work",
+                    "Publicize your search history", "Publicize your bank balance",
+                    "Use a flip phone forever", "Use a typewriter for all emails",
+                    "Pick your nose in front of your boss", "Loud stomach growl in a meeting",
+                    "No one shows up to your birthday", "100 strangers show up to your house",
+                    "Forget everyone's name instantly", "Always have spinach in your teeth",
+                    "Trip in public every day", "Speak in rhymes only",
+                    "Have a permanent wedgie", "Always have static cling",
+                    "Your voice cracks constantly", "Your phone autocorrects to nonsense",
+                    "Get caught talking to yourself", "Wear socks with sandals",
+                    "Always spill your drink", "Forget why you walked into a room",
+                    "Laugh at inappropriate times", "Have a permanent bad hair day",
+                    "Text the wrong person", "Send a message with typos",
+                    "Walk into glass doors", "Forget your own birthday",
+                    "Always be late", "Never know what to say",
+                    "Get stuck in awkward silences", "Wear mismatched shoes",
+                    "Have a loud sneeze", "Trip over nothing",
+                    "Forget to mute yourself on calls", "Send emails with mistakes",
+                    "Call someone by the wrong name", "Get caught staring",
+                    "Have food stuck in your teeth", "Forget to zip your pants",
+                    "Say the wrong thing", "Get caught in a lie",
+                    "Have your fly down", "Walk into the wrong room",
+                    "Forget your lines", "Spill food on yourself",
+                    "Have a phone battery die at a bad time", "Get caught singing out loud",
+                    "Wear clothes inside out", "Have your skirt tucked into your underwear",
+                    "Speak too loudly", "Forget important dates",
+                    "Have a loud laugh", "Get caught picking your nose",
+                    "Say 'you too' when not appropriate", "Forget your password",
+                    "Send a text to the wrong group", "Have your mic accidentally on",
+                    "Wear a shirt backwards", "Have your zipper stuck",
+                    "Get caught talking about someone", "Have a wardrobe malfunction",
+                    "Forget your wallet", "Have your phone ring in a quiet room",
+                    "Say something embarrassing", "Get caught yawning",
+                    "Wear a stain on your clothes", "Forget your lines in a presentation",
+                    "Talk too much", "Forget to introduce people",
+                    "Have a loud stomach growl", "Get caught daydreaming",
+                    "Wear sunglasses indoors", "Forget to respond to texts",
+                    "Have a loud hiccup", "Get caught sneezing loudly",
+                    "Say something awkward", "Forget to brush your teeth",
+                    "Have your shoelace untied", "Get caught making faces",
+                    "Talk with food in your mouth", "Forget someone's name immediately",
+                    "Have a loud cough", "Get caught tripping on stairs",
+                    "Wear mismatched socks", "Forget your phone at home",
+                    "Say the wrong word", "Get caught staring at someone",
+                    "Have a loud burp", "Forget to lock your door",
+                    "Wear clothes inside out", "Get caught singing in the shower",
+                    "Say something inappropriate", "Forget your keys",
+                    "Have a loud sneeze", "Get caught biting your nails",
+                    "Talk too fast", "Forget to charge your phone",
+                    "Have a loud laugh", "Get caught picking your nose",
+                    "Say 'you too' when not appropriate", "Forget your password",
+                    "Send a text to the wrong group", "Have your mic accidentally on",
+                    "Wear a shirt backwards", "Have your zipper stuck",
+                    "Get caught talking about someone", "Have a wardrobe malfunction",
+                    "Forget your wallet", "Have your phone ring in a quiet room",
+                    "Say something embarrassing", "Get caught yawning",
+                    "Wear a stain on your clothes", "Forget your lines in a presentation",
+                    "Talk too much", "Forget to introduce people",
+                    "Have a loud stomach growl", "Get caught daydreaming",
+                    "Wear sunglasses indoors", "Forget to respond to texts",
+                    "Have a loud hiccup", "Get caught sneezing loudly",
+                    "Say something awkward", "Forget to brush your teeth",
+                    "Have your shoelace untied", "Get caught making faces",
+                    "Talk with food in your mouth", "Forget someone's name immediately",
+                    "Have a loud cough", "Get caught tripping on stairs",
+                    "Wear mismatched socks", "Forget your phone at home",
+                    "Say the wrong word", "Get caught staring at someone",
+                    "Have a loud burp", "Forget to lock your door",
+                    "Wear clothes inside out", "Get caught singing in the shower",
+                    "Say something inappropriate", "Forget your keys",
+                    "Have a loud sneeze", "Get caught biting your nails",
+                    "Talk too fast", "Forget to charge your phone"
+                ]
+            },
+            "powers": {
+                "name": "Useless Powers",
+                "options": [
+                    "Fly, but only at 2 mph", "Run 100 mph, but only in reverse",
+                    "Read minds by touching feet", "See 5 seconds into the future",
+                    "Talk to animals who hate you", "Speak every language while crying",
+                    "Never sleep again", "Never eat again",
+                    "Hair color changes with every sneeze", "Eye color changes when you lie",
+                    "Control the TV with your mind", "Unlock any door with your pinky",
+                    "Always find a parking spot", "Always have exact change",
+                    "Invisible only when no one is looking", "Breathe underwater in a bathtub",
+                    "Pause time for 1 second", "Rewind time for 3 seconds",
+                    "Teleport only to your kitchen", "Jump 20ft high only onto grass",
+                    "Turn water into juice, but only grape", "Speak in only movie quotes",
+                    "Have a pet dragon, but it's invisible", "Change traffic lights to green, but only for you",
+                    "Walk through walls, but only in your house",
+                    "Shoot spaghetti from your fingers", "Turn invisible, but only when sneezing",
+                    "Make plants grow, but only dandelions",
+                    "Teleport, but always 1 inch off target",
+                    "Change your height by 1 inch", "Make objects levitate, but only 2 inches",
+                    "Speak to computers, but they ignore you",
+                    "Control the weather, but only light drizzle",
+                    "Turn your skin blue for 10 seconds", "Make any food taste like chocolate",
+                    "Teleport, but only to places you've never been",
+                    "Make yourself 10% heavier", "Turn your hair into spaghetti",
+                    "Have super strength, but only in your pinky",
+                    "Run faster, but only backwards",
+                    "Make any object squeak", "Turn invisible, but only to dogs",
+                    "Control shadows, but only your own",
+                    "Make any song play in your head", "Speak to plants, but they complain",
+                    "Create bubbles, but only underwater",
+                    "Shoot glitter from your eyes", "Make objects sticky",
+                    "Turn your voice into a kazoo", "Control ants, but only one at a time",
+                    "Teleport, but only 3 inches to the left",
+                    "Make your feet smell like flowers", "Turn invisible, but only when blinking",
+                    "Create fog, but only in small rooms",
+                    "Make objects float, but only for 1 second",
+                    "Speak in only questions", "Turn your hands into pancakes",
+                    "Run at normal speed, but only on your hands",
+                    "Make any food spicy", "Turn your nose into a horn",
+                    "Teleport, but only while dancing", "Make your shadow do the opposite",
+                    "Control pigeons, but they ignore you",
+                    "Turn your eyes into flashlights", "Make objects bounce",
+                    "Speak backwards", "Turn your hair into snakes",
+                    "Teleport, but only when sneezing", "Make your voice sound like a robot",
+                    "Create small earthquakes", "Turn invisible, but only in the dark",
+                    "Make objects glow", "Speak in only rhymes",
+                    "Turn your feet into roller skates", "Control the wind, but only a breeze",
+                    "Teleport, but only to your backyard", "Make your hands smell like cookies",
+                    "Turn your voice into a whisper", "Create sparks when you snap",
+                    "Make objects slippery", "Speak in only movie quotes",
+                    "Turn your skin into scales", "Control flies, but they dislike you",
+                    "Teleport, but only 5 inches up",
+                    "Make your hair stand on end", "Turn invisible, but only when asleep",
+                    "Create bubbles, but only in the rain",
+                    "Make objects sticky", "Speak in only questions",
+                    "Turn your hands into pancakes", "Run at normal speed, but only on your hands",
+                    "Make any food spicy", "Turn your nose into a horn",
+                    "Teleport, but only while dancing", "Make your shadow do the opposite",
+                    "Control pigeons, but they ignore you",
+                    "Turn your eyes into flashlights", "Make objects bounce",
+                    "Speak backwards", "Turn your hair into snakes",
+                    "Teleport, but only when sneezing", "Make your voice sound like a robot",
+                    "Create small earthquakes", "Turn invisible, but only in the dark",
+                    "Make objects glow", "Speak in only rhymes",
+                    "Turn your feet into roller skates", "Control the wind, but only a breeze",
+                    "Teleport, but only to your backyard", "Make your hands smell like cookies",
+                    "Turn your voice into a whisper", "Create sparks when you snap",
+                    "Make objects slippery", "Speak in only movie quotes",
+                    "Turn your skin into scales", "Control flies, but they dislike you"
+                ]
+            },
+            "struggles": {
+                "name": "Daily Pain",
+                "options": [
+                    "Wet popcorn kernel in your throat", "Small sharp rock in your shoe",
+                    "Every shirt is slightly itchy", "Every shoe is slightly tight",
+                    "Always 1% phone battery", "Always 1 bar of bad Wi-Fi",
+                    "Wash hair once a month", "Wash body once a week",
+                    "Heavy winter coat in summer", "Swimsuit in a blizzard",
+                    "1-ply toilet paper forever", "Cold showers forever",
+                    "Theme song plays when you enter", "Laugh track plays when you fail",
+                    "Only eat spicy food", "Only eat flavorless food",
+                    "Always 10 mins late", "Always 45 mins early",
+                    "Phone screen always cracked", "Phone speakers always muffled",
+                    "Lose one sock every laundry", "Sneezing fits at quiet places",
+                    "Always forget umbrella", "Keys always missing",
+                    "Shoelaces always untied", "Pen always runs out of ink",
+                    "Coffee always cold", "Toast always burnt",
+                    "Always get stuck in traffic", "Elevator always out of order",
+                    "Wi-Fi always slow", "Always lose one glove",
+                    "Alarm never loud enough", "Always spill coffee on clothes",
+                    "Never find matching socks", "Always miss the bus",
+                    "Shoes always squeaky", "Phone battery drains fast",
+                    "Always forget names", "Always lose your train of thought",
+                    "Always get stuck behind slow walkers", "Always get a parking ticket",
+                    "Always get a paper cut", "Always spill food on keyboard",
+                    "Always lose your pen", "Always forget passwords",
+                    "Always get bad hair day", "Always step on a Lego",
+                    "Always get sunburned", "Always lose your sunglasses",
+                    "Always get a flat tire", "Always forget your lunch",
+                    "Always get lost", "Always lose your wallet",
+                    "Always forget appointments", "Always get a cold",
+                    "Always lose your phone", "Always get a headache",
+                    "Always forget to charge devices", "Always get a stomach ache",
+                    "Always lose your keys", "Always get a sore throat",
+                    "Always forget birthdays", "Always get a toothache",
+                    "Always lose your glasses", "Always get a rash",
+                    "Always forget to eat", "Always get a cramp",
+                    "Always lose your hat", "Always get a bruise",
+                    "Always forget your password", "Always get a splinter",
+                    "Always lose your umbrella", "Always get a blister",
+                    "Always forget your PIN", "Always get a mosquito bite",
+                    "Always lose your ticket", "Always get a sunburn",
+                    "Always forget your lunchbox", "Always get a cold",
+                    "Always lose your wallet", "Always get a headache",
+                    "Always forget your phone", "Always get a stomach ache",
+                    "Always lose your keys", "Always get a sore throat",
+                    "Always forget birthdays", "Always get a toothache",
+                    "Always lose your glasses", "Always get a rash",
+                    "Always forget to eat", "Always get a cramp",
+                    "Always lose your hat", "Always get a bruise",
+                    "Always forget your password", "Always get a splinter",
+                    "Always lose your umbrella", "Always get a blister",
+                    "Always forget your PIN", "Always get a mosquito bite",
+                    "Always lose your ticket", "Always get a sunburn",
+                    "Always forget your lunchbox", "Always get a cold",
+                    "Always lose your wallet", "Always get a headache",
+                    "Always forget your phone", "Always get a stomach ache",
+                    "Always lose your keys", "Always get a sore throat",
+                    "Always forget birthdays", "Always get a toothache",
+                    "Always lose your glasses", "Always get a rash",
+                    "Always forget to eat", "Always get a cramp",
+                    "Always lose your hat", "Always get a bruise",
+                    "Always forget your password", "Always get a splinter",
+                    "Always lose your umbrella", "Always get a blister",
+                    "Always forget your PIN", "Always get a mosquito bite",
+                    "Always lose your ticket", "Always get a sunburn",
+                    "Always forget your lunchbox", "Always get a cold"
+                ]
+            },
+            "firsttime": {
+                "name": "First Time",
+                "options": [
+                    "First time skydiving", "First time cooking a meal",
+                    "First time riding a bike", "First time driving a car",
+                    "First time swimming in the ocean", "First time camping in the wild",
+                    "First time traveling alone", "First time speaking in public",
+                    "First time trying sushi", "First time playing a musical instrument",
+                    "First time painting a picture", "First time dancing on stage",
+                    "First time writing a story", "First time planting a tree",
+                    "First time fishing", "First time climbing a mountain",
+                    "First time skiing", "First time snowboarding",
+                    "First time surfing", "First time scuba diving",
+                    "First time going to a concert", "First time attending a festival",
+                    "First time riding a horse", "First time driving a motorcycle",
+                    "First time baking a cake", "First time doing yoga",
+                    "First time meditating", "First time volunteering",
+                    "First time learning a new language", "First time playing chess",
+                    "First time running a marathon", "First time skydiving",
+                    "First time bungee jumping", "First time paragliding",
+                    "First time ziplining", "First time kayaking",
+                    "First time paddleboarding", "First time rock climbing",
+                    "First time going on a road trip", "First time flying in a plane",
+                    "First time visiting a new country", "First time trying exotic food",
+                    "First time attending a wedding", "First time going to a museum",
+                    "First time going to a theater", "First time watching a play",
+                    "First time going to the opera", "First time attending a sports game",
+                    "First time going to a zoo", "First time visiting an aquarium",
+                    "First time going to a theme park", "First time riding a roller coaster",
+                    "First time going on a cruise", "First time staying in a hotel",
+                    "First time using public transportation", "First time riding a train",
+                    "First time attending a party", "First time going to a nightclub",
+                    "First time trying karaoke", "First time painting pottery",
+                    "First time going to a spa", "First time getting a massage",
+                    "First time getting a haircut", "First time getting a tattoo",
+                    "First time getting a piercing", "First time going to a dentist",
+                    "First time going to the doctor", "First time getting a vaccine",
+                    "First time donating blood", "First time adopting a pet",
+                    "First time going to a petting zoo", "First time feeding animals",
+                    "First time riding a camel", "First time riding an elephant",
+                    "First time going on a safari", "First time going to a farm",
+                    "First time picking fruit", "First time gardening",
+                    "First time knitting", "First time sewing",
+                    "First time crocheting", "First time making jewelry",
+                    "First time woodworking", "First time metalworking",
+                    "First time welding", "First time blacksmithing",
+                    "First time pottery making", "First time glass blowing",
+                    "First time candle making", "First time soap making",
+                    "First time brewing beer", "First time making wine",
+                    "First time baking bread", "First time making pasta",
+                    "First time cooking a new cuisine", "First time trying vegan food",
+                    "First time trying gluten-free food", "First time fasting",
+                    "First time doing a detox", "First time going on a diet",
+                    "First time doing a workout challenge", "First time running a race",
+                    "First time doing a triathlon", "First time doing a marathon",
+                    "First time doing a half marathon", "First time doing a 5k",
+                    "First time doing a 10k", "First time doing a yoga retreat",
+                    "First time doing meditation retreat", "First time doing a silent retreat",
+                    "First time doing a digital detox", "First time doing a social media break",
+                    "First time doing a juice cleanse", "First time doing a water fast",
+                    "First time doing a sleep experiment", "First time doing a gratitude journal",
+                    "First time doing a vision board", "First time doing a brain dump",
+                    "First time doing a time audit", "First time doing a budget",
+                    "First time doing taxes", "First time investing",
+                    "First time buying stocks", "First time buying real estate",
+                    "First time starting a business", "First time launching a product",
+                    "First time giving a presentation", "First time leading a team",
+                    "First time hiring someone", "First time firing someone",
+                    "First time negotiating", "First time public speaking",
+                    "First time being interviewed", "First time interviewing someone",
+                    "First time writing a resume", "First time writing a cover letter",
+                    "First time applying for a job", "First time going to a job fair",
+                    "First time attending a networking event", "First time making a cold call",
+                    "First time sending a cold email", "First time doing a webinar",
+                    "First time doing a podcast", "First time doing a video",
+                    "First time doing a livestream", "First time doing a photoshoot",
+                    "First time doing a fashion show", "First time doing a runway walk",
+                    "First time doing a dance performance", "First time doing a music performance",
+                    "First time doing a comedy show", "First time doing a magic show",
+                    "First time doing a circus act", "First time doing a stunt",
+                    "First time doing a cooking show", "First time doing a talk show",
+                    "First time doing a news report", "First time doing a documentary",
+                    "First time doing a movie", "First time doing a TV show",
+                    "First time doing a commercial", "First time doing a voiceover",
+                    "First time doing a radio show", "First time doing a book reading",
+                    "First time doing a book signing", "First time doing a workshop",
+                    "First time doing a seminar", "First time doing a conference",
+                    "First time doing a retreat", "First time doing a mastermind",
+                    "First time doing coaching", "First time doing mentoring",
+                    "First time doing consulting", "First time doing freelancing",
+                    "First time doing volunteering", "First time doing charity work",
+                    "First time doing activism", "First time doing politics",
+                    "First time doing fundraising", "First time doing crowdfunding",
+                    "First time doing blogging", "First time doing vlogging",
+                    "First time doing social media", "First time doing influencer marketing",
+                    "First time doing affiliate marketing", "First time doing email marketing",
+                    "First time doing SEO", "First time doing PPC",
+                    "First time doing content marketing", "First time doing event planning"
+                ]
+            },
+            "18plus": {
+                "name": "18+",
+                "options": [
+                    "Lose your virginity in a romantic candlelit bedroom with someone you love",
+                    "Lose your virginity in a risky public place where you might get caught",
+                    "Your first time be super gentle and slow",
+                    "Your first time be rough and passionate",
+                    "Have your first orgasm during sex from penetration",
+                    "Have your first orgasm during sex from oral or hand stimulation",
+                    "Give oral sex first or receive oral sex first on your first time",
+                    "Only be able to cum from penetration for the rest of your life",
+                    "Only be able to cum from oral for the rest of your life",
+                    "Your first time last only 2 minutes",
+                    "Your first time last over 2 hours",
+                    "Watch porn together before your first time",
+                    "Go completely blind with no idea what to expect on your first time",
+                    "Lose your virginity to someone very experienced",
+                    "Lose your virginity to another virgin",
+                    "Have your first time with the lights fully on and mirrors everywhere",
+                    "Have your first time in complete darkness",
+                    "Accidentally moan very loudly during your first time",
+                    "Stay completely silent during your first time",
+                    "Your partner finishes too fast on your first time",
+                    "You finish too fast on your first time",
+                    "Have sex only in missionary position forever",
+                    "Have sex only in doggy style forever",
+                    "Kiss for hours before your first time",
+                    "Skip foreplay entirely on your first time",
+                    "Have your first time while slightly drunk",
+                    "Have your first time completely sober",
+                    "Someone walks in during your first time",
+                    "Film your first time (for private viewing only)",
+                    "Never record anything sexual",
+                    "Your first time hurt a lot but felt good later",
+                    "Your first time feel good but be awkward",
+                    "Have a quickie for your first time",
+                    "Have a long romantic session for your first time",
+                    "Lose your virginity outdoors at night",
+                    "Lose your virginity in a fancy hotel",
+                    "Your crush is your first",
+                    "A stranger is your first",
+                    "Have amazing chemistry but bad technique on first time",
+                    "Have okay chemistry but perfect technique"
+                ]
+            }
+        };
+
+        let currentCatId = null;
+        let seenComboKeys = {}; // Tracks "idx1-idx2" strings
+        let totalCombos = 200 * 199 / 2; // for 200 options
+
+        // Load History
+        const saved = localStorage.getItem('wyr_combos_history');
+        if (saved) seenComboKeys = JSON.parse(saved);
+
+        function startGame(id) {
+            if (id === '18plus') {
+                const pass = prompt("Enter password to access 18+ category:");
+                if (pass !== "67676767") {
+                    alert("Incorrect password. Access denied.");
+                    return;
+                }
+            }
+
+            currentCatId = id;
+            if (!seenComboKeys[id]) seenComboKeys[id] = [];
+
+            // Reset if all combinations were seen
+            if (seenComboKeys[id].length >= totalCombos) {
+                seenComboKeys[id] = [];
+                saveHistory();
+            }
+
+            document.getElementById('category-tag').innerText = gameData[id].name;
+            document.getElementById('home').classList.remove('active');
+            document.getElementById('game').classList.add('active');
+            nextCard();
+        }
+
+        function nextCard() {
+            const options = gameData[currentCatId].options;
+            const seen = seenComboKeys[currentCatId];
+
+            if (seen.length >= totalCombos) {
+                goHome();
+                return;
+            }
+
+            // Find a unique pair that hasn't been shown
+            let idx1, idx2, key;
+            let attempts = 0;
+            
+            // We search for a pair that isn't in 'seen'
+            // To ensure we don't hang, we'll try random picking first
+            // If it's near the end of the pool, we'll brute-force search the remaining
+            do {
+                idx1 = Math.floor(Math.random() * options.length);
+                idx2 = Math.floor(Math.random() * options.length);
+                if (idx1 === idx2) continue;
+                
+                // Ensure idx1 is always smaller for a consistent key regardless of order
+                const sorted = [idx1, idx2].sort((a, b) => a - b);
+                key = `${sorted[0]}-${sorted[1]}`;
+                attempts++;
+                
+                // If random is taking too long (pool getting empty), find first available
+                if (attempts > 500) {
+                    let found = false;
+                    for (let i = 0; i < options.length; i++) {
+                        for (let j = i + 1; j < options.length; j++) {
+                            const testKey = `${i}-${j}`;
+                            if (!seen.includes(testKey)) {
+                                key = testKey;
+                                [idx1, idx2] = [i, j];
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found) break;
+                    }
+                }
+            } while (seen.includes(key));
+
+            // Save to history
+            seen.push(key);
+            saveHistory();
+
+            // Randomize Sides for the UI
+            const flip = Math.random() > 0.5;
+            const topText = flip ? options[idx1] : options[idx2];
+            const bottomText = flip ? options[idx2] : options[idx1];
+            
+            // Render
+            document.getElementById('text-top').innerText = topText + "?";
+            document.getElementById('text-bottom').innerText = bottomText + "?";
+            document.getElementById('counter').innerText = `${seen.length} / ${totalCombos}`;
+
+            // Animation
+            const cardEl = document.getElementById('question-card');
+            cardEl.classList.remove('card-enter');
+            void cardEl.offsetWidth; 
+            cardEl.classList.add('card-enter');
+        }
+
+        function handleVote() {
+            const seenCount = seenComboKeys[currentCatId].length;
+            if (seenCount >= totalCombos) {
+                setTimeout(() => {
+                    alert("Amazing! You've played all unique combinations in this category.");
+                    goHome();
+                }, 300);
+            } else {
+                nextCard();
+            }
+        }
+
+        function saveHistory() {
+            localStorage.setItem('wyr_combos_history', JSON.stringify(seenComboKeys));
+            updateBadges();
+        }
+
+        function updateBadges() {
+            Object.keys(gameData).forEach(id => {
+                const count = seenComboKeys[id] ? seenComboKeys[id].length : 0;
+                const badge = document.getElementById(`badge-${id}`);
+                if (badge) {
+                    if (count > 0 && count < totalCombos) {
+                        badge.innerText = `${count} / ${totalCombos} PAIRS`;
+                        badge.classList.add('text-white');
+                    } else if (count >= totalCombos) {
+                        badge.innerText = "ALL COMBOS SEEN";
+                        badge.classList.remove('text-white');
+                    } else {
+                        // Show correct default combos for each badge
+                        badge.innerText = `0 / ${totalCombos} PAIRS`;
+                    }
+                }
+            });
+        }
+
+        function clearHistory() {
+            seenComboKeys = {};
+            localStorage.removeItem('wyr_combos_history');
+            updateBadges();
+        }
+
+        function goHome() {
+            document.getElementById('game').classList.remove('active');
+            document.getElementById('home').classList.add('active');
+            updateBadges();
+        }
+
+        updateBadges();
+    </script>
+</body>
+</html>
