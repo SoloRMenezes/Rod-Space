@@ -469,7 +469,7 @@ function initAudio() {
             player.x = 50;
             player.y = 50;
 
-            // --- BOT SPAWN: fixed y=82 ---
+            // --- BOT SPAWN ---
 const loader = new THREE.TextureLoader();
 const botTexture = loader.load('https://i.imgur.com/8RKXAIV.png');
 for (let b = 0; b < botSpawns.length; b++) {
@@ -481,7 +481,7 @@ for (let b = 0; b < botSpawns.length; b++) {
     scene.add(bot);
     bots.push({
         mesh: bot,
-        baseSpeed: 13 * 2,
+        baseSpeed: 15 * 2,
         speedMult: 1
     });
             }
