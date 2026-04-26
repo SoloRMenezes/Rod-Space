@@ -709,6 +709,14 @@
         }
 
         function startCategory(cat) {
+            // Password requirement for 'freaky' category
+            if (cat === 'freaky') {
+                const password = prompt("This category is locked. Please enter the password:");
+                if (password !== '67676767') {
+                    alert('Incorrect password.');
+                    return;
+                }
+            }
             currentCategoryName = cat;
             currentQuestions = shuffle([...categories[cat]]);
             currentIndex = 0;
@@ -769,6 +777,12 @@
         }
     // Add startFreakyTeens function for the Freaky Teens category
     function startFreakyTeens() {
+        // Password requirement for 'Freaky Teens' category
+        const password = prompt("This category is locked. Please enter the password:");
+        if (password !== '67676767') {
+            alert('Incorrect password.');
+            return;
+        }
         currentCategoryName = 'Freaky Teens';
         currentQuestions = shuffle([...nuclearFreakyTeenQuestions]);
         currentIndex = 0;
