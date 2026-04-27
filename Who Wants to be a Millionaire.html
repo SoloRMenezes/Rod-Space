@@ -130,6 +130,10 @@
         .glow-text {
             text-shadow: 0 0 20px rgba(74, 144, 226, 0.8);
         }
+
+        #timer-bar {
+            transition: width 1s linear;
+        }
     </style>
 </head>
 <body>
@@ -142,7 +146,7 @@
             </svg>
         </div>
         <h1 class="text-6xl font-bold mb-4 glow-text uppercase tracking-widest">Who Wants To Be A<br><span class="text-yellow-500">Millionaire</span></h1>
-        <p class="text-blue-300 text-xl mb-10 max-w-md">15 Random Questions. 3 Lifelines. 1 Virtual Million. Are you ready?</p>
+        <p class="text-blue-300 text-xl mb-10 max-w-md">150+ Advanced Question Bank. 15 Per Round. High Stakes Knowledge. Are you ready?</p>
         <button onclick="initGame()" class="bg-yellow-500 text-black px-12 py-4 rounded-full font-bold text-2xl hover:bg-yellow-400 transition-all hover:scale-110 shadow-2xl">
             START THE QUIZ
         </button>
@@ -151,20 +155,28 @@
     <!-- Game Over Screen -->
     <div id="end-screen" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-black/95 z-50 hidden">
         <h2 id="end-title" class="text-6xl font-bold mb-4 text-yellow-500">GAME OVER</h2>
-        <p id="end-message" class="text-2xl mb-10"></p>
+        <p id="end-message" class="text-2xl mb-10 text-center max-w-2xl"></p>
         <button onclick="resetToHome()" class="bg-blue-600 text-white px-10 py-3 rounded-full font-bold hover:bg-blue-500">PLAY AGAIN</button>
     </div>
 
     <!-- Main Game Interface -->
     <div id="game-ui" class="hidden h-screen flex flex-col">
         
-        <!-- Header: Lifelines -->
+        <!-- Header: Lifelines & Timer -->
         <div class="p-6 flex justify-between items-start">
             <div class="flex gap-4">
                 <button id="ll-50" onclick="use5050()" class="lifeline">50:50</button>
                 <button id="ll-phone" onclick="usePhone()" class="lifeline">📞</button>
                 <button id="ll-host" onclick="useHost()" class="lifeline">🎤</button>
             </div>
+            
+            <div class="flex flex-col items-center w-48 mt-2">
+                <div class="w-full bg-blue-900/50 rounded-full h-4 border border-blue-400 overflow-hidden">
+                    <div id="timer-bar" class="bg-yellow-500 h-full w-full"></div>
+                </div>
+                <p id="timer-text" class="text-xl font-bold mt-1 text-white">30s</p>
+            </div>
+
             <div class="text-right">
                 <p class="text-blue-400 uppercase text-xs tracking-widest">Current Level</p>
                 <p id="current-prize-display" class="text-3xl font-bold text-yellow-500">$0</p>
@@ -177,7 +189,7 @@
                 
                 <div id="host-bubble" class="h-12 text-center text-blue-200 italic text-lg transition-opacity duration-500"></div>
 
-                <div class="hex-box w-full p-8 md:p-12 text-center text-xl md:text-3xl font-bold">
+                <div class="hex-box w-full p-8 md:p-12 text-center text-xl md:text-2xl font-bold">
                     <span id="question-text">Loading question...</span>
                 </div>
 
@@ -199,38 +211,219 @@
 
             <!-- Right Side: Money Ladder -->
             <div class="hidden lg:flex w-72 flex-col justify-center bg-blue-900/20 rounded-3xl p-6 border border-blue-800">
-                <div id="ladder-container" class="flex flex-col-reverse gap-1">
-                    <!-- Ladder items will be generated here -->
-                </div>
+                <div id="ladder-container" class="flex flex-col-reverse gap-1"></div>
             </div>
         </div>
     </div>
 
     <script>
         const PRIZES = ["100", "200", "300", "500", "1,000", "2,000", "4,000", "8,000", "16,000", "32,000", "64,000", "125,000", "250,000", "500,000", "1,000,000"];
+        const QUESTION_TIME_LIMIT = 30;
         
-        const QUESTION_BANK = [
-            { q: "Which animal is known as the 'Ship of the Desert'?", a: ["Horse", "Camel", "Elephant", "Donkey"], c: 1 },
-            { q: "In the game of chess, which piece can only move diagonally?", a: ["Rook", "Knight", "Bishop", "Pawn"], c: 2 },
-            { q: "What is the name of the fairy in Peter Pan?", a: ["Tinker Bell", "Cinderella", "Snow White", "Ariel"], c: 0 },
-            { q: "How many colors are there in a rainbow?", a: ["5", "6", "7", "8"], c: 2 },
-            { q: "Which of these is NOT a primary color?", a: ["Red", "Yellow", "Green", "Blue"], c: 2 },
-            { q: "In which season do leaves change color and fall from trees?", a: ["Spring", "Summer", "Autumn", "Winter"], c: 2 },
-            { q: "What is the capital of the United Kingdom?", a: ["Dublin", "Edinburgh", "London", "Cardiff"], c: 2 },
-            { q: "Which gas do plants absorb from the atmosphere?", a: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], c: 2 },
-            { q: "Who is known as the 'King of Pop'?", a: ["Elvis Presley", "Prince", "Michael Jackson", "Justin Bieber"], c: 2 },
-            { q: "How many continents are there on Earth?", a: ["5", "6", "7", "8"], c: 2 },
-            { q: "What is the largest ocean on Earth?", a: ["Atlantic", "Indian", "Arctic", "Pacific"], c: 3 },
-            { q: "In Greek mythology, who was the king of the gods?", a: ["Hades", "Poseidon", "Zeus", "Apollo"], c: 2 },
-            { q: "Which country gifted the Statue of Liberty to the USA?", a: ["Germany", "France", "United Kingdom", "Italy"], c: 1 },
-            { q: "What is the square root of 144?", a: ["10", "11", "12", "14"], c: 2 },
-            { q: "Which planet is famous for its big red spot?", a: ["Mars", "Saturn", "Jupiter", "Neptune"], c: 2 },
-            { q: "What is the name of the long-standing leader of the Autobots in 'Transformers'?", a: ["Bumblebee", "Megatron", "Optimus Prime", "Starscream"], c: 2 },
-            { q: "In the Pixar movie 'Toy Story', what is the name of the boy who owns the toys?", a: ["Sid", "Andy", "Christopher", "Billy"], c: 1 },
-            { q: "Which planet is closest to the Sun?", a: ["Venus", "Mars", "Mercury", "Earth"], c: 2 },
-            { q: "What fruit do kids traditionally leave out for Santa on Christmas Eve in many countries?", a: ["Apple", "Pear", "Banana", "Orange"], c: 0 },
-            { q: "In the story of 'The Three Little Pigs', what is the first pig's house made of?", a: ["Wood", "Straw", "Bricks", "Stone"], c: 1 }
-        ];
+        const QUESTION_BANK = {
+            tier1: [
+                { q: "Which animal is the tallest in the world?", a: ["Elephant", "Giraffe", "Ostrich", "Moose"], c: 1 },
+                { q: "What is the name of the fairy in Peter Pan?", a: ["Tinker Bell", "Cinderella", "Snow White", "Ariel"], c: 0 },
+                { q: "How many legs does a spider have?", a: ["6", "8", "10", "12"], c: 1 },
+                { q: "What color is a common emerald?", a: ["Blue", "Red", "Green", "Yellow"], c: 2 },
+                { q: "Which planet is known as the Red Planet?", a: ["Mars", "Venus", "Jupiter", "Saturn"], c: 0 },
+                { q: "What is the capital of France?", a: ["Berlin", "Madrid", "Paris", "Rome"], c: 2 },
+                { q: "How many days are in a leap year?", a: ["364", "365", "366", "367"], c: 2 },
+                { q: "What is the largest country by land area?", a: ["China", "Canada", "USA", "Russia"], c: 3 },
+                { q: "Who painted the 'Mona Lisa'?", a: ["Van Gogh", "Da Vinci", "Picasso", "Michelangelo"], c: 1 },
+                { q: "What is the freezing point of water in Celsius?", a: ["-10°C", "0°C", "32°C", "100°C"], c: 1 },
+                { q: "Which fruit is said to have kept the doctor away?", a: ["Banana", "Orange", "Apple", "Pear"], c: 2 },
+                { q: "What is the primary ingredient in hummus?", a: ["Lentils", "Chickpeas", "Soybeans", "Broad beans"], c: 1 },
+                { q: "Which bird is the fastest runner?", a: ["Emu", "Ostrich", "Roadrunner", "Penguin"], c: 1 },
+                { q: "How many strings does a standard violin have?", a: ["3", "4", "5", "6"], c: 1 },
+                { q: "What color are the stars on the United States flag?", a: ["Red", "White", "Blue", "Yellow"], c: 1 },
+                { q: "In which season do leaves typically change color and fall?", a: ["Spring", "Summer", "Autumn", "Winter"], c: 2 },
+                { q: "How many hours are there in a full day?", a: ["12", "24", "48", "60"], c: 1 },
+                { q: "Which of these is a primary color?", a: ["Green", "Purple", "Blue", "Orange"], c: 2 },
+                { q: "What is the name of the liquid inside a thermometer?", a: ["Water", "Oil", "Mercury", "Juice"], c: 2 },
+                { q: "Which shape has three sides?", a: ["Square", "Circle", "Triangle", "Rectangle"], c: 2 },
+                { q: "What do bees collect from flowers to make honey?", a: ["Water", "Nectar", "Leaves", "Mud"], c: 1 },
+                { q: "Which animal is known as the 'King of the Jungle'?", a: ["Tiger", "Lion", "Bear", "Wolf"], c: 1 },
+                { q: "How many cents make up one United States dollar?", a: ["10", "50", "100", "1000"], c: 2 },
+                { q: "What is the largest mammal in the world?", a: ["Elephant", "Blue Whale", "Giraffe", "Hippopotamus"], c: 1 },
+                { q: "Which planet is closest to the Sun?", a: ["Mercury", "Venus", "Earth", "Mars"], c: 0 },
+                { q: "What is the response to 'See you later, alligator'?", 'a': ["Bye bye", "After a while, crocodile", "See you soon", "Take care"], c: 1 },
+                { q: "How many months have 31 days?", a: ["4", "6", "7", "8"], c: 2 },
+                { q: "What is the name of the snowman in the movie 'Frozen'?", a: ["Sven", "Kristoff", "Olaf", "Hans"], c: 2 },
+                { q: "Which of these is a vegetable?", a: ["Apple", "Carrot", "Grape", "Peach"], c: 1 },
+                { q: "What is the name of the place where you go to borrow books?", a: ["School", "Museum", "Library", "Bank"], c: 2 }
+            ],
+            tier2: [
+                { q: "What is the chemical symbol for Gold?", a: ["Ag", "Gd", "Au", "Pb"], c: 2 },
+                { q: "Which ocean is the largest by volume?", a: ["Atlantic", "Indian", "Arctic", "Pacific"], c: 3 },
+                { q: "How many bones are in the adult human body?", a: ["186", "206", "216", "256"], c: 1 },
+                { q: "Which legendary Greek hero had only one weak spot?", a: ["Hercules", "Odysseus", "Achilles", "Perseus"], c: 2 },
+                { q: "What is the national flower of Japan?", a: ["Rose", "Lotus", "Cherry Blossom", "Tulip"], c: 2 },
+                { q: "Which instrument did Sherlock Holmes play?", a: ["Violin", "Piano", "Flute", "Cello"], c: 0 },
+                { q: "What is the most consumed manufactured drink in the world?", a: ["Coffee", "Tea", "Coca-Cola", "Orange Juice"], c: 1 },
+                { q: "Which city is known as the 'Big Apple'?", a: ["Los Angeles", "Chicago", "New York City", "Miami"], c: 2 },
+                { q: "In the periodic table, what is the first element?", a: ["Helium", "Oxygen", "Hydrogen", "Carbon"], c: 2 },
+                { q: "Who was the first woman to win a Nobel Prize?", a: ["Marie Curie", "Mother Teresa", "Ada Lovelace", "Rosalind Franklin"], c: 0 },
+                { q: "What is the capital city of Canada?", a: ["Toronto", "Montreal", "Vancouver", "Ottawa"], c: 3 },
+                { q: "Which planet is famous for its prominent ring system?", a: ["Jupiter", "Saturn", "Uranus", "Neptune"], c: 1 },
+                { q: "What is the name of the longest river in the world?", a: ["Amazon", "Nile", "Yangtze", "Mississippi"], c: 1 },
+                { q: "Which artist is famous for cutting off his own ear?", a: ["Picasso", "Dalí", "Van Gogh", "Rembrandt"], c: 2 },
+                { q: "What is the square root of 225?", a: ["13", "14", "15", "16"], c: 2 },
+                { q: "In Greek mythology, who is the god of the sea?", a: ["Zeus", "Hades", "Poseidon", "Apollo"], c: 2 },
+                { q: "Which metal is liquid at room temperature?", a: ["Silver", "Mercury", "Copper", "Lead"], c: 1 },
+                { q: "What is the hardest natural substance on Earth?", a: ["Gold", "Iron", "Diamond", "Steel"], c: 2 },
+                { q: "How many players are on a standard soccer team on the field?", a: ["9", "10", "11", "12"], c: 2 },
+                { q: "Which country is the home of the kangaroo?", a: ["New Zealand", "South Africa", "Australia", "India"], c: 2 },
+                { q: "What is the capital of Italy?", a: ["Venice", "Florence", "Milan", "Rome"], c: 3 },
+                { q: "Who wrote 'Romeo and Juliet'?", a: ["Dickens", "Shakespeare", "Hemingway", "Tolkien"], c: 1 },
+                { q: "What is the largest organ of the human body?", a: ["Liver", "Brain", "Skin", "Heart"], c: 2 },
+                { q: "Which country gifted the Statue of Liberty to the USA?", a: ["Germany", "UK", "France", "Italy"], c: 2 },
+                { q: "What is the name of the galaxy that contains our Solar System?", a: ["Andromeda", "Milky Way", "Sombrero", "Whirlpool"], c: 1 },
+                { q: "How many continents are there on Earth?", a: ["5", "6", "7", "8"], c: 2 },
+                { q: "What is the main gas found in the air we breathe?", a: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Argon"], c: 2 },
+                { q: "Which element does 'O' represent on the periodic table?", a: ["Gold", "Osmium", "Oxygen", "Ozone"], c: 2 },
+                { q: "Who was the first person to step on the moon?", a: ["Buzz Aldrin", "Neil Armstrong", "Yuri Gagarin", "John Glenn"], c: 1 },
+                { q: "What is the boiling point of water in Celsius?", a: ["90°C", "100°C", "110°C", "120°C"], c: 1 }
+            ],
+            tier3: [
+                { q: "Which planet in our solar system has the most moons?", a: ["Jupiter", "Saturn", "Uranus", "Neptune"], c: 1 },
+                { q: "What is the official currency of Switzerland?", a: ["Euro", "Swiss Franc", "Pound", "Krona"], c: 1 },
+                { q: "Which scientist proposed the three laws of motion?", a: ["Einstein", "Galileo", "Newton", "Tesla"], c: 2 },
+                { q: "What is the capital of Australia?", a: ["Sydney", "Melbourne", "Canberra", "Perth"], c: 2 },
+                { q: "In which year did the Titanic sink?", a: ["1910", "1912", "1914", "1916"], c: 1 },
+                { q: "Which element is named after the Greek word for 'sun'?", a: ["Helium", "Solaris", "Radon", "Neon"], c: 0 },
+                { q: "Who wrote the play 'Hamlet'?", a: ["Charles Dickens", "William Shakespeare", "Mark Twain", "Jane Austen"], c: 1 },
+                { q: "Which country has the most natural lakes?", a: ["USA", "Russia", "Brazil", "Canada"], c: 3 },
+                { q: "What is the largest internal organ in the human body?", a: ["Heart", "Lungs", "Liver", "Kidneys"], c: 2 },
+                { q: "In which decade was the Internet (ARPANET) first established?", a: ["1950s", "1960s", "1970s", "1980s"], c: 1 },
+                { q: "What is the rarest blood type in humans?", a: ["O Negative", "A Positive", "AB Negative", "B Negative"], c: 2 },
+                { q: "Which philosopher wrote 'The Republic'?", a: ["Aristotle", "Socrates", "Plato", "Epicurus"], c: 2 },
+                { q: "What is the capital of Iceland?", a: ["Oslo", "Reykjavik", "Helsinki", "Copenhagen"], c: 1 },
+                { q: "In what year was the first iPhone released?", a: ["2005", "2006", "2007", "2008"], c: 2 },
+                { q: "Which chemical element has the atomic number 1?", a: ["Oxygen", "Carbon", "Helium", "Hydrogen"], c: 3 },
+                { q: "What was the name of the first artificial satellite to orbit Earth?", a: ["Vanguard", "Explorer", "Sputnik 1", "Apollo 11"], c: 2 },
+                { q: "Who is the author of '1984'?", a: ["Aldous Huxley", "Ray Bradbury", "George Orwell", "H.G. Wells"], c: 2 },
+                { q: "What is the world's largest desert (excluding polar regions)?", a: ["Sahara", "Gobi", "Arabian", "Kalahari"], c: 0 },
+                { q: "Which physicist won the Nobel Prize for his explanation of the photoelectric effect?", a: ["Bohr", "Heisenberg", "Einstein", "Schrödinger"], c: 2 },
+                { q: "What is the smallest prime number?", a: ["0", "1", "2", "3"], c: 2 },
+                { q: "What is the capital of Brazil?", a: ["Rio de Janeiro", "Sao Paulo", "Brasilia", "Salvador"], c: 2 },
+                { q: "Which mountain is the highest in the world?", a: ["K2", "Kangchenjunga", "Lhotse", "Mount Everest"], c: 3 },
+                { q: "How many strings are on a standard cello?", a: ["4", "5", "6", "7"], c: 0 },
+                { q: "Who discovered Penicillin?", a: ["Marie Curie", "Alexander Fleming", "Louis Pasteur", "Gregor Mendel"], c: 1 },
+                { q: "What is the distance from the Earth to the Sun roughly?", a: ["93 million miles", "50 million miles", "150 million miles", "10 million miles"], c: 0 },
+                { q: "Which country has the largest population in the world?", a: ["China", "India", "USA", "Indonesia"], c: 1 },
+                { q: "In what year did World War II end?", a: ["1943", "1944", "1945", "1946"], c: 2 },
+                { q: "What is the study of fossils called?", a: ["Biology", "Paleontology", "Geology", "Anthropology"], c: 1 },
+                { q: "Which company developed the Java programming language?", a: ["Microsoft", "Apple", "Sun Microsystems", "Google"], c: 2 },
+                { q: "What is the square root of 144?", a: ["10", "11", "12", "14"], c: 2 }
+            ],
+            tier4: [
+                // Chemistry
+                { q: "Which element has the highest electronegativity?", a: ["Fluorine", "Oxygen", "Chlorine", "Nitrogen"], c: 0 },
+                { q: "Which molecule exhibits antiaromaticity?", a: ["Cyclobutadiene", "Benzene", "Cyclohexane", "Cyclopentadiene"], c: 0 },
+                { q: "What is the standard electrode potential of Fe²⁺/Fe³⁺?", a: ["+0.77V", "+0.35V", "-0.44V", "+1.23V"], c: 0 },
+                { q: "Which functional group is in acetylsalicylic acid?", a: ["Ester", "Ketone", "Amine", "Alcohol"], c: 0 },
+                { q: "What is the geometry of SO₄²⁻?", a: ["Tetrahedral", "Trigonal planar", "Bent", "Linear"], c: 0 },
+                { q: "Which is a transition metal?", a: ["Iron", "Calcium", "Sodium", "Magnesium"], c: 0 },
+                { q: "Which acid is strongest?", a: ["HClO₄", "HCl", "H₂SO₄", "HF"], c: 0 },
+                { q: "Which bond is the shortest?", a: ["Triple bond", "Double bond", "Single bond", "Hydrogen bond"], c: 0 },
+                { q: "What is the hybridization of carbon in ethyne?", a: ["sp", "sp2", "sp3", "sp3d"], c: 0 },
+                { q: "Which is the most electronegative group in the periodic table?", a: ["Halogens", "Alkali metals", "Alkaline earth", "Noble gases"], c: 0 },
+                { q: "What is the main product of combustion of methane?", a: ["CO₂ and H₂O", "CO and H₂", "CH₄O", "C and H₂O"], c: 0 },
+                { q: "Which compound is aromatic?", a: ["Benzene", "Cyclohexane", "Cyclobutane", "Cyclopentadiene"], c: 0 },
+                { q: "What is the molarity of 1 mol NaOH in 1 L?", a: ["1M", "0.1M", "10M", "0.01M"], c: 0 },
+                { q: "Which is a Lewis base?", a: ["NH₃", "H⁺", "BF₃", "AlCl₃"], c: 0 },
+                { q: "Which gas is produced in the reaction of acid with carbonate?", a: ["CO₂", "O₂", "H₂", "N₂"], c: 0 },
+                { q: "Which molecule is chiral?", a: ["Lactic acid", "Acetic acid", "Formic acid", "Pyruvic acid"], c: 0 },
+                { q: "Which is the strongest intermolecular force?", a: ["Ionic", "Hydrogen bond", "Dipole-dipole", "Van der Waals"], c: 0 },
+                { q: "Which element has the largest atomic radius?", a: ["Cesium", "Lithium", "Fluorine", "Oxygen"], c: 0 },
+                { q: "Which element is a noble gas?", a: ["Neon", "Nitrogen", "Oxygen", "Chlorine"], c: 0 },
+                { q: "Which is a redox reaction?", a: ["Zn + Cu²⁺ → Zn²⁺ + Cu", "HCl + NaOH → NaCl + H₂O", "AgNO₃ + NaCl → AgCl + NaNO₃", "NH₄Cl → NH₃ + HCl"], c: 0 },
+                // Physics
+                { q: "Which particle mediates the weak nuclear force?", a: ["W and Z bosons", "Photon", "Gluon", "Graviton"], c: 0 },
+                { q: "Energy of a photon is proportional to?", a: ["Frequency", "Wavelength", "Amplitude", "Phase"], c: 0 },
+                { q: "Which law explains light bending through a prism?", a: ["Snell's Law", "Newton's Law", "Hooke's Law", "Faraday's Law"], c: 0 },
+                { q: "Unit of magnetic flux?", a: ["Weber", "Tesla", "Henry", "Gauss"], c: 0 },
+                { q: "Which is a scalar quantity?", a: ["Speed", "Velocity", "Force", "Acceleration"], c: 0 },
+                { q: "In relativity, E = mc². What does c represent?", a: ["Speed of light", "Coulomb", "Planck constant", "Gravitational constant"], c: 0 },
+                { q: "Which law governs blackbody radiation?", a: ["Planck's Law", "Boyle's Law", "Ohm's Law", "Faraday's Law"], c: 0 },
+                { q: "Unit of electric resistance?", a: ["Ohm", "Volt", "Ampere", "Tesla"], c: 0 },
+                { q: "Which phenomenon explains rainbow?", a: ["Dispersion", "Diffraction", "Reflection", "Refraction"], c: 0 },
+                { q: "Which particle has no electric charge?", a: ["Neutron", "Proton", "Electron", "Positron"], c: 0 },
+                { q: "Acceleration due to gravity on Earth?", a: ["9.8 m/s²", "10 m/s²", "9 m/s²", "8 m/s²"], c: 0 },
+                { q: "Which device converts AC to DC?", a: ["Rectifier", "Transformer", "Inductor", "Capacitor"], c: 0 },
+                { q: "Which law defines current and resistance?", a: ["Ohm's Law", "Newton's Law", "Coulomb's Law", "Kirchhoff's Law"], c: 0 },
+                { q: "Unit of power?", a: ["Watt", "Joule", "Newton", "Volt"], c: 0 },
+                { q: "Which wave is longitudinal?", a: ["Sound wave", "Light wave", "Radio wave", "X-ray"], c: 0 },
+                { q: "Which phenomenon produces mirage?", a: ["Refraction", "Reflection", "Diffraction", "Interference"], c: 0 },
+                { q: "Which is a fundamental force?", a: ["Strong nuclear", "Friction", "Tension", "Centrifugal"], c: 0 },
+                { q: "Which telescope uses lenses?", a: ["Refracting telescope", "Radio telescope", "X-ray telescope", "Reflecting telescope"], c: 0 },
+                { q: "Unit of frequency?", a: ["Hertz", "Tesla", "Newton", "Volt"], c: 0 },
+                { q: "Which experiment proved quantization of energy?", a: ["Photoelectric effect", "Double-slit", "Cavendish", "Rutherford"], c: 0 },
+                // Biology
+                { q: "Which process generates most ATP per glucose?", a: ["Oxidative phosphorylation", "Glycolysis", "Krebs cycle", "Fermentation"], c: 0 },
+                { q: "Organelle with own DNA?", a: ["Mitochondria", "Nucleus", "Ribosome", "Endoplasmic reticulum"], c: 0 },
+                { q: "Function of Golgi apparatus?", a: ["Protein modification/packaging", "Energy production", "Lipid synthesis", "Cell signaling"], c: 0 },
+                { q: "Which cell type produces antibodies?", a: ["B cells", "T cells", "Neutrophils", "Macrophages"], c: 0 },
+                { q: "Which vitamin is fat-soluble?", a: ["Vitamin D", "Vitamin C", "Vitamin B12", "Vitamin B1"], c: 0 },
+                { q: "Which macromolecule stores genetic info?", a: ["DNA", "Protein", "Lipid", "Carbohydrate"], c: 0 },
+                { q: "Which process converts RNA to protein?", a: ["Translation", "Transcription", "Replication", "Splicing"], c: 0 },
+                { q: "Which organ detoxifies blood?", a: ["Liver", "Kidney", "Spleen", "Pancreas"], c: 0 },
+                { q: "Which hormone regulates blood sugar?", a: ["Insulin", "Adrenaline", "Cortisol", "Thyroxine"], c: 0 },
+                { q: "Which is prokaryotic?", a: ["Bacteria", "Fungi", "Plants", "Animals"], c: 0 },
+                { q: "Which pigment captures light in plants?", a: ["Chlorophyll", "Carotene", "Xanthophyll", "Anthocyanin"], c: 0 },
+                { q: "Which enzyme unwinds DNA?", a: ["Helicase", "Ligase", "Polymerase", "Topoisomerase"], c: 0 },
+                { q: "Which blood type is universal donor?", a: ["O Negative", "A Positive", "B Positive", "AB Negative"], c: 0 },
+                { q: "Which macronutrient provides 9 kcal/g?", a: ["Fat", "Protein", "Carbohydrate", "Alcohol"], c: 0 },
+                { q: "Which process produces gametes?", a: ["Meiosis", "Mitosis", "Binary fission", "Budding"], c: 0 },
+                { q: "Which immune cell kills virus-infected cells?", a: ["Cytotoxic T cells", "B cells", "Helper T cells", "Macrophages"], c: 0 },
+                { q: "Which organelle produces ATP?", a: ["Mitochondria", "Chloroplast", "Nucleus", "Golgi"], c: 0 },
+                { q: "Which is not part of CNS?", a: ["Peripheral nerves", "Brain", "Spinal cord", "Cerebellum"], c: 0 },
+                { q: "Which process splits water in photosynthesis?", a: ["Photolysis", "Glycolysis", "Krebs cycle", "Fermentation"], c: 0 },
+                { q: "Which is the powerhouse of the cell?", a: ["Mitochondria", "Ribosome", "Nucleus", "ER"], c: 0 },
+                // History
+                { q: "Ruler during Nika riots 532?", a: ["Justinian I", "Constantine", "Theodosius I", "Basil II"], c: 0 },
+                { q: "Treaty of Westphalia ended?", a: ["Thirty Years' War", "Hundred Years' War", "War of Roses", "Seven Years' War"], c: 0 },
+                { q: "Which used cuneiform writing?", a: ["Sumerians", "Egyptians", "Phoenicians", "Indus Valley"], c: 0 },
+                { q: "Who was first emperor of Rome?", a: ["Augustus", "Nero", "Caligula", "Tiberius"], c: 0 },
+                { q: "Year French Revolution began?", a: ["1789", "1776", "1799", "1804"], c: 0 },
+                { q: "Which dynasty built the Forbidden City?", a: ["Ming", "Qing", "Han", "Tang"], c: 0 },
+                { q: "Battle of Hastings year?", a: ["1066", "1215", "1415", "1000"], c: 0 },
+                { q: "Who discovered America 1492?", a: ["Columbus", "Magellan", "Vespucci", "Cortes"], c: 0 },
+                { q: "Which war was the US Civil War?", a: ["1861-1865", "1775-1783", "1914-1918", "1803-1815"], c: 0 },
+                { q: "Who wrote Magna Carta?", a: ["King John", "Edward I", "Henry II", "Richard I"], c: 0 },
+                { q: "Who led the Bolshevik Revolution?", a: ["Lenin", "Trotsky", "Stalin", "Kerensky"], c: 0 },
+                { q: "Year Berlin Wall fell?", a: ["1989", "1990", "1987", "1991"], c: 0 },
+                { q: "Who was Pharaoh during Exodus?", a: ["Ramses II", "Tutankhamun", "Akhenaten", "Cleopatra"], c: 0 },
+                { q: "Which empire was at its peak under Suleiman?", a: ["Ottoman", "Roman", "Mongol", "Persian"], c: 0 },
+                { q: "Year Magna Carta signed?", a: ["1215", "1066", "1492", "1314"], c: 0 },
+                { q: "Who founded the Mughal Empire?", a: ["Babur", "Akbar", "Shah Jahan", "Aurangzeb"], c: 0 },
+                { q: "Who initiated Protestant Reformation?", a: ["Martin Luther", "John Calvin", "Henry VIII", "Ulrich Zwingli"], c: 0 },
+                { q: "Which dynasty ruled Russia before 1917?", a: ["Romanov", "Rurik", "Tsar", "Boris"], c: 0 },
+                { q: "Who was the first president of USA?", a: ["George Washington", "John Adams", "Thomas Jefferson", "James Madison"], c: 0 },
+                // Cinematography
+                { q: "Director famous for Vertigo effect?", a: ["Alfred Hitchcock", "Kubrick", "Spielberg", "Nolan"], c: 0 },
+                { q: "French New Wave decade?", a: ["1950s", "1940s", "1960s", "1970s"], c: 2 },
+                { q: "Cinematographer of Blade Runner 2049?", a: ["Roger Deakins", "Emmanuel Lubezki", "Janusz Kamiński", "Robert Richardson"], c: 0 },
+                { q: "Which movie won first Best Picture Oscar?", a: ["Wings", "Sunrise", "Gone with Wind", "Casablanca"], c: 0 },
+                { q: "Director of 2001: A Space Odyssey?", a: ["Stanley Kubrick", "George Lucas", "Ridley Scott", "James Cameron"], c: 0 },
+                { q: "Which film pioneered CGI characters?", a: ["Jurassic Park", "Terminator 2", "Toy Story", "Avatar"], c: 1 },
+                { q: "Which color grading is 'Teal and Orange' used in?", a: ["Blockbusters", "Film noir", "Documentary", "Romantic comedies"], c: 0 },
+                { q: "Director of Pulp Fiction?", a: ["Quentin Tarantino", "Martin Scorsese", "David Fincher", "Christopher Nolan"], c: 0 },
+                { q: "Cinematographer of Inception?", a: ["Wally Pfister", "Emmanuel Lubezki", "Roger Deakins", "Janusz Kamiński"], c: 0 },
+                { q: "Which movie used 'Shaky Cam' style heavily?", a: ["The Blair Witch Project", "Jaws", "Citizen Kane", "Vertigo"], c: 0 },
+                { q: "Director of The Godfather?", a: ["Francis Ford Coppola", "Martin Scorsese", "Brian De Palma", "Orson Welles"], c: 0 },
+                { q: "Which editing technique creates tension?", a: ["Cross-cut", "Montage", "Fade", "Match-cut"], c: 0 },
+                { q: "Which camera format is 70mm?", a: ["IMAX", "35mm", "16mm", "Super 8"], c: 0 },
+                { q: "Which lens creates 'Bokeh' effect?", a: ["Telephoto", "Wide-angle", "Fisheye", "Macro"], c: 0 },
+                { q: "Director of Schindler's List?", a: ["Steven Spielberg", "Martin Scorsese", "Ridley Scott", "Woody Allen"], c: 0 },
+                { q: "Which film popularized 'Steadicam'?", a: ["Rocky", "Star Wars", "Jaws", "Goodfellas"], c: 0 },
+                { q: "Which director is known for long tracking shots?", a: ["Alfonso Cuarón", "Christopher Nolan", "Tarantino", "Spielberg"], c: 0 },
+                { q: "Cinematographer of Gravity?", a: ["Emmanuel Lubezki", "Roger Deakins", "Janusz Kamiński", "Wally Pfister"], c: 0 },
+                { q: "Which movie is considered the first blockbuster?", a: ["Jaws", "Star Wars", "Gone with the Wind", "E.T."], c: 0 },
+                { q: "Director of Parasite?", a: ["Bong Joon-ho", "Park Chan-wook", "Kim Ki-duk", "Lee Chang-dong"], c: 0 }
+            ]
+        };
 
         let currentQuestions = [];
         let currentIndex = 0;
@@ -238,6 +431,8 @@
         let currentCorrectIdx = -1;
         let isActive = false;
         let lifelines = { fifty: true, phone: true, host: true };
+        let timerSeconds = QUESTION_TIME_LIMIT;
+        let timerInterval = null;
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -252,8 +447,13 @@
             document.getElementById('game-ui').classList.remove('hidden');
             document.getElementById('end-screen').classList.add('hidden');
             
-            // Randomly pick 15 questions from the bank and shuffle them
-            currentQuestions = shuffle([...QUESTION_BANK]).slice(0, 15);
+            // Generate a fresh set of 15 questions for this round
+            const t1 = shuffle([...QUESTION_BANK.tier1]).slice(0, 4);
+            const t2 = shuffle([...QUESTION_BANK.tier2]).slice(0, 4);
+            const t3 = shuffle([...QUESTION_BANK.tier3]).slice(0, 4);
+            const t4 = shuffle([...QUESTION_BANK.tier4]).slice(0, 3);
+            
+            currentQuestions = [...t1, ...t2, ...t3, ...t4];
             currentIndex = 0;
             isActive = true;
             lifelines = { fifty: true, phone: true, host: true };
@@ -277,12 +477,50 @@
             });
         }
 
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerSeconds = QUESTION_TIME_LIMIT;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerDisplay();
+                
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const bar = document.getElementById('timer-bar');
+            const text = document.getElementById('timer-text');
+            const percentage = (timerSeconds / QUESTION_TIME_LIMIT) * 100;
+            
+            bar.style.width = `${percentage}%`;
+            text.innerText = `${timerSeconds}s`;
+
+            if (timerSeconds <= 10) {
+                bar.classList.remove('bg-yellow-500');
+                bar.classList.add('bg-red-500');
+            } else {
+                bar.classList.add('bg-yellow-500');
+                bar.classList.remove('bg-red-500');
+            }
+        }
+
+        function handleTimeOut() {
+            if (!isActive) return;
+            isActive = false;
+            document.getElementById(`btn-${currentCorrectIdx}`).classList.add('correct');
+            setTimeout(() => finishGame(false, true), 1500);
+        }
+
         function loadQuestion() {
             const rawQuestion = currentQuestions[currentIndex];
             const originalAnswers = rawQuestion.a;
-            const correctAnswerText = originalAnswers[rawQuestion.c];
 
-            // Create answer objects to track which one was originaly correct
             let answerPool = originalAnswers.map((text, i) => ({ text, isCorrect: i === rawQuestion.c }));
             currentShuffledAnswers = shuffle(answerPool);
             currentCorrectIdx = currentShuffledAnswers.findIndex(a => a.isCorrect);
@@ -292,7 +530,8 @@
             document.getElementById('current-prize-display').innerText = currentIndex > 0 ? `$${PRIZES[currentIndex-1]}` : "$0";
 
             document.querySelectorAll('.ladder-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`ladder-${currentIndex}`).classList.add('active');
+            const activeLadder = document.getElementById(`ladder-${currentIndex}`);
+            if (activeLadder) activeLadder.classList.add('active');
 
             for(let i=0; i<4; i++) {
                 const btn = document.getElementById(`btn-${i}`);
@@ -301,11 +540,14 @@
                 btn.disabled = false;
                 btn.querySelector('.answer-label').innerText = currentShuffledAnswers[i].text;
             }
+
+            startTimer();
         }
 
         function handleAnswer(idx) {
             if (!isActive) return;
             isActive = false;
+            clearInterval(timerInterval);
 
             const btn = document.getElementById(`btn-${idx}`);
 
@@ -319,7 +561,7 @@
                         isActive = true;
                         loadQuestion();
                     }
-                }, 2000);
+                }, 1500);
             } else {
                 btn.classList.add('wrong');
                 document.getElementById(`btn-${currentCorrectIdx}`).classList.add('correct');
@@ -343,8 +585,9 @@
             document.getElementById('ll-phone').classList.add('used');
 
             const labels = ["A", "B", "C", "D"];
-            const pick = Math.random() > 0.2 ? currentCorrectIdx : Math.floor(Math.random() * 4);
-            setHostMsg(`Friend: "I'm about 80% sure it's ${labels[pick]}!"`);
+            const chance = 0.85 - (currentIndex * 0.05);
+            const pick = Math.random() < chance ? currentCorrectIdx : Math.floor(Math.random() * 4);
+            setHostMsg(`Friend: "I'm about ${(chance*100).toFixed(0)}% sure the answer is ${labels[pick]}!"`);
         }
 
         function useHost() {
@@ -353,7 +596,7 @@
             document.getElementById('ll-host').classList.add('used');
 
             const labels = ["A", "B", "C", "D"];
-            setHostMsg(`Host: "Well, I can tell you that ${labels[currentCorrectIdx]} looks like a very logical choice here."`);
+            setHostMsg(`Host: "Looking at the data, ${labels[currentCorrectIdx]} seems most likely."`);
         }
 
         function setHostMsg(msg) {
@@ -362,7 +605,8 @@
             el.style.opacity = 1;
         }
 
-        function finishGame(win) {
+        function finishGame(win, isTimeout = false) {
+            clearInterval(timerInterval);
             document.getElementById('game-ui').classList.add('hidden');
             document.getElementById('end-screen').classList.remove('hidden');
             
@@ -371,17 +615,18 @@
 
             if (win) {
                 title.innerText = "MILLIONAIRE!";
-                msg.innerText = "You have answered every question correctly!";
+                msg.innerText = "ASTOUNDING! You've navigated through advanced science, history, and cinematography to claim the $1,000,000!";
             } else {
-                title.innerText = "GAME OVER";
+                title.innerText = isTimeout ? "TIME EXPIRED" : "GAME OVER";
                 let safetyPrize = "$0";
                 if (currentIndex >= 10) safetyPrize = "$32,000";
                 else if (currentIndex >= 5) safetyPrize = "$1,000";
-                msg.innerText = `You walk away with ${safetyPrize}. Great effort!`;
+                msg.innerText = `${isTimeout ? 'The clock hit zero. ' : 'Incorrect answer! '} You leave the show with a total of ${safetyPrize}.`;
             }
         }
 
         function resetToHome() {
+            clearInterval(timerInterval);
             document.getElementById('end-screen').classList.add('hidden');
             document.getElementById('start-screen').classList.remove('hidden');
         }
