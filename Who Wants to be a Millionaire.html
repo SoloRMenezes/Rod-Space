@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Wants to Be a Millionaire?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-blue: #020230;
+            --accent-gold: #e5a024;
+            --border-blue: #4a90e2;
+            --success-green: #28a745;
+            --error-red: #dc3545;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #0a0a4d 0%, #02021a 100%);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* The iconic Hexagon shape for buttons and question box */
+        .hex-box {
+            position: relative;
+            background: linear-gradient(180deg, #101050 0%, #050520 100%);
+            border: 2px solid var(--border-blue);
+            clip-path: polygon(2% 0, 98% 0, 100% 50%, 98% 100%, 2% 100%, 0 50%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .answer-btn {
+            cursor: pointer;
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            background: var(--accent-gold);
+            color: black;
+            border-color: white;
+            transform: scale(1.02);
+        }
+
+        .answer-btn.correct {
+            background: var(--success-green) !important;
+            border-color: white;
+            animation: pulse-green 0.5s infinite;
+        }
+
+        .answer-btn.wrong {
+            background: var(--error-red) !important;
+            border-color: white;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+
+        /* Money Ladder Styles */
+        .ladder-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 12px;
+            border-radius: 4px;
+            margin: 1px 0;
+        }
+
+        .ladder-item.active {
+            background: var(--accent-gold);
+            color: black;
+            font-weight: bold;
+            box-shadow: 0 0 15px var(--accent-gold);
+        }
+
+        .ladder-item.safe {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        .ladder-item.milestone {
+            color: var(--accent-gold);
+        }
+
+        /* Lifeline Styles */
+        .lifeline {
+            width: 60px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .lifeline:hover:not(.used) {
+            background: var(--accent-gold);
+            color: black;
+            transform: translateY(-2px);
+        }
+
+        .lifeline.used {
+            opacity: 0.3;
+            border-color: #666;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .lifeline.used::after {
+            content: "X";
+            color: var(--error-red);
+            font-size: 30px;
+            position: absolute;
+        }
+
+        #start-screen {
+            background: radial-gradient(circle, #1a1a7a 0%, #02021a 100%);
+            z-index: 100;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(74, 144, 226, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Starting Screen -->
+    <div id="start-screen" class="fixed inset-0 flex flex-col items-center justify-center p-6 text-center">
+        <div class="mb-12 animate-bounce">
+            <svg class="w-32 h-32 text-yellow-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9V5a1 1 0 112 0v4h3a1 1 0 110 2h-4v4a1 1 0 11-2 0v-4H6a1 1 0 110-2h3z"/>
+            </svg>
+        </div>
+        <h1 class="text-6xl font-bold mb-4 glow-text uppercase tracking-widest">Who Wants To Be A<br><span class="text-yellow-500">Millionaire</span></h1>
+        <p class="text-blue-300 text-xl mb-10 max-w-md">15 Random Questions. 3 Lifelines. 1 Virtual Million. Are you ready?</p>
+        <button onclick="initGame()" class="bg-yellow-500 text-black px-12 py-4 rounded-full font-bold text-2xl hover:bg-yellow-400 transition-all hover:scale-110 shadow-2xl">
+            START THE QUIZ
+        </button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="end-screen" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-black/95 z-50 hidden">
+        <h2 id="end-title" class="text-6xl font-bold mb-4 text-yellow-500">GAME OVER</h2>
+        <p id="end-message" class="text-2xl mb-10"></p>
+        <button onclick="resetToHome()" class="bg-blue-600 text-white px-10 py-3 rounded-full font-bold hover:bg-blue-500">PLAY AGAIN</button>
+    </div>
+
+    <!-- Main Game Interface -->
+    <div id="game-ui" class="hidden h-screen flex flex-col">
+        
+        <!-- Header: Lifelines -->
+        <div class="p-6 flex justify-between items-start">
+            <div class="flex gap-4">
+                <button id="ll-50" onclick="use5050()" class="lifeline">50:50</button>
+                <button id="ll-phone" onclick="usePhone()" class="lifeline">📞</button>
+                <button id="ll-host" onclick="useHost()" class="lifeline">🎤</button>
+            </div>
+            <div class="text-right">
+                <p class="text-blue-400 uppercase text-xs tracking-widest">Current Level</p>
+                <p id="current-prize-display" class="text-3xl font-bold text-yellow-500">$0</p>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col lg:flex-row p-4 lg:p-10 gap-10">
+            <!-- Left Side: Question Area -->
+            <div class="flex-1 flex flex-col justify-center gap-12">
+                
+                <div id="host-bubble" class="h-12 text-center text-blue-200 italic text-lg transition-opacity duration-500"></div>
+
+                <div class="hex-box w-full p-8 md:p-12 text-center text-xl md:text-3xl font-bold">
+                    <span id="question-text">Loading question...</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                    <button id="btn-0" onclick="handleAnswer(0)" class="hex-box answer-btn p-5 text-left flex items-center">
+                        <span class="text-yellow-500 font-bold mr-4">A:</span> <span class="answer-label">...</span>
+                    </button>
+                    <button id="btn-1" onclick="handleAnswer(1)" class="hex-box answer-btn p-5 text-left flex items-center">
+                        <span class="text-yellow-500 font-bold mr-4">B:</span> <span class="answer-label">...</span>
+                    </button>
+                    <button id="btn-2" onclick="handleAnswer(2)" class="hex-box answer-btn p-5 text-left flex items-center">
+                        <span class="text-yellow-500 font-bold mr-4">C:</span> <span class="answer-label">...</span>
+                    </button>
+                    <button id="btn-3" onclick="handleAnswer(3)" class="hex-box answer-btn p-5 text-left flex items-center">
+                        <span class="text-yellow-500 font-bold mr-4">D:</span> <span class="answer-label">...</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Side: Money Ladder -->
+            <div class="hidden lg:flex w-72 flex-col justify-center bg-blue-900/20 rounded-3xl p-6 border border-blue-800">
+                <div id="ladder-container" class="flex flex-col-reverse gap-1">
+                    <!-- Ladder items will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PRIZES = ["100", "200", "300", "500", "1,000", "2,000", "4,000", "8,000", "16,000", "32,000", "64,000", "125,000", "250,000", "500,000", "1,000,000"];
+        
+        const QUESTION_BANK = [
+            { q: "Which animal is known as the 'Ship of the Desert'?", a: ["Horse", "Camel", "Elephant", "Donkey"], c: 1 },
+            { q: "In the game of chess, which piece can only move diagonally?", a: ["Rook", "Knight", "Bishop", "Pawn"], c: 2 },
+            { q: "What is the name of the fairy in Peter Pan?", a: ["Tinker Bell", "Cinderella", "Snow White", "Ariel"], c: 0 },
+            { q: "How many colors are there in a rainbow?", a: ["5", "6", "7", "8"], c: 2 },
+            { q: "Which of these is NOT a primary color?", a: ["Red", "Yellow", "Green", "Blue"], c: 2 },
+            { q: "In which season do leaves change color and fall from trees?", a: ["Spring", "Summer", "Autumn", "Winter"], c: 2 },
+            { q: "What is the capital of the United Kingdom?", a: ["Dublin", "Edinburgh", "London", "Cardiff"], c: 2 },
+            { q: "Which gas do plants absorb from the atmosphere?", a: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], c: 2 },
+            { q: "Who is known as the 'King of Pop'?", a: ["Elvis Presley", "Prince", "Michael Jackson", "Justin Bieber"], c: 2 },
+            { q: "How many continents are there on Earth?", a: ["5", "6", "7", "8"], c: 2 },
+            { q: "What is the largest ocean on Earth?", a: ["Atlantic", "Indian", "Arctic", "Pacific"], c: 3 },
+            { q: "In Greek mythology, who was the king of the gods?", a: ["Hades", "Poseidon", "Zeus", "Apollo"], c: 2 },
+            { q: "Which country gifted the Statue of Liberty to the USA?", a: ["Germany", "France", "United Kingdom", "Italy"], c: 1 },
+            { q: "What is the square root of 144?", a: ["10", "11", "12", "14"], c: 2 },
+            { q: "Which planet is famous for its big red spot?", a: ["Mars", "Saturn", "Jupiter", "Neptune"], c: 2 },
+            { q: "What is the name of the long-standing leader of the Autobots in 'Transformers'?", a: ["Bumblebee", "Megatron", "Optimus Prime", "Starscream"], c: 2 },
+            { q: "In the Pixar movie 'Toy Story', what is the name of the boy who owns the toys?", a: ["Sid", "Andy", "Christopher", "Billy"], c: 1 },
+            { q: "Which planet is closest to the Sun?", a: ["Venus", "Mars", "Mercury", "Earth"], c: 2 },
+            { q: "What fruit do kids traditionally leave out for Santa on Christmas Eve in many countries?", a: ["Apple", "Pear", "Banana", "Orange"], c: 0 },
+            { q: "In the story of 'The Three Little Pigs', what is the first pig's house made of?", a: ["Wood", "Straw", "Bricks", "Stone"], c: 1 }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let currentShuffledAnswers = [];
+        let currentCorrectIdx = -1;
+        let isActive = false;
+        let lifelines = { fifty: true, phone: true, host: true };
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-ui').classList.remove('hidden');
+            document.getElementById('end-screen').classList.add('hidden');
+            
+            // Randomly pick 15 questions from the bank and shuffle them
+            currentQuestions = shuffle([...QUESTION_BANK]).slice(0, 15);
+            currentIndex = 0;
+            isActive = true;
+            lifelines = { fifty: true, phone: true, host: true };
+            
+            document.querySelectorAll('.lifeline').forEach(el => el.classList.remove('used'));
+            
+            buildLadder();
+            loadQuestion();
+        }
+
+        function buildLadder() {
+            const container = document.getElementById('ladder-container');
+            container.innerHTML = '';
+            PRIZES.forEach((amount, i) => {
+                const div = document.createElement('div');
+                div.id = `ladder-${i}`;
+                div.className = 'ladder-item';
+                if (i === 4 || i === 9 || i === 14) div.classList.add('safe');
+                div.innerHTML = `<span>${i + 1}</span> <span>$${amount}</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        function loadQuestion() {
+            const rawQuestion = currentQuestions[currentIndex];
+            const originalAnswers = rawQuestion.a;
+            const correctAnswerText = originalAnswers[rawQuestion.c];
+
+            // Create answer objects to track which one was originaly correct
+            let answerPool = originalAnswers.map((text, i) => ({ text, isCorrect: i === rawQuestion.c }));
+            currentShuffledAnswers = shuffle(answerPool);
+            currentCorrectIdx = currentShuffledAnswers.findIndex(a => a.isCorrect);
+
+            document.getElementById('question-text').innerText = rawQuestion.q;
+            document.getElementById('host-bubble').innerText = "";
+            document.getElementById('current-prize-display').innerText = currentIndex > 0 ? `$${PRIZES[currentIndex-1]}` : "$0";
+
+            document.querySelectorAll('.ladder-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`ladder-${currentIndex}`).classList.add('active');
+
+            for(let i=0; i<4; i++) {
+                const btn = document.getElementById(`btn-${i}`);
+                btn.classList.remove('correct', 'wrong');
+                btn.style.visibility = 'visible';
+                btn.disabled = false;
+                btn.querySelector('.answer-label').innerText = currentShuffledAnswers[i].text;
+            }
+        }
+
+        function handleAnswer(idx) {
+            if (!isActive) return;
+            isActive = false;
+
+            const btn = document.getElementById(`btn-${idx}`);
+
+            if (idx === currentCorrectIdx) {
+                btn.classList.add('correct');
+                setTimeout(() => {
+                    if (currentIndex === 14) {
+                        finishGame(true);
+                    } else {
+                        currentIndex++;
+                        isActive = true;
+                        loadQuestion();
+                    }
+                }, 2000);
+            } else {
+                btn.classList.add('wrong');
+                document.getElementById(`btn-${currentCorrectIdx}`).classList.add('correct');
+                setTimeout(() => finishGame(false), 2000);
+            }
+        }
+
+        function use5050() {
+            if (!lifelines.fifty || !isActive) return;
+            lifelines.fifty = false;
+            document.getElementById('ll-50').classList.add('used');
+
+            let pool = [0,1,2,3].filter(i => i !== currentCorrectIdx).sort(() => Math.random() - 0.5);
+            document.getElementById(`btn-${pool[0]}`).style.visibility = 'hidden';
+            document.getElementById(`btn-${pool[1]}`).style.visibility = 'hidden';
+        }
+
+        function usePhone() {
+            if (!lifelines.phone || !isActive) return;
+            lifelines.phone = false;
+            document.getElementById('ll-phone').classList.add('used');
+
+            const labels = ["A", "B", "C", "D"];
+            const pick = Math.random() > 0.2 ? currentCorrectIdx : Math.floor(Math.random() * 4);
+            setHostMsg(`Friend: "I'm about 80% sure it's ${labels[pick]}!"`);
+        }
+
+        function useHost() {
+            if (!lifelines.host || !isActive) return;
+            lifelines.host = false;
+            document.getElementById('ll-host').classList.add('used');
+
+            const labels = ["A", "B", "C", "D"];
+            setHostMsg(`Host: "Well, I can tell you that ${labels[currentCorrectIdx]} looks like a very logical choice here."`);
+        }
+
+        function setHostMsg(msg) {
+            const el = document.getElementById('host-bubble');
+            el.innerText = msg;
+            el.style.opacity = 1;
+        }
+
+        function finishGame(win) {
+            document.getElementById('game-ui').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-message');
+
+            if (win) {
+                title.innerText = "MILLIONAIRE!";
+                msg.innerText = "You have answered every question correctly!";
+            } else {
+                title.innerText = "GAME OVER";
+                let safetyPrize = "$0";
+                if (currentIndex >= 10) safetyPrize = "$32,000";
+                else if (currentIndex >= 5) safetyPrize = "$1,000";
+                msg.innerText = `You walk away with ${safetyPrize}. Great effort!`;
+            }
+        }
+
+        function resetToHome() {
+            document.getElementById('end-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
