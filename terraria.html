@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Terraria</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            pointer-events: none;
+            color: white;
+            text-shadow: 2px 2px 0px #000;
+            width: 100%;
+            display: none;
+        }
+        .inventory-slot {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: border-color 0.1s;
+        }
+        .inventory-slot:hover { border-color: #aaa; }
+        .inventory-slot.active {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        #main-menu {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+            transition: opacity 0.5s;
+        }
+        .menu-bg-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .floating-cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            animation: float 20s linear infinite;
+        }
+        @keyframes float {
+            from { transform: translateX(-200px); }
+            to { transform: translateX(110vw); }
+        }
+        
+        .game-title {
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 900;
+            color: #4caf50;
+            text-shadow: 4px 4px 0px #2e7d32, 8px 8px 0px rgba(0,0,0,0.2);
+            font-style: italic;
+            margin-bottom: 2rem;
+            letter-spacing: -2px;
+            z-index: 10;
+        }
+
+        .menu-btn {
+            background: rgba(46, 125, 50, 0.9);
+            padding: 0.75rem 2rem;
+            margin: 0.5rem;
+            border: 4px solid #1b5e20;
+            box-shadow: 0 4px 0 #1b5e20;
+            cursor: pointer;
+            transition: all 0.1s;
+            min-width: 240px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+            text-transform: uppercase;
+            z-index: 10;
+            pointer-events: auto;
+        }
+        .menu-btn:hover {
+            background: #4caf50;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #1b5e20;
+        }
+        .menu-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #1b5e20;
+        }
+
+        .overlay-panel {
+            display: none;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 2.5rem;
+            border-radius: 12px;
+            border: 4px solid #4caf50;
+            width: 90%;
+            max-width: 500px;
+            z-index: 120;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .save-item {
+            background: #222;
+            border: 2px solid #444;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+        }
+        .save-item:hover { border-color: #4caf50; }
+
+        #inventory-screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-menu">
+        <div class="menu-bg-elements" id="menu-bg"></div>
+        <h1 class="game-title">TERRARIA JS</h1>
+        
+        <div id="menu-buttons" class="flex flex-column items-center flex-col">
+            <div class="menu-btn" onclick="openSavesMenu()">Play</div>
+            <div class="menu-btn" onclick="toggleSettings(true)">Settings</div>
+        </div>
+
+        <!-- Saves Panel -->
+        <div id="saves-panel" class="overlay-panel">
+            <h2 class="text-3xl font-bold mb-4 text-center">World Selection</h2>
+            
+            <div class="mb-6 flex gap-2">
+                <input type="text" id="new-save-name" placeholder="World Name..." class="flex-grow bg-black border-2 border-gray-700 p-2 rounded text-white outline-none focus:border-green-500">
+                <button onclick="createNewWorld()" class="bg-green-600 px-4 py-2 font-bold rounded hover:bg-green-500">New</button>
+            </div>
+
+            <div id="saves-list" class="flex flex-col gap-2">
+                <!-- Saves populated here -->
+            </div>
+
+            <div class="menu-btn mt-6 w-full !ml-0" onclick="closeSavesMenu()">BACK</div>
+        </div>
+
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="overlay-panel">
+            <h2 class="text-3xl font-bold mb-4 text-center">Settings</h2>
+            <div class="flex flex-col gap-6">
+                <div class="flex items-center justify-between gap-8">
+                    <span class="font-bold">Zoom Level</span>
+                    <input type="range" id="zoom-range" min="20" max="60" value="32" oninput="updateZoom(this.value)">
+                </div>
+                <div class="flex items-center justify-between gap-8">
+                    <span class="font-bold">Auto Jump</span>
+                    <input type="checkbox" id="auto-jump-toggle" class="w-6 h-6 cursor-pointer" onchange="updateAutoJump(this.checked)">
+                </div>
+            </div>
+            <div class="menu-btn mt-6 !ml-0" onclick="toggleSettings(false)">BACK</div>
+        </div>
+
+        <div class="absolute bottom-4 text-gray-600 font-bold">Alpha Build v0.5.1</div>
+    </div>
+
+    <div id="inventory-screen">
+        <h2 class="text-3xl font-bold mb-6">Character Inventory</h2>
+        <div id="full-inventory-grid" class="grid grid-cols-5 gap-3 p-4 bg-gray-900/80 border-4 border-gray-700 rounded-lg"></div>
+        <p class="mt-6 text-gray-400">Press 'E' or 'ESC' to close</p>
+    </div>
+
+    <div id="ui-overlay">
+        <div class="flex gap-1" id="hotbar"></div>
+        <div class="mt-2 text-sm flex gap-4 bg-black/50 p-2 rounded w-fit backdrop-blur-sm border border-white/20">
+            <span>A/D: Move | SPACE: Jump | W/S: Climb | E: Inventory</span>
+            <span class="cursor-pointer underline text-yellow-400 font-bold" onclick="exitToMenu()">MENU (ESC)</span>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const hotbarEl = document.getElementById('hotbar');
+        const menuEl = document.getElementById('main-menu');
+        const uiEl = document.getElementById('ui-overlay');
+        const invScreenEl = document.getElementById('inventory-screen');
+        const invGridEl = document.getElementById('full-inventory-grid');
+        const settingsEl = document.getElementById('settings-panel');
+        const savesEl = document.getElementById('saves-panel');
+        const savesListEl = document.getElementById('saves-list');
+        const buttonsEl = document.getElementById('menu-buttons');
+        const menuBg = document.getElementById('menu-bg');
+
+        // Game Constants
+        let TILE_SIZE = 32;
+        const WORLD_WIDTH = 250;
+        const WORLD_HEIGHT = 150;
+        const GRAVITY = 0.4;
+        const FRICTION = 0.82;
+        const JUMP_FORCE = -9;
+        const ACCEL = 0.8;
+        const MAX_SPEED = 5.5;
+
+        // Tile Types
+        const TILE = { AIR: 0, DIRT: 1, GRASS: 2, STONE: 3, WOOD: 4, LEAF: 5, IRON: 6, COAL: 7, GOLD: 8, BRICK: 9, GLASS: 10 };
+        const TILE_DATA = {
+            [TILE.AIR]: { color: 'transparent', name: 'Air', solid: false },
+            [TILE.DIRT]: { color: '#5d4037', name: 'Dirt', solid: true },
+            [TILE.GRASS]: { color: '#4caf50', name: 'Grass', solid: true },
+            [TILE.STONE]: { color: '#757575', name: 'Stone', solid: true },
+            [TILE.WOOD]: { color: '#795548', name: 'Wood', solid: false },
+            [TILE.LEAF]: { color: '#2e7d32', name: 'Leaf', solid: false },
+            [TILE.IRON]: { color: '#b0bec5', name: 'Iron Ore', solid: true },
+            [TILE.COAL]: { color: '#212121', name: 'Coal Ore', solid: true },
+            [TILE.GOLD]: { color: '#ffd700', name: 'Gold Ore', solid: true },
+            [TILE.BRICK]: { color: '#b71c1c', name: 'Clay Brick', solid: true },
+            [TILE.GLASS]: { color: 'rgba(179, 229, 252, 0.6)', name: 'Glass', solid: true }
+        };
+
+        // Game State
+        let world = [];
+        let currentSaveId = null;
+        let player = {
+            x: 0, y: 0, vx: 0, vy: 0, w: 20, h: 44, grounded: false,
+            inventory: [TILE.DIRT, TILE.STONE, TILE.WOOD, TILE.BRICK, TILE.IRON, TILE.COAL, TILE.GOLD, TILE.GLASS, TILE.GRASS, TILE.LEAF],
+            selectedSlot: 0, autoJump: false
+        };
+
+        let camera = { x: 0, y: 0 };
+        let keys = {};
+        let mouse = { x: 0, y: 0, leftDown: false, rightDown: false };
+        let isPlaying = false;
+        let isInventoryOpen = false;
+        let lastSaveTime = 0;
+
+        function init() {
+            createMenuClouds();
+            resize();
+            setupUI();
+            
+            window.addEventListener('keydown', e => {
+                keys[e.code] = true;
+                if(e.code === 'KeyE') toggleInventory();
+                if(e.code === 'Escape') {
+                    if (isInventoryOpen) toggleInventory();
+                    else if (isPlaying) exitToMenu();
+                }
+            });
+            window.addEventListener('keyup', e => keys[e.code] = false);
+            window.addEventListener('mousedown', e => { 
+                if(!isPlaying || isInventoryOpen) return;
+                if(e.button === 0) mouse.leftDown = true;
+                if(e.button === 2) mouse.rightDown = true;
+                handleInteraction(e.button); 
+            });
+            window.addEventListener('mouseup', e => {
+                if(e.button === 0) mouse.leftDown = false;
+                if(e.button === 2) mouse.rightDown = false;
+            });
+            window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+            window.addEventListener('contextmenu', e => { if(isPlaying) e.preventDefault(); });
+            window.addEventListener('resize', resize);
+            requestAnimationFrame(gameLoop);
+        }
+
+        function createMenuClouds() {
+            for(let i=0; i<10; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'floating-cloud';
+                const width = 100 + Math.random() * 200;
+                cloud.style.width = width + 'px';
+                cloud.style.height = (width/3) + 'px';
+                cloud.style.top = (Math.random() * 80) + 'vh';
+                cloud.style.left = '-300px';
+                cloud.style.animationDelay = (Math.random() * 20) + 's';
+                cloud.style.animationDuration = (20 + Math.random() * 30) + 's';
+                menuBg.appendChild(cloud);
+            }
+        }
+
+        // --- Save Management ---
+        function getSaves() {
+            const saves = localStorage.getItem('terraria_saves_list');
+            return saves ? JSON.parse(saves) : [];
+        }
+
+        function openSavesMenu() {
+            buttonsEl.style.display = 'none';
+            savesEl.style.display = 'flex';
+            refreshSavesList();
+        }
+
+        function closeSavesMenu() {
+            savesEl.style.display = 'none';
+            buttonsEl.style.display = 'flex';
+        }
+
+        function refreshSavesList() {
+            const saves = getSaves();
+            savesListEl.innerHTML = '';
+            
+            if (saves.length === 0) {
+                savesListEl.innerHTML = '<p class="text-center text-gray-500 my-4">No saves found. Create one above!</p>';
+            }
+
+            saves.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'save-item';
+                div.innerHTML = `
+                    <div>
+                        <div class="font-bold text-lg text-white">${s.name}</div>
+                        <div class="text-xs text-gray-400">ID: ${s.id.slice(0,8)}</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="loadWorld('${s.id}')" class="bg-blue-600 px-3 py-1 rounded font-bold hover:bg-blue-500 text-white">Play</button>
+                        <button onclick="deleteWorld('${s.id}')" class="bg-red-900 px-3 py-1 rounded font-bold hover:bg-red-700 text-white">X</button>
+                    </div>
+                `;
+                savesListEl.appendChild(div);
+            });
+        }
+
+        function createNewWorld() {
+            const nameInput = document.getElementById('new-save-name');
+            const name = nameInput.value.trim() || "New World";
+            const id = 'save_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            generateWorld();
+            spawnPlayer();
+            
+            const saves = getSaves();
+            saves.push({ id, name });
+            localStorage.setItem('terraria_saves_list', JSON.stringify(saves));
+            
+            currentSaveId = id;
+            saveGame();
+            nameInput.value = '';
+            startGame();
+        }
+
+        function loadWorld(id) {
+            const savedData = localStorage.getItem(id);
+            if (!savedData) return;
+            
+            const data = JSON.parse(savedData);
+            world = data.world;
+            player.x = data.playerPos.x;
+            player.y = data.playerPos.y;
+            player.inventory = data.inventory;
+            player.autoJump = data.autoJump || false;
+            currentSaveId = id;
+            
+            document.getElementById('auto-jump-toggle').checked = player.autoJump;
+            startGame();
+        }
+
+        function deleteWorld(id) {
+            if (confirm("Delete this world forever?")) {
+                localStorage.removeItem(id);
+                const saves = getSaves().filter(s => s.id !== id);
+                localStorage.setItem('terraria_saves_list', JSON.stringify(saves));
+                refreshSavesList();
+            }
+        }
+
+        function saveGame() {
+            if (!currentSaveId || !world || world.length === 0) return;
+            const gameData = { 
+                world, 
+                playerPos: { x: player.x, y: player.y }, 
+                inventory: player.inventory,
+                autoJump: player.autoJump
+            };
+            localStorage.setItem(currentSaveId, JSON.stringify(gameData));
+            lastSaveTime = Date.now();
+        }
+
+        // --- Core Game Functions ---
+        function startGame() {
+            menuEl.style.opacity = '0';
+            setTimeout(() => {
+                menuEl.style.display = 'none';
+                uiEl.style.display = 'block';
+                isPlaying = true;
+                setupUI();
+            }, 500);
+        }
+
+        function exitToMenu() {
+            saveGame();
+            menuEl.style.display = 'flex';
+            setTimeout(() => menuEl.style.opacity = '1', 10);
+            uiEl.style.display = 'none';
+            invScreenEl.style.display = 'none';
+            isPlaying = false;
+            isInventoryOpen = false;
+            closeSavesMenu();
+        }
+
+        function toggleInventory() {
+            if (!isPlaying) return;
+            isInventoryOpen = !isInventoryOpen;
+            invScreenEl.style.display = isInventoryOpen ? 'flex' : 'none';
+            if (isInventoryOpen) setupFullInventory();
+        }
+
+        function toggleSettings(show) {
+            buttonsEl.style.display = show ? 'none' : 'flex';
+            settingsEl.style.display = show ? 'flex' : 'none';
+        }
+
+        function updateZoom(val) { TILE_SIZE = parseInt(val); }
+        function updateAutoJump(val) { player.autoJump = val; }
+
+        function spawnPlayer() {
+            player.x = (WORLD_WIDTH * TILE_SIZE) / 2;
+            player.y = (findSurfaceHeight(Math.floor(player.x / TILE_SIZE)) - 3) * TILE_SIZE;
+            player.vx = 0; player.vy = 0;
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function getCaveNoise(x, y) {
+            return (Math.sin(x * 0.1) + Math.sin(y * 0.1) + Math.sin(x * 0.05 + y * 0.05) + Math.sin(x * 0.02) * 2) / 5;
+        }
+
+        function generateWorld() {
+            world = [];
+            let surfacePoints = [];
+            for (let x = 0; x < WORLD_WIDTH; x++) {
+                let s = 45 + Math.sin(x * 0.1) * 4 + Math.sin(x * 0.03) * 8;
+                surfacePoints[x] = Math.floor(s);
+            }
+            for (let x = 0; x < WORLD_WIDTH; x++) {
+                world[x] = [];
+                let s = surfacePoints[x];
+                for (let y = 0; y < WORLD_HEIGHT; y++) {
+                    if (y < s) world[x][y] = TILE.AIR;
+                    else if (y === s) world[x][y] = TILE.GRASS;
+                    else if (y <= s + 4) world[x][y] = TILE.DIRT;
+                    else {
+                        let rand = Math.random();
+                        if (rand > 0.99 && y > 90) world[x][y] = TILE.GOLD;
+                        else if (rand > 0.97 && y > 70) world[x][y] = TILE.IRON;
+                        else if (rand > 0.95 && y > 60) world[x][y] = TILE.COAL;
+                        else world[x][y] = TILE.STONE;
+                    }
+                }
+            }
+            for (let x = 0; x < WORLD_WIDTH; x++) {
+                let s = surfacePoints[x];
+                for (let y = s + 6; y < WORLD_HEIGHT; y++) {
+                    if (getCaveNoise(x, y) > 0.3) world[x][y] = TILE.AIR;
+                }
+            }
+            // Smooth Caves
+            for (let i = 0; i < 2; i++) {
+                const newWorld = JSON.parse(JSON.stringify(world));
+                for (let x = 1; x < WORLD_WIDTH - 1; x++) {
+                    let s = surfacePoints[x];
+                    for (let y = s + 5; y < WORLD_HEIGHT - 1; y++) {
+                        let airN = 0;
+                        for(let nx=-1; nx<=1; nx++) for(let ny=-1; ny<=1; ny++) if(world[x+nx][y+ny] === TILE.AIR) airN++;
+                        if(airN > 5) newWorld[x][y] = TILE.AIR;
+                    }
+                }
+                world = newWorld;
+            }
+            // Trees
+            for (let i = 0; i < 40; i++) {
+                let tx = Math.floor(Math.random() * (WORLD_WIDTH - 4)) + 2;
+                let ty = findSurfaceHeight(tx);
+                if (ty > 0 && world[tx][ty] === TILE.GRASS) createTree(tx, ty - 1);
+            }
+        }
+
+        function findSurfaceHeight(x) {
+            if (x < 0 || x >= WORLD_WIDTH || !world[x]) return -1;
+            for (let y = 0; y < WORLD_HEIGHT; y++) if (world[x][y] !== TILE.AIR) return y;
+            return -1;
+        }
+
+        function createTree(x, y) {
+            let h = 5 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < h; i++) if (y - i >= 0) world[x][y - i] = TILE.WOOD;
+            let topY = y - h;
+            for (let ox = -2; ox <= 2; ox++) {
+                for (let oy = -2; oy <= 1; oy++) {
+                    if (x+ox >= 0 && x+ox < WORLD_WIDTH && world[x + ox][topY + oy] === TILE.AIR) {
+                        world[x + ox][topY + oy] = TILE.LEAF;
+                    }
+                }
+            }
+        }
+
+        function setupUI() {
+            hotbarEl.innerHTML = '';
+            for(let i = 0; i < 5; i++) {
+                const item = player.inventory[i] || TILE.AIR;
+                const slot = document.createElement('div');
+                slot.className = `inventory-slot ${i === player.selectedSlot ? 'active' : ''}`;
+                slot.innerHTML = item !== TILE.AIR ? `<div style="width:24px; height:24px; background:${TILE_DATA[item].color}"></div>` : '';
+                slot.onclick = () => { player.selectedSlot = i; setupUI(); };
+                hotbarEl.appendChild(slot);
+            }
+        }
+
+        function setupFullInventory() {
+            invGridEl.innerHTML = '';
+            player.inventory.forEach((item, index) => {
+                const slot = document.createElement('div');
+                slot.className = `inventory-slot ${index === player.selectedSlot ? 'active' : ''}`;
+                slot.innerHTML = item !== TILE.AIR ? `<div style="width:30px; height:30px; background:${TILE_DATA[item].color}"></div>` : '';
+                slot.onclick = () => { player.selectedSlot = index; setupUI(); setupFullInventory(); };
+                invGridEl.appendChild(slot);
+            });
+        }
+
+        function handleInteraction(button) {
+            if (!isPlaying || isInventoryOpen || !world || world.length === 0) return;
+            const mWX = mouse.x + camera.x;
+            const mWY = mouse.y + camera.y;
+            const tx = Math.floor(mWX / TILE_SIZE);
+            const ty = Math.floor(mWY / TILE_SIZE);
+            if (tx < 0 || tx >= WORLD_WIDTH || ty < 0 || ty >= WORLD_HEIGHT) return;
+            const dist = Math.hypot(player.x + player.w/2 - mWX, player.y + player.h/2 - mWY);
+            if (dist > TILE_SIZE * 5.5) return;
+            if (button === 0 && world[tx][ty] !== TILE.AIR) world[tx][ty] = TILE.AIR;
+            else if (button === 2 && world[tx][ty] === TILE.AIR) {
+                const tile = player.inventory[player.selectedSlot];
+                if (tile !== TILE.AIR) world[tx][ty] = tile;
+            }
+        }
+
+        function update() {
+            if (!isPlaying || isInventoryOpen || !world || world.length === 0) return;
+            if (Date.now() - lastSaveTime > 15000) saveGame();
+            if (player.y > WORLD_HEIGHT * TILE_SIZE) spawnPlayer();
+
+            if (keys['KeyA']) player.vx -= ACCEL;
+            if (keys['KeyD']) player.vx += ACCEL;
+            
+            const px = Math.floor((player.x + player.w / 2) / TILE_SIZE);
+            const py = Math.floor((player.y + player.h / 2) / TILE_SIZE);
+            const currentTile = world[px] ? world[px][py] : TILE.AIR;
+            const isClimbable = currentTile === TILE.WOOD || currentTile === TILE.LEAF;
+
+            if (isClimbable) {
+                player.vy *= 0.6;
+                if (keys['KeyW']) player.vy = -4;
+                if (keys['KeyS']) player.vy = 4;
+            } else {
+                if (keys['Space'] && player.grounded) { player.vy = JUMP_FORCE; player.grounded = false; }
+                player.vy += GRAVITY;
+            }
+
+            // Auto Jump Height logic
+            if (player.autoJump && player.grounded && (keys['KeyA'] || keys['KeyD'])) {
+                const dir = keys['KeyD'] ? 1 : -1;
+                const checkX = Math.floor((player.x + (dir === 1 ? player.w + 5 : -5)) / TILE_SIZE);
+                if (world[checkX]) {
+                    let obsH = 0;
+                    for (let h = 1; h <= 4; h++) {
+                        const checkY = Math.floor((player.y + player.h - (h * TILE_SIZE) + TILE_SIZE/2) / TILE_SIZE);
+                        if (world[checkX][checkY] && TILE_DATA[world[checkX][checkY]].solid) obsH = h; else break;
+                    }
+                    if (obsH > 0) {
+                        const hY = Math.floor((player.y + player.h - (obsH * TILE_SIZE) - player.h + 5) / TILE_SIZE);
+                        if (world[checkX][hY] === TILE.AIR) {
+                            player.vy = Math.max(-Math.sqrt(2 * GRAVITY * (obsH * TILE_SIZE + 10)), JUMP_FORCE);
+                            player.grounded = false;
+                        }
+                    }
+                }
+            }
+
+            player.vx *= FRICTION;
+            if (Math.abs(player.vx) > MAX_SPEED) player.vx = Math.sign(player.vx) * MAX_SPEED;
+            player.x += player.vx;
+            checkCollision(true);
+            player.y += player.vy;
+            player.grounded = false;
+            checkCollision(false);
+
+            camera.x += (player.x - canvas.width / 2 - camera.x) * 0.1;
+            camera.y += (player.y - canvas.height / 2 - camera.y) * 0.1;
+            if (Math.random() > 0.8) {
+                if (mouse.leftDown) handleInteraction(0);
+                if (mouse.rightDown) handleInteraction(2);
+            }
+        }
+
+        function checkCollision(isX) {
+            const l = Math.floor(player.x / TILE_SIZE);
+            const r = Math.floor((player.x + player.w) / TILE_SIZE);
+            const t = Math.floor(player.y / TILE_SIZE);
+            const b = Math.floor((player.y + player.h) / TILE_SIZE);
+            for (let x = l; x <= r; x++) {
+                for (let y = t; y <= b; y++) {
+                    if (world[x] && world[x][y] !== TILE.AIR && TILE_DATA[world[x][y]].solid) {
+                        if (isX) {
+                            if (player.vx > 0) player.x = x * TILE_SIZE - player.w - 0.01;
+                            else if (player.vx < 0) player.x = (x + 1) * TILE_SIZE + 0.01;
+                            player.vx = 0;
+                        } else {
+                            if (player.vy > 0) { player.y = y * TILE_SIZE - player.h - 0.01; player.grounded = true; player.vy = 0; }
+                            else if (player.vy < 0) { player.y = (y + 1) * TILE_SIZE + 0.01; player.vy = 0; }
+                        }
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const skyG = Math.floor(Math.sin(Date.now() * 0.00005) * 40 + 160);
+            ctx.fillStyle = isPlaying ? `rgb(100, ${skyG}, 240)` : '#87CEEB';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (!isPlaying || !world || world.length === 0) return;
+
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+
+            const sX = Math.max(0, Math.floor(camera.x / TILE_SIZE));
+            const eX = Math.min(WORLD_WIDTH, Math.ceil((camera.x + canvas.width) / TILE_SIZE));
+            const sY = Math.max(0, Math.floor(camera.y / TILE_SIZE));
+            const eY = Math.min(WORLD_HEIGHT, Math.ceil((camera.y + canvas.height) / TILE_SIZE));
+
+            for (let x = sX; x < eX; x++) {
+                if (!world[x]) continue;
+                for (let y = sY; y < eY; y++) {
+                    const t = world[x][y];
+                    if (t !== TILE.AIR) {
+                        ctx.fillStyle = TILE_DATA[t].color;
+                        if (y > 70) ctx.globalAlpha = 1 - Math.min(0.75, (y - 70) / 80);
+                        ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+            }
+
+            ctx.fillStyle = '#ffccbc'; ctx.fillRect(player.x, player.y, player.w, player.h);
+            ctx.fillStyle = '#3f51b5'; ctx.fillRect(player.x, player.y + player.h * 0.4, player.w, player.h * 0.4);
+            ctx.fillStyle = '#000'; ctx.fillRect(player.x + (player.vx >= 0 ? player.w * 0.7 : player.w * 0.2), player.y + 8, 4, 4);
+
+            if (isPlaying && !isInventoryOpen) {
+                const mWX = mouse.x + camera.x; const mWY = mouse.y + camera.y;
+                ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+                ctx.strokeRect(Math.floor(mWX / TILE_SIZE) * TILE_SIZE, Math.floor(mWY / TILE_SIZE) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            }
+            ctx.restore();
+        }
+
+        function gameLoop() { 
+            update(); 
+            draw(); 
+            requestAnimationFrame(gameLoop); 
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
