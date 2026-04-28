@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>21 Card Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #022c22;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .felt-bg {
+            background-color: #065f46;
+            background-image: 
+                radial-gradient(circle at 50% 50%, #067a5a 0%, #064e3b 100%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+            opacity: 0.95;
+        }
+
+        .table-border {
+            border: 12px solid #2d1b0e;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 100px rgba(0,0,0,0.4);
+            border-radius: 60px;
+        }
+
+        .card {
+            width: 90px;
+            height: 130px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            box-shadow: 2px 5px 15px rgba(0,0,0,0.4);
+            position: relative;
+            border: 1px solid #ddd;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: dealIn 0.6s ease-out forwards;
+        }
+
+        @keyframes dealIn {
+            from { transform: translateY(-600px) rotate(45deg); opacity: 0; }
+            to { transform: translateY(0) rotate(0); opacity: 1; }
+        }
+
+        .card.hidden {
+            background: #1e3a8a;
+            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20L40 40M40 0L0 40' stroke='%233b82f6' stroke-width='1' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+            border: 3px solid #ffffff;
+        }
+
+        .card-red { color: #e11d48; }
+        .card-black { color: #1e293b; }
+
+        .score-badge {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+            padding: 4px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-weight: 600;
+        }
+
+        .btn-action {
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .glass-panel {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="table-border w-full max-w-5xl h-[90vh] relative overflow-hidden flex flex-col justify-between items-center py-10 px-6 felt-bg">
+        
+        <!-- MAIN MENU OVERLAY -->
+        <div id="main-menu" class="absolute inset-0 z-50 flex flex-col items-center justify-center glass-panel">
+            <div class="mb-12 text-center">
+                <h1 class="text-6xl font-bold text-white tracking-tighter mb-2">21 CHALLENGE</h1>
+                <p class="text-emerald-400 font-medium tracking-widest uppercase text-sm">Strategic Card Game</p>
+            </div>
+            <div class="flex flex-col gap-4 w-64">
+                <button id="start-game-btn" class="bg-emerald-500 hover:bg-emerald-400 text-white py-4 rounded-xl font-bold text-lg shadow-xl transition-all uppercase tracking-widest">Play Now</button>
+                <button id="show-rules-btn" class="bg-white/10 hover:bg-white/20 text-white py-4 rounded-xl font-bold text-lg shadow-xl transition-all border border-white/20 uppercase tracking-widest">Rules</button>
+            </div>
+        </div>
+
+        <!-- RULES OVERLAY -->
+        <div id="rules-overlay" class="hidden absolute inset-0 z-[60] flex items-center justify-center glass-panel p-8">
+            <div class="max-w-md w-full bg-emerald-900/50 p-8 rounded-3xl border border-white/10">
+                <h2 class="text-3xl font-bold text-white mb-6 text-center">How to Play</h2>
+                <ul class="text-emerald-100 space-y-4 mb-8">
+                    <li class="flex gap-3"><span class="text-emerald-400 font-bold">1.</span> Reach a total score of 21 or as close as possible without going over.</li>
+                    <li class="flex gap-3"><span class="text-emerald-400 font-bold">2.</span> Number cards are face value. Face cards (J, Q, K) are 10. Aces are 1 or 11.</li>
+                    <li class="flex gap-3"><span class="text-emerald-400 font-bold">3.</span> 'Hit' to take another card, 'Stand' to keep your current hand.</li>
+                    <li class="flex gap-3"><span class="text-emerald-400 font-bold">4.</span> Beat the house score to win the round!</li>
+                </ul>
+                <button id="close-rules-btn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-white py-3 rounded-xl font-bold transition-all uppercase">Got it!</button>
+            </div>
+        </div>
+
+        <!-- GAME UI (Initially hidden until start) -->
+        <div id="game-ui" class="hidden contents">
+            <!-- Dealer Area -->
+            <div class="text-center w-full z-0">
+                <div class="flex flex-col items-center gap-3">
+                    <span class="text-emerald-200/60 uppercase tracking-[0.3em] text-xs font-bold">House Hand</span>
+                    <div id="dealer-cards" class="flex justify-center gap-3 min-h-[140px]"></div>
+                    <div id="dealer-score-display" class="score-badge text-white opacity-0 transition-opacity text-sm">Total: ?</div>
+                </div>
+            </div>
+
+            <!-- Middle Info / Result -->
+            <div id="result-container" class="hidden absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                <div class="glass-panel px-12 py-8 rounded-3xl text-center transform scale-110 pointer-events-auto">
+                    <h1 id="message-display" class="text-5xl font-bold text-white mb-6 drop-shadow-lg uppercase tracking-tighter"></h1>
+                    <div class="flex gap-4 justify-center">
+                        <button id="reset-btn" class="bg-white text-emerald-900 hover:bg-emerald-50 px-8 py-3 rounded-xl font-bold shadow-xl transition-all uppercase tracking-widest text-sm">Next Round</button>
+                        <button id="back-to-menu-btn" class="bg-white/10 text-white hover:bg-white/20 px-8 py-3 rounded-xl font-bold shadow-xl transition-all border border-white/20 uppercase tracking-widest text-sm">Menu</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Logo -->
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none select-none">
+                <div class="border-4 border-white rounded-full w-64 h-64 flex items-center justify-center">
+                    <span class="text-white text-6xl font-bold italic">21</span>
+                </div>
+            </div>
+
+            <!-- Player Area -->
+            <div class="text-center w-full z-10">
+                <div class="flex flex-col items-center gap-4">
+                    <div id="player-score-display" class="score-badge text-white text-lg">Total: 0</div>
+                    <div id="player-cards" class="flex justify-center gap-3 min-h-[140px]"></div>
+                    <span class="text-emerald-200/60 uppercase tracking-[0.3em] text-xs font-bold">Your Hand</span>
+                </div>
+            </div>
+
+            <!-- Bottom Controls -->
+            <div id="controls" class="flex gap-6 z-10">
+                <button id="hit-btn" class="btn-action bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-xl shadow-lg disabled:opacity-30">Hit</button>
+                <button id="stand-btn" class="btn-action bg-rose-600 hover:bg-rose-500 text-white px-10 py-4 rounded-xl shadow-lg disabled:opacity-30">Stand</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const suits = ['♥', '♦', '♣', '♠'];
+        const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        
+        let deck = [];
+        let playerHand = [];
+        let dealerHand = [];
+        let gameOver = false;
+
+        // Elements
+        const mainMenu = document.getElementById('main-menu');
+        const rulesOverlay = document.getElementById('rules-overlay');
+        const gameUI = document.getElementById('game-ui');
+        const dealerArea = document.getElementById('dealer-cards');
+        const playerArea = document.getElementById('player-cards');
+        const playerScoreEl = document.getElementById('player-score-display');
+        const dealerScoreEl = document.getElementById('dealer-score-display');
+        const messageEl = document.getElementById('message-display');
+        const resultContainer = document.getElementById('result-container');
+        
+        // Buttons
+        const startBtn = document.getElementById('start-game-btn');
+        const showRulesBtn = document.getElementById('show-rules-btn');
+        const closeRulesBtn = document.getElementById('close-rules-btn');
+        const backToMenuBtn = document.getElementById('back-to-menu-btn');
+        const hitBtn = document.getElementById('hit-btn');
+        const standBtn = document.getElementById('stand-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const controls = document.getElementById('controls');
+
+        function createDeck() {
+            deck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({ suit, value });
+                }
+            }
+            shuffle(deck);
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function getCardValue(card) {
+            if (['J', 'Q', 'K'].includes(card.value)) return 10;
+            if (card.value === 'A') return 11;
+            return parseInt(card.value);
+        }
+
+        function calculateScore(hand) {
+            let score = 0;
+            let aces = 0;
+            for (let card of hand) {
+                score += getCardValue(card);
+                if (card.value === 'A') aces++;
+            }
+            while (score > 21 && aces > 0) {
+                score -= 10;
+                aces--;
+            }
+            return score;
+        }
+
+        function createCardUI(card, isHidden = false, index = 0) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = `card ${isHidden ? 'hidden' : (card.suit === '♥' || card.suit === '♦' ? 'card-red' : 'card-black')}`;
+            cardDiv.style.animationDelay = `${index * 0.1}s`;
+            
+            if (!isHidden) {
+                cardDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <span class="text-xl font-bold leading-none">${card.value}</span>
+                        <span class="text-sm">${card.suit}</span>
+                    </div>
+                    <div class="text-center text-4xl self-center">${card.suit}</div>
+                    <div class="flex justify-between items-end rotate-180">
+                        <span class="text-xl font-bold leading-none">${card.value}</span>
+                        <span class="text-sm">${card.suit}</span>
+                    </div>
+                `;
+            }
+            return cardDiv;
+        }
+
+        function updateUI() {
+            playerArea.innerHTML = '';
+            dealerArea.innerHTML = '';
+
+            playerHand.forEach((card, i) => playerArea.appendChild(createCardUI(card, false, i)));
+            dealerHand.forEach((card, index) => {
+                const isHidden = !gameOver && index === 1;
+                dealerArea.appendChild(createCardUI(card, isHidden, index));
+            });
+
+            playerScoreEl.innerText = `Total: ${calculateScore(playerHand)}`;
+            
+            if (gameOver) {
+                dealerScoreEl.innerText = `Total: ${calculateScore(dealerHand)}`;
+                dealerScoreEl.classList.remove('opacity-0');
+            } else {
+                dealerScoreEl.classList.add('opacity-0');
+            }
+        }
+
+        async function startDealerTurn() {
+            gameOver = true;
+            updateUI();
+            
+            let dealerScore = calculateScore(dealerHand);
+            
+            while (dealerScore < 17) {
+                await new Promise(r => setTimeout(r, 800));
+                dealerHand.push(deck.pop());
+                dealerScore = calculateScore(dealerHand);
+                updateUI();
+            }
+
+            setTimeout(determineWinner, 500);
+        }
+
+        function determineWinner() {
+            const pScore = calculateScore(playerHand);
+            const dScore = calculateScore(dealerHand);
+
+            let msg = "";
+            if (pScore > 21) msg = "Bust!";
+            else if (dScore > 21) msg = "House Busts!";
+            else if (pScore > dScore) msg = "You Win!";
+            else if (dScore > pScore) msg = "House Wins!";
+            else msg = "Push";
+
+            messageEl.innerText = msg;
+            resultContainer.classList.remove('hidden');
+            controls.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function dealInitialCards() {
+            createDeck();
+            playerHand = [deck.pop(), deck.pop()];
+            dealerHand = [deck.pop(), deck.pop()];
+            gameOver = false;
+            
+            mainMenu.classList.add('hidden');
+            gameUI.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            controls.classList.remove('opacity-0', 'pointer-events-none');
+            
+            const pScore = calculateScore(playerHand);
+            updateUI();
+
+            if (pScore === 21) {
+                gameOver = true;
+                setTimeout(() => {
+                    messageEl.innerText = "21!";
+                    resultContainer.classList.remove('hidden');
+                    controls.classList.add('opacity-0', 'pointer-events-none');
+                }, 600);
+            }
+        }
+
+        // Event Listeners
+        startBtn.addEventListener('click', dealInitialCards);
+        showRulesBtn.addEventListener('click', () => rulesOverlay.classList.remove('hidden'));
+        closeRulesBtn.addEventListener('click', () => rulesOverlay.classList.add('hidden'));
+        backToMenuBtn.addEventListener('click', () => {
+            gameUI.classList.add('hidden');
+            mainMenu.classList.remove('hidden');
+        });
+
+        hitBtn.addEventListener('click', () => {
+            if (gameOver) return;
+            playerHand.push(deck.pop());
+            updateUI();
+            if (calculateScore(playerHand) > 21) {
+                gameOver = true;
+                setTimeout(determineWinner, 400);
+            }
+        });
+
+        standBtn.addEventListener('click', () => {
+            if (gameOver) return;
+            startDealerTurn();
+        });
+
+        resetBtn.addEventListener('click', dealInitialCards);
+    </script>
+</body>
+</html>
