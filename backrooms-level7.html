@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backrooms: Level 7 - Thalassophobia</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #0a0a0a; font-family: 'Courier New', Courier, monospace; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #d1d1d1; text-shadow: 2px 2px 4px #000; pointer-events: none; user-select: none; z-index: 10; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.5); border-radius: 50%; transform: translate(-50%, -50%); }
+        
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.6) 100%); pointer-events: none; z-index: 5; }
+        #vhs-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 6; opacity: 0.08; background: url('https://grainy-gradients.vercel.app/noise.svg'); }
+        #scanlines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%); background-size: 100% 4px; pointer-events: none; z-index: 7; }
+
+        #instructions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; z-index: 100; transition: opacity 0.8s ease; }
+        .bar-container { width: 200px; height: 8px; background: #222; margin-top: 10px; border: 1px solid #444; }
+        #sanity-bar { width: 100%; height: 100%; background: #0066ff; transition: width 0.3s; }
+        
+        button { background: transparent; color: #fff; border: 1px solid #fff; padding: 15px 40px; cursor: pointer; margin-top: 30px; font-family: inherit; font-size: 1rem; transition: 0.3s; }
+        button:hover { background: #fff; color: #000; }
+
+        .rec { position: absolute; top: 20px; right: 40px; color: #ff0000; font-weight: bold; animation: blink 1s infinite; z-index: 10; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        #fade-out { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; opacity: 0; pointer-events: none; transition: opacity 2s ease; z-index: 9999; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div style="font-weight: bold; font-size: 1.2rem;">LEVEL 7: THALASSOPHOBIA</div>
+        <div id="timer" style="margin-top: 5px;">TIME: 00:00</div>
+        <div style="margin-top: 15px; font-size: 0.7rem; color: #888;">SANITY</div>
+        <div class="bar-container">
+            <div id="sanity-bar"></div>
+        </div>
+    </div>
+
+    <div id="fade-out"></div>
+    <div class="rec">● REC</div>
+    <div id="crosshair"></div>
+    <div id="overlay"></div>
+    <div id="vhs-overlay"></div>
+    <div id="scanlines"></div>
+
+    <div id="instructions">
+        <h1 style="font-size: 3rem; margin-bottom: 10px;">LEVEL 7</h1>
+        <p style="color: #aaa; margin-bottom: 30px;">THE ROOMS ARE SUBMERGED. FIND THE EXIT.</p>
+        <button id="start-btn">ENTER</button>
+    </div>
+
+    <script>
+        let camera, scene, renderer, clock;
+        let keys = { w: false, s: false, a: false, d: false };
+        let sanity = 100;
+        let gameActive = false;
+        let exiting = false;
+        let stepCounter = 0;
+        let yaw = 0, pitch = 0;
+        let startTime = Date.now();
+
+        const CHUNK_SIZE = 14;
+        const chunks = new Map();
+        const walls = [];
+        const exits = [];
+
+        function createTexture(type) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            
+            if (type === 'wall') {
+                ctx.fillStyle = '#b0b095'; 
+                ctx.fillRect(0, 0, 1024, 1024);
+                for(let i = 0; i < 40000; i++) {
+                    ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.1})`;
+                    ctx.fillRect(Math.random()*1024, Math.random()*1024, 1, 1);
+                }
+                for(let i = 0; i < 40; i++) {
+                    const x = Math.random() * 1024;
+                    const y = Math.random() * 1024;
+                    const rad = Math.random() * 150 + 50;
+                    const grad = ctx.createRadialGradient(x, y, 0, x, y, rad);
+                    grad.addColorStop(0, 'rgba(60, 65, 50, 0.2)');
+                    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(x-rad, y-rad, rad*2, rad*2);
+                }
+            } else if (type === 'ceiling') {
+                ctx.fillStyle = '#d0d0c0';
+                ctx.fillRect(0, 0, 1024, 1024);
+                ctx.strokeStyle = '#808070';
+                ctx.lineWidth = 8;
+                for(let i = 0; i <= 4; i++) {
+                    ctx.beginPath(); ctx.moveTo(i * 256, 0); ctx.lineTo(i * 256, 1024); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(0, i * 256); ctx.lineTo(1024, i * 256); ctx.stroke();
+                }
+                for(let i = 0; i < 20000; i++) {
+                    ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.05})`;
+                    ctx.fillRect(Math.random()*1024, Math.random()*1024, 2, 2);
+                }
+            } else {
+                ctx.fillStyle = '#11110a';
+                ctx.fillRect(0, 0, 1024, 1024);
+                ctx.strokeStyle = '#222';
+                ctx.lineWidth = 10;
+                ctx.strokeRect(0,0,1024,1024);
+            }
+
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        const wallTexture = createTexture('wall');
+        const floorTexture = createTexture('floor');
+        const ceilingTexture = createTexture('ceiling');
+
+        const wallMat = new THREE.MeshStandardMaterial({ map: wallTexture, roughness: 0.8 });
+        const ceilingMat = new THREE.MeshStandardMaterial({ map: ceilingTexture, roughness: 0.9 });
+        const waterMat = new THREE.MeshStandardMaterial({ color: 0x0a1a2a, transparent: true, opacity: 0.7, roughness: 0.05, metalness: 0.9 });
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020305);
+            scene.fog = new THREE.FogExp2(0x03060a, 0.05); 
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.7, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            clock = new THREE.Clock();
+
+            const ambient = new THREE.AmbientLight(0x404050, 0.15); 
+            scene.add(ambient);
+
+            const flashLight = new THREE.SpotLight(0xfffce0, 3.5); 
+            flashLight.angle = Math.PI / 5.5;
+            flashLight.penumbra = 0.3;
+            flashLight.decay = 1.5;
+            flashLight.distance = 80;
+            camera.add(flashLight);
+            flashLight.position.set(0.3, -0.2, 0);
+            flashLight.target.position.set(0, 0, -10);
+            camera.add(flashLight.target);
+            scene.add(camera);
+
+            setupControls();
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        function createWall(px, pz, w, h, d, rot = 0) {
+            const geom = new THREE.BoxGeometry(w, h, d);
+            const mesh = new THREE.Mesh(geom, wallMat);
+            mesh.position.set(px, h/2 - 2.5, pz);
+            mesh.rotation.y = rot;
+            walls.push(mesh);
+            scene.add(mesh);
+            return mesh;
+        }
+
+        function spawnExitDoor(x, z) {
+            const group = new THREE.Group();
+            const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 4, 0.5), new THREE.MeshStandardMaterial({color: 0x111111}));
+            const door = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.8, 0.1), new THREE.MeshStandardMaterial({color: 0x221100, metalness: 0.5}));
+            door.position.z = 0.1;
+            group.add(frame, door);
+            group.position.set(x, -0.5, z);
+            scene.add(group);
+            exits.push(group);
+        }
+
+        function generateChunk(cx, cz) {
+            const key = `${cx},${cz}`;
+            if (chunks.has(key)) return;
+
+            const group = new THREE.Group();
+            const worldX = cx * CHUNK_SIZE;
+            const worldZ = cz * CHUNK_SIZE;
+            group.position.set(worldX, 0, worldZ);
+
+            // Floor
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), new THREE.MeshStandardMaterial({map: floorTexture}));
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.y = -2.5; 
+            group.add(floor);
+
+            // Water
+            const water = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), waterMat);
+            water.rotation.x = -Math.PI / 2;
+            water.position.y = 0.9; 
+            group.add(water);
+
+            // Enhanced Ceiling
+            const ceil = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), ceilingMat);
+            ceil.rotation.x = Math.PI / 2;
+            ceil.position.y = 5.5;
+            group.add(ceil);
+
+            // Beams
+            const beamMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.8, roughness: 0.2 });
+            const beamGeom = new THREE.BoxGeometry(CHUNK_SIZE, 0.15, 0.15);
+            for(let i = -1; i <= 1; i++) {
+                const bx = new THREE.Mesh(beamGeom, beamMat);
+                bx.position.set(0, 5.43, i * (CHUNK_SIZE/2.01));
+                group.add(bx);
+                const bz = new THREE.Mesh(beamGeom, beamMat);
+                bz.rotation.y = Math.PI/2;
+                bz.position.set(i * (CHUNK_SIZE/2.01), 5.43, 0);
+                group.add(bz);
+            }
+
+            // Rare Exit Spawn (only if far from start)
+            const distFromOrigin = Math.sqrt(cx*cx + cz*cz);
+            if (distFromOrigin > 5 && Math.random() > 0.985 && exits.length < 1) {
+                spawnExitDoor(worldX, worldZ);
+            }
+
+            const hash = Math.abs(Math.sin(cx * 12.98 + cz * 78.23) * 43758) % 1;
+            if (hash > 0.75) createWall(worldX, worldZ - CHUNK_SIZE/2, CHUNK_SIZE, 9, 0.6);
+            if (hash < 0.25) createWall(worldX + CHUNK_SIZE/2, worldZ, 0.6, 9, CHUNK_SIZE);
+
+            scene.add(group);
+            chunks.set(key, group);
+        }
+
+        function checkCollision(pos) {
+            const r = 0.4;
+            const pBox = new THREE.Box3().setFromCenterAndSize(pos, new THREE.Vector3(r, 2, r));
+            for (let w of walls) {
+                if (pBox.intersectsBox(new THREE.Box3().setFromObject(w))) return true;
+            }
+            return false;
+        }
+
+        function setupControls() {
+            document.getElementById('start-btn').addEventListener('click', () => {
+                document.body.requestPointerLock();
+            });
+
+            document.addEventListener('pointerlockchange', () => {
+                const locked = document.pointerLockElement === document.body;
+                document.getElementById('instructions').style.opacity = locked ? '0' : '1';
+                gameActive = locked;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!gameActive || exiting) return;
+                yaw -= e.movementX * 0.0016;
+                pitch -= e.movementY * 0.0016;
+                pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+            });
+
+            window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
+            window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = Math.min(clock.getDelta(), 0.1);
+            
+            if (gameActive && !exiting) {
+                const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).negate();
+                const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), forward);
+                
+                let moveDir = new THREE.Vector3(0, 0, 0);
+                if (keys.w) moveDir.add(forward);
+                if (keys.s) moveDir.sub(forward);
+                if (keys.d) moveDir.sub(right);
+                if (keys.a) moveDir.add(right);
+
+                if (moveDir.length() > 0) {
+                    const speed = 4.5; 
+                    moveDir.normalize().multiplyScalar(speed * delta);
+                    const nextPos = camera.position.clone().add(moveDir);
+                    if (!checkCollision(nextPos)) camera.position.copy(nextPos);
+                    stepCounter += delta * 12;
+                    camera.position.y = 1.7 + Math.sin(stepCounter) * 0.06;
+                } else {
+                    camera.position.y = 1.7 + Math.sin(Date.now() * 0.001) * 0.02;
+                }
+
+                camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+
+                // World Gen
+                const px = Math.round(camera.position.x / CHUNK_SIZE);
+                const pz = Math.round(camera.position.z / CHUNK_SIZE);
+                for(let x = -3; x <= 3; x++) {
+                    for(let z = -3; z <= 3; z++) {
+                        generateChunk(px + x, pz + z);
+                    }
+                }
+
+                // Check Exit Door Collision
+                exits.forEach(exit => {
+                    if (camera.position.distanceTo(exit.position) < 1.5) {
+                        exiting = true;
+                        document.getElementById('fade-out').style.opacity = '1';
+                        setTimeout(() => {
+                            window.location.href = "https://solormenezes.github.io/Rod-Space/backrooms-level10.html";
+                        }, 2000);
+                    }
+                });
+
+                sanity -= delta * 0.08;
+                document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timer').innerText = `TIME: ${Math.floor(elapsed/60).toString().padStart(2, '0')}:${(elapsed%60).toString().padStart(2, '0')}`;
+                if (sanity <= 0) location.reload();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
