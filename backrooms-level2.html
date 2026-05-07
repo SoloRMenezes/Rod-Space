@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backrooms: Level 2 - Pipe Dreams</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #ff8800; text-shadow: 2px 2px 4px #000; pointer-events: none; user-select: none; z-index: 10; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255, 100, 0, 0.4); border-radius: 50%; transform: translate(-50%, -50%); }
+        
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 50%, rgba(60,20,0,0.2) 100%); pointer-events: none; }
+        #heat-haze { position: absolute; top: 0; left: 0; width: 100%; height: 100%; backdrop-filter: blur(0.4px); opacity: 0.1; pointer-events: none; animation: haze 4s ease-in-out infinite; }
+        
+        @keyframes haze { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.005); } }
+        
+        #instructions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 10, 5, 0.98); color: #ffaa44; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; z-index: 100; }
+        .bar-container { width: 200px; height: 10px; background: #221100; margin-top: 5px; border: 1px solid #442200; }
+        #sanity-bar { width: 100%; height: 100%; background: #ff4400; transition: width 0.3s; }
+        #fade-out { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 1000; transition: opacity 2s ease-in; }
+        
+        #notification { position: absolute; bottom: 20%; width: 100%; text-align: center; color: #00ffcc; font-weight: bold; font-size: 1.2rem; opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 2px #000; z-index: 10; pointer-events: none; }
+        #interaction-prompt { position: absolute; bottom: 35%; width: 100%; text-align: center; color: #ffffff; font-size: 1.1rem; opacity: 0; transition: opacity 0.2s; text-shadow: 1px 1px 2px #000; z-index: 10; pointer-events: none; }
+
+        button { background: #331100; color: #ff8800; border: 1px solid #ff8800; padding: 15px 30px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: inherit; font-size: 1.2rem; }
+        button:hover { background: #ff8800; color: #000; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div>LOCATION: LEVEL 2 (PIPE DREAMS)</div>
+        <div>SANITY</div>
+        <div class="bar-container">
+            <div id="sanity-bar"></div>
+        </div>
+        <div id="timer" style="margin-top: 10px;">TIME: 00:00</div>
+    </div>
+
+    <div id="interaction-prompt">[E] DRINK ALMOND WATER</div>
+    <div id="notification">CONSUMED ALMOND WATER</div>
+    <div id="crosshair"></div>
+    <div id="overlay"></div>
+    <div id="heat-haze"></div>
+    <div id="fade-out"></div>
+
+    <div id="instructions">
+        <h1>LEVEL 2: PIPE DREAMS</h1>
+        <p style="color: #ff8844;">The pipes are getting louder.</p>
+        <p><strong>WASD</strong> to move | <strong>MOUSE</strong> to look | <strong>E</strong> to interact</p>
+        <p style="color: #ff4400; margin-top: 20px;">Keep moving. Find the exit wall.</p>
+        <button id="start-btn">BEGIN EXPLORATION</button>
+    </div>
+
+    <script>
+        let camera, scene, renderer, clock;
+        let keys = { w: false, s: false, a: false, d: false, e: false };
+        let sanity = 100;
+        let startTime = Date.now();
+        let gameActive = false;
+        let exitTriggered = false;
+        let stepCounter = 0;
+        let yaw = 0, pitch = 0;
+
+        const CHUNK_SIZE = 30; 
+        const chunks = new Map(); 
+        const items = [];
+        let floorMat, wallMat, pipeMat, ceilingMat, lampMat, junctionMat;
+
+        function createNoiseTexture(colorBase, noiseIntensity = 40, size = 512) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = colorBase;
+            ctx.fillRect(0, 0, size, size);
+
+            const imageData = ctx.getImageData(0, 0, size, size);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const noise = (Math.random() - 0.5) * noiseIntensity;
+                data[i] += noise;
+                data[i + 1] += noise;
+                data[i + 2] += noise;
+                
+                if (Math.random() < 0.001) {
+                    const spot = Math.random() * 50;
+                    data[i] -= spot;
+                    data[i+1] -= spot;
+                    data[i+2] -= spot;
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a120c); 
+            scene.fog = new THREE.FogExp2(0x1a120c, 0.035); 
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+            camera.position.set(0, 1.7, 0); 
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            clock = new THREE.Clock();
+            
+            const ambientLight = new THREE.AmbientLight(0xffccaa, 0.4);
+            scene.add(ambientLight);
+
+            const flashlight = new THREE.PointLight(0xffeedd, 1.5, 30); 
+            flashlight.decay = 2;
+            camera.add(flashlight);
+            scene.add(camera);
+
+            const wallTex = createNoiseTexture('#3d3530', 30);
+            const floorTex = createNoiseTexture('#332a25', 20);
+            const ceilingTex = createNoiseTexture('#2a2420', 15);
+
+            floorMat = new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.8, metalness: 0.1 }); 
+            wallMat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.7, metalness: 0.1 });  
+            ceilingMat = new THREE.MeshStandardMaterial({ map: ceilingTex, roughness: 0.9 });
+            pipeMat = new THREE.MeshStandardMaterial({ color: 0x5c3d2e, metalness: 0.8, roughness: 0.3 });
+            lampMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.2 });
+            junctionMat = new THREE.MeshStandardMaterial({ color: 0x221a15, metalness: 0.6, roughness: 0.6 });
+
+            updateProceduralWorld();
+            setupControls();
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        function createAlmondWater() {
+            const group = new THREE.Group();
+            const bottleGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.3, 8);
+            const bottleMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, transparent: true, opacity: 0.8 });
+            const bottle = new THREE.Mesh(bottleGeo, bottleMat);
+            group.add(bottle);
+
+            const capGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.05, 8);
+            const capMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const cap = new THREE.Mesh(capGeo, capMat);
+            cap.position.y = 0.18;
+            group.add(cap);
+
+            const labelGeo = new THREE.CylinderGeometry(0.082, 0.082, 0.1, 8);
+            const labelMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const label = new THREE.Mesh(labelGeo, labelMat);
+            group.add(label);
+
+            return group;
+        }
+
+        function createLamp() {
+            const group = new THREE.Group();
+            const housingGeo = new THREE.CylinderGeometry(0.3, 0.5, 0.2, 8);
+            const housing = new THREE.Mesh(housingGeo, lampMat);
+            housing.position.y = 3.4;
+            group.add(housing);
+
+            const bulbGeo = new THREE.SphereGeometry(0.15, 8, 8);
+            const bulbMat = new THREE.MeshBasicMaterial({ color: 0xffcc88 });
+            const bulb = new THREE.Mesh(bulbGeo, bulbMat);
+            bulb.position.y = 3.3;
+            group.add(bulb);
+
+            const light = new THREE.PointLight(0xffaa44, 1.2, 18);
+            light.position.y = 3.2;
+            light.decay = 1.8;
+            group.add(light);
+
+            return group;
+        }
+
+        function createPipeCluster() {
+            const cluster = new THREE.Group();
+            const sides = [-2.8, 2.8];
+
+            sides.forEach(sideX => {
+                const numPipes = 2 + Math.floor(Math.random() * 3);
+                const baseY = 0.5 + Math.random() * 1.5;
+                
+                // Add vertical support beam (box from top to bottom)
+                const beamGeo = new THREE.BoxGeometry(0.3, 3.5, 0.3);
+                const beam = new THREE.Mesh(beamGeo, junctionMat);
+                beam.position.set(sideX, 1.75, 0);
+                cluster.add(beam);
+
+                // Add a "junction box" connecting the horizontal pipes to the beam
+                const boxGeo = new THREE.BoxGeometry(0.45, 1.2, 0.45);
+                const junctionBox = new THREE.Mesh(boxGeo, junctionMat);
+                junctionBox.position.set(sideX, baseY + 0.3, 0);
+                cluster.add(junctionBox);
+
+                // Horizontal pipes
+                for(let i = 0; i < numPipes; i++) {
+                    const radius = 0.08 + Math.random() * 0.1;
+                    const pipeGeo = new THREE.CylinderGeometry(radius, radius, CHUNK_SIZE, 12);
+                    const pipe = new THREE.Mesh(pipeGeo, pipeMat);
+                    pipe.rotation.x = Math.PI / 2;
+                    pipe.position.set(sideX, baseY + (i * 0.3), 0);
+                    cluster.add(pipe);
+                }
+            });
+
+            return cluster;
+        }
+
+        function generateChunk(cz) {
+            if (chunks.has(cz)) return;
+
+            const chunkGroup = new THREE.Group();
+            chunkGroup.position.z = cz * CHUNK_SIZE;
+
+            const floorGeo = new THREE.PlaneGeometry(6, CHUNK_SIZE);
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            chunkGroup.add(floor);
+
+            const ceil = new THREE.Mesh(new THREE.PlaneGeometry(6, CHUNK_SIZE), ceilingMat);
+            ceil.rotation.x = Math.PI / 2; ceil.position.y = 3.5;
+            chunkGroup.add(ceil);
+
+            const wallGeo = new THREE.PlaneGeometry(CHUNK_SIZE, 4);
+            const leftWall = new THREE.Mesh(wallGeo, wallMat);
+            leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-3, 2, 0);
+            chunkGroup.add(leftWall);
+
+            const rightWall = new THREE.Mesh(wallGeo, wallMat);
+            rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(3, 2, 0);
+            chunkGroup.add(rightWall);
+
+            if (cz % 2 === 0) chunkGroup.add(createLamp());
+            chunkGroup.add(createPipeCluster());
+
+            if (Math.random() < 0.2) {
+                const water = createAlmondWater();
+                water.position.set((Math.random() - 0.5) * 4, 0.2, (Math.random() - 0.5) * CHUNK_SIZE);
+                chunkGroup.add(water);
+                items.push({ mesh: water, chunkId: cz });
+            }
+
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 300 && cz < -10) { 
+                const exitWall = new THREE.Mesh(new THREE.BoxGeometry(5.8, 3.3, 0.5), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+                exitWall.position.set(0, 1.7, -CHUNK_SIZE/2);
+                exitWall.name = "EXIT_WALL";
+                chunkGroup.add(exitWall);
+            }
+
+            scene.add(chunkGroup);
+            chunks.set(cz, chunkGroup);
+        }
+
+        function updateProceduralWorld() {
+            const pZ = Math.floor(camera.position.z / CHUNK_SIZE);
+            for (let z = -3; z <= 3; z++) {
+                generateChunk(pZ + z);
+            }
+        }
+
+        function showNotification(text) {
+            const el = document.getElementById('notification');
+            el.innerText = text;
+            el.style.opacity = '1';
+            setTimeout(() => { el.style.opacity = '0'; }, 2000);
+        }
+
+        function setupControls() {
+            const startBtn = document.getElementById('start-btn');
+            startBtn.addEventListener('click', () => { 
+                document.body.requestPointerLock();
+                startTime = Date.now();
+                gameActive = true;
+            });
+            document.addEventListener('pointerlockchange', () => {
+                document.getElementById('instructions').style.display = document.pointerLockElement === document.body ? 'none' : 'flex';
+                gameActive = document.pointerLockElement === document.body;
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement === document.body) {
+                    yaw -= e.movementX * 0.002;
+                    pitch = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, pitch - e.movementY * 0.002));
+                }
+            });
+            document.addEventListener('keydown', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; });
+            document.addEventListener('keyup', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
+        }
+
+        function handleInteractions(delta) {
+            let promptVisible = false;
+            const promptEl = document.getElementById('interaction-prompt');
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                const worldPos = new THREE.Vector3();
+                item.mesh.getWorldPosition(worldPos);
+                
+                const dist = camera.position.distanceTo(worldPos);
+                
+                if (dist < 2.0) {
+                    promptVisible = true;
+                    if (keys.e) {
+                        const gain = Math.floor(Math.random() * 11) + 5;
+                        sanity = Math.min(100, sanity + gain);
+                        showNotification(`CONSUMED ALMOND WATER (+${gain} SANITY)`);
+                        item.mesh.parent.remove(item.mesh);
+                        items.splice(i, 1);
+                        keys.e = false; 
+                    }
+                }
+                item.mesh.rotation.y += delta;
+            }
+            promptEl.style.opacity = promptVisible ? '1' : '0';
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (gameActive) {
+                const delta = clock.getDelta();
+                const moveSpeed = 4.8;
+                
+                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+                forward.y = 0; forward.normalize();
+                const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+                
+                const moveDir = new THREE.Vector3(0, 0, 0);
+                if (keys.w) moveDir.add(forward);
+                if (keys.s) moveDir.sub(forward);
+                if (keys.a) moveDir.sub(right);
+                if (keys.d) moveDir.add(right);
+
+                if (moveDir.length() > 0) {
+                    camera.position.add(moveDir.normalize().multiplyScalar(moveSpeed * delta));
+                    stepCounter += delta * 11;
+                    camera.position.y = 1.7 + Math.sin(stepCounter) * 0.06;
+                } else {
+                    camera.position.y = 1.7 + Math.sin(Date.now() * 0.0015) * 0.015;
+                }
+                
+                camera.position.x = Math.max(-2.3, Math.min(2.3, camera.position.x));
+                camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+
+                updateProceduralWorld();
+                handleInteractions(delta);
+
+                chunks.forEach((c) => {
+                    const lampGroup = c.children.find(child => child instanceof THREE.Group && child.children.some(g => g instanceof THREE.PointLight));
+                    if (lampGroup) {
+                        const light = lampGroup.children.find(l => l instanceof THREE.PointLight);
+                        if (Math.random() < 0.01) light.intensity = Math.random() * 1.5;
+                        else if (light.intensity < 1.2) light.intensity += 0.05;
+                    }
+
+                    const exit = c.getObjectByName("EXIT_WALL");
+                    if (exit) {
+                        const wp = new THREE.Vector3(); exit.getWorldPosition(wp);
+                        if (camera.position.distanceTo(wp) < 2.0 && !exitTriggered) {
+                            exitTriggered = true;
+                            document.getElementById('fade-out').style.opacity = '1';
+                            setTimeout(() => location.reload(), 2000);
+                        }
+                    }
+                });
+
+                sanity -= 0.012; 
+                document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
+                if (sanity <= 0) location.reload();
+
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timer').innerText = `TIME: ${Math.floor(elapsed/60).toString().padStart(2, '0')}:${(elapsed%60).toString().padStart(2, '0')}`;
+                
+                if (keys.e) setTimeout(() => { keys.e = false; }, 100);
+            }
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
