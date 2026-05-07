@@ -7,23 +7,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
-        #ui { position: absolute; top: 20px; left: 20px; color: #aaaaaa; text-shadow: 2px 2px 4px #000; pointer-events: none; user-select: none; z-index: 10; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #ffffff; text-shadow: 2px 2px 4px #000; pointer-events: none; user-select: none; z-index: 10; }
         #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.5); border-radius: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(0,0,0,0.5); }
         
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.6) 100%); pointer-events: none; }
-        #vhs-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='); opacity: 0.07; pointer-events: none; animation: noise 0.2s infinite; }
-        #glitch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 100, 255, 0.1); mix-blend-mode: hard-light; display: none; pointer-events: none; z-index: 5; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.3) 100%); pointer-events: none; }
+        #vhs-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='); opacity: 0.04; pointer-events: none; animation: noise 0.2s infinite; }
+        #glitch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 100, 255, 0.05); mix-blend-mode: screen; display: none; pointer-events: none; z-index: 5; }
         
         @keyframes noise { 0% { transform: translate(0,0) } 10% { transform: translate(-1%,-0.5%) } 20% { transform: translate(0.5%,1%) } 100% { transform: translate(0,0) } }
         
-        #instructions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 10, 0.98); color: #aaaaaa; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; z-index: 100; }
+        #instructions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 20, 20, 0.95); color: #aaaaaa; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; z-index: 100; }
         .bar-container { width: 200px; height: 10px; background: #222; margin-top: 5px; border: 1px solid #666; }
         #sanity-bar { width: 100%; height: 100%; background: #00ccff; transition: width 0.3s; }
-        #footer { position: absolute; bottom: 20px; right: 20px; color: #333; font-size: 12px; }
+        #footer { position: absolute; bottom: 20px; right: 20px; color: #444; font-size: 12px; }
         #message { position: absolute; bottom: 15%; width: 100%; text-align: center; color: #00ccff; font-weight: bold; opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 2px #000; z-index: 10; }
         #interaction-prompt { position: absolute; top: 60%; width: 100%; text-align: center; color: #fff; font-size: 14px; display: none; text-shadow: 1px 1px 2px #000; font-weight: bold; }
         
-        .glitch-active { filter: contrast(1.8) brightness(0.8) saturate(0.5); }
+        #fade-out { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 1000; transition: opacity 2s ease-in; }
+
+        .glitch-active { filter: contrast(1.2) brightness(1.1); }
         button { background: #333; color: #00ccff; border: 1px solid #00ccff; padding: 15px 30px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: inherit; }
         button:hover { background: #00ccff; color: #000; }
     </style>
@@ -46,14 +48,15 @@
     <div id="overlay"></div>
     <div id="vhs-effect"></div>
     <div id="glitch-overlay"></div>
+    <div id="fade-out"></div>
 
     <div id="instructions">
         <h1>THE BACKROOMS</h1>
-        <p style="color: #666;">Level 1: Concrete, darkness, and shifting walls.</p>
-        <p>Your sanity is slipping. Stay quiet. Stay hydrated.</p>
+        <p style="color: #888;">Level 1: Industrial corridors with concrete and flickering lights.</p>
+        <p>Stay hydrated. Watch the shadows.</p>
         <p><strong>W, A, S, D</strong> to move | <strong>MOUSE</strong> to look</p>
         <p><strong>E</strong> to interact with items</p>
-        <p style="color: #ff4444; margin-top: 20px;">Watch the shadows. They move when you don't.</p>
+        <p style="color: #00ccff; margin-top: 20px;">The exit will manifest after 5 minutes.</p>
         <button id="start-btn">DESCEND FURTHER</button>
     </div>
 
@@ -66,29 +69,31 @@
         let pitch = 0, yaw = 0;
         let sanity = 100;
         let startTime = Date.now();
+        let gameActive = false;
         
         let glitchTimer = 0;
         let isGlitching = false;
-        let glitchIntensity = 0;
+        let exitSpawned = false;
 
         // Entity Logic
         let entity = null;
         let entityChasing = false;
         let entityTimer = 0;
         let lastScreech = 0;
+        let entityCooldown = 0; // Cooldown timer in seconds
 
         const CHUNK_SIZE = 40; 
         const RENDER_DISTANCE = 1; 
         const CELL_SIZE = 8;
         const chunks = new Map(); 
         
-        let wallMat, floorMat, ceilMat, drawingMat, pipeMat;
+        let wallMat, floorMat, ceilMat, pipeMat;
         let stepCounter = 0;
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x050505);
-            scene.fog = new THREE.FogExp2(0x050505, 0.08);
+            scene.background = new THREE.Color(0x1a1a1a);
+            scene.fog = new THREE.FogExp2(0x1a1a1a, 0.04); 
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
             camera.position.set(0, 1.7, 0); 
@@ -100,18 +105,15 @@
 
             clock = new THREE.Clock();
             
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
             scene.add(ambientLight);
 
-            // Flashlight effect
-            const pointLight = new THREE.PointLight(0xffffff, 0.9, 18);
+            const pointLight = new THREE.PointLight(0xffffff, 1.4, 25);
             camera.add(pointLight);
             scene.add(camera);
 
-            floorMat = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#333') });
-            ceilMat = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#222') });
-            pipeMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.2 });
-            drawingMat = createDrawingMaterial();
+            floorMat = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#555') });
+            ceilMat = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#444') });
 
             updateProceduralWorld();
             setupControls();
@@ -134,34 +136,18 @@
             osc.stop(audioCtx.currentTime + 1.0);
         }
 
-        function createDrawingMaterial() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256; canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0,0,256,256);
-            ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-            ctx.lineWidth = 2;
-            ctx.strokeText("HELP", 50, 50);
-            ctx.beginPath();
-            ctx.arc(128, 128, 40, 0, Math.PI*2);
-            ctx.moveTo(100, 100); ctx.lineTo(150, 150);
-            ctx.stroke();
-            const tex = new THREE.CanvasTexture(canvas);
-            return new THREE.MeshBasicMaterial({ map: tex, transparent: true, polygonOffset: true, polygonOffsetFactor: -1 });
-        }
-
         function createConcreteTexture(baseColor) {
             const canvas = document.createElement('canvas');
             canvas.width = 512; canvas.height = 512;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = baseColor;
             ctx.fillRect(0, 0, 512, 512);
-            for(let i=0; i<3000; i++) {
-                ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.3})`;
+            for(let i=0; i<1500; i++) {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.15})`;
                 ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2);
             }
-            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-            for(let i=0; i<10; i++) {
+            ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+            for(let i=0; i<5; i++) {
                 ctx.beginPath();
                 ctx.moveTo(Math.random()*512, 0); ctx.lineTo(Math.random()*512, 512);
                 ctx.stroke();
@@ -179,10 +165,8 @@
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             group.add(body);
             
-            // Tentacle-like limbs for Level 1 entities
             for(let i=0; i<6; i++) {
                 const limb = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 6), bodyMat);
-                limb.position.y = 0;
                 limb.rotation.z = (Math.random() * Math.PI);
                 limb.rotation.x = (Math.random() * Math.PI);
                 group.add(limb);
@@ -194,26 +178,19 @@
             scene.add(group);
             entity = group;
             entityChasing = true;
-            entityTimer = 12;
+            entityTimer = 10; // Chase for 10 seconds max
             document.getElementById('entity-status').style.display = 'block';
             playScreech();
             showMessage("DISTURBANCE DETECTED");
         }
 
-        function spawnDecor(group, x, z) {
-            const roll = Math.random();
-            if (roll > 0.8) {
-                // Vertical Iron Pipes
-                const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4), pipeMat);
-                pipe.position.set(x, 2, z);
-                group.add(pipe);
-            } else if (roll > 0.6) {
-                // Grime on floor
-                const stain = new THREE.Mesh(new THREE.CircleGeometry(1.5, 8), new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.5 }));
-                stain.rotation.x = -Math.PI/2;
-                stain.position.set(x, 0.01, z);
-                group.add(stain);
-            }
+        function despawnEntity() {
+            if (!entity) return;
+            scene.remove(entity);
+            entity = null;
+            entityChasing = false;
+            entityCooldown = 60; // Wait 1 minute before spawning again
+            document.getElementById('entity-status').style.display = 'none';
         }
 
         function generateChunk(cx, cz) {
@@ -234,6 +211,9 @@
             const boxGeo = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
             const innerCells = Math.floor(CHUNK_SIZE / CELL_SIZE);
 
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const canSpawnExit = gameActive && elapsed > 300 && !exitSpawned;
+
             for(let x = 0; x < innerCells; x++) {
                 for(let z = 0; z < innerCells; z++) {
                     const localPosX = (x * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
@@ -247,19 +227,38 @@
                     const val = seed - Math.floor(seed);
                     
                     if (val > 0.85) {
-                        const wallMatInstance = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#444') });
+                        const wallMatInstance = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#666') });
                         const wall = new THREE.Mesh(boxGeo, wallMatInstance);
                         wall.position.set(localPosX, 2, localPosZ);
                         chunkGroup.add(wall);
+                    } else if (val < 0.01 && canSpawnExit) {
+                        spawnExit(chunkGroup, localPosX, localPosZ);
                     } else if (val < 0.005) { 
                         spawnAlmondWater(chunkGroup, localPosX, localPosZ);
-                    } else if (val > 0.3 && val < 0.35) {
-                        spawnDecor(chunkGroup, localPosX, localPosZ);
                     }
                 }
             }
             scene.add(chunkGroup);
             chunks.set(chunkKey, chunkGroup);
+        }
+
+        function spawnExit(group, x, z) {
+            const exitGroup = new THREE.Group();
+            const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 4, 0.3), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+            exitGroup.add(frame);
+            const portal = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 3.8), new THREE.MeshBasicMaterial({ color: 0x000011 }));
+            portal.position.z = 0.16;
+            exitGroup.add(portal);
+            const portalLight = new THREE.PointLight(0x00aaff, 1, 5);
+            portalLight.position.z = 0.5;
+            exitGroup.add(portalLight);
+
+            exitGroup.position.set(x, 2, z);
+            exitGroup.rotation.y = Math.random() * Math.PI;
+            exitGroup.name = "EXIT_PORTAL";
+            group.add(exitGroup);
+            exitSpawned = true;
+            showMessage("AN EXIT HAS MANIFESTED");
         }
 
         function spawnAlmondWater(group, x, z) {
@@ -282,13 +281,6 @@
                     generateChunk(pX + x, pZ + z);
                 }
             }
-            for (const [key, chunk] of chunks) {
-                const [cx, cz] = key.split(',').map(Number);
-                if (Math.abs(cx - pX) > RENDER_DISTANCE + 1 || Math.abs(cz - pZ) > RENDER_DISTANCE + 1) {
-                    scene.remove(chunk);
-                    chunks.delete(key);
-                }
-            }
         }
 
         function setupControls() {
@@ -297,9 +289,12 @@
             startBtn.addEventListener('click', () => { 
                 document.body.requestPointerLock();
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                startTime = Date.now();
+                gameActive = true;
             });
             document.addEventListener('pointerlockchange', () => {
                 inst.style.display = document.pointerLockElement === document.body ? 'none' : 'flex';
+                gameActive = document.pointerLockElement === document.body;
             });
             document.addEventListener('mousemove', (e) => {
                 if (document.pointerLockElement === document.body) {
@@ -321,25 +316,49 @@
         function handleInteractions() {
             const prompt = document.getElementById('interaction-prompt');
             prompt.style.display = 'none';
-            let minDist = 2.5;
             chunks.forEach(chunk => {
                 chunk.children.forEach(child => {
-                    if (child.name === "ALMOND_WATER") {
-                        const worldPos = new THREE.Vector3();
-                        child.getWorldPosition(worldPos);
-                        const dist = camera.position.distanceTo(worldPos);
-                        if (dist < minDist) {
-                            prompt.style.display = 'block';
-                            if (keys.e) {
-                                sanity = Math.min(100, sanity + 35); 
-                                chunk.remove(child);
-                                showMessage("DRANK PURIFIED ALMOND WATER");
-                                keys.e = false;
-                            }
+                    const worldPos = new THREE.Vector3();
+                    child.getWorldPosition(worldPos);
+                    const dist = camera.position.distanceTo(worldPos);
+                    
+                    if (child.name === "ALMOND_WATER" && dist < 2.5) {
+                        prompt.innerText = "PRESS [E] TO TAKE ALMOND WATER";
+                        prompt.style.display = 'block';
+                        if (keys.e) {
+                            sanity = Math.min(100, sanity + 35); 
+                            chunk.remove(child);
+                            showMessage("DRANK PURIFIED ALMOND WATER");
+                            keys.e = false;
                         }
+                    } else if (child.name === "EXIT_PORTAL" && dist < 3) {
+                        prompt.innerText = "NO-CLIP TO LEVEL 2";
+                        prompt.style.display = 'block';
+                        if (dist < 1.2) triggerExit();
                     }
                 });
             });
+        }
+
+        function triggerExit() {
+            if (!gameActive) return;
+            gameActive = false;
+            document.getElementById('fade-out').style.opacity = '1';
+            setTimeout(() => {
+                // Future Level 2 logic
+                location.reload(); 
+            }, 2000);
+        }
+
+        function triggerLevel0Fallback() {
+            if (!gameActive) return;
+            gameActive = false;
+            document.getElementById('fade-out').style.opacity = '1';
+            showMessage("SANITY DEPLETED - FADING AWAY...");
+            setTimeout(() => {
+                // Navigate back to Level 0
+                window.location.href = "level0.html"; 
+            }, 2500);
         }
 
         function showMessage(txt) {
@@ -372,7 +391,7 @@
         function handleGlitches(delta) {
             const overlay = document.getElementById('glitch-overlay');
             if (!isGlitching) {
-                const chance = 0.002 + (1 - (sanity / 100)) * 0.05;
+                const chance = 0.001 + (1 - (sanity / 100)) * 0.03;
                 if (Math.random() < chance) {
                     isGlitching = true;
                     glitchTimer = 0.15;
@@ -390,52 +409,59 @@
         }
 
         function handleEntity(delta) {
-            if (sanity < 40 && !entityChasing && Math.random() < 0.002) {
-                spawnEntity();
+            // Update Cooldown
+            if (entityCooldown > 0) {
+                entityCooldown -= delta;
             }
+
+            // Spawn logic: Sanity < 50% and Cooldown finished
+            if (sanity < 50 && !entityChasing && entityCooldown <= 0) {
+                if (Math.random() < 0.005) { // Random chance to spawn once conditions are met
+                    spawnEntity();
+                }
+            }
+
             if (entity && entityChasing) {
                 entityTimer -= delta;
                 const dir = camera.position.clone().sub(entity.position).normalize();
-                const speed = 5.5; 
+                const speed = 5.2; 
                 entity.position.add(dir.multiplyScalar(speed * delta));
                 entity.lookAt(camera.position.x, 1.75, camera.position.z);
                 
                 const dist = entity.position.distanceTo(camera.position);
-                if (Date.now() - lastScreech > 2000) {
+                if (Date.now() - lastScreech > 2500) {
                     playScreech();
                     lastScreech = Date.now();
                 }
+
+                // Attack logic
                 if (dist < 1.3) {
-                    sanity = Math.max(0, sanity - 20);
-                    entityChasing = false;
-                    scene.remove(entity);
-                    entity = null;
-                    document.getElementById('entity-status').style.display = 'none';
+                    sanity = Math.max(0, sanity - 25);
                     showMessage("EXPOSURE CRITICAL");
-                    isGlitching = true; glitchTimer = 1.0;
+                    despawnEntity(); // Despawn after attack
                 } else if (entityTimer <= 0) {
-                    entityChasing = false;
-                    scene.remove(entity);
-                    entity = null;
-                    document.getElementById('entity-status').style.display = 'none';
+                    // Despawn after timer expires if it didn't catch you
+                    despawnEntity();
                 }
             }
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            if (document.pointerLockElement === document.body) {
+            if (gameActive) {
                 const delta = clock.getDelta();
                 const moveSpeed = 5.0;
                 const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
                 const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
                 forward.y = 0; right.y = 0;
                 forward.normalize(); right.normalize();
+                
                 const moveDir = new THREE.Vector3(0, 0, 0);
                 if (keys.w) moveDir.add(forward);
                 if (keys.s) moveDir.sub(forward);
                 if (keys.a) moveDir.sub(right);
                 if (keys.d) moveDir.add(right);
+                
                 if (moveDir.length() > 0) {
                     moveDir.normalize().multiplyScalar(moveSpeed * delta);
                     const nextPos = camera.position.clone().add(moveDir);
@@ -447,21 +473,30 @@
                 } else {
                     camera.position.y = 1.7 + Math.sin(Date.now() * 0.001) * 0.015;
                 }
+                
                 camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+                
                 handleEntity(delta);
                 handleGlitches(delta);
                 updateProceduralWorld();
                 handleInteractions();
                 
-                // Lights flicker periodically in Level 1
-                if (Math.random() < 0.01) {
-                    camera.children[0].intensity = Math.random() > 0.5 ? 0.9 : 0.2;
+                // Flicker effect
+                if (Math.random() < 0.005) {
+                    camera.children[0].intensity = Math.random() > 0.5 ? 1.4 : 0.8;
                 } else {
-                    camera.children[0].intensity = 0.9;
+                    camera.children[0].intensity = 1.4;
                 }
 
-                sanity -= 0.01; 
+                // Sanity Decay
+                sanity -= 0.008; 
                 document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
+                
+                // Fallback to Level 0 if sanity hits 0
+                if (sanity <= 0) {
+                    triggerLevel0Fallback();
+                }
+
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 document.getElementById('timer').innerText = `TIME: ${Math.floor(elapsed/60).toString().padStart(2, '0')}:${(elapsed%60).toString().padStart(2, '0')}`;
             }
