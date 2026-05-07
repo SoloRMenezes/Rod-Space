@@ -25,6 +25,8 @@
         
         .glitch-active { filter: contrast(1.5) hue-rotate(90deg) brightness(1.2); }
         button { background: #ffff00; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: inherit; }
+
+        #fade-out { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 1000; transition: opacity 2s ease-in; }
     </style>
 </head>
 <body>
@@ -45,13 +47,14 @@
     <div id="overlay"></div>
     <div id="vhs-effect"></div>
     <div id="glitch-overlay"></div>
+    <div id="fade-out"></div>
 
     <div id="instructions">
         <h1>THE BACKROOMS</h1>
         <p>Your sanity is slipping. Stay quiet. Stay hydrated.</p>
         <p><strong>W, A, S, D</strong> to move | <strong>MOUSE</strong> to look</p>
         <p><strong>E</strong> to interact with items</p>
-        <p style="color: #ff4444; margin-top: 20px;">Avoid the Spindly One if it finds you.</p>
+        <p style="color: #ff4444; margin-top: 20px;">Survive for 5 minutes to find the exit.</p>
         <button id="start-btn">ENTER THE VOID</button>
     </div>
 
@@ -64,10 +67,14 @@
         let pitch = 0, yaw = 0;
         let sanity = 100;
         let startTime = Date.now();
+        let gameActive = false;
         
         let glitchTimer = 0;
         let isGlitching = false;
         let glitchIntensity = 0;
+
+        // Level Mechanics
+        let exitSpawned = false;
 
         // Entity Logic
         let entity = null;
@@ -260,6 +267,23 @@
             }
         }
 
+        function spawnExit(group, x, z) {
+            const exitGroup = new THREE.Group();
+            const frame = new THREE.Mesh(new THREE.TorusGeometry(1, 0.1, 16, 32), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+            exitGroup.add(frame);
+            const portal = new THREE.Mesh(new THREE.CircleGeometry(0.95, 32), new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.8 }));
+            exitGroup.add(portal);
+            const light = new THREE.PointLight(0xffff00, 2, 5);
+            exitGroup.add(light);
+
+            exitGroup.position.set(x, 1.7, z);
+            exitGroup.rotation.y = Math.random() * Math.PI;
+            exitGroup.name = "EXIT_PORTAL";
+            group.add(exitGroup);
+            exitSpawned = true;
+            showMessage("THE WAY OUT IS OPEN");
+        }
+
         function generateChunk(cx, cz) {
             const chunkKey = `${cx},${cz}`;
             if (chunks.has(chunkKey)) return;
@@ -278,21 +302,29 @@
             const boxGeo = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
             const innerCells = Math.floor(CHUNK_SIZE / CELL_SIZE);
 
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const canSpawnExit = gameActive && elapsed > 300 && !exitSpawned;
+
             for(let x = 0; x < innerCells; x++) {
                 for(let z = 0; z < innerCells; z++) {
                     const localPosX = (x * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
                     const localPosZ = (z * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
                     const worldX = (cx * CHUNK_SIZE) + localPosX;
                     const worldZ = (cz * CHUNK_SIZE) + localPosZ;
+                    
                     if (Math.abs(worldX) < 8 && Math.abs(worldZ) < 8) continue;
+                    
                     const seed = Math.abs(Math.sin(worldX * 0.1 + worldZ * 0.5) * 100);
                     const val = seed - Math.floor(seed);
+                    
                     if (val > 0.82) {
                         const wallMatInstance = new THREE.MeshLambertMaterial({ map: createCrackedWallTexture() });
                         const wall = new THREE.Mesh(boxGeo, wallMatInstance);
                         wall.position.set(localPosX, 2, localPosZ);
                         chunkGroup.add(wall);
-                    } else if (val < 0.005) { // REDUCED WATER RARITY FROM 0.02 TO 0.005
+                    } else if (val < 0.01 && canSpawnExit) {
+                        spawnExit(chunkGroup, localPosX, localPosZ);
+                    } else if (val < 0.005) { 
                         spawnAlmondWater(chunkGroup, localPosX, localPosZ);
                     } else if (val > 0.4 && val < 0.43) {
                         spawnDecor(chunkGroup, localPosX, localPosZ);
@@ -338,9 +370,12 @@
             startBtn.addEventListener('click', () => { 
                 document.body.requestPointerLock();
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                startTime = Date.now();
+                gameActive = true;
             });
             document.addEventListener('pointerlockchange', () => {
                 inst.style.display = document.pointerLockElement === document.body ? 'none' : 'flex';
+                gameActive = document.pointerLockElement === document.body;
             });
             document.addEventListener('mousemove', (e) => {
                 if (document.pointerLockElement === document.body) {
@@ -365,22 +400,59 @@
             let minDist = 2.5;
             chunks.forEach(chunk => {
                 chunk.children.forEach(child => {
-                    if (child.name === "ALMOND_WATER") {
+                    if (child.name === "ALMOND_WATER" || child.name === "EXIT_PORTAL") {
                         const worldPos = new THREE.Vector3();
                         child.getWorldPosition(worldPos);
                         const dist = camera.position.distanceTo(worldPos);
                         if (dist < minDist) {
-                            prompt.style.display = 'block';
-                            if (keys.e) {
-                                sanity = Math.min(100, sanity + 35); // INCREASED BOOST TO 35
-                                chunk.remove(child);
-                                showMessage("DRANK ALMOND WATER");
-                                keys.e = false;
+                            if (child.name === "ALMOND_WATER") {
+                                prompt.innerText = "PRESS [E] TO TAKE ALMOND WATER";
+                                prompt.style.display = 'block';
+                                if (keys.e) {
+                                    sanity = Math.min(100, sanity + 35);
+                                    chunk.remove(child);
+                                    showMessage("DRANK ALMOND WATER");
+                                    keys.e = false;
+                                }
+                            } else if (child.name === "EXIT_PORTAL") {
+                                prompt.innerText = "NO-CLIP TO EXIT";
+                                prompt.style.display = 'block';
+                                // Teleport if close enough
+                                if (dist < 1.2) {
+                                    winGame();
+                                }
                             }
                         }
                     }
                 });
             });
+        }
+
+        function winGame() {
+            if (!gameActive) return;
+            gameActive = false;
+            
+            const fade = document.getElementById('fade-out');
+            fade.style.opacity = '1';
+            
+            if (audioCtx) {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(40, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 2);
+                gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 2);
+            }
+
+            // Perform the redirection after the fade
+            setTimeout(() => {
+                window.location.href = "https://solormenezes.github.io/Rod-Space/backrooms-level1";
+            }, 2000);
         }
 
         function showMessage(txt) {
@@ -466,7 +538,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            if (document.pointerLockElement === document.body) {
+            if (gameActive) {
                 const delta = clock.getDelta();
                 const moveSpeed = 5.0;
                 const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
