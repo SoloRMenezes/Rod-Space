@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backrooms: Level 1 - Habitable Zone</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #aaaaaa; text-shadow: 2px 2px 4px #000; pointer-events: none; user-select: none; z-index: 10; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.5); border-radius: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(0,0,0,0.5); }
+        
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.6) 100%); pointer-events: none; }
+        #vhs-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='); opacity: 0.07; pointer-events: none; animation: noise 0.2s infinite; }
+        #glitch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 100, 255, 0.1); mix-blend-mode: hard-light; display: none; pointer-events: none; z-index: 5; }
+        
+        @keyframes noise { 0% { transform: translate(0,0) } 10% { transform: translate(-1%,-0.5%) } 20% { transform: translate(0.5%,1%) } 100% { transform: translate(0,0) } }
+        
+        #instructions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 10, 0.98); color: #aaaaaa; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; z-index: 100; }
+        .bar-container { width: 200px; height: 10px; background: #222; margin-top: 5px; border: 1px solid #666; }
+        #sanity-bar { width: 100%; height: 100%; background: #00ccff; transition: width 0.3s; }
+        #footer { position: absolute; bottom: 20px; right: 20px; color: #333; font-size: 12px; }
+        #message { position: absolute; bottom: 15%; width: 100%; text-align: center; color: #00ccff; font-weight: bold; opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 2px #000; z-index: 10; }
+        #interaction-prompt { position: absolute; top: 60%; width: 100%; text-align: center; color: #fff; font-size: 14px; display: none; text-shadow: 1px 1px 2px #000; font-weight: bold; }
+        
+        .glitch-active { filter: contrast(1.8) brightness(0.8) saturate(0.5); }
+        button { background: #333; color: #00ccff; border: 1px solid #00ccff; padding: 15px 30px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: inherit; }
+        button:hover { background: #00ccff; color: #000; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div>LOCATION: LEVEL 1 (HABITABLE ZONE)</div>
+        <div>SANITY</div>
+        <div class="bar-container">
+            <div id="sanity-bar"></div>
+        </div>
+        <div id="timer" style="margin-top: 10px;">TIME ELAPSED: 00:00</div>
+        <div id="entity-status" style="color: #ff3300; display: none; font-weight: bold; margin-top: 5px;">THREAT DETECTED</div>
+    </div>
+
+    <div id="message">FOUND ALMOND WATER +35% SANITY</div>
+    <div id="interaction-prompt">PRESS [E] TO TAKE ALMOND WATER</div>
+    <div id="crosshair"></div>
+    <div id="overlay"></div>
+    <div id="vhs-effect"></div>
+    <div id="glitch-overlay"></div>
+
+    <div id="instructions">
+        <h1>THE BACKROOMS</h1>
+        <p style="color: #666;">Level 1: Concrete, darkness, and shifting walls.</p>
+        <p>Your sanity is slipping. Stay quiet. Stay hydrated.</p>
+        <p><strong>W, A, S, D</strong> to move | <strong>MOUSE</strong> to look</p>
+        <p><strong>E</strong> to interact with items</p>
+        <p style="color: #ff4444; margin-top: 20px;">Watch the shadows. They move when you don't.</p>
+        <button id="start-btn">DESCEND FURTHER</button>
+    </div>
+
+    <div id="footer">REC [•] </div>
+
+    <script>
+        let camera, scene, renderer, clock, audioCtx;
+        let keys = { w: false, a: false, s: false, d: false, e: false };
+        let velocity = new THREE.Vector3();
+        let pitch = 0, yaw = 0;
+        let sanity = 100;
+        let startTime = Date.now();
+        
+        let glitchTimer = 0;
+        let isGlitching = false;
+        let glitchIntensity = 0;
+
+        // Entity Logic
+        let entity = null;
+        let entityChasing = false;
+        let entityTimer = 0;
+        let lastScreech = 0;
+
+        const CHUNK_SIZE = 40; 
+        const RENDER_DISTANCE = 1; 
+        const CELL_SIZE = 8;
+        const chunks = new Map(); 
+        
+        let wallMat, floorMat, ceilMat, drawingMat, pipeMat;
+        let stepCounter = 0;
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050505);
+            scene.fog = new THREE.FogExp2(0x050505, 0.08);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+            camera.position.set(0, 1.7, 0); 
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            clock = new THREE.Clock();
+            
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+            scene.add(ambientLight);
+
+            // Flashlight effect
+            const pointLight = new THREE.PointLight(0xffffff, 0.9, 18);
+            camera.add(pointLight);
+            scene.add(camera);
+
+            floorMat = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#333') });
+            ceilMat = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#222') });
+            pipeMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.2 });
+            drawingMat = createDrawingMaterial();
+
+            updateProceduralWorld();
+            setupControls();
+            window.addEventListener('resize', onWindowResize, false);
+            animate();
+        }
+
+        function playScreech() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(40, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.0);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1.0);
+        }
+
+        function createDrawingMaterial() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,256,256);
+            ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+            ctx.lineWidth = 2;
+            ctx.strokeText("HELP", 50, 50);
+            ctx.beginPath();
+            ctx.arc(128, 128, 40, 0, Math.PI*2);
+            ctx.moveTo(100, 100); ctx.lineTo(150, 150);
+            ctx.stroke();
+            const tex = new THREE.CanvasTexture(canvas);
+            return new THREE.MeshBasicMaterial({ map: tex, transparent: true, polygonOffset: true, polygonOffsetFactor: -1 });
+        }
+
+        function createConcreteTexture(baseColor) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = baseColor;
+            ctx.fillRect(0, 0, 512, 512);
+            for(let i=0; i<3000; i++) {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.3})`;
+                ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2);
+            }
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            for(let i=0; i<10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(Math.random()*512, 0); ctx.lineTo(Math.random()*512, 512);
+                ctx.stroke();
+            }
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        }
+
+        function spawnEntity() {
+            if (entity) return;
+            const group = new THREE.Group();
+            const bodyGeo = new THREE.SphereGeometry(0.3, 8, 8);
+            const bodyMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            group.add(body);
+            
+            // Tentacle-like limbs for Level 1 entities
+            for(let i=0; i<6; i++) {
+                const limb = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 6), bodyMat);
+                limb.position.y = 0;
+                limb.rotation.z = (Math.random() * Math.PI);
+                limb.rotation.x = (Math.random() * Math.PI);
+                group.add(limb);
+            }
+
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 15;
+            group.position.set(camera.position.x + Math.cos(angle) * dist, 1.75, camera.position.z + Math.sin(angle) * dist);
+            scene.add(group);
+            entity = group;
+            entityChasing = true;
+            entityTimer = 12;
+            document.getElementById('entity-status').style.display = 'block';
+            playScreech();
+            showMessage("DISTURBANCE DETECTED");
+        }
+
+        function spawnDecor(group, x, z) {
+            const roll = Math.random();
+            if (roll > 0.8) {
+                // Vertical Iron Pipes
+                const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4), pipeMat);
+                pipe.position.set(x, 2, z);
+                group.add(pipe);
+            } else if (roll > 0.6) {
+                // Grime on floor
+                const stain = new THREE.Mesh(new THREE.CircleGeometry(1.5, 8), new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.5 }));
+                stain.rotation.x = -Math.PI/2;
+                stain.position.set(x, 0.01, z);
+                group.add(stain);
+            }
+        }
+
+        function generateChunk(cx, cz) {
+            const chunkKey = `${cx},${cz}`;
+            if (chunks.has(chunkKey)) return;
+
+            const chunkGroup = new THREE.Group();
+            chunkGroup.position.set(cx * CHUNK_SIZE, 0, cz * CHUNK_SIZE);
+
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            chunkGroup.add(floor);
+
+            const ceil = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), ceilMat);
+            ceil.rotation.x = Math.PI / 2; ceil.position.y = 4;
+            chunkGroup.add(ceil);
+
+            const boxGeo = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
+            const innerCells = Math.floor(CHUNK_SIZE / CELL_SIZE);
+
+            for(let x = 0; x < innerCells; x++) {
+                for(let z = 0; z < innerCells; z++) {
+                    const localPosX = (x * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
+                    const localPosZ = (z * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
+                    const worldX = (cx * CHUNK_SIZE) + localPosX;
+                    const worldZ = (cz * CHUNK_SIZE) + localPosZ;
+                    
+                    if (Math.abs(worldX) < 8 && Math.abs(worldZ) < 8) continue;
+                    
+                    const seed = Math.abs(Math.sin(worldX * 0.1 + worldZ * 0.5) * 100);
+                    const val = seed - Math.floor(seed);
+                    
+                    if (val > 0.85) {
+                        const wallMatInstance = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#444') });
+                        const wall = new THREE.Mesh(boxGeo, wallMatInstance);
+                        wall.position.set(localPosX, 2, localPosZ);
+                        chunkGroup.add(wall);
+                    } else if (val < 0.005) { 
+                        spawnAlmondWater(chunkGroup, localPosX, localPosZ);
+                    } else if (val > 0.3 && val < 0.35) {
+                        spawnDecor(chunkGroup, localPosX, localPosZ);
+                    }
+                }
+            }
+            scene.add(chunkGroup);
+            chunks.set(chunkKey, chunkGroup);
+        }
+
+        function spawnAlmondWater(group, x, z) {
+            const bottleGroup = new THREE.Group();
+            const bottle = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.08, 0.08, 0.4),
+                new THREE.MeshStandardMaterial({ color: 0x00ccff, emissive: 0x0066ff, emissiveIntensity: 1 })
+            );
+            bottleGroup.add(bottle);
+            bottleGroup.position.set(x, 0.2, z);
+            bottleGroup.name = "ALMOND_WATER";
+            group.add(bottleGroup);
+        }
+
+        function updateProceduralWorld() {
+            const pX = Math.floor(camera.position.x / CHUNK_SIZE);
+            const pZ = Math.floor(camera.position.z / CHUNK_SIZE);
+            for (let x = -RENDER_DISTANCE; x <= RENDER_DISTANCE; x++) {
+                for (let z = -RENDER_DISTANCE; z <= RENDER_DISTANCE; z++) {
+                    generateChunk(pX + x, pZ + z);
+                }
+            }
+            for (const [key, chunk] of chunks) {
+                const [cx, cz] = key.split(',').map(Number);
+                if (Math.abs(cx - pX) > RENDER_DISTANCE + 1 || Math.abs(cz - pZ) > RENDER_DISTANCE + 1) {
+                    scene.remove(chunk);
+                    chunks.delete(key);
+                }
+            }
+        }
+
+        function setupControls() {
+            const inst = document.getElementById('instructions');
+            const startBtn = document.getElementById('start-btn');
+            startBtn.addEventListener('click', () => { 
+                document.body.requestPointerLock();
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            });
+            document.addEventListener('pointerlockchange', () => {
+                inst.style.display = document.pointerLockElement === document.body ? 'none' : 'flex';
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement === document.body) {
+                    yaw -= e.movementX * 0.0025;
+                    pitch -= e.movementY * 0.0025;
+                    pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                const key = e.key.toLowerCase();
+                if (keys.hasOwnProperty(key)) keys[key] = true;
+            });
+            document.addEventListener('keyup', (e) => {
+                const key = e.key.toLowerCase();
+                if (keys.hasOwnProperty(key)) keys[key] = false;
+            });
+        }
+
+        function handleInteractions() {
+            const prompt = document.getElementById('interaction-prompt');
+            prompt.style.display = 'none';
+            let minDist = 2.5;
+            chunks.forEach(chunk => {
+                chunk.children.forEach(child => {
+                    if (child.name === "ALMOND_WATER") {
+                        const worldPos = new THREE.Vector3();
+                        child.getWorldPosition(worldPos);
+                        const dist = camera.position.distanceTo(worldPos);
+                        if (dist < minDist) {
+                            prompt.style.display = 'block';
+                            if (keys.e) {
+                                sanity = Math.min(100, sanity + 35); 
+                                chunk.remove(child);
+                                showMessage("DRANK PURIFIED ALMOND WATER");
+                                keys.e = false;
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        function showMessage(txt) {
+            const msg = document.getElementById('message');
+            msg.innerText = txt; msg.style.opacity = '1';
+            setTimeout(() => { msg.style.opacity = '0'; }, 3000);
+        }
+
+        function checkCollision(pos) {
+            const r = 0.4;
+            for (const chunk of chunks.values()) {
+                for (const obj of chunk.children) {
+                    if (obj.geometry && obj.geometry.type === "BoxGeometry" && obj.position.y === 2) {
+                        const wx = chunk.position.x + obj.position.x;
+                        const wz = chunk.position.z + obj.position.z;
+                        if (pos.x > wx - CELL_SIZE/2 - r && pos.x < wx + CELL_SIZE/2 + r &&
+                            pos.z > wz - CELL_SIZE/2 - r && pos.z < wz + CELL_SIZE/2 + r) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function handleGlitches(delta) {
+            const overlay = document.getElementById('glitch-overlay');
+            if (!isGlitching) {
+                const chance = 0.002 + (1 - (sanity / 100)) * 0.05;
+                if (Math.random() < chance) {
+                    isGlitching = true;
+                    glitchTimer = 0.15;
+                    document.body.classList.add('glitch-active');
+                    overlay.style.display = 'block';
+                }
+            } else {
+                glitchTimer -= delta;
+                if (glitchTimer <= 0) {
+                    isGlitching = false;
+                    document.body.classList.remove('glitch-active');
+                    overlay.style.display = 'none';
+                }
+            }
+        }
+
+        function handleEntity(delta) {
+            if (sanity < 40 && !entityChasing && Math.random() < 0.002) {
+                spawnEntity();
+            }
+            if (entity && entityChasing) {
+                entityTimer -= delta;
+                const dir = camera.position.clone().sub(entity.position).normalize();
+                const speed = 5.5; 
+                entity.position.add(dir.multiplyScalar(speed * delta));
+                entity.lookAt(camera.position.x, 1.75, camera.position.z);
+                
+                const dist = entity.position.distanceTo(camera.position);
+                if (Date.now() - lastScreech > 2000) {
+                    playScreech();
+                    lastScreech = Date.now();
+                }
+                if (dist < 1.3) {
+                    sanity = Math.max(0, sanity - 20);
+                    entityChasing = false;
+                    scene.remove(entity);
+                    entity = null;
+                    document.getElementById('entity-status').style.display = 'none';
+                    showMessage("EXPOSURE CRITICAL");
+                    isGlitching = true; glitchTimer = 1.0;
+                } else if (entityTimer <= 0) {
+                    entityChasing = false;
+                    scene.remove(entity);
+                    entity = null;
+                    document.getElementById('entity-status').style.display = 'none';
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (document.pointerLockElement === document.body) {
+                const delta = clock.getDelta();
+                const moveSpeed = 5.0;
+                const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+                const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+                forward.y = 0; right.y = 0;
+                forward.normalize(); right.normalize();
+                const moveDir = new THREE.Vector3(0, 0, 0);
+                if (keys.w) moveDir.add(forward);
+                if (keys.s) moveDir.sub(forward);
+                if (keys.a) moveDir.sub(right);
+                if (keys.d) moveDir.add(right);
+                if (moveDir.length() > 0) {
+                    moveDir.normalize().multiplyScalar(moveSpeed * delta);
+                    const nextPos = camera.position.clone().add(moveDir);
+                    if (!checkCollision(nextPos)) {
+                        camera.position.copy(nextPos);
+                    }
+                    stepCounter += delta * 11;
+                    camera.position.y = 1.7 + Math.sin(stepCounter) * 0.06;
+                } else {
+                    camera.position.y = 1.7 + Math.sin(Date.now() * 0.001) * 0.015;
+                }
+                camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+                handleEntity(delta);
+                handleGlitches(delta);
+                updateProceduralWorld();
+                handleInteractions();
+                
+                // Lights flicker periodically in Level 1
+                if (Math.random() < 0.01) {
+                    camera.children[0].intensity = Math.random() > 0.5 ? 0.9 : 0.2;
+                } else {
+                    camera.children[0].intensity = 0.9;
+                }
+
+                sanity -= 0.01; 
+                document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timer').innerText = `TIME: ${Math.floor(elapsed/60).toString().padStart(2, '0')}:${(elapsed%60).toString().padStart(2, '0')}`;
+            }
+            renderer.render(scene, camera);
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
