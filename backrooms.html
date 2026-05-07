@@ -9,15 +9,23 @@
         body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
         #ui { position: absolute; top: 20px; left: 20px; color: #ffff00; text-shadow: 2px 2px 4px #000; pointer-events: none; user-select: none; z-index: 10; }
         #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.5); border-radius: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(0,0,0,0.5); }
+        
+        /* Effects Layers */
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.4) 100%); pointer-events: none; }
         #vhs-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='); opacity: 0.05; pointer-events: none; animation: noise 0.2s infinite; }
+        #glitch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 255, 255, 0.1); mix-blend-mode: color-dodge; display: none; pointer-events: none; z-index: 5; }
+        
         @keyframes noise { 0% { transform: translate(0,0) } 10% { transform: translate(-1%,-1%) } 20% { transform: translate(1%,1%) } 100% { transform: translate(0,0) } }
+        
         #instructions { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.9); color: #ffff00; padding: 40px; text-align: center; border: 2px solid #ffff00; cursor: pointer; z-index: 20; }
         .bar-container { width: 200px; height: 10px; background: #333; margin-top: 5px; border: 1px solid #ffff00; }
         #sanity-bar { width: 100%; height: 100%; background: #ffff00; transition: width 0.3s; }
         #footer { position: absolute; bottom: 20px; right: 20px; color: #444; font-size: 12px; }
         #message { position: absolute; bottom: 15%; width: 100%; text-align: center; color: #ffff00; font-weight: bold; opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 2px #000; }
         #interaction-prompt { position: absolute; top: 60%; width: 100%; text-align: center; color: #fff; font-size: 14px; display: none; text-shadow: 1px 1px 2px #000; font-weight: bold; }
+        
+        /* Chromatic Aberration Simulation */
+        .glitch-active { filter: contrast(1.2) hue-rotate(10deg); }
     </style>
 </head>
 <body>
@@ -36,6 +44,7 @@
     <div id="crosshair"></div>
     <div id="overlay"></div>
     <div id="vhs-effect"></div>
+    <div id="glitch-overlay"></div>
 
     <div id="instructions">
         <h1>THE BACKROOMS</h1>
@@ -57,6 +66,11 @@
         let sanity = 100;
         let startTime = Date.now();
         
+        // Glitch variables
+        let glitchTimer = 0;
+        let isGlitching = false;
+        let glitchIntensity = 0;
+
         const CHUNK_SIZE = 30; 
         const RENDER_DISTANCE = 1; 
         const CELL_SIZE = 6;
@@ -64,7 +78,6 @@
         
         let wallTex, floorTex, ceilTex, wallMat, floorMat, ceilMat;
         let stepCounter = 0;
-        let raycaster = new THREE.Raycaster();
 
         function init() {
             scene = new THREE.Scene();
@@ -84,10 +97,11 @@
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
             scene.add(ambientLight);
 
-            // Textures
+            // Create Textures
             wallTex = createOldBrickTexture();
             floorTex = createFloorTexture();
             ceilTex = createCeilingTexture();
+            
             wallMat = new THREE.MeshLambertMaterial({ map: wallTex });
             floorMat = new THREE.MeshLambertMaterial({ map: floorTex });
             ceilMat = new THREE.MeshLambertMaterial({ map: ceilTex });
@@ -107,7 +121,6 @@
             ctx.fillStyle = '#c5b085';
             ctx.fillRect(0, 0, 512, 512);
 
-            // Draw Bricks
             const rows = 12;
             const cols = 6;
             const rowH = 512 / rows;
@@ -116,51 +129,47 @@
             for (let y = 0; y < rows; y++) {
                 for (let x = 0; x < cols; x++) {
                     const offset = (y % 2 === 0) ? 0 : colW / 2;
-                    
-                    // Randomize brick color slightly for "old" look
-                    const tint = Math.random() * 20;
+                    const tint = Math.random() * 30;
                     ctx.fillStyle = `rgb(${197-tint}, ${176-tint}, ${133-tint})`;
-                    
-                    // Brick rectangle
                     ctx.fillRect(x * colW + offset + 2, y * rowH + 2, colW - 4, rowH - 4);
 
-                    // Add some grime/noise to each brick
-                    for(let i=0; i<10; i++) {
-                        ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.1})`;
-                        ctx.fillRect(x * colW + offset + Math.random()*colW, y * rowH + Math.random()*rowH, 4, 4);
+                    // Local grime/noise
+                    for(let i=0; i<8; i++) {
+                        ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.15})`;
+                        ctx.fillRect(x * colW + offset + Math.random()*colW, y * rowH + Math.random()*rowH, 3, 3);
                     }
                 }
             }
 
-            // Mortar lines (darker)
-            ctx.strokeStyle = 'rgba(60, 50, 30, 0.4)';
-            ctx.lineWidth = 2;
-            for (let y = 0; y < rows; y++) {
+            // Mortar
+            ctx.strokeStyle = 'rgba(60, 50, 30, 0.3)';
+            ctx.lineWidth = 3;
+            for (let y = 0; y <= rows; y++) {
                 ctx.beginPath();
                 ctx.moveTo(0, y * rowH);
                 ctx.lineTo(512, y * rowH);
                 ctx.stroke();
             }
 
-            // Draw Cracks
-            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            // Cracks
+            ctx.strokeStyle = 'rgba(0,0,0,0.4)';
             ctx.lineWidth = 1;
-            for(let c = 0; c < 15; c++) {
+            for(let c = 0; c < 20; c++) {
                 let curX = Math.random() * 512;
                 let curY = Math.random() * 512;
                 ctx.beginPath();
                 ctx.moveTo(curX, curY);
-                for(let seg = 0; seg < 5; seg++) {
-                    curX += (Math.random() - 0.5) * 40;
-                    curY += (Math.random() - 0.5) * 40;
+                for(let seg = 0; seg < 6; seg++) {
+                    curX += (Math.random() - 0.5) * 50;
+                    curY += (Math.random() - 0.5) * 50;
                     ctx.lineTo(curX, curY);
                 }
                 ctx.stroke();
             }
 
-            // General dirt overlay
-            for(let i=0; i<2000; i++) {
-                ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.05})`;
+            // General dirt
+            for(let i=0; i<3000; i++) {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.08})`;
                 ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2);
             }
 
@@ -175,8 +184,7 @@
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#d1d1d1'; ctx.fillRect(0, 0, 256, 256);
             ctx.strokeStyle = '#999'; ctx.strokeRect(5, 5, 246, 246);
-            // Grime
-            for(let i=0; i<200; i++) {
+            for(let i=0; i<300; i++) {
                 ctx.fillStyle = `rgba(0,0,0,0.05)`;
                 ctx.fillRect(Math.random()*256, Math.random()*256, 3, 3);
             }
@@ -217,7 +225,6 @@
                 for(let z = 0; z < innerCells; z++) {
                     const localPosX = (x * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
                     const localPosZ = (z * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
-                    
                     const worldX = (cx * CHUNK_SIZE) + localPosX;
                     const worldZ = (cz * CHUNK_SIZE) + localPosZ;
                     
@@ -318,9 +325,8 @@
             const prompt = document.getElementById('interaction-prompt');
             prompt.style.display = 'none';
 
-            // Find all potential bottles
             let nearestBottle = null;
-            let minDist = 3.0; // Max interaction distance
+            let minDist = 3.0;
 
             chunks.forEach(chunk => {
                 chunk.children.forEach(child => {
@@ -330,13 +336,11 @@
                         const dist = camera.position.distanceTo(worldPos);
                         
                         if (dist < minDist) {
-                            // Check if looking at it
                             const toItem = worldPos.clone().sub(camera.position).normalize();
                             const lookDir = new THREE.Vector3();
                             camera.getWorldDirection(lookDir);
                             const dot = lookDir.dot(toItem);
-                            
-                            if (dot > 0.9) { // Field of view check
+                            if (dot > 0.9) { 
                                 nearestBottle = { child, chunk };
                                 minDist = dist;
                             }
@@ -351,11 +355,10 @@
                     sanity = Math.min(100, sanity + 20);
                     nearestBottle.chunk.remove(nearestBottle.child);
                     showMessage("FOUND ALMOND WATER +20% SANITY");
-                    interactKey = false; // Prevent multi-triggers
+                    interactKey = false;
                 }
             }
 
-            // Simple spin animation for items
             chunks.forEach(chunk => {
                 chunk.children.forEach(child => {
                     if (child.name === "ALMOND_WATER") child.rotation.y += 0.02;
@@ -385,9 +388,7 @@
                         const minZ = worldZ - CELL_SIZE/2 - playerRadius;
                         const maxZ = worldZ + CELL_SIZE/2 + playerRadius;
 
-                        if (pos.x > minX && pos.x < maxX && pos.z > minZ && pos.z < maxZ) {
-                            return true;
-                        }
+                        if (pos.x > minX && pos.x < maxX && pos.z > minZ && pos.z < maxZ) return true;
                     }
                 }
             }
@@ -401,7 +402,7 @@
         }
 
         function updateUI() {
-            sanity -= 0.01; 
+            sanity -= 0.008; 
             if (sanity < 0) sanity = 0;
             document.getElementById('sanity-bar').style.width = sanity + '%';
             document.getElementById('ui').style.color = sanity < 30 ? '#ff0000' : '#ffff00';
@@ -409,6 +410,39 @@
             const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
             const secs = (elapsed % 60).toString().padStart(2, '0');
             document.getElementById('timer').innerText = `TIME ELAPSED: ${mins}:${secs}`;
+        }
+
+        function handleGlitches(delta) {
+            const glitchOverlay = document.getElementById('glitch-overlay');
+            
+            if (!isGlitching) {
+                // Random chance to start glitching (higher as sanity drops)
+                const triggerChance = 0.002 + (1 - (sanity / 100)) * 0.01;
+                if (Math.random() < triggerChance) {
+                    isGlitching = true;
+                    glitchTimer = 0.1 + Math.random() * 0.4;
+                    glitchIntensity = 0.05 + (1 - (sanity / 100)) * 0.15;
+                    document.body.classList.add('glitch-active');
+                    glitchOverlay.style.display = 'block';
+                }
+            } else {
+                glitchTimer -= delta;
+                if (glitchTimer <= 0) {
+                    isGlitching = false;
+                    document.body.classList.remove('glitch-active');
+                    glitchOverlay.style.display = 'none';
+                    // Reset camera offsets
+                } else {
+                    // Apply camera shake/jitter
+                    camera.position.x += (Math.random() - 0.5) * glitchIntensity;
+                    camera.position.y += (Math.random() - 0.5) * glitchIntensity;
+                    
+                    // Flash overlay color randomly
+                    if (Math.random() > 0.8) {
+                        glitchOverlay.style.background = `rgba(${Math.random()*255}, ${Math.random()*255}, 255, 0.15)`;
+                    }
+                }
+            }
         }
 
         function animate() {
@@ -438,13 +472,17 @@
                 attemptZ.z += walkZ;
                 if (!checkCollision(attemptZ)) camera.position.z = attemptZ.z;
 
+                // View Bobbing
                 if (moveForward || moveBackward || moveLeft || moveRight) {
                     stepCounter += delta * 10;
                     camera.position.y = 1.7 + Math.sin(stepCounter) * 0.05;
+                } else {
+                    camera.position.y = 1.7 + Math.sin(Date.now() * 0.001) * 0.01;
                 }
 
                 camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
                 
+                handleGlitches(delta);
                 updateProceduralWorld();
                 handleInteractions();
                 updateUI();
