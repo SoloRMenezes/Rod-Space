@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backrooms: Level 10 - The Verdant Field</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
+        
+        /* UI/Stat-box removed as requested */
+        
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 40%, rgba(255, 255, 255, 0.1) 100%); pointer-events: none; z-index: 5; }
+        
+        #vhs-effect {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.005), rgba(0, 255, 0, 0.005), rgba(0, 0, 255, 0.005));
+            background-size: 100% 4px, 4px 100%; pointer-events: none; z-index: 6; opacity: 0.3;
+        }
+
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 4px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 50%; z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="crosshair"></div>
+    <div id="overlay"></div>
+    <div id="vhs-effect"></div>
+
+    <script>
+        let scene, camera, renderer, clock;
+        let wheatInstances1, wheatInstances2, wheatMaterial;
+        let clouds = [];
+        let worldObjects = []; 
+        
+        const STALK_COUNT = 120000; 
+        const FIELD_SIZE = 350;
+        const STALK_HEIGHT = 1.4; 
+        const CLOUD_COUNT = 60;
+        const TREE_COUNT = 45;
+        
+        let moveSpeed = 5.2;
+        let yaw = 0, pitch = 0;
+        const keys = { w: false, a: false, s: false, d: false };
+        let stepCounter = 0;
+
+        function createWheatTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createLinearGradient(0, 128, 0, 0);
+            grad.addColorStop(0, '#2a2410'); 
+            grad.addColorStop(0.3, '#9d842c'); 
+            grad.addColorStop(0.7, '#d4bc6a'); 
+            grad.addColorStop(1, '#fdf4d5'); 
+            ctx.fillStyle = grad;
+            ctx.fillRect(24, 40, 16, 88); 
+            ctx.beginPath();
+            ctx.ellipse(32, 35, 20, 30, 0, 0, Math.PI * 2);
+            ctx.fill();
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createCloudTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const drawCircle = (x, y, r) => {
+                const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+                g.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+                g.addColorStop(0.8, 'rgba(255, 255, 255, 0.4)');
+                g.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            };
+            drawCircle(256, 256, 120);
+            drawCircle(180, 280, 100);
+            drawCircle(330, 280, 100);
+            drawCircle(256, 320, 80);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            
+            const topSky = new THREE.Color(0x3498db); 
+            const horizonSky = new THREE.Color(0xdff9fb);
+            
+            scene.background = topSky;
+            scene.fog = new THREE.Fog(horizonSky, 50, FIELD_SIZE * 0.6);
+
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 1.8, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            document.body.appendChild(renderer.domElement);
+
+            clock = new THREE.Clock();
+
+            // Sky Shader for gradient
+            const skyGeo = new THREE.SphereGeometry(1000, 32, 32);
+            const skyMat = new THREE.ShaderMaterial({
+                uniforms: {
+                    topColor: { value: topSky },
+                    bottomColor: { value: horizonSky },
+                    offset: { value: 0 },
+                    exponent: { value: 0.8 }
+                },
+                vertexShader: `
+                    varying vec3 vWorldPosition;
+                    void main() {
+                        vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
+                        vWorldPosition = worldPosition.xyz;
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+                    }
+                `,
+                fragmentShader: `
+                    uniform vec3 topColor;
+                    uniform vec3 bottomColor;
+                    uniform float offset;
+                    uniform float exponent;
+                    varying vec3 vWorldPosition;
+                    void main() {
+                        float h = normalize( vWorldPosition + offset ).y;
+                        gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h , 0.0), exponent ), 0.0 ) ), 1.0 );
+                    }
+                `,
+                side: THREE.BackSide
+            });
+            scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+            // Lighting
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            sunLight.position.set(-100, 200, 100);
+            scene.add(sunLight);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+
+            // Ground
+            const groundGeo = new THREE.PlaneGeometry(FIELD_SIZE * 4, FIELD_SIZE * 4);
+            const groundMat = new THREE.MeshLambertMaterial({ color: 0x3d2b1f });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            scene.add(ground);
+
+            // Wheat Instancing
+            const pGeo = new THREE.PlaneGeometry(0.6, STALK_HEIGHT, 1, 3);
+            pGeo.translate(0, STALK_HEIGHT / 2, 0);
+            const pGeo2 = pGeo.clone().rotateY(Math.PI / 2);
+
+            wheatMaterial = new THREE.MeshLambertMaterial({
+                map: createWheatTexture(),
+                alphaTest: 0.5,
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+
+            wheatMaterial.onBeforeCompile = (shader) => {
+                shader.uniforms.uTime = { value: 0 };
+                shader.vertexShader = `
+                    uniform float uTime;
+                    ${shader.vertexShader}
+                `.replace(
+                    `#include <begin_vertex>`,
+                    `
+                    #include <begin_vertex>
+                    vec4 worldPos = instanceMatrix * vec4(position, 1.0);
+                    float wave = sin(uTime * 1.5 + worldPos.x * 0.2 + worldPos.z * 0.15) * 0.25;
+                    float influence = uv.y;
+                    transformed.x += wave * influence;
+                    `
+                );
+                wheatMaterial.userData.shader = shader;
+            };
+
+            wheatInstances1 = new THREE.InstancedMesh(pGeo, wheatMaterial, STALK_COUNT);
+            wheatInstances2 = new THREE.InstancedMesh(pGeo2, wheatMaterial, STALK_COUNT);
+
+            const dummy = new THREE.Object3D();
+            for (let i = 0; i < STALK_COUNT; i++) {
+                const rx = (Math.random() - 0.5) * FIELD_SIZE;
+                const rz = (Math.random() - 0.5) * FIELD_SIZE;
+                dummy.position.set(rx, -0.05, rz);
+                dummy.rotation.y = Math.random() * Math.PI;
+                const s = 0.9 + Math.random() * 0.4;
+                dummy.scale.set(s, s, s);
+                dummy.updateMatrix();
+                wheatInstances1.setMatrixAt(i, dummy.matrix);
+                wheatInstances2.setMatrixAt(i, dummy.matrix);
+            }
+            scene.add(wheatInstances1);
+            scene.add(wheatInstances2);
+
+            // Trees
+            function createTree(x, z) {
+                const tree = new THREE.Group();
+                const trunk = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.3, 0.4, 2),
+                    new THREE.MeshLambertMaterial({ color: 0x4d3319 })
+                );
+                trunk.position.y = 1;
+                tree.add(trunk);
+
+                const leaves = new THREE.Mesh(
+                    new THREE.SphereGeometry(3.5, 8, 8),
+                    new THREE.MeshLambertMaterial({ color: 0x2d5a27 })
+                );
+                leaves.position.y = 5;
+                leaves.scale.y = 1.2;
+                tree.add(leaves);
+
+                tree.position.set(x, 0, z);
+                scene.add(tree);
+                worldObjects.push(tree);
+            }
+
+            for(let i=0; i<TREE_COUNT; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 140 + Math.random() * 20;
+                createTree(Math.cos(angle) * dist, Math.sin(angle) * dist);
+            }
+
+            // Red Barns
+            function createBarn(x, z) {
+                const barn = new THREE.Group();
+                const base = new THREE.Mesh(
+                    new THREE.BoxGeometry(10, 8, 14),
+                    new THREE.MeshLambertMaterial({ color: 0x9e1a1a })
+                );
+                base.position.y = 4;
+                barn.add(base);
+                const roof = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0, 7.5, 6, 4),
+                    new THREE.MeshLambertMaterial({ color: 0x333333 })
+                );
+                roof.rotation.y = Math.PI/4;
+                roof.scale.z = 1.3;
+                roof.position.y = 10.5;
+                barn.add(roof);
+                
+                barn.position.set(x, 0, z);
+                scene.add(barn);
+                worldObjects.push(barn);
+            }
+            createBarn(60, -80);
+            createBarn(-120, 100);
+
+            // Cloud Sprites
+            const cloudTex = createCloudTexture();
+            for(let i=0; i < CLOUD_COUNT; i++) {
+                const cloudMat = new THREE.SpriteMaterial({ 
+                    map: cloudTex, 
+                    transparent: true, 
+                    opacity: 0.7 + Math.random() * 0.3,
+                    depthWrite: false
+                });
+                const sprite = new THREE.Sprite(cloudMat);
+                const x = (Math.random() - 0.5) * FIELD_SIZE * 5;
+                const y = 90 + Math.random() * 50;
+                const z = (Math.random() - 0.5) * FIELD_SIZE * 5;
+                sprite.position.set(x, y, z);
+                const scale = 50 + Math.random() * 80;
+                sprite.scale.set(scale * 1.6, scale, 1);
+                scene.add(sprite);
+                clouds.push({ mesh: sprite, speed: 0.3 + Math.random() * 0.5 });
+            }
+
+            // Controls Setup
+            document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
+            document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+            document.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement) {
+                    yaw -= e.movementX * 0.0018;
+                    pitch -= e.movementY * 0.0018;
+                    pitch = Math.max(-Math.PI/2.2, Math.min(Math.PI/2.2, pitch));
+                }
+            });
+            document.body.addEventListener('click', () => {
+                if (!document.pointerLockElement) document.body.requestPointerLock();
+            });
+
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const time = clock.elapsedTime;
+
+            if (wheatMaterial.userData.shader) {
+                wheatMaterial.userData.shader.uniforms.uTime.value = time;
+            }
+
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            forward.y = 0; forward.normalize();
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+            right.y = 0; right.normalize();
+
+            const moveDir = new THREE.Vector3();
+            if (keys.w) moveDir.add(forward);
+            if (keys.s) moveDir.sub(forward);
+            if (keys.a) moveDir.sub(right);
+            if (keys.d) moveDir.add(right);
+
+            if (moveDir.length() > 0) {
+                camera.position.add(moveDir.normalize().multiplyScalar(moveSpeed * delta));
+                stepCounter += delta * 8;
+                camera.position.y = 1.8 + Math.sin(stepCounter) * 0.06; 
+            }
+
+            // Infinity Loop Logic
+            const limit = FIELD_SIZE / 2;
+            const wrap = (obj, l) => {
+                const dx = obj.position.x - camera.position.x;
+                const dz = obj.position.z - camera.position.z;
+                if (dx > l) obj.position.x -= FIELD_SIZE;
+                if (dx < -l) obj.position.x += FIELD_SIZE;
+                if (dz > l) obj.position.z -= FIELD_SIZE;
+                if (dz < -l) obj.position.z += FIELD_SIZE;
+            };
+
+            clouds.forEach(c => {
+                c.mesh.position.x += c.speed * delta;
+                wrap(c.mesh, FIELD_SIZE * 2.5);
+            });
+
+            worldObjects.forEach(obj => wrap(obj, limit + 50));
+
+            camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+            renderer.render(scene, camera);
+        }
+
+            window.onload = init;
+    </script>
+</body>
+</html>
