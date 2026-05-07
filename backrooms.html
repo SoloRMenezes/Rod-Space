@@ -566,8 +566,16 @@
                 handleGlitches(delta);
                 updateProceduralWorld();
                 handleInteractions();
-                sanity -= 0.008; 
-                document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
+                sanity -= 0.008;
+if (sanity <= 0) {
+    gameActive = false;
+    showMessage("YOUR MIND HAS SHATTERED...");
+    document.exitPointerLock();
+    setTimeout(() => window.location.reload(), 2500);
+    return;
+}
+document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
+
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 document.getElementById('timer').innerText = `TIME: ${Math.floor(elapsed/60).toString().padStart(2, '0')}:${(elapsed%60).toString().padStart(2, '0')}`;
             }
