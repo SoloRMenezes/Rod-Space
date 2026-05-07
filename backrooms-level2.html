@@ -190,19 +190,16 @@
                 const numPipes = 2 + Math.floor(Math.random() * 3);
                 const baseY = 0.5 + Math.random() * 1.5;
                 
-                // Add vertical support beam (box from top to bottom)
                 const beamGeo = new THREE.BoxGeometry(0.3, 3.5, 0.3);
                 const beam = new THREE.Mesh(beamGeo, junctionMat);
                 beam.position.set(sideX, 1.75, 0);
                 cluster.add(beam);
 
-                // Add a "junction box" connecting the horizontal pipes to the beam
                 const boxGeo = new THREE.BoxGeometry(0.45, 1.2, 0.45);
                 const junctionBox = new THREE.Mesh(boxGeo, junctionMat);
                 junctionBox.position.set(sideX, baseY + 0.3, 0);
                 cluster.add(junctionBox);
 
-                // Horizontal pipes
                 for(let i = 0; i < numPipes; i++) {
                     const radius = 0.08 + Math.random() * 0.1;
                     const pipeGeo = new THREE.CylinderGeometry(radius, radius, CHUNK_SIZE, 12);
@@ -251,6 +248,7 @@
             }
 
             const elapsed = (Date.now() - startTime) / 1000;
+            // Spawn exit after 5 minutes of gameplay and distance
             if (elapsed > 300 && cz < -10) { 
                 const exitWall = new THREE.Mesh(new THREE.BoxGeometry(5.8, 3.3, 0.5), new THREE.MeshBasicMaterial({ color: 0x000000 }));
                 exitWall.position.set(0, 1.7, -CHUNK_SIZE/2);
@@ -368,7 +366,10 @@
                         if (camera.position.distanceTo(wp) < 2.0 && !exitTriggered) {
                             exitTriggered = true;
                             document.getElementById('fade-out').style.opacity = '1';
-                            setTimeout(() => location.reload(), 2000);
+                            // Redirect to Level 3 after the fade animation
+                            setTimeout(() => {
+                                window.location.href = "https://solormenezes.github.io/Rod-Space/backrooms-level3.html";
+                            }, 2000);
                         }
                     }
                 });
