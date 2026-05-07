@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backrooms: Level 0</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #ffff00; text-shadow: 2px 2px 4px #000; pointer-events: none; user-select: none; z-index: 10; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.5); border-radius: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(0,0,0,0.5); }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.4) 100%); pointer-events: none; }
+        #vhs-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='); opacity: 0.05; pointer-events: none; animation: noise 0.2s infinite; }
+        @keyframes noise { 0% { transform: translate(0,0) } 10% { transform: translate(-1%,-1%) } 20% { transform: translate(1%,1%) } 100% { transform: translate(0,0) } }
+        #instructions { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.9); color: #ffff00; padding: 40px; text-align: center; border: 2px solid #ffff00; cursor: pointer; z-index: 20; }
+        .bar-container { width: 200px; height: 10px; background: #333; margin-top: 5px; border: 1px solid #ffff00; }
+        #sanity-bar { width: 100%; height: 100%; background: #ffff00; transition: width 0.3s; }
+        #footer { position: absolute; bottom: 20px; right: 20px; color: #444; font-size: 12px; }
+        #message { position: absolute; bottom: 15%; width: 100%; text-align: center; color: #ffff00; font-weight: bold; opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 2px #000; }
+        #interaction-prompt { position: absolute; top: 60%; width: 100%; text-align: center; color: #fff; font-size: 14px; display: none; text-shadow: 1px 1px 2px #000; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <div>LOCATION: LEVEL 0</div>
+        <div>SANITY</div>
+        <div class="bar-container">
+            <div id="sanity-bar"></div>
+        </div>
+        <div id="timer" style="margin-top: 10px;">TIME ELAPSED: 00:00</div>
+    </div>
+
+    <div id="message">FOUND ALMOND WATER +20% SANITY</div>
+    <div id="interaction-prompt">PRESS [E] TO TAKE ALMOND WATER</div>
+    <div id="crosshair"></div>
+    <div id="overlay"></div>
+    <div id="vhs-effect"></div>
+
+    <div id="instructions">
+        <h1>THE BACKROOMS</h1>
+        <p>Find <strong>Almond Water</strong> to restore your sanity.</p>
+        <p><strong>WASD</strong> to move | <strong>MOUSE</strong> to look</p>
+        <p><strong>E</strong> to interact with items</p>
+        <button style="background: #ffff00; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer;">ENTER</button>
+    </div>
+
+    <div id="footer">REC [•] </div>
+
+    <script>
+        let camera, scene, renderer, clock;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let interactKey = false;
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let pitch = 0, yaw = 0;
+        let sanity = 100;
+        let startTime = Date.now();
+        
+        const CHUNK_SIZE = 30; 
+        const RENDER_DISTANCE = 1; 
+        const CELL_SIZE = 6;
+        const chunks = new Map(); 
+        
+        let wallTex, floorTex, ceilTex, wallMat, floorMat, ceilMat;
+        let stepCounter = 0;
+        let raycaster = new THREE.Raycaster();
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a00);
+            scene.fog = new THREE.FogExp2(0x1a1a00, 0.15);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+            camera.position.set(0, 1.7, 0); 
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            clock = new THREE.Clock();
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+
+            // Textures
+            wallTex = createOldBrickTexture();
+            floorTex = createFloorTexture();
+            ceilTex = createCeilingTexture();
+            wallMat = new THREE.MeshLambertMaterial({ map: wallTex });
+            floorMat = new THREE.MeshLambertMaterial({ map: floorTex });
+            ceilMat = new THREE.MeshLambertMaterial({ map: ceilTex });
+
+            updateProceduralWorld();
+            setupControls();
+            window.addEventListener('resize', onWindowResize, false);
+            animate();
+        }
+
+        function createOldBrickTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            
+            // Base yellowish/beige color
+            ctx.fillStyle = '#c5b085';
+            ctx.fillRect(0, 0, 512, 512);
+
+            // Draw Bricks
+            const rows = 12;
+            const cols = 6;
+            const rowH = 512 / rows;
+            const colW = 512 / cols;
+
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const offset = (y % 2 === 0) ? 0 : colW / 2;
+                    
+                    // Randomize brick color slightly for "old" look
+                    const tint = Math.random() * 20;
+                    ctx.fillStyle = `rgb(${197-tint}, ${176-tint}, ${133-tint})`;
+                    
+                    // Brick rectangle
+                    ctx.fillRect(x * colW + offset + 2, y * rowH + 2, colW - 4, rowH - 4);
+
+                    // Add some grime/noise to each brick
+                    for(let i=0; i<10; i++) {
+                        ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.1})`;
+                        ctx.fillRect(x * colW + offset + Math.random()*colW, y * rowH + Math.random()*rowH, 4, 4);
+                    }
+                }
+            }
+
+            // Mortar lines (darker)
+            ctx.strokeStyle = 'rgba(60, 50, 30, 0.4)';
+            ctx.lineWidth = 2;
+            for (let y = 0; y < rows; y++) {
+                ctx.beginPath();
+                ctx.moveTo(0, y * rowH);
+                ctx.lineTo(512, y * rowH);
+                ctx.stroke();
+            }
+
+            // Draw Cracks
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            ctx.lineWidth = 1;
+            for(let c = 0; c < 15; c++) {
+                let curX = Math.random() * 512;
+                let curY = Math.random() * 512;
+                ctx.beginPath();
+                ctx.moveTo(curX, curY);
+                for(let seg = 0; seg < 5; seg++) {
+                    curX += (Math.random() - 0.5) * 40;
+                    curY += (Math.random() - 0.5) * 40;
+                    ctx.lineTo(curX, curY);
+                }
+                ctx.stroke();
+            }
+
+            // General dirt overlay
+            for(let i=0; i<2000; i++) {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.05})`;
+                ctx.fillRect(Math.random()*512, Math.random()*512, 2, 2);
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        }
+
+        function createCeilingTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#d1d1d1'; ctx.fillRect(0, 0, 256, 256);
+            ctx.strokeStyle = '#999'; ctx.strokeRect(5, 5, 246, 246);
+            // Grime
+            for(let i=0; i<200; i++) {
+                ctx.fillStyle = `rgba(0,0,0,0.05)`;
+                ctx.fillRect(Math.random()*256, Math.random()*256, 3, 3);
+            }
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function createFloorTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#6b5d40'; ctx.fillRect(0, 0, 256, 256);
+            for(let i=0; i<1500; i++) {
+                ctx.fillStyle = `rgba(0,0,0,${Math.random()*0.1})`;
+                ctx.fillRect(Math.random()*256, Math.random()*256, 2, 2);
+            }
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function generateChunk(cx, cz) {
+            const chunkKey = `${cx},${cz}`;
+            if (chunks.has(chunkKey)) return;
+
+            const chunkGroup = new THREE.Group();
+            chunkGroup.position.set(cx * CHUNK_SIZE, 0, cz * CHUNK_SIZE);
+
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            chunkGroup.add(floor);
+
+            const ceil = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), ceilMat);
+            ceil.rotation.x = Math.PI / 2; ceil.position.y = 4;
+            chunkGroup.add(ceil);
+
+            const boxGeo = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
+            const innerCells = Math.floor(CHUNK_SIZE / CELL_SIZE);
+
+            for(let x = 0; x < innerCells; x++) {
+                for(let z = 0; z < innerCells; z++) {
+                    const localPosX = (x * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
+                    const localPosZ = (z * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
+                    
+                    const worldX = (cx * CHUNK_SIZE) + localPosX;
+                    const worldZ = (cz * CHUNK_SIZE) + localPosZ;
+                    
+                    if (Math.abs(worldX) < 10 && Math.abs(worldZ) < 10) continue;
+
+                    const seed = Math.abs(Math.sin(worldX * 0.123 + worldZ * 0.456) * 100);
+                    const val = seed - Math.floor(seed);
+                    
+                    if (val > 0.85) {
+                        const wall = new THREE.Mesh(boxGeo, wallMat);
+                        wall.position.set(localPosX, 2, localPosZ);
+                        chunkGroup.add(wall);
+
+                        if (val > 0.98) {
+                            const light = new THREE.PointLight(0xffffaa, 0.4, 12);
+                            light.position.set(localPosX, 3.8, localPosZ);
+                            chunkGroup.add(light);
+                        }
+                    } else if (val < 0.015) {
+                        spawnAlmondWater(chunkGroup, localPosX, localPosZ);
+                    }
+                }
+            }
+
+            scene.add(chunkGroup);
+            chunks.set(chunkKey, chunkGroup);
+        }
+
+        function spawnAlmondWater(group, x, z) {
+            const bottleGroup = new THREE.Group();
+            const bottleGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.4);
+            const bottleMat = new THREE.MeshPhongMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.5 });
+            const bottle = new THREE.Mesh(bottleGeo, bottleMat);
+            bottleGroup.add(bottle);
+            const glow = new THREE.PointLight(0x00ffff, 1, 3);
+            glow.position.y = 0.2;
+            bottleGroup.add(glow);
+            bottleGroup.position.set(x, 0.2, z);
+            bottleGroup.name = "ALMOND_WATER";
+            group.add(bottleGroup);
+        }
+
+        function updateProceduralWorld() {
+            const pX = Math.floor(camera.position.x / CHUNK_SIZE);
+            const pZ = Math.floor(camera.position.z / CHUNK_SIZE);
+
+            for (let x = -RENDER_DISTANCE; x <= RENDER_DISTANCE; x++) {
+                for (let z = -RENDER_DISTANCE; z <= RENDER_DISTANCE; z++) {
+                    generateChunk(pX + x, pZ + z);
+                }
+            }
+
+            for (const [key, chunk] of chunks) {
+                const [cx, cz] = key.split(',').map(Number);
+                if (Math.abs(cx - pX) > RENDER_DISTANCE + 1 || Math.abs(cz - pZ) > RENDER_DISTANCE + 1) {
+                    scene.remove(chunk);
+                    chunks.delete(key);
+                }
+            }
+        }
+
+        function setupControls() {
+            const inst = document.getElementById('instructions');
+            inst.addEventListener('click', () => { document.body.requestPointerLock(); });
+            document.addEventListener('pointerlockchange', () => {
+                inst.style.display = document.pointerLockElement === document.body ? 'none' : 'block';
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement === document.body) {
+                    yaw -= e.movementX * 0.0035;
+                    pitch -= e.movementY * 0.0035;
+                    pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+                }
+            });
+            const onKeyDown = (e) => {
+                switch (e.code) {
+                    case 'KeyW': moveBackward = true; break; 
+                    case 'KeyS': moveForward = true; break;
+                    case 'KeyA': moveLeft = true; break;
+                    case 'KeyD': moveRight = true; break;
+                    case 'KeyE': interactKey = true; break;
+                }
+            };
+            const onKeyUp = (e) => {
+                switch (e.code) {
+                    case 'KeyW': moveBackward = false; break;
+                    case 'KeyS': moveForward = false; break;
+                    case 'KeyA': moveLeft = false; break;
+                    case 'KeyD': moveRight = false; break;
+                    case 'KeyE': interactKey = false; break;
+                }
+            };
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+        }
+
+        function handleInteractions() {
+            const prompt = document.getElementById('interaction-prompt');
+            prompt.style.display = 'none';
+
+            // Find all potential bottles
+            let nearestBottle = null;
+            let minDist = 3.0; // Max interaction distance
+
+            chunks.forEach(chunk => {
+                chunk.children.forEach(child => {
+                    if (child.name === "ALMOND_WATER") {
+                        const worldPos = new THREE.Vector3();
+                        child.getWorldPosition(worldPos);
+                        const dist = camera.position.distanceTo(worldPos);
+                        
+                        if (dist < minDist) {
+                            // Check if looking at it
+                            const toItem = worldPos.clone().sub(camera.position).normalize();
+                            const lookDir = new THREE.Vector3();
+                            camera.getWorldDirection(lookDir);
+                            const dot = lookDir.dot(toItem);
+                            
+                            if (dot > 0.9) { // Field of view check
+                                nearestBottle = { child, chunk };
+                                minDist = dist;
+                            }
+                        }
+                    }
+                });
+            });
+
+            if (nearestBottle) {
+                prompt.style.display = 'block';
+                if (interactKey) {
+                    sanity = Math.min(100, sanity + 20);
+                    nearestBottle.chunk.remove(nearestBottle.child);
+                    showMessage("FOUND ALMOND WATER +20% SANITY");
+                    interactKey = false; // Prevent multi-triggers
+                }
+            }
+
+            // Simple spin animation for items
+            chunks.forEach(chunk => {
+                chunk.children.forEach(child => {
+                    if (child.name === "ALMOND_WATER") child.rotation.y += 0.02;
+                });
+            });
+        }
+
+        function showMessage(txt) {
+            const msg = document.getElementById('message');
+            msg.innerText = txt; msg.style.opacity = '1';
+            setTimeout(() => { msg.style.opacity = '0'; }, 2000);
+        }
+
+        function checkCollision(pos) {
+            const playerRadius = 0.5;
+            for (const chunk of chunks.values()) {
+                if (Math.abs(pos.x - chunk.position.x) > CHUNK_SIZE / 2 + 5 || 
+                    Math.abs(pos.z - chunk.position.z) > CHUNK_SIZE / 2 + 5) continue;
+
+                for (const obj of chunk.children) {
+                    if (obj.geometry && obj.geometry.type === "BoxGeometry") {
+                        const worldX = chunk.position.x + obj.position.x;
+                        const worldZ = chunk.position.z + obj.position.z;
+                        
+                        const minX = worldX - CELL_SIZE/2 - playerRadius;
+                        const maxX = worldX + CELL_SIZE/2 + playerRadius;
+                        const minZ = worldZ - CELL_SIZE/2 - playerRadius;
+                        const maxZ = worldZ + CELL_SIZE/2 + playerRadius;
+
+                        if (pos.x > minX && pos.x < maxX && pos.z > minZ && pos.z < maxZ) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function updateUI() {
+            sanity -= 0.01; 
+            if (sanity < 0) sanity = 0;
+            document.getElementById('sanity-bar').style.width = sanity + '%';
+            document.getElementById('ui').style.color = sanity < 30 ? '#ff0000' : '#ffff00';
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const secs = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `TIME ELAPSED: ${mins}:${secs}`;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (document.pointerLockElement === document.body) {
+                const delta = Math.min(clock.getDelta(), 0.1); 
+                
+                velocity.x -= velocity.x * 10.0 * delta;
+                velocity.z -= velocity.z * 10.0 * delta;
+                
+                direction.z = Number(moveForward) - Number(moveBackward);
+                direction.x = Number(moveRight) - Number(moveLeft);
+                direction.normalize();
+                
+                if (moveForward || moveBackward) velocity.z -= direction.z * 50.0 * delta;
+                if (moveLeft || moveRight) velocity.x -= direction.x * 50.0 * delta;
+
+                const rotYaw = yaw;
+                const walkX = -velocity.x * delta * Math.cos(rotYaw) + -velocity.z * delta * Math.sin(rotYaw);
+                const walkZ = -velocity.x * delta * -Math.sin(rotYaw) + -velocity.z * delta * Math.cos(rotYaw);
+
+                const attemptX = camera.position.clone();
+                attemptX.x += walkX;
+                if (!checkCollision(attemptX)) camera.position.x = attemptX.x;
+
+                const attemptZ = camera.position.clone();
+                attemptZ.z += walkZ;
+                if (!checkCollision(attemptZ)) camera.position.z = attemptZ.z;
+
+                if (moveForward || moveBackward || moveLeft || moveRight) {
+                    stepCounter += delta * 10;
+                    camera.position.y = 1.7 + Math.sin(stepCounter) * 0.05;
+                }
+
+                camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+                
+                updateProceduralWorld();
+                handleInteractions();
+                updateUI();
+            }
+            renderer.render(scene, camera);
+        }
+        window.onload = init;
+    </script>
+</body>
+</html>
