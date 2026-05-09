@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IB Business HL - Flashcard SRS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IB Business - Flashcard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -12,11 +12,14 @@
             font-family: 'Inter', sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
+            touch-action: manipulation; /* Prevents double-tap zoom on buttons */
         }
 
         .flashcard {
             perspective: 1000px;
-            height: 300px;
+            height: 45vh; /* Responsive height based on viewport */
+            max-height: 350px;
+            min-height: 250px;
         }
 
         .flashcard-inner {
@@ -40,7 +43,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2.5rem;
+            padding: 1.5rem;
             border-radius: 1.25rem;
             text-align: center;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
@@ -68,28 +71,33 @@
             background: linear-gradient(90deg, #818cf8, #c084fc);
             transition: width 0.4s ease;
         }
+
+        /* Active states for mobile touch feedback */
+        button:active {
+            transform: scale(0.97);
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body class="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6">
 
-    <div class="w-full max-w-md space-y-6">
+    <div class="w-full max-w-md space-y-4 sm:space-y-6">
         <!-- Header -->
-        <div class="text-center relative">
-            <h1 class="text-3xl font-bold text-indigo-400">IB Business HL</h1>
-            <p class="text-slate-400 text-sm mt-2">Personal Study Assistant</p>
+        <div class="text-center relative pt-4">
+            <h1 class="text-2xl sm:text-3xl font-bold text-indigo-400">IB Business HL</h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">Personal Study Assistant</p>
             
             <!-- Undo Button -->
-            <button id="undo-btn" onclick="undoLastAction()" class="absolute right-0 top-0 text-slate-500 hover:text-indigo-400 transition hidden flex items-center gap-1 text-xs font-semibold uppercase tracking-wider">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+            <button id="undo-btn" onclick="undoLastAction()" class="absolute right-0 top-6 text-slate-500 hover:text-indigo-400 active:text-indigo-300 transition hidden flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
                 Undo
             </button>
         </div>
 
         <!-- Stats -->
-        <div class="bg-slate-800/50 p-5 rounded-2xl border border-slate-700 backdrop-blur-sm">
-            <div class="flex justify-between text-xs font-semibold mb-3 tracking-wide uppercase">
+        <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 backdrop-blur-sm">
+            <div class="flex justify-between text-[10px] sm:text-xs font-semibold mb-2 tracking-wide uppercase">
                 <span class="text-emerald-400">Mastered: <span id="mastered-count">0</span></span>
-                <span class="text-indigo-300">Remaining: <span id="learning-count">0</span></span>
+                <span class="text-indigo-300">Left: <span id="learning-count">0</span></span>
             </div>
             <div class="progress-bar">
                 <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
@@ -100,41 +108,41 @@
         <div id="card-container" class="flashcard">
             <div class="flashcard-inner" onclick="flipCard()">
                 <div class="flashcard-front">
-                    <h2 id="term" class="text-2xl font-bold tracking-tight">Loading...</h2>
+                    <h2 id="term" class="text-xl sm:text-2xl font-bold tracking-tight">Loading...</h2>
                 </div>
                 <div class="flashcard-back overflow-y-auto">
-                    <p id="definition" class="text-lg leading-relaxed font-medium text-slate-100"></p>
+                    <p id="definition" class="text-base sm:text-lg leading-relaxed font-medium text-slate-100"></p>
                 </div>
             </div>
         </div>
 
         <!-- Hint Text -->
-        <p id="hint" class="text-center text-slate-500 text-xs animate-pulse">Tap card to see definition</p>
+        <p id="hint" class="text-center text-slate-500 text-[11px] h-4">Tap card to see definition</p>
 
         <!-- Controls -->
-        <div id="controls" class="grid grid-cols-3 gap-3 hidden">
-            <button onclick="handleResponse('hard')" class="bg-rose-500/20 hover:bg-rose-500 border border-rose-500/50 text-rose-200 hover:text-white font-bold py-4 rounded-xl transition-all duration-200 shadow-lg">
+        <div id="controls" class="grid grid-cols-3 gap-2 sm:gap-3 hidden">
+            <button onclick="handleResponse('hard')" class="bg-rose-500/20 hover:bg-rose-500 border border-rose-500/50 text-rose-200 hover:text-white font-bold py-3 sm:py-4 rounded-xl transition-all duration-200 shadow-lg text-sm sm:text-base">
                 Hard
             </button>
-            <button onclick="handleResponse('good')" class="bg-amber-500/20 hover:bg-amber-500 border border-amber-500/50 text-amber-200 hover:text-white font-bold py-4 rounded-xl transition-all duration-200 shadow-lg">
+            <button onclick="handleResponse('good')" class="bg-amber-500/20 hover:bg-amber-500 border border-amber-500/50 text-amber-200 hover:text-white font-bold py-3 sm:py-4 rounded-xl transition-all duration-200 shadow-lg text-sm sm:text-base">
                 Good
             </button>
-            <button onclick="handleResponse('easy')" class="bg-emerald-500/20 hover:bg-emerald-500 border border-emerald-500/50 text-emerald-200 hover:text-white font-bold py-4 rounded-xl transition-all duration-200 shadow-lg">
+            <button onclick="handleResponse('easy')" class="bg-emerald-500/20 hover:bg-emerald-500 border border-emerald-500/50 text-emerald-200 hover:text-white font-bold py-3 sm:py-4 rounded-xl transition-all duration-200 shadow-lg text-sm sm:text-base">
                 Easy
             </button>
         </div>
 
         <!-- Session Finished -->
-        <div id="done-message" class="hidden text-center py-12 bg-slate-800/30 rounded-2xl border border-dashed border-slate-600">
-            <div class="text-5xl mb-4">🏆</div>
-            <p class="text-2xl font-bold text-emerald-400">Great Progress!</p>
-            <p class="text-slate-400 mt-2">You've cleared the current deck.</p>
-            <button onclick="resetSession()" class="mt-8 px-6 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-full text-sm font-bold transition">Review Again</button>
+        <div id="done-message" class="hidden text-center py-10 bg-slate-800/30 rounded-2xl border border-dashed border-slate-600">
+            <div class="text-4xl mb-4">🏆</div>
+            <p class="text-xl font-bold text-emerald-400">Great Progress!</p>
+            <p class="text-slate-400 text-sm mt-2">You've cleared the current deck.</p>
+            <button onclick="resetSession()" class="mt-6 px-6 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-full text-xs font-bold transition">Review Again</button>
         </div>
 
         <!-- Footer / Utility -->
-        <div class="pt-6 flex justify-center">
-            <button onclick="clearLocalStorage()" class="text-slate-600 text-[10px] hover:text-rose-400 transition tracking-widest uppercase">
+        <div class="pt-2 flex justify-center">
+            <button onclick="clearLocalStorage()" class="text-slate-600 text-[9px] hover:text-rose-400 transition tracking-widest uppercase p-2">
                 Reset All Data
             </button>
         </div>
@@ -318,7 +326,7 @@
             if (state.isFlipped) {
                 container.classList.add('flipped');
                 document.getElementById('controls').classList.remove('hidden');
-                hint.innerText = " ";
+                hint.innerText = "";
             } else {
                 container.classList.remove('flipped');
                 document.getElementById('controls').classList.add('hidden');
