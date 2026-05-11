@@ -256,6 +256,27 @@
             renderLibrary(filtered);
         };
 
+        // New function to toggle fullscreen mode for the video player
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                player.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Add event listener to the video player to toggle fullscreen on double click
+        player.addEventListener('dblclick', toggleFullScreen);
+
+        // Add keyboard shortcut: pressing 'f' toggles fullscreen
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') {
+                toggleFullScreen();
+            }
+        });
+
         init();
     </script>
 </body>
