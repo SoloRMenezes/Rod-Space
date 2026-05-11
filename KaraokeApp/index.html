@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karaoke Night | Midnight Edition</title>
+    <title>Karaoke Night</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
         
         :root {
-            --accent: #a855f7; /* Vibrant Purple */
-            --bg-deep: #050505; /* True Black */
-            --bg-card: #111111; /* Dark Gray */
+            --accent: #a855f7;
+            --bg-deep: #050505;
+            --bg-card: #111111;
             --glass: rgba(10, 10, 15, 0.8);
         }
 
@@ -39,13 +39,11 @@
             transform: translateY(-2px);
             background: #1a1a1a;
             border-color: var(--accent);
-            box-shadow: 0 10px 20px -10px rgba(168, 85, 247, 0.3);
         }
 
         .song-card.active {
             background: linear-gradient(135deg, #1e1b4b 0%, #050505 100%);
             border-color: var(--accent);
-            box-shadow: inset 0 0 15px rgba(168, 85, 247, 0.1);
         }
 
         video {
@@ -71,47 +69,49 @@
             pointer-events: none;
             z-index: 0;
         }
+
+        /* Queue Badge */
+        .q-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-weight: 800;
+        }
     </style>
 </head>
 <body class="flex h-screen w-screen p-5 gap-5">
 
-    <!-- Sidebar -->
     <aside class="w-80 flex flex-col gap-4 z-10">
         <div class="glass-panel rounded-[2rem] p-7 flex flex-col h-full shadow-2xl">
-            <div class="flex items-center gap-3 mb-10">
-                <div class="w-11 h-11 bg-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-600/30">
-                    <i class="fa-solid fa-moon text-white text-xl"></i>
+            <div class="flex items-center justify-between mb-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 bg-purple-600 rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-moon text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-extrabold tracking-tighter leading-none">KARAOKE</h1>
+                        <p class="text-[10px] text-purple-400 font-bold tracking-[0.4em] uppercase mt-1">NIGHT</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-xl font-extrabold tracking-tighter leading-none">KARAOKE</h1>
-                    <p class="text-[10px] text-purple-400 font-bold tracking-[0.4em] uppercase mt-1">NIGHT</p>
-                </div>
+                <div id="queue-count" class="hidden q-badge">0 IN QUEUE</div>
             </div>
 
-            <!-- Search -->
             <div class="relative mb-8">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 text-xs"></i>
                 <input type="text" id="search" placeholder="Search track..." 
                        class="w-full bg-black/40 border border-white/5 rounded-2xl py-3.5 pl-11 pr-4 text-sm focus:outline-none focus:border-purple-500/50 transition-all text-slate-300">
             </div>
 
-            <div id="song-list" class="flex-1 overflow-y-auto custom-scroll space-y-3 pr-2">
-                <!-- Song cards load here -->
-            </div>
+            <div id="song-list" class="flex-1 overflow-y-auto custom-scroll space-y-3 pr-2"></div>
 
-            <div class="mt-8 pt-6 border-t border-white/5">
-                <div class="flex items-center justify-between px-2">
-                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Midnight Engine v2</span>
-                    <div class="flex gap-1">
-                        <div class="w-1 h-1 rounded-full bg-purple-500 animate-pulse"></div>
-                        <div class="w-1 h-1 rounded-full bg-purple-500 animate-pulse delay-75"></div>
-                    </div>
-                </div>
+            <div class="mt-8 pt-6 border-t border-white/5 text-center text-[9px] text-slate-500 font-bold uppercase tracking-widest">
+                Midnight Engine v3.0
             </div>
         </div>
     </aside>
 
-    <!-- Main Player -->
     <main class="flex-1 flex flex-col gap-5 relative">
         <div class="glow-orb -top-20 -right-20"></div>
         <div class="glow-orb -bottom-20 -left-20"></div>
@@ -120,29 +120,27 @@
             <video id="player" class="w-full h-full object-contain z-10" poster="https://images.unsplash.com/photo-1514525253361-bee8a48790c3?q=80&w=2000&auto=format&fit=crop"></video>
         </div>
 
-        <!-- Controls -->
         <div class="glass-panel rounded-[2rem] p-6 shadow-xl">
-            <div class="max-w-4xl mx-auto flex items-center gap-10">
-                <!-- Info -->
-                <div class="w-72">
+            <div class="max-w-5xl mx-auto flex items-center gap-10">
+                <div class="w-64">
                     <h2 id="now-playing-title" class="text-lg font-extrabold truncate neon-text">Ready to Sing?</h2>
-                    <p id="now-playing-artist" class="text-xs text-slate-500 font-semibold tracking-wide mt-1">SELECT A TRACK FROM THE LIBRARY</p>
+                    <p id="now-playing-artist" class="text-xs text-slate-500 font-semibold tracking-wide mt-1 uppercase">Select a track</p>
                 </div>
 
-                <!-- Playback -->
                 <div class="flex-1 flex items-center gap-6">
                     <div class="flex items-center gap-4">
+                        <button onclick="playRandom()" class="text-slate-500 hover:text-purple-400 transition-colors" title="Shuffle Mode"><i class="fa-solid fa-shuffle"></i></button>
                         <button onclick="rewind()" class="text-slate-500 hover:text-purple-400 transition-colors"><i class="fa-solid fa-backward-step"></i></button>
                         <button onclick="togglePlay()" id="play-btn" class="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg">
                             <i class="fa-solid fa-play ml-1 text-lg"></i>
                         </button>
-                        <button onclick="forward()" class="text-slate-500 hover:text-purple-400 transition-colors"><i class="fa-solid fa-forward-step"></i></button>
+                        <button onclick="skipNext()" class="text-slate-500 hover:text-purple-400 transition-colors" title="Skip to Queue"><i class="fa-solid fa-forward-step"></i></button>
                     </div>
                     
                     <div class="flex-1 flex flex-col gap-2">
-                        <div class="flex justify-between items-center px-1">
-                            <span id="time-current" class="text-[10px] font-mono text-slate-500">00:00</span>
-                            <span id="time-total" class="text-[10px] font-mono text-slate-500">00:00</span>
+                        <div class="flex justify-between items-center px-1 text-[10px] font-mono text-slate-500">
+                            <span id="time-current">00:00</span>
+                            <span id="time-total">00:00</span>
                         </div>
                         <div class="h-1.5 bg-white/5 rounded-full relative group cursor-pointer overflow-hidden">
                             <div id="progress" class="absolute top-0 left-0 h-full bg-purple-500 w-0 rounded-full transition-all duration-150"></div>
@@ -150,11 +148,15 @@
                     </div>
                 </div>
 
-                <!-- Volume -->
-                <div class="flex items-center gap-4">
-                    <i class="fa-solid fa-volume-low text-slate-600 text-xs"></i>
-                    <input type="range" id="volume" min="0" max="1" step="0.05" value="1" 
-                           class="w-24 accent-purple-500 bg-white/10 rounded-lg h-1 appearance-none cursor-pointer">
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-volume-low text-slate-600 text-xs"></i>
+                        <input type="range" id="volume" min="0" max="1" step="0.05" value="1" 
+                               class="w-20 accent-purple-500 bg-white/10 rounded-lg h-1 appearance-none cursor-pointer">
+                    </div>
+                    <button onclick="toggleFullScreen()" class="text-slate-500 hover:text-purple-400 transition-colors">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -166,8 +168,11 @@
         const searchInput = document.getElementById('search');
         const playBtn = document.getElementById('play-btn');
         const progressBar = document.getElementById('progress');
+        const queueBadge = document.getElementById('queue-count');
         
         let songs = [];
+        let queue = [];
+        let isShuffle = false;
 
         async function init() {
             try {
@@ -175,7 +180,7 @@
                 songs = await res.json();
                 renderLibrary(songs);
             } catch (e) {
-                songList.innerHTML = '<p class="text-red-400 text-[10px] p-4 text-center">Update library.json to see songs</p>';
+                songList.innerHTML = '<p class="text-red-400 text-center">Check library.json</p>';
             }
         }
 
@@ -183,26 +188,46 @@
             songList.innerHTML = '';
             list.forEach((song) => {
                 const card = document.createElement('div');
-                card.className = "song-card rounded-[1.2rem] p-4 cursor-pointer";
+                card.className = "song-card rounded-[1.2rem] p-4 cursor-pointer group flex items-center justify-between";
                 card.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-purple-400 border border-white/5">
+                    <div class="flex items-center gap-4 overflow-hidden">
+                        <div class="w-10 h-10 rounded-xl bg-black flex items-center justify-center text-purple-400 border border-white/5 shrink-0">
                             <i class="fa-solid fa-music text-xs"></i>
                         </div>
-                        <div class="flex-1 overflow-hidden">
+                        <div class="overflow-hidden">
                             <div class="text-sm font-bold truncate">${song.title}</div>
                             <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">${song.artist || 'Artist'}</div>
                         </div>
                     </div>
+                    <button onclick="addToQueue(event, '${song.title}')" class="opacity-0 group-hover:opacity-100 p-2 hover:text-purple-400 transition-all">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
                 `;
                 card.onclick = () => loadSong(song, card);
                 songList.appendChild(card);
             });
         }
 
+        function addToQueue(e, title) {
+            e.stopPropagation();
+            const song = songs.find(s => s.title === title);
+            queue.push(song);
+            updateQueueUI();
+        }
+
+        function updateQueueUI() {
+            if (queue.length > 0) {
+                queueBadge.innerText = `${queue.length} IN QUEUE`;
+                queueBadge.classList.remove('hidden');
+            } else {
+                queueBadge.classList.add('hidden');
+            }
+        }
+
         function loadSong(song, element) {
             document.querySelectorAll('.song-card').forEach(c => c.classList.remove('active'));
-            element.classList.add('active');
+            if (element) element.classList.add('active');
+            
             document.getElementById('now-playing-title').innerText = song.title;
             document.getElementById('now-playing-artist').innerText = (song.artist || 'Artist').toUpperCase();
 
@@ -211,14 +236,35 @@
             updatePlayIcon(true);
         }
 
-        function togglePlay() {
-            if (player.paused) {
-                player.play();
-                updatePlayIcon(true);
-            } else {
-                player.pause();
-                updatePlayIcon(false);
+        // AUTO-ADVANCE LOGIC
+        player.onended = () => {
+            if (queue.length > 0) {
+                const nextSong = queue.shift();
+                updateQueueUI();
+                loadSong(nextSong);
+            } else if (isShuffle) {
+                playRandom();
             }
+        };
+
+        function skipNext() {
+            if (queue.length > 0) {
+                const nextSong = queue.shift();
+                updateQueueUI();
+                loadSong(nextSong);
+            } else {
+                playRandom();
+            }
+        }
+
+        function playRandom() {
+            isShuffle = true;
+            const randomIndex = Math.floor(Math.random() * songs.length);
+            loadSong(songs[randomIndex]);
+        }
+
+        function togglePlay() {
+            player.paused ? (player.play(), updatePlayIcon(true)) : (player.pause(), updatePlayIcon(false));
         }
 
         function updatePlayIcon(isPlaying) {
@@ -226,56 +272,25 @@
         }
 
         function rewind() { player.currentTime -= 10; }
-        function forward() { player.currentTime += 10; }
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) player.requestFullscreen();
+            else document.exitFullscreen();
+        }
 
         player.addEventListener('timeupdate', () => {
             const current = player.currentTime;
             const duration = player.duration;
-            const percent = (current / duration) * 100;
-            progressBar.style.width = `${percent}%`;
-
-            const formatTime = (t) => {
-                if(isNaN(t)) return "00:00";
-                const m = Math.floor(t / 60);
-                const s = Math.floor(t % 60);
-                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-            };
-
+            progressBar.style.width = `${(current / duration) * 100}%`;
+            const formatTime = (t) => isNaN(t) ? "00:00" : `${Math.floor(t / 60).toString().padStart(2,'0')}:${Math.floor(t % 60).toString().padStart(2,'0')}`;
             document.getElementById('time-current').innerText = formatTime(current);
             document.getElementById('time-total').innerText = formatTime(duration);
         });
 
         document.getElementById('volume').oninput = (e) => player.volume = e.target.value;
-
         searchInput.oninput = (e) => {
             const term = e.target.value.toLowerCase();
-            const filtered = songs.filter(s => 
-                s.title.toLowerCase().includes(term) || 
-                (s.artist && s.artist.toLowerCase().includes(term))
-            );
-            renderLibrary(filtered);
+            renderLibrary(songs.filter(s => s.title.toLowerCase().includes(term) || (s.artist && s.artist.toLowerCase().includes(term))));
         };
-
-        // New function to toggle fullscreen mode for the video player
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                player.requestFullscreen().catch(err => {
-                    console.error(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        }
-
-        // Add event listener to the video player to toggle fullscreen on double click
-        player.addEventListener('dblclick', toggleFullScreen);
-
-        // Add keyboard shortcut: pressing 'f' toggles fullscreen
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'f' || e.key === 'F') {
-                toggleFullScreen();
-            }
-        });
 
         init();
     </script>
