@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Evolution Engine</title>
+<style>
+:root {
+  --bg: #0e0904; --card: #1b1208; --inner: #271a0b;
+  --gold: #c9a227; --gold-faded: rgba(201, 162, 37, 0.4);
+  --text: #f0e2c0; --muted: #9e8660; --border: #3d2a15;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text); font-family: 'Segoe UI', serif;
+  display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 15px;
+}
+
+h1 { font-size: 14px; color: var(--gold); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; font-weight: 900; }
+
+.slot-nav { display: flex; width: 100%; max-width: 500px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.tab { flex: 1; padding: 12px; border: none; background: transparent; color: var(--muted); font-size: 11px; font-weight: bold; cursor: pointer; }
+.tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+
+.card { width: 100%; max-width: 450px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+
+.identity { text-align: center; margin-bottom: 20px; min-height: 80px; }
+.type-badge { background: var(--gold); color: #000; padding: 4px 18px; border-radius: 20px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; box-shadow: 0 0 15px var(--gold-faded); }
+.pathless { background: #333; color: #888; box-shadow: none; }
+.name-box { background: #000; border: 1px solid var(--border); border-radius: 12px; margin: 15px 0; padding: 5px; }
+.name-input { width: 100%; background: transparent; border: none; color: #fff; font-size: 28px; font-weight: 900; text-align: center; outline: none; }
+
+.hp-bar-outer { height: 10px; background: #000; border-radius: 5px; overflow: hidden; margin-bottom: 8px; border: 1px solid var(--border); }
+.hp-bar-inner { height: 100%; background: #1e8449; transition: width 0.4s; }
+.hp-text { text-align: center; font-size: 11px; font-weight: 900; color: var(--gold); margin-bottom: 20px; }
+
+.mult-display { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
+.mult-item { text-align: center; }
+.mult-lbl { font-size: 8px; color: var(--muted); text-transform: uppercase; display: block; }
+.mult-val { font-size: 14px; color: var(--gold); font-weight: 900; }
+
+.evo-section { border-top: 1px solid var(--border); padding-top: 15px; }
+.evo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.points-left { font-size: 20px; font-weight: 900; color: var(--gold); }
+
+.control-row { display: flex; align-items: center; background: rgba(0,0,0,0.2); margin-bottom: 8px; padding: 6px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); }
+.st-info { flex: 1; padding-left: 10px; }
+.st-label { font-size: 11px; font-weight: 900; color: var(--muted); text-transform: uppercase; display: block; }
+.st-calc { font-size: 18px; font-weight: 900; color: #fff; }
+.st-invest { font-size: 9px; color: var(--gold); opacity: 0.6; }
+
+.btn-m { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--border); background: #111; color: #fff; font-size: 20px; cursor: pointer; }
+.btn-m:disabled { opacity: 0.1; }
+
+.setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0; }
+select, .lvl-in { background: #000; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; width: 100%; text-align: center; outline: none; }
+
+.combat-area { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 20px; }
+.amt-box { width: 100%; background: #000; border: 1px solid var(--gold-faded); border-radius: 8px; color: var(--gold); font-size: 24px; font-weight: 900; text-align: center; padding: 12px; margin-bottom: 15px; outline: none; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.b { padding: 18px; border-radius: 10px; border: none; font-weight: 900; font-size: 13px; text-transform: uppercase; color: #fff; cursor: pointer; }
+.b-dmg { background: #4a1212; }
+.b-heal { background: #1e8449; }
+</style>
+</head>
+<body>
+
+<h1>Evolution Engine</h1>
+<div class="slot-nav" id="slot-nav"></div>
+<div class="card" id="main-card"></div>
+
+<script>
+const STAT_NAMES = ["Health", "Energy", "Speed", "Strength", "Magic", "Presence"];
+
+const RACES = {
+  Human:    [1.2, 1.2, 1.2, 1.2, 1.2, 1.2],
+  Vessel:   [1.1, 1.8, 1.1, 1.1, 2.0, 1.8],
+  Elf:      [1.3, 1.7, 1.8, 1.2, 1.9, 1.5],
+  Orc:      [1.9, 1.2, 1.4, 2.0, 1.1, 1.2],
+  Titan:    [2.0, 1.1, 1.1, 2.0, 1.1, 1.2],
+  Fae:      [1.1, 1.9, 2.0, 1.1, 1.8, 1.7],
+  Automaton:[1.7, 1.5, 1.2, 1.8, 1.6, 1.1]
+};
+
+const SPECIALISTS = {
+  Health:   ["Wheezer", "Survivor", "Sentinel", "Eternal"],
+  Energy:   ["Spark", "Channeler", "Reactor", "Core of Stars"],
+  Speed:    ["Stumbler", "Runner", "Blur", "Chronos"],
+  Strength: ["Weakling", "Guard", "Destroyer", "World Breaker"],
+  Magic:    ["Trickster", "Student", "Wizard", "Reality Warper"],
+  Presence: ["Shadow", "Leader", "Emperor", "God-King"]
+};
+
+const HYBRIDS = {
+  'Health+Strength': ["Fleshpile", "Brawler", "Juggernaut", "Behemoth"],
+  'Energy+Magic':    ["Flicker", "Spellcaster", "Sorcerer", "Archmage"],
+  'Speed+Strength':  ["Clumsy", "Duelist", "Assassin", "Reaper"],
+  'Magic+Presence':  ["Mutterer", "Oracle", "Avatar", "Entity"],
+  'Magic+Speed':     ["Static", "Initiate", "Spellblade", "Void Walker"],
+  'Energy+Health':   ["Breather", "Warden", "Paladin", "Aegis"],
+  'Magic+Strength':  ["Sparky", "Squire", "War-Mage", "Rune-Lord"],
+  'Health+Speed':    ["Pacer", "Scout", "Ranger", "Wind-Walker"]
+};
+
+let state = JSON.parse(localStorage.getItem('dnd_vMultiplier_vFinal')) || {
+  activeSlot: 0,
+  slots: [emptyChar(), emptyChar(), emptyChar()]
+};
+
+function emptyChar() {
+  return { 
+    name: "Unnamed", race: 'Human', level: 1, 
+    invest: [1, 1, 1, 1, 1, 1],
+    currentHP: 16
+  };
+}
+
+function getTitle(slot) {
+  if (slot.level < 5) return "Pathless";
+  const mults = RACES[slot.race];
+  const eff = slot.invest.map((v, i) => Math.round(v * mults[i]));
+  const maxVal = Math.max(...eff);
+  const toppers = eff.map((v, i) => v === maxVal ? i : -1).filter(i => i !== -1);
+  if (toppers.length >= 3) return "Typeless";
+
+  let chain;
+  if (toppers.length === 1) {
+    chain = SPECIALISTS[STAT_NAMES[toppers[0]]];
+  } else {
+    const pair = [STAT_NAMES[toppers[0]], STAT_NAMES[toppers[1]]].sort().join('+');
+    chain = HYBRIDS[pair] || ["Nobody", "Vagrant", "Seeker", "Legend"];
+  }
+
+  let tier = 0;
+  if (slot.level >= 10) tier = 1;
+  if (slot.level >= 30) tier = 2;
+  if (slot.level >= 100) tier = 3;
+  return chain[Math.min(tier, chain.length - 1)];
+}
+
+function render() {
+  const slot = state.slots[state.activeSlot];
+  
+  // Total Points = Level * 3
+  const maxPool = slot.level * 3;
+  // Spent = Total Sum - 6 (since all 6 stats start at 1)
+  const spent = slot.invest.reduce((a, b) => a + b, 0) - 6;
+  const remaining = maxPool - spent;
+
+  const mults = RACES[slot.race];
+  const effective = slot.invest.map((v, i) => Math.round(v * mults[i]));
+  
+  const maxHP = 10 + Math.round(slot.invest[0] * mults[0] * 5) + (slot.level * 10);
+  const title = getTitle(slot);
+
+  document.getElementById('slot-nav').innerHTML = state.slots.map((s, i) => 
+    `<button class="tab ${i === state.activeSlot ? 'active' : ''}" onclick="setSlot(${i})">Slot ${i+1}</button>`
+  ).join('');
+
+  document.getElementById('main-card').innerHTML = `
+    <div class="identity">
+      <span class="type-badge ${title === 'Pathless' || title === 'Typeless' ? 'pathless' : ''}">${title}</span>
+      <div class="name-box"><input class="name-input" value="${slot.name}" onchange="updateName(this.value)"></div>
+    </div>
+
+    <div class="hp-bar-outer"><div class="hp-bar-inner" style="width:${(slot.currentHP/maxHP)*100}%"></div></div>
+    <div class="hp-text">${slot.currentHP} / ${maxHP} HP</div>
+
+    <div class="mult-display">
+      ${STAT_NAMES.map((n, i) => `<div class="mult-item"><span class="mult-lbl">${n.slice(0,3)}</span><span class="mult-val">${mults[i]}x</span></div>`).join('')}
+    </div>
+
+    <div class="setup-grid">
+      <div style="text-align:left"><label class="st-label">Race</label><select onchange="updateRace(this.value)">${Object.keys(RACES).map(r => `<option value="${r}" ${slot.race === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+      <div style="text-align:left"><label class="st-label">Level</label><input type="number" class="lvl-in" value="${slot.level}" onchange="updateLevel(this.value)"></div>
+    </div>
+
+    <div class="evo-section">
+      <div class="evo-header">
+        <span class="st-label" style="color:var(--gold)">Evolution Potential</span>
+        <span class="points-left">${remaining}</span>
+      </div>
+      
+      ${STAT_NAMES.map((name, i) => `
+        <div class="control-row">
+          <div class="st-info">
+            <span class="st-label">${name}</span>
+            <span class="st-calc">${effective[i]}</span>
+            <span class="st-invest">base: ${slot.invest[i]}</span>
+          </div>
+          <button class="btn-m" onclick="modStat(${i},-1)" ${slot.invest[i] <= 1 ? 'disabled' : ''}>−</button>
+          <div style="width:10px"></div>
+          <button class="btn-m" onclick="modStat(${i},1)" ${remaining <= 0 ? 'disabled' : ''}>+</button>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="combat-area">
+      <input type="text" id="action-amt" class="amt-box" placeholder="0" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+      <div class="btns">
+        <button class="b b-dmg" onclick="applyAction(-1)">Damage</button>
+        <button class="b b-heal" onclick="applyAction(1)">Heal</button>
+      </div>
+    </div>
+  `;
+  localStorage.setItem('dnd_vMultiplier_vFinal', JSON.stringify(state));
+}
+
+function setSlot(i) { state.activeSlot = i; render(); }
+function updateName(v) { state.slots[state.activeSlot].name = v; render(); }
+function updateLevel(l) { 
+  const s = state.slots[state.activeSlot];
+  s.level = parseInt(l) || 1; 
+  syncHP();
+}
+function updateRace(r) { 
+  const s = state.slots[state.activeSlot];
+  s.race = r; 
+  syncHP();
+}
+
+function syncHP() {
+  const s = state.slots[state.activeSlot];
+  const mults = RACES[s.race];
+  const maxHP = 10 + Math.round(s.invest[0] * mults[0] * 5) + (s.level * 10);
+  s.currentHP = maxHP;
+  render();
+}
+
+function modStat(idx, sign) {
+  const s = state.slots[state.activeSlot];
+  const maxPool = s.level * 3;
+  const spent = s.invest.reduce((a, b) => a + b, 0) - 6;
+  const remaining = maxPool - spent;
+  
+  if (sign > 0 && remaining > 0) {
+    s.invest[idx]++;
+  } else if (sign < 0 && s.invest[idx] > 1) {
+    s.invest[idx]--;
+  }
+  render();
+}
+
+function applyAction(sign) {
+  const input = document.getElementById('action-amt');
+  const amt = parseInt(input.value) || 0;
+  const s = state.slots[state.activeSlot];
+  const mults = RACES[s.race];
+  const max = 10 + Math.round(s.invest[0] * mults[0] * 5) + (s.level * 10);
+  s.currentHP = Math.max(0, Math.min(max, s.currentHP + (amt * sign)));
+  input.value = ""; 
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
