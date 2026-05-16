@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Da Homie Lounge HQ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --card-bg: #161616;
+            --accent: #a855f7; 
+            --accent-dim: #7c3aed;
+            --text: #ffffff;
+            --text-dim: #a1a1aa;
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            outline: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color: var(--bg-color);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            background: var(--card-bg);
+            border-right: 1px solid #27272a;
+            display: flex;
+            flex-direction: column;
+            width: 260px;
+            padding: 24px;
+        }
+
+        .nav-item {
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .nav-item.active {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--accent);
+            box-shadow: inset 0 0 0 1px var(--accent);
+        }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 48px;
+            padding-bottom: 120px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .section {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .section.active {
+            display: block;
+            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- MOBILE UI --- */
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            nav {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: calc(75px + var(--safe-bottom));
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 12px 10px calc(12px + var(--safe-bottom));
+                border-right: none;
+                border-top: 1px solid #27272a;
+                z-index: 1000;
+                background: rgba(22, 22, 22, 0.95);
+                backdrop-filter: blur(10px);
+            }
+            .nav-item {
+                flex-direction: column;
+                gap: 4px;
+                font-size: 11px;
+                padding: 8px;
+                margin: 0;
+                background: none !important;
+                box-shadow: none !important;
+            }
+            .nav-item.active { color: var(--accent); }
+            .nav-item i { font-size: 22px; }
+            main { padding: 24px; padding-top: calc(32px + var(--safe-top)); }
+        }
+
+        /* --- COMPONENTS --- */
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #27272a;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 8px; }
+        p.subtitle { color: var(--text-dim); margin-bottom: 32px; font-size: 1.1rem; }
+
+        .topic-display {
+            font-size: 22px;
+            text-align: center;
+            min-height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            font-weight: 700;
+            color: var(--accent);
+            background: rgba(168, 85, 247, 0.05);
+            border: 2px dashed #3f3f46;
+            border-radius: 18px;
+            margin: 24px 0;
+            line-height: 1.4;
+            transition: all 0.2s;
+        }
+
+        .primary-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.1s;
+        }
+
+        .primary-btn:active { transform: scale(0.97); }
+
+        .cat-btn {
+            background: #1e1e1e;
+            color: var(--text-dim);
+            border: 1px solid #27272a;
+            padding: 10px 20px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .cat-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* --- CAST & SOCIALS ROLLDOWN --- */
+        .cast-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .cast-member {
+            background: #1e1e1e;
+            border-radius: 18px;
+            border: 1px solid #2a2a2a;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        
+        .cast-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+        }
+
+        .avatar-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #27272a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--accent);
+            border: 2px solid #3f3f46;
+        }
+
+        .cast-name { font-weight: 700; font-size: 1.1rem; flex: 1; }
+        
+        .chevron {
+            color: var(--text-dim);
+            transition: transform 0.3s;
+        }
+
+        .socials-tray {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #161616;
+            padding: 0 20px;
+        }
+
+        .cast-member.expanded { border-color: var(--accent); }
+        .cast-member.expanded .chevron { transform: rotate(180deg); color: var(--accent); }
+        .cast-member.expanded .socials-tray { max-height: 250px; padding: 10px 20px 20px 20px; }
+
+        .plug-item {
+            background: #1e1e1e;
+            border: 1px solid #27272a;
+            padding: 12px;
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .plug-item i { color: var(--accent); }
+
+        audio { 
+            width: 100%; 
+            margin-top: 24px; 
+            filter: hue-rotate(240deg) brightness(1.5); 
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <nav>
+        <div class="nav-item active" onclick="showSection('home', event)">
+            <i class="fa-solid fa-house"></i><span>Home</span>
+        </div>
+        <div class="nav-item" onclick="showSection('player', event)">
+            <i class="fa-solid fa-circle-play"></i><span>Lounge Player</span>
+        </div>
+        <div class="nav-item" onclick="showSection('topics', event)">
+            <i class="fa-solid fa-wand-magic-sparkles"></i><span>Topic Machine</span>
+        </div>
+        <div class="nav-item" onclick="showSection('archive', event)">
+            <i class="fa-solid fa-clapperboard"></i><span>The Vault</span>
+        </div>
+    </nav>
+
+    <main>
+        <!-- HOME SECTION -->
+        <section id="home" class="section active">
+            <h1>Da Homie Lounge</h1>
+            <p class="subtitle">HQ for the GC. Honest convos and chaos.</p>
+            
+            <div class="card" style="border-left: 4px solid var(--accent); background: rgba(168, 85, 247, 0.02);">
+                <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px;">Who we are</h3>
+                <p style="margin: 0; color: var(--text-dim); line-height: 1.6; font-size: 1.05rem;">
+                    Just a bunch of people with nothing better to do in life. We record the stuff we talk about so you can listen to us lose our minds.
+                </p>
+            </div>
+
+            <h2 style="margin-bottom: 16px; font-size: 1.5rem; color: var(--accent);">The Cast</h2>
+            <div class="cast-grid">
+                <!-- RODRIGO -->
+                <div class="cast-member" onclick="toggleSocials(this)">
+                    <div class="cast-header">
+                        <div class="avatar-placeholder">R</div>
+                        <div class="cast-name">Rodrigo</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="socials-tray">
+                        <a href="https://rodspace.github.io" target="_blank" class="plug-item"><i class="fa-solid fa-rocket"></i> Rod-Space</a>
+                        <a href="https://instagram.com/solormenezes" target="_blank" class="plug-item"><i class="fa-brands fa-instagram"></i> @solormenezes</a>
+                        <a href="https://instagram.com/solormenezes2" target="_blank" class="plug-item"><i class="fa-solid fa-camera"></i> Photography</a>
+                    </div>
+                </div>
+
+                <!-- NUNO -->
+                <div class="cast-member" onclick="toggleSocials(this)">
+                    <div class="cast-header">
+                        <div class="avatar-placeholder">N</div>
+                        <div class="cast-name">Nuno</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="socials-tray">
+                        <div class="plug-item"><i class="fa-solid fa-clock"></i> Coming Soon</div>
+                    </div>
+                </div>
+
+                <!-- FELIX -->
+                <div class="cast-member" onclick="toggleSocials(this)">
+                    <div class="cast-header">
+                        <div class="avatar-placeholder">F</div>
+                        <div class="cast-name">Felix</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="socials-tray">
+                        <div class="plug-item"><i class="fa-solid fa-clock"></i> Coming Soon</div>
+                    </div>
+                </div>
+
+                <!-- ALEX -->
+                <div class="cast-member" onclick="toggleSocials(this)">
+                    <div class="cast-header">
+                        <div class="avatar-placeholder">A</div>
+                        <div class="cast-name">Alex</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="socials-tray">
+                        <a href="https://www.instagram.com/sasha.proso/" target="_blank" class="plug-item"><i class="fa-brands fa-instagram"></i> @sasha.proso</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PLAYER SECTION -->
+        <section id="player" class="section">
+            <div class="card" style="text-align: center;">
+                <div id="animation-portal" style="height: 200px; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 16px;">
+                    <i class="fa-solid fa-waveform-lines" style="font-size: 3rem; opacity: 0.2; color: var(--accent);"></i>
+                </div>
+                <h2 id="track-title" style="margin-top: 20px;">Current Episode</h2>
+                <audio id="main-audio" controls>
+                    <source src="audio/podcast.mp3" type="audio/mpeg">
+                </audio>
+            </div>
+        </section>
+
+        <!-- TOPICS SECTION -->
+        <section id="topics" class="section">
+            <h1>Topic Machine</h1>
+            <p id="cat-desc" style="color: var(--text-dim); margin-bottom: 20px; font-style: italic;">Select a category to start the debate.</p>
+            
+            <div id="category-bar" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 20px; -webkit-overflow-scrolling: touch;">
+                <button class="cat-btn active" onclick="setCategory('All', event)">All</button>
+                <button class="cat-btn" onclick="setCategory('School', event)">School</button>
+                <button class="cat-btn" onclick="setCategory('Controversial', event)">Controversy</button>
+                <button class="cat-btn" onclick="setCategory('Media', event)">Media</button>
+                <button class="cat-btn" onclick="setCategory('Games', event)">Games</button>
+            </div>
+            
+            <div class="card">
+                <div class="topic-display" id="topic-out">Select a category and tap</div>
+                <button class="primary-btn" onclick="generateTopic()">Generate Idea</button>
+            </div>
+        </section>
+
+        <!-- ARCHIVE SECTION -->
+        <section id="archive" class="section">
+            <h1>The Vault</h1>
+            <p class="subtitle">Past episodes and transcripts.</p>
+            <div id="episode-list">
+                <div class="card"><strong>EP 01: Pilot</strong><br><small>Coming Soon</small></div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    function showSection(id, event) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+        document.querySelector('main').scrollTop = 0;
+    }
+
+    function toggleSocials(el) {
+        const isExpanded = el.classList.contains('expanded');
+        document.querySelectorAll('.cast-member').forEach(m => m.classList.remove('expanded'));
+        if (!isExpanded) el.classList.add('expanded');
+    }
+
+    let currentCategory = 'All';
+
+    const categoryDescriptions = {
+        "All": "A mix of everything. Total chaos mode.",
+        "School": "Venting about teachers, classes, and the IB struggle.",
+        "Controversial": "Topics that might end friendships. Proceed with caution.",
+        "Media": "Talking about anime, shows, and movies without holding back.",
+        "Games": "From Roblox horror to the most toxic gaming moments."
+    };
+
+    const topicData = {
+        "School": [
+            "What's the most pointless thing the IB makes us do?",
+            "Which teacher is secretly a legend outside of school?",
+            "If you could delete one subject from the syllabus forever, what's going?",
+            "Who in the group is most likely to become a teacher at CIV in 10 years?",
+            "What's the worst school lunch you've ever been served?"
+        ],
+        "Controversial": [
+            "Is it better to be the one who gets dumped or the one who does the dumping?",
+            "What's a 'red flag' that people think is a 'green flag'?",
+            "If you had to choose between never using a phone again or never leaving your hometown, what are you picking?",
+            "Who in the group is most likely to get cancelled for a hot take?",
+            "Is loyalty dead in our generation or is that just a meme?",
+            "Would you rather be famous for something embarrassing or be a 'nobody' forever?"
+        ],
+        "Media": [
+            "What's one feature that would make a horror movie or game terrifying instead of just annoying?",
+            "What's your take on anime right now? Is the quality dropping?",
+            "Hot Take: Live-action remakes are a complete waste of time. Agree or disagree?",
+            "Is superhero fatigue a real thing or are the movies just getting worse?",
+            "What's a show that everyone says is 'deep' but it's really just boring?",
+            "If you could erase one franchise from existence so it never happened, which one goes?"
+        ],
+        "Games": [
+            "Hot Take: Graphics don't matter at all if the movement is trash.",
+            "What's the most overrated horror game ever made?",
+            "Which one of us is most likely to rage-quit a game and break something?",
+            "If you were stuck in a horror game for 24 hours, which one are you picking to survive?",
+            "Are free-to-play games better than $70 games now?",
+            "What's the most legendary 'gamer moment' this group has ever had?"
+        ]
+    };
+
+    function setCategory(cat, event) {
+        currentCategory = cat;
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('cat-desc').innerText = categoryDescriptions[cat];
+        document.getElementById('topic-out').innerText = `Tapped into ${cat}`;
+    }
+
+    function generateTopic() {
+        let pool = (currentCategory === 'All') ? Object.values(topicData).flat() : topicData[currentCategory];
+        let used = JSON.parse(localStorage.getItem('used_topics_v2') || '[]');
+        if (used.length >= pool.length) used = [];
+        const available = pool.filter(t => !used.includes(t));
+        const random = available[Math.floor(Math.random() * available.length)];
+        used.push(random);
+        localStorage.setItem('used_topics_v2', JSON.stringify(used));
+        const display = document.getElementById('topic-out');
+        display.style.opacity = 0;
+        setTimeout(() => { display.innerText = random; display.style.opacity = 1; }, 150);
+    }
+
+    document.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+</script>
+
+</body>
+</html>
