@@ -33,6 +33,7 @@
             color: var(--text);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
+            touch-action: manipulation;
         }
 
         .app-container {
@@ -137,13 +138,13 @@
             border: 1px solid #27272a;
         }
 
-        h1 { font-size: 2.5rem; margin-bottom: 8px; }
+        h1 { font-size: 2.5rem; margin: 0 0 8px 0; }
         p.subtitle { color: var(--text-dim); margin-bottom: 32px; font-size: 1.1rem; }
 
         .topic-display {
             font-size: 22px;
             text-align: center;
-            min-height: 140px;
+            min-height: 160px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -246,7 +247,7 @@
 
         .cast-member.expanded { border-color: var(--accent); }
         .cast-member.expanded .chevron { transform: rotate(180deg); color: var(--accent); }
-        .cast-member.expanded .socials-tray { max-height: 250px; padding: 10px 20px 20px 20px; }
+        .cast-member.expanded .socials-tray { max-height: 300px; padding: 10px 20px 20px 20px; }
 
         .plug-item {
             background: #1e1e1e;
@@ -294,12 +295,12 @@
         <!-- HOME SECTION -->
         <section id="home" class="section active">
             <h1>Da Homie Lounge</h1>
-            <p class="subtitle">Just Chatting.</p>
+            <p class="subtitle">Unfiltered Talks.</p>
             
             <div class="card" style="border-left: 4px solid var(--accent); background: rgba(168, 85, 247, 0.02);">
                 <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px;">Who we are</h3>
                 <p style="margin: 0; color: var(--text-dim); line-height: 1.6; font-size: 1.05rem;">
-                    Just a bunch of people with nothing better to do in life. We record the stuff we talk about so you can listen to us lose our minds.
+                    Just a bunch of people with nothing better to do. We record the stuff we talk about so you can listen to us lose our minds.
                 </p>
             </div>
 
@@ -313,7 +314,7 @@
                         <i class="fa-solid fa-chevron-down chevron"></i>
                     </div>
                     <div class="socials-tray">
-                        <a href="https://rodspace.github.io" target="_blank" class="plug-item"><i class="fa-solid fa-rocket"></i> Rod-Space</a>
+                        <a href="https://rodspace.github.io" target="_blank" class="plug-item"><i class="fa-solid fa-rocket"></i> Rod-Space Hub</a>
                         <a href="https://instagram.com/solormenezes" target="_blank" class="plug-item"><i class="fa-brands fa-instagram"></i> @solormenezes</a>
                         <a href="https://instagram.com/solormenezes2" target="_blank" class="plug-item"><i class="fa-solid fa-camera"></i> Photography</a>
                     </div>
@@ -327,7 +328,7 @@
                         <i class="fa-solid fa-chevron-down chevron"></i>
                     </div>
                     <div class="socials-tray">
-                        <div class="plug-item"><i class="fa-solid fa-clock"></i> Coming Soon</div>
+                        <div class="plug-item"><i class="fa-solid fa-clock"></i> Links Coming Soon</div>
                     </div>
                 </div>
 
@@ -339,7 +340,7 @@
                         <i class="fa-solid fa-chevron-down chevron"></i>
                     </div>
                     <div class="socials-tray">
-                        <div class="plug-item"><i class="fa-solid fa-clock"></i> Coming Soon</div>
+                        <div class="plug-item"><i class="fa-solid fa-clock"></i> Links Coming Soon</div>
                     </div>
                 </div>
 
@@ -363,7 +364,7 @@
                 <div id="animation-portal" style="height: 200px; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 16px;">
                     <i class="fa-solid fa-waveform-lines" style="font-size: 3rem; opacity: 0.2; color: var(--accent);"></i>
                 </div>
-                <h2 id="track-title" style="margin-top: 20px;">Current Episode</h2>
+                <h2 id="track-title" style="margin-top: 20px;">Latest Episode</h2>
                 <audio id="main-audio" controls>
                     <source src="audio/podcast.mp3" type="audio/mpeg">
                 </audio>
@@ -384,7 +385,7 @@
             </div>
             
             <div class="card">
-                <div class="topic-display" id="topic-out">Select a category and tap</div>
+                <div class="topic-display" id="topic-out">Ready to get unhinged?</div>
                 <button class="primary-btn" onclick="generateTopic()">Generate Idea</button>
             </div>
         </section>
@@ -401,21 +402,28 @@
 </div>
 
 <script>
+    // NAVIGATION LOGIC
     function showSection(id, event) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         event.currentTarget.classList.add('active');
         document.querySelector('main').scrollTop = 0;
+
+        if(id === 'topics') syncTopics();
     }
 
+    // CAST ROLLDOWN LOGIC
     function toggleSocials(el) {
         const isExpanded = el.classList.contains('expanded');
         document.querySelectorAll('.cast-member').forEach(m => m.classList.remove('expanded'));
         if (!isExpanded) el.classList.add('expanded');
     }
 
+    // TOPIC MACHINE LOGIC
     let currentCategory = 'All';
+    let masterTopics = null;
+    const remoteUrl = 'https://solormenezes.github.io/Rod-Space/topics.json';
 
     const categoryDescriptions = {
         "All": "A mix of everything. Total chaos mode.",
@@ -425,39 +433,29 @@
         "Games": "From Roblox horror to the most toxic gaming moments."
     };
 
-    const topicData = {
-        "School": [
-            "What's the most pointless thing the IB makes us do?",
-            "Which teacher is secretly a legend outside of school?",
-            "If you could delete one subject from the syllabus forever, what's going?",
-            "Who in the group is most likely to become a teacher at CIV in 10 years?",
-            "What's the worst school lunch you've ever been served?"
-        ],
-        "Controversial": [
-            "Is it better to be the one who gets dumped or the one who does the dumping?",
-            "What's a 'red flag' that people think is a 'green flag'?",
-            "If you had to choose between never using a phone again or never leaving your hometown, what are you picking?",
-            "Who in the group is most likely to get cancelled for a hot take?",
-            "Is loyalty dead in our generation or is that just a meme?",
-            "Would you rather be famous for something embarrassing or be a 'nobody' forever?"
-        ],
-        "Media": [
-            "What's one feature that would make a horror movie or game terrifying instead of just annoying?",
-            "What's your take on anime right now? Is the quality dropping?",
-            "Hot Take: Live-action remakes are a complete waste of time. Agree or disagree?",
-            "Is superhero fatigue a real thing or are the movies just getting worse?",
-            "What's a show that everyone says is 'deep' but it's really just boring?",
-            "If you could erase one franchise from existence so it never happened, which one goes?"
-        ],
-        "Games": [
-            "Hot Take: Graphics don't matter at all if the movement is trash.",
-            "What's the most overrated horror game ever made?",
-            "Which one of us is most likely to rage-quit a game and break something?",
-            "If you were stuck in a horror game for 24 hours, which one are you picking to survive?",
-            "Are free-to-play games better than $70 games now?",
-            "What's the most legendary 'gamer moment' this group has ever had?"
-        ]
-    };
+    async function syncTopics() {
+        if (masterTopics) return;
+        
+        const display = document.getElementById('topic-out');
+        const originalText = display.innerText;
+        display.innerText = "Syncing 400+ topics...";
+        
+        try {
+            const response = await fetch(remoteUrl);
+            if (!response.ok) throw new Error('Failed to fetch');
+            masterTopics = await response.json();
+            display.innerText = "Topics Loaded. Tap Generate.";
+        } catch (error) {
+            console.error(error);
+            display.innerText = "Sync failed. Using local emergency topics.";
+            masterTopics = {
+                "School": ["IB is a scam.", "CIV wifi is trash."],
+                "Controversial": ["Stealing from multi-billion dollar companies is justice.", "Loyalty is dead."],
+                "Media": ["ShuttleTV is king.", "Anime is mid now."],
+                "Games": ["Emulation is a moral right.", "PC is a money pit."]
+            };
+        }
+    }
 
     function setCategory(cat, event) {
         currentCategory = cat;
@@ -468,18 +466,41 @@
     }
 
     function generateTopic() {
-        let pool = (currentCategory === 'All') ? Object.values(topicData).flat() : topicData[currentCategory];
-        let used = JSON.parse(localStorage.getItem('used_topics_v2') || '[]');
-        if (used.length >= pool.length) used = [];
+        if (!masterTopics) {
+            syncTopics();
+            return;
+        }
+
+        let pool = (currentCategory === 'All') 
+            ? Object.values(masterTopics).flat() 
+            : masterTopics[currentCategory];
+
+        // Shuffle Bag logic
+        let used = JSON.parse(localStorage.getItem('used_v5') || '[]');
         const available = pool.filter(t => !used.includes(t));
+
+        if (available.length === 0) {
+            used = used.filter(t => !pool.includes(t));
+            localStorage.setItem('used_v5', JSON.stringify(used));
+            return generateTopic();
+        }
+
         const random = available[Math.floor(Math.random() * available.length)];
         used.push(random);
-        localStorage.setItem('used_topics_v2', JSON.stringify(used));
+        localStorage.setItem('used_v5', JSON.stringify(used));
+
         const display = document.getElementById('topic-out');
         display.style.opacity = 0;
-        setTimeout(() => { display.innerText = random; display.style.opacity = 1; }, 150);
+        setTimeout(() => { 
+            display.innerText = random; 
+            display.style.opacity = 1; 
+        }, 150);
     }
 
+    // Auto-sync on load
+    window.onload = syncTopics;
+
+    // iOS Fixes
     document.addEventListener('touchstart', (e) => {
         if (e.touches.length > 1) e.preventDefault();
     }, { passive: false });
