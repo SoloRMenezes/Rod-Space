@@ -1,489 +1,417 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Lounge HQ | Da Homie Lounge</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-color: #0d0d0d;
-            --card-bg: #161616;
-            --accent: #a855f7; 
-            --accent-dim: #7c3aed;
-            --text: #ffffff;
-            --text-dim: #a1a1aa;
-            --safe-top: env(safe-area-inset-top);
-            --safe-bottom: env(safe-area-inset-bottom);
-        }
-
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            outline: none;
-        }
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            background-color: var(--bg-color);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow: hidden;
-        }
-
-        .app-container {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        /* --- NAVIGATION --- */
-        nav {
-            background: var(--card-bg);
-            border-right: 1px solid #27272a;
-            display: flex;
-            flex-direction: column;
-            width: 260px;
-            padding: 24px;
-        }
-
-        .nav-item {
-            padding: 14px 18px;
-            margin-bottom: 8px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            font-weight: 600;
-            color: var(--text-dim);
-        }
-
-        .nav-item.active {
-            background: rgba(168, 85, 247, 0.15);
-            color: var(--accent);
-            box-shadow: inset 0 0 0 1px var(--accent);
-        }
-
-        /* --- MAIN CONTENT --- */
-        main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 48px;
-            padding-bottom: 120px;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .section {
-            display: none;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .section.active {
-            display: block;
-            animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- MOBILE UI --- */
-        @media (max-width: 768px) {
-            .app-container { flex-direction: column; }
-            nav {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                height: calc(75px + var(--safe-bottom));
-                flex-direction: row;
-                justify-content: space-around;
-                padding: 12px 10px calc(12px + var(--safe-bottom));
-                border-right: none;
-                border-top: 1px solid #27272a;
-                z-index: 1000;
-                background: rgba(22, 22, 22, 0.95);
-                backdrop-filter: blur(10px);
-            }
-            .nav-item {
-                flex-direction: column;
-                gap: 4px;
-                font-size: 11px;
-                padding: 8px;
-                margin: 0;
-                background: none !important;
-                box-shadow: none !important;
-            }
-            .nav-item.active { color: var(--accent); }
-            .nav-item i { font-size: 22px; }
-            main { padding: 24px; padding-top: calc(32px + var(--safe-top)); }
-        }
-
-        /* --- COMPONENTS --- */
-        .card {
-            background: var(--card-bg);
-            padding: 24px;
-            border-radius: 20px;
-            margin-bottom: 24px;
-            border: 1px solid #27272a;
-        }
-
-        h1 { font-size: 2.5rem; margin-bottom: 8px; }
-        p.subtitle { color: var(--text-dim); margin-bottom: 32px; font-size: 1.1rem; }
-
-        .topic-display {
-            font-size: 22px;
-            text-align: center;
-            min-height: 140px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            font-weight: 700;
-            color: var(--accent);
-            background: rgba(168, 85, 247, 0.05);
-            border: 2px dashed #3f3f46;
-            border-radius: 18px;
-            margin: 24px 0;
-            line-height: 1.4;
-            transition: all 0.2s;
-        }
-
-        .primary-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 18px;
-            border-radius: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: transform 0.1s;
-        }
-
-        .primary-btn:active { transform: scale(0.97); }
-
-        .cat-btn {
-            background: #1e1e1e;
-            color: var(--text-dim);
-            border: 1px solid #27272a;
-            padding: 10px 20px;
-            border-radius: 20px;
-            white-space: nowrap;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-        .cat-btn.active {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        /* --- CAST & SOCIALS ROLLDOWN --- */
-        .cast-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-        
-        .cast-member {
-            background: #1e1e1e;
-            border-radius: 18px;
-            border: 1px solid #2a2a2a;
-            overflow: hidden;
-            transition: border-color 0.3s;
-        }
-        
-        .cast-header {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            cursor: pointer;
-        }
-
-        .avatar-placeholder {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #27272a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--accent);
-            border: 2px solid #3f3f46;
-        }
-
-        .cast-name { font-weight: 700; font-size: 1.1rem; flex: 1; }
-        
-        .chevron {
-            color: var(--text-dim);
-            transition: transform 0.3s;
-        }
-
-        .socials-tray {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #161616;
-            padding: 0 20px;
-        }
-
-        .cast-member.expanded { border-color: var(--accent); }
-        .cast-member.expanded .chevron { transform: rotate(180deg); color: var(--accent); }
-        .cast-member.expanded .socials-tray { max-height: 250px; padding: 10px 20px 20px 20px; }
-
-        .plug-item {
-            background: #1e1e1e;
-            border: 1px solid #27272a;
-            padding: 12px;
-            border-radius: 12px;
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-        .plug-item i { color: var(--accent); }
-
-        audio { 
-            width: 100%; 
-            margin-top: 24px; 
-            filter: hue-rotate(240deg) brightness(1.5); 
-        }
-
-    </style>
-</head>
-<body>
-
-<div class="app-container">
-    <nav>
-        <div class="nav-item active" onclick="showSection('home', event)">
-            <i class="fa-solid fa-house"></i><span>Home</span>
-        </div>
-        <div class="nav-item" onclick="showSection('player', event)">
-            <i class="fa-solid fa-circle-play"></i><span>Lounge Player</span>
-        </div>
-        <div class="nav-item" onclick="showSection('topics', event)">
-            <i class="fa-solid fa-wand-magic-sparkles"></i><span>Topic Machine</span>
-        </div>
-        <div class="nav-item" onclick="showSection('archive', event)">
-            <i class="fa-solid fa-clapperboard"></i><span>The Vault</span>
-        </div>
-    </nav>
-
-    <main>
-        <!-- HOME SECTION -->
-        <section id="home" class="section active">
-            <h1>Da Homie Lounge</h1>
-            <p class="subtitle">HQ for the GC. Honest convos and chaos.</p>
-            
-            <div class="card" style="border-left: 4px solid var(--accent); background: rgba(168, 85, 247, 0.02);">
-                <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px;">Who we are</h3>
-                <p style="margin: 0; color: var(--text-dim); line-height: 1.6; font-size: 1.05rem;">
-                    Just a bunch of people with nothing better to do in life. We record the stuff we talk about so you can listen to us lose our minds.
-                </p>
-            </div>
-
-            <h2 style="margin-bottom: 16px; font-size: 1.5rem; color: var(--accent);">The Cast</h2>
-            <div class="cast-grid">
-                <!-- RODRIGO -->
-                <div class="cast-member" onclick="toggleSocials(this)">
-                    <div class="cast-header">
-                        <div class="avatar-placeholder">R</div>
-                        <div class="cast-name">Rodrigo</div>
-                        <i class="fa-solid fa-chevron-down chevron"></i>
-                    </div>
-                    <div class="socials-tray">
-                        <a href="https://rodspace.github.io" target="_blank" class="plug-item"><i class="fa-solid fa-rocket"></i> Rod-Space</a>
-                        <a href="https://instagram.com/solormenezes" target="_blank" class="plug-item"><i class="fa-brands fa-instagram"></i> @solormenezes</a>
-                        <a href="https://instagram.com/solormenezes2" target="_blank" class="plug-item"><i class="fa-solid fa-camera"></i> Photography</a>
-                    </div>
-                </div>
-
-                <!-- NUNO -->
-                <div class="cast-member" onclick="toggleSocials(this)">
-                    <div class="cast-header">
-                        <div class="avatar-placeholder">N</div>
-                        <div class="cast-name">Nuno</div>
-                        <i class="fa-solid fa-chevron-down chevron"></i>
-                    </div>
-                    <div class="socials-tray">
-                        <div class="plug-item"><i class="fa-solid fa-clock"></i> Coming Soon</div>
-                    </div>
-                </div>
-
-                <!-- FELIX -->
-                <div class="cast-member" onclick="toggleSocials(this)">
-                    <div class="cast-header">
-                        <div class="avatar-placeholder">F</div>
-                        <div class="cast-name">Felix</div>
-                        <i class="fa-solid fa-chevron-down chevron"></i>
-                    </div>
-                    <div class="socials-tray">
-                        <div class="plug-item"><i class="fa-solid fa-clock"></i> Coming Soon</div>
-                    </div>
-                </div>
-
-                <!-- ALEX -->
-                <div class="cast-member" onclick="toggleSocials(this)">
-                    <div class="cast-header">
-                        <div class="avatar-placeholder">A</div>
-                        <div class="cast-name">Alex</div>
-                        <i class="fa-solid fa-chevron-down chevron"></i>
-                    </div>
-                    <div class="socials-tray">
-                        <a href="https://www.instagram.com/sasha.proso/" target="_blank" class="plug-item"><i class="fa-brands fa-instagram"></i> @sasha.proso</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PLAYER SECTION -->
-        <section id="player" class="section">
-            <div class="card" style="text-align: center;">
-                <div id="animation-portal" style="height: 200px; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 16px;">
-                    <i class="fa-solid fa-waveform-lines" style="font-size: 3rem; opacity: 0.2; color: var(--accent);"></i>
-                </div>
-                <h2 id="track-title" style="margin-top: 20px;">Current Episode</h2>
-                <audio id="main-audio" controls>
-                    <source src="audio/podcast.mp3" type="audio/mpeg">
-                </audio>
-            </div>
-        </section>
-
-        <!-- TOPICS SECTION -->
-        <section id="topics" class="section">
-            <h1>Topic Machine</h1>
-            <p id="cat-desc" style="color: var(--text-dim); margin-bottom: 20px; font-style: italic;">Select a category to start the debate.</p>
-            
-            <div id="category-bar" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 20px; -webkit-overflow-scrolling: touch;">
-                <button class="cat-btn active" onclick="setCategory('All', event)">All</button>
-                <button class="cat-btn" onclick="setCategory('School', event)">School</button>
-                <button class="cat-btn" onclick="setCategory('Controversial', event)">Controversy</button>
-                <button class="cat-btn" onclick="setCategory('Media', event)">Media</button>
-                <button class="cat-btn" onclick="setCategory('Games', event)">Games</button>
-            </div>
-            
-            <div class="card">
-                <div class="topic-display" id="topic-out">Select a category and tap</div>
-                <button class="primary-btn" onclick="generateTopic()">Generate Idea</button>
-            </div>
-        </section>
-
-        <!-- ARCHIVE SECTION -->
-        <section id="archive" class="section">
-            <h1>The Vault</h1>
-            <p class="subtitle">Past episodes and transcripts.</p>
-            <div id="episode-list">
-                <div class="card"><strong>EP 01: Pilot</strong><br><small>Coming Soon</small></div>
-            </div>
-        </section>
-    </main>
-</div>
-
-<script>
-    function showSection(id, event) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        event.currentTarget.classList.add('active');
-        document.querySelector('main').scrollTop = 0;
-    }
-
-    function toggleSocials(el) {
-        const isExpanded = el.classList.contains('expanded');
-        document.querySelectorAll('.cast-member').forEach(m => m.classList.remove('expanded'));
-        if (!isExpanded) el.classList.add('expanded');
-    }
-
-    let currentCategory = 'All';
-
-    const categoryDescriptions = {
-        "All": "A mix of everything. Total chaos mode.",
-        "School": "Venting about teachers, classes, and the IB struggle.",
-        "Controversial": "Topics that might end friendships. Proceed with caution.",
-        "Media": "Talking about anime, shows, and movies without holding back.",
-        "Games": "From Roblox horror to the most toxic gaming moments."
-    };
-
-    const topicData = {
-        "School": [
-            "What's the most pointless thing the IB makes us do?",
-            "Which teacher is secretly a legend outside of school?",
-            "If you could delete one subject from the syllabus forever, what's going?",
-            "Who in the group is most likely to become a teacher at CIV in 10 years?",
-            "What's the worst school lunch you've ever been served?"
-        ],
-        "Controversial": [
-            "Is it better to be the one who gets dumped or the one who does the dumping?",
-            "What's a 'red flag' that people think is a 'green flag'?",
-            "If you had to choose between never using a phone again or never leaving your hometown, what are you picking?",
-            "Who in the group is most likely to get cancelled for a hot take?",
-            "Is loyalty dead in our generation or is that just a meme?",
-            "Would you rather be famous for something embarrassing or be a 'nobody' forever?"
-        ],
-        "Media": [
-            "What's one feature that would make a horror movie or game terrifying instead of just annoying?",
-            "What's your take on anime right now? Is the quality dropping?",
-            "Hot Take: Live-action remakes are a complete waste of time. Agree or disagree?",
-            "Is superhero fatigue a real thing or are the movies just getting worse?",
-            "What's a show that everyone says is 'deep' but it's really just boring?",
-            "If you could erase one franchise from existence so it never happened, which one goes?"
-        ],
-        "Games": [
-            "Hot Take: Graphics don't matter at all if the movement is trash.",
-            "What's the most overrated horror game ever made?",
-            "Which one of us is most likely to rage-quit a game and break something?",
-            "If you were stuck in a horror game for 24 hours, which one are you picking to survive?",
-            "Are free-to-play games better than $70 games now?",
-            "What's the most legendary 'gamer moment' this group has ever had?"
-        ]
-    };
-
-    function setCategory(cat, event) {
-        currentCategory = cat;
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById('cat-desc').innerText = categoryDescriptions[cat];
-        document.getElementById('topic-out').innerText = `Tapped into ${cat}`;
-    }
-
-    function generateTopic() {
-        let pool = (currentCategory === 'All') ? Object.values(topicData).flat() : topicData[currentCategory];
-        let used = JSON.parse(localStorage.getItem('used_topics_v2') || '[]');
-        if (used.length >= pool.length) used = [];
-        const available = pool.filter(t => !used.includes(t));
-        const random = available[Math.floor(Math.random() * available.length)];
-        used.push(random);
-        localStorage.setItem('used_topics_v2', JSON.stringify(used));
-        const display = document.getElementById('topic-out');
-        display.style.opacity = 0;
-        setTimeout(() => { display.innerText = random; display.style.opacity = 1; }, 150);
-    }
-
-    document.addEventListener('touchstart', (e) => {
-        if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
-</script>
-
-</body>
-</html>
+{
+  "School": [
+    "IB textbooks are a scam—pirating them is literally a moral duty.",
+    "Which teacher at CIV is 100% an NPC?",
+    "Math AA HL is a social experiment to see how much we can suffer before we snap.",
+    "Imagine the school Wi-Fi filter didn't exist for one hour. What's the first thing you're searching?",
+    "Ranking the absolute worst 'mystery meats' ever served in the cafeteria.",
+    "Stop lying—how many CAS hours did you fake this month?",
+    "If the school caught you using AI for every single essay, would you admit it or gaslight them?",
+    "Which teacher would you trust to help you hide a body?",
+    "Delete one IB subject from existence forever. Which one is gone?",
+    "The CIV dress code is just a way for them to control the vibe—agree or disagree?",
+    "Most likely person in this room to end up back at CIV as a teacher in 10 years.",
+    "Which classroom always smells like old gym socks and failed dreams?",
+    "Who is definitely the principal's favorite student?",
+    "Publicly roast the most useless project we've ever had to do.",
+    "Cycle Tests are just a way for teachers to feel powerful on a Tuesday.",
+    "What's the most legendary piece of school drama that got swept under the rug?",
+    "If we started a riot in the lounge, what's our first demand?",
+    "Which teacher has the most 'divorced energy' right now?",
+    "You get 5 minutes on the school's admin computer. Whose grades are you changing first?",
+    "Most embarrassing thing a teacher has said while trying to be 'cool'.",
+    "Which subject is basically just a 60-minute nap period?",
+    "School assemblies: a complete waste of oxygen or a good way to skip class?",
+    "Tell the truth: who has the most 'teacher's pet' energy here?",
+    "The library is for sleeping, not studying. Change my mind.",
+    "Which teacher would be the first to die in a zombie apocalypse?",
+    "IB learner profile traits are just a list of things nobody actually is.",
+    "What's the smallest thing that could get someone expelled if the school found out?",
+    "The kid who reminds the teacher about the homework deserves a special place in hell.",
+    "Most likely to show up to graduation in a track suit.",
+    "Which classroom has the most cursed aura?",
+    "Teachers' lounge: what's the most scandalous thing they talk about in there?",
+    "The IB diploma is just a piece of paper that costs your soul. Is it worth it?",
+    "Who in the group is most likely to fail a test they studied a week for?",
+    "Which subject attracts the most toxic people?",
+    "If you could fire one teacher today with zero consequences, who's out?",
+    "DP2 makes DP1 look like a vacation. Agree or disagree?",
+    "Most likely to win 'least likely to succeed' but still gets richer than all of us.",
+    "Which teacher is secretly a legend outside of school hours?",
+    "School trips: actually fun or just a way for them to babysit us in a different city?",
+    "The lockers are just metal trash cans for things we forgot we owned.",
+    "Who is the biggest 'academic weapon' (but only in their own head)?",
+    "Worst time to realize you have a double period of your least favorite subject.",
+    "Most likely to accidentally call a teacher 'Mom' or 'Dad' during a lecture.",
+    "Which subject has the most boring syllabus in human history?",
+    "Which teacher would win in a boxing match?",
+    "School events are 90% cringe and 10% actually decent.",
+    "Most likely to have 50+ unread emails from the school office right now.",
+    "If the school had a 'Most Likely to Get Cancelled' award, who wins it?",
+    "Which classroom is always freezing for absolutely no reason?",
+    "Which teacher has the best 'I don't give a shit' attitude?",
+    "The IB is basically a cult. Prove me wrong.",
+    "Who is definitely hiding a phone under their desk during every single test?",
+    "Most likely to start a business in the lounge and get it shut down by Wednesday.",
+    "Which teacher has the weirdest collection of stuff on their desk?",
+    "School lunch prices: daylight robbery or just 'inflation'?",
+    "Most likely to forget it's a test day until they walk into the room.",
+    "Which teacher probably has a secret TikTok account with 100k followers?",
+    "The 'quiet kid' is usually the one with the most unhinged stories.",
+    "Most likely to accidentally CC the entire school on a private email.",
+    "Which subject feels like a fever dream every time you walk into the room?",
+    "Which teacher would you trust to give you a ride if you were stranded at 2 AM?",
+    "The school's 'spirit' is just us being tired together. Agree or disagree?",
+    "Most likely to get a tattoo of an IB formula by mistake.",
+    "Which classroom is the best spot for a secret 20-minute nap?",
+    "Which teacher is most likely an alien in a human suit?",
+    "Most likely to write their IA the night before and somehow get a 7.",
+    "Which subject is the biggest waste of paper?",
+    "Which teacher would you most want as a teammate in a bank heist?",
+    "The 'smart kid' who hasn't slept since 2024—what's their actual secret?",
+    "Most likely to spend their entire student budget on coffee in the first week.",
+    "Which teacher has the scariest stare in the building?",
+    "School projects are just a way for one person to do all the work while the rest watch.",
+    "Most likely to have their parents called for something completely stupid.",
+    "Which classroom has the best view of literally anything else?",
+    "Which teacher would you most want to roast in a rap battle?",
+    "The school handbook is just a list of suggestions, right?",
+    "Most likely to lose their diploma within an hour of getting it.",
+    "Which subject is actually useful for real life? (Hint: none of them).",
+    "Which teacher looks like they haven't slept in a decade?",
+    "Most likely to fall asleep during their own presentation.",
+    "Which classroom is always suspiciously quiet?",
+    "Which teacher would be the best fit for a reality TV show?",
+    "The school website looks like it's from 2005—fix it or keep the vintage trash vibe?",
+    "Most likely to bring a full three-course meal into a class where eating is banned.",
+    "Which subject has the most homework for no actual reason?",
+    "Which teacher is definitely a secret pro gamer?",
+    "Most likely to win a debate by just being the loudest person in the room.",
+    "Which classroom is most likely to be haunted by a former IB student?",
+    "Which teacher would you actually want to have a coffee with outside of school?",
+    "The 'new kid' who immediately became popular—what's the secret?",
+    "Most likely to get caught in the hallway without a pass and try to run.",
+    "Which subject makes you want to quit the IB every single morning?",
+    "Which teacher probably has a secret life as an underground musician?",
+    "Most likely to spend their life savings on a car they can't even drive yet.",
+    "Which classroom is the hardest to find if you're not a senior?",
+    "Which teacher gives the most confusing instructions in the world?",
+    "Most likely to start a podcast about how much they hate the IB program.",
+    "Which subject has the most 'vibes' but zero actual substance?",
+    "Which teacher would you most want to see in a Halloween costume?",
+    "The school's 'community' is just us trauma-bonding over exams."
+  ],
+  "Controversial": [
+    "Stealing from multi-billion dollar companies isn't theft—it's justice.",
+    "What are some red flags that our generation actually thinks are green flags?",
+    "Who in the group is definitely getting cancelled first?",
+    "10k to let everyone in this room see your full search history. Are you doing it?",
+    "Most 'main character' energy in the lounge right now—who needs to chill?",
+    "Dump someone or be the one dumped? Pick the lesser of two evils.",
+    "Loyalty is dead—everyone is just waiting for a better offer to come along.",
+    "Which 'cancelable' take are you willing to die on a hill for?",
+    "Would you leak the group chat for a guaranteed 45 in the IB?",
+    "Friendship ends the second you start dating your friend's ex. Agree or disagree?",
+    "Is 'hustle culture' just a fancy way to say you're burning out for nothing?",
+    "Who is the biggest 'fake' person we all know but don't talk about?",
+    "Fame for something humiliating or being a 'nobody' forever. Which one?",
+    "Social media is just a contest for who can lie the best about their life.",
+    "Is it actually possible to be 'just friends' with an ex?",
+    "What's the biggest lie our parents told us about 'the real world'?",
+    "Lying to protect someone's feelings is just a coward's way out.",
+    "Who in the group has a toxic trait they refuse to admit to?",
+    "Is 'cancel culture' just a modern-day witch hunt for bored people?",
+    "Most overrated celebrity who needs to vanish from the internet immediately.",
+    "Would you rather be feared by everyone or loved by nobody?",
+    "Privacy is dead—should we even bother trying to keep secrets anymore?",
+    "Regret for something you did vs. regret for something you didn't do—which is worse?",
+    "Ghosting someone is sometimes the only mature way to handle a situation.",
+    "What's the most overrated life milestone that everyone obsesses over?",
+    "Is brand loyalty just a way for companies to own your entire personality?",
+    "Better to be brutally honest and hated, or polite and fake?",
+    "Who is the most misunderstood person in history?",
+    "Is 'money can't buy happiness' just something rich people say to keep us quiet?",
+    "What's the biggest lie you've ever told yourself just to get through the day?",
+    "Judging people based on their music taste is actually 100% valid.",
+    "What's a toxic relationship dynamic that people actually romanticize?",
+    "Forgiveness is overrated—some people deserve to be hated forever.",
+    "Is competition healthy or just a way to make us all miserable?",
+    "What's the biggest risk you've taken that absolutely did not pay off?",
+    "Lead or follow? There is no middle ground in this group.",
+    "Most misleading thing you've ever seen in an advertisement.",
+    "Is 'forever' even a real thing when it comes to friendships?",
+    "What's the biggest misconception people have about you?",
+    "Changing your mind is a sign of intelligence, not a sign of weakness.",
+    "Most annoying thing people do on social media for attention.",
+    "Tradition is just peer pressure from dead people. Agree or disagree?",
+    "What's a 'failure' you've had that you're actually proud of?",
+    "Plan everything or improvise everything? Choose your chaos.",
+    "Most overrated food that people only like because it's 'trendy' on TikTok.",
+    "Perfection is a myth—why are we still chasing it in the IB?",
+    "Biggest lie society tells us about 'growing up'.",
+    "Disagreeing with your parents is a rite of passage, not a rebellion.",
+    "What's the most annoying personality trait someone can have?",
+    "Is knowledge power, or is it just more stress?",
+    "What's the biggest secret you've ever kept for someone in this room?",
+    "Give or receive? Be honest about which one you actually prefer.",
+    "Most misunderstood emotion that people are afraid to show.",
+    "Is fear actually a better motivator than love or passion?",
+    "Biggest lie about what the world will look like in 20 years.",
+    "Prioritizing yourself isn't selfish—it's just survival.",
+    "Most overrated hobby that people only do for the 'aesthetic'.",
+    "Is change actually inevitable or are we just too lazy to stop it?",
+    "Biggest lie you've ever heard about 'true love'.",
+    "Vulnerability is a weakness in the real world. Prove me wrong.",
+    "Most annoying thing about 'influencers' in Portugal right now.",
+    "Talent is 10% skill and 90% just having the right connections.",
+    "Biggest lie about 'finding your passion' in life.",
+    "Taking a break is just another word for giving up. Agree or disagree?",
+    "Most annoying thing about how people communicate now.",
+    "Creativity is just knowing how to hide your sources well.",
+    "Biggest lie about 'healthy living' and wellness culture.",
+    "Being 'different' is just another way to try and fit in. Agree or disagree?",
+    "Most annoying thing about traveling with your friends.",
+    "Freedom is an illusion—we're all just slaves to something.",
+    "Biggest lie about how technology 'connects' us.",
+    "Curiosity killed the cat, and it's probably going to ruin your life too.",
+    "Most annoying thing about other people's opinions on your life.",
+    "Justice is never actually blind—it's just expensive.",
+    "Biggest lie about 'time management' in the IB.",
+    "Ambition is just a fancy word for never being satisfied with anything.",
+    "Most annoying thing about the world today.",
+    "Peace is just the time between two different wars.",
+    "Biggest lie about the actual value of a university degree.",
+    "Being yourself is the worst advice you can give someone. Agree or disagree?",
+    "Most annoying thing about group dynamics in our GC.",
+    "Honesty is only the best policy when you have nothing to hide.",
+    "The IB is a scam designed to keep us busy while they take our money.",
+    "Success is 100% subjective—stop letting other people define yours.",
+    "Happiness is just a temporary chemical imbalance in your brain.",
+    "Most annoying thing about people our age.",
+    "Privacy is a luxury only the rich can afford anymore.",
+    "Is 'fate' just an excuse for people who don't want to take responsibility?",
+    "Biggest lie about 'the good old days'.",
+    "Ambition without talent is just a tragedy waiting to happen.",
+    "Most annoying thing about the internet in 2026.",
+    "History is written by the winners—what are we not being told at CIV?",
+    "What's the most overrated virtue in society?",
+    "Self-help books are just a way to make you feel worse about yourself.",
+    "Most annoying thing about modern dating culture.",
+    "Is 'common sense' actually common, or is it a myth?",
+    "Biggest lie about the 'importance' of your final grades.",
+    "Better to be forgotten forever or remembered for something terrible?",
+    "Most annoying thing about how we spend our free time.",
+    "The truth is rarely pure and never simple. Agree or disagree?"
+  ],
+  "Media": [
+    "ShuttleTV and Flixer are the only reasons I haven't gone broke—streaming services are a scam.",
+    "Live-action remakes are just corporate cash-grabs—stop paying to see them.",
+    "Is superhero fatigue real, or is the writing just getting lazier every year?",
+    "What's a show everyone says is 'deep' but is actually just boring as hell?",
+    "Erase one entire movie franchise from history. Which one is dying?",
+    "Omni-Man was right—humanity is too weak to lead itself without him.",
+    "Which character from The Boys would get expelled from CIV the fastest?",
+    "Horror games: what's the one mechanic that actually makes you scream?",
+    "Anime is becoming too mainstream—has the 'vibe' officially been ruined?",
+    "What's the most overrated anime of all time? No holding back.",
+    "Is streaming actually worse than the 'old days' of cable TV?",
+    "A movie everyone else loves but you secretly think is absolute trash.",
+    "Binge-watching is just a way to avoid your actual life problems.",
+    "Which show should have ended three seasons ago but is still going?",
+    "Movie theaters: a legendary experience or just overpriced popcorn and sticky floors?",
+    "What's the most underrated show on Netflix that nobody is talking about?",
+    "Is the MCU actually ruining the concept of cinema for everyone else?",
+    "Best movie soundtrack that you'd actually listen to on repeat while gaming.",
+    "Is anime for kids? Let's settle this once and for all.",
+    "Most annoying 'hero' in a popular TV show right now.",
+    "Rebooting shows is just a sign that Hollywood has zero new ideas left.",
+    "Which movie villain actually had a point if you really think about it?",
+    "Are streaming services killing cinemas?",
+    "What's the scariest movie scene that actually traumatized you as a kid?",
+    "Netflix is falling off—where is the group moving to next for shows?",
+    "Best plot twist that you genuinely did not see coming.",
+    "CGI is making movies look like trash video games—agree or disagree?",
+    "What's the most emotional scene that actually made you tear up?",
+    "Is anime becoming too 'sanitized' for global audiences to enjoy?",
+    "Which 'hero' is actually the biggest villain in their own story?",
+    "Is 'TV' dead, or is it just evolving into something even worse?",
+    "Most overrated director in the industry right now.",
+    "Is filmmaking an art form or just a giant business meeting?",
+    "Best comedy movie that actually makes you laugh out loud in 2026.",
+    "Is anime a culture or just a hobby for people with too much time?",
+    "What's the most annoying trope that shows up in every single movie?",
+    "Is streaming actually cheaper, or are we being scammed by 10 different subs?",
+    "Best action movie that isn't just constant explosions and no plot.",
+    "Is anime actually changing how Western media is made for the better?",
+    "Most overrated actor who keeps getting lead roles for no reason.",
+    "Horror as a genre is 90% jump scares and 10% actual fear. Prove me wrong.",
+    "Best drama movie that didn't feel like a chore to watch.",
+    "Is anime still misunderstood by anyone over the age of 30?",
+    "What's the most annoying thing about modern movie trailers?",
+    "Is the streaming model even sustainable for another 5 years?",
+    "Best documentary that actually changed how you see the world.",
+    "Is anime diverse enough, or is it just the same three tropes over and over?",
+    "Most overrated TV show of the last decade.",
+    "Film school is a waste of money when YouTube exists. Agree or disagree?",
+    "Best sci-fi movie that actually feels like it could happen.",
+    "Is anime high art or just 'cartoons' for teenagers?",
+    "Most annoying thing about people who think they're 'film critics'.",
+    "Streaming has officially killed the 'water cooler' conversation. Agree or disagree?",
+    "Best animated movie that isn't made by Disney or Pixar.",
+    "Is anime for everyone, or should some things stay niche?",
+    "Most overrated character in any movie ever made.",
+    "Editing is the most important part of a movie—not the acting or directing.",
+    "Best indie movie that outperformed the big blockbusters recently.",
+    "Is watching anime actually good for your brain or just a distraction?",
+    "Most annoying thing about toxic fandoms (looking at you, Star Wars/Marvel).",
+    "Streaming is better for viewers but worse for creators. Agree or disagree?",
+    "Best fantasy movie that isn't Lord of the Rings.",
+    "Is anime a global phenomenon or just a passing trend that will fade?",
+    "Most overrated movie franchise that needs to stop making sequels.",
+    "Cinematography is just 'pretty pictures' if the story is trash.",
+    "Best musical movie for people who absolutely hate musicals.",
+    "Is anime changing the animation industry for the better?",
+    "Most annoying thing about social media influencers getting movie roles.",
+    "Convenience is the only reason streaming won. Agree or disagree?",
+    "Best thriller that kept you on the edge of your seat the whole time.",
+    "Is anime a valid form of storytelling or just a visual style?",
+    "Most overrated movie soundtrack of all time.",
+    "Writing is the hardest part of making a movie—change my mind.",
+    "Best romance movie that isn't completely cringe and unrealistic.",
+    "Can media actually improve your mental health or does it make it worse?",
+    "Most annoying thing about constant movie sequels and prequels.",
+    "Is streaming officially the death of the movie theater experience?",
+    "Best short film you've ever seen on YouTube or Vimeo.",
+    "Is anime a lifestyle or just something you watch when you're bored?",
+    "Most overrated movie poster design in recent years.",
+    "Distribution is the secret 'villain' of the entire film industry.",
+    "Best war movie that didn't glorify the violence.",
+    "Is anime a reflection of society or just an escape from it?",
+    "What's the most annoying thing about movie prequels?",
+    "Is streaming actually helping diversity in media or just making it fake?",
+    "Best Western movie that isn't boring and slow.",
+    "Is anime a form of expression or just a product for profit?",
+    "Most overrated movie trailer that was way better than the actual film.",
+    "Is film history actually important for making movies today?",
+    "Best biography movie that actually felt like the real person.",
+    "Is anime a good way to learn about different cultures?",
+    "Most annoying thing about people who post spoilers on day one.",
+    "Smaller projects have a better chance now thanks to the internet.",
+    "Best crime movie that made you root for the bad guy.",
+    "Is anime a way to connect with people or just a way to isolate yourself?",
+    "Most overrated movie review site on the internet.",
+    "Film theory is just overanalyzing things that aren't actually there.",
+    "Best sports movie for people who don't actually watch sports.",
+    "Is anime the ultimate way to escape the stress of the IB?",
+    "Movie theaters need to change or they will die. What's the first fix?",
+    "Streaming is the future, but is it a future we actually want to live in?",
+    "Best superhero movie that isn't from the Marvel or DC universe.",
+    "MatPat leaving Game Theory was the end of an era. Agree or disagree?",
+    "Which Game Theory video was the biggest reach in history?",
+    "Can you actually learn anything useful from Game Theory or is it just 'for entertainment'?"
+  ],
+  "Games": [
+    "Emulating Nintendo games is always morally correct—don't even try to argue.",
+    "Graphics mean nothing if the movement and mechanics are trash.",
+    "Who is the biggest rage-quitter in the GC? Call them out right now.",
+    "You're stuck in a horror game for 24 hours. Which one gives you the best survival odds?",
+    "$70 for a game is a robbery when free-to-play titles are this good.",
+    "What's the most legendary gamer moment this group has ever seen?",
+    "Roblox horror games are unironically scarier than most triple-A titles.",
+    "Which game absolutely destroyed your sleep schedule during the last holidays?",
+    "Ranking the most toxic gaming communities in existence today.",
+    "PC gaming is a money pit—consoles are just more practical for us.",
+    "What's that one game everyone obsesses over that you find boring as hell?",
+    "Mobile gaming is 'real' gaming. Agree or disagree?",
+    "Most frustrating level or mission that almost made you break a controller.",
+    "VR is a gimmick that will never go truly mainstream. Change my mind.",
+    "Best boss fight that actually felt like a massive achievement to win.",
+    "eSports: a real sport or just a glorified hobby for people with high FPS?",
+    "What's the scariest game you've ever played with the lights off?",
+    "Microtransactions are the cancer of the modern gaming industry.",
+    "Best game soundtrack that you still listen to while studying for Cycle Tests.",
+    "Is gaming actually improving your reflexes or just wasting your time?",
+    "Most annoying character in any video game history.",
+    "Speedrunning: an impressive skill or just a waste of a perfectly good game?",
+    "Best story in a game that was better than most movies you've seen.",
+    "Steam is the only platform that matters—the rest are just trash launchers.",
+    "Most overrated game developer who gets way too much credit.",
+    "Single-player games are dying and it's our fault for not buying them.",
+    "Best game world that you'd actually want to live in (if you weren't an NPC).",
+    "Modding is the only thing keeping some games alive in 2026.",
+    "The most emotional moment in a game that actually hit you hard.",
+    "Gaming is becoming too 'corporate'—the soul is officially gone.",
+    "Best 'hero' in gaming who isn't just a generic soldier with a gun.",
+    "Consoles are just PCs with worse specs and better marketing.",
+    "Most annoying thing about 'professional' game reviewers.",
+    "Gaming is the highest form of art. Change my mind or get out.",
+    "Best villain in gaming that you actually felt bad for at the end.",
+    "Indie games are carrying the entire industry on their backs right now.",
+    "Most overrated game mechanic that needs to be retired immediately.",
+    "Streaming on Twitch: a dream job or a mental health nightmare?",
+    "Best game ending that left you staring at the credits in total silence.",
+    "Retro games are only 'better' because of nostalgia, not actual quality.",
+    "Most annoying trope in modern open-world games.",
+    "Is gaming actually making the world a better place or just distracting us?",
+    "Best RPG ever made—let's settle the debate right now.",
+    "Competitive gaming is a toxic trap for your mental health.",
+    "Most overrated game franchise that keeps getting sequels it doesn't need.",
+    "Gaming is a lifestyle, not just a way to kill time between classes.",
+    "Best FPS game that actually requires skill, not just camping and luck.",
+    "Gaming is still misunderstood by literally everyone over 40.",
+    "Most annoying thing about constant 'Day One' patches that are 50GB.",
+    "VR is finally worth the money in 2026—agree or disagree?",
+    "Best open-world game that didn't feel like a giant list of chores.",
+    "Is gaming actually influencing how we see real-world problems?",
+    "Most overrated game character that everyone seems to love.",
+    "Game design is more important than graphics—every single time.",
+    "Best strategy game that actually made you feel like a genius for five minutes.",
+    "Gaming is the first truly global culture of our generation.",
+    "Most annoying thing about gaming subreddits and forums.",
+    "Gaming is better for your social life than actually going out. Prove me wrong.",
+    "Best survival game that didn't feel like a second full-time job.",
+    "Is the gaming industry diverse enough, or is it just playing it 'safe'?",
+    "Most overrated game soundtrack of all time.",
+    "Game development is a nightmare—we should be way nicer to the devs.",
+    "Best puzzle game that actually challenged your brain without a guide.",
+    "Can gaming actually help with stress or does it just add to the pile?",
+    "Most annoying thing about sequels that change everything people liked.",
+    "Gaming is for everyone—the 'gatekeeping' needs to stop now.",
+    "Best horror game that didn't rely on cheap jump scares.",
+    "Is gaming a form of expression or just a toy for bored people?",
+    "Most overrated game trailer that completely lied about the actual game.",
+    "Game history is just as important as film or art history.",
+    "Best simulation game that was actually fun to play for more than an hour.",
+    "Can you actually learn real-world skills from gaming? (Besides rage).",
+    "Most annoying thing about people who post 'no commentary' walkthroughs.",
+    "Smaller developers are the only ones taking actual risks anymore.",
+    "Best adventure game that actually felt like a journey, not a map crawl.",
+    "Gaming is the best way to connect with people across the entire world.",
+    "Most overrated game review site (besides the obvious ones).",
+    "Does 'Game Theory' actually help us understand games or is it just MatPat's fanfic?",
+    "Best sports game for people who absolutely hate actual sports.",
+    "Gaming is the ultimate escape from the IB stress. Agree or disagree?",
+    "Consoles need to stop with the 'exclusive' games—it's anti-human.",
+    "Is gaming officially the future of all human entertainment?",
+    "Best stealth game that actually made you feel like a ghost in the room.",
+    "Gaming is changing the animation industry forever. Agree or disagree?",
+    "Most annoying thing about 'influencers' in the gaming space.",
+    "Convenience is the only reason digital sales won over physical discs.",
+    "Best fighting game that actually has a decent community.",
+    "Gaming is a form of storytelling that movies can't even touch.",
+    "Most overrated game soundtrack composer in the industry.",
+    "Writing for games is 10x harder than writing for TV or movies.",
+    "Best platformer that didn't feel like a cheap Mario knockoff.",
+    "Can gaming actually help your career in the long run?",
+    "Most annoying thing about modern game controllers and drift.",
+    "Gaming is officially bigger than the movie industry—what's the next step?",
+    "Best racing game that isn't just a boring driving simulator.",
+    "Is gaming a reflection of society or just a giant distraction from it?",
+    "Most annoying thing about game prequels that nobody asked for.",
+    "Gaming is finally becoming more inclusive—is it actually enough?",
+    "Best card game that isn't just a pay-to-win trap.",
+    "Gaming is art—the debate was over ten years ago.",
+    "Most overrated game poster or box art design.",
+    "Distribution is the biggest bottleneck for indie developers today."
+  ]
+}
