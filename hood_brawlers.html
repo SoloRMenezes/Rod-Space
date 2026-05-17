@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hood Brawlers</title>
+    <title>Hood Brawlers: Pro Edition</title>
     <style>
         body {
             margin: 0;
-            background: #1a1a1a;
+            background: #0a0a0c;
             color: white;
-            font-family: 'Arial Black', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -21,14 +21,14 @@
 
         #game-container {
             position: relative;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            border: 4px solid #333;
+            box-shadow: 0 0 100px rgba(0,0,0,0.9);
+            border: 6px solid #222;
             width: 1024px;
             height: 576px;
             background: #000;
+            border-radius: 8px;
         }
 
-        /* Screens */
         .screen {
             position: absolute;
             top: 0;
@@ -40,18 +40,18 @@
             align-items: center;
             justify-content: center;
             z-index: 5;
+            backdrop-filter: blur(4px);
         }
 
         #start-screen {
             display: flex;
-            background: linear-gradient(45deg, #2c3e50, #2980b9);
-            animation: fadeIn 1s ease-in;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
         }
 
         #char-select-screen {
             display: none;
             flex-direction: row;
-            background: #111;
+            background: #0f172a;
         }
 
         .select-half {
@@ -61,133 +61,162 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 2px solid #333;
-            transition: background 0.3s;
+            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.02);
+            transition: all 0.3s;
         }
 
-        /* UI Elements */
         .ui-layer {
             position: absolute;
-            top: 20px;
+            top: 30px;
             width: 100%;
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
+            align-items: flex-start;
             pointer-events: none;
             z-index: 2;
         }
 
         .health-wrapper {
-            width: 400px;
+            width: 420px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            position: relative;
         }
 
         .health-bar-bg {
             width: 100%;
-            height: 30px;
-            background: #222;
-            border: 2px solid #eee;
+            height: 35px;
+            background: #111;
+            border: 3px solid #333;
             position: relative;
             overflow: hidden;
+            transform: skewX(-15deg);
+        }
+
+        .health-bar-ghost {
+            position: absolute;
+            height: 100%;
+            background: #ff4757;
+            width: 100%;
+            transition: width 0.8s cubic-bezier(0.1, 0, 0.1, 1);
         }
 
         .health-bar {
+            position: absolute;
             height: 100%;
             width: 100%;
-            transition: width 0.2s ease-out;
+            transition: width 0.1s ease-out;
+            z-index: 1;
         }
 
-        #p1-health {
-            background: linear-gradient(to bottom, #3498db, #2980b9);
+        #p1-health { background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%); }
+        #p2-health { background: linear-gradient(90deg, #f85032 0%, #e73827 100%); }
+
+        #timer {
+            width: 80px;
+            height: 80px;
+            background: #222;
+            border: 4px solid #fde047;
+            color: #fde047;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 900;
+            margin: 0 20px;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(253, 224, 71, 0.3);
         }
 
-        #p2-health {
-            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+        .player-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 900;
         }
-
-        .player-hp-label {
-            margin-top: 5px;
-            font-size: 18px;
-            letter-spacing: 2px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px #000;
-        }
-
-        #p1-sub { color: #3498db; }
-        #p2-sub { color: #e74c3c; }
+        #p1-label { left: 0; color: #00d2ff; }
+        #p2-label { right: 0; color: #f85032; }
 
         #game-over {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 60px;
+            font-size: 80px;
             text-align: center;
             display: none;
-            text-shadow: 0 0 20px rgba(0,0,0,1);
+            text-shadow: 0 0 30px rgba(0,0,0,1);
             z-index: 10;
+            font-weight: 900;
         }
 
         .btn {
-            padding: 15px 40px;
-            font-size: 24px;
+            padding: 15px 45px;
+            font-size: 20px;
             cursor: pointer;
-            background: #fff;
+            background: #fde047;
             border: none;
-            color: #2c3e50;
-            font-family: 'Arial Black', sans-serif;
-            transition: transform 0.2s, background 0.2s;
+            color: #000;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s;
             margin-top: 20px;
             border-radius: 4px;
+            box-shadow: 0 4px 0 #ca8a04;
         }
 
         .btn:hover {
-            transform: scale(1.05);
-            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #ca8a04;
         }
 
         .color-picker-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 30px;
         }
 
         .color-option {
-            width: 50px;
-            height: 50px;
-            border: 3px solid #444;
+            width: 45px;
+            height: 45px;
+            border: 3px solid transparent;
             cursor: pointer;
-            transition: transform 0.1s, border-color 0.2s;
-            border-radius: 8px;
+            transition: transform 0.2s;
+            border-radius: 50%;
         }
 
         .color-option.selected {
             border-color: #fff;
-            transform: scale(1.1);
-            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            transform: scale(1.2);
         }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
         .opening-title {
-            font-size: 80px;
-            margin-bottom: 40px;
-            text-shadow: 5px 5px 0px #e67e22;
+            font-size: 100px;
+            margin-bottom: 20px;
+            font-style: italic;
+            background: linear-gradient(#fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
         }
 
-        canvas {
-            display: none;
-        }
+        canvas { display: none; }
 
         .preview-box {
-            width: 80px;
-            height: 180px;
-            border: 4px solid #444;
-            margin-bottom: 20px;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-            border-radius: 4px;
+            width: 120px;
+            height: 220px;
+            border: 4px solid #334155;
+            margin-bottom: 25px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -196,42 +225,48 @@
     <div id="game-container">
         <div id="start-screen" class="screen">
             <h1 class="opening-title">HOOD BRAWLERS</h1>
-            <button class="btn" onclick="showCharacterSelect()">ENTER ARENA</button>
+            <p style="color: #64748b; margin-top: -10px; letter-spacing: 5px;">STREET FIGHTER PROTO</p>
+            <button class="btn" onclick="showCharacterSelect()">Start Game</button>
         </div>
 
         <div id="char-select-screen" class="screen">
             <div class="select-half" id="p1-select">
-                <h2 style="color: #3498db;">PLAYER 1</h2>
+                <h2 style="color: #00d2ff; margin-bottom: 30px;">P1 SELECT</h2>
                 <div id="p1-preview" class="preview-box"></div>
                 <div class="color-picker-grid" id="p1-pickers"></div>
-                <button class="btn" id="p1-ready-btn" onclick="setReady(1)">READY</button>
+                <button class="btn" id="p1-ready-btn" onclick="setReady(1)">Ready Up</button>
             </div>
             <div class="select-half" id="p2-select">
-                <h2 style="color: #e74c3c;">PLAYER 2</h2>
+                <h2 style="color: #f85032; margin-bottom: 30px;">P2 SELECT</h2>
                 <div id="p2-preview" class="preview-box"></div>
                 <div class="color-picker-grid" id="p2-pickers"></div>
-                <button class="btn" id="p2-ready-btn" onclick="setReady(2)">READY</button>
+                <button class="btn" id="p2-ready-btn" onclick="setReady(2)">Ready Up</button>
             </div>
         </div>
 
         <div class="ui-layer" id="game-ui" style="display: none;">
             <div class="health-wrapper">
                 <div class="health-bar-bg">
+                    <div id="p1-ghost" class="health-bar-ghost"></div>
                     <div id="p1-health" class="health-bar"></div>
                 </div>
-                <div class="player-hp-label" id="p1-sub">PLAYER 1</div>
+                <div class="player-label" id="p1-label">Player 1</div>
             </div>
+            
+            <div id="timer">99</div>
+
             <div class="health-wrapper">
-                <div class="health-bar-bg">
-                    <div id="p2-health" class="health-bar"></div>
+                <div class="health-bar-bg" style="transform: skewX(15deg);">
+                    <div id="p2-ghost" class="health-bar-ghost" style="right: 0;"></div>
+                    <div id="p2-health" class="health-bar" style="right: 0;"></div>
                 </div>
-                <div class="player-hp-label" id="p2-sub">PLAYER 2</div>
+                <div class="player-label" id="p2-label">Player 2</div>
             </div>
         </div>
         
         <div id="game-over">
-            <span id="winner-text">PLAYER 1 WINS!</span><br>
-            <button class="btn" onclick="resetToMenu()">MAIN MENU</button>
+            <span id="winner-text" style="color: #fde047;">DRAW</span><br>
+            <button class="btn" onclick="resetToMenu()">Return to Menu</button>
         </div>
 
         <canvas id="gameCanvas"></canvas>
@@ -243,25 +278,27 @@
         canvas.width = 1024;
         canvas.height = 576;
 
-        const gravity = 0.7;
+        const gravity = 0.8;
         let animationId;
         let p1Ready = false;
         let p2Ready = false;
         let gameOver = false;
+        let timer = 99;
+        let timerId;
 
         const COLORS = [
-            '#2980b9', '#c0392b', '#27ae60', 
-            '#f39c12', '#8e44ad', '#16a085', 
-            '#2c3e50', '#d35400', '#7f8c8d'
+            '#3498db', '#e74c3c', '#2ecc71', 
+            '#f1c40f', '#9b59b6', '#1abc9c', 
+            '#ecf0f1', '#e67e22', '#34495e'
         ];
         
-        let characterData = JSON.parse(localStorage.getItem('sf_simple_char')) || {
-            p1: '#2980b9',
-            p2: '#c0392b'
+        let characterData = JSON.parse(localStorage.getItem('hood_brawl_config')) || {
+            p1: '#3498db',
+            p2: '#e74c3c'
         };
 
         function saveConfig() {
-            localStorage.setItem('sf_simple_char', JSON.stringify(characterData));
+            localStorage.setItem('hood_brawl_config', JSON.stringify(characterData));
         }
 
         function showCharacterSelect() {
@@ -294,106 +331,141 @@
         function updatePreviews() {
             [1, 2].forEach(pNum => {
                 const preview = document.getElementById(`p${pNum}-preview`);
-                preview.style.backgroundColor = characterData[`p${pNum}`];
+                preview.innerHTML = '';
+                const miniCanvas = document.createElement('canvas');
+                miniCanvas.width = 100;
+                miniCanvas.height = 200;
+                preview.appendChild(miniCanvas);
+                const mCtx = miniCanvas.getContext('2d');
+                
+                const dummy = new Fighter({ position: { x: 20, y: 20 }, velocity: { x: 0, y: 0 } });
+                dummy.color = characterData[`p${pNum}`];
+                dummy.draw(mCtx, true);
             });
         }
 
         function setReady(pNum) {
             const btn = document.getElementById(`p${pNum}-ready-btn`);
-            if (pNum === 1) {
-                p1Ready = true;
-                btn.style.background = '#27ae60';
-                btn.style.color = '#fff';
-                btn.innerText = 'LOCKED';
-            } else {
-                p2Ready = true;
-                btn.style.background = '#27ae60';
-                btn.style.color = '#fff';
-                btn.innerText = 'LOCKED';
-            }
+            if (pNum === 1) p1Ready = true;
+            else p2Ready = true;
+            btn.style.background = '#2ecc71';
+            btn.innerText = 'LOCKED';
+            if (p1Ready && p2Ready) setTimeout(startGame, 500);
+        }
 
-            if (p1Ready && p2Ready) {
-                setTimeout(startGame, 300);
-            }
+        function decreaseTimer() {
+            if (timer > 0) {
+                timerId = setTimeout(decreaseTimer, 1000);
+                timer--;
+                document.getElementById('timer').innerText = timer;
+            } else if (!gameOver) determineWinner();
+        }
+
+        function determineWinner() {
+            gameOver = true;
+            clearTimeout(timerId);
+            document.getElementById('game-over').style.display = 'block';
+            if (player1.health === player2.health) document.getElementById('winner-text').innerText = "TIE GAME";
+            else if (player1.health > player2.health) document.getElementById('winner-text').innerText = "P1 WINS";
+            else document.getElementById('winner-text').innerText = "P2 WINS";
         }
 
         function startGame() {
             gameOver = false;
+            timer = 99;
+            document.getElementById('timer').innerText = timer;
             document.getElementById('char-select-screen').style.display = 'none';
             document.getElementById('game-ui').style.display = 'flex';
             document.getElementById('game-over').style.display = 'none';
             canvas.style.display = 'block';
-            
-            player1.color = characterData.p1;
-            player2.color = characterData.p2;
-            player1.health = 100;
-            player2.health = 100;
-            player1.position = { x: 150, y: 0 };
-            player2.position = { x: 814, y: 0 };
-            player1.velocity = { x: 0, y: 0 };
-            player2.velocity = { x: 0, y: 0 };
-            player1.isWinner = false;
-            player2.isWinner = false;
-            player1.facing = 'right';
-            player2.facing = 'left';
-            document.getElementById('p1-health').style.width = '100%';
-            document.getElementById('p2-health').style.width = '100%';
-            
+            player1.reset({ x: 150, y: 0 }, characterData.p1);
+            player2.reset({ x: 814, y: 0 }, characterData.p2);
+            decreaseTimer();
             gameLoop();
         }
 
         function resetToMenu() {
             cancelAnimationFrame(animationId);
-            p1Ready = false;
-            p2Ready = false;
+            clearTimeout(timerId);
+            p1Ready = false; p2Ready = false;
             document.getElementById('game-over').style.display = 'none';
             document.getElementById('game-ui').style.display = 'none';
             canvas.style.display = 'none';
-            document.querySelectorAll('.btn').forEach(b => {
-                if(b.innerText === 'LOCKED') {
-                    b.style.background = '#fff';
-                    b.style.color = '#2c3e50';
-                    b.innerText = 'READY';
-                }
-            });
             document.getElementById('start-screen').style.display = 'flex';
         }
 
         function drawBackground() {
-            ctx.fillStyle = '#0f172a';
+            // Sky Gradient
+            const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            sky.addColorStop(0, '#020617');
+            sky.addColorStop(1, '#1e1b4b');
+            ctx.fillStyle = sky;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(100, 200, 150, 400);
-            ctx.fillRect(350, 150, 200, 450);
-            ctx.fillRect(700, 220, 180, 380);
-            ctx.fillStyle = '#fde04733';
-            ctx.fillRect(120, 230, 25, 25);
-            ctx.fillRect(170, 300, 25, 25);
-            ctx.fillRect(380, 180, 30, 30);
-            ctx.fillRect(450, 350, 25, 25);
-            ctx.fillStyle = '#334155';
-            ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
-            ctx.fillStyle = '#475569';
-            ctx.fillRect(0, canvas.height - 130, canvas.width, 10);
-            drawTree(60, canvas.height - 130);
-            drawTree(300, canvas.height - 130);
-            drawTree(640, canvas.height - 130);
-            drawTree(940, canvas.height - 130);
-        }
 
-        function drawTree(x, y) {
-            ctx.fillStyle = '#3e2723';
-            ctx.fillRect(x - 6, y - 45, 12, 45);
-            ctx.fillStyle = '#166534';
+            // Moon
+            ctx.fillStyle = '#fefce8';
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = '#fefce8';
             ctx.beginPath();
-            ctx.arc(x, y - 70, 30, 0, Math.PI * 2);
+            ctx.arc(850, 100, 40, 0, Math.PI * 2);
             ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x - 20, y - 50, 25, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + 20, y - 50, 25, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Stars
+            ctx.fillStyle = '#fff';
+            for(let i=0; i<30; i++) {
+                let sX = (Math.sin(i * 1234) * 0.5 + 0.5) * canvas.width;
+                let sY = (Math.cos(i * 5678) * 0.5 + 0.5) * 300;
+                ctx.fillRect(sX, sY, 2, 2);
+            }
+
+            // Distant City (Darker)
+            ctx.fillStyle = '#0f172a';
+            const bWidths = [120, 180, 150, 200, 140, 160];
+            let currentX = 20;
+            bWidths.forEach((w, i) => {
+                let h = 200 + (Math.sin(i) * 100);
+                ctx.fillRect(currentX, canvas.height - 80 - h, w, h);
+                
+                // Dim windows
+                ctx.fillStyle = 'rgba(253, 224, 71, 0.1)';
+                for(let win=0; win<5; win++) {
+                    ctx.fillRect(currentX + 15, canvas.height - 80 - h + 30 + (win*40), w - 30, 10);
+                }
+                ctx.fillStyle = '#0f172a';
+                currentX += w + 40;
+            });
+
+            // Mid City (More detail)
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, canvas.height - 300, 150, 220);
+            ctx.fillRect(200, canvas.height - 380, 250, 300);
+            ctx.fillRect(550, canvas.height - 320, 180, 240);
+            ctx.fillRect(850, canvas.height - 400, 180, 320);
+
+            // Windows with light
+            ctx.fillStyle = '#eab308';
+            ctx.fillRect(250, canvas.height - 350, 20, 30);
+            ctx.fillRect(280, canvas.height - 350, 20, 30);
+            ctx.fillRect(900, canvas.height - 370, 30, 40);
+
+            // Rooftop Floor
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
+            
+            // Floor Detail (Grip/Texture)
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            for(let i=0; i<canvas.width; i+=40) {
+                ctx.beginPath();
+                ctx.moveTo(i, canvas.height - 80);
+                ctx.lineTo(i - 40, canvas.height);
+                ctx.stroke();
+            }
+
+            // Top edge line
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(0, canvas.height - 85, canvas.width, 5);
         }
 
         class Fighter {
@@ -404,54 +476,110 @@
                 this.height = 150;
                 this.health = 100;
                 this.isPlayer2 = isPlayer2;
-                this.color = isPlayer2 ? characterData.p2 : characterData.p1;
                 this.isCrouching = false;
                 this.isAttacking = false;
                 this.isWinner = false;
                 this.attackType = null;
-                this.victoryFrame = 0;
+                this.frame = 0;
                 this.facing = isPlayer2 ? 'left' : 'right';
-                
-                this.attackBox = {
-                    position: { x: this.position.x, y: this.position.y },
-                    width: 100,
-                    height: 50
-                };
+                this.attackBox = { position: { x: 0, y: 0 }, width: 100, height: 50 };
+                this.skinTone = '#ffdbac';
             }
 
-            draw() {
-                if (this.health <= 0 && gameOver) return;
+            reset(pos, color) {
+                this.position = pos; this.velocity = { x: 0, y: 0 };
+                this.health = 100; this.color = color;
+                this.isWinner = false; this.isAttacking = false;
+                this.facing = this.isPlayer2 ? 'left' : 'right';
+            }
 
-                let currentHeight = this.isCrouching ? this.height * 0.6 : this.height;
-                let currentY = this.isCrouching ? this.position.y + (this.height * 0.4) : this.position.y;
+            draw(targetCtx = ctx, isStatic = false) {
+                this.frame += isStatic ? 0.02 : 0.12;
+                const breathe = Math.sin(this.frame) * 3;
+                const legMove = Math.cos(this.frame) * 12;
                 
-                if (this.isWinner) {
-                    this.victoryFrame += 0.1;
-                    const bounce = Math.sin(this.victoryFrame) * 20;
-                    currentY += bounce;
+                let x = this.position.x;
+                let y = this.position.y;
+                let h = this.height;
+                let w = this.width;
+
+                if (this.isCrouching) { h *= 0.6; y += 60; }
+                if (this.isWinner) y += Math.sin(this.frame * 2) * 15;
+
+                // Player Shadow / Ground Glow
+                if (!isStatic) {
+                    ctx.save();
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color;
+                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                    ctx.beginPath();
+                    ctx.ellipse(x + 30, canvas.height - 75, 40, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
                 }
 
-                ctx.beginPath();
-                ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                ctx.ellipse(this.position.x + this.width/2, canvas.height - 30, 45, 12, 0, 0, Math.PI * 2);
-                ctx.fill();
+                targetCtx.save();
+                if (this.facing === 'left') {
+                    targetCtx.translate(x + w, 0);
+                    targetCtx.scale(-1, 1);
+                    x = 0;
+                }
 
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.position.x, currentY, this.width, currentHeight);
-                ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                ctx.fillRect(this.position.x, currentY, this.width/4, currentHeight);
+                // Legs
+                targetCtx.fillStyle = '#1e293b'; 
+                const onGround = this.position.y >= (canvas.height - 80 - this.height - 1);
+                const isMoving = Math.abs(this.velocity.x) > 0;
+                let lLegOff = (isMoving && onGround) ? legMove : 0;
+                let rLegOff = (isMoving && onGround) ? -legMove : 0;
+                targetCtx.fillRect(x + 12 + lLegOff, y + h - 45, 16, 45);
+                targetCtx.fillRect(x + 32 + rLegOff, y + h - 45, 16, 45);
 
-                // Eyes and Detail
-                ctx.fillStyle = '#fff';
-                let eyeXOffset = this.facing === 'right' ? this.width - 25 : 10;
-                ctx.fillRect(this.position.x + eyeXOffset, currentY + 25, 15, 6);
-                
-                ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                let mouthXOffset = this.facing === 'right' ? this.width - 20 : 5;
-                ctx.fillRect(this.position.x + mouthXOffset, currentY + 45, 15, 3);
+                // Shoes
+                targetCtx.fillStyle = '#000';
+                targetCtx.fillRect(x + 10 + lLegOff, y + h - 5, 20, 8);
+                targetCtx.fillRect(x + 30 + rLegOff, y + h - 5, 20, 8);
 
-                if (this.isAttacking && !this.isWinner) {
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                // Shirt
+                targetCtx.fillStyle = this.color;
+                targetCtx.beginPath();
+                targetCtx.roundRect(x + 5, y + 40 + breathe, 50, h - 85 - breathe, 5);
+                targetCtx.fill();
+
+                // Arms
+                targetCtx.fillStyle = this.color;
+                if (this.isAttacking && this.attackType === 'punch') {
+                    targetCtx.fillRect(x + 40, y + 55 + breathe, 45, 18);
+                    targetCtx.fillStyle = this.skinTone;
+                    targetCtx.fillRect(x + 85, y + 55 + breathe, 15, 18);
+                } else {
+                    targetCtx.fillRect(x - 5, y + 60 + breathe, 15, 35);
+                    targetCtx.fillStyle = this.skinTone;
+                    targetCtx.fillRect(x - 5, y + 95 + breathe, 15, 12);
+                }
+
+                // Head
+                targetCtx.fillStyle = this.skinTone;
+                targetCtx.beginPath();
+                targetCtx.arc(x + 30, y + 20 + breathe, 22, 0, Math.PI * 2);
+                targetCtx.fill();
+
+                // Hair
+                targetCtx.fillStyle = '#2d1b1a';
+                targetCtx.beginPath();
+                targetCtx.arc(x + 30, y + 15 + breathe, 23, Math.PI, 0);
+                targetCtx.fill();
+
+                // Face
+                targetCtx.fillStyle = '#000';
+                targetCtx.fillRect(x + 38, y + 15 + breathe, 4, 4);
+                targetCtx.beginPath();
+                targetCtx.arc(x + 40, y + 28 + breathe, 5, 0.2, Math.PI - 0.2);
+                targetCtx.stroke();
+
+                targetCtx.restore();
+
+                if (this.isAttacking) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
                     ctx.fillRect(this.attackBox.position.x, this.attackBox.position.y, this.attackBox.width, this.attackBox.height);
                 }
             }
@@ -459,34 +587,23 @@
             update() {
                 this.draw();
                 if (gameOver) return;
-
                 this.attackBox.position.x = this.facing === 'left' ? this.position.x - this.attackBox.width : this.position.x + this.width;
-                const attackYOffset = this.attackType === 'punch' ? 20 : 80;
-                this.attackBox.position.y = this.position.y + attackYOffset + (this.isCrouching ? 40 : 0);
-
+                this.attackBox.position.y = this.position.y + (this.attackType === 'punch' ? 45 : 100);
                 this.position.x += this.velocity.x;
                 this.position.y += this.velocity.y;
-
-                if (this.position.y + this.height + this.velocity.y >= canvas.height - 30) {
+                if (this.position.y + this.height + this.velocity.y >= canvas.height - 80) {
                     this.velocity.y = 0;
-                    this.position.y = canvas.height - 30 - this.height;
-                } else {
-                    this.velocity.y += gravity;
-                }
-
+                    this.position.y = canvas.height - 80 - this.height;
+                } else this.velocity.y += gravity;
                 if (this.position.x < 0) this.position.x = 0;
                 if (this.position.x + this.width > canvas.width) this.position.x = canvas.width - this.width;
             }
 
             attack(type) {
                 if (this.isAttacking || gameOver) return;
-                if (type === 'punch' && this.isCrouching) return;
-                const isOnGround = this.position.y >= (canvas.height - 30 - this.height - 1);
-                if (type === 'kick' && !isOnGround) return;
-
                 this.attackType = type;
                 this.isAttacking = true;
-                this.attackBox.width = (type === 'kick') ? 120 : 80;
+                this.attackBox.width = (type === 'kick') ? 140 : 100;
                 setTimeout(() => { this.isAttacking = false; }, 150);
             }
         }
@@ -500,14 +617,12 @@
         };
 
         function detectCollision(attacker, target) {
-            const targetHeight = target.isCrouching ? target.height * 0.6 : target.height;
-            const targetY = target.isCrouching ? target.position.y + (target.height * 0.4) : target.position.y;
             return (
                 attacker.isAttacking &&
                 attacker.attackBox.position.x < target.position.x + target.width &&
                 attacker.attackBox.position.x + attacker.attackBox.width > target.position.x &&
-                attacker.attackBox.position.y < targetY + targetHeight &&
-                attacker.attackBox.position.y + attacker.attackBox.height > targetY
+                attacker.attackBox.position.y < target.position.y + target.height &&
+                attacker.attackBox.position.y + attacker.attackBox.height > target.position.y
             );
         }
 
@@ -519,42 +634,25 @@
             player2.update();
 
             if (!gameOver) {
-                // FIXED: Persistence logic - only update facing when a key is pressed
-                if (keys.a.pressed) player1.facing = 'left';
-                if (keys.d.pressed) player1.facing = 'right';
+                player1.velocity.x = 0; player1.isCrouching = keys.s.pressed;
+                if (keys.a.pressed) { player1.velocity.x = -8; player1.facing = 'left'; }
+                if (keys.d.pressed) { player1.velocity.x = 8; player1.facing = 'right'; }
 
-                if (keys.k.pressed) player2.facing = 'left';
-                if (keys.ç.pressed) player2.facing = 'right';
-
-                player1.velocity.x = 0;
-                player1.isCrouching = keys.s.pressed;
-                if (keys.a.pressed) player1.velocity.x = -7;
-                if (keys.d.pressed) player1.velocity.x = 7;
-
-                player2.velocity.x = 0;
-                player2.isCrouching = keys.l.pressed;
-                if (keys.k.pressed) player2.velocity.x = -7;
-                if (keys.ç.pressed) player2.velocity.x = 7;
+                player2.velocity.x = 0; player2.isCrouching = keys.l.pressed;
+                if (keys.k.pressed) { player2.velocity.x = -8; player2.facing = 'left'; }
+                if (keys.ç.pressed) { player2.velocity.x = 8; player2.facing = 'right'; }
 
                 if (detectCollision(player1, player2)) {
-                    player1.isAttacking = false;
-                    player2.health -= 10;
-                    document.getElementById('p2-health').style.width = Math.max(0, player2.health) + '%';
+                    player1.isAttacking = false; player2.health -= 10;
+                    document.getElementById('p2-health').style.width = player2.health + '%';
+                    setTimeout(() => document.getElementById('p2-ghost').style.width = player2.health + '%', 400);
                 }
                 if (detectCollision(player2, player1)) {
-                    player2.isAttacking = false;
-                    player1.health -= 10;
-                    document.getElementById('p1-health').style.width = Math.max(0, player1.health) + '%';
+                    player2.isAttacking = false; player1.health -= 10;
+                    document.getElementById('p1-health').style.width = player1.health + '%';
+                    setTimeout(() => document.getElementById('p1-ghost').style.width = player1.health + '%', 400);
                 }
-
-                if (player1.health <= 0 || player2.health <= 0) {
-                    gameOver = true;
-                    const winner = player1.health <= 0 ? player2 : player1;
-                    winner.isWinner = true;
-                    winner.velocity.x = 0;
-                    document.getElementById('game-over').style.display = 'block';
-                    document.getElementById('winner-text').innerText = player1.health <= 0 ? "PLAYER 2 WINS!" : "PLAYER 1 WINS!";
-                }
+                if (player1.health <= 0 || player2.health <= 0) determineWinner();
             }
         }
 
@@ -564,25 +662,21 @@
             if (key === 'a') keys.a.pressed = true;
             if (key === 'd') keys.d.pressed = true;
             if (key === 's') keys.s.pressed = true;
-            if (key === 'w' && player1.velocity.y === 0) player1.velocity.y = -18;
+            if (key === 'w' && player1.position.y > 300) player1.velocity.y = -20;
             if (key === 'q') player1.attack('punch');
             if (key === 'e') player1.attack('kick');
             if (key === 'k') keys.k.pressed = true;
             if (key === 'ç') keys.ç.pressed = true;
             if (key === 'l') keys.l.pressed = true;
-            if (key === 'o' && player2.velocity.y === 0) player2.velocity.y = -18;
+            if (key === 'o' && player2.position.y > 300) player2.velocity.y = -20;
             if (key === 'i') player2.attack('punch');
             if (key === 'p') player2.attack('kick');
         });
 
         window.addEventListener('keyup', (event) => {
             const key = event.key.toLowerCase();
-            if (key === 'a') keys.a.pressed = false;
-            if (key === 'd') keys.d.pressed = false;
-            if (key === 's') keys.s.pressed = false;
-            if (key === 'k') keys.k.pressed = false;
-            if (key === 'ç') keys.ç.pressed = false;
-            if (key === 'l') keys.l.pressed = false;
+            if (key === 'a') keys.a.pressed = false; if (key === 'd') keys.d.pressed = false; if (key === 's') keys.s.pressed = false;
+            if (key === 'k') keys.k.pressed = false; if (key === 'ç') keys.ç.pressed = false; if (key === 'l') keys.l.pressed = false;
         });
 
         updatePreviews();
