@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chronos: The Planet Architect</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,6 +12,17 @@
             --parchment: #f4e4bc;
             --ink: #2c241a;
             --gold: #b8860b;
+            --planet-base: #2c241a;
+            --planet-glow: rgba(184, 134, 11, 0.4);
+        }
+
+        /* MOBILE OPTIMIZATION OVERRIDES */
+        * {
+            -webkit-tap-highlight-color: transparent; /* Remove blue flash on tap */
+            -webkit-touch-callout: none;                /* Prevent long-press menu */
+            user-select: none;                         /* Prevent text selection */
+            -webkit-user-select: none;
+            touch-action: manipulation;                /* Disable double-tap zoom */
         }
 
         body {
@@ -19,23 +30,53 @@
             background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
             color: var(--ink);
             font-family: 'Spectral', serif;
-            overflow-x: hidden;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: fixed; /* Prevents "pull to refresh" on mobile */
         }
 
-        h1, h2, .font-mythic {
-            font-family: 'Cinzel', serif;
+        h1, h2, h3, .font-mythic { font-family: 'Cinzel', serif; }
+
+        .planet-container {
+            perspective: 1000px;
+            filter: drop-shadow(0 0 25px var(--planet-glow));
         }
+
+        #planet-sphere {
+            width: clamp(140px, 40vw, 200px);
+            height: clamp(140px, 40vw, 200px);
+            border-radius: 50%;
+            background: var(--planet-base);
+            position: relative;
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            box-shadow: inset -20px -20px 50px rgba(0,0,0,0.8), 
+                        inset 10px 10px 30px rgba(255,255,255,0.1);
+        }
+
+        .planet-atmosphere {
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transition: all 1.5s;
+            opacity: 0.5;
+        }
+
+        @keyframes pulse { 
+            0% { transform: scale(1); } 
+            50% { transform: scale(1.1); } 
+            100% { transform: scale(1); } 
+        }
+
+        .clicking { animation: pulse 0.1s ease-out !important; }
 
         .scroll-panel {
-            background: rgba(255, 255, 255, 0.3);
-            border: 2px solid #8b7355;
-            box-shadow: inset 0 0 30px rgba(139, 115, 85, 0.1);
-            border-radius: 8px;
-        }
-
-        .planet-glow {
-            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-            filter: drop-shadow(0 0 15px rgba(184, 134, 11, 0.4));
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid #8b7355;
+            box-shadow: inset 0 0 20px rgba(139, 115, 85, 0.1);
+            border-radius: 4px;
         }
 
         .btn-ancient {
@@ -43,517 +84,253 @@
             color: var(--parchment);
             transition: all 0.2s;
             border: 1px solid var(--gold);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
 
-        .btn-ancient:hover:not(:disabled) {
-            background: var(--gold);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .btn-ancient:active:not(:disabled) {
+        .btn-ancient:active {
             transform: scale(0.95);
-        }
-
-        .btn-ancient:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            filter: grayscale(1);
-        }
-
-        .upgrade-card {
-            border-left: 3px solid var(--gold);
-            background: rgba(255, 255, 255, 0.5);
-            transition: opacity 0.3s ease;
+            background: var(--gold);
         }
 
         .nav-btn {
-            font-family: 'Cinzel', serif;
             font-size: 0.7rem;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
             padding: 4px 8px;
             border-bottom: 2px solid transparent;
             transition: all 0.3s;
         }
 
-        .nav-btn.active {
-            border-bottom: 2px solid var(--gold);
-            color: var(--gold);
-        }
+        .nav-btn.active { border-bottom-color: var(--gold); color: var(--gold); }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--parchment); }
-        ::-webkit-scrollbar-thumb { background: #8b7355; border-radius: 100px; }
-        
-        @keyframes critPop {
-            0% { transform: scale(1); color: #b91c1c; }
-            50% { transform: scale(1.2); color: #ef4444; }
-            100% { transform: scale(1); color: #b91c1c; }
-        }
-        .crit-text { animation: critPop 0.3s ease-out; font-weight: bold; }
-
-        #save-indicator {
-            transition: opacity 0.5s;
+        .particle {
+            position: absolute;
             pointer-events: none;
+            animation: floatUp 0.6s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-120px) scale(0.5); opacity: 0; }
         }
     </style>
 </head>
-<body class="h-screen flex flex-col p-4 max-w-6xl mx-auto">
+<body class="flex flex-col p-4">
 
-    <!-- Save Indicator -->
-    <div id="save-indicator" class="fixed bottom-4 right-4 bg-amber-900 text-amber-100 px-3 py-1 rounded text-xs font-mythic opacity-0 z-50">
-        PROGRESS RECORDED
+    <div id="save-indicator" class="fixed top-2 right-4 bg-amber-900 text-amber-100 px-3 py-1 rounded-full text-[9px] font-mythic opacity-0 z-50 transition-opacity">
+        RECORDED
     </div>
 
-    <!-- Header & Navigation -->
-    <header class="flex justify-between items-center mb-4 border-b border-amber-900 pb-2">
-        <div class="text-left">
-            <h1 class="text-2xl font-bold tracking-widest text-amber-900 uppercase leading-none">Chronos</h1>
-            <p class="italic text-[10px] opacity-80">Archive of Terrestrial Becoming</p>
+    <header class="flex justify-between items-center mb-4 border-b border-amber-900/30 pb-2">
+        <div>
+            <h1 class="text-xl font-bold tracking-widest text-amber-900 uppercase">Chronos</h1>
         </div>
         <nav class="flex gap-2">
-            <button onclick="setView('home')" id="nav-home" class="nav-btn active">HOME</button>
-            <button onclick="setView('achievements')" id="nav-achievements" class="nav-btn">ACHIEVEMENTS</button>
-            <button onclick="setView('rebirth')" id="nav-rebirth" class="nav-btn">REBIRTH</button>
+            <button onclick="setView('home')" id="nav-home" class="nav-btn font-mythic active">GENESIS</button>
+            <button onclick="setView('achievements')" id="nav-achievements" class="nav-btn font-mythic">LOGS</button>
+            <button onclick="setView('rebirth')" id="nav-rebirth" class="nav-btn font-mythic">RISE</button>
         </nav>
     </header>
 
-    <!-- Main Views -->
-    <main class="flex-grow overflow-hidden relative">
+    <main class="flex-grow relative overflow-hidden flex flex-col">
         
         <!-- HOME VIEW -->
-        <div id="view-home" class="h-full flex flex-col md:flex-row gap-6">
-            <!-- Left Column: The Planet Visualizer -->
-            <div class="w-full md:w-5/12 flex flex-col space-y-4 h-full">
-                <div id="visualizer" class="scroll-panel flex-grow flex flex-col items-center justify-center relative overflow-hidden p-6">
-                    <div id="planet" class="planet-glow text-8xl md:text-9xl select-none mb-8">✨</div>
-                    
-                    <div class="text-center w-full px-4">
-                        <h2 id="era-name" class="font-mythic text-xl text-amber-900 font-bold uppercase tracking-widest">The Pre-Void</h2>
-                        <p id="era-desc" class="text-xs italic opacity-70 leading-tight mt-2">A scattering of stardust in the dark.</p>
-                    </div>
-
-                    <div id="particles" class="absolute inset-0 pointer-events-none"></div>
+        <div id="view-home" class="h-full flex flex-col lg:flex-row gap-4 overflow-hidden">
+            <!-- Planet Core -->
+            <div class="flex-shrink-0 flex flex-col items-center justify-center relative p-4 scroll-panel min-h-[280px]">
+                <div class="planet-container mb-6">
+                    <div id="planet-atmosphere" class="planet-atmosphere"></div>
+                    <div id="planet-sphere" onclick="handlePlanetClick(event)"></div>
+                </div>
+                
+                <div class="text-center">
+                    <h2 id="era-name" class="font-mythic text-lg text-amber-900">The Pre-Void</h2>
+                    <p id="era-desc" class="text-[10px] italic opacity-60">Darkness moves upon the deep.</p>
                 </div>
 
-                <div class="space-y-3">
-                    <div class="flex justify-between items-end border-b border-amber-900/20 pb-1">
-                        <span class="font-mythic text-xs uppercase opacity-60">Primordial Essence</span>
-                        <div id="essence-display" class="text-3xl font-bold text-amber-900">0</div>
+                <div class="grid grid-cols-2 gap-4 mt-4 w-full">
+                    <div class="text-center">
+                        <span class="text-[9px] uppercase font-mythic opacity-50 block">Essence</span>
+                        <div id="essence-display" class="text-xl font-bold text-amber-900">0</div>
                     </div>
-                    <button id="collect-btn" class="w-full py-4 btn-ancient font-mythic text-lg rounded shadow-lg uppercase tracking-widest">
-                        Gather Essence
-                    </button>
+                    <div class="text-center">
+                        <span class="text-[9px] uppercase font-mythic opacity-50 block">Flow</span>
+                        <div id="auto-rate" class="text-xl font-bold opacity-80">0/s</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Right Column: Upgrades & Records -->
-            <div class="w-full md:w-7/12 flex flex-col h-full overflow-hidden">
-                <div class="flex items-center justify-between border-b border-amber-900 mb-2 pb-1 text-[10px] md:text-xs">
-                    <div class="font-mythic uppercase text-amber-900 px-2 font-bold">Records of Creation</div>
-                    <div class="flex gap-4 italic opacity-70">
-                        <div>Click: <span id="click-display" class="font-bold text-amber-900">1</span></div>
-                        <div>Crit: <span id="crit-display" class="font-bold text-amber-700">0</span>%</div>
-                        <div>Rate: <span id="auto-rate" class="font-bold text-amber-900">0</span> / sec</div>
-                    </div>
+            <!-- Shop -->
+            <div class="flex-grow flex flex-col overflow-hidden">
+                <div id="upgrade-container" class="space-y-1.5 overflow-y-auto pr-1 flex-grow">
+                    <!-- Upgrades -->
                 </div>
 
-                <div id="upgrade-container" class="space-y-2 overflow-y-auto pr-2 flex-grow mb-4">
-                    <!-- Upgrades injected by JS -->
-                </div>
-
-                <div id="log" class="h-20 scroll-panel p-2 text-xs italic overflow-y-auto text-amber-900/70 border-dashed border-1 border-amber-900">
-                    Welcome, Architect. Tap the void to begin the weave of history.
+                <div id="log" class="mt-2 p-2 bg-amber-900/5 rounded text-[10px] italic text-amber-900/60 h-12 overflow-hidden border border-amber-900/10">
+                    Architect the weave.
                 </div>
             </div>
         </div>
 
         <!-- ACHIEVEMENTS VIEW -->
-        <div id="view-achievements" class="h-full hidden flex flex-col space-y-4 overflow-y-auto">
-            <h2 class="font-mythic text-2xl text-amber-900 border-b border-amber-900 pb-2">Celestial Milestones</h2>
-            <div id="achievement-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Achievements injected here -->
-            </div>
+        <div id="view-achievements" class="h-full hidden overflow-y-auto">
+            <div id="achievement-list" class="grid grid-cols-1 gap-2"></div>
         </div>
 
         <!-- REBIRTH VIEW -->
         <div id="view-rebirth" class="h-full hidden flex flex-col space-y-4">
-            <div class="flex justify-between items-center border-b border-amber-900 pb-2">
-                <h2 class="font-mythic text-2xl text-amber-900">The Eternal Cycle</h2>
-                <div class="text-right">
-                    <span class="text-xs opacity-60 uppercase font-mythic">Total Aether:</span>
-                    <div id="aether-display" class="text-2xl font-bold text-indigo-900">0</div>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow overflow-hidden">
-                <!-- Rebirth Action -->
-                <div class="scroll-panel p-6 flex flex-col items-center justify-center text-center space-y-4">
-                    <div class="text-5xl">🌀</div>
-                    <h3 class="font-mythic text-xl">Shed This Form</h3>
-                    <p class="text-sm italic opacity-70">Reset current essence and progress to claim Aether. Rebirth requires higher essence thresholds each cycle.</p>
-                    
-                    <div class="w-full bg-amber-900/10 rounded p-4 border border-amber-900/20">
-                        <div class="flex justify-between text-xs mb-1">
-                            <span>Next Rebirth Cost:</span>
-                            <span id="rebirth-cost-display" class="font-bold">1.00M</span>
-                        </div>
-                        <div class="flex justify-between text-xs mb-4">
-                            <span>Current Aether Reward:</span>
-                            <span id="aether-reward-display" class="font-bold text-indigo-700">1</span>
-                        </div>
-                        <button id="rebirth-action-btn" class="w-full btn-ancient py-3 rounded uppercase font-mythic disabled:opacity-30">
-                            Perform Rebirth
-                        </button>
+             <div class="scroll-panel p-6 text-center">
+                <h2 class="font-mythic text-xl text-amber-900 mb-2">Ascension</h2>
+                <p class="text-[11px] italic opacity-70 mb-4">Shed this shell for Aether.</p>
+                
+                <div class="flex justify-around mb-6 border-y border-amber-900/10 py-4">
+                    <div>
+                        <span class="text-[9px] font-mythic opacity-50 block">Current</span>
+                        <div id="aether-display" class="text-2xl font-bold text-indigo-900">0</div>
+                    </div>
+                    <div>
+                        <span class="text-[9px] font-mythic opacity-50 block">Gained</span>
+                        <div id="aether-reward-display" class="text-2xl font-bold text-amber-700">0</div>
                     </div>
                 </div>
 
-                <!-- Aether Upgrades -->
-                <div class="flex flex-col space-y-4 h-full overflow-hidden">
-                    <h3 class="font-mythic text-lg text-amber-800 border-b border-amber-800/30">Permanent Boons</h3>
-                    <div id="aether-upgrades" class="space-y-3 overflow-y-auto flex-grow pr-2">
-                        <!-- Permanent upgrades injected here -->
-                    </div>
-                </div>
-            </div>
+                <button id="rebirth-btn" onclick="performRebirth()" class="btn-ancient w-full py-3 font-mythic tracking-widest text-sm disabled:opacity-20">
+                    ASCEND
+                </button>
+             </div>
         </div>
-
     </main>
 
     <script>
-        // Game State
         let state = {
-            essence: 0,
-            totalEssence: 0,
-            autoRate: 0,
-            clickPower: 1,
-            critChance: 0,
-            eraIndex: 0,
-            upgradesOwned: {},
-            lastTick: Date.now(),
-            
-            // Rebirth State
-            aether: 0,
-            rebirthCount: 0,
-            permanentUpgrades: {
-                clickPower: 0,
-                productionBoost: 0
-            }
+            essence: 0, totalEssence: 0, 
+            autoRate: 0, clickPower: 1, critChance: 0,
+            eraIndex: 0, upgradesOwned: {}, aether: 0,
+            rebirthCount: 0, lastTick: Date.now()
         };
 
-        const rebirthThresholds = [1000000, 10000000, 50000000, 100000000, 1000000000];
-
         const eras = [
-            { name: "The Pre-Void", emoji: "✨", desc: "A scattering of stardust in the dark.", minEssence: 0 },
-            { name: "Hadean Inferno", emoji: "🔥", desc: "A molten hellscape formed by gravity.", minEssence: 300 },
-            { name: "The Primordial Sea", emoji: "🌊", desc: "The great cooling begins. Water is life.", minEssence: 3000 },
-            { name: "The Verdant Rise", emoji: "🌳", desc: "Oxygen fills the sky. The land turns green.", minEssence: 30000 },
-            { name: "Age of Monsters", emoji: "🦖", desc: "Great beasts walk the earth.", minEssence: 150000 },
-            { name: "The Frozen Reset", emoji: "❄️", desc: "A strike from the heavens brings a winter of ages.", minEssence: 800000 },
-            { name: "The Cenozoic Bloom", emoji: "🌍", desc: "Life returns, small and warm-blooded.", minEssence: 3000000 }
+            { name: "The Pre-Void", color: "#2c241a", glow: "rgba(184, 134, 11, 0.2)", atmo: "transparent", min: 0 },
+            { name: "Hadean Inferno", color: "#5a1a1a", glow: "rgba(255, 69, 0, 0.4)", atmo: "rgba(255, 100, 0, 0.1)", min: 300 },
+            { name: "Archean Waters", color: "#1a2b3c", glow: "rgba(0, 191, 255, 0.4)", atmo: "rgba(0, 255, 255, 0.05)", min: 5000 },
+            { name: "Verdant Bloom", color: "#1a3c21", glow: "rgba(50, 205, 50, 0.4)", atmo: "rgba(144, 238, 144, 0.1)", min: 50000 },
+            { name: "Techno-Organic", color: "#2d1a3c", glow: "rgba(147, 112, 219, 0.4)", atmo: "rgba(200, 100, 255, 0.1)", min: 1000000 }
         ];
 
         const upgrades = [
-            { id: 'focus', name: "Focus", cost: 10, baseClick: 1.2, desc: "Concentrated thought. (x1.2 Click Power)", type: 'click' },
-            { id: 'gravity', name: "Gravity", cost: 10, baseYield: 1, desc: "Clump dust. (+1 Essence/sec)", type: 'auto' },
-            { id: 'impacts', name: "Impacts", cost: 75, baseCrit: 0.5, desc: "Lethal luck. (+0.5% Crit Chance, x3 Multiplier)", type: 'crit' },
-            { id: 'core', name: "Iron Core", cost: 400, baseYield: 20, desc: "Magnetic shield. (+20 Essence/sec)", type: 'auto' },
-            { id: 'rain', name: "Rain", cost: 2500, baseYield: 95, desc: "Atmospheric cooling. (+95 Essence/sec)", type: 'auto' },
-            { id: 'oxygen', name: "Oxygen", cost: 12000, baseYield: 500, desc: "Biological sky workers. (+500 Essence/sec)", type: 'auto' },
-            { id: 'tectonics', name: "Continents", cost: 60000, baseYield: 2400, desc: "The forge of land. (+2400 Essence/sec)", type: 'auto' },
-            { id: 'dinosaurs', name: "Dinosaurs", cost: 250000, baseYield: 10000, desc: "Ancient giants. (+10k Essence/sec)", type: 'auto' },
-            { id: 'meteor', name: "Meteor", cost: 1000000, baseYield: 45000, desc: "Renewal by fire. (+45k Essence/sec)", type: 'auto' },
-            { id: 'mammals', name: "Mammals", cost: 5000000, baseYield: 250000, desc: "Warm blood. (+250k Essence/sec)", type: 'auto' }
+            { id: 'focus', name: "Divine Will", cost: 10, baseClick: 1.25, type: 'click' },
+            { id: 'gravity', name: "Primal Mass", cost: 40, baseYield: 1.5, type: 'auto' },
+            { id: 'flare', name: "Solar Flare", cost: 200, baseCrit: 1, type: 'crit' },
+            { id: 'core', name: "Iron Heart", cost: 1000, baseYield: 12, type: 'auto' },
+            { id: 'tectonics', name: "World Forge", cost: 7000, baseYield: 80, type: 'auto' }
         ];
 
-        const achievements = [
-            { id: 'first_click', title: "The Spark", desc: "Initiate the first pulse of creation.", req: () => state.totalEssence >= 1 },
-            { id: 'era_hadean', title: "Hot Start", desc: "Reach the Hadean Era.", req: () => state.eraIndex >= 1 },
-            { id: 'rich', title: "Universal Wealth", desc: "Accumulate 10,000 Essence.", req: () => state.totalEssence >= 10000 },
-            { id: 'lucky', title: "Fateful Strike", desc: "Unlock 5% Critical Strike chance.", req: () => state.critChance >= 5 },
-            { id: 'rebirther', title: "Phoenix", desc: "Perform your first rebirth.", req: () => state.rebirthCount >= 1 }
-        ];
-
-        const pUpgrades = [
-            { id: 'clickPower', name: "Soul Strength", desc: "+20% Clicking Power", cost: 1 },
-            { id: 'productionBoost', name: "Cosmic Efficiency", desc: "+10% All Production", cost: 2 }
-        ];
-
-        // UI Selectors
-        const essenceEl = document.getElementById('essence-display');
-        const autoRateEl = document.getElementById('auto-rate');
-        const clickDisplayEl = document.getElementById('click-display');
-        const critDisplayEl = document.getElementById('crit-display');
-        const upgradeContainer = document.getElementById('upgrade-container');
-        const collectBtn = document.getElementById('collect-btn');
-        const planetEl = document.getElementById('planet');
-        const eraNameEl = document.getElementById('era-name');
-        const eraDescEl = document.getElementById('era-desc');
-        const logEl = document.getElementById('log');
-        const aetherDisplay = document.getElementById('aether-display');
-        const rebirthCostDisplay = document.getElementById('rebirth-cost-display');
-        const aetherRewardDisplay = document.getElementById('aether-reward-display');
-        const rebirthBtn = document.getElementById('rebirth-action-btn');
-        const saveIndicator = document.getElementById('save-indicator');
-
-        // LOCAL STORAGE LOGIC
-        function saveGame() {
-            localStorage.setItem('chronos_save', JSON.stringify(state));
-            saveIndicator.style.opacity = "1";
-            setTimeout(() => { saveIndicator.style.opacity = "0"; }, 2000);
-        }
-
-        function loadGame() {
-            const savedData = localStorage.getItem('chronos_save');
-            if (savedData) {
-                try {
-                    const parsed = JSON.parse(savedData);
-                    state = { ...state, ...parsed };
-                    calculateRates();
-                    addLog("Chronicles restored from memory.");
-                } catch (e) {
-                    console.error("Failed to load save", e);
-                }
-            }
-        }
-
-        function formatNum(num) {
-            if (num >= 1000000000) return (num / 1000000000).toFixed(2) + "B";
-            if (num >= 1000000) return (num / 1000000).toFixed(2) + "M";
-            if (num >= 1000) return (num / 1000).toFixed(1) + "k";
+        function format(num) {
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + "k";
             return Math.floor(num);
         }
 
-        function setView(view) {
-            document.querySelectorAll('main > div').forEach(v => v.classList.add('hidden'));
-            document.querySelectorAll('nav > button').forEach(b => b.classList.remove('active'));
-            
-            document.getElementById(`view-${view}`).classList.remove('hidden');
-            document.getElementById(`nav-${view}`).classList.add('active');
-            
-            if (view === 'achievements') renderAchievements();
-            if (view === 'rebirth') renderRebirth();
-        }
-
-        function getCost(upg) {
-            const count = state.upgradesOwned[upg.id] || 0;
-            return Math.floor(upg.cost * Math.pow(1.18, count));
-        }
-
-        function initUpgrades() {
-            upgradeContainer.innerHTML = '';
-            upgrades.forEach(upg => {
-                const div = document.createElement('div');
-                div.id = `card-${upg.id}`;
-                div.className = "upgrade-card p-3 rounded flex justify-between items-center border border-amber-900/10 shadow-sm hidden";
-                div.innerHTML = `
-                    <div class="flex-grow pr-2">
-                        <h3 class="font-mythic font-bold text-sm text-amber-900">
-                            ${upg.name} <span id="count-${upg.id}" class="text-[10px] opacity-40">x0</span>
-                        </h3>
-                        <p class="text-[10px] italic opacity-70">${upg.desc}</p>
-                        <p class="text-xs font-bold mt-0.5">Price: <span id="cost-${upg.id}">${formatNum(upg.cost)}</span></p>
-                    </div>
-                    <button id="btn-${upg.id}" onclick="buyUpgrade('${upg.id}')" class="btn-ancient px-3 py-1.5 rounded text-[10px] uppercase font-mythic">
-                        Infuse
-                    </button>
-                `;
-                upgradeContainer.appendChild(div);
-            });
-        }
-
-        window.buyUpgrade = (id) => {
-            const upg = upgrades.find(u => u.id === id);
-            const cost = getCost(upg);
-            if (state.essence >= cost) {
-                state.essence -= cost;
-                state.upgradesOwned[id] = (state.upgradesOwned[id] || 0) + 1;
-                calculateRates();
-                addLog(`Architected: ${upg.name}.`);
-                updateUI();
-            }
-        };
-
         function calculateRates() {
-            let rate = 0;
-            let crit = 0;
-            let clickMult = 1;
-
-            upgrades.forEach(upg => {
-                const count = state.upgradesOwned[upg.id] || 0;
-                if (upg.type === 'auto') rate += upg.baseYield * count;
-                if (upg.type === 'crit') crit += upg.baseCrit * count;
-                if (upg.type === 'click') clickMult *= Math.pow(upg.baseClick, count);
+            let rate = 0; let crit = 0; let clickMult = 1;
+            upgrades.forEach(u => {
+                const count = state.upgradesOwned[u.id] || 0;
+                if (u.type === 'auto') rate += u.baseYield * count;
+                if (u.type === 'crit') crit += u.baseCrit * count;
+                if (u.type === 'click') clickMult *= Math.pow(u.baseClick, count);
             });
-            
-            rate = rate * (1 + (state.permanentUpgrades.productionBoost * 0.1));
-            
-            let eraPower = 1 + (state.eraIndex * 5);
-            let finalClick = eraPower * clickMult * (1 + (state.permanentUpgrades.clickPower * 0.2));
-            
             state.autoRate = rate;
             state.critChance = crit;
-            state.clickPower = Math.max(1, Math.floor(finalClick));
-        }
-
-        function renderAchievements() {
-            const list = document.getElementById('achievement-list');
-            list.innerHTML = '';
-            achievements.forEach(ach => {
-                const completed = ach.req();
-                const div = document.createElement('div');
-                div.className = `p-4 scroll-panel border-l-4 ${completed ? 'border-amber-600 grayscale-0' : 'border-gray-400 opacity-50 grayscale'}`;
-                div.innerHTML = `
-                    <h4 class="font-mythic text-sm font-bold">${completed ? ach.title : '???'}</h4>
-                    <p class="text-[10px] italic">${completed ? ach.desc : 'Condition unknown.'}</p>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        function renderRebirth() {
-            aetherDisplay.innerText = formatNum(state.aether);
-            const thresholdIdx = Math.min(state.rebirthCount, rebirthThresholds.length - 1);
-            const cost = rebirthThresholds[thresholdIdx];
-            
-            rebirthCostDisplay.innerText = formatNum(cost);
-            const reward = Math.floor(Math.sqrt(state.essence / 1000000)) || 1;
-            aetherRewardDisplay.innerText = reward;
-            
-            rebirthBtn.disabled = state.essence < cost;
-
-            const uContainer = document.getElementById('aether-upgrades');
-            uContainer.innerHTML = '';
-            pUpgrades.forEach(pu => {
-                const level = state.permanentUpgrades[pu.id];
-                const cost = pu.cost * (level + 1);
-                const div = document.createElement('div');
-                div.className = "p-3 scroll-panel flex justify-between items-center";
-                div.innerHTML = `
-                    <div>
-                        <h4 class="font-mythic text-xs font-bold text-indigo-900">${pu.name} (Lv.${level})</h4>
-                        <p class="text-[10px] italic opacity-70">${pu.desc}</p>
-                        <p class="text-xs font-bold">Cost: ${cost} Aether</p>
-                    </div>
-                    <button onclick="buyPermanent('${pu.id}', ${cost})" ${state.aether < cost ? 'disabled' : ''} class="btn-ancient px-3 py-1 bg-indigo-900 rounded text-[10px]">Buy</button>
-                `;
-                uContainer.appendChild(div);
-            });
-        }
-
-        window.buyPermanent = (id, cost) => {
-            if (state.aether >= cost) {
-                state.aether -= cost;
-                state.permanentUpgrades[id]++;
-                calculateRates();
-                renderRebirth();
-            }
-        };
-
-        rebirthBtn.addEventListener('click', () => {
-            const thresholdIdx = Math.min(state.rebirthCount, rebirthThresholds.length - 1);
-            if (state.essence >= rebirthThresholds[thresholdIdx]) {
-                const reward = Math.floor(Math.sqrt(state.essence / 1000000)) || 1;
-                state.aether += reward;
-                state.rebirthCount++;
-                
-                state.essence = 0;
-                state.autoRate = 0;
-                state.critChance = 0;
-                state.clickPower = 1;
-                state.upgradesOwned = {};
-                state.eraIndex = 0;
-                
-                calculateRates();
-                addLog(`Performed Rebirth. Gained ${reward} Aether.`);
-                saveGame();
-                setView('home');
-                updateUI();
-            }
-        });
-
-        function addLog(msg) {
-            const p = document.createElement('p');
-            p.innerText = `> ${msg}`;
-            logEl.prepend(p);
-            if(logEl.childNodes.length > 15) logEl.lastChild.remove();
+            state.clickPower = Math.max(1, Math.round(clickMult * (1 + state.eraIndex)));
         }
 
         function updateUI() {
-            essenceEl.innerText = formatNum(state.essence);
-            autoRateEl.innerText = formatNum(state.autoRate);
-            critDisplayEl.innerText = state.critChance.toFixed(1);
-            clickDisplayEl.innerText = formatNum(state.clickPower);
+            document.getElementById('essence-display').innerText = format(state.essence);
+            document.getElementById('auto-rate').innerText = format(state.autoRate) + "/s";
 
-            let currentEra = 0;
-            for(let i = eras.length - 1; i >= 0; i--) {
-                if(state.totalEssence >= eras[i].minEssence) {
-                    currentEra = i;
-                    break;
-                }
-            }
+            let activeEra = 0;
+            eras.forEach((era, i) => { if (state.totalEssence >= era.min) activeEra = i; });
             
-            if (currentEra !== state.eraIndex) {
-                state.eraIndex = currentEra;
-                planetEl.innerText = eras[currentEra].emoji;
-                eraNameEl.innerText = eras[currentEra].name;
-                eraDescEl.innerText = eras[currentEra].desc;
-                addLog(`NEW ERA: ${eras[currentEra].name}`);
-                calculateRates(); 
+            if (activeEra !== state.eraIndex) {
+                state.eraIndex = activeEra;
+                const era = eras[activeEra];
+                const sphere = document.getElementById('planet-sphere');
+                const atmo = document.getElementById('planet-atmosphere');
+                sphere.style.background = era.color;
+                document.documentElement.style.setProperty('--planet-glow', era.glow);
+                atmo.style.background = era.atmo;
+                document.getElementById('era-name').innerText = era.name;
+                calculateRates();
             }
 
-            upgrades.forEach(upg => {
-                const card = document.getElementById(`card-${upg.id}`);
-                const cost = getCost(upg);
-                const count = state.upgradesOwned[upg.id] || 0;
-
-                // RULE: Only show if current essence is enough to buy it OR if we already own some
-                if (state.essence >= cost || count > 0) {
-                    card.classList.remove('hidden');
-                    document.getElementById(`count-${upg.id}`).innerText = `x${count}`;
-                    document.getElementById(`cost-${upg.id}`).innerText = formatNum(cost);
-                    const btn = document.getElementById(`btn-${upg.id}`);
+            upgrades.forEach(u => {
+                const count = state.upgradesOwned[u.id] || 0;
+                const cost = Math.floor(u.cost * Math.pow(1.18, count));
+                const btn = document.getElementById(`btn-${u.id}`);
+                if (btn) {
                     btn.disabled = state.essence < cost;
+                    btn.querySelector('.cost').innerText = format(cost);
+                    btn.querySelector('.count').innerText = `x${count}`;
                 }
             });
+
+            const reward = Math.floor(Math.sqrt(state.essence / 100000));
+            document.getElementById('aether-reward-display').innerText = reward;
+            document.getElementById('rebirth-btn').disabled = state.essence < 100000;
         }
 
-        function spawnParticle(x, y, isCrit) {
+        function handlePlanetClick(e) {
+            const sphere = document.getElementById('planet-sphere');
+            sphere.classList.remove('clicking');
+            void sphere.offsetWidth;
+            sphere.classList.add('clicking');
+
+            let gain = state.clickPower;
+            const isCrit = (Math.random() * 100) < state.critChance;
+            if (isCrit) gain *= 5;
+
+            state.essence += gain;
+            state.totalEssence += gain;
+            
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            spawnParticle(clientX, clientY, isCrit ? `!!` : `+${format(gain)}`);
+            updateUI();
+        }
+
+        function spawnParticle(x, y, text) {
             const p = document.createElement('div');
-            p.innerText = isCrit ? "🔥 CRIT!" : "✨";
-            p.className = `absolute text-xs pointer-events-none transition-all duration-700 opacity-0 ${isCrit ? 'crit-text text-red-600' : ''}`;
+            p.className = 'particle font-mythic text-amber-900 text-xs font-bold';
             p.style.left = x + 'px';
             p.style.top = y + 'px';
-            document.getElementById('particles').appendChild(p);
-            
-            setTimeout(() => {
-                p.style.transform = `translate(${(Math.random()-0.5)*80}px, -100px) scale(${isCrit ? 1.5 : 1})`;
-                p.style.opacity = "1";
-            }, 10);
-            
-            setTimeout(() => p.remove(), 700);
+            p.innerText = text;
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 600);
         }
 
-        collectBtn.addEventListener('click', (e) => {
-            let power = state.clickPower;
-            
-            const isCrit = (Math.random() * 100) < state.critChance;
-            if (isCrit) power *= 3;
-            
-            state.essence += power;
-            state.totalEssence += power;
-            
-            const rect = collectBtn.getBoundingClientRect();
-            spawnParticle(rect.left + Math.random()*rect.width, rect.top, isCrit);
-            updateUI();
-        });
+        function buyUpgrade(id) {
+            const u = upgrades.find(up => up.id === id);
+            const count = state.upgradesOwned[id] || 0;
+            const cost = Math.floor(u.cost * Math.pow(1.18, count));
+            if (state.essence >= cost) {
+                state.essence -= cost;
+                state.upgradesOwned[id] = count + 1;
+                calculateRates();
+                updateUI();
+            }
+        }
+
+        function setView(v) {
+            ['home', 'achievements', 'rebirth'].forEach(id => {
+                document.getElementById(`view-${id}`).classList.toggle('hidden', id !== v);
+                document.getElementById(`nav-${id}`).classList.toggle('active', id === v);
+            });
+        }
 
         function tick() {
             const now = Date.now();
             const delta = (now - state.lastTick) / 1000;
             state.lastTick = now;
-
             if (state.autoRate > 0) {
                 const gain = state.autoRate * delta;
                 state.essence += gain;
@@ -563,13 +340,28 @@
             requestAnimationFrame(tick);
         }
 
-        setInterval(saveGame, 5000);
+        const container = document.getElementById('upgrade-container');
+        upgrades.forEach(u => {
+            const div = document.createElement('div');
+            div.className = "scroll-panel p-2 flex justify-between items-center";
+            div.innerHTML = `
+                <div>
+                    <h3 class="font-mythic text-[10px] font-bold">${u.name} <span class="count opacity-40">x0</span></h3>
+                </div>
+                <button id="btn-${u.id}" onclick="buyUpgrade('${u.id}')" class="btn-ancient px-3 py-1.5 rounded text-[10px] font-mythic">
+                    <span class="cost">0</span>
+                </button>
+            `;
+            container.appendChild(div);
+        });
 
-        loadGame();
-        initUpgrades();
-        updateUI();
         requestAnimationFrame(tick);
-
+        const saved = localStorage.getItem('chronos_save');
+        if (saved) {
+            state = {...state, ...JSON.parse(saved)};
+            calculateRates();
+        }
+        setInterval(() => localStorage.setItem('chronos_save', JSON.stringify(state)), 10000);
     </script>
 </body>
 </html>
