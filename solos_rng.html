@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Solo's RNG - Premium Edition</title>
     <style>
         :root {
@@ -17,40 +17,62 @@
             --mythic: #ef4444;
             --limited: #f472b6;
             --coin: #ffd700;
-            --shop: #10b981;
             --text-main: #f8fafc;
             --text-dim: #71717a;
+            --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* MOBILE FIXES */
+        * {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            box-sizing: border-box;
+        }
+
+        input {
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text-main);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             margin: 0;
             min-height: 100vh;
-            padding-bottom: 100px;
+            padding-bottom: 120px;
         }
 
-        /* Center the entire top section (coin bar + main content) horizontally */
         .game-container {
             width: 100%;
             max-width: 450px;
             padding: 1.5rem;
-            margin-left: auto;
-            margin-right: auto;
-            text-align: left;
-            display: flex;
+            margin: 0 auto;
+        }
+
+        /* SCREEN TRANSITIONS */
+        .screen { 
+            display: none !important; 
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        .active-screen { 
+            display: flex !important; 
             flex-direction: column;
+            opacity: 1;
+            transform: translateY(0);
+            animation: screenEntrance 0.4s var(--spring); 
         }
 
-        .screen { display: none; animation: fadeIn 0.3s ease; }
-        .active-screen { display: block; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes screenEntrance {
+            from { opacity: 0; transform: scale(0.98) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
+        /* UI ELEMENTS */
         .header {
             display: flex;
             justify-content: space-between;
@@ -62,28 +84,38 @@
             border: 1px solid #27272a;
         }
 
-        .currency-display {
-            color: var(--coin);
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .currency-display { color: var(--coin); font-weight: 800; display: flex; align-items: center; gap: 6px; }
 
         .display-area {
-            height: 220px;
+            height: 240px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             background: radial-gradient(circle at center, #1e1e22 0%, #151518 100%);
-            border-radius: 24px;
+            border-radius: 28px;
             margin-bottom: 1.5rem;
             border: 2px solid #27272a;
             position: relative;
+            overflow: hidden;
+            transition: all 0.3s var(--spring);
         }
 
-        .item-emoji-display { font-size: 4rem; margin-bottom: 0.5rem; }
+        .display-area.is-rolling {
+            border-color: var(--accent);
+            transform: scale(0.95);
+            filter: brightness(1.2);
+        }
+
+        .item-emoji-display { font-size: 4.5rem; margin-bottom: 0.5rem; transition: transform 0.2s; }
+        .is-rolling .item-emoji-display { animation: rollShake 0.1s infinite; }
+
+        @keyframes rollShake {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+
         .item-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem; }
 
         .pity-container {
@@ -94,733 +126,382 @@
             margin-top: 15px;
             overflow: hidden;
         }
-        #pity-progress { height: 100%; background: var(--legendary); width: 0%; transition: width 0.3s; }
+        #pity-progress { 
+            height: 100%; 
+            background: linear-gradient(90deg, var(--legendary), #fbbf24);
+            width: 0%; 
+            transition: width 0.4s var(--spring);
+        }
 
-        /* Statistics UI Overhaul */
-        .stats-grid {
+        .inventory-grid, #collection-list {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        .stat-card {
-            background: var(--card);
-            border: 1px solid #27272a;
-            border-radius: 20px;
-            padding: 20px;
-            text-align: left;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-label {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            display: block;
-        }
-
-        .probability-table {
-            background: var(--card);
-            border: 1px solid #27272a;
-            border-radius: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
             margin-top: 15px;
-            overflow: hidden;
-        }
-
-        .prob-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 20px;
-            border-bottom: 1px solid #27272a;
-            font-size: 0.85rem;
-        }
-        .prob-row:last-child { border-bottom: none; }
-        .prob-name { font-weight: 600; }
-        .prob-val { font-family: monospace; }
-
-        .shop-card {
-            background: var(--card);
-            padding: 1.5rem;
-            border-radius: 20px;
-            border: 1px solid #27272a;
-            margin-bottom: 1rem;
-            text-align: left;
-        }
-
-        .limited-item-box {
-            background: linear-gradient(135deg, #f472b622 0%, #151518 100%);
-            border: 1px solid var(--limited);
-            position: relative;
-        }
-
-        .timer-text {
-            font-size: 0.7rem;
-            color: var(--limited);
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        /* Override inventory-grid for collection screen to ensure a 4-column grid layout */
-        #screen-collection {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #screen-collection h2 {
-            text-align: center !important;
-            width: 100%;
-        }
-        #collection-stats-grid {
-            display: flex;
-            justify-content: center; /* center horizontally */
-            align-items: center;
-            gap: 8px;                /* minimal horizontal gap */
-            margin-bottom: 20px;
-            width: 100%;
-            flex-wrap: nowrap;        /* prevent wrapping */
-        }
-
-        #collection-stats-grid .stat-card {
-            flex-shrink: 0;          /* prevent cards from stretching/shrinking */
-        }
-        #collection-list {
-            display: grid;
-            grid-template-columns: repeat(4, 110px); /* fixed width for each card */
-            gap: 12px; /* equal row and column spacing */
-            justify-content: center; /* center the whole grid horizontally */
-            align-items: flex-start;
-        }
-        #screen-collection .inventory-grid .inv-slot,
-        #collection-list .inv-slot {
-            width: 110px;
-            max-width: 110px;
-            font-size: 3.2rem;
         }
 
         .inv-slot {
             aspect-ratio: 1;
             background: #1e1e22;
-            border-radius: 12px;
+            border-radius: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-size: 2.2rem;
             border: 1px solid #2d2d33;
             cursor: pointer;
+            transition: transform 0.2s;
             position: relative;
-            transition: box-shadow 0.18s;
         }
+        .inv-slot:active { transform: scale(0.9); }
 
-        .inv-slot span { font-size: 0.8rem; margin-top: 4px; font-weight: bold; }
-
-        /* Leave bottom nav-bar centered */
         .nav-bar {
             position: fixed;
-            bottom: 20px;
+            bottom: 25px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 20px;
-            border-radius: 24px;
-            background: rgba(21, 21, 24, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid #27272a;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 28px;
+            background: rgba(21, 21, 24, 0.85);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.08);
             z-index: 1000;
-            width: auto;
+            width: 90%;
             max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         .nav-item {
             flex: 1;
-            padding: 12px;
+            padding: 14px 0;
             border: none;
             background: none;
             color: #71717a;
             font-weight: 700;
             cursor: pointer;
-            border-radius: 16px;
-            transition: all 0.2s;
+            border-radius: 20px;
+            transition: all 0.3s;
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
+            gap: 4px;
+        }
+        .nav-item.active { background: var(--accent); color: white; }
+
+        .btn-primary { 
+            background: var(--accent); color: white; border: none; padding: 16px; 
+            border-radius: 18px; font-weight: 700; cursor: pointer; width: 100%; 
+            transition: all 0.2s;
+        }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .checkout-card {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+            border-radius: 24px;
+            padding: 24px;
+            margin: 20px 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .card-chip { width: 45px; height: 35px; background: #fbbf24; border-radius: 6px; margin-bottom: 20px; opacity: 0.8; }
+        
+        .card-input {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            width: 100%;
+            margin-bottom: 12px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            outline: none;
         }
 
-        .nav-item.active { background: var(--accent); color: white; }
-        .nav-icon { font-size: 1.2rem; margin-bottom: 2px; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); display: none; justify-content: center;
+            align-items: center; z-index: 3000; backdrop-filter: blur(10px);
+        }
 
-        .btn-primary { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; }
-        .btn-shop { background: var(--shop); color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.8rem; }
-        .btn-shop:disabled { background: #27272a; opacity: 0.5; }
+        .modal { 
+            background: var(--card); padding: 2.5rem 1.5rem; border-radius: 32px; width: 92%; 
+            max-width: 400px; text-align: center; border: 1px solid #27272a;
+        }
 
         .rarity-Common { color: var(--common); }
         .rarity-Uncommon { color: var(--uncommon); }
         .rarity-Rare { color: var(--rare); }
         .rarity-Epic { color: var(--epic); }
-        .rarity-Legendary { color: var(--legendary); }
-        .rarity-Mythic { color: var(--mythic); }
+        .rarity-Legendary { color: var(--legendary); text-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
+        .rarity-Mythic { color: var(--mythic); text-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
         .rarity-Limited { color: var(--limited); text-shadow: 0 0 10px var(--limited); }
 
         #msg-box {
-            position: fixed;
-            top: 20px;
-            background: var(--accent);
-            padding: 10px 20px;
-            border-radius: 12px;
-            opacity: 0;
-            transition: 0.3s;
-            pointer-events: none;
-            z-index: 2000;
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: white; padding: 12px 24px;
+            border-radius: 30px; opacity: 0; transition: 0.4s var(--spring);
+            z-index: 4000; pointer-events: none; font-weight: bold;
         }
 
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: none; justify-content: center;
-            align-items: center; z-index: 3000; backdrop-filter: blur(5px);
-        }
-        .modal { background: var(--card); padding: 2rem; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #27272a; }
-
-        .member-card {
-            background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+        .shop-card {
+            background: var(--card);
             border-radius: 24px;
-            padding: 30px;
-            text-align: left;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-            margin: 20px auto;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #27272a;
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-            max-width: 320px;
         }
-        .card-label { font-size: 0.7rem; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 6px; display: block; font-weight: 600; }
-        .card-input {
-            background: rgba(0,0,0,0.15);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
+
+        .rarity-table {
             width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 1rem;
-            margin-bottom: 20px;
-            outline: none;
-            box-sizing: border-box;
-        }
-        .card-input::placeholder { color: rgba(255,255,255,0.4); }
-
-        .coin-selector-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
             margin-top: 15px;
-        }
-        .coin-option {
-            background: #1e1e22;
-            border: 1px solid #27272a;
-            padding: 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--coin);
-            font-weight: 800;
-            text-align: center;
+            border-collapse: collapse;
             font-size: 0.8rem;
+            color: var(--text-dim);
         }
-        .coin-option:hover { background: #27272a; border-color: var(--coin); }
-
-        #secret-game-area {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg);
-            z-index: 5000;
-        }
-        .click-coin {
-            font-size: 5rem;
-            cursor: pointer;
-            user-select: none;
-            transition: transform 0.1s;
-        }
-        .click-coin:active { transform: scale(0.9); }
+        .rarity-table td { padding: 8px 0; border-bottom: 1px solid #27272a; }
+        .rarity-table td:last-child { text-align: right; color: var(--text-main); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="msg-box">Message</div>
 
-<div id="secret-game-area">
-    <h2 style="color:var(--coin);">Coin Catch!</h2>
-    <p>Catch the coin! Reach your goal! Time: <span id="secret-timer-val">15</span>s</p>
-    <div id="secret-target" class="click-coin" onclick="secretClick()">🪙</div>
-    <p style="margin-top:20px;">Collected: <span id="secret-earned">0</span> / <span id="secret-goal">0</span> 🪙</p>
-    <button class="btn-primary" style="max-width:200px; margin-top:20px; display:none;" id="btn-exit-secret" onclick="exitSecret()">Return to Shop</button>
+<!-- REALISTIC CHECKOUT MODAL -->
+<div class="modal-overlay" id="access-modal">
+    <div class="modal">
+        <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">SECURE CHECKOUT</div>
+        <h2 style="margin: 0 0 20px 0;">Authorize Payment</h2>
+        
+        <div class="checkout-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div class="card-chip"></div>
+                <div style="color: white; font-weight: bold; font-style: italic; opacity: 0.7;">SOLO BANK</div>
+            </div>
+            
+            <input type="text" id="access-num" class="card-input" placeholder="0000 0000 0000 0000">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="access-exp" class="card-input" placeholder="MM/YY">
+                <input type="password" class="card-input" placeholder="CVV" value="***" disabled style="width: 80px;">
+            </div>
+            <input type="text" id="access-name" class="card-input" placeholder="CARDHOLDER NAME">
+        </div>
+
+        <div style="display: flex; justify-content: space-between; padding: 15px; background: #1e1e22; border-radius: 15px; margin-bottom: 20px;">
+            <span style="color: var(--text-dim);">Total Amount:</span>
+            <span style="color: var(--coin); font-weight: 800;">🪙 <span id="access-target-label">0</span></span>
+        </div>
+
+        <button class="btn-primary" id="btn-verify" onclick="verifyAccess()">Confirm & Pay</button>
+        <button style="background:none; border:none; color:var(--text-dim); margin-top:15px; cursor:pointer;" onclick="document.getElementById('access-modal').style.display='none'">Cancel</button>
+    </div>
 </div>
 
 <div class="game-container">
     <div class="header">
         <div class="currency-display">🪙 <span id="coin-balance">0</span></div>
-        <div style="font-size: 0.7rem; color: #71717a;" id="header-inv-cap">Bag: 0/10</div>
+        <div style="font-size: 0.7rem; color: var(--text-dim);" id="header-inv-cap">Bag: 0/10</div>
     </div>
 
+    <!-- SCREENS -->
     <div id="screen-game" class="screen active-screen">
-        <div class="display-area">
+        <div class="display-area" id="main-display">
             <div id="item-emoji" class="item-emoji-display">📦</div>
             <div class="item-name" id="item-name">Lootbox</div>
-            <div class="item-rarity" id="item-rarity">12 Coins per roll</div>
-            <div class="pity-container">
-                <div id="pity-progress"></div>
-            </div>
-            <div style="font-size: 0.6rem; color: #52525b; margin-top: 5px;">Pity to Legendary+: <span id="pity-val">0</span>/100</div>
+            <div class="item-rarity" id="item-rarity" style="color:var(--text-dim); font-size:0.8rem;">12 Coins per roll</div>
+            <div class="pity-container"><div id="pity-progress"></div></div>
+            <div style="font-size: 0.6rem; color: #52525b; margin-top: 8px;">Pity: <span id="pity-val">0</span>/100</div>
         </div>
 
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-primary" onclick="spin(1)">Roll 1x (12🪙)</button>
-            <button class="btn-primary" style="background: #27272a;" onclick="spin(10)">Roll 10x</button>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn-primary" id="roll-1-btn" onclick="spin(1)">Roll 1x</button>
+            <button class="btn-primary" id="roll-10-btn" style="background: #27272a;" onclick="spin(10)">Roll 10x</button>
         </div>
 
-        <div style="margin-top: 2rem; text-align: left;">
+        <div style="margin-top: 2.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.8rem; font-weight:800; color:#71717a;">INVENTORY</span>
-                <button onclick="sellAll()" style="background:none; border:none; color:var(--mythic); font-size:0.7rem; cursor:pointer;">Sell All</button>
+                <span style="font-size:0.75rem; color:var(--text-dim); font-weight:800; letter-spacing:1px;">INVENTORY</span>
+                <button onclick="sellAll()" style="background:none; border:none; color:var(--mythic); font-size:0.75rem; font-weight:bold; cursor:pointer;">SELL ALL</button>
             </div>
             <div class="inventory-grid" id="inventory-list"></div>
         </div>
     </div>
 
     <div id="screen-shop" class="screen">
-        <h2 style="text-align: left;">The Shop</h2>
-        <div class="shop-card limited-item-box">
-            <span class="timer-text" id="reset-timer">Resets in: --:--:--</span>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div>
-                    <h3 id="limited-item-name" class="rarity-Limited" style="margin:0;">Loading...</h3>
-                    <p style="font-size:0.7rem; color:#71717a; margin:5px 0 0 0;">Weekly Shop Exclusive</p>
-                </div>
-                <div id="limited-item-emoji" style="font-size: 2.5rem;">✨</div>
-            </div>
-            <button class="btn-shop" style="width:100%; background:var(--limited);" onclick="buyLimitedItem()">Buy for 500 🪙</button>
-        </div>
+        <h2 style="margin-bottom:20px;">Premium Shop</h2>
 
-        <div class="shop-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div>
-                    <h4 style="margin:0;">Expand Bag</h4>
-                    <p style="font-size:0.7rem; color:#71717a;">+1 Inventory Space</p>
-                </div>
-                <button class="btn-shop" id="btn-buy-inv" onclick="buyUpgrade('inv')">10 🪙</button>
+        <div class="shop-card" style="border:1px solid var(--limited); background:linear-gradient(135deg, #f472b611, transparent);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <span style="font-size:0.6rem; color:var(--limited); font-weight:bold;">WEEKLY LIMITED</span>
+                <span id="reset-timer" style="font-size:0.6rem; color:var(--text-dim);">Resets in: --:--</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                    <h4 style="margin:0;">Luck Charm</h4>
-                    <p style="font-size:0.7rem; color:#71717a;">+5% Global Luck</p>
+                    <h3 id="limited-item-name" class="rarity-Limited" style="margin:5px 0;">Pastel de Nata</h3>
+                    <button class="btn-primary" style="background:var(--limited); padding:10px 18px; font-size:0.75rem; width:auto;" onclick="buyLimitedItem()">Buy for 500 🪙</button>
                 </div>
-                <button class="btn-shop" id="btn-buy-luck" onclick="buyUpgrade('luck')">15 🪙</button>
+                <div id="limited-item-emoji" style="font-size:3rem; filter:drop-shadow(0 0 10px var(--limited));">🧁</div>
             </div>
         </div>
 
-        <div class="shop-card" style="border: 1px dashed var(--coin);">
-            <h4 style="margin:0;">Coin Catch Entry</h4>
-            <p style="font-size:0.7rem; color:#71717a;">Membership credentials required.</p>
-            <div class="coin-selector-grid">
-                <div class="coin-option" onclick="startVerificationFlow(100)">100 🪙</div>
-                <div class="coin-option" onclick="startVerificationFlow(200)">200 🪙</div>
-                <div class="coin-option" onclick="startVerificationFlow(500)">500 🪙</div>
-                <div class="coin-option" onclick="startVerificationFlow(1200)">1.2K 🪙</div>
-                <div class="coin-option" onclick="startVerificationFlow(5000)">5K 🪙</div>
-                <div class="coin-option" onclick="startVerificationFlow(10000)" style="grid-column: span 1;">10K 🪙</div>
+        <div class="shop-card" style="border:1px dashed var(--coin); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 10px;">🎰</div>
+            <h3>Coin Catch Mini-Game</h3>
+            <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 15px;">Secure Vault Access Required.</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <button class="btn-primary" style="background:#1e1e22; border:1px solid #27272a;" onclick="startVerificationFlow(100)">100 🪙</button>
+                <button class="btn-primary" style="background:#1e1e22; border:1px solid #27272a;" onclick="startVerificationFlow(500)">500 🪙</button>
             </div>
         </div>
     </div>
 
-<div id="screen-stats" class="screen">
-    <!-- Screen title below top bar -->
-    <h2 style="text-align: left;">Player Overview</h2>
-    <!-- Stat cards grid below title -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <span class="stat-label">Global Luck</span>
-            <span class="stat-value" id="stat-luck" style="color:var(--uncommon);">0%</span>
+    <div id="screen-stats" class="screen">
+        <h2>Your Progress</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom: 20px;">
+            <div style="background:var(--card); padding:20px; border-radius:20px; border:1px solid #27272a;">
+                <div style="font-size:0.7rem; color:var(--text-dim);">TOTAL ROLLS</div>
+                <div id="stat-rolls" style="font-size:1.5rem; font-weight:bold;">0</div>
+            </div>
+            <div style="background:var(--card); padding:20px; border-radius:20px; border:1px solid #27272a;">
+                <div style="font-size:0.7rem; color:var(--text-dim);">LEGENDARIES+</div>
+                <div id="stat-legendary" style="font-size:1.5rem; font-weight:bold; color:var(--legendary);">0</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <span class="stat-label">Bag Space</span>
-            <span class="stat-value" id="stat-space">10</span>
+
+        <div style="background:var(--card); padding:20px; border-radius:20px; border:1px solid #27272a; margin-bottom: 20px;">
+            <div style="font-size:0.7rem; color:var(--text-dim); margin-bottom: 10px; letter-spacing: 1px;">DROP CHANCES</div>
+            <table class="rarity-table">
+                <tr><td class="rarity-Common">Common</td><td>51.0%</td></tr>
+                <tr><td class="rarity-Uncommon">Uncommon</td><td>25.5%</td></tr>
+                <tr><td class="rarity-Rare">Rare</td><td>12.8%</td></tr>
+                <tr><td class="rarity-Epic">Epic</td><td>6.1%</td></tr>
+                <tr><td class="rarity-Legendary">Legendary</td><td>3.1%</td></tr>
+                <tr><td class="rarity-Mythic">Mythic</td><td>1.5%</td></tr>
+            </table>
         </div>
-        <div class="stat-card">
-            <span class="stat-label">Total Rolls</span>
-            <span class="stat-value" id="stat-rolls">0</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-label">Legendaries+</span>
-            <span class="stat-value" id="stat-legos" style="color:var(--legendary);">0</span>
-        </div>
+
+        <button class="btn-primary" style="background: #ef444422; color: #ef4444; border: 1px solid #ef444444;" onclick="hardReset()">HARD RESET DATA</button>
     </div>
-    <!-- Live probabilities table below stat cards -->
-    <h3 style="text-align: left; margin-top: 25px; font-size: 1rem; color: var(--text-dim);">Live Probabilities</h3>
-    <div class="probability-table">
-        <div class="prob-row"><span class="prob-name rarity-Common">Common</span><span class="prob-val" id="prob-common">0.00%</span></div>
-        <div class="prob-row"><span class="prob-name rarity-Uncommon">Uncommon</span><span class="prob-val" id="prob-uncommon">0.00%</span></div>
-        <div class="prob-row"><span class="prob-name rarity-Rare">Rare</span><span class="prob-val" id="prob-rare">0.00%</span></div>
-        <div class="prob-row"><span class="prob-name rarity-Epic">Epic</span><span class="prob-val" id="prob-epic">0.00%</span></div>
-        <div class="prob-row"><span class="prob-name rarity-Legendary">Legendary</span><span class="prob-val" id="prob-legendary">0.00%</span></div>
-        <div class="prob-row"><span class="prob-name rarity-Mythic">Mythic</span><span class="prob-val" id="prob-mythic">0.00%</span></div>
-    </div>
-    <button onclick="resetGame()" style="margin-top:2rem; background:none; border:none; color:#3f3f46; font-size:0.7rem; cursor:pointer; text-decoration:underline;">Hard Reset Data</button>
-</div>
-</div>
 
     <div id="screen-collection" class="screen">
-        <!-- Use only the main header at the top of the app; do not duplicate coin/bag display here -->
-        <!-- Collection stats grid above the collection grid -->
-        <div id="collection-stats-grid"></div>
-        <!-- Collection grid beneath title -->
-        <div class="inventory-grid" id="collection-list"></div>
+        <h2 style="margin-bottom:5px;">Collection</h2>
+        <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:20px;">Unique Artifacts Found.</p>
+        <div id="collection-list"></div>
     </div>
+</div>
 
+<!-- NAV BAR -->
 <div class="nav-bar">
-    <button class="nav-item active" onclick="showScreen('game')"><span class="nav-icon">🎮</span><span>GAME</span></button>
-    <button class="nav-item" onclick="showScreen('shop')"><span class="nav-icon">🛒</span><span>SHOP</span></button>
-    <button class="nav-item" onclick="showScreen('stats')"><span class="nav-icon">📊</span><span>STATS</span></button>
-    <button class="nav-item" onclick="showScreen('collection')"><span class="nav-icon">📚</span><span>Collection</span></button>
+    <button class="nav-item active" id="nav-game" onclick="showScreen('game')">🎮<span>GAME</span></button>
+    <button class="nav-item" id="nav-shop" onclick="showScreen('shop')">🛒<span>SHOP</span></button>
+    <button class="nav-item" id="nav-stats" onclick="showScreen('stats')">📊<span>STATS</span></button>
+    <button class="nav-item" id="nav-collection" onclick="showScreen('collection')">📚<span>COLLECT</span></button>
 </div>
 
-<div class="modal-overlay" id="access-modal">
-    <div class="modal">
-        <h3 style="margin-top:0;">Verification Required</h3>
-        <p style="font-size:0.8rem; color:#71717a; margin-bottom:10px;">Target: <span id="access-target-label" style="color:var(--coin);">0</span> 🪙</p>
-        
-        <div class="member-card">
-            <span class="card-label">Card Holder</span>
-            <input type="text" id="access-name" class="card-input" placeholder="John Smith">
-            <span class="card-label">Card Number</span>
-            <input type="text" id="access-num" class="card-input" placeholder="1234 1234 1234 1234">
-            <span class="card-label">Expiry Date</span>
-            <input type="text" id="access-exp" class="card-input" placeholder="01/01" style="margin-bottom:0;">
-        </div>
-
-        <button class="btn-primary" onclick="verifyAccess()" style="margin-top:15px;">Next</button>
-        <button class="btn-primary" style="background:#27272a; margin-top:10px;" onclick="closeAccessModal()">Cancel</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="item-modal" onclick="closeModal()">
-    <div class="modal" onclick="event.stopPropagation()">
-        <div id="modal-emoji" style="font-size: 5rem; margin-bottom: 1rem;">❓</div>
-        <h2 id="modal-name">Item Name</h2>
-        <p id="modal-rarity" style="font-weight:800; letter-spacing:2px;">RARITY</p>
-        <div style="background:#1e1e22; padding:15px; border-radius:15px; margin:15px 0;">
-            <p style="font-size:0.8rem; color:#71717a; margin:0;">Sell Value</p>
-            <p style="color:var(--coin); font-weight:800; font-size:1.2rem; margin:5px 0 0 0;">🪙 <span id="modal-sell">0</span></p>
-        </div>
-        <button class="btn-primary" style="background:#ef4444;" id="btn-sell-single">Sell Item</button>
-        <button class="btn-primary" style="background:#27272a; margin-top:10px;" onclick="closeModal()">Close</button>
-    </div>
+<!-- SECRET GAME AREA -->
+<div id="secret-game-area" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:5000; flex-direction:column; align-items:center; justify-content:center;">
+    <h2 style="color:var(--coin);">Vault Entry</h2>
+    <p>Catch the coin! Reach your goal! Time: <span id="secret-timer-val">15</span>s</p>
+    <div id="secret-target" style="font-size:5rem; cursor:pointer; position:absolute; filter:drop-shadow(0 0 20px var(--coin));" onclick="secretClick()">🪙</div>
+    <p style="margin-top:20px;">Collected: <span id="secret-earned">0</span> / <span id="secret-goal">0</span> 🪙</p>
+    <button class="btn-primary" style="max-width:200px; margin-top:20px; display:none;" id="btn-exit-secret" onclick="exitSecret()">Done</button>
 </div>
 
 <script>
     const SPIN_COST = 12;
-
     const generatePool = () => {
         const pool = [];
         const config = [
-            { r: "Common", w: 100, s: 2, e: ["🔩","🍞","🧪","🍃","📎","🍎","🪨","⚙️","🪀","🥕","🧲","🪑","🧴","🧵","🧂","🛏️","🪔","🪟","🪤","🧸"] },
-            { r: "Uncommon", w: 50, s: 5, e: ["🔍","🗡️","🏹","🛡️","🕯️","🪓"] },
-            { r: "Rare", w: 25, s: 15, e: ["🔋","🏺","🧭","⚖️","🔮","🧿"] },
-            { r: "Epic", w: 12, s: 50, e: ["🗺️","💎","🪶","🔥","❄️","⚡"] },
+            { r: "Common", w: 100, s: 2, e: ["🔩","🍞","🧪","🍃","📎","🍎","🪨","⚙️","🪀","🥕"] },
+            { r: "Uncommon", w: 50, s: 5, e: ["🔍","🗡️","🏹","🛡️","🕯️"] },
+            { r: "Rare", w: 25, s: 15, e: ["🔋","🏺","🧭","⚖️","🔮"] },
+            { r: "Epic", w: 12, s: 50, e: ["🗺️","💎","🪶","🔥","❄️"] },
             { r: "Legendary", w: 6, s: 200, e: ["🛰️","👑","🐉","🧬"] },
             { r: "Mythic", w: 3, s: 1000, e: ["🕳️","🎞️","🪐"] }
         ];
-
         config.forEach(c => {
-            let count = c.e.length;
-            if (c.r === "Common") count = 100;
-            else count = Math.floor(100 / 2 / (c.r === "Uncommon" ? 1 : c.r === "Rare" ? 2 : c.r === "Epic" ? 2 : c.r === "Legendary" ? 2 : 2));
-            for (let i = 0; i < count; i++) {
-                const emoji = c.e[i % c.e.length];
-                let properName;
-                switch(c.r) {
-                    case "Common":
-                        properName = ["Gear","Bread","Potion","Leaf","Clip","Apple","Rock","Cog","Yo-yo","Carrot","Magnet","Chair","Lotion","Thread","Salt","Bed","Lamp","Window","Trap","Teddy"][i % 20];
-                        break;
-                    case "Uncommon":
-                        properName = ["Magnifier","Dagger","Bow","Shield","Candle","Axe"][i % 6];
-                        break;
-                    case "Rare":
-                        properName = ["Battery","Vase","Compass","Scales","Crystal","Amulet"][i % 6];
-                        break;
-                    case "Epic":
-                        properName = ["Map","Gem","Feather","Flame","Ice","Lightning"][i % 6];
-                        break;
-                    case "Legendary":
-                        properName = ["Satellite","Crown","Dragon","DNA"][i % 4];
-                        break;
-                    case "Mythic":
-                        properName = ["Void","Film","Planet"][i % 3];
-                        break;
-                }
-                pool.push({ name: `${properName} ${c.r} #${i+1}`, rarity: c.r, weight: c.w, sell: c.s, emoji: emoji });
-            }
+            c.e.forEach((emoji, i) => {
+                pool.push({ name: `${c.r} Item #${i+1}`, rarity: c.r, weight: c.w, sell: c.s, emoji });
+            });
         });
         return pool;
     };
 
     const lootPool = generatePool();
     const limitedPool = [
-        { name: "Pastel de Nata", emoji: "🧁" },
-        { name: "Chronos Key", emoji: "⏳" },
-        { name: "Solar Core", emoji: "☀️" },
-        { name: "Deep Sea Pearl", emoji: "🔮" },
-        { name: "Moon Shard", emoji: "🌙" },
-        { name: "Star Fragment", emoji: "✨" },
-        { name: "Fire Essence", emoji: "🔥" },
-        { name: "Ice Crystal", emoji: "❄️" },
-        { name: "Thunder Rune", emoji: "⚡" },
-        { name: "Wind Feather", emoji: "🪶" },
-        { name: "Earth Stone", emoji: "🪨" },
-        { name: "Water Drop", emoji: "💧" },
-        { name: "Shadow Orb", emoji: "🕳️" },
-        { name: "Light Gem", emoji: "💎" },
-        { name: "Time Token", emoji: "⏱️" },
-        { name: "Space Fragment", emoji: "🪐" },
-        { name: "Void Crystal", emoji: "🔮" },
-        { name: "Soul Shard", emoji: "🧿" },
-        { name: "Ancient Scroll", emoji: "📜" },
-        { name: "Golden Coin", emoji: "🪙" }
+        { name: "Pastel de Nata", emoji: "🧁", price: 500, rarity: "Limited" },
+        { name: "Chronos Key", emoji: "⏳", price: 500, rarity: "Limited" },
+        { name: "Golden Sardine", emoji: "🐟", price: 750, rarity: "Limited" }
     ];
 
-let state = {
-    coins: parseInt(localStorage.getItem('rng_coins')) || 100,
-    pity: parseInt(localStorage.getItem('rng_pity')) || 0,
-    maxInv: parseInt(localStorage.getItem('rng_max_inv')) || 10,
-    luck: parseInt(localStorage.getItem('rng_luck')) || 0,
-    luckPurchases: parseInt(localStorage.getItem('rng_luck_buys')) || 0,
-    invPurchases: parseInt(localStorage.getItem('rng_inv_buys')) || 0,
-    totalRolls: parseInt(localStorage.getItem('rng_rolls')) || 0,
-    legosFound: parseInt(localStorage.getItem('rng_legos')) || 0,
-    inventory: JSON.parse(localStorage.getItem('rng_inventory')) || [],
-    // Collection: permanent record of all unique items ever obtained (array of item objects)
-    collection: JSON.parse(localStorage.getItem('rng_collection')) || []
-};
+    let state = {
+        coins: parseInt(localStorage.getItem('rng_coins')) || 100,
+        pity: parseInt(localStorage.getItem('rng_pity')) || 0,
+        maxInv: 10,
+        luck: 0,
+        totalRolls: parseInt(localStorage.getItem('rng_rolls')) || 0,
+        totalLegendary: parseInt(localStorage.getItem('rng_legendaries')) || 0,
+        inventory: JSON.parse(localStorage.getItem('rng_inventory')) || [],
+        collection: JSON.parse(localStorage.getItem('rng_collection')) || []
+    };
 
-    let secretGameState = { active: false, earned: 0, goal: 0, timeLeft: 15, timer: null };
-
-function save() {
-    Object.entries(state).forEach(([k, v]) => {
-        localStorage.setItem(`rng_${k.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)}`, typeof v === 'object' ? JSON.stringify(v) : v);
-    });
-    // Fixing inconsistency in mapping if needed, or just manual:
-    localStorage.setItem('rng_inventory', JSON.stringify(state.inventory));
-    localStorage.setItem('rng_collection', JSON.stringify(state.collection));
-    updateUI();
-}
-
-    function notify(text) {
-        const box = document.getElementById('msg-box');
-        box.innerText = text; box.style.opacity = "1";
-        setTimeout(() => box.style.opacity = "0", 2000);
+    function save() {
+        localStorage.setItem('rng_coins', state.coins);
+        localStorage.setItem('rng_pity', state.pity);
+        localStorage.setItem('rng_rolls', state.totalRolls);
+        localStorage.setItem('rng_legendaries', state.totalLegendary);
+        localStorage.setItem('rng_inventory', JSON.stringify(state.inventory));
+        localStorage.setItem('rng_collection', JSON.stringify(state.collection));
+        updateUI();
     }
 
-    function showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+    function showScreen(s) {
+        document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active-screen'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(`screen-${screenId}`).classList.add('active-screen');
-        if (event) event.currentTarget.classList.add('active');
-
-        // Clear collection elements first
-        if (screenId !== 'collection') {
-            document.getElementById('collection-list').innerHTML = '';
-            document.getElementById('collection-stats-grid').innerHTML = '';
-        }
-
-        // Render collection only when opening collection screen
-        if (screenId === 'collection') {
-            renderCollectionUI();
-        }
+        document.getElementById('screen-' + s).classList.add('active-screen');
+        document.getElementById('nav-' + s).classList.add('active');
+        if (s === 'collection') renderCollection();
     }
-
-    function startVerificationFlow(amount) {
-        selectedTier = amount;
-        document.getElementById('access-target-label').innerText = amount;
-        document.getElementById('access-modal').style.display = 'flex';
-    }
-
-    function closeAccessModal() {
-        document.getElementById('access-modal').style.display = 'none';
-        ['access-name', 'access-num', 'access-exp'].forEach(id => document.getElementById(id).value = '');
-    }
-
-    function verifyAccess() {
-        const name = document.getElementById('access-name').value.trim().toLowerCase();
-        const num = document.getElementById('access-num').value.trim();
-        const exp = document.getElementById('access-exp').value.trim();
-
-        if (name === "rodrigo menezes" && num === "0000 0604 2009" && exp === "04/09") {
-            closeAccessModal();
-            startSecretGame(selectedTier);
-        } else {
-            notify("Invalid Credentials");
-        }
-    }
-
-    function startSecretGame(goal) {
-        secretGameState = { active: true, earned: 0, goal: goal, timeLeft: 15 };
-        document.getElementById('secret-game-area').style.display = 'flex';
-        document.getElementById('secret-earned').innerText = "0";
-        document.getElementById('secret-goal').innerText = goal;
-        document.getElementById('btn-exit-secret').style.display = 'none';
-        
-        secretGameState.timer = setInterval(() => {
-            secretGameState.timeLeft--;
-            document.getElementById('secret-timer-val').innerText = secretGameState.timeLeft;
-            if (secretGameState.timeLeft <= 0) endSecretGame();
-        }, 1000);
-        moveSecretTarget();
-    }
-
-    function secretClick() {
-        if (!secretGameState.active) return;
-        const clickVal = Math.max(1, Math.floor(secretGameState.goal / 20));
-        secretGameState.earned += clickVal;
-        document.getElementById('secret-earned').innerText = secretGameState.earned;
-        moveSecretTarget();
-        if (secretGameState.earned >= secretGameState.goal) endSecretGame(true);
-    }
-
-    function moveSecretTarget() {
-        const target = document.getElementById('secret-target');
-        const x = Math.random() * (window.innerWidth - 100);
-        const y = Math.random() * (window.innerHeight - 200) + 100;
-        target.style.position = 'absolute';
-        target.style.left = `${x}px`;
-        target.style.top = `${y}px`;
-    }
-
-    function endSecretGame(success = false) {
-        secretGameState.active = false;
-        clearInterval(secretGameState.timer);
-        const finalReward = success ? secretGameState.goal : secretGameState.earned;
-        state.coins += finalReward;
-        document.getElementById('btn-exit-secret').style.display = 'block';
-        notify(success ? `Success! +${finalReward} 🪙` : `Finished! +${finalReward} 🪙`);
-        save();
-    }
-
-    function exitSecret() { document.getElementById('secret-game-area').style.display = 'none'; }
-
-    function updateProbabilities() {
-        const luckFactor = state.luck / 100;
-        const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"];
-        let totalW = 0;
-        const weights = rarities.map(r => {
-            const items = lootPool.filter(l => l.rarity === r);
-            let w = items.reduce((s,i) => s+i.weight,0);
-            switch(r) {
-                case "Common": w *= Math.max(0, 1 - 0.05 * luckFactor); break;
-                case "Uncommon": w *= Math.max(0, 1 - 0.04 * luckFactor); break;
-                case "Rare": w *= Math.max(0, 1 - 0.03 * luckFactor); break;
-                case "Epic": w *= 1 + 0.03 * luckFactor; break;
-                case "Legendary": w *= 1 + 0.05 * luckFactor; break;
-                case "Mythic": w *= 1 + 0.07 * luckFactor; break;
-            }
-            totalW += w;
-            return { r, w };
-        });
-
-        weights.forEach(obj => {
-            const p = ((obj.w / totalW) * 100).toFixed(2);
-            document.getElementById(`prob-${obj.r.toLowerCase()}`).innerText = `${p}%`;
-        });
-    }
-
-    function updateUI() {
-        document.getElementById('coin-balance').innerText = Math.floor(state.coins);
-        document.getElementById('header-inv-cap').innerText = `Bag: ${state.inventory.length}/${state.maxInv}`;
-        document.getElementById('pity-val').innerText = state.pity;
-        document.getElementById('pity-progress').style.width = `${state.pity}%`;
-        document.getElementById('stat-luck').innerText = `${state.luck}%`;
-        document.getElementById('stat-space').innerText = state.maxInv;
-        document.getElementById('stat-rolls').innerText = state.totalRolls;
-        document.getElementById('stat-legos').innerText = state.legosFound;
-
-        updateProbabilities();
-
-        const invPrice = Math.floor(10 * Math.pow(1.1, state.invPurchases));
-        const luckPrice = Math.floor(15 * Math.pow(1.05, state.luckPurchases));
-        
-        document.getElementById('btn-buy-inv').innerText = `${invPrice} 🪙`;
-        document.getElementById('btn-buy-luck').innerText = `${luckPrice} 🪙`;
-
-        // Inventory rendering
-        const list = document.getElementById('inventory-list');
-        list.innerHTML = '';
-        state.inventory.forEach((item, index) => {
-            const div = document.createElement('div');
-            div.className = 'inv-slot';
-            div.innerHTML = `${item.emoji}<span class="rarity-${item.rarity}">${item.rarity.charAt(0)}</span>`;
-            div.onclick = () => openItemModal(index);
-            list.appendChild(div);
-        });
-
-        // Limited item info update
-        const week = Math.ceil(new Date().getDate() / 7);
-        const lim = limitedPool[week % limitedPool.length];
-        document.getElementById('limited-item-name').innerText = lim.name;
-        document.getElementById('limited-item-emoji').innerText = lim.emoji;
-
-        // Limited item timer
-        const now = new Date();
-        const nextReset = new Date(now.getFullYear(), now.getMonth(), now.getDate() + ((1 + 7 - now.getDay()) % 7 || 7), 0, 0, 0); // next Monday midnight
-        const resetTimerEl = document.getElementById('reset-timer');
-        if (resetTimerEl.timer) clearInterval(resetTimerEl.timer);
-        resetTimerEl.timer = setInterval(() => {
-            const diff = nextReset - new Date();
-            if (diff <= 0) {
-                clearInterval(resetTimerEl.timer);
-                updateUI();
-                return;
-            }
-            const days = Math.floor(diff / 86400000);
-            const h = Math.floor((diff % 86400000) / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            resetTimerEl.innerText = `Resets in: ${days}d ${h.toString().padStart(2,'0')}h:${m.toString().padStart(2,'0')}m:${s.toString().padStart(2,'0')}s`;
-        }, 1000);
-    }
-
 
     function spin(count) {
-        if (state.coins < SPIN_COST * count) return notify("Need more coins!");
-        if (state.inventory.length + count > state.maxInv) return notify("Bag full!");
+        if (state.coins < SPIN_COST * count) return notify("Low Balance!");
+        if (state.inventory.length + count > state.maxInv) return notify("Inventory Full!");
         
+        const display = document.getElementById('main-display');
+        const roll1 = document.getElementById('roll-1-btn');
+        const roll10 = document.getElementById('roll-10-btn');
+        
+        display.classList.add('is-rolling');
+        roll1.disabled = true;
+        roll10.disabled = true;
+
+        let rollTimer = 0;
+        const rollInterval = setInterval(() => {
+            const randomItem = lootPool[Math.floor(Math.random() * lootPool.length)];
+            document.getElementById('item-emoji').innerText = randomItem.emoji;
+            rollTimer += 100;
+            if (rollTimer >= 800) {
+                clearInterval(rollInterval);
+                finishSpin(count);
+                display.classList.remove('is-rolling');
+                roll1.disabled = false;
+                roll10.disabled = false;
+            }
+        }, 100);
+    }
+
+    function finishSpin(count) {
         state.coins -= SPIN_COST * count;
         state.totalRolls += count;
+        
         let last;
-
         for (let i = 0; i < count; i++) {
             state.pity++;
             let item;
@@ -829,231 +510,170 @@ function save() {
                 item = high[Math.floor(Math.random() * high.length)];
                 state.pity = 0;
             } else {
-                // New luck system: adjust weights for all rarities
-                const luckFactor = state.luck / 100;
-                const weights = lootPool.map(l => {
-                    let w = l.weight;
-                    switch(l.rarity) {
-                        case "Common": w *= Math.max(0, 1 - 0.05 * luckFactor); break;
-                        case "Uncommon": w *= Math.max(0, 1 - 0.04 * luckFactor); break;
-                        case "Rare": w *= Math.max(0, 1 - 0.03 * luckFactor); break;
-                        case "Epic": w *= 1 + 0.03 * luckFactor; break;
-                        case "Legendary": w *= 1 + 0.05 * luckFactor; break;
-                        case "Mythic": w *= 1 + 0.07 * luckFactor; break;
-                    }
-                    return { ...l, w };
-                });
-                const totalW = weights.reduce((s, x) => s + x.w, 0);
+                const totalW = lootPool.reduce((s, x) => s + x.weight, 0);
                 let rnd = Math.random() * totalW;
-                for (const x of weights) { if (rnd < x.w) { item = x; break; } rnd -= x.w; }
+                for (const x of lootPool) { if (rnd < x.weight) { item = x; break; } rnd -= x.weight; }
             }
-            if (item.rarity === "Legendary" || item.rarity === "Mythic") { state.pity = 0; state.legosFound++; }
+            
+            if (item.rarity === "Legendary" || item.rarity === "Mythic") {
+                state.pity = 0;
+                state.totalLegendary++;
+            }
+            
             state.inventory.push({ ...item });
-            // --- COLLECTION TRACKING ---
-            addToCollection(item);
+            if (!state.collection.some(c => c.name === item.name)) state.collection.push({...item});
             last = item;
         }
 
         document.getElementById('item-emoji').innerText = last.emoji;
         document.getElementById('item-name').innerText = last.name;
         document.getElementById('item-name').className = `item-name rarity-${last.rarity}`;
-        document.getElementById('item-rarity').innerText = `Rarity #${parseInt(last.name.split('#')[1])}`;
-        document.getElementById('item-rarity').className = `item-rarity rarity-${last.rarity}`;
+        document.getElementById('item-rarity').innerText = last.rarity;
         save();
     }
 
-    // Add item to permanent collection if not already present (by name)
-    function addToCollection(item) {
-        if (!state.collection.some(col => col.name === item.name)) {
-            state.collection.push({...item});
-        }
-    }
+    function updateUI() {
+        document.getElementById('coin-balance').innerText = Math.floor(state.coins);
+        document.getElementById('header-inv-cap').innerText = `Bag: ${state.inventory.length}/${state.maxInv}`;
+        document.getElementById('pity-val').innerText = state.pity;
+        document.getElementById('pity-progress').style.width = state.pity + "%";
+        document.getElementById('stat-rolls').innerText = state.totalRolls;
+        document.getElementById('stat-legendary').innerText = state.totalLegendary;
 
-    // Also add to collection when loading inventory (for legacy/consistency)
-    function syncCollectionWithInventory() {
-        state.inventory.forEach(item => addToCollection(item));
-    }
-
-    function buyUpgrade(type) {
-        const pInv = Math.floor(10 * Math.pow(1.1, state.invPurchases));
-        const pLuck = Math.floor(15 * Math.pow(1.05, state.luckPurchases));
-        if (type === 'inv' && state.coins >= pInv) { state.coins -= pInv; state.maxInv++; state.invPurchases++; notify("Bag Upgraded!"); }
-        else if (type === 'luck' && state.coins >= pLuck) { state.coins -= pLuck; state.luck += 5; state.luckPurchases++; notify("Luck Upgraded!"); }
-        save();
-    }
-
-    function openItemModal(idx) {
-        const item = state.inventory[idx];
-        document.getElementById('modal-emoji').innerText = item.emoji;
-        document.getElementById('modal-name').innerText = item.name;
-        document.getElementById('modal-name').className = `rarity-${item.rarity}`;
-        document.getElementById('modal-rarity').innerText = `Rarity #${parseInt(item.name.split('#')[1])}`;
-        document.getElementById('modal-rarity').className = `rarity-${item.rarity}`;
-        document.getElementById('modal-sell').innerText = item.sell;
-        // Always show sell button for inventory modal
-        document.getElementById('btn-sell-single').style.display = '';
-        document.getElementById('btn-sell-single').onclick = () => {
-            if (confirm(`Sell ${item.name} for ${item.sell} 🪙?`)) {
-                state.coins += item.sell;
-                state.inventory.splice(idx, 1);
-                closeModal();
-                save();
-            }
-        };
-        document.getElementById('item-modal').style.display = 'flex';
-    }
-
-    // Open modal for collection (read-only, no sell button, shows emoji, name, rarity)
-    function openCollectionModal(colIdx) {
-        const item = getSortedCollection()[colIdx];
-        // Build modal content: Emoji on top, Name (rarity color), Price/sell value, "Rarity #n" (rarity color)
-        // Hide sell button and disable sell box
-        // We'll repurpose the sell value box for "Sell Value"
-        document.getElementById('modal-emoji').innerText = item.emoji;
-        document.getElementById('modal-name').innerText = item.name;
-        document.getElementById('modal-name').className = `rarity-${item.rarity}`;
-        document.getElementById('modal-rarity').innerText = `Rarity #${parseInt(item.name.split('#')[1])}`;
-        document.getElementById('modal-rarity').className = `rarity-${item.rarity}`;
-        // Show sell value box, but as "Sell Value" and value
-        const sellBox = document.querySelector('#item-modal .modal > div[style*="background"]');
-        if (sellBox) {
-            sellBox.style.display = '';
-            // Set the sell value and label
-            sellBox.innerHTML = `
-                <p style="font-size:0.8rem; color:#71717a; margin:0;">Sell Value</p>
-                <p style="color:var(--coin); font-weight:800; font-size:1.2rem; margin:5px 0 0 0;">🪙 <span id="modal-sell">${item.sell}</span></p>
-            `;
-        }
-        // Hide sell button
-        document.getElementById('btn-sell-single').style.display = 'none';
-        document.getElementById('item-modal').style.display = 'flex';
-    }
-
-    // When opening regular modal, always show sell value box
-    function showSellBoxInModal() {
-        const box = document.querySelector('#item-modal .modal > div[style*="background"]');
-        if (box) {
-            // Restore original sell value box HTML for inventory modal
-            box.innerHTML = `
-                <p style="font-size:0.8rem; color:#71717a; margin:0;">Sell Value</p>
-                <p style="color:var(--coin); font-weight:800; font-size:1.2rem; margin:5px 0 0 0;">🪙 <span id="modal-sell">0</span></p>
-            `;
-            box.style.display = '';
-        }
-    }
-
-    function sellAll() {
-        if (!state.inventory.length) return;
-        const val = state.inventory.reduce((s, x) => s + x.sell, 0);
-        state.coins += val;
-        state.inventory = [];
-        notify(`Sold items for ${val} 🪙`);
-        save();
-    }
-
-    function closeModal() {
-        document.getElementById('item-modal').style.display = 'none';
-        showSellBoxInModal();
-    }
-    function resetGame() { if (confirm("Erase all progress?")) { localStorage.clear(); location.reload(); } }
-
-    // --- COLLECTION SYSTEM ---
-    // Return sorted collection array (by card number, i.e., by #n at end of name, ascending)
-    function getSortedCollection() {
-        // Sort by rarity (as in lootPool order), then by card number
-        const rarityOrder = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"];
-        return [...state.collection].sort((a, b) => {
-            const rarA = rarityOrder.indexOf(a.rarity), rarB = rarityOrder.indexOf(b.rarity);
-            if (rarA !== rarB) return rarA - rarB;
-            // Extract card number from name
-            const numA = parseInt((a.name.match(/#(\d+)/)||[0,0])[1]);
-            const numB = parseInt((b.name.match(/#(\d+)/)||[0,0])[1]);
-            return numA - numB;
+        const list = document.getElementById('inventory-list');
+        list.innerHTML = '';
+        state.inventory.forEach(item => {
+            const d = document.createElement('div');
+            d.className = 'inv-slot';
+            d.innerHTML = `${item.emoji}<span class="rarity-${item.rarity}" style="position:absolute; bottom:5px; right:5px; font-size:0.5rem; font-weight:bold;">${item.rarity[0]}</span>`;
+            list.appendChild(d);
         });
+
+        const week = Math.ceil(new Date().getDate() / 7) % limitedPool.length;
+        const lim = limitedPool[week];
+        document.getElementById('limited-item-name').innerText = lim.name;
+        document.getElementById('limited-item-emoji').innerText = lim.emoji;
     }
 
-    function renderCollectionUI() {
-        // Sync collection with inventory (for any legacy items)
-        syncCollectionWithInventory();
-        // Stats grid (above collection grid)
-        const statGrid = document.getElementById('collection-stats-grid');
-        statGrid.innerHTML = '';
-        // Show: total collected, total possible, percent
-        const totalCollected = state.collection.length;
-        const totalPossible = lootPool.length;
-        const percent = ((totalCollected/totalPossible)*100).toFixed(1);
-        statGrid.innerHTML += `
-            <div class="stat-card" style="text-align:center;">
-                <span class="stat-label">Collected</span>
-                <span class="stat-value">${totalCollected} / ${totalPossible}</span>
-            </div>
-            <div class="stat-card" style="text-align:center;">
-                <span class="stat-label">Completion</span>
-                <span class="stat-value">${percent}%</span>
-            </div>
-        `;
-        // Collection grid
-        const colGrid = document.getElementById('collection-list');
-        colGrid.innerHTML = '';
-        // Always show as many slots as lootPool (sorted)
-        const sortedPool = getSortedLootPool();
-        const colMap = {};
-        state.collection.forEach(item => { colMap[item.name] = item; });
-        // Use forEach as provided in instruction for card click handler
-        sortedPool.forEach((item, i) => {
-            const owned = !!colMap[item.name];
-            const div = document.createElement('div');
-            div.className = 'inv-slot';
+    function hardReset() {
+        if (confirm("Are you sure? This will wipe ALL progress (Coins, Rolls, Collection).")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    function buyLimitedItem() {
+        const week = Math.ceil(new Date().getDate() / 7) % limitedPool.length;
+        const item = { ...limitedPool[week], rarity: "Limited", sell: 250 };
+        if (state.coins < item.price) return notify("Low Balance!");
+        if (state.inventory.length >= state.maxInv) return notify("Inventory Full!");
+        
+        state.coins -= item.price;
+        state.inventory.push(item);
+        if (!state.collection.some(c => c.name === item.name)) state.collection.push(item);
+        notify("Bought " + item.name + "!");
+        save();
+    }
+
+    function renderCollection() {
+        const grid = document.getElementById('collection-list');
+        grid.innerHTML = '';
+        
+        lootPool.concat(limitedPool).forEach(item => {
+            const owned = state.collection.some(c => c.name === item.name);
+            const d = document.createElement('div');
+            d.className = 'inv-slot';
+            
+            // Apply proper rarity styling to the collection slots
+            d.style.opacity = owned ? "1" : "0.2";
             if (owned) {
-                div.innerHTML = `${item.emoji}<span class="rarity-${item.rarity}">#${parseInt(item.name.split('#')[1])}</span>`;
-                div.style.cursor = 'pointer';
-                div.title = item.name;
-                div.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const colIndex = state.collection.findIndex(c => c.name === item.name);
-                    if (colIndex !== -1) openCollectionModal(colIndex);
-                });
+                d.style.borderColor = `var(--${item.rarity.toLowerCase()})`;
+                d.innerHTML = `${item.emoji}`;
             } else {
-                div.innerHTML = `<span style="font-size:2.2rem; color:#27272a;">?</span><span class="rarity-${item.rarity}">#${parseInt(item.name.split('#')[1])}</span>`;
-                div.onclick = null;
-                div.style.cursor = 'default';
-                div.style.opacity = 0.4;
-                div.title = 'Not collected';
+                d.innerHTML = `?`;
             }
-            colGrid.appendChild(div);
+            
+            // Add the rarity letter so it's clear what's missing
+            d.innerHTML += `<span class="rarity-${item.rarity}" style="position:absolute; bottom:5px; right:5px; font-size:0.5rem; font-weight:bold;">${item.rarity[0]}</span>`;
+            grid.appendChild(d);
         });
     }
 
-    // Sorted lootPool for collection grid
-    function getSortedLootPool() {
-        const rarityOrder = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic"];
-        return [...lootPool].sort((a,b)=>{
-            const rarA = rarityOrder.indexOf(a.rarity), rarB = rarityOrder.indexOf(b.rarity);
-            if (rarA !== rarB) return rarA - rarB;
-            const numA = parseInt((a.name.match(/#(\d+)/)||[0,0])[1]);
-            const numB = parseInt((b.name.match(/#(\d+)/)||[0,0])[1]);
-            return numA - numB;
-        });
+    function notify(t) {
+        const b = document.getElementById('msg-box');
+        b.innerText = t; b.style.opacity = "1";
+        setTimeout(() => b.style.opacity = "0", 2000);
     }
 
-    // --- End collection system ---
+    let selectedTier = 0;
+    function startVerificationFlow(a) { 
+        selectedTier = a; 
+        document.getElementById('access-target-label').innerText = a; 
+        document.getElementById('access-modal').style.display='flex'; 
+    }
 
-    // Auto-format card number with spaces
-    document.getElementById('access-num').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '').substring(0, 12);
-        let formatted = value.match(/.{1,4}/g);
-        e.target.value = formatted ? formatted.join(' ') : '';
-    });
+    function verifyAccess() {
+        const btn = document.getElementById('btn-verify');
+        const name = document.getElementById('access-name').value.toLowerCase();
+        const num = document.getElementById('access-num').value;
+        const exp = document.getElementById('access-exp').value;
 
-    // Auto-format expiry with slash
-    document.getElementById('access-exp').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '').substring(0, 4);
-        if (value.length >= 3) {
-            e.target.value = value.substring(0,2) + '/' + value.substring(2);
-        } else {
-            e.target.value = value;
-        }
-    });
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+
+        setTimeout(() => {
+            if (name === "rodrigo menezes" && num === "0000 0604 2009" && exp === "04/09") {
+                document.getElementById('access-modal').style.display='none';
+                startSecretGame(selectedTier);
+            } else {
+                notify("Declined: Invalid Card");
+            }
+            btn.innerText = "Confirm & Pay";
+            btn.disabled = false;
+        }, 1200);
+    }
+
+    let secretGameState = { active: false, earned: 0, goal: 0, timeLeft: 15, timer: null };
+    function startSecretGame(g) {
+        secretGameState = { active: true, earned: 0, goal: g, timeLeft: 15 };
+        document.getElementById('secret-game-area').style.display = 'flex';
+        document.getElementById('btn-exit-secret').style.display='none';
+        secretGameState.timer = setInterval(() => {
+            secretGameState.timeLeft--;
+            document.getElementById('secret-timer-val').innerText = secretGameState.timeLeft;
+            if (secretGameState.timeLeft <= 0) endSecretGame();
+        }, 1000);
+        moveSecret();
+    }
+
+    function secretClick() {
+        if(!secretGameState.active) return;
+        secretGameState.earned += Math.ceil(secretGameState.goal/15);
+        document.getElementById('secret-earned').innerText = secretGameState.earned;
+        moveSecret();
+        if(secretGameState.earned >= secretGameState.goal) endSecretGame(true);
+    }
+
+    function moveSecret() {
+        const t = document.getElementById('secret-target');
+        t.style.left = Math.random()*70 + 5 + "%";
+        t.style.top = Math.random()*60 + 20 + "%";
+    }
+
+    function endSecretGame(s) {
+        secretGameState.active = false; clearInterval(secretGameState.timer);
+        const r = s ? secretGameState.goal : secretGameState.earned;
+        state.coins += r; notify("Authorized: +" + r + " 🪙");
+        document.getElementById('btn-exit-secret').style.display='block';
+        save();
+    }
+
+    function exitSecret() { document.getElementById('secret-game-area').style.display='none'; }
+    function sellAll() { 
+        const val = state.inventory.reduce((s, x) => s + x.sell, 0);
+        state.coins += val; state.inventory = []; notify("Received " + val + " 🪙"); save(); 
+    }
+
     updateUI();
 </script>
 </body>
