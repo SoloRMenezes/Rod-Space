@@ -1,730 +1,890 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rod Space</title>
-  <meta name="description" content="Rod Space: Rodrigo's hub for games and experiments." />
-
-  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css" />
-
-  <style>
-    .project-controls {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 14px;
-    }
-
-    .control-btn,
-    .control-select {
-      background: rgba(255, 255, 255, 0.08);
-      color: #e5f2ff;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-family: inherit;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease, border 0.2s ease;
-    }
-
-    .control-btn:hover,
-    .control-select:hover {
-      background: rgba(255, 255, 255, 0.14);
-    }
-
-    .control-btn.active {
-      background: #8fc0e3;
-      color: #020617;
-      border-color: #8fc0e3;
-    }
-
-    .control-select { appearance: none; }
-
-    .pill.pc-tag {
-      background: rgba(255,255,255,.05);
-      color: #94a3b8;
-      border: 1px solid rgba(255,255,255,.1);
-      font-size: .7rem;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-    }
-
-    .tag-container {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    /* Card Layout for Pinning */
-    .card {
-      position: relative;
-    }
-
-    /* Pin Button Styles */
-    .pin-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: rgba(0, 0, 0, 0.2);
-      border: none;
-      color: rgba(255, 255, 255, 0.3);
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      transition: all 0.2s ease;
-      z-index: 10;
-    }
-
-    .pin-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #8fc0e3;
-    }
-
-    .pin-btn.active {
-      color: #8fc0e3;
-      background: rgba(143, 192, 227, 0.2);
-      transform: rotate(-45deg);
-    }
-
-    /* Favorite Button Styles */
-    .fav-btn {
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.3);
-      cursor: pointer;
-      font-size: 1.4rem;
-      padding: 4px;
-      transition: transform 0.2s ease, color 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: auto;
-    }
-
-    .fav-btn:hover {
-      transform: scale(1.2);
-      color: #fbbf24;
-    }
-
-    .fav-btn.active {
-      color: #fbbf24;
-    }
-
-    .card-actions {
-      display: flex;
-      align-items: center;
-      width: 100%;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rod Space - Games & Experiments</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    /* Pinned Section Divider */
-    .pinned-divider {
-      grid-column: 1 / -1;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.1);
-      margin: 20px 0;
-      display: none;
-    }
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    .pinned-label {
-      grid-column: 1 / -1;
-      text-align: left;
-      font-size: 0.8rem;
-      color: #8fc0e3;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 10px;
-      display: none;
-      font-weight: 700;
-    }
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+              display: ["Space Grotesk", "sans-serif"],
+              mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+            }
+          }
+        }
+      }
+    </script>
 
-    /* Footer Versioning */
-    .footer-inner {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
+    <style>
+      /* Hide scrollbars for categories navigation */
+      .scrollbar-none::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-none {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body class="bg-[#0d1117] text-slate-300 font-sans selection:bg-blue-500/30 selection:text-blue-200 min-h-screen relative overflow-x-hidden">
     
-    .version-tag {
-      font-size: 0.75rem;
-      opacity: 0.6;
-      font-family: monospace;
-      font-weight: bold;
-    }
-  </style>
-</head>
+    <!-- Sleek Ambient subtle glow -->
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[450px] pointer-events-none overflow-hidden opacity-30 z-0">
+      <div class="absolute -top-[10%] left-1/3 w-[600px] h-[300px] rounded-full bg-blue-900/15 blur-[120px]"></div>
+      <div class="absolute top-[5%] right-1/4 w-[400px] h-[350px] rounded-full bg-indigo-950/10 blur-[130px]"></div>
+    </div>
 
-<body>
+    <!-- Sleek Header Panel -->
+    <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-[#0d1117]/90 backdrop-blur-md">
+      <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-md shadow-black/40">
+            <span class="text-lg font-bold text-white tracking-wider">R</span>
+          </div>
+          <div>
+            <h1 class="font-display text-lg font-bold tracking-tight text-white">
+              ROD <span class="text-blue-500">SPACE</span>
+            </h1>
+            <p class="text-[9px] text-slate-500 font-mono tracking-widest uppercase">Active Archive Hub</p>
+          </div>
+        </div>
 
-<header class="site-header">
-  <a href="#" class="brand">
-    <img src="assets/logo.svg" width="28" height="28" onerror="this.src='https://via.placeholder.com/28'" />
-    <span>Rod Space</span>
-  </a>
-</header>
-
-<main id="home">
-
-<section class="hero">
-  <div class="hero-inner">
-    <h1>
-      <span class="fade">Welcome to</span>
-      <span class="gradient-text">Rod Space</span>
-    </h1>
-  </div>
-  <div class="hero-bg"></div>
-</section>
-
-<section id="projects" class="projects" style="text-align:center">
-  <div class="container">
-
-    <div class="section-head">
-      <h2>Projects & Experiments</h2>
-
-      <div class="project-controls">
-        <select id="filterType" class="control-select" onchange="applyFiltersAndSort()">
-          <option value="all">All Types</option>
-          <option value="favs">Favorites</option>
-          <option value="solo">Solo Games</option>
-          <option value="party">Party Games</option>
-          <option value="tool">Tools</option>
-        </select>
-        <select id="sortBy" class="control-select" onchange="applyFiltersAndSort()">
-          <option value="new">Newest</option>
-          <option value="az">A–Z</option>
-        </select>
+        <div class="flex items-center gap-4">
+          <a
+            href="https://github.com/SoloRMenezes/Rod-Space/tree/main"
+            target="_blank"
+            rel="noreferrer"
+            class="group flex items-center gap-1.5 rounded-lg border border-slate-800 bg-[#161b22] px-3.5 py-1.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:border-slate-700 hover:text-white"
+          >
+            <span>GitHub</span>
+            <i data-lucide="external-link" class="h-3.5 w-3.5 text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"></i>
+          </a>
+        </div>
       </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-12">
+      
+      <!-- Sleek Hero Section -->
+      <div class="text-center mb-10">
+        <h2 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white uppercase">
+          ROD <span class="text-blue-500">SPACE</span>
+        </h2>
+        <p class="mt-3 text-xs sm:text-sm text-slate-500 max-w-xl mx-auto uppercase tracking-widest leading-relaxed">
+          Rodrigo's curated collection of live applications, offline-first party games, retro utilities, and experimental prototypes.
+        </p>
+      </div>
+
+      <!-- Filters and Controls -->
+      <div class="mb-8 space-y-4">
+        
+        <!-- Main Filter & Sort Strip -->
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-[#161b22] border border-slate-800 p-4 rounded-2xl shadow-inner">
+          
+          <!-- Search Input Container -->
+          <div class="relative flex-1 max-w-md">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 opacity-40">
+              <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+            </div>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Search projects, tags, pills... (Press '/' to focus)"
+              class="block w-full rounded-xl border border-slate-800/80 bg-[#0d1117] py-2.5 pl-10 pr-10 font-sans text-sm placeholder-slate-600 text-white focus:border-blue-500/50 focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all shadow-inner"
+            />
+            <button
+              id="clearSearchBtn"
+              class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-300"
+            >
+              <i data-lucide="x" class="h-4 w-4"></i>
+            </button>
+            <div id="searchShortcut" class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <kbd class="inline-flex items-center rounded border border-slate-800 bg-[#161b22] px-1.5 font-mono text-[10px] text-slate-500">
+                /
+              </kbd>
+            </div>
+          </div>
+
+          <!-- Sorter Selector -->
+          <div class="flex items-center gap-3">
+            <span class="flex items-center gap-1.5 text-xs font-mono text-slate-500 uppercase tracking-wider">
+              <i data-lucide="sliders-horizontal" class="h-3.5 w-3.5 text-slate-500"></i>
+              Sort:
+            </span>
+            <select
+              id="sortSelect"
+              class="bg-[#0d1117] border border-slate-800 rounded-xl px-3 py-2 text-xs font-sans text-slate-300 focus:border-blue-500/50 focus:outline-none transition-all cursor-pointer"
+            >
+              <option value="newest">Newest Added</option>
+              <option value="oldest">Oldest Added</option>
+              <option value="az">Alphabetical (A-Z)</option>
+              <option value="za">Alphabetical (Z-A)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Category Filter Badges -->
+        <div class="flex flex-wrap items-center gap-2 overflow-x-auto pb-1 scrollbar-none" id="categoriesContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Project List Container -->
+      <div id="projectsSection" class="space-y-12">
+        <!-- Rendered dynamically -->
+      </div>
+    </main>
+
+    <!-- Modern Compact Toast Notification System -->
+    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl bg-slate-900 border border-slate-800 px-4 py-3 text-xs font-semibold text-amber-200 shadow-2xl shadow-black/80">
+      <span>⚠️</span>
+      <span id="toastMessage"></span>
     </div>
 
-    <div class="grid" id="projectGrid">
-      <div id="pinnedLabel" class="pinned-label">📌 Pinned Projects</div>
-
-      <!-- Projects -->
-     <article class="card" data-id="DUNGEONS AND DRAGONS" data-type="party" data-date="2026-05-17">
-  <button class="pin-btn" onclick="togglePin('DUNGEONS AND DRAGONS')" title="Pin up to 3">📌</button>
-  <div class="card-top"><div class="icon">🎤</div><h3>Dungeons And Dragons</h3><p>Sing Along</p></div>
-  <div class="card-actions">
-    <a href="DND.html" class="btn small primary">Open</a>
-    <span class="pill">Party</span>
-    <button class="fav-btn" onclick="toggleFavorite('DUNGEONS AND DRAGONS')">★</button>
-  </div>
-</article>
-      
-      <article class="card" data-id="piano" data-type="tool" data-date="2026-01-22">
-        <button class="pin-btn" onclick="togglePin('piano')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🎹</div><h3>Virtual Piano</h3><p>Playable keyboard</p></div>
-        <div class="card-actions">
-          <a href="piano.html" class="btn small primary">Open</a>
-          <span class="pill">Tool</span>
-          <button class="fav-btn" onclick="toggleFavorite('piano')">★</button>
+    <!-- Sleek Minimal Footer -->
+    <footer class="border-t border-slate-800 bg-[#0d1117] mt-20 py-8">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 opacity-60 text-[11px] font-medium tracking-widest uppercase text-slate-400">
+        <div class="flex flex-wrap gap-x-6 gap-y-2">
+          <span>GH/ROD-SPACE</span>
+          <span class="text-slate-800">|</span>
+          <span>LAST SYNC: 15:38 UTC</span>
         </div>
-      </article>
-            
-      <article class="card" data-id="IBBMFC" data-type="tool" data-date="2026-05-09">
-        <button class="pin-btn" onclick="togglePin('IBBMFC')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🧠</div><h3>Business Flashcards</h3><p>Study Time</p></div>
-        <div class="card-actions">
-          <a href="IBBMFC.html" class="btn small primary">Open</a>
-          <span class="pill">Tool</span>
-          <button class="fav-btn" onclick="toggleFavorite('counter')">★</button>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            <span>SYSTEM OPERATIONAL</span>
+          </div>
+          <span class="text-slate-800 font-normal">|</span>
+          <span>v7.2-STABLE</span>
         </div>
-      </article>
+      </div>
+    </footer>
 
-            <article class="card" data-id="counter" data-type="tool" data-date="2026-01-22">
-        <button class="pin-btn" onclick="togglePin('counter')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🔢</div><h3>Counter</h3><p>Simple counter</p></div>
-        <div class="card-actions">
-          <a href="counter.html" class="btn small primary">Open</a>
-          <span class="pill">Tool</span>
-          <button class="fav-btn" onclick="toggleFavorite('counter')">★</button>
-        </div>
-      </article>
+    <!-- Single file data & rendering engine -->
+    <script>
+      const PROJECTS_DATA = [
+        {
+          id: "dungeons-and-dragons",
+          name: "Dungeons And Dragons",
+          description: "Sing Along",
+          url: "DND.html",
+          icon: "🎤",
+          type: "party",
+          pill: "Party",
+          date: "2026-05-17"
+        },
+        {
+          id: "piano",
+          name: "Virtual Piano",
+          description: "Playable keyboard",
+          url: "piano.html",
+          icon: "🎹",
+          type: "tool",
+          pill: "Tool",
+          date: "2026-01-22"
+        },
+        {
+          id: "ibbmfc",
+          name: "Business Flashcards",
+          description: "Study Time",
+          url: "IBBMFC.html",
+          icon: "🧠",
+          type: "tool",
+          pill: "Tool",
+          date: "2026-05-09"
+        },
+        {
+          id: "counter",
+          name: "Counter",
+          description: "Simple counter",
+          url: "counter.html",
+          icon: "🔢",
+          type: "tool",
+          pill: "Tool",
+          date: "2026-01-22"
+        },
+        {
+          id: "would-you-rather",
+          name: "Would You Rather",
+          description: "Choices",
+          url: "would-you-rather.html",
+          icon: "🤷‍♂️",
+          type: "party",
+          pill: "Party",
+          date: "2026-01-22"
+        },
+        {
+          id: "karaoke-night",
+          name: "Karaoke Night",
+          description: "Sing Along",
+          url: "KaraokeApp/index.html",
+          icon: "🎤",
+          type: "party",
+          pill: "Party",
+          date: "2026-05-11"
+        },
+        {
+          id: "who-wants-to-be-a-millionaire",
+          name: "Who Wants to be a Millionaire",
+          description: "Get Rich",
+          url: "Who Wants to be a Millionaire.html",
+          icon: "💰",
+          type: "party",
+          pill: "Game",
+          date: "2026-05-01"
+        },
+        {
+          id: "monthly-grind",
+          name: "The Monthly Grind",
+          description: "Loose Your Money",
+          url: "the-monthly-grind.html",
+          icon: "💸",
+          type: "party",
+          pill: "Party",
+          date: "2026-02-26"
+        },
+        {
+          id: "truth-or-dare",
+          name: "Truth or Dare",
+          description: "Face Your Fears",
+          url: "truth-or-dare.html",
+          icon: "😈",
+          type: "party",
+          pill: "Party",
+          date: "2026-02-26"
+        },
+        {
+          id: "da-homie-lounge",
+          name: "Da Homie Lounge",
+          description: "Real Talks",
+          url: "DHL.html",
+          icon: "😈",
+          type: "party",
+          pill: "Party",
+          date: "2026-05-16"
+        },
+        {
+          id: "whos-more-likely",
+          name: "Who's More Likely To?",
+          description: "Destroy Friendships",
+          url: "whos-more-likely.html",
+          icon: "🤔",
+          type: "party",
+          pill: "Party",
+          date: "2026-02-26"
+        },
+        {
+          id: "impostor",
+          name: "Impostor",
+          description: "Don't Get Caught",
+          url: "impostor.html",
+          icon: "🔪",
+          type: "party",
+          pill: "Party",
+          date: "2026-03-20"
+        },
+        {
+          id: "sidequests",
+          name: "Side Quests",
+          description: "Break Routines",
+          url: "sidequests.html",
+          icon: "🏆",
+          type: "party",
+          pill: "Party",
+          date: "2026-02-02"
+        },
+        {
+          id: "drills",
+          name: "Drills",
+          description: "For CAS Project",
+          url: "drills.html",
+          icon: "⚽️",
+          type: "party",
+          pill: "Party",
+          date: "2026-01-26"
+        },
+        {
+          id: "darts",
+          name: "Darts",
+          description: "Test Your Percision",
+          url: "darts.html",
+          icon: "🔫",
+          type: "party",
+          pill: "Party",
+          date: "2026-01-26"
+        },
+        {
+          id: "tic-tac-toe",
+          name: "Tic Tac Toe",
+          description: "The Classic",
+          url: "tic-tac-toe.html",
+          icon: "❌⭕",
+          type: "party",
+          pill: "Party",
+          date: "2026-01-26"
+        },
+        {
+          id: "dots-boxes",
+          name: "Dots & Boxes",
+          description: "Challenge Your Mind",
+          url: "dots&boxes.html",
+          icon: "📦",
+          type: "party",
+          pill: "Party",
+          date: "2026-01-26"
+        },
+        {
+          id: "theft",
+          name: "Theft",
+          description: "Rob The Louvre",
+          url: "theft.html",
+          icon: "🥷🏿",
+          type: "party",
+          pill: "Party",
+          date: "2026-01-26"
+        },
+        {
+          id: "cards-against",
+          name: "Cards Against Boredom",
+          description: "Cards Against Humanity No Copy Right",
+          url: "cards-against-boredom.html",
+          icon: "🃏",
+          type: "party",
+          pill: "Party",
+          date: "2026-01-25"
+        },
+        {
+          id: "reaction",
+          name: "Reaction Game",
+          description: "Test your reflexes.",
+          url: "reaction.html",
+          icon: "🔄",
+          type: "solo",
+          pill: "Game",
+          date: "2026-01-22"
+        },
+        {
+          id: "solos-rng",
+          name: "Solo's RNG",
+          description: "Roll Rare Cards",
+          url: "solos_rng.html",
+          icon: "🎲",
+          type: "solo",
+          pill: "Game",
+          date: "2026-03-22"
+        },
+        {
+          id: "blackjack",
+          name: "Black Jack",
+          description: "I Don't Get It",
+          url: "Blackjack.html",
+          icon: "🎲",
+          type: "solo",
+          pill: "Game",
+          date: "2026-05-05"
+        },
+        {
+          id: "3d-drift",
+          name: "3D Drift Racer",
+          description: "Dont Crash",
+          url: "3d_drift_racer.html",
+          icon: "🏎️",
+          type: "solo",
+          pill: "Game",
+          date: "2026-03-01",
+          tags: ["PC Only"]
+        },
+        {
+          id: "hood-brawlers",
+          name: "Hood Brawlers",
+          description: "Haduuuuken!",
+          url: "hood_brawlers.html",
+          icon: "🥊",
+          type: "solo",
+          pill: "Game",
+          date: "2026-03-01",
+          tags: ["PC Only"]
+        },
+        {
+          id: "planet-architect",
+          name: "Planet Architect",
+          description: "Build your world",
+          url: "planet_architect.html",
+          icon: "🌏",
+          type: "solo",
+          pill: "Game",
+          date: "2026-03-20",
+          tags: ["Better On PC"]
+        },
+        {
+          id: "terraria",
+          name: "Terraria",
+          description: "Minecraft = Better",
+          url: "terraria.html",
+          icon: "👾",
+          type: "solo",
+          pill: "Game",
+          date: "2026-05-05",
+          tags: ["Better On PC"]
+        },
+        {
+          id: "orbit-boss",
+          name: "Orbit Boss",
+          description: "Dodge, orbit, strike.",
+          url: "orbit-boss.html",
+          icon: "🚀",
+          type: "solo",
+          pill: "Game",
+          date: "2026-01-22"
+        },
+        {
+          id: "pac-man-3d",
+          name: "Pac-Man 3D",
+          description: "First-person Pac-Man.",
+          url: "pac-man-3d.html",
+          icon: "🟡",
+          type: "solo",
+          pill: "Game",
+          date: "2026-01-22",
+          tags: ["PC Only"]
+        },
+        {
+          id: "nicos-nextbots",
+          name: "Nico's Nextbots",
+          description: "RUN!!!",
+          url: "nicos_nextbots.html",
+          icon: "🤖",
+          type: "solo",
+          pill: "Game",
+          date: "2026-04-26",
+          tags: ["PC Only"]
+        },
+        {
+          id: "backrooms",
+          name: "The Backrooms",
+          description: "Going Insane",
+          url: "backrooms.html",
+          icon: "☠️",
+          type: "solo",
+          pill: "Game",
+          date: "2026-05-04",
+          tags: ["PC Only"]
+        },
+        {
+          id: "sling-champ",
+          name: "Sling Champ",
+          description: "This Is Too Funny",
+          url: "sling_champ.html",
+          icon: "🐥",
+          type: "solo",
+          pill: "Game",
+          date: "2026-03-12"
+        },
+        {
+          id: "relic-rush",
+          name: "Relic Rush",
+          description: "Survive",
+          url: "relic_rush.html",
+          icon: "💀",
+          type: "solo",
+          pill: "Game",
+          date: "2026-02-22"
+        },
+        {
+          id: "slot-machine",
+          name: "Slot Machine",
+          description: "Try your luck.",
+          url: "slot-machine.html",
+          icon: "🎰",
+          type: "solo",
+          pill: "Game",
+          date: "2026-01-22"
+        },
+        {
+          id: "fidget-roulette",
+          name: "Fidget Roulette",
+          description: "Spin and win.",
+          url: "fidget-roulette.html",
+          icon: "🎯",
+          type: "solo",
+          pill: "Game",
+          date: "2026-01-22"
+        },
+        {
+          id: "tilt-maze",
+          name: "Tilt Maze Runner",
+          description: "Navigate the maze.",
+          url: "tilt_maze_runner.html",
+          icon: "🧩",
+          type: "solo",
+          pill: "Game",
+          date: "2026-01-22"
+        },
+        {
+          id: "multiplayer-test",
+          name: "Multiplayer Test",
+          description: "Third-person sandbox.",
+          url: "multiplayer.html",
+          icon: "👥",
+          type: "solo",
+          pill: "Game",
+          date: "2025-11-20",
+          tags: ["PC Only"]
+        }
+      ];
 
-      <article class="card" data-id="would-you-rather" data-type="tool" data-date="2026-01-22">
-        <button class="pin-btn" onclick="togglePin('would-you-rather')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🤷‍♂️</div><h3>Would You Rather</h3><p>Choices</p></div>
-        <div class="card-actions">
-          <a href="would-you-rather.html" class="btn small primary">Open</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('would-you-rather')">★</button>
-        </div>
-      </article>
+      // Dynamic states
+      let searchQuery = "";
+      let activeCategory = "all";
+      let sortBy = "newest";
 
-<article class="card" data-id="karaoke-night" data-type="party" data-date="2026-05-11">
-  <button class="pin-btn" onclick="togglePin('karaoke-night')" title="Pin up to 3">📌</button>
-  <div class="card-top"><div class="icon">🎤</div><h3>Karaoke Night</h3><p>Sing Along</p></div>
-  <div class="card-actions">
-    <a href="KaraokeApp/index.html" class="btn small primary">Open</a>
-    <span class="pill">Party</span>
-    <button class="fav-btn" onclick="toggleFavorite('karaoke-night')">★</button>
-  </div>
-</article>
+      // Persistent lists
+      let favorites = [];
+      let pinned = [];
 
-            <article class="card" data-id="whos-more-likely" data-type="party" data-date="2026-05-01">
-        <button class="pin-btn" onclick="togglePin('Who Wants to be a Millionaire')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">💰</div><h3>Who Wants to be a Millionaire</h3><p>Get Rich</p></div>
-        <div class="card-actions">
-          <a href="Who Wants to be a Millionaire.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('Who Wants to be a Millionaire')">★</button>
-        </div>
-      </article>
-
-            <article class="card" data-id="whos-more-likely" data-type="party" data-date="2026-02-26">
-        <button class="pin-btn" onclick="togglePin('whos-more-likely')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">💸</div><h3>The Monthly Grind</h3><p>Loose Your Money</p></div>
-        <div class="card-actions">
-          <a href="the-monthly-grind.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('whos-more-likely')">★</button>
-        </div>
-      </article>
-
-            <article class="card" data-id="whos-more-likely" data-type="party" data-date="2026-02-26">
-        <button class="pin-btn" onclick="togglePin('whos-more-likely')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">😈</div><h3>Truth or Dare</h3><p>Face Your Fears</p></div>
-        <div class="card-actions">
-          <a href="truth-or-dare.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('whos-more-likely')">★</button>
-        </div>
-      </article>
-
-            <article class="card" data-id="DHL" data-type="party" data-date="2026-05-16">
-        <button class="pin-btn" onclick="togglePin('DHL')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">😈</div><h3>Da Homie Lounge</h3><p>Real Talks</p></div>
-        <div class="card-actions">
-          <a href="DHL.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('DHL')">★</button>
-        </div>
-      </article>
-      
-      <article class="card" data-id="whos-more-likely" data-type="party" data-date="2026-02-26">
-        <button class="pin-btn" onclick="togglePin('whos-more-likely')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🤔</div><h3>Who's More Likely To?</h3><p>Destroy Friendships</p></div>
-        <div class="card-actions">
-          <a href="whos-more-likely.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('whos-more-likely')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="impostor" data-type="party" data-date="2026-03-20">
-        <button class="pin-btn" onclick="togglePin('impostor')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🔪</div><h3>Impostor</h3><p>Don't Get Caught</p></div>
-        <div class="card-actions">
-          <a href="impostor.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('impostor')">★</button>
-        </div>
-      </article>
-      
-      <article class="card" data-id="sidequests" data-type="party" data-date="2026-02-2">
-        <button class="pin-btn" onclick="togglePin('sidequests')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🏆</div><h3>Side Quests</h3><p>Break Routines</p></div>
-        <div class="card-actions">
-          <a href="sidequests.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('sidequests')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="darts" data-type="party" data-date="2026-01-26">
-        <button class="pin-btn" onclick="togglePin('darts')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">⚽️</div><h3>Drills</h3><p>For CAS Project</p></div>
-        <div class="card-actions">
-          <a href="drills.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('darts')">★</button>
-        </div>
-      </article>
-      
-      <article class="card" data-id="darts" data-type="party" data-date="2026-01-26">
-        <button class="pin-btn" onclick="togglePin('darts')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🔫</div><h3>Darts</h3><p>Test Your Percision</p></div>
-        <div class="card-actions">
-          <a href="darts.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('darts')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="tic-tac-toe" data-type="party" data-date="2026-01-26">
-        <button class="pin-btn" onclick="togglePin('tic-tac-toe')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">❌⭕️</div><h3>Tic Tac Toe</h3><p>The Classic</p></div>
-        <div class="card-actions">
-          <a href="tic-tac-toe.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('tic-tac-toe')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="dots-boxes" data-type="party" data-date="2026-01-26">
-        <button class="pin-btn" onclick="togglePin('dots-boxes')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">📦</div><h3>Dots & Boxes</h3><p>Challenge Your Mind</p></div>
-        <div class="card-actions">
-          <a href="dots&boxes.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('dots-boxes')">★</button>
-        </div>
-      </article>
-      
-      <article class="card" data-id="theft" data-type="party" data-date="2026-01-26">
-        <button class="pin-btn" onclick="togglePin('theft')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🥷🏿</div><h3>Theft</h3><p>Rob The Louvre</p></div>
-        <div class="card-actions">
-          <a href="theft.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('theft')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="cards-against" data-type="party" data-date="2026-01-25">
-        <button class="pin-btn" onclick="togglePin('cards-against')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🃏</div><h3>Cards Against Boredom</h3><p>Cards Against Humanity No Copy Right</p></div>
-        <div class="card-actions">
-          <a href="cards-against-boredom.html" class="btn small primary">Play</a>
-          <span class="pill">Party</span>
-          <button class="fav-btn" onclick="toggleFavorite('cards-against')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="reaction" data-type="solo" data-date="2026-01-22">
-        <button class="pin-btn" onclick="togglePin('reaction')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🔄</div><h3>Reaction Game</h3><p>Test your reflexes.</p></div>
-        <div class="card-actions">
-          <a href="reaction.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('reaction')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="solos-rng" data-type="solo" data-date="2026-03-22">
-        <button class="pin-btn" onclick="togglePin('solos-rng')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🎲</div><h3>Solo's RNG</h3><p>Roll Rare Cards</p></div>
-        <div class="card-actions">
-          <a href="solos_rng.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('solos-rng')">★</button>
-        </div>
-      </article>
-
-            <article class="card" data-id="solos-rng" data-type="solo" data-date="2026-05-05">
-        <button class="pin-btn" onclick="togglePin('solos-rng')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🎲</div><h3>Black Jack</h3><p>I Don't Get It</p></div>
-        <div class="card-actions">
-          <a href="Blackjack.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('solos-rng')">★</button>
-        </div>
-      </article>
-      
-      <article class="card" data-id="3d-drift" data-type="solo" data-date="2026-3-1">
-        <button class="pin-btn" onclick="togglePin('3d-drift')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🏎️</div><h3>3D Drift Racer</h3><p>Dont Crash</p></div>
-        <div class="card-actions">
-          <a href="3d_drift_racer.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
-          <button class="fav-btn" onclick="toggleFavorite('3d-drift')">★</button>
-        </div>
-      </article>
-
-            <article class="card" data-id="3d-drift" data-type="solo" data-date="2026-3-1">
-        <button class="pin-btn" onclick="togglePin('3d-drift')" title="Pin up to 3">📌</button>
-        <div class="card-top">🥊<div class="icon"></div><h3>Hood Brawlers</h3><p>Haduuuuken!</p></div>
-        <div class="card-actions">
-          <a href="hood_brawlers.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
-          <button class="fav-btn" onclick="toggleFavorite('3d-drift')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="planet-architect" data-type="solo" data-date="2026-3-20">
-        <button class="pin-btn" onclick="togglePin('planet-architect')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🌏</div><h3>Planet Architect</h3><p>Build your world</p></div>
-        <div class="card-actions">
-          <a href="planet_architect.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">Better On PC</span></div>
-          <button class="fav-btn" onclick="toggleFavorite('planet-architect')">★</button>
-        </div>
-      </article>
-
-            <article class="card" data-id="planet-architect" data-type="solo" data-date="2026-05-05">
-        <button class="pin-btn" onclick="togglePin('planet-architect')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">👾</div><h3>Terraria</h3><p>Minecraft = Better</p></div>
-        <div class="card-actions">
-          <a href="terraria.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">Better On PC</span></div>
-          <button class="fav-btn" onclick="toggleFavorite('planet-architect')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="orbit-boss" data-type="solo" data-date="2026-01-22">
-        <button class="pin-btn" onclick="togglePin('orbit-boss')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🚀</div><h3>Orbit Boss</h3><p>Dodge, orbit, strike.</p></div>
-        <div class="card-actions">
-          <a href="orbit-boss.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('orbit-boss')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="pac-man-3d" data-type="solo" data-date="2026-01-22">
-        <button class="pin-btn" onclick="togglePin('pac-man-3d')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🟡</div><h3>Pac-Man 3D</h3><p>First-person Pac-Man.</p></div>
-        <div class="card-actions">
-          <a href="pac-man-3d.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
-          <button class="fav-btn" onclick="toggleFavorite('pac-man-3d')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="nicos-nextbots" data-type="solo" data-date="2026-04-26">
-        <button class="pin-btn" onclick="togglePin('nicos-nextbots')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🤖</div><h3>Nico's Nextbots</h3><p>RUN!!!</p></div>
-        <div class="card-actions">
-          <a href="nicos_nextbots.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
-          <button class="fav-btn" onclick="toggleFavorite('nicos-nextbots')">★</button>
-        </div>
-      </article>
-
-            <article class="card" data-id="backrooms" data-type="solo" data-date="2026-05-04">
-        <button class="pin-btn" onclick="togglePin('backrooms')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">☠️</div><h3>The Backrooms</h3><p>Going Insane</p></div>
-        <div class="card-actions">
-          <a href="backrooms.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
-          <button class="fav-btn" onclick="toggleFavorite('backrooms')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="sling-champ" data-type="solo" data-date="2026-03-12">
-        <button class="pin-btn" onclick="togglePin('sling-champ')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🐥</div><h3>Sling Champ</h3><p>This Is Too Funny</p></div>
-        <div class="card-actions">
-          <a href="sling_champ.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('sling-champ')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="relic-rush" data-type="solo" data-date="2026-02-22">
-        <button class="pin-btn" onclick="togglePin('relic-rush')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">💀</div><h3>Relic Rush</h3><p>Survive</p></div>
-        <div class="card-actions">
-          <a href="relic_rush.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('relic-rush')">★</button>
-        </div>
-      </article>
-      
-      <article class="card" data-id="slot-machine" data-type="solo" data-date="2026-01-22">
-        <button class="pin-btn" onclick="togglePin('slot-machine')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🎰</div><h3>Slot Machine</h3><p>Try your luck.</p></div>
-        <div class="card-actions">
-          <a href="slot-machine.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('slot-machine')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="fidget-roulette" data-type="solo" data-date="2026-01-22">
-        <button class="pin-btn" onclick="togglePin('fidget-roulette')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🎯</div><h3>Fidget Roulette</h3><p>Spin and win.</p></div>
-        <div class="card-actions">
-          <a href="fidget-roulette.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('fidget-roulette')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="tilt-maze" data-type="solo" data-date="2026-01-22">
-        <button class="pin-btn" onclick="togglePin('tilt-maze')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">🧩</div><h3>Tilt Maze Runner</h3><p>Navigate the maze.</p></div>
-        <div class="card-actions">
-          <a href="tilt_maze_runner.html" class="btn small primary">Play</a>
-          <span class="pill">Game</span>
-          <button class="fav-btn" onclick="toggleFavorite('tilt-maze')">★</button>
-        </div>
-      </article>
-
-      <article class="card" data-id="multiplayer-test" data-type="solo" data-date="2025-11-20">
-        <button class="pin-btn" onclick="togglePin('multiplayer-test')" title="Pin up to 3">📌</button>
-        <div class="card-top"><div class="icon">👥</div><h3>Multiplayer Test</h3><p>Third-person sandbox.</p></div>
-        <div class="card-actions">
-          <a href="multiplayer.html" class="btn small primary">Play</a>
-          <div class="tag-container"><span class="pill">Game</span><span class="pill pc-tag">PC Only</span></div>
-          <button class="fav-btn" onclick="toggleFavorite('multiplayer-test')">★</button>
-        </div>
-      </article>
-
-      <div id="gridDivider" class="pinned-divider"></div>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<footer class="site-footer">
-  <div class="container footer-inner">
-    <span>© 2025 Rod Space</span>
-    <span class="version-tag">v7.1</span>
-  </div>
-</footer>
-
-<script>
-  // Initial card references to prevent losing them during innerHTML clears
-  const originalCards = Array.from(document.querySelectorAll('.card'));
-  const grid = document.getElementById("projectGrid");
-  const pinnedLabel = document.getElementById("pinnedLabel");
-  const gridDivider = document.getElementById("gridDivider");
-
-  // State for favorites and pins
-  let favorites = JSON.parse(localStorage.getItem('rod_space_favs')) || [];
-  let pinned = JSON.parse(localStorage.getItem('rod_space_pins')) || [];
-
-  /**
-   * Toggles a project's pin status (max 3).
-   */
-  function togglePin(id) {
-    const index = pinned.indexOf(id);
-    if (index > -1) {
-      pinned.splice(index, 1);
-    } else {
-      if (pinned.length >= 3) {
-        showToast("You can only pin up to 3 projects!");
-        return;
-      }
-      pinned.push(id);
-    }
-    localStorage.setItem('rod_space_pins', JSON.stringify(pinned));
-    updateUIStates();
-    applyFiltersAndSort();
-  }
-
-  function showToast(msg) {
-    const toast = document.createElement('div');
-    toast.style.position = 'fixed';
-    toast.style.bottom = '20px';
-    toast.style.left = '50%';
-    toast.style.transform = 'translateX(-50%)';
-    toast.style.background = '#8fc0e3';
-    toast.style.color = '#020617';
-    toast.style.padding = '10px 20px';
-    toast.style.borderRadius = '10px';
-    toast.style.zIndex = '1000';
-    toast.style.fontWeight = 'bold';
-    toast.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.5)';
-    toast.textContent = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.5s ease';
-        setTimeout(() => toast.remove(), 500);
-    }, 2500);
-  }
-
-  function toggleFavorite(id) {
-    const index = favorites.indexOf(id);
-    if (index > -1) {
-      favorites.splice(index, 1);
-    } else {
-      favorites.push(id);
-    }
-    localStorage.setItem('rod_space_favs', JSON.stringify(favorites));
-    updateUIStates();
-    applyFiltersAndSort();
-  }
-
-  function updateUIStates() {
-    originalCards.forEach(card => {
-      const id = card.dataset.id;
-      const favBtn = card.querySelector('.fav-btn');
-      const pinBtn = card.querySelector('.pin-btn');
-
-      if (favorites.includes(id)) {
-        favBtn.classList.add('active');
-      } else {
-        favBtn.classList.remove('active');
+      try {
+        favorites = JSON.parse(localStorage.getItem("rod_space_favs")) || [];
+        pinned = JSON.parse(localStorage.getItem("rod_space_pins")) || [];
+      } catch (e) {
+        favorites = [];
+        pinned = [];
       }
 
-      if (pinned.includes(id)) {
-        pinBtn.classList.add('active');
-      } else {
-        pinBtn.classList.remove('active');
+      function saveStates() {
+        localStorage.setItem("rod_space_favs", JSON.stringify(favorites));
+        localStorage.setItem("rod_space_pins", JSON.stringify(pinned));
       }
-    });
-  }
 
-  function applyFiltersAndSort() {
-    const filterType = document.getElementById("filterType").value;
-    const sortBy = document.getElementById("sortBy").value;
-    
-    updateUIStates();
-
-    // 1. Filter and separate
-    const filteredCards = originalCards.filter(card => {
-      const type = card.dataset.type;
-      const id = card.dataset.id;
-      
-      let isMatch = false;
-      if (filterType === "all") isMatch = true;
-      else if (filterType === "favs") isMatch = favorites.includes(id);
-      else isMatch = (type === filterType);
-      
-      card.style.display = isMatch ? "" : "none";
-      return isMatch;
-    });
-
-    // 2. Sort Logic
-    const sortFn = (a, b) => {
-      if (sortBy === "az") {
-        const titleA = a.querySelector("h3").textContent.trim().toLowerCase();
-        const titleB = b.querySelector("h3").textContent.trim().toLowerCase();
-        return titleA.localeCompare(titleB);
-      } else {
-        const dateA = new Date(a.dataset.date || 0);
-        const dateB = new Date(b.dataset.date || 0);
-        return dateB - dateA;
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        const toastMessage = document.getElementById("toastMessage");
+        toastMessage.textContent = message;
+        toast.classList.remove("hidden");
+        setTimeout(() => {
+          toast.classList.add("hidden");
+        }, 3000);
       }
-    };
 
-    const pinnedCards = filteredCards.filter(c => pinned.includes(c.dataset.id)).sort(sortFn);
-    const regularCards = filteredCards.filter(c => !pinned.includes(c.dataset.id)).sort(sortFn);
+      function toggleFavorite(id, event) {
+        event.stopPropagation();
+        const index = favorites.indexOf(id);
+        if (index > -1) {
+          favorites.splice(index, 1);
+        } else {
+          favorites.push(id);
+        }
+        saveStates();
+        render();
+      }
 
-    // 3. Clear and Rebuild DOM carefully
-    grid.innerHTML = ""; 
-    grid.appendChild(pinnedLabel);
+      function togglePin(id, event) {
+        event.stopPropagation();
+        const index = pinned.indexOf(id);
+        if (index > -1) {
+          pinned.splice(index, 1);
+        } else {
+          if (pinned.length >= 3) {
+            showToast("Maximum limit of 3 pinned items reached!");
+            return;
+          }
+          pinned.push(id);
+        }
+        saveStates();
+        render();
+      }
 
-    if (pinnedCards.length > 0) {
-      pinnedLabel.style.display = "block";
-      pinnedCards.forEach(c => grid.appendChild(c));
-      grid.appendChild(gridDivider);
-      gridDivider.style.display = "block";
-    } else {
-      pinnedLabel.style.display = "none";
-      gridDivider.style.display = "none";
-    }
+      // Keyboard Listeners
+      document.addEventListener("keydown", (e) => {
+        const searchInput = document.getElementById("searchInput");
+        if ((e.key === "/" || (e.key === "k" && (e.metaKey || e.ctrlKey))) && document.activeElement !== searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+        }
+      });
 
-    regularCards.forEach(c => grid.appendChild(c));
-  }
+      // DOM Node references
+      const searchInput = document.getElementById("searchInput");
+      const clearSearchBtn = document.getElementById("clearSearchBtn");
+      const searchShortcut = document.getElementById("searchShortcut");
+      const sortSelect = document.getElementById("sortSelect");
+      const categoriesContainer = document.getElementById("categoriesContainer");
+      const projectsSection = document.getElementById("projectsSection");
 
-  document.addEventListener("DOMContentLoaded", () => {
-    applyFiltersAndSort();
-  });
-</script>
+      // Set input event handlers
+      searchInput.addEventListener("input", (e) => {
+        searchQuery = e.target.value;
+        if (searchQuery) {
+          clearSearchBtn.classList.remove("hidden");
+          searchShortcut.classList.add("hidden");
+        } else {
+          clearSearchBtn.classList.add("hidden");
+          searchShortcut.classList.remove("hidden");
+        }
+        render();
+      });
 
-</body>
+      clearSearchBtn.addEventListener("click", () => {
+        searchQuery = "";
+        searchInput.value = "";
+        clearSearchBtn.classList.add("hidden");
+        searchShortcut.classList.remove("hidden");
+        render();
+      });
+
+      sortSelect.addEventListener("change", (e) => {
+        sortBy = e.target.value;
+        render();
+      });
+
+      // Categories setup
+      const CATEGORIES = [
+        { id: "all", label: "All Works" },
+        { id: "solo", label: "Solo Games" },
+        { id: "party", label: "Party Games" },
+        { id: "tool", label: "Tools" },
+        { id: "favorites", label: "Starred ★" },
+        { id: "pinned", label: "Pinned 📌" }
+      ];
+
+      function renderCategories() {
+        categoriesContainer.innerHTML = "";
+        CATEGORIES.forEach(cat => {
+          const btn = document.createElement("button");
+          const isActive = activeCategory === cat.id;
+          btn.className = `relative rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer border ${
+            isActive
+              ? "bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-950/20"
+              : "bg-[#161b22] border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
+          }`;
+          btn.textContent = cat.label;
+          btn.onclick = () => {
+            activeCategory = cat.id;
+            renderCategories();
+            render();
+          };
+          categoriesContainer.appendChild(btn);
+        });
+      }
+
+      function getFilteredAndSorted() {
+        let items = PROJECTS_DATA.filter(proj => {
+          const isFav = favorites.includes(proj.id);
+          const isPinned = pinned.includes(proj.id);
+
+          if (activeCategory === "favorites") return isFav;
+          if (activeCategory === "pinned") return isPinned;
+          if (activeCategory === "solo") return proj.type === "solo";
+          if (activeCategory === "party") return proj.type === "party";
+          if (activeCategory === "tool") return proj.type === "tool";
+          return true;
+        });
+
+        if (searchQuery.trim() !== "") {
+          const q = searchQuery.toLowerCase().trim();
+          items = items.filter(proj =>
+            proj.name.toLowerCase().includes(q) ||
+            proj.description.toLowerCase().includes(q) ||
+            proj.pill.toLowerCase().includes(q) ||
+            (proj.tags && proj.tags.some(t => t.toLowerCase().includes(q)))
+          );
+        }
+
+        items.sort((a, b) => {
+          if (sortBy === "az") return a.name.localeCompare(b.name);
+          if (sortBy === "za") return b.name.localeCompare(a.name);
+          if (sortBy === "oldest") return new Date(a.date) - new Date(b.date);
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        return items;
+      }
+
+      function buildCardHTML(proj, isPinnedItem) {
+        const isFav = favorites.includes(proj.id);
+        const isPin = pinned.includes(proj.id);
+
+        let pillStyles = "";
+        if (proj.pill === "Game") {
+          pillStyles = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+        } else if (proj.pill === "Tool") {
+          pillStyles = "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
+        } else {
+          pillStyles = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        }
+
+        const favClass = isFav ? "bg-amber-500/10 border-amber-500/30 text-amber-400" : "bg-[#0d1117] border-slate-800 text-slate-500 hover:text-slate-300";
+        const pinClass = isPin ? "bg-blue-500/10 border-blue-500/30 text-blue-400" : "bg-[#0d1117] border-slate-800 text-slate-500 hover:text-slate-300";
+
+        let tagsHTML = "";
+        if (proj.tags && proj.tags.length > 0) {
+          proj.tags.forEach(t => {
+            const tagBg = t === "PC Only" ? "bg-rose-950/30 text-rose-400 border border-rose-500/10" : "bg-amber-950/30 text-amber-400 border border-amber-500/10";
+            tagsHTML += `
+              <span class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-mono font-bold ${tagBg}">
+                <i data-lucide="laptop" class="h-2.5 w-2.5"></i>
+                ${t}
+              </span>
+            `;
+          });
+        }
+
+        const launchBtnClass = isPin ? "bg-blue-600 text-white hover:bg-blue-500 shadow-md" : "bg-[#0d1117] text-slate-300 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 hover:text-white";
+
+        const formattedDate = new Date(proj.date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+
+        return `
+          <article
+            class="group relative flex flex-col h-full rounded-2xl bg-[#161b22] border p-6 transition-all duration-300 shadow-xl cursor-pointer hover:-translate-y-1 ${
+              isPin ? 'border-blue-500/30 bg-gradient-to-b from-blue-950/10 to-[#161b22]' : 'border-slate-800 hover:border-blue-500/30'
+            }"
+            onclick="if (!event.target.closest('button')) { window.location.href = '${proj.url}' }"
+          >
+            <!-- Top Action Row -->
+            <div class="flex items-center justify-between mb-4">
+              <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${pillStyles}">
+                ${proj.pill}
+              </span>
+              <div class="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                <button
+                  onclick="toggleFavorite('${proj.id}', event)"
+                  title="${isFav ? 'Remove from Favorites' : 'Mark as Favorite'}"
+                  class="p-1.5 rounded-lg border text-xs cursor-pointer transition-colors ${favClass}"
+                >
+                  <i data-lucide="star" class="h-3.5 w-3.5 ${isFav ? 'fill-amber-400' : ''}"></i>
+                </button>
+                <button
+                  onclick="togglePin('${proj.id}', event)"
+                  title="${isPin ? 'Unpin Project' : 'Pin up to 3 projects'}"
+                  class="p-1.5 rounded-lg border text-xs cursor-pointer transition-colors ${pinClass}"
+                >
+                  <i data-lucide="pin" class="h-3.5 w-3.5 ${isPin ? 'fill-blue-400' : ''}"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Emojis and details -->
+            <div class="flex items-start gap-4 flex-1">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#0d1117] border border-slate-800 shadow-inner text-2xl transition-transform group-hover:scale-110 duration-300 select-none">
+                ${proj.icon}
+              </div>
+              <div class="min-w-0 flex-1">
+                <h4 class="font-display text-base font-semibold text-white tracking-tight group-hover:text-blue-400 transition-colors line-clamp-1">
+                  ${proj.name}
+                </h4>
+                <p class="mt-1 text-xs text-slate-500 leading-relaxed line-clamp-2">
+                  ${proj.description}
+                </p>
+              </div>
+            </div>
+
+            <!-- Tag shelf -->
+            ${tagsHTML ? `<div class="flex flex-wrap gap-1.5 mt-4">${tagsHTML}</div>` : ''}
+
+            <!-- Launch Action Footer -->
+            <div class="mt-5 pt-4 border-t border-slate-800/60 flex items-center justify-between">
+              <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+                ${formattedDate}
+              </span>
+              <a
+                href="${proj.url}"
+                class="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold cursor-pointer transition-all ${launchBtnClass}"
+              >
+                <span>${proj.pill === "Tool" ? "Open" : "Play"}</span>
+                <i data-lucide="chevron-right" class="h-3 w-3 transition-transform group-hover:translate-x-0.5"></i>
+              </a>
+            </div>
+          </article>
+        `;
+      }
+
+      function render() {
+        const items = getFilteredAndSorted();
+        
+        if (items.length === 0) {
+          projectsSection.innerHTML = `
+            <div class="text-center py-20 border border-dashed border-slate-800 rounded-3xl bg-[#161b22]/20">
+              <div class="text-4xl mb-4">🔍</div>
+              <h3 class="font-display text-lg font-semibold text-slate-300">No projects found</h3>
+              <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+                No matches for "${searchQuery}" or chosen category. Try adjusting your search query or reset filters.
+              </p>
+              <button
+                onclick="searchQuery=''; activeCategory='all'; document.getElementById('searchInput').value=''; document.getElementById('clearSearchBtn').classList.add('hidden'); document.getElementById('searchShortcut').classList.remove('hidden'); renderCategories(); render();"
+                class="mt-4 inline-flex items-center justify-center rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-2 text-xs font-semibold text-white transition-all border border-blue-500 shadow-md"
+              >
+                Clear all filters
+              </button>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+        }
+
+        const pinnedList = items.filter(p => pinned.includes(p.id));
+        const regularList = items.filter(p => !pinned.includes(p.id));
+
+        let html = "";
+
+        // Pinned Shelf
+        if (pinnedList.length > 0 && activeCategory !== "pinned") {
+          html += `
+            <div class="space-y-4">
+              <div class="flex items-center gap-2 pb-2 border-b border-slate-800/80">
+                <i data-lucide="pin" class="h-4 w-4 text-blue-500"></i>
+                <h3 class="font-display text-xs font-bold tracking-widest text-slate-400 uppercase">
+                  Pinned Projects (${pinnedList.length}/3)
+                </h3>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                ${pinnedList.map(p => buildCardHTML(p, true)).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        // Regular Shelf
+        if (regularList.length > 0) {
+          const showHeader = pinnedList.length > 0 && activeCategory !== "pinned";
+          html += `
+            <div class="space-y-4">
+              ${showHeader ? `
+                <div class="flex items-center gap-2 pb-2 border-b border-slate-800/80 pt-4">
+                  <i data-lucide="grid" class="h-4 w-4 text-slate-500"></i>
+                  <h3 class="font-display text-xs font-bold tracking-widest text-slate-500 uppercase">
+                    All Experiments
+                  </h3>
+                </div>
+              ` : ''}
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                ${regularList.map(p => buildCardHTML(p, false)).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        projectsSection.innerHTML = html;
+        lucide.createIcons();
+      }
+
+      // Initial Bootstrap
+      renderCategories();
+      render();
+    </script>
+  </body>
 </html>
