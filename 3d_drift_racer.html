@@ -827,8 +827,8 @@
       const c = document.createElement('canvas');
       c.width = 128; c.height = 128;
       const x = c.getContext('2d');
-      x.fillStyle = '#0a0d14'; x.fillRect(0, 0, 128, 128); // Slate black grid tiles
-      x.strokeStyle = '#1e293b'; x.lineWidth = 1; // Slate grid borders
+      x.fillStyle = '#070a12'; x.fillRect(0, 0, 128, 128); // deeper cool asphalt base
+      x.strokeStyle = '#2a3b55'; x.lineWidth = 1; // cooler blue grid contrast
       x.strokeRect(0, 0, 128, 128);
       const tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -836,7 +836,7 @@
       return tex;
     }
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
+      color: 0x111827,
       map: createGridTex(),
       roughness: 0.85,
       metalness: 0.1
@@ -875,20 +875,31 @@
       const c = document.createElement('canvas');
       c.width = 512; c.height = 512;
       const x = c.getContext('2d');
-      x.fillStyle = '#111827'; x.fillRect(0, 0, 512, 512); // Deep rich charcoal asphalt
+      x.fillStyle = '#6b7280'; x.fillRect(0, 0, 512, 512); // lighter asphalt for visibility
+      // strong asphalt boundary vignette for edge readability
+      const g = x.createLinearGradient(0, 0, 512, 0);
+      g.addColorStop(0, 'rgba(0,0,0,0.5)');
+      g.addColorStop(0.5, 'rgba(0,0,0,0)');
+      g.addColorStop(1, 'rgba(0,0,0,0.5)');
+      x.fillStyle = g;
+      x.fillRect(0, 0, 512, 512);
       // Fine stone noise
       for (let i = 0; i < 15000; i++) {
-        x.fillStyle = `rgba(255,255,255,${Math.random() * 0.08})`;
+        x.fillStyle = `rgba(220,230,255,${Math.random() * 0.04})`;
         x.fillRect(Math.random() * 512, Math.random() * 512, 1.5, 1.5);
       }
+      // Lane marker glow effect
+      x.shadowColor = 'rgba(255, 245, 200, 0.35)';
+      x.shadowBlur = 10;
       // Paint beautiful gold dashed lane markers down the center
-      x.strokeStyle = 'rgba(251, 191, 36, 0.65)'; // Elegant track gold
+      x.strokeStyle = 'rgba(255, 245, 200, 0.85)'; // higher contrast off-white racing line
       x.lineWidth = 6;
       x.setLineDash([20, 25]);
       x.beginPath();
       x.moveTo(256, 0);
       x.lineTo(256, 512);
       x.stroke();
+      x.shadowBlur = 0;
 
       const tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -910,13 +921,13 @@
 
       // Left edge
       const pL = pos.clone().add(normal.clone().multiplyScalar(trackWidth / 2));
-      pL.y = 0.08; // slightly elevated above ground
+      pL.y = 0.12; // slightly elevated above ground (was 0.08)
       roadPoints.push(pL.x, pL.y, pL.z);
       roadUvs.push(0, t * 20);
 
       // Right edge
       const pR = pos.clone().add(normal.clone().multiplyScalar(-trackWidth / 2));
-      pR.y = 0.08;
+      pR.y = 0.12;
       roadPoints.push(pR.x, pR.y, pR.z);
       roadUvs.push(1, t * 20);
     }
@@ -938,10 +949,12 @@
     roadGeo.computeVertexNormals();
 
     const roadMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
+      color: 0xbfc7d5,
       map: createAsphaltTex(),
-      roughness: 0.85,
-      metalness: 0.15
+      roughness: 0.8,
+      metalness: 0.05,
+      emissive: new THREE.Color(0x111111),
+      emissiveIntensity: 0.4
     });
     const roadMesh = new THREE.Mesh(roadGeo, roadMat);
     roadMesh.receiveShadow = true;
@@ -1027,8 +1040,10 @@
 
     const curbMat = new THREE.MeshStandardMaterial({
       map: createCurbTex(),
-      roughness: 0.8,
-      metalness: 0.1
+      roughness: 0.55,
+      metalness: 0.2,
+      emissive: new THREE.Color(0xffffff),
+      emissiveIntensity: 1.25
     });
     const curbMesh = new THREE.Mesh(curbGeo, curbMat);
     curbMesh.receiveShadow = true;
@@ -1062,8 +1077,8 @@
               const d = 24 + Math.random() * 8;
               const h = 45 + Math.random() * 120;
 
-              // Cinematic dark slate, charcoal, and deep navy building colors
-              const colors = [0x1e293b, 0x111827, 0x1f2937, 0x0f172a];
+              // Improved building palette for visibility
+              const colors = [0x243447, 0x1f2a44, 0x2b3a55, 0x3b2f4a, 0x2f3f3f];
               const bMat = new THREE.MeshStandardMaterial({
                 color: colors[Math.floor(Math.random() * colors.length)],
                 roughness: 0.65,
@@ -1076,6 +1091,19 @@
               building.castShadow = true;
               building.receiveShadow = true;
               scene.add(building);
+              // Ground contact slab for better visual separation
+              const base = new THREE.Mesh(
+                new THREE.BoxGeometry(w * 1.05, 0.2, d * 1.05),
+                new THREE.MeshStandardMaterial({
+                  color: 0x0a0f1a,
+                  roughness: 1.0,
+                  metalness: 0.0,
+                  emissive: new THREE.Color(0x02040a),
+                  emissiveIntensity: 0.2
+                })
+              );
+              base.position.set(x, 0.1, z);
+              scene.add(base);
 
               buildings.push({
                 minX: x - w / 2,
@@ -1090,7 +1118,7 @@
                 const wMat = new THREE.MeshStandardMaterial({
                   color: 0xfde047, // Golden yellow windows
                   emissive: 0xd97706, // Amber glowing windows
-                  emissiveIntensity: 0.45,
+                  emissiveIntensity: 0.6,
                   transparent: true,
                   opacity: 0.55,
                   roughness: 0.1
