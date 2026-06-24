@@ -178,6 +178,17 @@
 
     <!-- Single file data & rendering engine -->
     <script>
+      // HARD SAFETY: prevent external analytics crashes (Amplitude / injected scripts)
+      window.amplitude = undefined;
+      window.analytics = undefined;
+      window.mixpanel = undefined;
+
+      // prevent analytics-related runtime errors from breaking app
+      window.addEventListener("error", (e) => {
+        if (String(e?.message || "").toLowerCase().includes("amplitude")) {
+          e.preventDefault();
+        }
+      });
       const PROJECTS_DATA = [
         {
           id: "dungeons-and-dragons",
@@ -436,12 +447,12 @@
           id: "terraria",
           name: "Terraria",
           description: "Minecraft = Better",
-          url: "terraria.html"
+          url: "terraria.html",
           icon: "👾",
           type: "solo",
           pill: "Game",
           date: "2026-05-05",
-          tags: ["PC Only"]
+          tags: ["Better On PC"]
         },
         {
           id: "orbit-boss",
