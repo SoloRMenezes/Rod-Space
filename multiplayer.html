@@ -478,6 +478,7 @@
         roofGeo.rotateY(Math.PI / 4); // Make it a square pyramid
         const leafGeo = new THREE.IcosahedronGeometry(1, 1); // Low poly sphere
         const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 1, 6);
+        const rockGeo = new THREE.DodecahedronGeometry(1, 0); // Low poly rock base
 
         function addBoxCollider(mesh) {
             mesh.updateMatrixWorld();
@@ -618,13 +619,50 @@
                     worldColliders.push(leafHitbox);
 
                 } else {
-                    // Stone Crates / Platforming elements
-                    const size = 3 + Math.random() * 3;
-                    const height = size + Math.random() * 5;
-                    createWorldBlock(x, height/2, z, size, height, size, stoneMat);
+                    // Low-poly Organic Rocks
+                    const rockSize = 3 + Math.random() * 4;
+                    const rock = new THREE.Mesh(rockGeo, stoneMat);
                     
+                    // Scale randomly on axes to make it look jagged and organic
+                    rock.scale.set(
+                        rockSize * (0.8 + Math.random() * 0.4),
+                        rockSize * (0.5 + Math.random() * 0.4), // Flatter on the Y axis
+                        rockSize * (0.8 + Math.random() * 0.4)
+                    );
+                    
+                    // Rotate randomly
+                    rock.rotation.set(
+                        Math.random() * Math.PI,
+                        Math.random() * Math.PI,
+                        Math.random() * Math.PI
+                    );
+                    
+                    // Sink slightly into the ground
+                    rock.position.set(x, rock.scale.y * 0.4, z);
+                    rock.castShadow = true;
+                    rock.receiveShadow = true;
+                    worldGroup.add(rock);
+                    addBoxCollider(rock);
+                    
+                    // 50% chance to spawn a smaller companion rock next to it
                     if (Math.random() > 0.5) {
-                        createWorldBlock(x + size, height + size, z + size, size*0.8, 2, size*0.8, stoneMat);
+                        const smallRockSize = rockSize * 0.6;
+                        const smallRock = new THREE.Mesh(rockGeo, stoneMat);
+                        smallRock.scale.set(
+                            smallRockSize * (0.8 + Math.random() * 0.4),
+                            smallRockSize * (0.5 + Math.random() * 0.4),
+                            smallRockSize * (0.8 + Math.random() * 0.4)
+                        );
+                        smallRock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                        
+                        const offsetX = x + (Math.random() > 0.5 ? rockSize : -rockSize) * 0.7;
+                        const offsetZ = z + (Math.random() > 0.5 ? rockSize : -rockSize) * 0.7;
+                        
+                        smallRock.position.set(offsetX, smallRock.scale.y * 0.4, offsetZ);
+                        smallRock.castShadow = true;
+                        smallRock.receiveShadow = true;
+                        worldGroup.add(smallRock);
+                        addBoxCollider(smallRock);
                     }
                 }
             }
@@ -635,7 +673,7 @@
         let px = 50;
         let pz = -50;
         let py = 1;
-        createWorldBlock(px, 2, pz, 16, 4, 16, stoneMat); // Base platform
+        createWorldBlock(px, 0.5, pz, 16, 1, 16, parkourMat); // Styled cyan starting pad
 
         // Generate a sequence of floating platforms
         for (let i = 0; i < 20; i++) {
@@ -1012,9 +1050,11 @@
             // Record intended position
             const nextPos = playerBody.position.clone();
             
-            // Y-Axis Collision (Vertical)
+            // 1. Y-Axis Collision (Vertical)
+            // BUGFIX: Use the CURRENT X and Z to check for Y-collisions. 
+            // This prevents diagonal movement into walls from registering as a "head hit".
             nextPos.y += playerVelocity.y * dt;
-            playerAABB.setFromCenterAndSize(new THREE.Vector3(nextPos.x, nextPos.y + playerSize.y/2, nextPos.z), playerSize);
+            playerAABB.setFromCenterAndSize(new THREE.Vector3(playerBody.position.x, nextPos.y + playerSize.y/2, playerBody.position.z), playerSize);
             
             isGrounded = false;
             for (let collider of worldColliders) {
@@ -1039,23 +1079,27 @@
             const horizontalSize = new THREE.Vector3(playerSize.x, playerSize.y - 0.2, playerSize.z);
             const horizontalCenterY = playerBody.position.y + playerSize.y/2 + 0.1;
 
-            // X-Axis Collision
+            // 2. X-Axis Collision
             nextPos.x += playerVelocity.x * dt;
             playerAABB.setFromCenterAndSize(new THREE.Vector3(nextPos.x, horizontalCenterY, playerBody.position.z), horizontalSize);
             for (let collider of worldColliders) {
                 if (playerAABB.intersectsBox(collider)) {
-                    nextPos.x = playerBody.position.x; // Undo X move
+                    // Slide along the wall instead of a dead stop
+                    if (playerVelocity.x > 0) nextPos.x = collider.min.x - horizontalSize.x/2 - 0.001;
+                    else if (playerVelocity.x < 0) nextPos.x = collider.max.x + horizontalSize.x/2 + 0.001;
                     playerVelocity.x = 0;
                 }
             }
             playerBody.position.x = nextPos.x;
 
-            // Z-Axis Collision
+            // 3. Z-Axis Collision
             nextPos.z += playerVelocity.z * dt;
             playerAABB.setFromCenterAndSize(new THREE.Vector3(playerBody.position.x, horizontalCenterY, nextPos.z), horizontalSize);
             for (let collider of worldColliders) {
                 if (playerAABB.intersectsBox(collider)) {
-                    nextPos.z = playerBody.position.z; // Undo Z move
+                    // Slide along the wall instead of a dead stop
+                    if (playerVelocity.z > 0) nextPos.z = collider.min.z - horizontalSize.z/2 - 0.001;
+                    else if (playerVelocity.z < 0) nextPos.z = collider.max.z + horizontalSize.z/2 + 0.001;
                     playerVelocity.z = 0;
                 }
             }
