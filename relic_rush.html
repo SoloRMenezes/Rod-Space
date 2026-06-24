@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Relic Rush 2</title>
+  <title>Relic Rush - Standalone Roguelite</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -18,9 +18,6 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
-  <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -59,7 +56,7 @@
 
   <div id="root"></div>
 
-  <script type="text/babel">
+  <script type="text/plain" id="game-source">
     const { useState, useEffect, useRef } = React;
 
     // --- SYNTHESIZED AUDIO MODULE ---
@@ -2341,6 +2338,31 @@
     const container = document.getElementById('root');
     const root = ReactDOM.createRoot(container);
     root.render(<App />);
+  </script>
+  <script>
+    (function() {
+      try {
+        const code = document.getElementById('game-source').textContent;
+        const compiled = Babel.transform(code, {
+          presets: [
+            [Babel.availablePresets['react'], { runtime: 'classic' }]
+          ]
+        }).code;
+        const script = document.createElement('script');
+        script.textContent = compiled;
+        document.body.appendChild(script);
+      } catch (err) {
+        console.error("Babel compilation error:", err);
+        const errorDiv = document.createElement('div');
+        errorDiv.style.color = '#ef4444';
+        errorDiv.style.padding = '24px';
+        errorDiv.style.fontFamily = 'monospace';
+        errorDiv.style.fontSize = '14px';
+        errorDiv.style.whiteSpace = 'pre-wrap';
+        errorDiv.textContent = 'Babel Standalone Compilation Error:\n' + err.stack;
+        document.body.appendChild(errorDiv);
+      }
+    })();
   </script>
 </body>
 </html>
