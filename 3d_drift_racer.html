@@ -1,538 +1,2127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Canvas Drift Pro</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #87CEEB; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
-        
-        /* Overlay Systems */
-        .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(5px);
-            z-index: 100;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DRIFT PRO 2</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@700;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            display: ['"Space Grotesk"', 'sans-serif']
+          }
         }
-
-        h1 { color: white; font-size: 48px; margin-bottom: 30px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        h2 { color: #ff4444; font-size: 36px; margin-bottom: 20px; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-
-        .btn {
-            background: white; color: black; border: none;
-            padding: 15px 40px; margin: 10px; font-size: 20px; font-weight: bold;
-            border-radius: 50px; cursor: pointer; width: 250px;
-            transition: transform 0.2s, background 0.2s;
-        }
-        .btn:hover { transform: scale(1.05); background: #eee; }
-
-        /* Game UI */
-        #game-ui {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; display: none;
-        }
-
-        #top-left-ui {
-            position: absolute;
-            top: 20px; left: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        #turbo-container { width: 200px; }
-        .ui-label { color: white; font-size: 12px; font-weight: bold; margin-bottom: 5px; text-shadow: 1px 1px 2px black; }
-        #turbo-bar-bg { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); }
-        #turbo-bar { width: 100%; height: 100%; background: #00f2ff; transition: width 0.1s; }
-
-        #health-container { display: flex; gap: 5px; }
-        .heart { width: 20px; height: 20px; fill: #ff4444; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
-        .heart.lost { fill: #333; opacity: 0.5; }
-
-        #speed-container {
-            position: absolute;
-            bottom: 30px; left: 30px;
-            color: white; text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
-        }
-        #speed-val { font-size: 64px; font-weight: 900; }
-        #speed-unit { font-size: 24px; margin-left: 5px; opacity: 0.8; }
-
-        #home-btn {
-            position: absolute;
-            top: 20px; right: 20px;
-            pointer-events: auto;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s, background 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        #home-btn:hover { transform: scale(1.1); background: white; }
-        #home-btn svg { width: 28px; height: 28px; fill: #333; }
-
-        /* Screens */
-        .hidden { display: none !important; }
-        
-        #skin-picker { background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; }
-        .colors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
-        .color-btn { width: 50px; height: 50px; border-radius: 10px; border: 3px solid transparent; cursor: pointer; }
-        .color-btn:hover { border-color: white; }
-
-        #keybinds-screen { color: white; background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; text-align: left; line-height: 2; }
-        
-        #damage-flash {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 0, 0.3);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.1s;
-            z-index: 50;
-        }
-    </style>
+      }
+    }
+  </script>
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <style>
+    body {
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.2);
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-black text-white overflow-hidden h-screen w-screen select-none font-sans">
 
-    <div id="damage-flash"></div>
+  <!-- Main WebGL 3D Canvas -->
+  <canvas id="game-canvas" class="w-full h-full block absolute inset-0 z-0"></canvas>
 
-    <!-- Main Menu -->
-    <div id="main-menu" class="overlay">
-        <h1>DRIFT PRO</h1>
-        <button class="btn" onclick="startGame()">START</button>
-        <button class="btn" onclick="showScreen('skin-picker')">CUSTOMIZE</button>
-        <button class="btn" onclick="showScreen('keybinds-screen')">KEYBINDS</button>
-    </div>
-
-    <!-- Game Over Screen -->
-    <div id="game-over" class="overlay hidden">
-        <h2>CRASHED!</h2>
-        <div style="color: white; font-size: 20px; margin-bottom: 20px;">Car integrity compromised.</div>
-        <button class="btn" onclick="startGame()">RETRY</button>
-        <button class="btn" style="background: #444; color: white;" onclick="backToMenu()">MAIN MENU</button>
-    </div>
-
-    <!-- Customize Screen -->
-    <div id="skin-picker" class="overlay hidden">
-        <h2 style="color: white">CHOOSE COLOR</h2>
-        <div class="colors">
-            <div class="color-btn" style="background: #ff0000;" onclick="setCarColor(0xff0000)"></div>
-            <div class="color-btn" style="background: #ff8800;" onclick="setCarColor(0xff8800)"></div>
-            <div class="color-btn" style="background: #00ff00;" onclick="setCarColor(0x00ff00)"></div>
-            <div class="color-btn" style="background: #00ccff;" onclick="setCarColor(0x00ccff)"></div>
-            <div class="color-btn" style="background: #ffff00;" onclick="setCarColor(0xffff00)"></div>
-            <div class="color-btn" style="background: #ffffff;" onclick="setCarColor(0xffffff)"></div>
-            <div class="color-btn" style="background: #888888;" onclick="setCarColor(0x888888)"></div>
-            <div class="color-btn" style="background: #ff00ff;" onclick="setCarColor(0xff00ff)"></div>
-            <div class="color-btn" style="background: #8800ff;" onclick="setCarColor(0x8800ff)"></div>
+  <!-- Dynamic HUD Layer (Only visible when game is active) -->
+  <div id="hud-layer" class="absolute inset-0 z-10 pointer-events-none select-none flex flex-col justify-between p-4 md:p-6 hidden">
+    <!-- Top Bar -->
+    <div class="w-full flex justify-between items-start">
+      <!-- Top Left: Speed & Armor -->
+      <div class="flex flex-col gap-2 pointer-events-auto bg-neutral-950/80 border border-white/10 p-3 rounded-xl w-44 shadow-2xl backdrop-blur-md">
+        <div class="flex items-baseline justify-between">
+          <div class="text-3xl font-black italic text-white tracking-tighter font-display">
+            <span id="speed-val">0</span>
+            <span class="text-xs not-italic text-neutral-400 font-bold ml-0.5">KM/H</span>
+          </div>
+          <div id="gear-val" class="px-1.5 py-0.5 bg-white text-black font-black italic text-[9px] rounded-sm">G1</div>
         </div>
-        <button class="btn" style="margin-top: 20px" onclick="showScreen('main-menu')">BACK</button>
-    </div>
-
-    <!-- Keybinds Screen -->
-    <div id="keybinds-screen" class="overlay hidden">
-        <h2>CONTROLS</h2>
-        <div><b>WASD / ARROWS:</b> DRIVE & STEER</div>
-        <div><b>SPACE:</b> TURBO BOOST</div>
-        <div><b>SHIFT:</b> FREELOOK (SHIFT LOCK)</div>
-        <button class="btn" style="margin-top: 20px" onclick="showScreen('main-menu')">BACK</button>
-    </div>
-
-    <!-- In-Game UI -->
-    <div id="game-ui">
-        <div id="top-left-ui">
-            <div id="turbo-container">
-                <div class="ui-label">TURBO</div>
-                <div id="turbo-bar-bg">
-                    <div id="turbo-bar"></div>
-                </div>
-            </div>
-            <div id="health-container">
-                <!-- Hearts generated by JS -->
-            </div>
+        <!-- 5-Shields Armor Indicator -->
+        <div class="flex items-center justify-between mt-1 border-t border-white/5 pt-1.5">
+          <span class="text-[9px] uppercase tracking-wider text-neutral-400 font-bold font-mono">ARMOR</span>
+          <div id="armor-shields" class="flex gap-0.5">
+            <!-- Shields filled dynamically -->
+          </div>
         </div>
-
-        <div id="speed-container">
-            <span id="speed-val">0</span><span id="speed-unit">KM/H</span>
+        <!-- Nitro Boost Bar -->
+        <div class="flex flex-col gap-0.5 mt-1">
+          <div class="flex justify-between text-[9px] font-bold text-neutral-400 font-mono">
+            <span>BOOST (N2O)</span>
+            <span id="turbo-percent">100%</span>
+          </div>
+          <div class="h-1 bg-neutral-800 rounded-full overflow-hidden">
+            <div id="turbo-bar" class="h-full bg-white transition-all duration-75" style="width: 100%"></div>
+          </div>
         </div>
+      </div>
 
-        <button id="home-btn" onclick="backToMenu()" title="Back to Menu">
-            <svg viewBox="0 0 24 24">
-                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
+      <!-- Top Center Controls -->
+      <div class="flex gap-1.5 bg-neutral-950/80 border border-white/10 p-1.5 rounded-xl shadow-xl pointer-events-auto backdrop-blur-md">
+        <button id="cam-btn" title="Toggle Viewpoint" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
+          <i data-lucide="eye" class="w-4 h-4"></i>
         </button>
+        <button id="mute-btn" title="Toggle Sound" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
+          <i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i>
+        </button>
+        <button id="home-btn" title="Exit to Menu" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
+          <i data-lucide="home" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Top Right Scores -->
+      <div class="flex flex-col gap-1 pointer-events-auto bg-neutral-950/80 border border-white/10 p-3 rounded-xl w-44 shadow-2xl backdrop-blur-md">
+        <div class="text-right flex flex-col items-end">
+          <span class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">DRIFT SCORE</span>
+          <span id="score-total" class="text-2xl font-black italic text-white tracking-tight leading-none mt-0.5">0</span>
+        </div>
+        <div class="w-full h-[1px] bg-white/10 my-1"></div>
+        <div class="flex justify-between w-full text-[9px] font-bold text-neutral-400 font-mono">
+          <span>MAX COMBO</span>
+          <span id="combo-max" class="text-white font-black">0x</span>
+        </div>
+      </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        // --- Texture Generators ---
-        function createAsphaltTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#222'; ctx.fillRect(0, 0, 512, 512);
-            for (let i = 0; i < 4000; i++) {
-                ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.04})`;
-                ctx.fillRect(Math.random() * 512, Math.random() * 512, 1, 1);
-            }
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            return tex;
+    <!-- Active Drift Stats & Checkpoint Alerts (Upper-middle) -->
+    <div class="absolute inset-x-0 top-24 flex flex-col items-center gap-3">
+      <!-- Checkpoint message slider -->
+      <div id="alert-banner" class="bg-neutral-950/95 border-l-4 border-white p-3.5 shadow-2xl backdrop-blur-md hidden transition-all duration-300 transform translate-y-4 opacity-0 max-w-sm">
+        <div class="text-[9px] font-black uppercase tracking-widest text-neutral-400 font-mono">SYSTEM NOTIFICATION</div>
+        <div id="alert-text" class="text-xs font-black italic text-white mt-0.5">CHECKPOINT ACQUIRED!</div>
+      </div>
+
+      <!-- Active Drift Combo Box -->
+      <div id="drift-combo-box" class="flex flex-col items-center justify-center p-4 bg-neutral-950/90 border border-white/10 rounded-xl min-w-[12rem] text-center shadow-2xl backdrop-blur-md opacity-0 scale-90 transition-all duration-150">
+        <div id="drift-mult" class="text-white text-4xl font-black italic font-display leading-none">x1.0</div>
+        <div class="text-[9px] uppercase tracking-widest font-bold text-neutral-400 font-mono mt-0.5">DRIFT MULTIPLIER</div>
+        <div id="drift-pts" class="text-lg font-mono font-black text-white mt-1.5">0 PTS</div>
+        <!-- Progress to next level -->
+        <div class="mt-2 h-1 w-28 bg-neutral-800 rounded-full overflow-hidden">
+          <div id="drift-progress" class="h-full bg-white transition-all duration-150" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- On-screen Floating Touch Controls (Visible only on mobile) -->
+    <div id="touch-controls" class="w-full flex justify-between items-end pb-8 pt-4 md:hidden">
+      <!-- Left side: Steer -->
+      <div class="flex gap-4 pointer-events-auto">
+        <button id="touch-left" class="w-16 h-16 rounded-full bg-neutral-950/80 border border-white/10 active:bg-white/20 active:border-white/40 flex items-center justify-center text-white text-2xl font-black select-none cursor-pointer backdrop-blur-sm shadow-xl" style="touch-action: none;">←</button>
+        <button id="touch-right" class="w-16 h-16 rounded-full bg-neutral-950/80 border border-white/10 active:bg-white/20 active:border-white/40 flex items-center justify-center text-white text-2xl font-black select-none cursor-pointer backdrop-blur-sm shadow-xl" style="touch-action: none;">→</button>
+      </div>
+      <!-- Center: Turbo Boost -->
+      <div class="absolute bottom-10 left-1/2 -translate-x-1/2 pointer-events-auto">
+        <button id="touch-nitro" class="px-5 py-3.5 rounded-xl bg-neutral-950/90 border border-white/20 text-white active:bg-white active:text-black font-black uppercase tracking-widest text-xs shadow-xl select-none cursor-pointer italic backdrop-blur-sm" style="touch-action: none;">NITRO</button>
+      </div>
+      <!-- Right side: Drive & Reverse -->
+      <div class="flex flex-col gap-3 pointer-events-auto items-end">
+        <button id="touch-up" class="w-16 h-16 rounded-full bg-neutral-950/80 border border-white/10 active:bg-white/20 active:border-white/40 flex items-center justify-center text-white text-2xl font-black select-none cursor-pointer backdrop-blur-sm shadow-xl" style="touch-action: none;">▲</button>
+        <button id="touch-down" class="w-16 h-12 rounded-xl bg-neutral-950/80 border border-white/10 active:bg-red-950/40 active:border-red-500/40 flex items-center justify-center text-white text-lg font-black select-none cursor-pointer backdrop-blur-sm shadow-xl" style="touch-action: none;">▼</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Screens Overlay Panel -->
+  <div id="screens-overlay" class="absolute inset-0 z-20 flex items-center justify-center bg-neutral-950/85 backdrop-blur-md p-4 overflow-y-auto">
+    
+    <div class="w-full max-w-lg bg-neutral-950 border border-white/10 rounded-2xl p-6 md:p-8 shadow-[0_0_60px_rgba(0,0,0,0.85)] relative flex flex-col gap-6 overflow-hidden">
+      
+      <!-- Screen 1: Main Menu -->
+      <div id="screen-main-menu" class="flex flex-col items-center text-center gap-6">
+        <div class="flex flex-col gap-1">
+          <div class="text-[10px] tracking-[0.3em] font-black text-neutral-400 uppercase font-mono">PRO DRIFT SIMULATION</div>
+          <h1 class="text-5xl md:text-6xl font-black tracking-tighter bg-gradient-to-b from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent italic leading-none select-none font-display">
+            DRIFT PRO
+          </h1>
+        </div>
+
+        <!-- Highscore Dashboard -->
+        <div class="grid grid-cols-2 gap-4 w-full">
+          <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-white p-4 text-left rounded-r-lg">
+            <div class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">Best Lap Time</div>
+            <div id="menu-best-lap" class="text-xl font-black italic mt-1 text-white tracking-tight">--:--.--</div>
+          </div>
+          <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-neutral-400 p-4 text-left rounded-r-lg">
+            <div class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">Max Combo</div>
+            <div id="menu-max-combo" class="text-xl font-black italic mt-1 text-white">0x</div>
+          </div>
+        </div>
+
+        <!-- Active Car Configuration Info -->
+        <div class="flex flex-col items-center gap-1.5 w-full bg-neutral-900/40 rounded-xl p-4 border border-white/5 text-left">
+          <div class="text-[9px] text-neutral-500 font-bold uppercase tracking-wider font-mono">READY VEHICLE</div>
+          <div class="flex items-center gap-3 w-full mt-1">
+            <div id="menu-car-color" class="w-10 h-10 rounded-lg border border-white/10 shadow-inner flex-shrink-0" style="background-color: #ef4444;"></div>
+            <div class="flex-1">
+              <div id="menu-car-name" class="text-sm font-bold tracking-tight">Drift Spec Hachi</div>
+              <div id="menu-car-desc" class="text-[10px] text-neutral-400 line-clamp-1 mt-0.5">Perfect slip-angle controls. Retains speed during massive slides.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Buttons -->
+        <div class="flex flex-col gap-3 w-full">
+          <button id="btn-start" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-lg uppercase tracking-wider shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 italic">
+            <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+            START TRIAL
+          </button>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <button id="btn-goto-garage" class="py-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-white font-black text-xs tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 uppercase italic">
+              <i data-lucide="palette" class="w-4 h-4 text-neutral-400"></i>
+              GARAGE
+            </button>
+            <button id="btn-goto-manual" class="py-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-white font-black text-xs tracking-widest transition-all cursor-pointer flex items-center justify-center gap-2 uppercase italic">
+              <i data-lucide="help-circle" class="w-4 h-4 text-neutral-400"></i>
+              MANUAL
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen 2: Garage Customizer -->
+      <div id="screen-garage" class="flex flex-col gap-5 hidden">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+          <button id="btn-garage-back" class="p-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-300 cursor-pointer">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <h2 class="text-xl font-extrabold uppercase tracking-tight flex items-center gap-2 font-display">
+            <i data-lucide="palette" class="w-5 h-5"></i>
+            VEHICLE GARAGE
+          </h2>
+        </div>
+
+        <!-- Car Model Carousel -->
+        <div class="flex flex-col gap-2">
+          <label class="text-[9px] font-black text-neutral-500 uppercase tracking-widest font-mono">Select Model</label>
+          <div class="flex items-center justify-between bg-neutral-900/60 rounded-xl p-4 border border-white/5">
+            <button id="carousel-prev" class="w-9 h-9 rounded-full bg-neutral-850 hover:bg-neutral-800 flex items-center justify-center border border-white/5 cursor-pointer">
+              <i data-lucide="chevron-left" class="w-4 h-4 text-white"></i>
+            </button>
+            
+            <div class="flex flex-col items-center text-center px-4 flex-1">
+              <div id="garage-car-name" class="text-base font-black text-white tracking-tight italic">Drift Spec Hachi</div>
+              <p id="garage-car-desc" class="text-[11px] text-neutral-400 mt-0.5 leading-relaxed">Perfect slip-angle controls.</p>
+            </div>
+
+            <button id="carousel-next" class="w-9 h-9 rounded-full bg-neutral-850 hover:bg-neutral-800 flex items-center justify-center border border-white/5 cursor-pointer">
+              <i data-lucide="chevron-right" class="w-4 h-4 text-white"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Benchmark Specs Bars -->
+        <div class="bg-neutral-900/40 rounded-xl p-4 border border-white/5 flex flex-col gap-3">
+          <div class="text-[9px] font-black text-neutral-500 uppercase tracking-widest font-mono">Specs Benchmark</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Speed spec -->
+            <div class="flex flex-col gap-1 w-full text-xs">
+              <div class="flex justify-between text-neutral-400 font-bold uppercase text-[9px] font-mono">
+                <span>Top Speed</span>
+                <span id="spec-speed-num" class="text-white">80%</span>
+              </div>
+              <div class="h-1.5 bg-neutral-850 rounded-full overflow-hidden">
+                <div id="spec-speed-bar" class="h-full bg-white" style="width: 80%"></div>
+              </div>
+            </div>
+            <!-- Accel spec -->
+            <div class="flex flex-col gap-1 w-full text-xs">
+              <div class="flex justify-between text-neutral-400 font-bold uppercase text-[9px] font-mono">
+                <span>Acceleration</span>
+                <span id="spec-accel-num" class="text-white">65%</span>
+              </div>
+              <div class="h-1.5 bg-neutral-850 rounded-full overflow-hidden">
+                <div id="spec-accel-bar" class="h-full bg-white" style="width: 65%"></div>
+              </div>
+            </div>
+            <!-- Drift spec -->
+            <div class="flex flex-col gap-1 w-full text-xs">
+              <div class="flex justify-between text-neutral-400 font-bold uppercase text-[9px] font-mono">
+                <span>Drift Handling</span>
+                <span id="spec-drift-num" class="text-white">95%</span>
+              </div>
+              <div class="h-1.5 bg-neutral-850 rounded-full overflow-hidden">
+                <div id="spec-drift-bar" class="h-full bg-white" style="width: 95%"></div>
+              </div>
+            </div>
+            <!-- Armor spec -->
+            <div class="flex flex-col gap-1 w-full text-xs">
+              <div class="flex justify-between text-neutral-400 font-bold uppercase text-[9px] font-mono">
+                <span>Armor Integrity</span>
+                <span id="spec-armor-num" class="text-white">5 / 5</span>
+              </div>
+              <div class="h-1.5 bg-neutral-850 rounded-full overflow-hidden">
+                <div id="spec-armor-bar" class="h-full bg-white" style="width: 100%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Color Preset Palette -->
+        <div class="flex flex-col gap-3">
+          <div class="flex justify-between items-center">
+            <label class="text-[9px] font-black text-neutral-500 uppercase tracking-widest font-mono">Paint Color</label>
+            <div class="flex items-center gap-2">
+              <span id="paint-hex" class="text-xs font-mono text-neutral-400">#EF4444</span>
+              <input id="paint-picker" type="color" value="#ef4444" class="w-6 h-6 rounded-md bg-transparent border-0 cursor-pointer">
+            </div>
+          </div>
+          <!-- Grid of preset swatches -->
+          <div id="color-presets-grid" class="grid grid-cols-9 gap-1.5">
+            <!-- Generated swatches -->
+          </div>
+        </div>
+
+        <button id="btn-save-garage" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center italic">
+          SAVE VEHICLE SETUP
+        </button>
+      </div>
+
+      <!-- Screen 3: Racing Manual / Controls -->
+      <div id="screen-manual" class="flex flex-col gap-5 hidden">
+        <div class="flex items-center gap-3 border-b border-white/10 pb-4">
+          <button id="btn-manual-back" class="p-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-300 cursor-pointer">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <h2 class="text-xl font-extrabold uppercase tracking-tight font-display">RACING MANUAL</h2>
+        </div>
+
+        <div class="flex flex-col gap-4 text-neutral-300 max-h-80 overflow-y-auto pr-1 custom-scroll">
+          <div class="bg-neutral-900/60 rounded-xl p-4 border border-white/5 flex flex-col gap-3">
+            <div class="text-[9px] font-black text-white uppercase tracking-widest border-b border-white/5 pb-1.5 font-mono">KEYBOARD BINDINGS</div>
+            <div class="grid grid-cols-1 gap-2.5 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="text-neutral-450">Drive / Reverse:</span>
+                <span class="bg-neutral-800 border border-white/10 px-2 py-0.5 rounded font-mono font-bold text-white text-[10px]">W / S or ▲/▼</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-neutral-450">Steer Wheels:</span>
+                <span class="bg-neutral-800 border border-white/10 px-2 py-0.5 rounded font-mono font-bold text-white text-[10px]">A / D or ◄/►</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-neutral-450">Nitro Boost (N2O):</span>
+                <span class="bg-neutral-800 border border-white/10 px-2 py-0.5 rounded font-mono font-bold text-white text-[10px]">SPACEBAR</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-neutral-450">Handbrake / Slide:</span>
+                <span class="bg-neutral-800 border border-white/10 px-2 py-0.5 rounded font-mono font-bold text-white text-[10px]">SHIFT KEY</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-neutral-900/45 rounded-xl p-4 border border-white/5 text-[11px] flex flex-col gap-1.5">
+            <span class="text-[9px] font-black text-neutral-400 uppercase tracking-wider font-mono">TOUCH LAYOUT</span>
+            <p class="leading-relaxed text-neutral-400">
+              When playing on mobile or tablets, intuitive interactive touch overlay controls automatically appear on screen. Steering wheels and engine throttle map directly to your thumbs.
+            </p>
+          </div>
+
+          <div class="bg-neutral-900/45 rounded-xl p-4 border border-white/5 text-[11px] flex flex-col gap-1.5">
+            <span class="text-[9px] font-black text-neutral-400 uppercase tracking-wider font-mono">DRIFTING PHYSICS TIPS</span>
+            <p class="leading-relaxed text-neutral-400">
+              Build up your speed. Steer sharply into corners and hold <strong>SHIFT</strong> or slide. Once the back-end slips, steer in the opposite direction (counter-steer) to maintain balance. Keeping speed high during slides keeps your multiplier combo active!
+            </p>
+          </div>
+        </div>
+
+        <button id="btn-manual-ok" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm uppercase tracking-wider transition-all cursor-pointer italic">
+          RACING GUIDE READY
+        </button>
+      </div>
+
+      <!-- Screen 4: Game Over -->
+      <div id="screen-game-over" class="flex flex-col items-center text-center gap-6 hidden">
+        <div class="flex flex-col items-center gap-2">
+          <div class="w-16 h-16 rounded-full bg-red-950/30 border border-red-500/30 flex items-center justify-center animate-pulse shadow-xl">
+            <i data-lucide="shield-alert" class="w-8 h-8 text-red-500"></i>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-black text-red-500 tracking-tighter uppercase italic font-display">
+            VEHICLE CRASHED
+          </h2>
+          <p class="text-xs text-neutral-400 max-w-sm mt-0.5 leading-relaxed">
+            Car structural integrity has dropped to 0%. The simulation was forcefully terminated due to critical collision damage.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 w-full">
+          <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-red-500 p-4 text-left rounded-r-lg">
+            <span class="text-[9px] text-neutral-400 font-bold uppercase font-mono">Laps Run</span>
+            <div id="crash-laps" class="text-xl font-black italic mt-1 text-white">0 Laps</div>
+          </div>
+          <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-neutral-400 p-4 text-left rounded-r-lg">
+            <span class="text-[9px] text-neutral-400 font-bold uppercase font-mono">Match Score</span>
+            <div id="crash-score" class="text-xl font-black italic mt-1 text-white">0</div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 w-full">
+          <button id="btn-restart-crash" class="w-full py-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-md uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xl italic">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            REDEPLOY SIMULATOR
+          </button>
+          <button id="btn-menu-crash" class="w-full py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-300 font-bold text-xs tracking-wider transition-all cursor-pointer">
+            RETURN TO GARAGE
+          </button>
+        </div>
+      </div>
+
+      <!-- Screen 5: Victory Complete -->
+      <div id="screen-victory" class="flex flex-col items-center text-center gap-6 hidden">
+        <div class="flex flex-col items-center gap-1">
+          <div class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20 mb-2 animate-bounce shadow-xl">
+            <i data-lucide="trophy" class="w-8 h-8 text-yellow-500"></i>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-black bg-gradient-to-r from-yellow-500 via-amber-200 to-yellow-600 bg-clip-text text-transparent tracking-tighter uppercase italic font-display">
+            GRAND FINALE!
+          </h2>
+          <p class="text-xs text-neutral-400 max-w-sm mt-0.5 leading-relaxed">
+            Congratulations! You successfully crossed all checkpoints and completed the full 3-Lap Time Trial challenge!
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-2.5 w-full bg-neutral-900/60 rounded-xl p-4 border border-white/5">
+          <div class="text-[9px] font-black text-white uppercase tracking-widest text-left border-b border-white/5 pb-1.5 font-mono">TRIAL SUMMARY</div>
+          <div class="flex justify-between text-xs py-1 border-b border-white/5">
+            <span class="text-neutral-400">Total Drifting Score:</span>
+            <span id="victory-score" class="font-mono font-bold text-white">0 PTS</span>
+          </div>
+          <div class="flex justify-between text-xs py-1 border-b border-white/5">
+            <span class="text-neutral-400">Best Lap Record:</span>
+            <span id="victory-lap-time" class="font-mono font-bold text-white">01:45.22</span>
+          </div>
+          <div class="flex justify-between text-xs py-1">
+            <span class="text-neutral-400">Max Combo Achieved:</span>
+            <span id="victory-combo" class="font-mono font-bold text-white">0x</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-3 w-full">
+          <button id="btn-restart-victory" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-md uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xl italic">
+            <i data-lucide="rotate-ccw" class="w-4 h-4 fill-current"></i>
+            RACE AGAIN
+          </button>
+          <button id="btn-menu-victory" class="w-full py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-300 font-bold text-xs tracking-wider transition-all cursor-pointer">
+            RETURN TO GARAGE
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sound/Synthesizer Engine & Physics Simulation Script -->
+  <script>
+    // --- 1. SoundEngine with Web Audio API (Fully procedurally synthesized) ---
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.isMuted = false;
+        this.engineOsc = null;
+        this.engineFilter = null;
+        this.engineGain = null;
+        this.engineSubOsc = null;
+        this.engineSubGain = null;
+        this.squealOsc = null;
+        this.squealGain = null;
+        this.masterGain = null;
+      }
+
+      init() {
+        if (this.ctx) return;
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContextClass();
+          
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.5, this.ctx.currentTime);
+          this.masterGain.connect(this.ctx.destination);
+
+          this.setupEngine();
+          this.setupSqueal();
+        } catch (e) {
+          console.warn("Web Audio Context initialization error", e);
         }
+      }
 
-        function createBuildingTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 128; canvas.height = 128;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#333'; ctx.fillRect(0, 0, 128, 128);
-            ctx.fillStyle = '#ffd700';
-            for(let y = 10; y < 120; y += 15) {
-                for(let x = 10; x < 120; x += 20) {
-                    if(Math.random() > 0.4) ctx.fillRect(x, y, 12, 8);
-                }
-            }
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            return tex;
+      toggleMute() {
+        this.isMuted = !this.isMuted;
+        if (this.masterGain && this.ctx) {
+          this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.5, this.ctx.currentTime);
         }
+        return this.isMuted;
+      }
 
-        // --- Setup Scene ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB);
-        scene.fog = new THREE.Fog(0x87CEEB, 20, 350);
+      setupEngine() {
+        if (!this.ctx) return;
+        this.engineOsc = this.ctx.createOscillator();
+        this.engineOsc.type = 'sawtooth';
+        this.engineOsc.frequency.setValueAtTime(40, this.ctx.currentTime);
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1500);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        document.body.appendChild(renderer.domElement);
+        this.engineSubOsc = this.ctx.createOscillator();
+        this.engineSubOsc.type = 'triangle';
+        this.engineSubOsc.frequency.setValueAtTime(20, this.ctx.currentTime);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-        const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-        sun.position.set(100, 200, 100);
-        scene.add(sun);
+        this.engineFilter = this.ctx.createBiquadFilter();
+        this.engineFilter.type = 'lowpass';
+        this.engineFilter.frequency.setValueAtTime(250, this.ctx.currentTime);
+        this.engineFilter.Q.setValueAtTime(3, this.ctx.currentTime);
 
-        const WORLD_SIZE = 1000;
+        this.engineGain = this.ctx.createGain();
+        this.engineGain.gain.setValueAtTime(0, this.ctx.currentTime);
 
-        // Ground (Open World Grass/Dirt)
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(WORLD_SIZE * 2.5, WORLD_SIZE * 2.5),
-            new THREE.MeshLambertMaterial({ color: 0x3d4d3d })
-        );
-        ground.rotation.x = -Math.PI / 2;
-        scene.add(ground);
+        this.engineSubGain = this.ctx.createGain();
+        this.engineSubGain.gain.setValueAtTime(0, this.ctx.currentTime);
 
-        // --- Track / Looping Road ---
-        // Create a custom path for the track
-        const trackWidth = 24;
-        const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(0, 0.05, 0),
-            new THREE.Vector3(200, 0.05, 50),
-            new THREE.Vector3(400, 0.05, -150),
-            new THREE.Vector3(500, 0.05, 200),
-            new THREE.Vector3(250, 0.05, 450),
-            new THREE.Vector3(-150, 0.05, 400),
-            new THREE.Vector3(-450, 0.05, 250),
-            new THREE.Vector3(-300, 0.05, -100),
-            new THREE.Vector3(-100, 0.05, -350),
-            new THREE.Vector3(300, 0.05, -500),
-            new THREE.Vector3(600, 0.05, -400),
-            new THREE.Vector3(450, 0.05, 100),
-            new THREE.Vector3(0, 0.05, 0) // Loop back to start
-        ]);
+        this.engineOsc.connect(this.engineFilter);
+        this.engineFilter.connect(this.engineGain);
+        this.engineGain.connect(this.masterGain);
 
-        const points = curve.getPoints(200);
-        const roadShape = new THREE.Shape();
-        roadShape.moveTo(0, -trackWidth/2);
-        roadShape.lineTo(0, trackWidth/2);
+        this.engineSubOsc.connect(this.engineSubGain);
+        this.engineSubGain.connect(this.masterGain);
 
-        const extrudeSettings = {
-            steps: 200,
-            extrudePath: curve,
-            bevelEnabled: false
-        };
+        this.engineOsc.start(0);
+        this.engineSubOsc.start(0);
+      }
 
-        const roadGeo = new THREE.ExtrudeGeometry(roadShape, extrudeSettings);
-        // Correcting road geometry orientation (flattening it)
-        const v = roadGeo.attributes.position.array;
-        for(let i = 1; i < v.length; i+=3) { v[i] = 0.06; } // Keep it flat on ground
+      setupSqueal() {
+        if (!this.ctx) return;
+        this.squealOsc = this.ctx.createOscillator();
+        this.squealOsc.type = 'triangle';
+        this.squealOsc.frequency.setValueAtTime(800, this.ctx.currentTime);
+
+        this.squealGain = this.ctx.createGain();
+        this.squealGain.gain.setValueAtTime(0, this.ctx.currentTime);
+
+        const vibrato = this.ctx.createOscillator();
+        vibrato.frequency.value = 35;
+        const vibratoGain = this.ctx.createGain();
+        vibratoGain.gain.value = 90;
+
+        vibrato.connect(vibratoGain);
+        vibratoGain.connect(this.squealOsc.frequency);
+        vibrato.start(0);
+
+        const hp = this.ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.setValueAtTime(450, this.ctx.currentTime);
+
+        this.squealOsc.connect(hp);
+        hp.connect(this.squealGain);
+        this.squealGain.connect(this.masterGain);
+
+        this.squealOsc.start(0);
+      }
+
+      startEngine() {
+        this.init();
+        if (!this.ctx) return;
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        const t = this.ctx.currentTime;
+        if (this.engineGain) this.engineGain.gain.linearRampToValueAtTime(0.18, t + 0.3);
+        if (this.engineSubGain) this.engineSubGain.gain.linearRampToValueAtTime(0.28, t + 0.3);
+      }
+
+      stopEngine() {
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        if (this.engineGain) this.engineGain.gain.linearRampToValueAtTime(0, t + 0.3);
+        if (this.engineSubGain) this.engineSubGain.gain.linearRampToValueAtTime(0, t + 0.3);
+        if (this.squealGain) this.squealGain.gain.linearRampToValueAtTime(0, t + 0.1);
+      }
+
+      updateEngine(speedFraction, isBoosting) {
+        if (!this.ctx || this.isMuted) return;
+        const t = this.ctx.currentTime;
+        const speed = Math.max(0, Math.min(1, speedFraction));
+        const rpmFreq = 42 + speed * 125 + (isBoosting ? 55 : 0);
+        const filterFreq = 190 + speed * 750 + (isBoosting ? 250 : 0);
+
+        if (this.engineOsc) this.engineOsc.frequency.setValueAtTime(rpmFreq, t);
+        if (this.engineSubOsc) this.engineSubOsc.frequency.setValueAtTime(rpmFreq / 2, t);
+        if (this.engineFilter) this.engineFilter.frequency.setValueAtTime(filterFreq, t);
+
+        const engineVol = 0.15 + speed * 0.15 + (isBoosting ? 0.12 : 0);
+        const subVol = 0.22 + speed * 0.12 + (isBoosting ? 0.08 : 0);
+
+        if (this.engineGain) this.engineGain.gain.setValueAtTime(engineVol, t);
+        if (this.engineSubGain) this.engineSubGain.gain.setValueAtTime(subVol, t);
+      }
+
+      setDrifting(isDrifting, intensity = 1.0) {
+        if (!this.ctx || this.isMuted || !this.squealGain) return;
+        const t = this.ctx.currentTime;
+        if (isDrifting) {
+          const vol = Math.min(0.2, intensity * 0.15);
+          this.squealGain.gain.setTargetAtTime(vol, t, 0.05);
+          if (this.squealOsc) this.squealOsc.frequency.setValueAtTime(700 + intensity * 200, t);
+        } else {
+          this.squealGain.gain.setTargetAtTime(0, t, 0.15);
+        }
+      }
+
+      playCrash() {
+        this.init();
+        if (!this.ctx || this.isMuted || !this.masterGain) return;
+        const t = this.ctx.currentTime;
         
-        const roadTex = createAsphaltTexture();
-        roadTex.repeat.set(1, 1);
-        const roadMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1a });
-        const roadMesh = new THREE.Mesh(roadGeo, roadMat);
-        scene.add(roadMesh);
+        // Impact low rumble
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(120, t);
+        osc.frequency.exponentialRampToValueAtTime(30, t + 0.35);
+        gain.gain.setValueAtTime(0.7, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(t);
+        osc.stop(t + 0.45);
 
-        // Road Lines (Yellow center)
-        const lineMat = new THREE.MeshBasicMaterial({ color: 0xffcc00 });
-        const lineGeo = new THREE.TubeGeometry(curve, 200, 0.4, 4, false);
-        const lineMesh = new THREE.Mesh(lineGeo, lineMat);
-        lineMesh.position.y = 0.1;
-        scene.add(lineMesh);
+        // Noise snap
+        const bufferSize = this.ctx.sampleRate * 0.18;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const noiseGain = this.ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.35, t);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+        noise.connect(noiseGain);
+        noiseGain.connect(this.masterGain);
+        noise.start(t);
+        noise.stop(t + 0.2);
+      }
 
-        // --- Buildings ---
-        const buildings = [];
-        const bTex = createBuildingTexture();
-        function createCity() {
-            for(let i = 0; i < 350; i++) {
-                const w = 10 + Math.random() * 20;
-                const d = 10 + Math.random() * 20;
-                const h = 20 + Math.random() * 100;
-                
-                let x = (Math.random() - 0.5) * 1800;
-                let z = (Math.random() - 0.5) * 1800;
-                
-                // Avoid the track
-                const testPos = new THREE.Vector3(x, 0.05, z);
-                let minDistToTrack = 10000;
-                for(let t=0; t<=1; t+=0.01) {
-                    const p = curve.getPoint(t);
-                    const dist = testPos.distanceTo(p);
-                    if(dist < minDistToTrack) minDistToTrack = dist;
-                }
-                if(minDistToTrack < 35) continue;
+      playCollect() {
+        this.init();
+        if (!this.ctx || this.isMuted || !this.masterGain) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, t); // C5
+        osc.frequency.setValueAtTime(783.99, t + 0.08); // G5
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.005, t + 0.25);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(t);
+        osc.stop(t + 0.28);
+      }
 
-                const mat = new THREE.MeshLambertMaterial({ map: bTex.clone() });
-                mat.map.repeat.set(1, h/10);
-                const box = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-                box.position.set(x, h/2, z);
-                scene.add(box);
-                buildings.push({ 
-                    minX: x - w/2, maxX: x + w/2, 
-                    minZ: z - d/2, maxZ: z + d/2 
+      playBoost() {
+        this.init();
+        if (!this.ctx || this.isMuted || !this.masterGain) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, t);
+        osc.frequency.exponentialRampToValueAtTime(650, t + 0.35);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(200, t);
+        filter.frequency.exponentialRampToValueAtTime(2200, t + 0.35);
+
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.exponentialRampToValueAtTime(0.005, t + 0.4);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(t);
+        osc.stop(t + 0.45);
+      }
+
+      playCheckpoint() {
+        this.init();
+        if (!this.ctx || this.isMuted || !this.masterGain) return;
+        const t = this.ctx.currentTime;
+        const chords = [329.63, 392.0, 523.25, 659.25]; // E4, G4, C5, E5
+        chords.forEach((freq, idx) => {
+          if (!this.ctx || !this.masterGain) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, t + idx * 0.05);
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(0.1, t + idx * 0.05 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45 + idx * 0.05);
+          osc.connect(gain);
+          gain.connect(this.masterGain);
+          osc.start(t + idx * 0.05);
+          osc.stop(t + 0.55 + idx * 0.05);
+        });
+      }
+    }
+
+    const audio = new SoundEngine();
+
+    // --- 2. Game Configurations & Data Models ---
+    const CAR_ARCHETYPES = [
+      {
+        id: 'drift_king',
+        name: 'Drift Spec Hachi',
+        description: 'Perfect slip-angle controls. Retains speed during massive slides.',
+        color: '#ef4444', // Vibrant Premium Cherry Crimson
+        topSpeed: 0.95,
+        acceleration: 0.016,
+        driftHandling: 0.95,
+        armor: 5,
+        scale: { x: 1.0, y: 1.0, z: 1.0 }
+      },
+      {
+        id: 'speed_demon',
+        name: 'GT Supercharged',
+        description: 'Blistering acceleration and top speed, but high-risk drift grip.',
+        color: '#f59e0b', // Glowing Sunset Gold/Orange
+        topSpeed: 1.25,
+        acceleration: 0.024,
+        driftHandling: 0.50,
+        armor: 4,
+        scale: { x: 1.0, y: 0.95, z: 1.05 }
+      },
+      {
+        id: 'urban_tank',
+        name: 'V8 Cyber Truck',
+        description: 'Heavy duty. Virtually indestructible armor, lower drift control.',
+        color: '#64748b', // Cyber Slate Steel
+        topSpeed: 0.85,
+        acceleration: 0.012,
+        driftHandling: 0.40,
+        armor: 8,
+        scale: { x: 1.15, y: 1.15, z: 1.2 }
+      },
+      {
+        id: 'hyper_boost',
+        name: 'Quantum EV',
+        description: 'Instant torque and rapid turbo regeneration. Lightweight chassis.',
+        color: '#f3f4f6', // Pearl White
+        topSpeed: 1.10,
+        acceleration: 0.021,
+        driftHandling: 0.75,
+        armor: 3,
+        scale: { x: 0.95, y: 0.90, z: 0.95 }
+      }
+    ];
+
+    const COLOR_PRESETS = [
+      '#ef4444', // Premium Crimson Red
+      '#f97316', // Sunset Amber Orange
+      '#fbbf24', // Racing Gold
+      '#10b981', // Emerald Mint Green
+      '#06b6d4', // Electric Cyan
+      '#6366f1', // Indigo Blue
+      '#a855f7', // Velvet Purple
+      '#f3f4f6', // Pearl White
+      '#1f2937'  // Carbon Black
+    ];
+
+    // Global Interactive State
+    const state = {
+      isGameRunning: false,
+      activeScreen: 'main-menu', // main-menu, garage, manual, game-over, victory
+      cameraMode: 'chase', // chase, cockpit, overhead, orbital
+      selectedArchetypeIndex: 0,
+      customCarColor: '#ef4444',
+      isMuted: false,
+      
+      // Highscores persistent career stats
+      bestLapTime: Infinity,
+      maxCombo: 0,
+      totalDriftScore: 0,
+
+      // Live match parameters
+      currentLap: 1,
+      totalLaps: 3,
+      currentLapTime: 0,
+      checkpointProgress: 0, // 0 to 3
+      checkpointMsgTimer: 0,
+      currentArmor: 5,
+      maxArmor: 5,
+      currentSpeed: 0,
+      turboAmount: 100,
+
+      // Live keyboard mappings
+      keys: { KeyW: false, KeyS: false, KeyA: false, KeyD: false, Space: false, ShiftLeft: false }
+    };
+
+    // --- 3. Three.js Scene Setup & Physics Core ---
+    const canvas = document.getElementById('game-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    // Beautiful cinematic twilight deep charcoal sky and dense fog for depth
+    const bgColor = 0x0c0f17; // Deep Space Charcoal Black
+    scene.background = new THREE.Color(bgColor);
+    scene.fog = new THREE.FogExp2(bgColor, 0.0035);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.5, 1200);
+
+    // Dynamic Camera resize handler
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const width = entry.contentRect.width || window.innerWidth;
+        const height = entry.contentRect.height || window.innerHeight;
+        renderer.setSize(width, height);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }
+    });
+    resizeObserver.observe(canvas);
+
+    // Ambient and Sunlight - cinematic warm sunset casting long soft shadows
+    const ambient = new THREE.AmbientLight(0x475569, 0.45); // Cool dusk atmosphere fill light
+    scene.add(ambient);
+
+    const sun = new THREE.DirectionalLight(0xf59e0b, 1.45); // Warm golden sunset sun
+    sun.position.set(120, 95, -180);
+    sun.castShadow = true;
+    sun.shadow.mapSize.width = 1024;
+    sun.shadow.mapSize.height = 1024;
+    sun.shadow.camera.near = 0.5;
+    sun.shadow.camera.far = 800;
+    const d = 300;
+    sun.shadow.camera.left = -d;
+    sun.shadow.camera.right = d;
+    sun.shadow.camera.top = d;
+    sun.shadow.camera.bottom = -d;
+    scene.add(sun);
+
+    // Procedural dark concrete grid landscape (high contrast, stylish)
+    const groundGeo = new THREE.PlaneGeometry(2500, 2500);
+    // Create Grid Canvas Texture
+    function createGridTex() {
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 128;
+      const x = c.getContext('2d');
+      x.fillStyle = '#0a0d14'; x.fillRect(0, 0, 128, 128); // Slate black grid tiles
+      x.strokeStyle = '#1e293b'; x.lineWidth = 1; // Slate grid borders
+      x.strokeRect(0, 0, 128, 128);
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(100, 100);
+      return tex;
+    }
+    const groundMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      map: createGridTex(),
+      roughness: 0.85,
+      metalness: 0.1
+    });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // --- Winding Race Track pathway ---
+    const S = 100;
+    const trackWidth = 14;
+    const trackPoints = [
+      new THREE.Vector3(0, 0.05, 0),
+      new THREE.Vector3(0, 0.05, S),
+      new THREE.Vector3(S, 0.05, S),
+      new THREE.Vector3(S, 0.05, S * 2),
+      new THREE.Vector3(-S, 0.05, S * 2),
+      new THREE.Vector3(-S, 0.05, S),
+      new THREE.Vector3(-S * 2, 0.05, S),
+      new THREE.Vector3(-S * 2, 0.05, -S),
+      new THREE.Vector3(-S, 0.05, -S),
+      new THREE.Vector3(-S, 0.05, -S * 2),
+      new THREE.Vector3(S, 0.05, -S * 2),
+      new THREE.Vector3(S, 0.05, -S),
+      new THREE.Vector3(S * 2, 0.05, -S),
+      new THREE.Vector3(S * 2, 0.05, 0),
+      new THREE.Vector3(0, 0.05, 0)
+    ];
+
+    const trackCurve = new THREE.CatmullRomCurve3(trackPoints);
+    trackCurve.closed = true;
+
+    // Create Asphalt Texture canvas
+    function createAsphaltTex() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const x = c.getContext('2d');
+      x.fillStyle = '#111827'; x.fillRect(0, 0, 512, 512); // Deep rich charcoal asphalt
+      // Fine stone noise
+      for (let i = 0; i < 15000; i++) {
+        x.fillStyle = `rgba(255,255,255,${Math.random() * 0.08})`;
+        x.fillRect(Math.random() * 512, Math.random() * 512, 1.5, 1.5);
+      }
+      // Paint beautiful gold dashed lane markers down the center
+      x.strokeStyle = 'rgba(251, 191, 36, 0.65)'; // Elegant track gold
+      x.lineWidth = 6;
+      x.setLineDash([20, 25]);
+      x.beginPath();
+      x.moveTo(256, 0);
+      x.lineTo(256, 512);
+      x.stroke();
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(1, 20); // repeat along the path
+      return tex;
+    }
+
+    // Create a perfect flat ribbon along track Curve with zero Z-fighting
+    const segments = 200;
+    const roadPoints = [];
+    const roadIndices = [];
+    const roadUvs = [];
+
+    for (let i = 0; i <= segments; i++) {
+      const t = i / segments;
+      const pos = trackCurve.getPointAt(t % 1);
+      const tangent = trackCurve.getTangentAt(t % 1).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+
+      // Left edge
+      const pL = pos.clone().add(normal.clone().multiplyScalar(trackWidth / 2));
+      pL.y = 0.08; // slightly elevated above ground
+      roadPoints.push(pL.x, pL.y, pL.z);
+      roadUvs.push(0, t * 20);
+
+      // Right edge
+      const pR = pos.clone().add(normal.clone().multiplyScalar(-trackWidth / 2));
+      pR.y = 0.08;
+      roadPoints.push(pR.x, pR.y, pR.z);
+      roadUvs.push(1, t * 20);
+    }
+
+    for (let i = 0; i < segments; i++) {
+      const r0 = i * 2;
+      const r1 = r0 + 1;
+      const r2 = r0 + 2;
+      const r3 = r0 + 3;
+
+      roadIndices.push(r0, r1, r2);
+      roadIndices.push(r1, r3, r2);
+    }
+
+    const roadGeo = new THREE.BufferGeometry();
+    roadGeo.setAttribute('position', new THREE.Float32BufferAttribute(roadPoints, 3));
+    roadGeo.setAttribute('uv', new THREE.Float32BufferAttribute(roadUvs, 2));
+    roadGeo.setIndex(roadIndices);
+    roadGeo.computeVertexNormals();
+
+    const roadMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      map: createAsphaltTex(),
+      roughness: 0.85,
+      metalness: 0.15
+    });
+    const roadMesh = new THREE.Mesh(roadGeo, roadMat);
+    roadMesh.receiveShadow = true;
+    scene.add(roadMesh);
+
+    // Procedural Red/White Striped Apex Curbs
+    function createCurbTex() {
+      const c = document.createElement('canvas');
+      c.width = 64; c.height = 128;
+      const x = c.getContext('2d');
+      x.fillStyle = '#ef4444'; x.fillRect(0, 0, 64, 64); // Red Stripe
+      x.fillStyle = '#ffffff'; x.fillRect(0, 64, 64, 64); // White Stripe
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    const curbSegments = 200;
+    const curbPoints = [];
+    const curbIndices = [];
+    const curbUvs = [];
+
+    for (let i = 0; i <= curbSegments; i++) {
+      const t = i / curbSegments;
+      const pos = trackCurve.getPointAt(t % 1);
+      const tangent = trackCurve.getTangentAt(t % 1).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+
+      const wInnerL = trackWidth / 2;
+      const wOuterL = wInnerL + 0.65;
+
+      // Left Curb Inner
+      const pLi = pos.clone().add(normal.clone().multiplyScalar(wInnerL));
+      pLi.y = 0.12;
+      curbPoints.push(pLi.x, pLi.y, pLi.z);
+      curbUvs.push(0, t * 50);
+
+      // Left Curb Outer
+      const pLo = pos.clone().add(normal.clone().multiplyScalar(wOuterL));
+      pLo.y = 0.08;
+      curbPoints.push(pLo.x, pLo.y, pLo.z);
+      curbUvs.push(1, t * 50);
+
+      const wInnerR = -trackWidth / 2;
+      const wOuterR = wInnerR - 0.65;
+
+      // Right Curb Inner
+      const pRi = pos.clone().add(normal.clone().multiplyScalar(wInnerR));
+      pRi.y = 0.12;
+      curbPoints.push(pRi.x, pRi.y, pRi.z);
+      curbUvs.push(0, t * 50);
+
+      // Right Curb Outer
+      const pRo = pos.clone().add(normal.clone().multiplyScalar(wOuterR));
+      pRo.y = 0.08;
+      curbPoints.push(pRo.x, pRo.y, pRo.z);
+      curbUvs.push(1, t * 50);
+    }
+
+    for (let i = 0; i < curbSegments; i++) {
+      const l0 = i * 4;
+      const l1 = l0 + 1;
+      const l2 = l0 + 4;
+      const l3 = l0 + 5;
+
+      curbIndices.push(l0, l1, l2);
+      curbIndices.push(l1, l3, l2);
+
+      const r0 = i * 4 + 2;
+      const r1 = r0 + 1;
+      const r2 = r0 + 4;
+      const r3 = r0 + 5;
+
+      curbIndices.push(r0, r1, r2);
+      curbIndices.push(r1, r3, r2);
+    }
+
+    const curbGeo = new THREE.BufferGeometry();
+    curbGeo.setAttribute('position', new THREE.Float32BufferAttribute(curbPoints, 3));
+    curbGeo.setAttribute('uv', new THREE.Float32BufferAttribute(curbUvs, 2));
+    curbGeo.setIndex(curbIndices);
+    curbGeo.computeVertexNormals();
+
+    const curbMat = new THREE.MeshStandardMaterial({
+      map: createCurbTex(),
+      roughness: 0.8,
+      metalness: 0.1
+    });
+    const curbMesh = new THREE.Mesh(curbGeo, curbMat);
+    curbMesh.receiveShadow = true;
+    scene.add(curbMesh);
+
+    // --- City Block Building Scenery (Placed away from roads) ---
+    const buildings = [];
+    const blockCenters = [-S * 1.5, -S * 0.5, S * 0.5, S * 1.5];
+    const bGeo = new THREE.BoxGeometry(1, 1, 1);
+
+    // Helper to check if a building overlaps streets
+    function isOnStreet(x, z) {
+      const gw = trackWidth / 2 + 5.0;
+      const xs = [-S * 2, -S, 0, S, S * 2];
+      const zs = [-S * 2, -S, 0, S, S * 2];
+      const isNearV = xs.some(gx => Math.abs(x - gx) < gw);
+      const isNearH = zs.some(gz => Math.abs(z - gz) < gw);
+      return isNearV || isNearH;
+    }
+
+    blockCenters.forEach((bx) => {
+      blockCenters.forEach((bz) => {
+        const subgrid = [-22, 22];
+        subgrid.forEach((sdx) => {
+          subgrid.forEach((sdz) => {
+            const x = bx + sdx + (Math.random() - 0.5) * 5;
+            const z = bz + sdz + (Math.random() - 0.5) * 5;
+
+            if (!isOnStreet(x, z)) {
+              const w = 24 + Math.random() * 8;
+              const d = 24 + Math.random() * 8;
+              const h = 45 + Math.random() * 120;
+
+              // Cinematic dark slate, charcoal, and deep navy building colors
+              const colors = [0x1e293b, 0x111827, 0x1f2937, 0x0f172a];
+              const bMat = new THREE.MeshStandardMaterial({
+                color: colors[Math.floor(Math.random() * colors.length)],
+                roughness: 0.65,
+                metalness: 0.2
+              });
+
+              const building = new THREE.Mesh(bGeo, bMat);
+              building.scale.set(w, h, d);
+              building.position.set(x, h / 2, z);
+              building.castShadow = true;
+              building.receiveShadow = true;
+              scene.add(building);
+
+              buildings.push({
+                minX: x - w / 2,
+                maxX: x + w / 2,
+                minZ: z - d / 2,
+                maxZ: z + d / 2
+              });
+
+              // Add elegant warm glowing windows to simulate high-rises at twilight
+              if (Math.random() > 0.3) {
+                const wGeo = new THREE.BoxGeometry(w + 0.1, h * 0.85, d + 0.1);
+                const wMat = new THREE.MeshStandardMaterial({
+                  color: 0xfde047, // Golden yellow windows
+                  emissive: 0xd97706, // Amber glowing windows
+                  emissiveIntensity: 0.45,
+                  transparent: true,
+                  opacity: 0.55,
+                  roughness: 0.1
                 });
+                const windowPlate = new THREE.Mesh(wGeo, wMat);
+                windowPlate.position.set(x, h / 2, z);
+                scene.add(windowPlate);
+              }
             }
+          });
+        });
+      });
+    });
+
+    // Tokyo Tower Landmark Spire (In the far distance)
+    const towerGroup = new THREE.Group();
+    const spireMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, metalness: 0.5 }); // crimson
+    const spirePillar = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 9, 70, 4), spireMat);
+    spirePillar.position.y = 35;
+    towerGroup.add(spirePillar);
+    const spireTop = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 1.2, 50, 4), spireMat);
+    spireTop.position.y = 95;
+    towerGroup.add(spireTop);
+    towerGroup.position.set(-250, 0, -580);
+    scene.add(towerGroup);
+
+    // Torii Gate placing (Segment decorations)
+    const toriiPoints = [25, 160];
+    toriiPoints.forEach(idx => {
+      const pos = trackCurve.getPointAt(idx / 200);
+      const tangent = trackCurve.getTangentAt(idx / 200).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+
+      const torii = new THREE.Group();
+      const pillarMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.5 }); // red
+
+      const left = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 11, 8), pillarMat);
+      left.position.copy(pos).add(normal.clone().multiplyScalar(trackWidth / 2 + 0.5));
+      left.position.y = 5.5;
+      torii.add(left);
+
+      const right = left.clone();
+      right.position.copy(pos).add(normal.clone().multiplyScalar(-(trackWidth / 2 + 0.5)));
+      torii.add(right);
+
+      const cross = new THREE.Mesh(new THREE.BoxGeometry(trackWidth + 2.5, 0.5, 0.5), pillarMat);
+      cross.position.copy(pos);
+      cross.position.y = 10.2;
+      cross.lookAt(pos.clone().add(tangent));
+      torii.add(cross);
+
+      scene.add(torii);
+    });
+
+    // Sakura Cherry Blossom Trees
+    for (let i = 0; i < 200; i += 5) {
+      const pos = trackCurve.getPointAt(i / 200);
+      const tangent = trackCurve.getTangentAt(i / 200).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+      const side = i % 10 === 0 ? 1 : -1;
+      const itemPos = pos.clone().add(normal.clone().multiplyScalar(side * (trackWidth / 2 + 2.5)));
+
+      if (!isOnStreet(itemPos.x, itemPos.z)) {
+        const tree = new THREE.Group();
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.22, 3.2, 8), new THREE.MeshStandardMaterial({ color: 0x451a03 }));
+        trunk.position.y = 1.6;
+        tree.add(trunk);
+
+        const canopy = new THREE.Mesh(new THREE.SphereGeometry(1.4, 5, 5), new THREE.MeshStandardMaterial({ color: 0xfbcfe8, roughness: 0.8 }));
+        canopy.position.y = 3.2;
+        tree.add(canopy);
+
+        tree.position.copy(itemPos);
+        scene.add(tree);
+      }
+    }
+
+    // --- Dynamic Sakura Wind Particles ---
+    const sakuraCount = 45;
+    const sakuraGeometry = new THREE.BufferGeometry();
+    const sakuraPositions = new Float32Array(sakuraCount * 3);
+    for (let i = 0; i < sakuraCount * 3; i += 3) {
+      sakuraPositions[i] = (Math.random() - 0.5) * 200;
+      sakuraPositions[i + 1] = Math.random() * 15;
+      sakuraPositions[i + 2] = (Math.random() - 0.5) * 200;
+    }
+    sakuraGeometry.setAttribute('position', new THREE.BufferAttribute(sakuraPositions, 3));
+    const sakuraMaterial = new THREE.PointsMaterial({
+      color: 0xfbcfe8,
+      size: 0.35,
+      transparent: true,
+      opacity: 0.8
+    });
+    const sakuraSystem = new THREE.Points(sakuraGeometry, sakuraMaterial);
+    scene.add(sakuraSystem);
+
+    // --- Collectibles (Wrenches & Nitro canisters) ---
+    const collectibles = [];
+    const collectGeos = {
+      wrench: new THREE.BoxGeometry(0.3, 0.8, 0.3),
+      boost: new THREE.CylinderGeometry(0.2, 0.2, 0.8, 8)
+    };
+    const collectMats = {
+      wrench: new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.9, roughness: 0.1 }),
+      boost: new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.5, roughness: 0.2 })
+    };
+
+    // Spawn 10 collectibles along track
+    for (let i = 0; i < 10; i++) {
+      const fract = (i * 20 + 8) / 200;
+      const type = i % 2 === 0 ? 'boost' : 'wrench';
+      const pos = trackCurve.getPointAt(fract);
+      pos.y = 0.5;
+
+      const mesh = new THREE.Mesh(collectGeos[type], collectMats[type]);
+      mesh.position.copy(pos);
+      scene.add(mesh);
+
+      collectibles.push({
+        id: `c_${i}`,
+        type,
+        mesh,
+        collected: false
+      });
+    }
+
+    // --- Collision Traffic Cones ---
+    const obstacles = [];
+    const coneGeo = new THREE.ConeGeometry(0.35, 0.9, 8);
+    const coneMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.6 }); // red-rose cone
+    
+    // Spawn 8 cones
+    for (let i = 0; i < 8; i++) {
+      const fract = (i * 25 + 16) / 200;
+      const pos = trackCurve.getPointAt(fract);
+      // Put offset to side slightly
+      const tangent = trackCurve.getTangentAt(fract).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+      const offsetPos = pos.clone().add(normal.clone().multiplyScalar((Math.random() - 0.5) * (trackWidth - 4)));
+      offsetPos.y = 0.5;
+
+      const mesh = new THREE.Mesh(coneGeo, coneMat);
+      mesh.position.copy(offsetPos);
+      scene.add(mesh);
+
+      obstacles.push({
+        id: `o_${i}`,
+        mesh,
+        hit: false,
+        velocity: new THREE.Vector3()
+      });
+    }
+
+    // --- Time Trial Checkpoints ---
+    const checkpointCount = 4;
+    const checkpointGates = [];
+    // fractions for intermediate checkpoints
+    const checkpointFractions = [0.25, 0.50, 0.75];
+    const finishPos = trackCurve.getPointAt(0);
+
+    checkpointFractions.forEach((fraction, idx) => {
+      const pos = trackCurve.getPointAt(fraction);
+      const tangent = trackCurve.getTangentAt(fraction).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+
+      const gate = new THREE.Group();
+      const postMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.6 });
+
+      const lPost = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 9, 8), postMat);
+      lPost.position.copy(pos).add(normal.clone().multiplyScalar(trackWidth / 2 + 0.3));
+      lPost.position.y = 4.5;
+      gate.add(lPost);
+
+      const rPost = lPost.clone();
+      rPost.position.copy(pos).add(normal.clone().multiplyScalar(-(trackWidth / 2 + 0.3)));
+      gate.add(rPost);
+
+      // overhead board
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(trackWidth + 1, 0.4, 0.4), postMat);
+      bar.position.copy(pos);
+      bar.position.y = 9.2;
+      bar.lookAt(pos.clone().add(tangent));
+      gate.add(bar);
+
+      // Neon sign lamp indicator
+      const led = new THREE.Mesh(new THREE.BoxGeometry(2, 0.8, 0.1), new THREE.MeshBasicMaterial({ color: 0xb45309 })); // amber glow
+      led.position.copy(pos);
+      led.position.y = 9.2;
+      led.lookAt(pos.clone().add(tangent));
+      gate.add(led);
+
+      scene.add(gate);
+      checkpointGates.push({ index: idx + 1, position: pos });
+    });
+
+    // --- Starting Banner / Finish Arch ---
+    const startBanner = new THREE.Group();
+    const startPos = trackCurve.getPointAt(0);
+    const startTangent = trackCurve.getTangentAt(0).normalize();
+    const startNormal = new THREE.Vector3(-startTangent.z, 0, startTangent.x).normalize();
+
+    const bannerLPost = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 10, 8), new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8 }));
+    bannerLPost.position.copy(startPos).add(startNormal.clone().multiplyScalar(trackWidth / 2 + 0.5));
+    bannerLPost.position.y = 5;
+    startBanner.add(bannerLPost);
+
+    const bannerRPost = bannerLPost.clone();
+    bannerRPost.position.copy(startPos).add(startNormal.clone().multiplyScalar(-(trackWidth / 2 + 0.5)));
+    startBanner.add(bannerRPost);
+
+    const bannerBoard = new THREE.Mesh(new THREE.BoxGeometry(trackWidth + 1.2, 1.8, 0.3), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
+    bannerBoard.position.copy(startPos);
+    bannerBoard.position.y = 10;
+    bannerBoard.lookAt(startPos.clone().add(startTangent));
+    startBanner.add(bannerBoard);
+
+    scene.add(startBanner);
+
+    // --- Car Rebuilding & Customizer Spawning ---
+    let carGroup = new THREE.Group();
+    scene.add(carGroup);
+
+    let carWheels = [];
+    let exhaustFlames = [];
+    let carBodyMesh = null;
+
+    function rebuildCar(archetypeId, colorHex) {
+      // Clear previous car parts
+      while (carGroup.children.length > 0) {
+        carGroup.remove(carGroup.children[0]);
+      }
+      carWheels = [];
+      exhaustFlames = [];
+
+      const arch = CAR_ARCHETYPES.find(a => a.id === archetypeId) || CAR_ARCHETYPES[0];
+      const sc = arch.scale;
+
+      const bodyMat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(colorHex),
+        roughness: 0.15,
+        metalness: 0.85
+      });
+      const blackMat = new THREE.MeshStandardMaterial({ color: 0x171717, roughness: 0.7 });
+      const chromeMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.1 });
+      const glassMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, transparent: true, opacity: 0.85 });
+
+      const bodyGroup = new THREE.Group();
+      carGroup.add(bodyGroup);
+
+      // Chassis frame
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(1.6 * sc.x, 0.22 * sc.y, 3.2 * sc.z), blackMat);
+      frame.position.y = 0.3 * sc.y;
+      frame.castShadow = true;
+      bodyGroup.add(frame);
+
+      // Front Hood section
+      const hood = new THREE.Mesh(new THREE.BoxGeometry(1.58 * sc.x, 0.32 * sc.y, 1.1 * sc.z), bodyMat);
+      hood.position.set(0, 0.44 * sc.y, 1.0 * sc.z);
+      hood.castShadow = true;
+      bodyGroup.add(hood);
+
+      // Trunk section
+      const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.58 * sc.x, 0.38 * sc.y, 0.9 * sc.z), bodyMat);
+      trunk.position.set(0, 0.47 * sc.y, -1.1 * sc.z);
+      trunk.castShadow = true;
+      bodyGroup.add(trunk);
+
+      // Center Passenger Cabin
+      const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6 * sc.x, 0.45 * sc.y, 1.3 * sc.z), bodyMat);
+      cabin.position.set(0, 0.48 * sc.y, 0);
+      cabin.castShadow = true;
+      bodyGroup.add(cabin);
+      carBodyMesh = cabin;
+
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(1.2 * sc.x, 0.5 * sc.y, 1.4 * sc.z), bodyMat);
+      roof.position.set(0, 0.88 * sc.y, -0.1 * sc.z);
+      roof.castShadow = true;
+      bodyGroup.add(roof);
+
+      // Windshield
+      const wind = new THREE.Mesh(new THREE.BoxGeometry(1.15 * sc.x, 0.45 * sc.y, 0.7 * sc.z), glassMat);
+      wind.position.set(0, 0.9 * sc.y, 0.5 * sc.z);
+      wind.rotation.x = 0.5;
+      bodyGroup.add(wind);
+
+      // Spoilers wing
+      const wingPost = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.4, 0.1), bodyMat);
+      wingPost.position.set(0.5 * sc.x, 0.65, -1.4 * sc.z);
+      bodyGroup.add(wingPost);
+      const wingPostR = wingPost.clone();
+      wingPostR.position.x = -0.5 * sc.x;
+      bodyGroup.add(wingPostR);
+
+      const wing = new THREE.Mesh(new THREE.BoxGeometry(1.7 * sc.x, 0.05, 0.45 * sc.z), blackMat);
+      wing.position.set(0, 0.85, -1.42 * sc.z);
+      wing.castShadow = true;
+      bodyGroup.add(wing);
+
+      // Taillight bar
+      const tailRed = new THREE.Mesh(new THREE.BoxGeometry(1.2 * sc.x, 0.06, 0.05), new THREE.MeshBasicMaterial({ color: 0x991b1b }));
+      tailRed.position.set(0, 0.45 * sc.y, -1.56 * sc.z);
+      bodyGroup.add(tailRed);
+
+      // Dynamic Exhaust pipe and Turbo flames
+      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.35, 8), chromeMat);
+      pipe.rotateX(Math.PI / 2);
+      pipe.position.set(0.45 * sc.x, 0.22 * sc.y, -1.6 * sc.z);
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.5, 8), new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.85 }));
+      flame.rotateX(-Math.PI / 2);
+      flame.position.set(0, 0, -0.22);
+      flame.visible = false;
+      pipe.add(flame);
+      exhaustFlames.push(flame);
+      bodyGroup.add(pipe);
+
+      // Four Star Alloys Tires
+      const tireGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.4, 16);
+      tireGeo.rotateZ(Math.PI / 2);
+
+      const positions = [
+        { x: 0.85 * sc.x, y: 0.42, z: 1.1 * sc.z, isFront: true },
+        { x: -0.85 * sc.x, y: 0.42, z: 1.1 * sc.z, isFront: true },
+        { x: 0.85 * sc.x, y: 0.42, z: -1.1 * sc.z, isFront: false },
+        { x: -0.85 * sc.x, y: 0.42, z: -1.1 * sc.z, isFront: false }
+      ];
+
+      positions.forEach(pos => {
+        const pivot = new THREE.Group();
+        pivot.position.set(pos.x, pos.y, pos.z);
+        carGroup.add(pivot);
+
+        const tire = new THREE.Mesh(tireGeo, blackMat);
+        tire.castShadow = true;
+        pivot.add(tire);
+        carWheels.push(tire);
+
+        if (pos.isFront) {
+          tire.userData = { isFront: true, pivot };
         }
-        createCity();
 
-        // --- Advanced Car Model ---
-        function createCar() {
-            const group = new THREE.Group();
-            const bodyMat = new THREE.MeshPhongMaterial({ color: 0x00ccff, shininess: 100 });
-            const blackMat = new THREE.MeshPhongMaterial({ color: 0x111111 });
-            const chromeMat = new THREE.MeshPhongMaterial({ color: 0x888888 });
+        const spokes = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.42, 8), chromeMat);
+        spokes.rotateZ(Math.PI / 2);
+        tire.add(spokes);
+      });
 
-            // Main Body
-            const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.5, 3.4), bodyMat);
-            body.position.y = 0.5;
-            group.add(body);
+      // Align to starting point on start
+      resetCarToStart();
+    }
 
-            // Hood Slope
-            const hood = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.2, 1.2), bodyMat);
-            hood.position.set(0, 0.7, 1.1);
-            hood.rotation.x = 0.1;
-            group.add(hood);
+    function resetCarToStart() {
+      const p = trackCurve.getPointAt(0);
+      const tang = trackCurve.getTangentAt(0).normalize();
+      carGroup.position.copy(p);
+      carGroup.rotation.set(0, Math.atan2(tang.x, tang.z), 0);
+      velocity.set(0, 0, 0);
+      state.currentSpeed = 0;
+    }
 
-            // Cabin
-            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.6, 1.6), blackMat);
-            cabin.position.set(0, 1.0, -0.2);
-            group.add(cabin);
+    // --- Dynamic Physics Engine & Particles ---
+    const velocity = new THREE.Vector3();
+    const smokeParticles = [];
+    const pGeo = new THREE.SphereGeometry(0.12, 4, 4);
+    const pMat = new THREE.MeshBasicMaterial({ color: 0xd1d5db, transparent: true, opacity: 0.6 });
 
-            // Spoiler
-            const sPostL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.4, 0.1), bodyMat);
-            sPostL.position.set(0.6, 0.8, -1.5);
-            group.add(sPostL);
-            const sPostR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.4, 0.1), bodyMat);
-            sPostR.position.set(-0.6, 0.8, -1.5);
-            group.add(sPostR);
-            const sWing = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.1, 0.6), bodyMat);
-            sWing.position.set(0, 1.0, -1.5);
-            sWing.rotation.x = -0.1;
-            group.add(sWing);
+    function emitSmoke(pos, isOrange = false) {
+      const p = new THREE.Mesh(pGeo, isOrange ? new THREE.MeshBasicMaterial({ color: 0xf97316 }) : pMat);
+      p.position.copy(pos);
+      p.scale.set(1, 1, 1);
+      scene.add(p);
+      smokeParticles.push({
+        mesh: p,
+        v: new THREE.Vector3((Math.random() - 0.5) * 1.5, Math.random() * 1.0 + 0.5, (Math.random() - 0.5) * 1.5),
+        life: 1.0
+      });
+    }
 
-            // Wheels
-            const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.4, 20);
-            wheelGeo.rotateZ(Math.PI / 2);
-            const wheelsArr = [];
-            const wheelPos = [{x:0.9,z:1.1}, {x:-0.9,z:1.1}, {x:0.9,z:-1.1}, {x:-0.9,z:-1.1}];
-            wheelPos.forEach(p => {
-                const w = new THREE.Mesh(wheelGeo, blackMat);
-                w.position.set(p.x, 0.4, p.z);
-                group.add(w);
-                wheelsArr.push(w);
-                // Rim
-                const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.42, 10), chromeMat);
-                rim.rotateZ(Math.PI / 2);
-                w.add(rim);
-            });
+    // --- Dynamic Skidmark segment buffers ---
+    const skidmarkSegments = [];
+    const skidMaterial = new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.65 });
 
-            return { group, bodyMat, wheelsArr };
+    function addSkidmark(leftWheelWorld, rightWheelWorld) {
+      const g = new THREE.PlaneGeometry(0.4, 0.8);
+      g.rotateX(-Math.PI / 2);
+      const m1 = new THREE.Mesh(g, skidMaterial);
+      m1.position.copy(leftWheelWorld);
+      m1.position.y = 0.07;
+      scene.add(m1);
+
+      const m2 = new THREE.Mesh(g, skidMaterial);
+      m2.position.copy(rightWheelWorld);
+      m2.position.y = 0.07;
+      scene.add(m2);
+
+      skidmarkSegments.push({ m: m1, life: 1.0 });
+      skidmarkSegments.push({ m: m2, life: 1.0 });
+    }
+
+    // --- 4. User Interfaces & Dynamic DOM Binder ---
+    function updateHUD() {
+      document.getElementById('speed-val').innerText = Math.floor(Math.abs(state.currentSpeed) * 230);
+      document.getElementById('gear-val').innerText = `G${Math.max(1, Math.min(5, Math.floor(Math.abs(state.currentSpeed) * 4.2) + 1))}`;
+      document.getElementById('turbo-percent').innerText = `${Math.floor(state.turboAmount)}%`;
+      document.getElementById('turbo-bar').style.width = `${state.turboAmount}%`;
+      document.getElementById('score-total').innerText = state.totalDriftScore.toLocaleString();
+      document.getElementById('combo-max').innerText = `${state.maxCombo}x`;
+
+      // Update Shields
+      const shieldContainer = document.getElementById('armor-shields');
+      shieldContainer.innerHTML = '';
+      for (let i = 0; i < state.maxArmor; i++) {
+        const shield = document.createElement('div');
+        shield.className = `w-3 h-3.5 rounded-sm border ${i < state.currentArmor ? 'bg-red-600 border-red-500' : 'bg-neutral-850 border-neutral-700'}`;
+        shieldContainer.appendChild(shield);
+      }
+    }
+
+    function showScreen(screenId) {
+      state.activeScreen = screenId;
+      document.getElementById('screens-overlay').classList.remove('hidden');
+      
+      // Hide all screens
+      ['screen-main-menu', 'screen-garage', 'screen-manual', 'screen-game-over', 'screen-victory'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+
+      // Show target screen
+      document.getElementById(`screen-${screenId}`).classList.remove('hidden');
+
+      if (screenId === 'main-menu') {
+        document.getElementById('hud-layer').classList.add('hidden');
+        resetCarToStart();
+      }
+    }
+
+    function showNotification(text) {
+      const banner = document.getElementById('alert-banner');
+      document.getElementById('alert-text').innerText = text;
+      banner.classList.remove('hidden');
+      setTimeout(() => {
+        banner.classList.add('translate-y-0', 'opacity-100');
+      }, 50);
+
+      state.checkpointMsgTimer = 3.0;
+    }
+
+    function hideNotification() {
+      const banner = document.getElementById('alert-banner');
+      banner.classList.remove('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 300);
+    }
+
+    // Format Lap Time ms to MM:SS.CC
+    function formatTime(ms) {
+      if (ms === Infinity || ms === 0) return '--:--.--';
+      const m = Math.floor(ms / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      const c = Math.floor((ms % 1000) / 10);
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${c.toString().padStart(2, '0')}`;
+    }
+
+    // Dynamic Swatches generation
+    const swatchesGrid = document.getElementById('color-presets-grid');
+    COLOR_PRESETS.forEach(color => {
+      const btn = document.createElement('button');
+      btn.className = 'aspect-square rounded-lg border border-white/10 flex items-center justify-center cursor-pointer transition-transform active:scale-90';
+      btn.style.backgroundColor = color;
+      btn.onclick = () => {
+        state.customCarColor = color;
+        document.getElementById('paint-hex').innerText = color.toUpperCase();
+        document.getElementById('paint-picker').value = color;
+        rebuildCar(CAR_ARCHETYPES[state.selectedArchetypeIndex].id, color);
+      };
+      swatchesGrid.appendChild(btn);
+    });
+
+    // Color picker mapping
+    document.getElementById('paint-picker').oninput = (e) => {
+      const color = e.target.value;
+      state.customCarColor = color;
+      document.getElementById('paint-hex').innerText = color.toUpperCase();
+      rebuildCar(CAR_ARCHETYPES[state.selectedArchetypeIndex].id, color);
+    };
+
+    // Update garage carousel UI info
+    function updateGarageCarousel() {
+      const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
+      document.getElementById('garage-car-name').innerText = arch.name;
+      document.getElementById('garage-car-desc').innerText = arch.description;
+
+      // Spec values (0 to 100 scale)
+      const speedPct = Math.round((arch.topSpeed / 1.3) * 100);
+      const accelPct = Math.round((arch.acceleration / 0.026) * 100);
+      const driftPct = Math.round((arch.driftHandling / 1.0) * 100);
+
+      document.getElementById('spec-speed-num').innerText = `${speedPct}%`;
+      document.getElementById('spec-speed-bar').style.width = `${speedPct}%`;
+
+      document.getElementById('spec-accel-num').innerText = `${accelPct}%`;
+      document.getElementById('spec-accel-bar').style.width = `${accelPct}%`;
+
+      document.getElementById('spec-drift-num').innerText = `${driftPct}%`;
+      document.getElementById('spec-drift-bar').style.width = `${driftPct}%`;
+
+      document.getElementById('spec-armor-num').innerText = `${arch.armor} / 5`;
+      document.getElementById('spec-armor-bar').style.width = `${(arch.armor / 5) * 100}%`;
+
+      rebuildCar(arch.id, state.customCarColor);
+    }
+
+    // --- Carousel Event Observers ---
+    document.getElementById('carousel-prev').onclick = () => {
+      state.selectedArchetypeIndex = (state.selectedArchetypeIndex - 1 + CAR_ARCHETYPES.length) % CAR_ARCHETYPES.length;
+      updateGarageCarousel();
+      audio.playCollect();
+    };
+    document.getElementById('carousel-next').onclick = () => {
+      state.selectedArchetypeIndex = (state.selectedArchetypeIndex + 1) % CAR_ARCHETYPES.length;
+      updateGarageCarousel();
+      audio.playCollect();
+    };
+
+    // Screen navigation clicks
+    document.getElementById('btn-goto-garage').onclick = () => showScreen('garage');
+    document.getElementById('btn-goto-manual').onclick = () => showScreen('manual');
+    document.getElementById('btn-garage-back').onclick = () => {
+      // Sync configurations back to Lobby Card UI
+      const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
+      document.getElementById('menu-car-name').innerText = arch.name;
+      document.getElementById('menu-car-desc').innerText = arch.description;
+      document.getElementById('menu-car-color').style.backgroundColor = state.customCarColor;
+      showScreen('main-menu');
+    };
+    document.getElementById('btn-save-garage').onclick = () => {
+      document.getElementById('btn-garage-back').click();
+    };
+    document.getElementById('btn-manual-back').onclick = () => showScreen('main-menu');
+    document.getElementById('btn-manual-ok').onclick = () => showScreen('main-menu');
+
+    // Mute toggle click
+    document.getElementById('mute-btn').onclick = (e) => {
+      e.stopPropagation();
+      const muted = audio.toggleMute();
+      state.isMuted = muted;
+      const icon = document.getElementById('mute-btn').querySelector('i');
+      if (muted) {
+        icon.setAttribute('data-lucide', 'volume-x');
+        icon.className = 'w-4 h-4 text-red-500';
+      } else {
+        icon.setAttribute('data-lucide', 'volume-2');
+        icon.className = 'w-4 h-4 text-emerald-400';
+      }
+      lucide.createIcons();
+    };
+
+    // Home back click
+    document.getElementById('home-btn').onclick = () => {
+      state.isGameRunning = false;
+      audio.stopEngine();
+      showScreen('main-menu');
+    };
+
+    // Camera Switch click
+    document.getElementById('cam-btn').onclick = () => {
+      const modes = ['chase', 'cockpit', 'overhead'];
+      const idx = (modes.indexOf(state.cameraMode) + 1) % modes.length;
+      state.cameraMode = modes[idx];
+    };
+
+    // Start racing click
+    document.getElementById('btn-start').onclick = () => {
+      // Hide Lobby Screens overlay
+      document.getElementById('screens-overlay').classList.add('hidden');
+      document.getElementById('hud-layer').classList.remove('hidden');
+
+      // Setup vehicle match parameters
+      const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
+      state.currentArmor = arch.armor;
+      state.maxArmor = arch.armor;
+      state.turboAmount = 100;
+      state.currentLap = 1;
+      state.totalDriftScore = 0;
+      state.currentLapTime = 0;
+      state.checkpointProgress = 0;
+
+      // Launch match
+      state.isGameRunning = true;
+      audio.startEngine();
+      resetCarToStart();
+      showNotification("SIMULATOR ARMED. TIME TRIAL START!");
+    };
+
+    // Crash restart clicks
+    document.getElementById('btn-restart-crash').onclick = () => {
+      document.getElementById('btn-start').click();
+    };
+    document.getElementById('btn-menu-crash').onclick = () => {
+      showScreen('main-menu');
+    };
+
+    // Victory restart clicks
+    document.getElementById('btn-restart-victory').onclick = () => {
+      document.getElementById('btn-start').click();
+    };
+    document.getElementById('btn-menu-victory').onclick = () => {
+      showScreen('main-menu');
+    };
+
+    // --- Key Event Listeners ---
+    window.addEventListener('keydown', (e) => {
+      audio.startEngine();
+      if (e.code === 'KeyW' || e.code === 'ArrowUp') state.keys.KeyW = true;
+      if (e.code === 'KeyS' || e.code === 'ArrowDown') state.keys.KeyS = true;
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') state.keys.KeyA = true;
+      if (e.code === 'KeyD' || e.code === 'ArrowRight') state.keys.KeyD = true;
+      if (e.code === 'Space') state.keys.Space = true;
+      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') state.keys.ShiftLeft = true;
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'KeyW' || e.code === 'ArrowUp') state.keys.KeyW = false;
+      if (e.code === 'KeyS' || e.code === 'ArrowDown') state.keys.KeyS = false;
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') state.keys.KeyA = false;
+      if (e.code === 'KeyD' || e.code === 'ArrowRight') state.keys.KeyD = false;
+      if (e.code === 'Space') state.keys.Space = false;
+      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') state.keys.ShiftLeft = false;
+    });
+
+    // --- Mobile Virtual Touch Bindings ---
+    const touchState = { up: false, down: false, left: false, right: false, nitro: false };
+    
+    function mapTouch(elId, keyStateField) {
+      const el = document.getElementById(elId);
+      const start = (e) => { e.preventDefault(); touchState[keyStateField] = true; audio.startEngine(); };
+      const end = (e) => { e.preventDefault(); touchState[keyStateField] = false; };
+      el.addEventListener('touchstart', start, { passive: false });
+      el.addEventListener('touchend', end, { passive: false });
+      el.addEventListener('mousedown', start);
+      el.addEventListener('mouseup', end);
+      el.addEventListener('mouseleave', end);
+    }
+
+    mapTouch('touch-up', 'up');
+    mapTouch('touch-down', 'down');
+    mapTouch('touch-left', 'left');
+    mapTouch('touch-right', 'right');
+    mapTouch('touch-nitro', 'nitro');
+
+    // --- 5. Main Game Loop Frame Updates ---
+    let activeDriftScore = 0;
+    let activeDriftMultiplier = 1.0;
+    let driftCooldown = 0;
+
+    let lastTime = performance.now();
+
+    function loop(now) {
+      requestAnimationFrame(loop);
+
+      const dt = Math.min(0.03, (now - lastTime) / 1000);
+      lastTime = now;
+
+      const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
+
+      // Keyboard or Touch mappings combined
+      const isFwd = state.keys.KeyW || touchState.up;
+      const isBwd = state.keys.KeyS || touchState.down;
+      const isL = state.keys.KeyA || touchState.left;
+      const isR = state.keys.KeyD || touchState.right;
+      const isTurbo = state.keys.Space || touchState.nitro;
+
+      // 1. CAR PHYSICS & ENGINE LOOP
+      if (state.isGameRunning) {
+        state.currentLapTime += dt * 1000;
+
+        // Drive acceleration
+        const topLimit = arch.topSpeed * (isTurbo && state.turboAmount > 5 ? 1.4 : 1.0);
+        if (isFwd) {
+          state.currentSpeed = Math.min(topLimit, state.currentSpeed + arch.acceleration);
+        } else if (isBwd) {
+          state.currentSpeed = Math.max(-0.35, state.currentSpeed - arch.acceleration * 1.5);
+        } else {
+          // Rolling friction drag
+          state.currentSpeed = THREE.MathUtils.lerp(state.currentSpeed, 0, 0.025);
         }
 
-        const { group: carGroup, bodyMat: carBodyMat, wheelsArr: carWheels } = createCar();
-        scene.add(carGroup);
+        // Steer angle wheels pivot
+        const turnRadius = Math.min(Math.abs(state.currentSpeed) * 3.8, 1);
+        const isShift = state.keys.ShiftLeft || state.currentSpeed > 0.3; // automatic sliding at speed
+        const steerFactor = 0.048 * arch.driftHandling * turnRadius * (isShift ? 1.5 : 1.0);
 
-        // --- Game State ---
-        let isGameRunning = false;
-        let velocity = new THREE.Vector3();
-        let currentSpeed = 0;
-        let turboAmount = 100;
-        let carHealth = 5;
-        let freelookRotation = 0;
-        let lastCollisionTime = 0;
-        const keys = {};
+        if (isL) carGroup.rotation.y += steerFactor;
+        if (isR) carGroup.rotation.y -= steerFactor;
 
-        window.addEventListener('keydown', (e) => keys[e.code] = true);
-        window.addEventListener('keyup', (e) => keys[e.code] = false);
+        // Steer front wheel rotation mesh simulation
+        if (carWheels.length >= 2) {
+          const targetAngle = isL ? 0.35 : (isR ? -0.35 : 0);
+          carWheels[0].parent.rotation.y = THREE.MathUtils.lerp(carWheels[0].parent.rotation.y, targetAngle, 0.2);
+          carWheels[1].parent.rotation.y = THREE.MathUtils.lerp(carWheels[1].parent.rotation.y, targetAngle, 0.2);
+        }
 
-        const speedVal = document.getElementById('speed-val');
-        const turboBar = document.getElementById('turbo-bar');
-        const healthContainer = document.getElementById('health-container');
-        const damageFlash = document.getElementById('damage-flash');
+        // Spin wheels based on physical speed
+        carWheels.forEach(w => w.rotation.x += state.currentSpeed * 2.5);
 
-        function updateHealthUI() {
-            healthContainer.innerHTML = '';
-            for (let i = 0; i < 5; i++) {
-                const heart = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                heart.setAttribute("viewBox", "0 0 24 24");
-                heart.classList.add("heart");
-                if (i >= carHealth) heart.classList.add("lost");
-                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("d", "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z");
-                heart.appendChild(path);
-                healthContainer.appendChild(heart);
+        // Exhaust turbo fire
+        if (exhaustFlames.length > 0) {
+          exhaustFlames[0].visible = isTurbo && isFwd && state.turboAmount > 5;
+          if (exhaustFlames[0].visible) {
+            const s = 0.8 + Math.random() * 0.4;
+            exhaustFlames[0].scale.set(s, s, s * 1.2);
+          }
+        }
+
+        // 2. SLIP-ANGLE & DRIFT DETECTOR
+        const heading = new THREE.Vector3(0, 0, 1).applyQuaternion(carGroup.quaternion);
+        const targetVel = heading.clone().multiplyScalar(state.currentSpeed);
+        
+        const slip = 0.045 + (1 - arch.driftHandling) * 0.055;
+        velocity.lerp(targetVel, isShift ? slip * 0.5 : slip);
+
+        const slipDiff = velocity.angleTo(heading);
+        const speedKmh = Math.floor(Math.abs(state.currentSpeed) * 230);
+        const isDrifting = slipDiff > 0.16 && speedKmh > 35 && !isBwd;
+
+        const comboEl = document.getElementById('drift-combo-box');
+
+        if (isDrifting) {
+          audio.setDrifting(true, slipDiff * 2);
+          
+          // Emit smokes
+          if (carWheels.length >= 4) {
+            const wL = carWheels[2].parent.position.clone().applyMatrix4(carGroup.matrixWorld);
+            const wR = carWheels[3].parent.position.clone().applyMatrix4(carGroup.matrixWorld);
+            if (Math.random() > 0.3) {
+              emitSmoke(wL);
+              emitSmoke(wR);
             }
-        }
+            if (Math.random() > 0.4) {
+              addSkidmark(wL, wR);
+            }
+          }
 
-        function triggerDamage() {
-            const now = Date.now();
-            if (now - lastCollisionTime < 500) return; 
-            carHealth--;
-            lastCollisionTime = now;
-            updateHealthUI();
-            damageFlash.style.opacity = '1';
-            setTimeout(() => damageFlash.style.opacity = '0', 100);
-            if (carHealth <= 0) gameOver();
-        }
+          // Point addition
+          activeDriftScore += Math.floor(speedKmh * slipDiff * 0.8);
+          activeDriftMultiplier = Math.min(10.0, activeDriftMultiplier + dt * 0.45);
+          driftCooldown = 1.3;
 
-        function showScreen(screenId) {
-            document.querySelectorAll('.overlay').forEach(s => s.classList.add('hidden'));
-            document.getElementById(screenId).classList.remove('hidden');
-        }
+          // Charge turbo
+          state.turboAmount = Math.min(100, state.turboAmount + dt * 15);
 
-        function startGame() {
-            document.querySelectorAll('.overlay').forEach(s => s.classList.add('hidden'));
-            document.getElementById('game-ui').style.display = 'block';
-            carHealth = 5;
-            currentSpeed = 0;
-            velocity.set(0,0,0);
-            carGroup.position.set(0, 0, 15);
-            carGroup.rotation.y = Math.PI; // Point down the track
-            turboAmount = 100;
-            updateHealthUI();
-            isGameRunning = true;
-        }
+          // Update Combo Box DOM
+          comboEl.style.opacity = '1';
+          comboEl.style.transform = 'scale(1.05)';
+          document.getElementById('drift-mult').innerText = `x${activeDriftMultiplier.toFixed(1)}`;
+          document.getElementById('drift-pts').innerText = `${activeDriftScore} PTS`;
+          document.getElementById('drift-progress').style.width = `${Math.min(100, (activeDriftScore / 1200) * 100)}%`;
 
-        function gameOver() {
-            isGameRunning = false;
-            showScreen('game-over');
-        }
-
-        function backToMenu() {
-            isGameRunning = false;
-            document.getElementById('game-ui').style.display = 'none';
-            showScreen('main-menu');
-            carGroup.position.set(0,0,0);
-        }
-
-        function setCarColor(color) {
-            carBodyMat.color.setHex(color);
-            showScreen('main-menu');
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            if (!isGameRunning) {
-                carGroup.rotation.y += 0.005;
-                camera.position.set(8, 4, 8);
-                camera.lookAt(carGroup.position);
-                carWheels.forEach(w => w.rotation.x += 0.02);
-            } else {
-                const isFwd = keys['KeyW'] || keys['ArrowUp'];
-                const isBwd = keys['KeyS'] || keys['ArrowDown'];
-                const isL = keys['KeyA'] || keys['ArrowLeft'];
-                const isR = keys['KeyD'] || keys['ArrowRight'];
-                const isTurbo = keys['Space'] && turboAmount > 0;
-                const isShiftLock = keys['ShiftLeft'] || keys['ShiftRight'];
-
-                if (isFwd) currentSpeed += (isTurbo ? 0.024 : 0.014);
-                if (isBwd) currentSpeed -= 0.01;
-                currentSpeed *= 0.985;
-
-                if (isTurbo) turboAmount -= 1.3;
-                else if (turboAmount < 100) turboAmount += 0.2;
-
-                const turnFactor = 0.045 * Math.min(Math.abs(currentSpeed) * 6, 1);
-                if (isL) carGroup.rotation.y += turnFactor;
-                if (isR) carGroup.rotation.y -= turnFactor;
-
-                // Visual Steering
-                carWheels[0].rotation.y = isL ? 0.4 : (isR ? -0.4 : 0);
-                carWheels[1].rotation.y = isL ? 0.4 : (isR ? -0.4 : 0);
-                carWheels.forEach(w => w.rotation.x += currentSpeed * 2);
-
-                const heading = new THREE.Vector3(0, 0, 1).applyQuaternion(carGroup.quaternion);
-                const targetVel = heading.clone().multiplyScalar(currentSpeed);
+        } else {
+          audio.setDrifting(false);
+          if (driftCooldown > 0) {
+            driftCooldown -= dt;
+            if (driftCooldown <= 0) {
+              // Cash out combo points
+              if (activeDriftScore > 0) {
+                const payout = Math.floor(activeDriftScore * activeDriftMultiplier);
+                state.totalDriftScore += payout;
                 
-                // Drift logic - find if on track
-                let minDistToTrack = 1000;
-                for(let t=0; t<=1; t+=0.02) {
-                    const p = curve.getPoint(t);
-                    const d = carGroup.position.distanceTo(p);
-                    if(d < minDistToTrack) minDistToTrack = d;
+                const currentMultInt = Math.floor(activeDriftMultiplier);
+                if (currentMultInt > state.maxCombo) {
+                  state.maxCombo = currentMultInt;
                 }
-                const onRoad = minDistToTrack < trackWidth / 2;
-                const lerpFactor = onRoad ? 0.08 : 0.04; 
-                velocity.lerp(targetVel, lerpFactor);
 
-                let nextPos = carGroup.position.clone().add(velocity);
-                const carRadius = 1.2;
+                audio.playCollect();
 
-                // Collision with buildings
-                for(let b of buildings) {
-                    if(nextPos.x + carRadius > b.minX && nextPos.x - carRadius < b.maxX &&
-                       nextPos.z + carRadius > b.minZ && nextPos.z - carRadius < b.maxZ) {
-                        if (Math.abs(currentSpeed) > 0.1) triggerDamage();
-                        velocity.multiplyScalar(-0.4);
-                        currentSpeed *= -0.5;
-                        nextPos.copy(carGroup.position);
-                    }
-                }
-                carGroup.position.copy(nextPos);
+                // Fade combo Box
+                comboEl.style.opacity = '0';
+                comboEl.style.transform = 'scale(0.9)';
 
-                // Camera follow
-                if (!isShiftLock) freelookRotation = carGroup.rotation.y;
-                const camOffset = new THREE.Vector3(0, 4, -9).applyQuaternion(
-                    new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), freelookRotation)
-                );
-                camera.position.lerp(carGroup.position.clone().add(camOffset), 0.1);
-                camera.lookAt(carGroup.position.clone().add(new THREE.Vector3(0, 1, 0)));
-
-                speedVal.innerText = Math.floor(Math.abs(currentSpeed) * 500);
-                turboBar.style.width = turboAmount + '%';
+                activeDriftScore = 0;
+                activeDriftMultiplier = 1.0;
+              }
             }
-
-            renderer.render(scene, camera);
+          }
         }
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        // Use turbo
+        if (isTurbo && isFwd && state.turboAmount > 5) {
+          state.turboAmount = Math.max(0, state.turboAmount - dt * 25);
+          if (Math.random() > 0.5) audio.playBoost();
+        } else {
+          state.turboAmount = Math.min(100, state.turboAmount + dt * 4);
+        }
+
+        // 3. COLLISION CORRECTION WITH BUILDINGS
+        const nextPos = carGroup.position.clone().add(velocity);
+        const r = 1.2;
+
+        buildings.forEach(b => {
+          if (nextPos.x + r > b.minX && nextPos.x - r < b.maxX &&
+              nextPos.z + r > b.minZ && nextPos.z - r < b.maxZ) {
+            // Crash impact
+            state.currentSpeed = -state.currentSpeed * 0.4;
+            velocity.set(0, 0, 0);
+            nextPos.copy(carGroup.position); // bounce back
+
+            state.currentArmor = Math.max(0, state.currentArmor - 1);
+            audio.playCrash();
+            showNotification("VEHICLE IMPACT DETECTED! -1 ARMOR");
+
+            // Damage Flash
+            if (carBodyMesh) {
+              carBodyMesh.material.color.setHex(0xff0000);
+              setTimeout(() => {
+                carBodyMesh.material.color.copy(new THREE.Color(state.customCarColor));
+              }, 180);
+            }
+
+            if (state.currentArmor <= 0) {
+              // Game Over
+              state.isGameRunning = false;
+              audio.stopEngine();
+              document.getElementById('crash-laps').innerText = `${state.currentLap - 1} Laps`;
+              document.getElementById('crash-score').innerText = state.totalDriftScore.toLocaleString();
+              showScreen('game-over');
+            }
+          }
         });
 
-        window.setCarColor = setCarColor;
-        updateHealthUI();
-        animate();
-    </script>
+        carGroup.position.copy(nextPos);
+
+        // 4. CHECKPOINT & FINISH PORTAL MATH
+        // Lap finishing line cross check
+        const dFinish = carGroup.position.distanceTo(finishPos);
+        if (dFinish < 11) {
+          // Must have passed checkpoint 3 (idx 2) to prevent reverse cheating
+          if (state.checkpointProgress === 3) {
+            const finishedLapTime = state.currentLapTime;
+            if (finishedLapTime < state.bestLapTime) {
+              state.bestLapTime = finishedLapTime;
+              document.getElementById('menu-best-lap').innerText = formatTime(state.bestLapTime);
+            }
+
+            state.currentLap++;
+            state.checkpointProgress = 0;
+            state.currentLapTime = 0;
+            audio.playCheckpoint();
+
+            if (state.currentLap > state.totalLaps) {
+              // Game victory completed
+              state.isGameRunning = false;
+              audio.stopEngine();
+
+              // Update Career Best
+              if (state.totalDriftScore > state.totalDriftScore) {
+                state.totalDriftScore = state.totalDriftScore;
+              }
+              document.getElementById('menu-max-combo').innerText = `${state.maxCombo}x`;
+
+              // Update Victory screens
+              document.getElementById('victory-score').innerText = `${state.totalDriftScore.toLocaleString()} PTS`;
+              document.getElementById('victory-lap-time').innerText = formatTime(state.bestLapTime);
+              document.getElementById('victory-combo').innerText = `${state.maxCombo}x`;
+              
+              showScreen('victory');
+            } else {
+              showNotification(`LAP ${state.currentLap - 1} COMPLETE! ENTERING LAP ${state.currentLap}`);
+            }
+          }
+        }
+
+        // Check intermediate portals
+        checkpointGates.forEach(gate => {
+          if (state.checkpointProgress === gate.index - 1) {
+            const dist = carGroup.position.distanceTo(gate.position);
+            if (dist < 11) {
+              state.checkpointProgress = gate.index;
+              audio.playCheckpoint();
+              showNotification(`CHECKPOINT ${gate.index} ACQUIRED!`);
+            }
+          }
+        });
+
+        // Collectible overlaps
+        collectibles.forEach(col => {
+          if (!col.collected) {
+            const dist = carGroup.position.distanceTo(col.mesh.position);
+            if (dist < 2.0) {
+              col.collected = true;
+              col.mesh.visible = false;
+              audio.playCollect();
+
+              if (col.type === 'wrench') {
+                state.currentArmor = Math.min(state.maxArmor, state.currentArmor + 1);
+                showNotification("ARMOR INTEGRITY REPAIRED +1");
+              } else {
+                state.turboAmount = 100;
+                showNotification("NITRO BOOST CAPACITY RECHARGED!");
+              }
+
+              // Respawn canister in 8 seconds
+              setTimeout(() => {
+                col.collected = false;
+                col.mesh.visible = true;
+              }, 8000);
+            }
+          }
+        });
+
+        // Obstacle cones physics
+        obstacles.forEach(o => {
+          const dist = carGroup.position.distanceTo(o.mesh.position);
+          if (dist < 2.2) {
+            // hit cone
+            o.hit = true;
+            audio.playCrash();
+            const headingAngle = Math.atan2(o.mesh.position.z - carGroup.position.z, o.mesh.position.x - carGroup.position.x);
+            o.velocity.set(Math.cos(headingAngle) * 20, 8, Math.sin(headingAngle) * 20);
+          }
+
+          if (o.hit) {
+            o.mesh.position.addScaledVector(o.velocity, dt);
+            o.velocity.y -= 18 * dt; // gravity
+            o.mesh.rotation.x += 0.1;
+            o.mesh.rotation.y += 0.05;
+
+            if (o.mesh.position.y <= 0.45) {
+              o.mesh.position.y = 0.45;
+              o.velocity.set(0, 0, 0);
+              o.hit = false;
+            }
+          }
+        });
+
+        // Decay alerts
+        if (state.checkpointMsgTimer > 0) {
+          state.checkpointMsgTimer -= dt;
+          if (state.checkpointMsgTimer <= 0) hideNotification();
+        }
+
+        // Live HUD panels update
+        updateHUD();
+      }
+
+      // 2. MAIN MENU IDLE SPIN CAM OR CAR UPDATE
+      if (!state.isGameRunning) {
+        carGroup.rotation.y += 0.005;
+        carWheels.forEach(w => w.rotation.x += 0.01);
+        
+        // Orbital camera spin
+        camera.position.set(12 * Math.cos(now * 0.0003), 4.2, 12 * Math.sin(now * 0.0003));
+        camera.lookAt(0, 0.5, 0);
+      } else {
+        // Update Chase/Cockpit following mode camera
+        const lookTarget = carGroup.position.clone().add(new THREE.Vector3(0, 0.4, 0));
+
+        if (state.cameraMode === 'chase') {
+          const backOffset = new THREE.Vector3(0, 2.2, -5.6).applyQuaternion(carGroup.quaternion);
+          const targetCam = carGroup.position.clone().add(backOffset);
+          camera.position.lerp(targetCam, 0.12);
+          camera.lookAt(lookTarget);
+        } else if (state.cameraMode === 'cockpit') {
+          const frontOffset = new THREE.Vector3(0, 0.9, 0.3).applyQuaternion(carGroup.quaternion);
+          camera.position.copy(carGroup.position).add(frontOffset);
+          const headHeading = new THREE.Vector3(0, 0, 10).applyQuaternion(carGroup.quaternion);
+          camera.lookAt(carGroup.position.clone().add(headHeading));
+        } else {
+          // Overhead Mode
+          const overOffset = new THREE.Vector3(0, 28, -2).applyQuaternion(carGroup.quaternion);
+          const targetCam = carGroup.position.clone().add(overOffset);
+          camera.position.lerp(targetCam, 0.1);
+          camera.lookAt(lookTarget);
+        }
+      }
+
+      // 3. RENDER AND WIND PARTICLES ANIMATE
+      const sakuraPos = sakuraGeometry.attributes.position.array;
+      for (let i = 0; i < sakuraCount * 3; i += 3) {
+        sakuraPos[i] += dt * 8; // drift speed
+        sakuraPos[i + 1] -= dt * 2; // slow fall
+        sakuraPos[i + 2] += dt * 3;
+
+        if (sakuraPos[i + 1] < 0) {
+          sakuraPos[i] = carGroup.position.x + (Math.random() - 0.5) * 160;
+          sakuraPos[i + 1] = 15;
+          sakuraPos[i + 2] = carGroup.position.z + (Math.random() - 0.5) * 160;
+        }
+      }
+      sakuraGeometry.attributes.position.needsUpdate = true;
+
+      // Animate smoke particles life
+      for (let i = smokeParticles.length - 1; i >= 0; i--) {
+        const p = smokeParticles[i];
+        p.mesh.position.addScaledVector(p.v, dt);
+        p.life -= dt * 1.5;
+        p.mesh.scale.set(p.life, p.life, p.life);
+        p.mesh.material.opacity = p.life * 0.6;
+
+        if (p.life <= 0) {
+          scene.remove(p.mesh);
+          smokeParticles.splice(i, 1);
+        }
+      }
+
+      // Skidmarks trails life decay
+      for (let i = skidmarkSegments.length - 1; i >= 0; i--) {
+        const sk = skidmarkSegments[i];
+        sk.life -= dt * 0.1; // decay slowly
+        sk.m.material.opacity = sk.life * 0.65;
+        if (sk.life <= 0) {
+          scene.remove(sk.m);
+          skidmarkSegments.splice(i, 1);
+        }
+      }
+
+      // Update synth volumes based on live speed
+      if (state.isGameRunning) {
+        const absoluteFraction = Math.abs(state.currentSpeed) / (arch.topSpeed * 1.3);
+        audio.updateEngine(absoluteFraction, isTurbo && isFwd && state.turboAmount > 5);
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    // --- 6. Initialization Entry Point ---
+    rebuildCar(CAR_ARCHETYPES[0].id, state.customCarColor);
+    updateGarageCarousel();
+    showScreen('main-menu');
+    lucide.createIcons();
+
+    // Start request animation frame loop
+    requestAnimationFrame(loop);
+  </script>
 </body>
 </html>
