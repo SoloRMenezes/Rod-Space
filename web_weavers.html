@@ -1,0 +1,3326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WEB WEAVERS — Queens Patrol</title>
+<link rel="icon" href="data:,">
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;background:#0a0f1e;font-family:Arial,Helvetica,sans-serif;}
+  #gameCanvas{display:block;width:100vw;height:100vh;visibility:hidden;}
+  #startScreen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+    background:#173f82;color:#111;overflow:hidden;}
+  #startScreen:before{content:"";position:absolute;inset:auto 0 0;height:34%;background:#e8232a;
+    clip-path:polygon(0 58%,10% 30%,18% 54%,29% 8%,39% 48%,50% 19%,61% 61%,72% 13%,83% 45%,92% 23%,100% 55%,100% 100%,0 100%);}
+  #startScreen:after{content:"";position:absolute;width:52vw;height:52vw;max-width:680px;max-height:680px;
+    border:16px solid #fff17a;border-radius:50%;opacity:.22;}
+  #startCard{position:relative;z-index:1;width:min(520px,calc(100vw - 44px));padding:28px 30px 30px;
+    background:#f4f5f7;border:5px solid #111;box-shadow:9px 9px 0 #111;box-sizing:border-box;}
+  #startTitle{margin:0;color:#e8232a;font-size:clamp(38px,7vw,74px);line-height:.88;text-align:center;
+    letter-spacing:0;text-shadow:4px 4px 0 #111;transform:skew(-5deg);}
+  #startSub{margin:12px 0 22px;text-align:center;font-weight:900;color:#1b4fa0;letter-spacing:1px;}
+  #startActions{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  #startActions .btn{font-size:16px;padding:13px 10px;text-align:center;}
+  #btnPlay{grid-column:1/-1;background:#e8232a;color:#fff;font-size:22px!important;}
+  #btnSkins{opacity:.55;cursor:not-allowed;}
+  #startDebug.on{background:#e8232a;color:#fff;}
+  body.settings-open #hud{display:block!important;z-index:120;}
+  body.settings-open #hud>div:not(#bindPanel){display:none!important;}
+  body.settings-open #bindPanel{display:block!important;position:fixed;top:50%;z-index:121;
+    transform:translate(-50%,-50%);max-height:calc(100vh - 48px);overflow:auto;}
+
+  /* ---------- COMIC HUD ---------- */
+  .comicPanel{
+    background:#fff17a;
+    border:4px solid #111;
+    box-shadow:4px 4px 0 #111;
+    border-radius:6px;
+  }
+  #pauseOverlay .menuCard,#deathOverlay .menuCard{
+    background:#fff17a;
+    border:4px solid #111;
+    box-shadow:5px 5px 0 #111;
+    color:#111;
+    min-width:280px;
+    max-width:360px;
+  }
+  #pauseOverlay .menuTitle,#deathOverlay .menuTitle{
+    display:inline-block;
+    background:#e8232a;
+    color:#fff;
+    border:3px solid #111;
+    border-radius:6px;
+    padding:5px 14px;
+    transform:skew(-8deg);
+    box-shadow:3px 3px 0 #111;
+    letter-spacing:1px;
+  }
+  #pauseOverlay .menuCopy,#deathOverlay .menuCopy{
+    color:#111;
+    font-size:12px;
+    line-height:1.4;
+    margin:12px 0 14px;
+  }
+  #pauseOverlay .menuAction,#deathOverlay .menuAction{
+    background:#1b4fa0;
+    color:#fff;
+    display:inline-block;
+    min-width:120px;
+    text-align:center;
+    border-color:#111;
+  }
+  #hud{position:fixed;inset:0;pointer-events:none;font-weight:800;color:#111;display:none;}
+  #hud *{box-sizing:border-box;}
+
+  #healthWrap{position:absolute;top:16px;left:16px;width:280px;}
+  #healthLabel{background:#e8232a;color:#fff;padding:4px 10px;display:inline-block;
+    border:3px solid #111;border-radius:6px 6px 0 0;font-size:13px;letter-spacing:1px;
+    transform:skew(-8deg);box-shadow:3px 3px 0 #111;}
+  #healthBarOuter{height:22px;background:#3a0d0d;border:3px solid #111;border-radius:0 6px 6px 6px;overflow:hidden;box-shadow:3px 3px 0 #111;}
+  #healthBarInner{height:100%;width:100%;background:linear-gradient(#ff4d4d,#c0181d);transition:width .15s;}
+
+  #abilityBar{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:10px;}
+  .ability{width:58px;height:58px;background:#1b4fa0;border:3px solid #111;border-radius:10px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-size:11px;
+    box-shadow:3px 3px 0 #111;position:relative;overflow:hidden;}
+  .ability .icon{font-size:20px;line-height:1;}
+  .ability .cd{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);height:0%;}
+  .ability .key{position:absolute;top:2px;right:4px;font-size:9px;background:#fff17a;color:#111;
+    border:2px solid #111;border-radius:4px;padding:0 3px;}
+
+  #crosshairWrap{position:absolute;top:50%;left:50%;width:0;height:0;display:none;}
+  #crosshair{position:absolute;top:-12px;left:-12px;width:24px;height:24px;color:#7CFC00;
+    filter:drop-shadow(1px 1px 0 #111);transition:color .08s;}
+  #crosshair:before,#crosshair:after{content:"";position:absolute;left:50%;top:50%;background:currentColor;
+    transform:translate(-50%,-50%);border-radius:1px;}
+  #crosshair:before{width:22px;height:3px;}
+  #crosshair:after{width:3px;height:22px;}
+  #crosshair.enemy{color:#ff2b2b;}
+  #crosshair.none{color:rgba(255,255,255,.72);}
+
+  #minimapWrap{position:absolute;top:16px;right:16px;width:190px;height:190px;}
+  #minimapLabel{background:#e8232a;color:#fff;padding:3px 10px;display:inline-block;
+    border:3px solid #111;border-radius:6px 6px 0 0;font-size:11px;letter-spacing:1px;box-shadow:3px 3px 0 #111;transform:skew(-8deg);}
+  #minimap{width:190px;height:190px;background:#123;border:3px solid #111;border-radius:0 6px 6px 6px;box-shadow:3px 3px 0 #111;}
+
+  #msgCenter{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#fff;
+    text-shadow:3px 3px 0 #111;font-size:26px;letter-spacing:1px;}
+  #lockHint{position:absolute;bottom:14px;left:50%;transform:translate(-50%,0);color:#fff;font-size:12px;
+    text-shadow:2px 2px 0 #111;opacity:.85;}
+  @media (max-width:600px){
+    #lockHint{display:none;}
+    #abilityBar{gap:4px;bottom:18px;}
+    .ability{width:54px;height:54px;}
+  }
+
+  #topButtons{position:absolute;top:16px;left:50%;transform:translateX(-50%);display:none;gap:8px;pointer-events:all;}
+  .btn{background:#fff17a;border:3px solid #111;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:800;
+    cursor:pointer;box-shadow:3px 3px 0 #111;letter-spacing:.5px;}
+  .btn:active{box-shadow:1px 1px 0 #111;transform:translate(2px,2px);}
+
+  #debugPanel{position:absolute;bottom:16px;left:16px;width:260px;max-height:220px;overflow:auto;
+    padding:8px 10px;font-size:11px;pointer-events:all;display:none;}
+  #debugPanel h3{margin:0 0 6px;font-size:12px;}
+  #debugPanel div.row{display:flex;justify-content:space-between;border-bottom:1px dashed #111;padding:2px 0;}
+
+  #bindPanel{position:absolute;top:70px;left:50%;transform:translateX(-50%);width:320px;padding:12px 14px;
+    display:none;pointer-events:all;}
+  #bindPanel h3{margin:0 0 8px;font-size:14px;background:#e8232a;color:#fff;border:3px solid #111;
+    border-radius:6px;padding:5px 8px;box-shadow:2px 2px 0 #111;}
+  #bindPanel .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;}
+  #bindPanel .keybtn{background:#1b4fa0;color:#fff;border:2px solid #111;border-radius:5px;padding:3px 8px;
+    cursor:pointer;min-width:70px;text-align:center;}
+  #bindPanel .keybtn.listening{background:#e8232a;}
+  #bindPanel input[type="range"]{accent-color:#1b4fa0;width:110px;}
+  #sensitivityValue{display:inline-block;min-width:32px;text-align:right;}
+
+  #enemyHpLayer{position:absolute;inset:0;pointer-events:none;}
+  .enemyHp{position:absolute;width:44px;height:6px;border:2px solid #111;background:#3a0d0d;border-radius:3px;transform:translate(-50%,-100%);}
+  .enemyHp .fill{height:100%;background:#ff5555;border-radius:1px;}
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="startScreen">
+  <div id="startCard">
+    <h1 id="startTitle">WEB<br>WEAVERS</h1>
+    <div id="startSub">QUEENS WEB PATROL</div>
+    <div id="startActions">
+      <button class="btn" id="btnPlay">PLAY</button>
+      <button class="btn" id="btnStartSettings">SETTINGS</button>
+      <button class="btn" id="startDebug">DEBUG: OFF</button>
+      <button class="btn" id="btnSkins" disabled>SKINS - SOON</button>
+    </div>
+  </div>
+</div>
+
+<div id="hud">
+  <div id="healthWrap">
+    <div id="healthLabel">SPIDEY HP</div>
+    <div id="healthBarOuter"><div id="healthBarInner"></div></div>
+  </div>
+
+  <div id="minimapWrap">
+    <div id="minimapLabel">QUEENS</div>
+    <canvas id="minimap" width="190" height="190"></canvas>
+  </div>
+
+  <div id="topButtons">
+    <div class="btn" id="btnControls">CONTROLS</div>
+    <div class="btn" id="btnDebug">DEBUG: OFF</div>
+  </div>
+
+  <div id="abilityBar">
+    <div class="ability" id="abSwing"><div class="icon">🕸️</div>SWING<div class="key">Q</div><div class="cd"></div></div>
+    <div class="ability" id="abZip"><div class="icon">➤</div>ZIP<div class="key">Z</div><div class="cd"></div></div>
+    <div class="ability" id="abWebshot"><div class="icon">💥</div>SHOT<div class="key">X</div><div class="cd"></div></div>
+    <div class="ability" id="abPull"><div class="icon">↙</div>PULL<div class="key">C</div><div class="cd"></div></div>
+    <div class="ability" id="abMelee"><div class="icon">✊</div>PUNCH<div class="key">LMB</div><div class="cd"></div></div>
+    <div class="ability" id="abBlock"><div class="icon">🛡️</div>BLOCK<div class="key">F</div><div class="cd"></div></div>
+  </div>
+
+  <div id="crosshairWrap"><div id="crosshair" class="none"></div></div>
+
+  <div id="msgCenter" style="transition:opacity .25s;opacity:0;"></div>
+  <div id="lockHint">HOLD RMB (or toggle Shift-Lock) to look around — I/O zoom, WASD to move</div>
+
+  <div id="pauseOverlay" style="display:none;position:absolute;inset:0;background:rgba(18,34,72,.78);
+    align-items:center;justify-content:center;pointer-events:all;">
+    <div class="comicPanel menuCard" style="padding:22px 30px;text-align:center;">
+      <div class="menuTitle" style="font-size:26px;margin-bottom:10px;">PAUSED</div>
+      <div class="menuCopy">Press ESC to resume</div>
+      <div class="btn menuAction" id="btnResume">RESUME</div>
+      <div class="btn menuAction" id="btnMainMenu" style="margin-top:10px;">MAIN MENU</div>
+    </div>
+  </div>
+
+  <div id="deathOverlay" style="display:none;position:absolute;inset:0;background:#173f82;
+    align-items:center;justify-content:center;pointer-events:all;z-index:80;">
+    <div class="comicPanel menuCard" style="padding:24px 30px;text-align:center;">
+      <div class="menuTitle" style="font-size:30px;margin-bottom:10px;">DEFEATED</div>
+      <div class="menuCopy">Queens still needs a web-slinger.</div>
+      <div class="btn menuAction" id="btnRespawn">RESPAWN</div>
+      <div class="btn menuAction" id="btnDeathMainMenu" style="margin-top:10px;">MAIN MENU</div>
+    </div>
+  </div>
+
+  <div id="debugPanel" class="comicPanel">
+    <h3>DEBUG — ENEMY GROUPS</h3>
+    <div id="debugList"></div>
+  </div>
+
+  <div id="bindPanel" class="comicPanel">
+    <h3>CONTROLS (click a key to rebind)</h3>
+    <div class="row"><span>Move / climb (auto vs. walls)</span><span>WASD</span></div>
+    <div class="row"><span>Look</span><span>Mouse</span></div>
+    <div class="row"><span>Mouse sensitivity</span><span><input id="sensitivitySlider" type="range" min="50" max="180" value="100"><span id="sensitivityValue">100%</span></span></div>
+    <div class="row"><span>Zoom in / first person</span><span class="keybtn" data-action="zoomIn">I</span></div>
+    <div class="row"><span>Zoom out</span><span class="keybtn" data-action="zoomOut">O</span></div>
+    <div class="row"><span>Hold to drag camera</span><span>Right Mouse</span></div>
+    <div class="row"><span>Toggle shift-lock</span><span class="keybtn" data-action="shiftLock">SHIFT</span></div>
+    <div class="row"><span>Toggle run/walk</span><span class="keybtn" data-action="toggleRun">CTRL</span></div>
+    <div class="row"><span>Jump / toggle web-wings</span><span class="keybtn" data-action="jump">SPACE</span></div>
+    <div class="row"><span>Smart web swing</span><span class="keybtn" data-action="swing">Q</span></div>
+    <div class="row"><span>Zip</span><span class="keybtn" data-action="zip">Z</span></div>
+    <div class="row"><span>Web-shot</span><span class="keybtn" data-action="webshot">X</span></div>
+    <div class="row"><span>Pull</span><span class="keybtn" data-action="pull">C</span></div>
+    <div class="row"><span>Melee</span><span>Left Mouse</span></div>
+    <div class="row"><span>Block</span><span class="keybtn" data-action="block">F</span></div>
+    <div class="row"><span>Recover after hard fall</span><span class="keybtn" data-action="recover">R</span></div>
+    <div class="row"><span>Toggle debug</span><span class="keybtn" data-action="debug">`</span></div>
+    <div class="row"><span>Main menu / pause</span><span>ESC</span></div>
+    <div class="btn" id="btnCloseBind" style="margin-top:6px;text-align:center;">CLOSE</div>
+  </div>
+
+  <div id="enemyHpLayer"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =========================================================================================
+   WEB WEAVERS — Spider-Man-inspired open world traversal + combat prototype
+   Single-file Three.js prototype. Placeholder art, arcade physics.
+
+   NOTE ON THE CITY: This build cannot pull live OpenStreetMap data at runtime (the
+   sandboxed environment this artifact runs in has no outbound network access, and my
+   own tools can't hit the Overpass API on your behalf). Instead the city below is
+   PROCEDURALLY GENERATED to evoke Forest Hills / Queens: a numbered-street grid,
+   mostly low/mid-rise apartment blocks and rowhouses, with a few taller towers near
+   "subway hub" intersections — rather than skyscraper Manhattan. If you want the real
+   footprints, the cleanest path is: export a bounding box from openstreetmap.org as
+   .osm/.geojson yourself, and I can write you an importer that reads that file and
+   builds the exact same building array this prototype already consumes.
+   ========================================================================================= */
+
+// ---------------------------------------------------------------------------------------
+// INPUT / KEYBINDS  (fully rebindable at runtime — see #bindPanel)
+// ---------------------------------------------------------------------------------------
+const bindings = {
+  forward:'KeyW', back:'KeyS', left:'KeyA', right:'KeyD',
+  jump:'Space', swing:'KeyQ', zip:'KeyZ', webshot:'KeyX', pull:'KeyC',
+  block:'KeyF', recover:'KeyR', toggleRun:'ControlLeft', shiftLock:'ShiftLeft', menu:'Escape',
+  zoomIn:'KeyI', zoomOut:'KeyO', debug:'Backquote'
+};
+const defaultBindings = {...bindings};
+const SETTINGS_KEY = 'webSlingerPrototypeSettings';
+const keys = {};
+let listeningFor = null;
+let running = true;       // Ctrl toggles this
+let shiftLocked = false;  // Shift toggles this
+let paused = true;
+let gameActive = false;
+let debugOn = false;
+let mouseSensitivity = 1;
+let cameraDistance = 7.5;
+let cameraCollisionDistance = null;
+let firstPersonAutoLock = false;
+
+loadSettings();
+syncBindingLabels();
+syncSensitivityUI();
+
+window.addEventListener('keydown', e=>{
+  if(listeningFor){
+    bindings[listeningFor] = e.code;
+    document.querySelector(`.keybtn[data-action="${listeningFor}"]`).textContent = prettyKey(e.code);
+    document.querySelector(`.keybtn[data-action="${listeningFor}"]`).classList.remove('listening');
+    listeningFor = null;
+    saveSettings();
+    return;
+  }
+  const already = keys[e.code];
+  keys[e.code] = true;
+  if(e.code === bindings.menu && !already && gameActive){ togglePause(); }
+  if(!gameActive || paused) return;
+  if(e.code === bindings.debug) toggleDebug();
+  if(e.code === bindings.toggleRun && !already){ running = !running; saveSettings(); flashMsg(running?'RUN':'WALK'); }
+  if(e.code === bindings.shiftLock && !already){ setShiftLock(!shiftLocked); }
+  if(e.code === bindings.zoomIn && !already){ adjustCameraZoom(-0.65, true); }
+  if(e.code === bindings.zoomOut && !already){ adjustCameraZoom(0.65, true); }
+});
+window.addEventListener('keyup', e=>{
+  keys[e.code]=false;
+  if(e.code===bindings.swing && gameActive && !paused &&
+      (P.state==='swing' || (P.state==='climb' && P.wallRunFromSwing))){
+    releaseSwing(null);
+    lastSwing=false;
+  }
+  if(e.code === bindings.zoomIn || e.code === bindings.zoomOut) saveSettings();
+});
+
+function flashMsg(text){
+  const el=document.getElementById('msgCenter');
+  el.textContent=text; el.style.opacity=1;
+  clearTimeout(flashMsg._t);
+  flashMsg._t=setTimeout(()=>{ el.style.opacity=0; },700);
+}
+function setShiftLock(on){
+  if(cameraDistance<=0.6){
+    shiftLocked=false;
+    firstPersonAutoLock=true;
+    if(gameActive && !paused && document.pointerLockElement!==canvas) canvas.requestPointerLock();
+    return;
+  }
+  firstPersonAutoLock=false;
+  shiftLocked = on;
+  if(on){ canvas.requestPointerLock(); document.getElementById('lockHint').style.display='none'; }
+  else if(document.pointerLockElement===canvas) document.exitPointerLock();
+}
+function togglePause(){
+  if(!gameActive) return;
+  if(document.getElementById('deathOverlay').style.display==='flex') return;
+  paused = !paused;
+  document.getElementById('pauseOverlay').style.display = paused?'flex':'none';
+  if(paused && document.pointerLockElement===canvas) document.exitPointerLock();
+  if(paused) clearHeldInputs();
+  else if(cameraDistance<=0.6){
+    firstPersonAutoLock=true;
+    canvas.requestPointerLock();
+  }
+}
+function adjustCameraZoom(delta, persist=false){
+  const wasFirstPerson=cameraDistance<=0.6;
+  cameraDistance = THREE.MathUtils.clamp(cameraDistance + delta, 0.15, 18);
+  const isFirstPerson=cameraDistance<=0.6;
+  if(gameActive && !paused && isFirstPerson && !wasFirstPerson){
+    shiftLocked=false;
+    firstPersonAutoLock=true;
+    canvas.requestPointerLock();
+  } else if(wasFirstPerson && !isFirstPerson && firstPersonAutoLock){
+    firstPersonAutoLock=false;
+    if(document.pointerLockElement===canvas) document.exitPointerLock();
+  }
+  if(persist) saveSettings();
+}
+function prettyKey(code){
+  return code.replace('Key','').replace('Digit','').replace('Left','').replace('Space','SPACE').replace('Backquote','`');
+}
+function readSavedSettings(){
+  try{
+    return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+  }catch{
+    return {};
+  }
+}
+function writeSavedSettings(data){
+  try{
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
+  }catch{}
+}
+function loadSettings(){
+  const saved = readSavedSettings();
+  if(saved && typeof saved === 'object'){
+    if(saved.bindings && typeof saved.bindings === 'object'){
+      Object.keys(defaultBindings).forEach(k=>{
+        if(typeof saved.bindings[k] === 'string') bindings[k] = saved.bindings[k];
+      });
+      // Migrate older two-button swing saves to the single smart-swing action.
+      if(typeof saved.bindings.swing !== 'string' && typeof saved.bindings.swingLeft === 'string'){
+        bindings.swing = saved.bindings.swingLeft;
+      }
+    }
+    if(typeof saved.running === 'boolean') running = saved.running;
+    if(typeof saved.debugOn === 'boolean') debugOn = saved.debugOn;
+    if(Number.isFinite(saved.mouseSensitivity)) mouseSensitivity = THREE.MathUtils.clamp(saved.mouseSensitivity, 0.5, 1.8);
+    if(Number.isFinite(saved.cameraDistance)) cameraDistance = THREE.MathUtils.clamp(saved.cameraDistance, 0.15, 18);
+  }
+}
+function saveSettings(){
+  writeSavedSettings({bindings, running, debugOn, mouseSensitivity, cameraDistance});
+}
+function syncBindingLabels(){
+  ['shiftLock','toggleRun','jump','swing','zip','webshot','pull','block','recover','zoomIn','zoomOut','debug']
+    .forEach(a=>{
+      const el = document.querySelector(`.keybtn[data-action="${a}"]`);
+      if(el) el.textContent = prettyKey(bindings[a]);
+    });
+}
+document.querySelectorAll('.keybtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.keybtn').forEach(b=>b.classList.remove('listening'));
+    btn.classList.add('listening');
+    listeningFor = btn.dataset.action;
+  });
+});
+document.getElementById('btnControls').onclick = ()=>{
+  document.getElementById('bindPanel').style.display =
+    document.getElementById('bindPanel').style.display==='block' ? 'none' : 'block';
+};
+document.getElementById('btnCloseBind').onclick = ()=>{
+  document.getElementById('bindPanel').style.display='none';
+  document.body.classList.remove('settings-open');
+};
+function syncSensitivityUI(){
+  const slider = document.getElementById('sensitivitySlider');
+  const label = document.getElementById('sensitivityValue');
+  if(!slider || !label) return;
+  slider.value = Math.round(mouseSensitivity * 100);
+  label.textContent = slider.value + '%';
+}
+document.getElementById('sensitivitySlider').addEventListener('input', e=>{
+  mouseSensitivity = THREE.MathUtils.clamp(Number(e.target.value)/100, 0.5, 1.8);
+  syncSensitivityUI();
+  saveSettings();
+});
+
+let mouseDown = {0:false,2:false};
+window.addEventListener('mousedown', e=>{
+  mouseDown[e.button]=true;
+  if(e.button===2){ e.preventDefault(); document.getElementById('lockHint').style.display='none'; }
+});
+window.addEventListener('mouseup', e=>{
+  mouseDown[e.button]=false;
+});
+window.addEventListener('contextmenu', e=>e.preventDefault());
+window.addEventListener('wheel', e=>{
+  if(e.target.closest && e.target.closest('#bindPanel')) return;
+  e.preventDefault();
+  const pinchMultiplier = e.ctrlKey ? 0.027 : 0.009;
+  adjustCameraZoom(e.deltaY * pinchMultiplier, true);
+}, {passive:false});
+let gestureStartScale = 1;
+window.addEventListener('gesturestart', e=>{
+  e.preventDefault();
+  gestureStartScale = e.scale || 1;
+}, {passive:false});
+window.addEventListener('gesturechange', e=>{
+  e.preventDefault();
+  const scale = e.scale || 1;
+  adjustCameraZoom((gestureStartScale - scale) * 3.2, true);
+  gestureStartScale = scale;
+}, {passive:false});
+
+function toggleDebug(){
+  debugOn=!debugOn;
+  applyDebugVisibility();
+  saveSettings();
+}
+function applyDebugVisibility(){
+  document.getElementById('debugPanel').style.display = debugOn?'block':'none';
+  document.getElementById('btnDebug').textContent = 'DEBUG: '+(debugOn?'ON':'OFF');
+  const startDebug=document.getElementById('startDebug');
+  if(startDebug){
+    startDebug.textContent='DEBUG: '+(debugOn?'ON':'OFF');
+    startDebug.classList.toggle('on',debugOn);
+  }
+  if(typeof spawnMarkers !== 'undefined') spawnMarkers.forEach(m=>m.visible=debugOn);
+  if(typeof anchorMarkers !== 'undefined') anchorMarkers.forEach(m=>m.visible=debugOn);
+}
+document.getElementById('btnDebug').onclick = toggleDebug;
+document.getElementById('btnResume').onclick = togglePause;
+document.getElementById('startDebug').onclick = toggleDebug;
+document.getElementById('btnStartSettings').onclick = ()=>{
+  document.body.classList.add('settings-open');
+  document.getElementById('bindPanel').style.display='block';
+};
+
+function startGame(){
+  if(P.state==='defeated') resetDefeatedPlayer();
+  gameActive=true;
+  paused=false;
+  document.body.classList.remove('settings-open');
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('gameCanvas').style.visibility='visible';
+  document.getElementById('hud').style.display='block';
+  document.getElementById('pauseOverlay').style.display='none';
+  document.getElementById('deathOverlay').style.display='none';
+  clearHeldInputs();
+  if(cameraDistance<=0.6){
+    firstPersonAutoLock=true;
+    canvas.requestPointerLock();
+  }
+}
+
+function showStartScreen(){
+  gameActive=false;
+  paused=true;
+  document.body.classList.remove('settings-open');
+  document.getElementById('bindPanel').style.display='none';
+  document.getElementById('pauseOverlay').style.display='none';
+  document.getElementById('deathOverlay').style.display='none';
+  document.getElementById('hud').style.display='none';
+  document.getElementById('gameCanvas').style.visibility='hidden';
+  document.getElementById('startScreen').style.display='flex';
+  if(document.pointerLockElement===canvas) document.exitPointerLock();
+  firstPersonAutoLock=false;
+  shiftLocked=false;
+  clearHeldInputs();
+}
+
+document.getElementById('btnPlay').onclick=startGame;
+document.getElementById('btnMainMenu').onclick=showStartScreen;
+document.getElementById('btnDeathMainMenu').onclick=showStartScreen;
+
+function resetDefeatedPlayer(){
+  P.pos.copy(PLAYER_SPAWN);
+  P.vel.set(0,0,0);
+  P.hp=P.maxHp;
+  P.invuln=1.5;
+  P.state='ground';
+  P.gliding=false;
+  P.wingCooldown=0;
+  P.climbNormal=null;
+  P.climbBuilding=null;
+  P.climbVisualAngle=0;
+  P.wallRunAutoT=0;
+  P.wallRunDirection.set(0,0);
+  P.wallRunEntrySpeed=0;
+  P.wallRunFromSwing=false;
+  P.wallRunMomentum=0;
+  P.meleeT=0;
+  P.wallFlipT=0;
+  P.wallDetachT=0;
+  P.pendingFallDamage=0;
+  P.recoveryT=0;
+  P.recoverLock=false;
+  P.peakY=P.pos.y;
+  P.swingWebs.left.anchor=null;
+  P.swingWebs.right.anchor=null;
+  P.swingWebs.left.physicsPivot=null;
+  P.swingWebs.right.physicsPivot=null;
+  P.swingWebs.left.auto=false;
+  P.swingWebs.right.auto=false;
+  P.swingWebs.left.fallCatch=false;
+  P.swingWebs.right.fallCatch=false;
+  P.activeSwingHand=null;
+  P.nextSwingHand='left';
+  P.swingRequireRelease=false;
+  P.swingPhase='entry';
+  P.swingPhaseT=0;
+  P.swingAge=0;
+  P.swingHasDescended=false;
+  P.swingClimbedAfterDescent=false;
+  P.swingLastVy=0;
+  P.swingBottomSpeed=0;
+  P.swingPeakRise=0;
+  P.swingTelemetry=null;
+  P.swingGroundPullT=0;
+  P.swingGroundPullAnchor=null;
+  P.swingGroundPullAnchors.left=null;
+  P.swingGroundPullAnchors.right=null;
+  pullTarget=null;
+  combatTarget=null;
+  comboChainTarget=null;
+  comboChainMode=null;
+  zipTarget=null;
+  zipDir=null;
+  zipEnemyTarget=null;
+}
+
+function respawnPlayer(){
+  resetDefeatedPlayer();
+  paused=false;
+  document.getElementById('deathOverlay').style.display='none';
+  clearHeldInputs();
+  flashMsg('BACK ON PATROL');
+  if(cameraDistance<=0.6){
+    firstPersonAutoLock=true;
+    canvas.requestPointerLock();
+  }
+}
+
+function showDeathScreen(){
+  paused=true;
+  document.getElementById('deathOverlay').style.display='flex';
+  if(document.pointerLockElement===canvas) document.exitPointerLock();
+  shiftLocked=false;
+  firstPersonAutoLock=false;
+  clearHeldInputs();
+}
+
+document.getElementById('btnRespawn').onclick=respawnPlayer;
+
+// Mouse-look: RMB-drag rotates the camera using the mouse's raw movementX/Y — this works
+// immediately on every browser and doesn't depend on the Pointer Lock API succeeding.
+// Shift toggles a persistent lock (Pointer Lock, for unlimited drag distance) as an
+// optional alternative to holding RMB the whole time.
+const canvas = document.getElementById('gameCanvas');
+let yaw = 0, pitch = -0.15;
+let cursorClientX=innerWidth*0.5, cursorClientY=innerHeight*0.5;
+
+function aimScreenPoint(){
+  const centered=shiftLocked || firstPersonAutoLock || cameraDistance<=0.6;
+  if(centered) return {x:0,y:0};
+  const rect=canvas.getBoundingClientRect();
+  return {
+    x:((cursorClientX-rect.left)/Math.max(1,rect.width))*2-1,
+    y:-((cursorClientY-rect.top)/Math.max(1,rect.height))*2+1
+  };
+}
+document.addEventListener('pointerlockchange', ()=>{
+  if(document.pointerLockElement!==canvas) shiftLocked = false;
+});
+document.addEventListener('mousemove', e=>{
+  cursorClientX=e.clientX;
+  cursorClientY=e.clientY;
+  if(!gameActive || paused) return;
+  const firstPersonLook=cameraDistance<=0.6;
+  if(!mouseDown[2] && !shiftLocked && !firstPersonLook) return;
+  const lookRate = 0.0028 * mouseSensitivity;
+  yaw -= e.movementX*lookRate;
+  pitch -= e.movementY*lookRate;
+  // Nearly full vertical look: stop just short of straight up/down to avoid
+  // the camera flipping at the poles.
+  pitch = THREE.MathUtils.clamp(pitch,-1.52,1.52);
+});
+
+// ---------------------------------------------------------------------------------------
+// THREE SCENE
+// ---------------------------------------------------------------------------------------
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x8fd3ff);
+scene.fog = new THREE.Fog(0x8fd3ff, 140, 420);
+
+const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 1000);
+function resizeRenderer(){
+  const w = Math.max(1, window.innerWidth);
+  const h = Math.max(1, window.innerHeight);
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(w, h);
+}
+window.addEventListener('resize', resizeRenderer);
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0x3a3a55, 0.9);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff2c0, 1.05);
+sun.position.set(120,180,80);
+scene.add(sun);
+scene.add(new THREE.AmbientLight(0xffffff,0.25));
+
+// simple comic clouds
+for(let i=0;i<14;i++){
+  const cloud = new THREE.Sprite(new THREE.SpriteMaterial({color:0xffffff, transparent:true, opacity:0.9}));
+  cloud.position.set((Math.random()-0.5)*700,120+Math.random()*90,(Math.random()-0.5)*700);
+  const s = 40+Math.random()*60;
+  cloud.scale.set(s,s*0.5,1);
+  scene.add(cloud);
+}
+
+// ---------------------------------------------------------------------------------------
+// CITY GENERATION  (procedural "Forest Hills, Queens" grid)
+// ---------------------------------------------------------------------------------------
+const BLOCKS = 7;              // grid of blocks in each direction
+const BLOCK = 46;               // building-lot size
+const STREET = 15;              // street width
+const TILE = BLOCK+STREET;
+const HALF_CITY = (BLOCKS*TILE)/2;
+const PLAYER_SPAWN = new THREE.Vector3(STREET * 2, 0, STREET * 2);
+const ISLAND_RADIUS_X = HALF_CITY + 58;
+const ISLAND_RADIUS_Z = HALF_CITY + 52;
+const WATER_LEVEL = -3.2;
+const OCEAN_FLOOR = -24;
+
+function isOverIsland(x,z, extra=0){
+  const rx=ISLAND_RADIUS_X+extra, rz=ISLAND_RADIUS_Z+extra;
+  return Math.pow(Math.abs(x)/rx,6)+Math.pow(Math.abs(z)/rz,6) <= 1;
+}
+
+function constrainToIsland(pos,vel){
+  const rx=ISLAND_RADIUS_X-1.2, rz=ISLAND_RADIUS_Z-1.2;
+  const q=Math.pow(Math.abs(pos.x)/rx,6)+Math.pow(Math.abs(pos.z)/rz,6);
+  if(q<=1) return false;
+  const scale=Math.pow(q,-1/6)*0.998;
+  pos.x*=scale;
+  pos.z*=scale;
+  const normal=new THREE.Vector3(
+    Math.sign(pos.x)*Math.pow(Math.abs(pos.x),5)/Math.pow(rx,6),
+    0,
+    Math.sign(pos.z)*Math.pow(Math.abs(pos.z),5)/Math.pow(rz,6)
+  ).normalize();
+  const outward=vel.dot(normal);
+  if(outward>0) vel.addScaledVector(normal,-outward);
+  return true;
+}
+
+function makeIslandShape(rx,rz){
+  const shape=new THREE.Shape();
+  const power=2/6;
+  for(let i=0;i<=128;i++){
+    const t=(i/128)*Math.PI*2;
+    const c=Math.cos(t), s=Math.sin(t);
+    const x=rx*Math.sign(c)*Math.pow(Math.abs(c),power);
+    const z=rz*Math.sign(s)*Math.pow(Math.abs(s),power);
+    if(i===0) shape.moveTo(x,z); else shape.lineTo(x,z);
+  }
+  shape.closePath();
+  return shape;
+}
+
+const buildingMeshes = [];      // visual bounds and collision bounds are identical
+const anchorEdges = [];         // continuous upper perimeters for swing debug viz
+const anchorMarkers = [];
+const colorPalette = [0xc9564f,0xe0a458,0x6a8caf,0xc7b198,0x8fae6b,0xb46a5a,0x9aa5b1];
+
+const cityGroup = new THREE.Group();
+scene.add(cityGroup);
+
+// A rounded island and shoreline replace the old square map border.
+const oceanUniforms={time:{value:0}};
+const ocean = new THREE.Mesh(
+  new THREE.PlaneGeometry(1800,1800,150,150),
+  new THREE.ShaderMaterial({
+    uniforms:oceanUniforms,
+    vertexShader:`
+      uniform float time;
+      varying vec2 vUv;
+      varying float vWave;
+      void main(){
+        vUv=uv;
+        vec3 p=position;
+        float broad=sin(p.x*0.028+time*0.72)+cos(p.y*0.033-time*0.58);
+        float chop=sin((p.x+p.y)*0.067-time*1.05)*0.42;
+        p.z=(broad*0.34)+(chop*0.22);
+        vWave=p.z;
+        gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);
+      }
+    `,
+    fragmentShader:`
+      uniform float time;
+      varying vec2 vUv;
+      varying float vWave;
+      void main(){
+        float ripple=sin(vUv.x*520.0+time*1.9)+sin(vUv.y*430.0-time*1.5);
+        float crossing=sin((vUv.x-vUv.y)*310.0+time*1.2);
+        float crest=smoothstep(1.25,1.95,ripple+crossing*0.55+vWave*1.8);
+        float depth=0.5+0.5*sin((vUv.x+vUv.y)*9.0);
+        vec3 deep=mix(vec3(0.018,0.18,0.31),vec3(0.035,0.34,0.48),depth);
+        vec3 water=mix(deep,vec3(0.42,0.82,0.9),crest*0.7);
+        gl_FragColor=vec4(water,1.0);
+      }
+    `
+  })
+);
+ocean.rotation.x=-Math.PI/2;
+ocean.position.y=WATER_LEVEL;
+scene.add(ocean);
+
+const shore = new THREE.Mesh(
+  new THREE.ShapeGeometry(makeIslandShape(ISLAND_RADIUS_X+9,ISLAND_RADIUS_Z+9)),
+  new THREE.MeshLambertMaterial({color:0xb9c3c5})
+);
+shore.rotation.x=-Math.PI/2;
+shore.position.y=-0.18;
+scene.add(shore);
+
+const groundMat = new THREE.MeshLambertMaterial({color:0x3d3f46});
+const ground = new THREE.Mesh(
+  new THREE.ShapeGeometry(makeIslandShape(ISLAND_RADIUS_X,ISLAND_RADIUS_Z)),
+  groundMat
+);
+ground.rotation.x = -Math.PI/2;
+ground.position.y=0;
+scene.add(ground);
+
+function makeSkylineTexture(seed){
+  const canvas=document.createElement('canvas');
+  canvas.width=1024; canvas.height=256;
+  const ctx=canvas.getContext('2d');
+  const sky=ctx.createLinearGradient(0,0,0,256);
+  sky.addColorStop(0,'rgba(135,206,242,0)');
+  sky.addColorStop(0.35,'rgba(135,206,242,0.08)');
+  sky.addColorStop(1,'rgba(76,132,166,0.48)');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,1024,256);
+  let x=-20, n=seed*9973;
+  const rand=()=>{ n=(n*1664525+1013904223)>>>0; return n/4294967296; };
+  while(x<1044){
+    const w=18+rand()*48, h=42+rand()*120;
+    ctx.fillStyle=`rgba(${55+rand()*28|0},${83+rand()*35|0},${112+rand()*38|0},0.72)`;
+    ctx.fillRect(x,256-h,w,h);
+    if(rand()>.45){
+      ctx.fillStyle='rgba(255,226,139,0.48)';
+      for(let wy=256-h+12;wy<246;wy+=17){
+        for(let wx=x+7;wx<x+w-5;wx+=12){
+          if(rand()>.56) ctx.fillRect(wx,wy,4,6);
+        }
+      }
+    }
+    x+=w+3+rand()*8;
+  }
+  const texture=new THREE.CanvasTexture(canvas);
+  texture.colorSpace=THREE.SRGBColorSpace;
+  return texture;
+}
+
+// A cylindrical panorama has no corner gaps: every route toward the shoreline
+// sees another borough across the water instead of an empty horizon.
+const skylineTexture=makeSkylineTexture(7);
+skylineTexture.wrapS=THREE.RepeatWrapping;
+skylineTexture.repeat.set(4,1);
+const distantSkyline=new THREE.Mesh(
+  new THREE.CylinderGeometry(690,690,210,96,1,true),
+  new THREE.MeshBasicMaterial({
+    map:skylineTexture,
+    transparent:true,
+    depthWrite:false,
+    side:THREE.BackSide
+  })
+);
+distantSkyline.position.y=82;
+distantSkyline.renderOrder=-2;
+scene.add(distantSkyline);
+
+// sidewalks/lots (lighter tint under each block so streets read as darker grid lines)
+const lotMat = new THREE.MeshLambertMaterial({color:0x55575e});
+
+function addEdges(mesh, color=0x111111){
+  const eg = new THREE.EdgesGeometry(mesh.geometry, 20);
+  const line = new THREE.LineSegments(eg, new THREE.LineBasicMaterial({color}));
+  mesh.add(line);
+}
+
+function makeBuilding(cx, cz, w, d, h, colorIdx){
+  const geo = new THREE.BoxGeometry(w, h, d);
+  const mat = new THREE.MeshLambertMaterial({color: colorPalette[colorIdx % colorPalette.length]});
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(cx, h/2, cz);
+  addEdges(mesh);
+  cityGroup.add(mesh);
+  const minX = cx-w/2, maxX = cx+w/2, minZ = cz-d/2, maxZ = cz+d/2;
+  const rec = {
+    mesh, minX, maxX, minZ, maxZ, h,
+    hitMinX:minX, hitMaxX:maxX,
+    hitMinZ:minZ, hitMaxZ:maxZ
+  };
+  buildingMeshes.push(rec);
+  anchorEdges.push([
+    new THREE.Vector3(minX,h-0.65,minZ),
+    new THREE.Vector3(maxX,h-0.65,minZ),
+    new THREE.Vector3(maxX,h-0.65,maxZ),
+    new THREE.Vector3(minX,h-0.65,maxZ)
+  ]);
+  return rec;
+}
+
+for(let ix=0; ix<BLOCKS; ix++){
+  for(let iz=0; iz<BLOCKS; iz++){
+    const bx = -HALF_CITY + ix*TILE + TILE/2;
+    const bz = -HALF_CITY + iz*TILE + TILE/2;
+
+    // lot ground tint
+    const lot = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK, BLOCK), lotMat);
+    lot.rotation.x = -Math.PI/2; lot.position.set(bx, 0.02, bz);
+    scene.add(lot);
+
+    const nearCenter = (Math.abs(ix-BLOCKS/2)<1.2 && Math.abs(iz-BLOCKS/2)<1.2);
+    const isLandmark = Math.random() < (nearCenter? 0.5:0.12);
+    // split each block lot into 1-2 buildings, Queens rowhouse/apartment style
+    if(Math.random()<0.4){
+      const h = isLandmark ? 130+Math.random()*110 : 62+Math.random()*68;
+      makeBuilding(bx,bz, BLOCK*0.9, BLOCK*0.9, h, (ix+iz));
+    } else {
+      const h1 = isLandmark? 120+Math.random()*105 : 70+Math.random()*78;
+      const h2 = 58+Math.random()*74;
+      makeBuilding(bx-BLOCK*0.24, bz, BLOCK*0.44, BLOCK*0.88, h1, ix);
+      makeBuilding(bx+BLOCK*0.24, bz, BLOCK*0.44, BLOCK*0.88, h2, iz+3);
+    }
+  }
+}
+
+// Debug mode shows the actual continuous target surface instead of implying
+// that the web can only grab four discrete rooftop corners.
+const anchorMat = new THREE.LineBasicMaterial({color:0xffe600});
+anchorEdges.forEach(points=>{
+  const marker=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points),anchorMat);
+  marker.visible=false;
+  scene.add(marker);
+  anchorMarkers.push(marker);
+});
+
+// ---------------------------------------------------------------------------------------
+// PLAYER
+// ---------------------------------------------------------------------------------------
+const player = new THREE.Group();
+player.rotation.order='YXZ';
+const playerRig = new THREE.Group();
+playerRig.rotation.order='YXZ';
+// P.pos is the exact collision-floor contact. The longer R6 boots extend 0.34
+// units below their limb origin, so lift only the rendered rig to place their
+// soles on that contact plane without changing movement or landing physics.
+const PLAYER_RIG_GROUND_OFFSET=0.34;
+playerRig.position.y=PLAYER_RIG_GROUND_OFFSET;
+player.add(playerRig);
+const bodyMat = new THREE.MeshLambertMaterial({color:0xd12b2b});
+const limbMat = new THREE.MeshLambertMaterial({color:0x1b4fa0});
+const suitBlackMat=new THREE.MeshBasicMaterial({color:0x11151d});
+const suitWhiteMat=new THREE.MeshBasicMaterial({color:0xf5fbff});
+// Classic Roblox R6: Head, Torso, Left/Right Arm, Left/Right Leg.
+const torso = new THREE.Mesh(new THREE.BoxGeometry(0.96,1.08,0.5),bodyMat);
+torso.position.y=1.15; addEdges(torso); playerRig.add(torso);
+const head = new THREE.Mesh(new THREE.BoxGeometry(0.66,0.62,0.58),bodyMat);
+head.position.y=2.02; addEdges(head); playerRig.add(head);
+
+function addMaskEye(side){
+  const outline=new THREE.Mesh(new THREE.SphereGeometry(0.125,10,8),suitBlackMat);
+  outline.scale.set(0.72,1.35,0.18);
+  outline.position.set(side*0.14,0.035,0.315);
+  outline.rotation.z=-side*0.18;
+  const lens=new THREE.Mesh(new THREE.SphereGeometry(0.096,10,8),suitWhiteMat);
+  lens.scale.set(0.68,1.32,0.2);
+  lens.position.z=0.045;
+  outline.add(lens);
+  head.add(outline);
+}
+addMaskEye(-1); addMaskEye(1);
+
+function makeSuitArm(side){
+  const arm=new THREE.Group();
+  arm.position.set(side*0.67,1.58,0);
+  const limb=new THREE.Mesh(new THREE.BoxGeometry(0.34,1.02,0.36),limbMat);
+  limb.position.y=-0.43;
+  addEdges(limb);
+  arm.add(limb);
+  const shoulder=new THREE.Mesh(new THREE.BoxGeometry(0.345,0.34,0.365),bodyMat);
+  shoulder.position.y=-0.09;
+  arm.add(shoulder);
+  const glove=new THREE.Mesh(new THREE.BoxGeometry(0.35,0.3,0.37),bodyMat);
+  glove.position.y=-0.8;
+  arm.add(glove);
+  return arm;
+}
+function makeSuitLeg(side){
+  const leg=new THREE.Group();
+  leg.position.set(side*0.25,0.9,0);
+  const limb=new THREE.Mesh(new THREE.BoxGeometry(0.4,1.18,0.42),limbMat);
+  limb.position.y=-0.58; addEdges(limb); leg.add(limb);
+  const boot=new THREE.Mesh(new THREE.BoxGeometry(0.405,0.32,0.5),bodyMat);
+  boot.position.set(0,-1.08,0.07); leg.add(boot);
+  const foot=new THREE.Object3D();
+  foot.position.set(0,-1.14,0.13); leg.add(foot);
+  leg.userData.foot=foot;
+  return leg;
+}
+const armL=makeSuitArm(-1), armR=makeSuitArm(1);
+const legL=makeSuitLeg(-1), legR=makeSuitLeg(1);
+playerRig.add(armL,armR,legL,legR);
+const handL=new THREE.Object3D(), handR=new THREE.Object3D();
+handL.position.set(0,-0.99,0.04);
+handR.position.set(0,-0.99,0.04);
+armL.add(handL);
+armR.add(handR);
+
+function addSpiderEmblem(z,colorMat,scale=1){
+  const emblem=new THREE.Group();
+  emblem.position.set(0,0.05,z);
+  if(z<0) emblem.rotation.y=Math.PI;
+  emblem.scale.setScalar(scale);
+  const abdomen=new THREE.Mesh(new THREE.SphereGeometry(0.075,8,6),colorMat);
+  abdomen.scale.y=1.65; emblem.add(abdomen);
+  for(const side of [-1,1]){
+    for(let i=0;i<4;i++){
+      const leg=new THREE.Mesh(new THREE.BoxGeometry(0.035,0.25,0.025),colorMat);
+      leg.position.set(side*(0.08+i*0.018),0.1-i*0.065,0);
+      leg.rotation.z=side*(0.55+i*0.18);
+      emblem.add(leg);
+    }
+  }
+  torso.add(emblem);
+}
+addSpiderEmblem(0.26,suitBlackMat,0.9);
+addSpiderEmblem(-0.26,suitWhiteMat,1.08);
+
+function makeWebWingTexture(){
+  const canvas=document.createElement('canvas');
+  canvas.width=canvas.height=128;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='rgba(240,252,255,0.82)';
+  ctx.fillRect(0,0,128,128);
+  ctx.strokeStyle='rgba(119,205,232,0.9)';
+  ctx.lineWidth=3;
+  for(let i=0;i<=4;i++){
+    ctx.beginPath(); ctx.moveTo(64,128); ctx.lineTo(i*32,0); ctx.stroke();
+  }
+  for(let y=26;y<112;y+=24){
+    ctx.beginPath(); ctx.arc(64,128,128-y,Math.PI*1.15,Math.PI*1.85); ctx.stroke();
+  }
+  const texture=new THREE.CanvasTexture(canvas);
+  texture.wrapS=texture.wrapT=THREE.ClampToEdgeWrapping;
+  return texture;
+}
+const webWingTexture=makeWebWingTexture();
+
+function makeWebWing(){
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute('position',new THREE.Float32BufferAttribute([
+    0,0,0, 0,0,0, 0,0,0
+  ],3));
+  geometry.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,0.5,1],2));
+  geometry.setIndex([0,1,2]);
+  geometry.computeVertexNormals();
+  const material=new THREE.MeshBasicMaterial({map:webWingTexture,transparent:true,opacity:0.9,side:THREE.DoubleSide});
+  const wing=new THREE.Mesh(geometry,material);
+  wing.visible=false;
+  playerRig.add(wing);
+  return wing;
+}
+const webWingL=makeWebWing();
+const webWingR=makeWebWing();
+const webWingLegs=makeWebWing();
+
+function setWingTriangle(wing,a,b,c){
+  const positions=wing.geometry.attributes.position;
+  positions.setXYZ(0,a.x,a.y,a.z);
+  positions.setXYZ(1,b.x,b.y,b.z);
+  positions.setXYZ(2,c.x,c.y,c.z);
+  positions.needsUpdate=true;
+  wing.geometry.computeVertexNormals();
+}
+
+function rigLocalPoint(object){
+  return playerRig.worldToLocal(object.getWorldPosition(new THREE.Vector3()));
+}
+
+function updateWebWings(){
+  const visible=P.state==='air' && P.gliding;
+  webWingL.visible=visible;
+  webWingR.visible=visible;
+  webWingLegs.visible=visible;
+  if(!visible) return;
+  player.updateMatrixWorld(true);
+  const leftHand=rigLocalPoint(handL);
+  const rightHand=rigLocalPoint(handR);
+  const leftFoot=rigLocalPoint(legL.userData.foot);
+  const rightFoot=rigLocalPoint(legR.userData.foot);
+  const wingDepth=-0.12;
+  const wingPoint=point=>new THREE.Vector3(point.x,point.y,wingDepth);
+  setWingTriangle(webWingL,new THREE.Vector3(-0.42,1.48,wingDepth),wingPoint(leftHand),new THREE.Vector3(-0.4,0.72,wingDepth));
+  setWingTriangle(webWingR,new THREE.Vector3(0.42,1.48,wingDepth),wingPoint(rightHand),new THREE.Vector3(0.4,0.72,wingDepth));
+  setWingTriangle(webWingLegs,new THREE.Vector3(0,0.78,wingDepth),wingPoint(leftFoot),wingPoint(rightFoot));
+}
+player.position.copy(PLAYER_SPAWN);
+scene.add(player);
+
+const playerParts = {torso, head, armL, armR, legL, legR};
+const basePose = {};
+Object.entries(playerParts).forEach(([name, part])=>{
+  basePose[name] = {pos:part.position.clone(), rot:part.rotation.clone()};
+});
+let animClock = 0;
+
+const P = {
+  pos: player.position,
+  vel: new THREE.Vector3(),
+  state: 'ground',         // air | ground | swing | zip | climb | downed | defeated
+  hp: 100, maxHp:100,
+  swingWebs:{
+    left:{anchor:null,physicsPivot:null,length:0,targetLength:0,retry:0,auto:false,fallCatch:false},
+    right:{anchor:null,physicsPivot:null,length:0,targetLength:0,retry:0,auto:false,fallCatch:false}
+  },
+  activeSwingHand:null,
+  nextSwingHand:'left',
+  swingAssisted:false,
+  swingPhase:'entry',
+  swingPhaseT:0,
+  swingAge:0,
+  swingHasDescended:false,
+  swingClimbedAfterDescent:false,
+  swingLastVy:0,
+  swingBottomSpeed:0,
+  swingPeakRise:0,
+  swingTelemetry:null,
+  swingGroundPullT:0,
+  swingGroundPullAnchor:null,
+  swingGroundPullAnchors:{left:null,right:null},
+  swingPeakFlat:0,
+  swingRequireRelease:false,
+  swingReleaseT:0,
+  climbNormal: null,
+  climbBuilding: null,
+  climbVisualAngle:0,
+  wallRunAutoT:0,
+  wallRunDirection:new THREE.Vector2(),
+  wallRunEntrySpeed:0,
+  wallRunFromSwing:false,
+  wallRunMomentum:0,
+  wallFlipT:0,
+  wallDetachT:0,
+  meleeT:0,
+  meleeSide:1,
+  invuln:0,
+  facing: 0,
+  gliding:false, wingCooldown:0, peakY:0, downedT:0, pendingFallDamage:0, recoveryT:0, recoverLock:false,
+  defeatedT:0, recoverPressed:false, blocking:false,
+  cooldowns:{swing:0, zip:0, pull:0, melee:0, webshot:0},
+};
+
+const GRAVITY = -30;
+const RUN_SPEED = 13;
+const JUMP_SPEED = 13.5;
+const SWING_MAX_RANGE = 100;
+const SWING_MIN_RANGE = 12;
+const ZIP_RANGE = 110;
+const ZIP_SPEED = 55;
+const PULL_RANGE = 26;
+const WEBSHOT_RANGE = 46;
+const WEBSHOT_SPEED = 95;
+const MELEE_RANGE = 3.0;
+const CLIMB_SPEED = 8.5;
+const WALL_CRAWL_SPEED = 6.2;
+const WALL_RUN_SPEED = 14.5;
+const PLAYER_RADIUS = 0.55;
+const CLIMB_WALL_OFFSET = 0.3;
+const AIR_CONTROL = 18;
+const AIR_DRAG = 0.997;
+const AIR_MAX_SPEED = 50;
+const SWING_MAX_SPEED = 58;
+const SWING_MAX_RISE_SPEED = 24;
+const SWING_DESCENT_PUMP = 10;
+const SWING_ASCENT_PUMP = 3.2;
+const SWING_ENTRY_DOWN_ACCEL = 8;
+const SWING_ENTRY_FORWARD_ACCEL = 6;
+const SWING_ENTRY_MAX_TIME = 0.55;
+const SWING_SAFE_REEL_SPEED = 7;
+const SWING_LOW_ASCENT_REEL_SPEED = 11;
+const SWING_BOTTOM_REEL_SPEED = 4;
+const SWING_LOW_CLEARANCE = 7;
+const SWING_LOW_LIFT_ACCEL = 30;
+const SWING_SKIM_UP_SPEED = 4.5;
+const SWING_PIVOT_FORWARD_MIN = 16;
+const SWING_PIVOT_FORWARD_MAX = 25;
+const SWING_GROUND_PULL_TIME = 0.46;
+const SWING_GROUND_PULL_UP_ACCEL = 58;
+const SWING_GROUND_PULL_FORWARD_ACCEL = 16;
+const SWING_GROUND_PULL_REEL_SPEED = 15;
+const MAX_TRAVERSAL_SPEED = 60;
+const MAX_FALL_SPEED = -58;
+const MAX_RISE_SPEED = 34;
+const KEY_ZOOM_SPEED = 8.5;
+const FALL_SAFE_DISTANCE = 20;
+
+function fallDamageForDrop(dropHeight){
+  const dangerousHeight=Math.max(0,dropHeight-FALL_SAFE_DISTANCE);
+  if(dangerousHeight<=0) return 0;
+  const severeHeight=Math.max(0,dangerousHeight-20);
+  return Math.min(90,dangerousHeight*1.15+severeHeight*0.85);
+}
+
+// ---------------------------------------------------------------------------------------
+// RAYCASTING HELPERS (ground height, wall proximity, crosshair target)
+// ---------------------------------------------------------------------------------------
+const raycaster = new THREE.Raycaster();
+const collidables = () => buildingMeshes.map(b=>b.mesh);
+
+function objectBelongsTo(object,root){
+  for(let node=object;node;node=node.parent){
+    if(node===root) return true;
+  }
+  return false;
+}
+
+function enemyForObject(object){
+  return enemies.find(e=>e.alive && objectBelongsTo(object,e.mesh)) || null;
+}
+
+function heightAt(x,z, ignoreAboveY=Infinity){
+  // returns highest surface (rooftop or ground) at x,z that's at/under ignoreAboveY+0.1
+  let best = isOverIsland(x,z) ? 0 : OCEAN_FLOOR;
+  for(const b of buildingMeshes){
+    if(x>b.hitMinX && x<b.hitMaxX && z>b.hitMinZ && z<b.hitMaxZ){
+      if(b.h <= ignoreAboveY+0.15 && b.h>best) best = b.h;
+    }
+  }
+  return best;
+}
+
+function wallAhead(px,pz, dirYaw, dist=0.9){
+  const dx = Math.sin(dirYaw), dz = Math.cos(dirYaw);
+  for(const b of buildingMeshes){
+    // does the point (px+dx*dist, pz+dz*dist) fall inside a taller-than-player building, while current point is outside?
+    const nx = px+dx*dist, nz = pz+dz*dist;
+    const inside = nx>b.hitMinX && nx<b.hitMaxX && nz>b.hitMinZ && nz<b.hitMaxZ;
+    const wasOutside = !(px>b.hitMinX && px<b.hitMaxX && pz>b.hitMinZ && pz<b.hitMaxZ);
+    if(inside && wasOutside && b.h > P.pos.y+1) return b;
+  }
+  return null;
+}
+
+function wallContact(px,pz, dirYaw, dist=0.9){
+  const b = wallAhead(px,pz,dirYaw,dist);
+  if(!b) return null;
+  const probe = new THREE.Vector3(px + Math.sin(dirYaw)*dist, 0, pz + Math.cos(dirYaw)*dist);
+  const distances = [
+    {d:Math.abs(probe.x-b.hitMinX), n:new THREE.Vector3(-1,0,0)},
+    {d:Math.abs(probe.x-b.hitMaxX), n:new THREE.Vector3(1,0,0)},
+    {d:Math.abs(probe.z-b.hitMinZ), n:new THREE.Vector3(0,0,-1)},
+    {d:Math.abs(probe.z-b.hitMaxZ), n:new THREE.Vector3(0,0,1)}
+  ];
+  distances.sort((a,b)=>a.d-b.d);
+  return {building:b, normal:distances[0].n};
+}
+
+// Horizontal hitbox: pushes the player out of any building that's taller than they
+// currently are (buildings short enough to just stand on are handled by heightAt instead).
+function resolveWallCollision(pos, previousPos=null){
+  let hitNormal = null;
+  let hitBuilding = null;
+  for(const b of buildingMeshes){
+    if(b.h <= pos.y + 1.0) continue;
+    const minX=b.hitMinX-PLAYER_RADIUS, maxX=b.hitMaxX+PLAYER_RADIUS, minZ=b.hitMinZ-PLAYER_RADIUS, maxZ=b.hitMaxZ+PLAYER_RADIUS;
+    if(pos.x>minX && pos.x<maxX && pos.z>minZ && pos.z<maxZ){
+      let normal;
+      if(previousPos && previousPos.x<=minX){ pos.x=minX; normal=new THREE.Vector3(-1,0,0); }
+      else if(previousPos && previousPos.x>=maxX){ pos.x=maxX; normal=new THREE.Vector3(1,0,0); }
+      else if(previousPos && previousPos.z<=minZ){ pos.z=minZ; normal=new THREE.Vector3(0,0,-1); }
+      else if(previousPos && previousPos.z>=maxZ){ pos.z=maxZ; normal=new THREE.Vector3(0,0,1); }
+      else {
+        const options = [
+          {d:pos.x-minX, set:()=>{ pos.x=minX; }, n:new THREE.Vector3(-1,0,0)},
+          {d:maxX-pos.x, set:()=>{ pos.x=maxX; }, n:new THREE.Vector3(1,0,0)},
+          {d:pos.z-minZ, set:()=>{ pos.z=minZ; }, n:new THREE.Vector3(0,0,-1)},
+          {d:maxZ-pos.z, set:()=>{ pos.z=maxZ; }, n:new THREE.Vector3(0,0,1)}
+        ];
+        options.sort((a,b)=>a.d-b.d);
+        options[0].set();
+        normal=options[0].n;
+      }
+      hitNormal = normal;
+      hitBuilding = b;
+      if(pos===P.pos){
+        const inwardSpeed = P.vel.dot(normal);
+        if(inwardSpeed<0) P.vel.addScaledVector(normal, -inwardSpeed);
+      }
+    }
+  }
+  return hitNormal ? {normal:hitNormal,building:hitBuilding} : null;
+}
+
+function crosshairHit(maxDist, includeEnemies=true){
+  raycaster.setFromCamera(aimScreenPoint(), camera);
+  const targets = includeEnemies
+    ? collidables().concat(enemies.filter(e=>e.alive).map(e=>e.mesh))
+    : collidables();
+  const hits = raycaster.intersectObjects(targets,true).filter(hit=>hit.object.type!=='LineSegments');
+  if(hits.length && hits[0].distance<=maxDist) return hits[0];
+  return null;
+}
+
+function zipCrosshairHit(maxDist){
+  raycaster.setFromCamera(aimScreenPoint(),camera);
+  const targets=collidables().concat([ground],enemies.filter(e=>e.alive).map(e=>e.mesh));
+  const hits=raycaster.intersectObjects(targets,true).filter(hit=>hit.object.type!=='LineSegments');
+  if(hits.length && hits[0].distance<=maxDist) return hits[0];
+  return null;
+}
+
+function nearestPointOnBuilding(b, source){
+  const x = THREE.MathUtils.clamp(source.x, b.minX, b.maxX);
+  const y = THREE.MathUtils.clamp(source.y, 3, b.h);
+  const z = THREE.MathUtils.clamp(source.z, b.minZ, b.maxZ);
+  const faces = [
+    {d:Math.abs(source.x-b.minX), p:new THREE.Vector3(b.minX,y,z)},
+    {d:Math.abs(source.x-b.maxX), p:new THREE.Vector3(b.maxX,y,z)},
+    {d:Math.abs(source.z-b.minZ), p:new THREE.Vector3(x,y,b.minZ)},
+    {d:Math.abs(source.z-b.maxZ), p:new THREE.Vector3(x,y,b.maxZ)},
+    {d:Math.abs(source.y-b.h), p:new THREE.Vector3(x,b.h,z)}
+  ];
+  faces.sort((a,b)=>a.d-b.d);
+  return faces[0].p;
+}
+
+function upperBuildingEdgePoints(b,source){
+  const y=Math.max(3,b.h-0.65);
+  const x=THREE.MathUtils.clamp(source.x,b.minX,b.maxX);
+  const z=THREE.MathUtils.clamp(source.z,b.minZ,b.maxZ);
+  return [
+    new THREE.Vector3(b.minX,y,z),
+    new THREE.Vector3(b.maxX,y,z),
+    new THREE.Vector3(x,y,b.minZ),
+    new THREE.Vector3(x,y,b.maxZ)
+  ];
+}
+
+function upperBuildingEdgeRayPoints(b,origin,direction){
+  const dir=new THREE.Vector2(direction.x,direction.z);
+  if(dir.lengthSq()<0.0001) return [];
+  dir.normalize();
+  let tMin=-Infinity;
+  let tMax=Infinity;
+  const updateSlab=(value,delta,min,max)=>{
+    if(Math.abs(delta)<0.0001) return value>=min && value<=max;
+    const t1=(min-value)/delta;
+    const t2=(max-value)/delta;
+    tMin=Math.max(tMin,Math.min(t1,t2));
+    tMax=Math.min(tMax,Math.max(t1,t2));
+    return tMin<=tMax;
+  };
+  if(!updateSlab(origin.x,dir.x,b.minX,b.maxX) ||
+     !updateSlab(origin.z,dir.y,b.minZ,b.maxZ) || tMax<0) return [];
+  const y=Math.max(3,b.h-0.65);
+  const times=[];
+  if(tMin>=0) times.push(tMin);
+  if(tMax>=0 && Math.abs(tMax-tMin)>0.01) times.push(tMax);
+  return times.map(t=>new THREE.Vector3(origin.x+dir.x*t,y,origin.z+dir.y*t));
+}
+
+function upperEdgeInteriorClearance(point,b){
+  const onX=Math.abs(point.x-b.minX)<0.03 || Math.abs(point.x-b.maxX)<0.03;
+  return onX
+    ? Math.min(point.z-b.minZ,b.maxZ-point.z)
+    : Math.min(point.x-b.minX,b.maxX-point.x);
+}
+
+function buildingForUpperEdgePoint(point){
+  return buildingMeshes.find(b=>{
+    if(Math.abs(point.y-(b.h-0.65))>0.08) return false;
+    const onX=(Math.abs(point.x-b.minX)<0.08 || Math.abs(point.x-b.maxX)<0.08) &&
+      point.z>=b.minZ-0.08 && point.z<=b.maxZ+0.08;
+    const onZ=(Math.abs(point.z-b.minZ)<0.08 || Math.abs(point.z-b.maxZ)<0.08) &&
+      point.x>=b.minX-0.08 && point.x<=b.maxX+0.08;
+    return onX||onZ;
+  });
+}
+
+function lowerGroundPullAnchor(choice,hand){
+  if(!choice?.point) return null;
+  const b=buildingForUpperEdgePoint(choice.point);
+  if(!b) return choice.point.clone();
+  const point=choice.point.clone();
+  const sideSign=hand==='left'?-1:1;
+  const right=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
+  const sideShift=right.multiplyScalar(sideSign*2.4);
+  const onX=Math.abs(point.x-b.minX)<0.08 || Math.abs(point.x-b.maxX)<0.08;
+  if(onX) point.z=THREE.MathUtils.clamp(point.z+sideShift.z,b.minZ+0.35,b.maxZ-0.35);
+  else point.x=THREE.MathUtils.clamp(point.x+sideShift.x,b.minX+0.35,b.maxX-0.35);
+  // Startup pull strands hit the forward facade well below the roof. Their job
+  // is to lift the player into the arc; the regular swing web takes the high
+  // roof-edge target only after this short pull finishes.
+  const rise=THREE.MathUtils.clamp(b.h*0.22,10,20);
+  point.y=THREE.MathUtils.clamp(P.pos.y+rise,5,Math.max(5,b.h-5));
+  return point;
+}
+
+function addUniqueAnchorCandidates(target,points){
+  points.forEach(point=>{
+    if(!target.some(existing=>existing.distanceToSquared(point)<0.01)) target.push(point);
+  });
+}
+
+function highSwingAnchorY(point,b,playerEye,playerGround){
+  const nearTopY=THREE.MathUtils.clamp(
+    Math.max(playerEye.y+34,playerGround+44,b.h*0.86),
+    6,b.h-1
+  );
+  const distance=Math.hypot(point.x-playerEye.x,nearTopY-playerEye.y,point.z-playerEye.z);
+  return distance<=SWING_MAX_RANGE-2 ? nearTopY : null;
+}
+
+function findAssistedSwingAnchor(hand='center',excludePoint=null){
+  const cameraForward=cameraForwardFlat();
+  const momentumForward=new THREE.Vector3(P.vel.x,0,P.vel.z);
+  if(momentumForward.lengthSq()>16) momentumForward.normalize().lerp(cameraForward,0.65).normalize();
+  else momentumForward.copy(cameraForward);
+  const sideSign=hand==='left'?-1:1;
+  const right=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),momentumForward).normalize();
+  const playerEye=P.pos.clone().add(new THREE.Vector3(0,1.35,0));
+  const playerGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+  const searchPoint=playerEye.clone().addScaledVector(momentumForward,44).addScaledVector(right,sideSign*12);
+  const highFalling=P.vel.y<-10;
+  const fallSearchDistance=THREE.MathUtils.clamp(54+Math.abs(P.vel.y)*0.45,58,76);
+  const fallSearchPoint=playerEye.clone()
+    .addScaledVector(momentumForward,fallSearchDistance)
+    .addScaledVector(right,sideSign*8);
+  let best=null;
+  let bestScore=-Infinity;
+
+  for(const b of buildingMeshes){
+    const candidates=[];
+    addUniqueAnchorCandidates(candidates,upperBuildingEdgePoints(b,searchPoint));
+    addUniqueAnchorCandidates(candidates,upperBuildingEdgePoints(b,playerEye));
+    // Intersections between the player's forward corridor and the complete
+    // rooftop perimeter provide continuously sliding targets between corners.
+    for(const offset of [sideSign*7,sideSign*13,0]){
+      const corridorOrigin=playerEye.clone().addScaledVector(right,offset);
+      addUniqueAnchorCandidates(candidates,upperBuildingEdgeRayPoints(b,corridorOrigin,momentumForward));
+    }
+
+    const fallingCatch=highFalling && P.pos.y>b.h+5;
+    if(fallingCatch){
+      addUniqueAnchorCandidates(candidates,upperBuildingEdgePoints(b,fallSearchPoint));
+      const fallDirection=fallSearchPoint.clone().sub(playerEye).setY(0).normalize();
+      addUniqueAnchorCandidates(candidates,upperBuildingEdgeRayPoints(b,playerEye,fallDirection));
+    }
+
+    for(const point of candidates){
+      if(excludePoint && point.distanceTo(excludePoint)<12) continue;
+      const to=point.clone().sub(playerEye);
+      const dist=to.length();
+      if(dist<SWING_MIN_RANGE || dist>SWING_MAX_RANGE) continue;
+      const horizontal=new THREE.Vector3(to.x,0,to.z);
+      const horizontalDist=horizontal.length();
+      const belowCatch=point.y<playerEye.y-2 && fallingCatch;
+      if(horizontalDist<(belowCatch?7:14)) continue;
+      horizontal.normalize();
+      const forwardDot=horizontal.dot(momentumForward);
+      const sideDot=horizontal.dot(right)*sideSign;
+      if(belowCatch && (horizontalDist<28 || forwardDot<0.35)) continue;
+      if(!belowCatch && forwardDot<-0.28) continue;
+      // A side candidate must actually live on that side of the travel corridor.
+      // This makes hand choice deterministic instead of allowing both searches to
+      // return the same building with slightly different scores.
+      if(!belowCatch && sideDot<0.02) continue;
+
+      // Reject anchors hidden behind another building or on a far-facing wall.
+      raycaster.set(playerEye,to.clone().normalize());
+      raycaster.far=dist+1;
+      const sightHits=raycaster.intersectObjects(collidables(),false);
+      raycaster.far=Infinity;
+      if(!belowCatch && (!sightHits.length || sightHits[0].object!==b.mesh || Math.abs(sightHits[0].distance-dist)>6)) continue;
+
+      // Keep the bottom of an assisted arc comfortably above the surface instead
+      // of allowing a nearly ground-level rope that turns swinging into fast walking.
+      const maxClearRope=point.y-playerGround-12;
+      if(!belowCatch && maxClearRope<SWING_MIN_RANGE) continue;
+      const idealLength=belowCatch?dist*0.92:Math.min(dist*0.88,maxClearRope);
+      const ropeLength=Math.max(SWING_MIN_RANGE,idealLength);
+      const interiorBonus=Math.min(18,Math.max(0,upperEdgeInteriorClearance(point,b))*1.4);
+      const score=belowCatch
+        ? 310-Math.abs(horizontalDist-fallSearchDistance)*3.2+forwardDot*190+Math.max(0,sideDot)*28+interiorBonus
+        : 220-Math.abs(horizontalDist-38)*2.1+forwardDot*100+Math.max(0,sideDot)*45+
+          Math.min(55,point.y-playerEye.y)*2.2+interiorBonus;
+      if(score>bestScore){ bestScore=score; best={point:point.clone(),length:ropeLength,score}; }
+    }
+  }
+  return best;
+}
+
+// ---------------------------------------------------------------------------------------
+// ENEMIES + SPAWN GROUPS
+// ---------------------------------------------------------------------------------------
+const spawnPoints = [];
+for(let i=0;i<10;i++){
+  // Street intersections remain clear even when a block contains two buildings.
+  const ix = 1+((Math.random()*(BLOCKS-1))|0);
+  const iz = 1+((Math.random()*(BLOCKS-1))|0);
+  const x = -HALF_CITY + ix*TILE;
+  const z = -HALF_CITY + iz*TILE;
+  spawnPoints.push(new THREE.Vector3(x,0,z));
+}
+const spawnMarkers = [];
+const spawnMat = new THREE.MeshBasicMaterial({color:0x00e5ff, transparent:true, opacity:0.55});
+spawnPoints.forEach(p=>{
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(3,3,0.2,16), spawnMat);
+  m.position.set(p.x,0.15,p.z); m.visible=false;
+  scene.add(m); spawnMarkers.push(m);
+});
+applyDebugVisibility();
+
+const enemies = [];
+const groups = []; // {points:[..], members:[enemy idx], defeatedAt:null, homeIdx}
+
+const enemyGeo = new THREE.BoxGeometry(0.9,1.0,0.5);
+const ENEMY_RADIUS = 0.62;
+const ENEMY_HEIGHT = 2.15;
+function makeEnemy(pos, groupId){
+  const outfitColors=[0x7a3b3b,0x36506f,0x55426e,0x52613b];
+  const mat = new THREE.MeshLambertMaterial({color:outfitColors[groupId%outfitColors.length]});
+  const pantsMat = new THREE.MeshLambertMaterial({color:0x252a34});
+  const skinColors=[0x8d5138,0xb97858,0xd39a78,0x6f3f30];
+  const hairColors=[0x171313,0x35251d,0x161b24,0x5a3826];
+  const skinMat = new THREE.MeshLambertMaterial({color:skinColors[(groupId+enemies.length)%skinColors.length]});
+  const hairMat = new THREE.MeshLambertMaterial({color:hairColors[(groupId*2+enemies.length)%hairColors.length]});
+  const shoeMat = new THREE.MeshLambertMaterial({color:0x11151c});
+  const mesh = new THREE.Mesh(enemyGeo, mat);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.62,0.58,0.56),skinMat);
+  head.position.y=0.82; addEdges(head);
+  const hair=new THREE.Mesh(new THREE.BoxGeometry(0.64,0.18,0.58),hairMat);
+  hair.position.y=0.22; head.add(hair);
+  const eyeMat=new THREE.MeshBasicMaterial({color:0x12161c});
+  for(const side of [-1,1]){
+    const eye=new THREE.Mesh(new THREE.BoxGeometry(0.045,0.07,0.025),eyeMat);
+    eye.position.set(side*0.105,0.035,0.293); head.add(eye);
+  }
+  const mouth=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.025,0.025),eyeMat);
+  mouth.position.set(0,-0.105,0.294); head.add(mouth);
+
+  function makeEnemyArm(side){
+    const arm=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.96,0.34),mat);
+    arm.position.set(side*0.61,0,0); addEdges(arm);
+    const hand=new THREE.Mesh(new THREE.BoxGeometry(0.325,0.28,0.345),skinMat);
+    hand.position.y=-0.35; arm.add(hand);
+    return arm;
+  }
+  function makeEnemyLeg(side){
+    const leg=new THREE.Mesh(new THREE.BoxGeometry(0.38,0.82,0.4),pantsMat);
+    leg.position.set(side*0.23,-0.7,0); addEdges(leg);
+    const shoe=new THREE.Mesh(new THREE.BoxGeometry(0.385,0.24,0.48),shoeMat);
+    shoe.position.set(0,-0.3,0.04); leg.add(shoe);
+    return leg;
+  }
+  const armL=makeEnemyArm(-1), armR=makeEnemyArm(1);
+  const legL=makeEnemyLeg(-1), legR=makeEnemyLeg(1);
+  addEdges(mesh);
+  mesh.add(head,armL,armR,legL,legR);
+  const shirtDetail=new THREE.Mesh(new THREE.BoxGeometry(0.16,0.56,0.025),pantsMat);
+  shirtDetail.position.set(0,0.05,0.263); mesh.add(shirtDetail);
+  mesh.position.copy(pos); mesh.position.y=1.0;
+  scene.add(mesh);
+  const e = {
+    mesh, mat, hp:40, maxHp:40, state:'idle', groupId,
+    home:pos.clone(), vel:new THREE.Vector3(), stunT:0, attackCd:0, alertT:0,
+    hitRadius:ENEMY_RADIUS, hitHeight:ENEMY_HEIGHT,
+    alive:true, hpEl:null, parts:{head,armL,armR,legL,legR}, outfitColor:outfitColors[groupId%outfitColors.length],
+  };
+  const hpEl = document.createElement('div');
+  hpEl.className='enemyHp';
+  hpEl.innerHTML = '<div class="fill" style="width:100%"></div>';
+  document.getElementById('enemyHpLayer').appendChild(hpEl);
+  e.hpEl = hpEl;
+  enemies.push(e);
+  return e;
+}
+
+function spawnGroup(spawnIdx){
+  const base = spawnPoints[spawnIdx];
+  const count = 3+((Math.random()*2)|0);
+  const g = {spawnIdx, members:[], defeatedAt:null};
+  for(let i=0;i<count;i++){
+    const off = new THREE.Vector3((Math.random()-0.5)*8,0,(Math.random()-0.5)*8);
+    const e = makeEnemy(base.clone().add(off), groups.length);
+    g.members.push(e);
+  }
+  groups.push(g);
+}
+// initial groups at a handful of spawn points
+[0,2,4,6,8].forEach(i=>spawnGroup(i));
+
+const RESPAWN_TIME = 300; // 5 minutes
+
+function removeEnemy(e){
+  scene.remove(e.mesh);
+  if(e.hpEl) e.hpEl.remove();
+  const idx = enemies.indexOf(e);
+  if(idx !== -1) enemies.splice(idx, 1);
+}
+
+function updateGroups(dt){
+  groups.forEach(g=>{
+    const anyAlive = g.members.some(e=>e.alive);
+    if(!anyAlive && g.defeatedAt===null){
+      g.defeatedAt = performance.now();
+    }
+    if(!anyAlive && g.defeatedAt!==null){
+      const elapsed = (performance.now()-g.defeatedAt)/1000;
+      if(elapsed >= RESPAWN_TIME){
+        // respawn at a random valid point away from player
+        let idx;
+        do{ idx = (Math.random()*spawnPoints.length)|0; }
+        while(spawnPoints[idx].distanceTo(P.pos) < 20);
+        g.members.forEach(removeEnemy);
+        g.members = [];
+        g.spawnIdx = idx;
+        g.defeatedAt = null;
+        const base = spawnPoints[idx];
+        const count = 3+((Math.random()*2)|0);
+        for(let i=0;i<count;i++){
+          const off = new THREE.Vector3((Math.random()-0.5)*8,0,(Math.random()-0.5)*8);
+          const e = makeEnemy(base.clone().add(off), groups.indexOf(g));
+          g.members.push(e);
+        }
+      }
+    }
+  });
+}
+
+const ALERT_RADIUS = 16;
+const CHASE_SPEED = 6.5;
+const ATTACK_RANGE = 2.0;
+
+function applyEnemyVelocity(e, dt){
+  if(e.vel.lengthSq() < 0.001) return;
+  e.mesh.position.x += e.vel.x * dt;
+  e.mesh.position.z += e.vel.z * dt;
+  e.vel.multiplyScalar(Math.pow(0.08, dt));
+}
+
+function resolveEnemyHitboxes(){
+  const alive=enemies.filter(e=>e.alive);
+  for(let i=0;i<alive.length;i++){
+    const a=alive[i];
+    for(let j=i+1;j<alive.length;j++){
+      const b=alive[j];
+      const dx=b.mesh.position.x-a.mesh.position.x;
+      const dz=b.mesh.position.z-a.mesh.position.z;
+      const dist=Math.hypot(dx,dz);
+      const minimum=a.hitRadius+b.hitRadius;
+      if(dist>=minimum) continue;
+      const nx=dist>0.001?dx/dist:1;
+      const nz=dist>0.001?dz/dist:0;
+      const push=(minimum-dist)*0.5;
+      a.mesh.position.x-=nx*push; a.mesh.position.z-=nz*push;
+      b.mesh.position.x+=nx*push; b.mesh.position.z+=nz*push;
+    }
+  }
+
+  // Traversal owns the player's trajectory. Enemies only body-block grounded,
+  // low-speed combat movement, never a swing, zip, wall run, glide, or fly-by.
+  if(P.state!=='ground' || Math.hypot(P.vel.x,P.vel.z)>8 || pullTarget) return;
+  for(const e of alive){
+    const playerCenterY=P.pos.y+0.95;
+    if(Math.abs(playerCenterY-e.mesh.position.y)>ENEMY_HEIGHT*0.75) continue;
+    const dx=P.pos.x-e.mesh.position.x;
+    const dz=P.pos.z-e.mesh.position.z;
+    const dist=Math.hypot(dx,dz);
+    const minimum=PLAYER_RADIUS+e.hitRadius;
+    if(dist>=minimum) continue;
+    const nx=dist>0.001?dx/dist:Math.sin(P.facing);
+    const nz=dist>0.001?dz/dist:Math.cos(P.facing);
+    const push=minimum-dist;
+    P.pos.x+=nx*push;
+    P.pos.z+=nz*push;
+    const inward=P.vel.x*nx+P.vel.z*nz;
+    if(inward<0){ P.vel.x-=nx*inward; P.vel.z-=nz*inward; }
+  }
+}
+
+function animateEnemy(e,dt){
+  const phase=performance.now()*0.009+e.home.x*0.12;
+  const walking=e.state==='chasing';
+  const stride=walking ? Math.sin(phase)*0.72 : 0;
+  let armL=stride, armR=-stride, legL=-stride, legR=stride;
+  if(e.state==='attacking') armR=-1.35;
+  if(e.stunT>0){ armL=0.75; armR=-0.75; legL=0.22; legR=-0.22; }
+  const blend=1-Math.exp(-12*dt);
+  e.parts.armL.rotation.x=THREE.MathUtils.lerp(e.parts.armL.rotation.x,armL,blend);
+  e.parts.armR.rotation.x=THREE.MathUtils.lerp(e.parts.armR.rotation.x,armR,blend);
+  e.parts.legL.rotation.x=THREE.MathUtils.lerp(e.parts.legL.rotation.x,legL,blend);
+  e.parts.legR.rotation.x=THREE.MathUtils.lerp(e.parts.legR.rotation.x,legR,blend);
+}
+
+function enemyHasClearHit(e){
+  const origin=e.mesh.position.clone().add(new THREE.Vector3(0,0.85,0));
+  const target=P.pos.clone().add(new THREE.Vector3(0,0.95,0));
+  const toPlayer=target.sub(origin);
+  const distance=toPlayer.length();
+  if(distance>ATTACK_RANGE*1.65) return false;
+  raycaster.set(origin,toPlayer.normalize());
+  raycaster.far=distance;
+  const obstruction=raycaster.intersectObjects(collidables(),false)[0];
+  raycaster.far=Infinity;
+  return !obstruction || obstruction.distance>=distance-0.35;
+}
+
+function updateEnemies(dt){
+  enemies.forEach(e=>{
+    if(!e.alive) return;
+    const enemyBeforeMove=e.mesh.position.clone();
+    applyEnemyVelocity(e, dt);
+    if(e.stunT>0){
+      e.stunT-=dt;
+      e.mat.color.setHex(0x3355ff);
+      e.mesh.position.y = 0.8;
+      animateEnemy(e,dt);
+      resolveWallCollision(e.mesh.position,enemyBeforeMove);
+      return;
+    }
+    e.mat.color.setHex(e.outfitColor);
+
+    const verticalGap=Math.abs((P.pos.y+0.95)-(e.mesh.position.y+0.85));
+    const sameLevel=verticalGap<2.6;
+    const toPlayer = new THREE.Vector3().subVectors(P.pos, e.mesh.position);
+    toPlayer.y=0;
+    const dist = toPlayer.length();
+
+    if(e.state==='idle'){
+      if(sameLevel && dist < ALERT_RADIUS){ e.state='alert'; e.alertT=0.5; }
+      else {
+        // gentle idle bob
+        e.mesh.position.y = 0.8 + Math.sin(performance.now()*0.002 + e.home.x)*0.03;
+      }
+    } else if(e.state==='alert'){
+      e.alertT -= dt;
+      e.mat.color.setHex(0xd18a1c);
+      if(!sameLevel) e.state='idle';
+      else if(e.alertT<=0) e.state='chasing';
+      if(dist>ALERT_RADIUS*1.6) e.state='idle';
+    } else if(e.state==='chasing'){
+      if(!sameLevel){ e.state='idle'; }
+      else if(dist < ATTACK_RANGE){ e.state='attacking'; e.attackCd=0.6; }
+      else if(dist>ALERT_RADIUS*2.2){ e.state='idle'; }
+      else {
+        toPlayer.normalize();
+        e.mesh.position.addScaledVector(toPlayer, CHASE_SPEED*dt);
+        e.mesh.lookAt(P.pos.x, e.mesh.position.y, P.pos.z);
+      }
+    } else if(e.state==='attacking'){
+      e.attackCd -= dt;
+      if(!sameLevel){ e.state='idle'; }
+      else if(dist>ATTACK_RANGE*1.4){ e.state='chasing'; }
+      else if(e.attackCd<=0){
+        e.attackCd = 1.1;
+        if(P.invuln<=0 && P.state!=='downed' && enemyHasClearHit(e)){
+          const dmg = P.blocking ? 2 : 8;
+          damagePlayer(dmg);
+        }
+      }
+    }
+    e.mesh.position.y = 0.8;
+    animateEnemy(e,dt);
+    resolveWallCollision(e.mesh.position,enemyBeforeMove);
+  });
+  resolveEnemyHitboxes();
+}
+
+// ---------------------------------------------------------------------------------------
+// WEB PROJECTILES (web-shot + rope visual)
+// ---------------------------------------------------------------------------------------
+const projectiles = [];
+const webshotGeo = new THREE.SphereGeometry(0.18,8,8);
+const webshotMat = new THREE.MeshBasicMaterial({color:0xdff8ff});
+const swingRopeGeo = new THREE.CylinderGeometry(0.075,0.075,1,7);
+const swingRopeMat = new THREE.MeshBasicMaterial({color:0xf4fbff});
+const ropeLine = new THREE.Mesh(swingRopeGeo,swingRopeMat);
+ropeLine.visible=false;
+scene.add(ropeLine);
+
+const ropeLineRight=ropeLine.clone();
+ropeLineRight.visible=false;
+scene.add(ropeLineRight);
+
+const comboLine=ropeLine.clone();
+comboLine.visible=false;
+scene.add(comboLine);
+
+// Zip keeps its existing line renderer and mechanics; swing webs use real geometry
+// because WebGL ignores lineWidth on most browsers.
+const zipLine = new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),
+  new THREE.LineBasicMaterial({color:0xbfe9ff})
+);
+zipLine.visible=false;
+scene.add(zipLine);
+
+const ropeUp=new THREE.Vector3(0,1,0);
+function setSwingRope(mesh,start,end){
+  const delta=end.clone().sub(start);
+  const length=delta.length();
+  if(length<0.01){ mesh.visible=false; return; }
+  mesh.visible=true;
+  mesh.position.copy(start).add(end).multiplyScalar(0.5);
+  mesh.scale.set(1,length,1);
+  mesh.quaternion.setFromUnitVectors(ropeUp,delta.multiplyScalar(1/length));
+}
+
+function fireWebshot(){
+  raycaster.setFromCamera(aimScreenPoint(),camera);
+  const dir=raycaster.ray.direction.clone();
+  const origin = player.position.clone().add(new THREE.Vector3(0,1.3,0));
+  const mesh = new THREE.Mesh(webshotGeo, webshotMat);
+  mesh.position.copy(origin);
+  scene.add(mesh);
+  projectiles.push({pos:origin, dir, life:1.0, mesh});
+}
+
+function removeProjectile(index){
+  const p = projectiles[index];
+  if(p.mesh) scene.remove(p.mesh);
+  projectiles.splice(index,1);
+}
+
+// ---------------------------------------------------------------------------------------
+// ABILITY LOGIC
+// ---------------------------------------------------------------------------------------
+let zipTarget=null;
+let zipDir=null;
+let zipEnemyTarget=null;
+let pullTarget=null;
+let combatTarget=null;
+let comboChainTarget=null;
+let comboChainMode=null;
+
+// Q chooses one reachable anchor and automatically fires the wrist on that side.
+// Enemies stay valid targets for combat abilities, but traversal webs need city geometry.
+function trySwing(abilId){
+  if(P.state==='downed' || P.state==='defeated') return;
+  if(P.activeSwingHand || P.cooldowns.swing>0) return false;
+  const leftChoice=findAssistedSwingAnchor('left',null);
+  const rightChoice=findAssistedSwingAnchor('right',null);
+  let hand=null;
+  let chosen=null;
+  if(leftChoice && rightChoice){
+    const nearMapBorder=Math.abs(P.pos.x)>HALF_CITY*0.82 || Math.abs(P.pos.z)>HALF_CITY*0.82;
+    if(nearMapBorder){
+      const leftDistance=P.pos.distanceTo(leftChoice.point);
+      const rightDistance=P.pos.distanceTo(rightChoice.point);
+      hand=leftDistance<=rightDistance?'left':'right';
+    } else {
+      hand=P.nextSwingHand;
+    }
+    chosen=hand==='left'?leftChoice:rightChoice;
+  } else if(leftChoice){
+    chosen=leftChoice;
+    hand='left';
+  } else if(rightChoice){
+    chosen=rightChoice;
+    hand='right';
+  }
+  if(!chosen || !hand) return false;
+  const web=P.swingWebs[hand];
+  const otherHand=hand==='left'?'right':'left';
+  if(chosen){
+    if(P.gliding){
+      P.gliding=false;
+      P.wingCooldown=5;
+    }
+    const wasGround = P.state==='ground';
+    const entryGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+    const groundClearance=Math.max(0,P.pos.y-entryGround);
+    const groundPull=wasGround || groundClearance<1.5;
+    P.swingWebs[otherHand].anchor=null;
+    P.swingWebs[otherHand].physicsPivot=null;
+    P.swingWebs[otherHand].auto=false;
+    const pivotForward=cameraForwardFlat();
+    const entryFlatSpeed=Math.hypot(P.vel.x,P.vel.z);
+    const pivotForwardDistance=THREE.MathUtils.clamp(
+      SWING_PIVOT_FORWARD_MIN+entryFlatSpeed*0.16,
+      SWING_PIVOT_FORWARD_MIN,
+      SWING_PIVOT_FORWARD_MAX
+    );
+    web.anchor=chosen.point.clone();
+    web.fallCatch=P.vel.y<-10 && web.anchor.y<P.pos.y-2;
+    // The visible strand lands on the building, but the fixed pendulum pivot
+    // sits over the travel corridor. Both points share a height so the VFX still
+    // communicates the arc without pulling the player into the facade.
+    web.physicsPivot=P.pos.clone();
+    web.physicsPivot.y=web.anchor.y;
+    web.physicsPivot.addScaledVector(pivotForward,pivotForwardDistance);
+    web.length=P.pos.distanceTo(web.physicsPivot);
+    web.targetLength=Math.min(web.length,chosen.length);
+    web.auto=false;
+    const secondaryChoice=hand==='left'?rightChoice:leftChoice;
+    P.swingGroundPullT=groundPull?SWING_GROUND_PULL_TIME:0;
+    P.swingGroundPullAnchor=groundPull?(secondaryChoice?.point||chosen.point).clone():null;
+    if(groundPull){
+      P.swingGroundPullAnchors.left=lowerGroundPullAnchor(leftChoice||chosen,'left');
+      P.swingGroundPullAnchors.right=lowerGroundPullAnchor(rightChoice||chosen,'right');
+    } else {
+      P.swingGroundPullAnchors.left=null;
+      P.swingGroundPullAnchors.right=null;
+    }
+    P.activeSwingHand=hand;
+    P.nextSwingHand=hand==='left'?'right':'left';
+    P.state='swing';
+    P.swingAssisted=true;
+    P.swingPhaseT=0;
+    P.swingAge=0;
+    giveSwingEntryMomentum(wasGround,groundClearance);
+    P.swingHasDescended=P.vel.y<-1.5;
+    P.swingClimbedAfterDescent=false;
+    P.swingPeakFlat=Math.hypot(P.vel.x,P.vel.z);
+    P.swingLastVy=P.vel.y;
+    P.swingBottomSpeed=0;
+    P.swingPeakRise=Math.max(0,P.vel.y);
+    P.swingPhase=P.swingHasDescended?'descent':'entry';
+    P.swingTelemetry={
+      phase:P.swingPhase,
+      entryVelocity:P.vel.clone(),
+      attachPosition:P.pos.clone(),
+      visualAnchor:web.anchor.clone(),
+      physicsPivot:web.physicsPivot.clone(),
+      pivotForwardDistance,
+      samples:[]
+    };
+    pulse(abilId);
+    return true;
+  }
+  return false;
+}
+
+function cameraForwardFlat(){
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y=0;
+  if(forward.lengthSq()<0.001) forward.set(Math.sin(P.facing),0,Math.cos(P.facing));
+  return forward.normalize();
+}
+
+function giveSwingEntryMomentum(fromGround=false,groundClearance=Infinity){
+  const forward = cameraForwardFlat();
+  const flatSpeed = Math.hypot(P.vel.x,P.vel.z);
+  // Keep every incoming component. Low-speed starts get an additive nudge instead
+  // of having their velocity replaced, so diagonal momentum survives attachment.
+  if(flatSpeed<9){
+    const assist=9-flatSpeed;
+    P.vel.x += forward.x*assist;
+    P.vel.z += forward.z*assist;
+  }
+  // A street-level start has no room to descend. Give it only enough clearance
+  // to establish the rope, then let gravity create the normal downward arc.
+  if(fromGround || groundClearance<1.5) P.vel.y=Math.max(P.vel.y,4.5);
+}
+
+function swingConstraint(activeWebs){
+  const web=activeWebs[0];
+  return {anchor:web.physicsPivot||web.anchor,length:web.length};
+}
+
+function enforceSwingConstraint(activeWebs){
+  if(!activeWebs.length) return;
+  const constraint=swingConstraint(activeWebs);
+  const offset=P.pos.clone().sub(constraint.anchor);
+  const distance=offset.length();
+  if(distance<=constraint.length || distance<0.001) return;
+  const radial=offset.multiplyScalar(1/distance);
+  P.pos.copy(constraint.anchor).addScaledVector(radial,constraint.length);
+  const outwardSpeed=P.vel.dot(radial);
+  if(outwardSpeed>0) P.vel.addScaledVector(radial,-outwardSpeed);
+}
+
+function releaseSwing(hand=null,boost=true){
+  const wallSwing=P.state==='climb' && P.wallRunFromSwing;
+  if(P.state!=='swing' && !wallSwing) return;
+  if(hand && P.activeSwingHand!==hand) return;
+  P.swingWebs.left.anchor=null;
+  P.swingWebs.right.anchor=null;
+  P.swingWebs.left.physicsPivot=null;
+  P.swingWebs.right.physicsPivot=null;
+  P.swingWebs.left.auto=false;
+  P.swingWebs.right.auto=false;
+  P.swingWebs.left.fallCatch=false;
+  P.swingWebs.right.fallCatch=false;
+  P.swingGroundPullT=0;
+  P.swingGroundPullAnchor=null;
+  P.swingGroundPullAnchors.left=null;
+  P.swingGroundPullAnchors.right=null;
+  P.activeSwingHand=null;
+  if(wallSwing){
+    P.wallRunFromSwing=false;
+    P.wallRunMomentum=0;
+    P.swingAssisted=false;
+    P.swingPhase='release';
+    P.cooldowns.swing=Math.max(P.cooldowns.swing,0.25);
+    P.swingRequireRelease=true;
+    return;
+  }
+  if(boost && P.swingAssisted){
+    // Manual release is immediate and momentum-preserving. A tiny upward carry
+    // keeps the animation readable without redirecting the player toward camera.
+    if(P.vel.y>-2) P.vel.y=Math.min(SWING_MAX_RISE_SPEED,P.vel.y+1.25);
+    limitHorizontalSpeed(SWING_MAX_SPEED);
+  }
+  P.state='air';
+  P.swingAssisted=false;
+  P.swingPhase='release';
+  P.swingReleaseT=0.35;
+  P.cooldowns.swing=Math.max(P.cooldowns.swing,0.25);
+  P.swingRequireRelease=true;
+}
+
+function setSwingPhase(phase){
+  if(P.swingPhase===phase) return;
+  P.swingPhase=phase;
+  P.swingPhaseT=0;
+}
+
+function autoReleaseSwing(){
+  const flatSpeed=Math.hypot(P.vel.x,P.vel.z);
+  const storedSpeed=Math.max(flatSpeed,P.swingBottomSpeed,P.swingPeakFlat);
+  const launchY=THREE.MathUtils.clamp(7+storedSpeed*0.18,9,16);
+  P.swingPhase='release';
+  releaseSwing(null,false);
+  // Keep the exact horizontal travel direction and speed. The automatic assist
+  // spends part of the stored arc energy vertically instead of firing forward.
+  limitHorizontalSpeed(SWING_MAX_SPEED);
+  P.vel.y=Math.max(P.vel.y,launchY);
+  P.swingRequireRelease=true;
+  P.swingWebs.left.retry=0.3;
+  P.swingWebs.right.retry=0.3;
+}
+
+function limitHorizontalSpeed(maxSpeed){
+  const flat = Math.hypot(P.vel.x, P.vel.z);
+  if(flat > maxSpeed){
+    const s = maxSpeed / flat;
+    P.vel.x *= s;
+    P.vel.z *= s;
+  }
+}
+
+function clampPlayerVelocity(){
+  const riseCap=P.state==='swing'?SWING_MAX_RISE_SPEED:MAX_RISE_SPEED;
+  P.vel.y = THREE.MathUtils.clamp(P.vel.y, MAX_FALL_SPEED, riseCap);
+  if(P.state === 'swing') limitHorizontalSpeed(SWING_MAX_SPEED);
+  else if(P.state !== 'zip') limitHorizontalSpeed(AIR_MAX_SPEED);
+  if(P.state!=='zip' && P.vel.length()>MAX_TRAVERSAL_SPEED) P.vel.setLength(MAX_TRAVERSAL_SPEED);
+}
+
+function tryZip(){
+  if(P.state==='downed' || P.state==='defeated') return;
+  const hit = zipCrosshairHit(ZIP_RANGE);
+  if(!hit) return;
+  comboChainTarget=null;
+  comboChainMode=null;
+  zipEnemyTarget=enemyForObject(hit.object);
+  if(zipEnemyTarget) combatTarget=zipEnemyTarget;
+  zipTarget = zipEnemyTarget
+    ? zipEnemyTarget.mesh.position.clone().add(new THREE.Vector3(0,0.8,0))
+    : hit.point.clone();
+  zipDir = zipTarget.clone().sub(P.pos);
+  if(zipDir.lengthSq()>0.001) zipDir.normalize();
+  else camera.getWorldDirection(zipDir);
+  P.state='zip';
+  pulse('abZip');
+}
+
+function cancelZip(){
+  if(P.state!=='zip') return;
+  P.state='air';
+  zipTarget=null;
+  zipDir=null;
+  zipEnemyTarget=null;
+  P.cooldowns.zip=Math.min(P.cooldowns.zip,0.08);
+}
+
+function beginTraversalWallRun(normal,building,incoming){
+  const entryVelocity=incoming.clone();
+  const fromSwing=P.state==='swing' && !!P.activeSwingHand && !!P.swingWebs[P.activeSwingHand].anchor;
+  if(P.state==='zip') cancelZip();
+  if(!fromSwing){
+    P.swingWebs.left.anchor=null;
+    P.swingWebs.right.anchor=null;
+    P.swingWebs.left.physicsPivot=null;
+    P.swingWebs.right.physicsPivot=null;
+    P.swingWebs.left.fallCatch=false;
+    P.swingWebs.right.fallCatch=false;
+    P.activeSwingHand=null;
+  }
+  zipTarget=null;
+  zipDir=null;
+  zipEnemyTarget=null;
+  comboChainTarget=null;
+  comboChainMode=null;
+
+  const wallRight=new THREE.Vector3().crossVectors(normal,new THREE.Vector3(0,1,0)).normalize();
+  let across=entryVelocity.dot(wallRight);
+  if(Math.abs(across)<3){
+    const cameraAcross=cameraForwardFlat().dot(wallRight);
+    across=(Math.abs(cameraAcross)>0.12?Math.sign(cameraAcross):1)*Math.max(7,Math.hypot(entryVelocity.x,entryVelocity.z)*0.45);
+  }
+  const entrySpeed=THREE.MathUtils.clamp(Math.max(11,entryVelocity.length()*0.72),11,22);
+  const upward=THREE.MathUtils.clamp(entryVelocity.y/Math.max(entrySpeed,1),0.18,0.72);
+  P.state='climb';
+  P.gliding=false;
+  P.climbNormal=normal.clone();
+  P.climbBuilding=building;
+  P.wallRunAutoT=4;
+  P.wallRunDirection.set(Math.sign(across)||1,upward).normalize();
+  P.wallRunEntrySpeed=entrySpeed;
+  P.wallRunFromSwing=fromSwing;
+  P.swingGroundPullT=0;
+  P.swingGroundPullAnchor=null;
+  P.swingGroundPullAnchors.left=null;
+  P.swingGroundPullAnchors.right=null;
+  P.wallRunMomentum=fromSwing?Math.max(entryVelocity.length(),P.swingPeakFlat,entrySpeed):0;
+  P.climbVisualAngle=Math.atan2(-P.wallRunDirection.x,P.wallRunDirection.y);
+  P.vel.set(0,0,0);
+}
+
+function resumeSwingFromWall(jumpBoost=false){
+  const web=P.activeSwingHand?P.swingWebs[P.activeSwingHand]:null;
+  if(!P.wallRunFromSwing || !web || !web.anchor) return false;
+  const normal=P.climbNormal?P.climbNormal.clone():cameraForwardFlat().multiplyScalar(-1);
+  const wallRight=new THREE.Vector3().crossVectors(normal,new THREE.Vector3(0,1,0)).normalize();
+  const speed=THREE.MathUtils.clamp(Math.max(P.wallRunMomentum,P.wallRunEntrySpeed,14),14,SWING_MAX_SPEED);
+  const travel=wallRight.multiplyScalar(P.wallRunDirection.x);
+  travel.y=P.wallRunDirection.y;
+  if(travel.lengthSq()<0.001) travel.copy(cameraForwardFlat());
+  travel.normalize();
+  P.vel.copy(travel).multiplyScalar(speed);
+  if(jumpBoost){
+    P.vel.addScaledVector(normal,4.5);
+    P.vel.y=Math.max(P.vel.y,10);
+    P.wallFlipT=0.65;
+  }
+  P.state='swing';
+  P.swingPhase=P.vel.y<-1?'descent':(P.swingHasDescended?'ascent':'entry');
+  P.swingPhaseT=0;
+  P.swingLastVy=P.vel.y;
+  P.swingPeakFlat=Math.max(P.swingPeakFlat,Math.hypot(P.vel.x,P.vel.z));
+  P.wallDetachT=0.3;
+  P.wallRunAutoT=0;
+  P.wallRunFromSwing=false;
+  P.wallRunMomentum=0;
+  P.climbBuilding=null;
+  P.climbNormal=null;
+  return true;
+}
+
+function jumpFromWallEdge(right,direction,speed){
+  P.pos.addScaledVector(P.climbNormal,0.45);
+  if(resumeSwingFromWall(true)) return;
+  P.state='air';
+  P.vel.copy(right).multiplyScalar(direction.x*speed);
+  P.vel.y=Math.max(9,direction.y*speed+5);
+  P.vel.addScaledVector(P.climbNormal,5.5);
+  P.wallFlipT=0.65;
+  P.wallDetachT=0.3;
+  P.wallRunAutoT=0;
+  P.climbBuilding=null;
+  P.climbNormal=null;
+}
+
+function tryWebshot(){
+  if(P.state==='downed' || P.state==='defeated') return;
+  fireWebshot();
+  pulse('abWebshot');
+}
+
+function tryPull(){
+  if(P.state==='downed' || P.state==='defeated') return;
+  const hit = crosshairHit(PULL_RANGE);
+  if(!hit) return;
+  const enemy=enemyForObject(hit.object);
+  if(enemy){
+    comboChainTarget=null;
+    comboChainMode=null;
+    pullTarget = enemy;
+    combatTarget = enemy;
+    pulse('abPull');
+  }
+}
+
+function tryMelee(){
+  if(P.state==='downed' || P.state==='defeated') return;
+  P.meleeT=0.34;
+  P.meleeSide*=-1;
+  const fwd = new THREE.Vector3(Math.sin(P.facing),0,Math.cos(P.facing));
+  if(combatTarget && (!combatTarget.alive || combatTarget.mesh.position.distanceTo(P.pos)>14)) combatTarget=null;
+  if(!combatTarget){
+    let best=null;
+    let bestD=Infinity;
+    enemies.forEach(e=>{
+      if(!e.alive) return;
+      const to=new THREE.Vector3().subVectors(e.mesh.position,P.pos); to.y=0;
+      const d=to.length();
+      if(d<MELEE_RANGE && d<bestD && to.normalize().dot(fwd)>0.35){ best=e; bestD=d; }
+    });
+    combatTarget=best;
+  }
+  if(combatTarget){
+    const e=combatTarget;
+    const to = new THREE.Vector3().subVectors(e.mesh.position, P.pos); to.y=0;
+    const d = to.length();
+    if(d<MELEE_RANGE){
+      const attackDir=to.lengthSq()>0.001 ? to.normalize() : fwd;
+      P.facing=Math.atan2(attackDir.x,attackDir.z);
+      damageEnemy(e, 18, true);
+      e.vel.addScaledVector(attackDir,9);
+    }
+  }
+  pulse('abMelee');
+}
+
+function damageEnemy(e, amount, fromMelee=false){
+  e.hp -= amount;
+  e.mat.color.setHex(0xffffff);
+  setTimeout(()=>{ if(e.alive) e.mat.color.setHex(e.outfitColor); },80);
+  if(e.hp<=0 && e.alive){
+    e.alive=false;
+    e.mesh.visible=false;
+    e.hpEl.style.display='none';
+    if(combatTarget===e) combatTarget=null;
+    if(fromMelee) beginComboChain(e);
+  }
+}
+
+function beginComboChain(defeated){
+  let best=null;
+  let bestD=Infinity;
+  enemies.forEach(e=>{
+    if(!e.alive) return;
+    const dPlayer=e.mesh.position.distanceTo(P.pos);
+    const dOrigin=e.mesh.position.distanceTo(defeated.mesh.position);
+    if(dPlayer<13 && dOrigin<16 && dPlayer<bestD){ best=e; bestD=dPlayer; }
+  });
+  if(!best) return;
+  combatTarget=best;
+  comboChainTarget=best;
+  best.stunT=Math.max(best.stunT,0.8);
+  const toEnemy=best.mesh.position.clone().sub(P.pos);
+  toEnemy.y=0;
+  if(toEnemy.lengthSq()>0.01){
+    P.facing=Math.atan2(toEnemy.x,toEnemy.z);
+    yaw=P.facing;
+  }
+  if(bestD>5){
+    comboChainMode='zip';
+    zipEnemyTarget=best;
+    zipTarget=best.mesh.position.clone().add(new THREE.Vector3(0,0.8,0));
+    zipDir=zipTarget.clone().sub(P.pos).normalize();
+    P.state='zip';
+  } else {
+    comboChainMode='pull';
+    pullTarget=best;
+  }
+}
+
+function finishComboChain(e){
+  if(!e || !e.alive) return;
+  comboChainTarget=null;
+  comboChainMode=null;
+  combatTarget=e;
+  const toEnemy=e.mesh.position.clone().sub(P.pos);
+  toEnemy.y=0;
+  const attackDir=toEnemy.lengthSq()>0.001?toEnemy.normalize():cameraForwardFlat();
+  P.facing=Math.atan2(attackDir.x,attackDir.z);
+  P.meleeT=0.34;
+  P.meleeSide*=-1;
+  e.stunT=Math.max(e.stunT,0.7);
+  damageEnemy(e,18,true);
+  e.vel.addScaledVector(attackDir,7);
+}
+
+function flashDamage(){
+  document.getElementById('healthBarInner').style.filter='brightness(2)';
+  setTimeout(()=>document.getElementById('healthBarInner').style.filter='',120);
+}
+
+function damagePlayer(amount, grace=0.65, ignoreInvuln=false){
+  if((P.invuln>0 && !ignoreInvuln) || P.state==='downed' || P.state==='defeated') return false;
+  P.hp = Math.max(0, P.hp-amount);
+  P.invuln = grace;
+  flashDamage();
+  if(P.hp<=0){
+    P.state='defeated';
+    P.defeatedT=3;
+    P.gliding=false;
+    P.pendingFallDamage=0;
+    P.recoveryT=0;
+    P.swingWebs.left.anchor=null;
+    P.swingWebs.right.anchor=null;
+    P.swingWebs.left.physicsPivot=null;
+    P.swingWebs.right.physicsPivot=null;
+    P.swingWebs.left.fallCatch=false;
+    P.swingWebs.right.fallCatch=false;
+    P.swingGroundPullT=0;
+    P.swingGroundPullAnchor=null;
+    P.swingGroundPullAnchors.left=null;
+    P.swingGroundPullAnchors.right=null;
+    P.activeSwingHand=null;
+    P.vel.set(0,0,0);
+    combatTarget=null;
+    pullTarget=null;
+    zipTarget=null;
+    zipDir=null;
+    zipEnemyTarget=null;
+    flashMsg('DEFEATED');
+    showDeathScreen();
+  }
+  return true;
+}
+
+function playerInCombat(){
+  if(P.invuln>0 || P.pendingFallDamage>0 || P.state==='downed' || P.state==='defeated' || P.hp<=0) return true;
+  return enemies.some(e=>{
+    if(!e.alive) return false;
+    const dist = e.mesh.position.distanceTo(P.pos);
+    return dist < ALERT_RADIUS * 1.4 && (e.state==='alert' || e.state==='chasing' || e.state==='attacking');
+  });
+}
+
+function pulse(id){
+  const el = document.getElementById(id);
+  el.style.transform='scale(1.12)';
+  setTimeout(()=>el.style.transform='scale(1)',100);
+}
+
+function blendPart(part, base, rot, posOffset, amt){
+  part.rotation.x = THREE.MathUtils.lerp(part.rotation.x, base.rot.x + (rot.x||0), amt);
+  part.rotation.y = THREE.MathUtils.lerp(part.rotation.y, base.rot.y + (rot.y||0), amt);
+  part.rotation.z = THREE.MathUtils.lerp(part.rotation.z, base.rot.z + (rot.z||0), amt);
+  part.position.x = THREE.MathUtils.lerp(part.position.x, base.pos.x + (posOffset.x||0), amt);
+  part.position.y = THREE.MathUtils.lerp(part.position.y, base.pos.y + (posOffset.y||0), amt);
+  part.position.z = THREE.MathUtils.lerp(part.position.z, base.pos.z + (posOffset.z||0), amt);
+}
+
+function animatePlayer(dt, moveVec){
+  animClock += dt * (running ? 1.35 : 1);
+  const speedFlat = Math.hypot(P.vel.x, P.vel.z);
+  const moving = moveVec.lengthSq() > 0.04 && (P.state==='ground' || P.state==='air');
+  const step = Math.sin(animClock * (running ? 11 : 7.5));
+  const bob = moving ? Math.abs(step) * (running ? 0.08 : 0.045) : 0;
+  const amt = 1 - Math.pow(0.001, dt);
+  const wingPose=P.state==='air' && P.gliding;
+  // The physics root stays upright; only the visual rig rolls and pitches.
+  let rigPitch=wingPose?Math.PI/2:0;
+  if(P.wallFlipT>0) rigPitch=-(1-P.wallFlipT/0.65)*Math.PI*2;
+  playerRig.rotation.x=P.wallFlipT>0 ? rigPitch : THREE.MathUtils.lerp(playerRig.rotation.x,rigPitch,amt);
+  // On a wall, rotate the whole visual rig so its head points along travel.
+  // Horizontal and swing-carried runs therefore read as a sideways sprint,
+  // while vertical runs treat the wall exactly like the floor.
+  const targetRigRoll=P.state==='climb'?P.climbVisualAngle:0;
+  const rollDelta=Math.atan2(Math.sin(targetRigRoll-playerRig.rotation.z),Math.cos(targetRigRoll-playerRig.rotation.z));
+  playerRig.rotation.z+=rollDelta*(1-Math.exp(-14*dt));
+
+  let torsoRot = {x:0, y:0, z:0};
+  let headRot = {x:0, y:0, z:0};
+  let armLRot = {x:0, y:0, z:0};
+  let armRRot = {x:0, y:0, z:0};
+  let legLRot = {x:0, y:0, z:0};
+  let legRRot = {x:0, y:0, z:0};
+  let torsoPos = {x:0, y:bob, z:0};
+  let headPos = {x:0, y:bob * 0.55, z:0};
+
+  if(P.state==='ground'){
+    if(moving || speedFlat > 1){
+      const stride = running ? 0.85 : 0.48;
+      armLRot.x = step * stride * 0.7;
+      armRRot.x = -step * stride * 0.7;
+      legLRot.x = -step * stride;
+      legRRot.x = step * stride;
+      torsoRot.z = THREE.MathUtils.clamp(step * 0.04, -0.05, 0.05);
+    }
+  } else if(P.state==='air'){
+    if(P.swingReleaseT>0 && !P.gliding){
+      const release=Math.sin((P.swingReleaseT/0.35)*Math.PI);
+      armLRot.x=-0.75-release*0.45;
+      armRRot.x=-0.75-release*0.45;
+      armLRot.z=0.7+release*0.25;
+      armRRot.z=-0.7-release*0.25;
+      legLRot.x=0.65;
+      legRRot.x=0.25;
+      legLRot.z=0.18;
+      legRRot.z=-0.18;
+      torsoRot.x=-0.18;
+    } else {
+      armLRot.x = P.gliding ? 0 : -0.35;
+      armRRot.x = P.gliding ? 0 : -0.35;
+      armLRot.z = P.gliding ? -1.52 : -0.18;
+      armRRot.z = P.gliding ? 1.52 : 0.18;
+      legLRot.x = P.gliding ? 0 : 0.25;
+      legRRot.x = P.gliding ? 0 : -0.15;
+      legLRot.z = P.gliding ? -0.72 : 0;
+      legRRot.z = P.gliding ? 0.72 : 0;
+      torsoRot.x = P.gliding ? 0 : 0.05;
+    }
+  } else if(P.state==='swing'){
+    const leftAttached=!!P.swingWebs.left.anchor;
+    const rightAttached=!!P.swingWebs.right.anchor;
+    const groundPullPose=P.swingGroundPullT>0;
+    const entryPose=P.swingPhase==='entry';
+    const pullBack=Math.sin((1-P.swingGroundPullT/SWING_GROUND_PULL_TIME)*Math.PI)*0.65;
+    armLRot.x = groundPullPose ? -2.7+pullBack : (leftAttached ? (entryPose?-2.62:-2.48) : -0.55);
+    armRRot.x = groundPullPose ? -2.7+pullBack : (rightAttached ? (entryPose?-2.62:-2.48) : -0.55);
+    armLRot.z = groundPullPose ? -0.18 : (leftAttached ? -0.16 : -0.48);
+    armRRot.z = groundPullPose ? 0.18 : (rightAttached ? 0.16 : 0.48);
+    const swingKick=Math.sin(P.swingAge*8);
+    legLRot.x = entryPose ? 0.62 : 0.5+swingKick*0.3;
+    legRRot.x = entryPose ? 0.42 : -0.2-swingKick*0.3;
+    const facingRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
+    const lateralSpeed=P.vel.dot(facingRight);
+    const swingSideLean=THREE.MathUtils.clamp(-lateralSpeed*0.022,-0.38,0.38);
+    legLRot.z = (entryPose ? 0.18 : 0.08)+swingSideLean*0.9;
+    legRRot.z = (entryPose ? -0.18 : -0.08)+swingSideLean*0.9;
+    torsoRot.x = entryPose ? -0.18 : THREE.MathUtils.clamp(-P.vel.y*0.012,-0.28,0.2);
+    torsoRot.z = swingSideLean;
+  } else if(P.state==='zip'){
+    armLRot.x = -1.8;
+    armRRot.x = -1.8;
+    legLRot.x = 0.35;
+    legRRot.x = 0.35;
+    torsoRot.x = -0.32;
+  } else if(P.state==='climb'){
+    const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
+    const wallRunning=running || P.wallRunAutoT>0;
+    if(wallMoving && wallRunning){
+      const wallSide=P.wallRunDirection.x;
+      const wallVertical=P.wallRunDirection.y;
+      const sidewaysRun=P.wallRunFromSwing || Math.abs(wallSide)>Math.abs(wallVertical)*0.72;
+      const sideSign=Math.sign(wallSide)||1;
+      const stride=0.85;
+      armLRot.x=step*stride*0.7;
+      armRRot.x=-step*stride*0.7;
+      legLRot.x=-step*stride;
+      legRRot.x=step*stride;
+      if(sidewaysRun){
+        // A lateral wall run keeps the regular sprint cycle, but leans into
+        // travel and opens the trailing arm for balance like the reference pose.
+        torsoRot.x=-0.12;
+        torsoRot.z=sideSign*0.14+THREE.MathUtils.clamp(step*0.025,-0.03,0.03);
+        headRot.z=-sideSign*0.08;
+        if(sideSign>0){
+          armLRot.z=-1.02;
+          armLRot.x=-0.38+step*0.22;
+          armRRot.z=0.16;
+        } else {
+          armRRot.z=1.02;
+          armRRot.x=-0.38-step*0.22;
+          armLRot.z=-0.16;
+        }
+        legLRot.z=sideSign*0.12;
+        legRRot.z=sideSign*0.12;
+      } else {
+        // Up/down wall running is the normal opposing stride, rotated with the
+        // rig so the wall becomes the runner's floor.
+        torsoRot.z=THREE.MathUtils.clamp(step*0.04,-0.05,0.05);
+      }
+    } else if(wallMoving){
+      const climb=Math.sin(animClock*(wallRunning?12:7));
+      const reach=wallRunning?0.58:0.38;
+      armLRot.x=-1.28+climb*reach;
+      armRRot.x=-1.28-climb*reach;
+      legLRot.x=-0.72-climb*reach;
+      legRRot.x=-0.72+climb*reach;
+      armLRot.z=-0.58; armRRot.z=0.58;
+      legLRot.z=-0.42; legRRot.z=0.42;
+      torsoRot.x=-0.14;
+    } else {
+      // Four-point stationary wall cling: hands high, feet spread, no idle cycling.
+      armLRot.x=-1.25; armRRot.x=-1.25;
+      armLRot.z=-0.72; armRRot.z=0.72;
+      legLRot.x=-0.82; legRRot.x=-0.82;
+      legLRot.z=-0.52; legRRot.z=0.52;
+      torsoRot.x=-0.08;
+    }
+  } else if(P.state==='downed'){
+    torsoRot.x = 0.38;
+    headRot.x = -0.18;
+    armLRot.x = -0.85;
+    armRRot.x = -0.85;
+    armLRot.z = 0.32;
+    armRRot.z = -0.32;
+    legLRot.x = 1.0;
+    legRRot.x = 1.0;
+    legLRot.z = 0.2;
+    legRRot.z = -0.2;
+    torsoPos.y = -0.25;
+  }
+
+  if(P.meleeT>0 && P.state!=='downed' && P.state!=='defeated'){
+    const attackProgress=1-P.meleeT/0.34;
+    const strike=Math.sin(attackProgress*Math.PI);
+    const followThrough=Math.sin(Math.min(1,attackProgress*1.35)*Math.PI);
+    const rightPunch=P.meleeSide>0;
+    if(rightPunch){
+      armRRot.x=-1.72-strike*0.45;
+      armRRot.z=-0.08;
+      armLRot.x=-0.72;
+      armLRot.z=-0.42;
+      torsoRot.y=-followThrough*0.28;
+    } else {
+      armLRot.x=-1.72-strike*0.45;
+      armLRot.z=0.08;
+      armRRot.x=-0.72;
+      armRRot.z=0.42;
+      torsoRot.y=followThrough*0.28;
+    }
+    torsoRot.x=-0.12*strike;
+  }
+
+  if(P.state==='defeated'){
+    torsoRot.z=-1.45;
+    headRot.z=-0.35;
+    armLRot.z=1.25;
+    armRRot.z=-1.25;
+    legLRot.z=0.45;
+    legRRot.z=-0.45;
+    torsoPos.y=-0.22;
+  }
+
+  if(P.blocking){
+    armLRot.x = -1.25; armRRot.x = -1.25;
+    armLRot.z = -0.22; armRRot.z = 0.22;
+  }
+
+  blendPart(torso, basePose.torso, torsoRot, torsoPos, amt);
+  blendPart(head, basePose.head, headRot, headPos, amt);
+  blendPart(armL, basePose.armL, armLRot, {x:0,y:bob,z:0}, amt);
+  blendPart(armR, basePose.armR, armRRot, {x:0,y:bob,z:0}, amt);
+  blendPart(legL, basePose.legL, legLRot, {x:0,y:bob*0.2,z:0}, amt);
+  blendPart(legR, basePose.legR, legRRot, {x:0,y:bob*0.2,z:0}, amt);
+}
+
+// ---------------------------------------------------------------------------------------
+// MAIN UPDATE LOOP
+// ---------------------------------------------------------------------------------------
+let lastSwing=false, lastZip=false, lastJump=false, lastPull=false, lastMelee=false, lastWebshot=false;
+const WALK_SPEED = 6.5;
+
+function clearHeldInputs(){
+  Object.keys(keys).forEach(code=>{ keys[code] = false; });
+  mouseDown[0] = false;
+  mouseDown[2] = false;
+  lastSwing = false;
+  lastZip = false;
+  lastJump = false;
+  lastPull = false;
+  lastMelee = false;
+  lastWebshot = false;
+  P.blocking = false;
+  if(P.state === 'swing' || (P.state==='climb' && P.wallRunFromSwing)) releaseSwing(null,false);
+  if(P.state === 'zip') cancelZip();
+}
+window.addEventListener('blur', clearHeldInputs);
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden) clearHeldInputs();
+});
+
+function updatePlayer(dt){
+  if(paused) return;
+
+  // cooldown timers
+  for(const k in P.cooldowns) P.cooldowns[k]=Math.max(0,P.cooldowns[k]-dt);
+  P.swingWebs.left.retry=Math.max(0,P.swingWebs.left.retry-dt);
+  P.swingWebs.right.retry=Math.max(0,P.swingWebs.right.retry-dt);
+  P.swingReleaseT=Math.max(0,P.swingReleaseT-dt);
+  P.wingCooldown=Math.max(0,P.wingCooldown-dt);
+  const wallFlipWasActive=P.wallFlipT>0;
+  P.wallFlipT=Math.max(0,P.wallFlipT-dt);
+  // A completed backflip is the same orientation as zero. Reset the Euler value
+  // at that exact moment so interpolation cannot visibly unwind it as a front flip.
+  if(wallFlipWasActive && P.wallFlipT===0) playerRig.rotation.x=0;
+  P.wallDetachT=Math.max(0,P.wallDetachT-dt);
+  P.wallRunAutoT=Math.max(0,P.wallRunAutoT-dt);
+  P.meleeT=Math.max(0,P.meleeT-dt);
+  P.invuln = Math.max(0, P.invuln-dt);
+
+  // Swing is strictly single-hand, including after interrupted input frames.
+  if(P.swingWebs.left.anchor && P.swingWebs.right.anchor){
+    const keep=P.activeSwingHand || 'left';
+    const discard=keep==='left'?'right':'left';
+    P.swingWebs[discard].anchor=null;
+    P.swingWebs[discard].physicsPivot=null;
+    P.swingWebs[discard].fallCatch=false;
+    P.swingWebs[discard].auto=false;
+  }
+  if(P.activeSwingHand && !P.swingWebs[P.activeSwingHand].anchor) P.activeSwingHand=null;
+
+  // input edge detection
+  const swingDown = keys[bindings.swing];
+  const zipDown = keys[bindings.zip];
+  const webshotDown = keys[bindings.webshot];
+  const jumpDown = keys[bindings.jump];
+  const pullDown = keys[bindings.pull];
+  const meleeDown = mouseDown[0];
+  P.blocking = !!keys[bindings.block] && P.state!=='downed' && P.state!=='defeated';
+
+  if(!swingDown) P.swingRequireRelease=false;
+  if(swingDown && !P.swingRequireRelease && !P.activeSwingHand &&
+      P.swingWebs.left.retry<=0 && P.swingWebs.right.retry<=0){
+    trySwing('abSwing');
+    P.swingWebs.left.retry=0.18;
+    P.swingWebs.right.retry=0.18;
+  }
+  if(!swingDown && lastSwing) releaseSwing(null);
+  if(zipDown && !lastZip && P.cooldowns.zip<=0 && P.state!=='zip'){ tryZip(); P.cooldowns.zip=0.15; }
+  if(!zipDown && lastZip && P.state==='zip') cancelZip();
+  if(webshotDown && !lastWebshot && P.cooldowns.webshot<=0){ tryWebshot(); P.cooldowns.webshot=0.5; }
+  if(pullDown && !lastPull && P.cooldowns.pull<=0){ tryPull(); P.cooldowns.pull=1.6; }
+  if(meleeDown && !lastMelee && P.cooldowns.melee<=0 && P.state!=='swing'){ tryMelee(); P.cooldowns.melee=0.45; }
+  if(jumpDown && !lastJump){
+    if(P.state==='ground'||P.state==='climb'){
+      const jumpingFromWall=P.state==='climb';
+      const wallNormal=jumpingFromWall&&P.climbNormal?P.climbNormal.clone():null;
+      if(jumpingFromWall && P.wallRunFromSwing){
+        if(wallNormal) P.pos.addScaledVector(wallNormal,0.45);
+        resumeSwingFromWall(true);
+      } else {
+        P.vel.y = JUMP_SPEED * (P.state==='climb'?0.9:1);
+        if(wallNormal){
+          P.vel.addScaledVector(wallNormal,8);
+          P.wallFlipT=0.65;
+          P.wallDetachT=0.3;
+        }
+        P.climbNormal=null;
+        P.climbBuilding=null;
+        P.state='air'; P.gliding=false;
+      }
+    } else if(P.state==='air'){
+      // Wings may be closed at any time, but only opened when the player is high
+      // enough above the next surface for an unprotected landing to cause damage.
+      const wingGround=heightAt(P.pos.x,P.pos.z,P.pos.y+0.15);
+      const canOpenWings=P.pos.y-wingGround>FALL_SAFE_DISTANCE;
+      if(P.gliding){
+        P.gliding=false;
+        P.wingCooldown=5;
+      } else if(canOpenWings && P.wingCooldown<=0){
+        P.gliding=true;
+        if(P.vel.y<0) P.vel.y = Math.max(P.vel.y, -8);
+      }
+    }
+  }
+  if(P.pendingFallDamage>0 && P.recoveryT>0 && keys[bindings.recover] && !P.recoverPressed){
+    P.recoverPressed=true;
+    const groundH = heightAt(P.pos.x, P.pos.z, P.pos.y+2);
+    P.pos.y = Math.max(P.pos.y, groundH + 1.2);
+    P.state = 'air';
+    P.downedT = 0;
+    P.pendingFallDamage = 0;
+    P.recoveryT = 0;
+    P.recoverLock = true;
+    P.gliding = false;
+    P.peakY = P.pos.y;
+    P.vel.y = Math.max(P.vel.y, 18);
+    const flatSpeed = Math.hypot(P.vel.x, P.vel.z);
+    if(flatSpeed < 8){
+      const fwd = new THREE.Vector3(Math.sin(P.facing), 0, Math.cos(P.facing));
+      P.vel.x = fwd.x * 8;
+      P.vel.z = fwd.z * 8;
+    }
+    flashMsg('RECOVER');
+  }
+  if(!keys[bindings.recover]) P.recoverPressed=false;
+
+  lastSwing=swingDown; lastZip=zipDown; lastWebshot=webshotDown;
+  lastJump=jumpDown; lastPull=pullDown; lastMelee=meleeDown;
+
+  // movement input vector (camera relative)
+  const mv = new THREE.Vector3(
+    (keys[bindings.left]?1:0)-(keys[bindings.right]?1:0), 0,
+    (keys[bindings.forward]?1:0)-(keys[bindings.back]?1:0)
+  );
+  if(mv.lengthSq()>0) mv.normalize();
+  mv.applyAxisAngle(new THREE.Vector3(0,1,0), yaw);
+  const moveSpeed = (running?RUN_SPEED:WALK_SPEED) * (P.blocking?0.5:1);
+
+  const facingLocked=shiftLocked || firstPersonAutoLock || cameraDistance<=0.6;
+  if(facingLocked){
+    P.facing=yaw;
+  } else if(mv.lengthSq()>0.01 && (P.state==='ground'||P.state==='air') && !P.gliding){
+    const targetFacing=Math.atan2(mv.x,mv.z);
+    const turnDelta=Math.atan2(Math.sin(targetFacing-P.facing),Math.cos(targetFacing-P.facing));
+    P.facing+=turnDelta*(1-Math.exp(-18*dt));
+  }
+  player.rotation.y=P.facing;
+
+  // ---------------- STATE MACHINE ----------------
+  if(P.state==='defeated'){
+    P.vel.set(0,0,0);
+  }
+  else if(P.state==='downed'){
+    P.state='ground';
+    P.downedT=0;
+  }
+  else if(P.state==='swing'){
+    P.swingAge+=dt;
+    P.swingPhaseT+=dt;
+    P.swingPeakFlat=Math.max(P.swingPeakFlat,Math.hypot(P.vel.x,P.vel.z));
+    const previousVy=P.swingLastVy;
+    P.vel.y += GRAVITY*dt;
+    let activeWebs=[P.swingWebs.left,P.swingWebs.right].filter(web=>web.anchor);
+    if(!activeWebs.length){
+      P.state='air';
+      P.swingAssisted=false;
+    } else {
+    let constraint=swingConstraint(activeWebs);
+    activeWebs.forEach(web=>{
+      if(!web.fallCatch || !web.physicsPivot) return;
+      // A forward rooftop below the player initially creates slack. Take that
+      // slack up without applying force so the first outward part of the fall
+      // immediately becomes a taut, energy-preserving pendulum.
+      const catchDistance=P.pos.distanceTo(web.physicsPivot);
+      if(catchDistance<web.length){
+        web.length=catchDistance;
+        web.targetLength=Math.min(web.targetLength,catchDistance);
+      }
+    });
+    constraint=swingConstraint(activeWebs);
+    const swingGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+    const groundClearance=Math.max(0,P.pos.y-swingGround);
+    const lowAssist=THREE.MathUtils.clamp(1-groundClearance/SWING_LOW_CLEARANCE,0,1);
+    const radial=P.pos.clone().sub(constraint.anchor).normalize();
+    const forwardTangent=cameraForwardFlat();
+    forwardTangent.addScaledVector(radial,-forwardTangent.dot(radial));
+
+    if(P.swingGroundPullT>0){
+      P.swingGroundPullT=Math.max(0,P.swingGroundPullT-dt);
+      // This is the street-start web pull: two visible strands and one actual
+      // corridor pivot. It establishes air beneath the player, then hands the
+      // preserved velocity to the ordinary down-then-up pendulum.
+      P.vel.y+=SWING_GROUND_PULL_UP_ACCEL*dt;
+      if(forwardTangent.lengthSq()>0.001){
+        P.vel.addScaledVector(forwardTangent.clone().normalize(),SWING_GROUND_PULL_FORWARD_ACCEL*dt);
+      }
+      activeWebs.forEach(web=>{
+        web.length=Math.max(web.targetLength,web.length-SWING_GROUND_PULL_REEL_SPEED*dt);
+      });
+      if(P.swingGroundPullT===0){
+        P.swingGroundPullAnchor=null;
+        P.swingGroundPullAnchors.left=null;
+        P.swingGroundPullAnchors.right=null;
+      }
+    }
+
+    if(P.swingPhase==='entry'){
+      // Rising entries keep rising. Level or slow entries receive a small
+      // tangential dip, never a direct downward teleport or upward zip force.
+      if(P.vel.y<=1 && groundClearance>4){
+        const downTangent=new THREE.Vector3(0,-1,0);
+        downTangent.addScaledVector(radial,-downTangent.dot(radial));
+        if(downTangent.lengthSq()>0.001) P.vel.addScaledVector(downTangent.normalize(),SWING_ENTRY_DOWN_ACCEL*dt);
+      }
+      if(forwardTangent.lengthSq()>0.001) P.vel.addScaledVector(forwardTangent.clone().normalize(),SWING_ENTRY_FORWARD_ACCEL*dt);
+      if(P.vel.y<-0.75 || (P.swingPhaseT>=SWING_ENTRY_MAX_TIME && P.vel.y<=0.5)){
+        P.swingHasDescended=true;
+        setSwingPhase('descent');
+      }
+    }
+
+    if(P.swingPhase==='descent'){
+      if(P.vel.y<-0.5) P.swingHasDescended=true;
+      if(forwardTangent.lengthSq()>0.001) P.vel.addScaledVector(forwardTangent.clone().normalize(),SWING_DESCENT_PUMP*dt);
+      // Ground protection only acts when the projected arc is running out of
+      // clearance. It is not part of ordinary mid-air swing acceleration.
+      if(constraint.anchor.y>swingGround+10 && lowAssist>0 && P.vel.y<2){
+        P.vel.y+=SWING_LOW_LIFT_ACCEL*lowAssist*dt;
+        activeWebs.forEach(web=>{
+          web.length=Math.max(web.targetLength,web.length-SWING_SAFE_REEL_SPEED*lowAssist*dt);
+        });
+      }
+    } else if(P.swingPhase==='ascent'){
+      P.swingPeakRise=Math.max(P.swingPeakRise,P.vel.y);
+      if(forwardTangent.lengthSq()>0.001) P.vel.addScaledVector(forwardTangent.clone().normalize(),SWING_ASCENT_PUMP*dt);
+      // A low start earns its lift only after crossing the bottom of the arc.
+      // This creates the visible down-then-up motion while still raising the next
+      // release above traffic instead of trapping the player in a street skim.
+      if(constraint.anchor.y>swingGround+10 && lowAssist>0){
+        P.vel.y+=SWING_LOW_LIFT_ACCEL*0.55*lowAssist*dt;
+        activeWebs.forEach(web=>{
+          web.length=Math.max(web.targetLength,web.length-SWING_LOW_ASCENT_REEL_SPEED*lowAssist*dt);
+        });
+      }
+      // A slight reel just after the bottom helps convert the downswing into
+      // height, while leaving almost all of the ascent to pendulum momentum.
+      if(P.swingPhaseT<0.32){
+        activeWebs.forEach(web=>{
+          web.length=Math.max(web.targetLength,web.length-SWING_BOTTOM_REEL_SPEED*dt);
+        });
+      }
+    }
+
+    // Steering is tangential too, so left/right momentum is retained rather than
+    // being cancelled by an invisible pull toward the middle of the street.
+    if(mv.lengthSq()>0){
+      const swingSteer=mv.clone().addScaledVector(radial,-mv.dot(radial));
+      if(swingSteer.lengthSq()>0.001) P.vel.addScaledVector(swingSteer.normalize(),12*dt);
+    }
+    const beforeSwingMove = P.pos.clone();
+    const swingImpactVelocity=P.vel.clone();
+    P.pos.addScaledVector(P.vel, dt);
+    const constrainedWebs=[P.swingWebs.left,P.swingWebs.right].filter(web=>web.anchor);
+    enforceSwingConstraint(constrainedWebs);
+    const swingWall=resolveWallCollision(P.pos,beforeSwingMove);
+    if(swingWall) beginTraversalWallRun(swingWall.normal,swingWall.building,swingImpactVelocity);
+    // A valid overhead web skims upward instead of collapsing into fast walking.
+    const landingGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+    if(P.state==='swing' && P.pos.y<=landingGround+1 && P.vel.y<0){
+      if(constraint.anchor.y>landingGround+10){
+        P.pos.y=landingGround+1;
+        P.vel.y=Math.max(P.vel.y,SWING_SKIM_UP_SPEED);
+      } else {
+        P.pos.y=landingGround;
+        P.vel.y=0;
+        P.state='ground';
+        P.swingWebs.left.anchor=null;
+        P.swingWebs.right.anchor=null;
+        P.swingWebs.left.physicsPivot=null;
+        P.swingWebs.right.physicsPivot=null;
+        P.swingWebs.left.fallCatch=false;
+        P.swingWebs.right.fallCatch=false;
+        P.swingGroundPullT=0;
+        P.swingGroundPullAnchor=null;
+        P.swingGroundPullAnchors.left=null;
+        P.swingGroundPullAnchors.right=null;
+        P.activeSwingHand=null;
+        P.swingAssisted=false;
+      }
+    }
+    if(P.state==='swing'){
+      const currentVy=P.vel.y;
+      if(P.swingPhase==='entry' && currentVy<-0.75){
+        P.swingHasDescended=true;
+        setSwingPhase('descent');
+      }
+      if(P.swingPhase==='descent'){
+        const crossedBottom=P.swingHasDescended && previousVy<-0.35 && currentVy>=-0.35;
+        if(crossedBottom || (P.swingHasDescended && currentVy>0.9)){
+          P.swingBottomSpeed=P.vel.length();
+          P.swingPeakRise=Math.max(0,currentVy);
+          setSwingPhase('ascent');
+        }
+      }
+      if(P.swingPhase==='ascent'){
+        P.swingPeakRise=Math.max(P.swingPeakRise,currentVy);
+        if(currentVy>2.5) P.swingClimbedAfterDescent=true;
+        const releaseGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+        const releaseThreshold=Math.max(2.2,P.swingPeakRise*0.34);
+        const losingRise=P.swingClimbedAfterDescent && P.swingPeakRise>4.5 && currentVy<=releaseThreshold && previousVy>currentVy;
+        if(P.swingAge>0.75 && losingRise && currentVy>-0.5 && P.pos.y-releaseGround>12) autoReleaseSwing();
+      }
+      P.swingLastVy=P.vel.y;
+      if(P.swingTelemetry){
+        P.swingTelemetry.phase=P.swingPhase;
+        const samples=P.swingTelemetry.samples;
+        samples.push({t:P.swingAge,phase:P.swingPhase,y:P.pos.y,vy:P.vel.y,
+          speed:P.vel.length(),flat:Math.hypot(P.vel.x,P.vel.z),rope:constraint.length,clearance:groundClearance});
+        if(samples.length>240) samples.shift();
+      }
+    }
+    }
+  }
+  else if(P.state==='zip'){
+    if(zipEnemyTarget && zipEnemyTarget.alive){
+      zipTarget.copy(zipEnemyTarget.mesh.position).add(new THREE.Vector3(0,0.8,0));
+    } else if(zipEnemyTarget){
+      zipEnemyTarget=null;
+    }
+    const toT = new THREE.Vector3().subVectors(zipTarget, P.pos);
+    const d = toT.length();
+    if(d < 2.2){
+      const arrivedEnemy=zipEnemyTarget;
+      const completesCombo=comboChainMode==='zip' && comboChainTarget===arrivedEnemy;
+      const exitDir = zipDir && zipDir.lengthSq()>0.001 ? zipDir : new THREE.Vector3(Math.sin(P.facing),0,Math.cos(P.facing));
+      P.state='air';
+      P.vel.copy(exitDir).multiplyScalar(8);
+      zipTarget = null;
+      zipDir = null;
+      if(arrivedEnemy) arrivedEnemy.stunT=Math.max(arrivedEnemy.stunT,0.6);
+      zipEnemyTarget=null;
+      if(completesCombo) finishComboChain(arrivedEnemy);
+    }
+    else {
+      toT.normalize();
+      zipDir = toT.clone();
+      const beforeZipMove = P.pos.clone();
+      const zipImpactVelocity=toT.clone().multiplyScalar(ZIP_SPEED);
+      P.pos.addScaledVector(toT, ZIP_SPEED*dt);
+      P.vel.copy(toT).multiplyScalar(ZIP_SPEED*0.6);
+      const zipWall=resolveWallCollision(P.pos, beforeZipMove);
+      if(zipWall) beginTraversalWallRun(zipWall.normal,zipWall.building,zipImpactVelocity);
+    }
+  }
+  else if(P.state==='climb'){
+    if(!P.climbNormal || !P.climbBuilding){
+      if(!resumeSwingFromWall(false)) P.state='air';
+      return;
+    }
+    // W/S travel vertically and A/D travel across the wall. The run toggle changes
+    // wall crawling into a faster wall run, matching movement on the street.
+    const manualClimbMove = new THREE.Vector3(
+      (keys[bindings.left]?1:0)-(keys[bindings.right]?1:0),
+      (keys[bindings.forward]?1:0)-(keys[bindings.back]?1:0), 0
+    );
+    if(manualClimbMove.lengthSq()>0.01) P.wallRunAutoT=0;
+    const autoWallRunning=P.wallRunAutoT>0 && manualClimbMove.lengthSq()<0.01;
+    const climbMove=autoWallRunning
+      ? new THREE.Vector3(P.wallRunDirection.x,P.wallRunDirection.y,0)
+      : manualClimbMove;
+    if(climbMove.lengthSq()>1) climbMove.normalize();
+    if(climbMove.lengthSq()>0.01){
+      P.climbVisualAngle=Math.atan2(-climbMove.x,climbMove.y);
+      P.wallRunDirection.set(climbMove.x,climbMove.y).normalize();
+    }
+    const wallRunning=running || autoWallRunning;
+    const wallSpeed=autoWallRunning?Math.max(WALL_RUN_SPEED,P.wallRunEntrySpeed):(wallRunning?WALL_RUN_SPEED:WALL_CRAWL_SPEED);
+    if(P.wallRunFromSwing) P.wallRunMomentum=Math.max(P.wallRunMomentum,wallSpeed);
+    const right = new THREE.Vector3().crossVectors(P.climbNormal, new THREE.Vector3(0,1,0)).normalize();
+    P.pos.addScaledVector(right,climbMove.x*wallSpeed*dt);
+    P.pos.y+=climbMove.y*wallSpeed*dt;
+    P.vel.set(0,0,0);
+
+    const b=P.climbBuilding;
+    const n=P.climbNormal;
+    if(n.x<0) P.pos.x=b.hitMinX-CLIMB_WALL_OFFSET;
+    else if(n.x>0) P.pos.x=b.hitMaxX+CLIMB_WALL_OFFSET;
+    else if(n.z<0) P.pos.z=b.hitMinZ-CLIMB_WALL_OFFSET;
+    else P.pos.z=b.hitMaxZ+CLIMB_WALL_OFFSET;
+    const alongWall=n.x!==0
+      ? P.pos.z>=b.hitMinZ-PLAYER_RADIUS && P.pos.z<=b.hitMaxZ+PLAYER_RADIUS
+      : P.pos.x>=b.hitMinX-PLAYER_RADIUS && P.pos.x<=b.hitMaxX+PLAYER_RADIUS;
+    P.facing=Math.atan2(-n.x,-n.z);
+    player.rotation.y=P.facing;
+
+    // The collision normal points away from the wall, so sample and step in the
+    // opposite direction to mantle onto the actual rooftop.
+    const roofX=P.pos.x-P.climbNormal.x*1.3;
+    const roofZ=P.pos.z-P.climbNormal.z*1.3;
+    const roofH=heightAt(roofX,roofZ);
+    if(P.pos.y>=roofH-0.2 && roofH>0){
+      if(P.wallRunFromSwing || (wallRunning && climbMove.lengthSq()>0.01)){
+        const exitDirection=climbMove.lengthSq()>0.01?climbMove:new THREE.Vector3(P.wallRunDirection.x,P.wallRunDirection.y,0);
+        P.pos.x=roofX;
+        P.pos.z=roofZ;
+        P.pos.y=roofH+0.35;
+        jumpFromWallEdge(right,exitDirection,wallSpeed);
+      } else {
+        P.pos.x=roofX;
+        P.pos.z=roofZ;
+        P.pos.y=roofH;
+        P.vel.set(0,0,0);
+        P.state='ground';
+        P.climbBuilding=null;
+        P.climbNormal=null;
+        P.peakY=roofH;
+      }
+    }
+    else if(!alongWall || P.pos.y<0.15){
+      if(P.wallRunFromSwing || (P.pos.y>=0.15 && wallRunning && climbMove.lengthSq()>0.01)){
+        const exitDirection=climbMove.lengthSq()>0.01?climbMove:new THREE.Vector3(P.wallRunDirection.x,P.wallRunDirection.y,0);
+        jumpFromWallEdge(right,exitDirection,wallSpeed);
+      } else {
+        P.state=P.pos.y<0.15?'ground':'air';
+        P.pos.y=Math.max(0,P.pos.y);
+        P.wallRunAutoT=0;
+        P.climbBuilding=null;
+        P.climbNormal=null;
+      }
+    }
+  }
+  else { // ground / air
+    if(P.state === 'ground'){
+      P.vel.x = mv.x*moveSpeed;
+      P.vel.z = mv.z*moveSpeed;
+    } else {
+      if(mv.lengthSq()>0) P.vel.addScaledVector(mv, AIR_CONTROL*dt);
+      P.vel.x *= Math.pow(AIR_DRAG, dt*60);
+      P.vel.z *= Math.pow(AIR_DRAG, dt*60);
+    }
+    const activelyGliding=P.state==='air' && P.gliding && P.vel.y<=0;
+    const g = activelyGliding ? GRAVITY*0.24 : GRAVITY;
+    P.vel.y += g*dt;
+    clampPlayerVelocity();
+    if(activelyGliding){
+      P.vel.y=Math.max(P.vel.y,-8);
+      const steerToward=mv.lengthSq()>0 ? mv.clone().normalize() : cameraForwardFlat();
+      const glideVelocity=new THREE.Vector3(P.vel.x,0,P.vel.z);
+      const glideSpeed=THREE.MathUtils.clamp(Math.max(12,glideVelocity.length()+7*dt),12,34);
+      if(glideVelocity.lengthSq()<0.01) glideVelocity.copy(steerToward);
+      else glideVelocity.normalize().lerp(steerToward,1-Math.exp(-3.8*dt)).normalize();
+      P.vel.x=glideVelocity.x*glideSpeed;
+      P.vel.z=glideVelocity.z*glideSpeed;
+      P.facing=Math.atan2(glideVelocity.x,glideVelocity.z);
+      player.rotation.y=P.facing;
+    }
+    const beforeMove = P.pos.clone();
+    P.pos.addScaledVector(new THREE.Vector3(P.vel.x,0,P.vel.z), dt);
+    P.pos.y += P.vel.y*dt;
+    resolveWallCollision(P.pos, beforeMove);
+
+    if(P.state==='air') P.peakY = Math.max(P.peakY, P.pos.y);
+
+    const groundH = heightAt(P.pos.x,P.pos.z, P.pos.y+1.5);
+    if(P.pos.y<=groundH){
+      const fallDrop = P.peakY - groundH;
+      const protectedByWings=P.gliding;
+      P.pos.y=groundH; P.vel.y=0;
+      const dmg=protectedByWings ? 0 : fallDamageForDrop(fallDrop);
+      if(dmg>0){
+        P.state='ground';
+        P.gliding=false;
+        if(P.recoverLock){
+          P.recoverLock=false;
+          damagePlayer(dmg,0.25,true);
+        } else {
+          P.pendingFallDamage=dmg;
+          P.recoveryT=2;
+        }
+      } else {
+        P.state='ground'; P.gliding=false;
+        if(P.pendingFallDamage<=0) P.recoverLock=false;
+      }
+      P.peakY = P.pos.y;
+    }
+    else {
+      if(P.state==='ground') P.peakY = P.pos.y;
+      P.state='air';
+    }
+
+    // Moving into a wall from either the street or the air starts a wall crawl/run.
+    if((P.state==='air'||P.state==='ground') && P.wallDetachT<=0 && mv.lengthSq()>0.1){
+      const wc = wallContact(P.pos.x,P.pos.z,P.facing,1.0);
+      if(wc){
+        P.state='climb'; P.gliding=false;
+        P.climbNormal = wc.normal.clone();
+        P.climbBuilding = wc.building;
+        P.vel.set(0,0,0);
+      }
+    }
+  }
+
+  clampPlayerVelocity();
+
+  // pull ability resolution (enemy flies to player)
+  if(pullTarget){
+    const e = pullTarget;
+    if(!e.alive){
+      pullTarget=null;
+      if(comboChainTarget===e){ comboChainTarget=null; comboChainMode=null; }
+    }
+    else {
+      const to = new THREE.Vector3().subVectors(P.pos, e.mesh.position); to.y=0;
+      const d = to.length();
+      if(d<2.2){
+        const completesCombo=comboChainMode==='pull' && comboChainTarget===e;
+        e.stunT = 1.5;
+        pullTarget=null;
+        if(completesCombo) finishComboChain(e);
+        else damageEnemy(e,12);
+      } else {
+        to.normalize();
+        e.mesh.position.addScaledVector(to, 30*dt);
+      }
+    }
+  }
+
+  // Water is scenery only. The rounded shoreline silently blocks outward motion.
+  constrainToIsland(P.pos,P.vel);
+  if(P.state!=='downed') P.downedT = 0;
+
+  if(P.pendingFallDamage>0 && P.recoveryT>0){
+    P.recoveryT=Math.max(0,P.recoveryT-dt);
+    if(P.recoveryT<=0){
+      const pendingDamage=P.pendingFallDamage;
+      P.pendingFallDamage=0;
+      damagePlayer(pendingDamage,0.25,true);
+    }
+  }
+
+  animatePlayer(dt, mv);
+  updateWebWings();
+
+  // health regen (slow) when not in combat
+  if(P.hp>0 && P.state!=='defeated' && !playerInCombat()) P.hp = Math.min(P.maxHp, P.hp + dt*0.6);
+}
+
+function updateProjectiles(dt){
+  for(let i=projectiles.length-1;i>=0;i--){
+    const p = projectiles[i];
+    p.life -= dt;
+    p.pos.addScaledVector(p.dir, WEBSHOT_SPEED*dt);
+    if(p.mesh) p.mesh.position.copy(p.pos);
+    let hit=false;
+    for(const e of enemies){
+      if(!e.alive) continue;
+      if(p.pos.distanceTo(e.mesh.position) < 1.6){
+        combatTarget=e;
+        damageEnemy(e, 10);
+        e.stunT = 2.2;
+        e.vel.addScaledVector(p.dir,4);
+        hit=true;
+        break;
+      }
+    }
+    if(hit || p.life<=0) removeProjectile(i);
+  }
+}
+
+function pointInsideBuildingVolume(point){
+  return buildingMeshes.some(b =>
+    point.x > b.hitMinX &&
+    point.x < b.hitMaxX &&
+    point.z > b.hitMinZ &&
+    point.z < b.hitMaxZ &&
+    point.y > 0 &&
+    point.y < b.h
+  );
+}
+
+function pushPointOutOfBuildingVolume(point, clearance=0.45){
+  for(const b of buildingMeshes){
+    const inside =
+      point.x > b.hitMinX &&
+      point.x < b.hitMaxX &&
+      point.z > b.hitMinZ &&
+      point.z < b.hitMaxZ &&
+      point.y > 0 &&
+      point.y < b.h;
+    if(!inside) continue;
+    const options = [
+      {d:point.x-b.hitMinX, set:()=>{ point.x = b.hitMinX-clearance; }},
+      {d:b.hitMaxX-point.x, set:()=>{ point.x = b.hitMaxX+clearance; }},
+      {d:point.z-b.hitMinZ, set:()=>{ point.z = b.hitMinZ-clearance; }},
+      {d:b.hitMaxZ-point.z, set:()=>{ point.z = b.hitMaxZ+clearance; }},
+      {d:b.h-point.y, set:()=>{ point.y = b.h+clearance; }}
+    ];
+    options.sort((a,b)=>a.d-b.d);
+    options[0].set();
+  }
+  return point;
+}
+
+function updateCamera(dt=1/60){
+  const firstPerson = cameraDistance <= 0.6;
+  player.visible = !firstPerson;
+
+  const traversalSpeed=P.vel.length();
+  const targetFov=70+THREE.MathUtils.clamp((traversalSpeed-14)*0.18,0,8);
+  const nextFov=THREE.MathUtils.lerp(camera.fov,targetFov,1-Math.exp(-5*dt));
+  if(Math.abs(nextFov-camera.fov)>0.01){
+    camera.fov=nextFov;
+    camera.updateProjectionMatrix();
+  }
+
+  const lookDir = new THREE.Vector3(
+    Math.sin(yaw) * Math.cos(pitch),
+    Math.sin(pitch),
+    Math.cos(yaw) * Math.cos(pitch)
+  ).normalize();
+  const focus = new THREE.Vector3(P.pos.x, P.pos.y + 1.45, P.pos.z);
+  if(!firstPerson && traversalSpeed>12){
+    const lead=new THREE.Vector3(P.vel.x,0,P.vel.z);
+    if(lead.lengthSq()>0.001) focus.addScaledVector(lead.normalize(),Math.min(1.8,(traversalSpeed-12)*0.035));
+  }
+
+  if(firstPerson){
+    cameraCollisionDistance=null;
+    const eye = new THREE.Vector3(P.pos.x, P.pos.y + 1.62, P.pos.z);
+    camera.position.lerp(eye, 0.35);
+    camera.lookAt(eye.clone().addScaledVector(lookDir, 12));
+    return;
+  }
+
+  const dist = cameraDistance;
+  const camOffset = new THREE.Vector3(
+    -Math.sin(yaw)*Math.cos(pitch)*dist,
+    1.75-Math.sin(pitch)*dist,
+    -Math.cos(yaw)*Math.cos(pitch)*dist
+  );
+  const desired = P.pos.clone().add(camOffset);
+  const fromFocus = desired.clone().sub(focus);
+  const desiredDist = fromFocus.length();
+  const cameraRay = fromFocus.clone().normalize();
+  let clearDistance = desiredDist;
+
+  if(desiredDist > 0.1){
+    raycaster.set(focus, cameraRay);
+    raycaster.far = desiredDist;
+    const hits = raycaster.intersectObjects(collidables(), false);
+    if(hits.length) clearDistance=Math.min(clearDistance,Math.max(0.45,hits[0].distance-0.4));
+    raycaster.far = Infinity;
+
+    // Keep the camera above whichever surface is below it: island or ocean.
+    const cameraFloor=(isOverIsland(desired.x,desired.z) ? 0 : WATER_LEVEL)+0.32;
+    if(cameraRay.y<0 && desired.y<cameraFloor){
+      const groundDistance=(focus.y-cameraFloor)/-cameraRay.y;
+      clearDistance=Math.min(clearDistance,Math.max(0.45,groundDistance));
+    }
+  }
+
+  if(cameraCollisionDistance===null) cameraCollisionDistance=clearDistance;
+  const response=clearDistance<cameraCollisionDistance ? 30 : 7;
+  const blend=1-Math.exp(-response*dt);
+  cameraCollisionDistance=THREE.MathUtils.lerp(cameraCollisionDistance,clearDistance,blend);
+  camera.position.copy(focus).addScaledVector(cameraRay,cameraCollisionDistance);
+  camera.lookAt(focus);
+}
+
+function updateZoomInput(dt){
+  let delta = 0;
+  if(keys[bindings.zoomIn]) delta -= KEY_ZOOM_SPEED * dt;
+  if(keys[bindings.zoomOut]) delta += KEY_ZOOM_SPEED * dt;
+  if(delta !== 0) adjustCameraZoom(delta);
+}
+
+// ---------------------------------------------------------------------------------------
+// HUD / MINIMAP / DEBUG
+// ---------------------------------------------------------------------------------------
+const mmCanvas = document.getElementById('minimap');
+const mmCtx = mmCanvas.getContext('2d');
+function drawMinimap(){
+  const S=190, scale=S/(HALF_CITY*2.6);
+  mmCtx.clearRect(0,0,S,S);
+  mmCtx.fillStyle='#12233a'; mmCtx.fillRect(0,0,S,S);
+  function toMM(x,z){ return [S/2 + x*scale, S/2 + z*scale]; }
+  mmCtx.fillStyle='#4c5568';
+  buildingMeshes.forEach(b=>{
+    const [x1,y1]=toMM(b.minX,b.minZ); const [x2,y2]=toMM(b.maxX,b.maxZ);
+    mmCtx.fillRect(x1,y1,x2-x1,y2-y1);
+  });
+  // spawn points (waypoints)
+  spawnPoints.forEach(sp=>{
+    const [x,y]=toMM(sp.x,sp.z);
+    mmCtx.fillStyle='#00e5ff'; mmCtx.beginPath(); mmCtx.arc(x,y,3,0,7); mmCtx.fill();
+  });
+  // enemies
+  enemies.forEach(e=>{
+    if(!e.alive) return;
+    const [x,y]=toMM(e.mesh.position.x,e.mesh.position.z);
+    mmCtx.fillStyle = e.state==='idle'?'#888': e.state==='alert'?'#ffcc00': e.stunT>0?'#3355ff':'#ff3030';
+    mmCtx.beginPath(); mmCtx.arc(x,y,2.6,0,7); mmCtx.fill();
+  });
+  // player
+  const [px,py]=toMM(P.pos.x,P.pos.z);
+  mmCtx.save();
+  mmCtx.translate(px,py); mmCtx.rotate(yaw);
+  mmCtx.fillStyle='#e8232a';
+  mmCtx.beginPath(); mmCtx.moveTo(0,-6); mmCtx.lineTo(4,5); mmCtx.lineTo(-4,5); mmCtx.closePath(); mmCtx.fill();
+  mmCtx.restore();
+}
+
+function updateCrosshair(){
+  const wrap=document.getElementById('crosshairWrap');
+  const aimingLocked=gameActive && !paused && (shiftLocked || cameraDistance<=0.6 || firstPersonAutoLock);
+  wrap.style.display=aimingLocked?'block':'none';
+  if(!aimingLocked) return;
+  const hit = zipCrosshairHit(Math.max(SWING_MAX_RANGE,WEBSHOT_RANGE,ZIP_RANGE));
+  const el = document.getElementById('crosshair');
+  if(!hit){ el.className='none'; return; }
+  const isEnemy=!!enemyForObject(hit.object);
+  el.className = isEnemy? 'enemy':'';
+}
+
+function updateEnemyHpBars(){
+  const v = new THREE.Vector3();
+  enemies.forEach(e=>{
+    if(!e.alive){ e.hpEl.style.display='none'; return; }
+    v.copy(e.mesh.position); v.y+=1.9;
+    v.project(camera);
+    if(v.z>1){ e.hpEl.style.display='none'; return; }
+    const x=(v.x*0.5+0.5)*innerWidth, y=(-v.y*0.5+0.5)*innerHeight;
+    e.hpEl.style.display='block';
+    e.hpEl.style.left=x+'px'; e.hpEl.style.top=y+'px';
+    e.hpEl.querySelector('.fill').style.width = Math.max(0,(e.hp/e.maxHp*100))+'%';
+  });
+}
+
+function updateDebugPanel(){
+  if(!debugOn) return;
+  const list = document.getElementById('debugList');
+  list.innerHTML='';
+  groups.forEach((g,i)=>{
+    const alive = g.members.filter(e=>e.alive).length;
+    let status;
+    if(alive>0) status = alive+' active';
+    else {
+      const remain = Math.max(0, RESPAWN_TIME - (performance.now()-(g.defeatedAt||performance.now()))/1000);
+      status = 'respawn in '+remain.toFixed(0)+'s';
+    }
+    const row=document.createElement('div');
+    row.className='row';
+    row.innerHTML = `<span>Group ${i}</span><span>${status}</span>`;
+    list.appendChild(row);
+  });
+}
+
+function updateAbilityCooldownUI(){
+  const map = {abSwing:'swing', abZip:'zip', abWebshot:'webshot', abPull:'pull', abMelee:'melee'};
+  const maxes = {swing:0.25, zip:0.15, webshot:0.5, pull:1.6, melee:0.45};
+  for(const id in map){
+    const cd = P.cooldowns[map[id]];
+    const pct = Math.max(0,Math.min(1, cd/maxes[map[id]]))*100;
+    document.querySelector('#'+id+' .cd').style.height = pct+'%';
+  }
+  document.querySelector('#abBlock .cd').style.height = P.blocking ? '100%':'0%';
+}
+
+// ---------------------------------------------------------------------------------------
+// GAME LOOP
+// ---------------------------------------------------------------------------------------
+let last = performance.now();
+function tick(){
+  requestAnimationFrame(tick);
+  const now = performance.now();
+  let dt = (now-last)/1000; last=now;
+  dt = Math.min(dt, 0.05);
+  oceanUniforms.time.value=now*0.001;
+
+  updateZoomInput(dt);
+  if(!paused){
+    updatePlayer(dt);
+    updateEnemies(dt);
+    updateGroups(dt);
+    updateProjectiles(dt);
+  }
+  updateCamera(dt);
+
+  // rope visuals
+  player.updateMatrixWorld(true);
+  const leftOrigin=handL.getWorldPosition(new THREE.Vector3());
+  const rightOrigin=handR.getWorldPosition(new THREE.Vector3());
+  const swingWebVisible=P.state==='swing' || (P.state==='climb' && P.wallRunFromSwing);
+  if(swingWebVisible && P.swingGroundPullT>0 && P.swingGroundPullAnchors.left){
+    setSwingRope(ropeLine,leftOrigin,P.swingGroundPullAnchors.left);
+  } else if(swingWebVisible && P.swingWebs.left.anchor){
+    setSwingRope(ropeLine,leftOrigin,P.swingWebs.left.anchor);
+  } else ropeLine.visible=false;
+  if(swingWebVisible && P.swingGroundPullT>0 && P.swingGroundPullAnchors.right){
+    setSwingRope(ropeLineRight,rightOrigin,P.swingGroundPullAnchors.right);
+  } else if(swingWebVisible && P.swingWebs.right.anchor){
+    setSwingRope(ropeLineRight,rightOrigin,P.swingWebs.right.anchor);
+  } else ropeLineRight.visible=false;
+  if(P.state==='zip' && zipTarget){
+    zipLine.visible=true;
+    zipLine.geometry.setFromPoints([player.position.clone().add(new THREE.Vector3(0,1.2,0)), zipTarget]);
+  } else zipLine.visible=false;
+  if(comboChainMode==='pull' && pullTarget && pullTarget.alive){
+    setSwingRope(comboLine,rightOrigin,pullTarget.mesh.position.clone().add(new THREE.Vector3(0,0.8,0)));
+  } else comboLine.visible=false;
+
+  document.getElementById('healthBarInner').style.width = P.hp+'%';
+  updateCrosshair();
+  drawMinimap();
+  updateEnemyHpBars();
+  updateDebugPanel();
+  updateAbilityCooldownUI();
+
+  renderer.render(scene, camera);
+}
+tick();
+</script>
+</body>
+</html>
