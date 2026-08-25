@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#203419" />
+    <title>Card Wars</title>
+    <link rel="stylesheet" href="styles.css?v=123" />
+  </head>
+  <body class="home-active loading-active startup-loading">
+    <div class="forest-backdrop" aria-hidden="true"></div>
+    <section class="loading-screen" id="loadingScreen" aria-live="polite" aria-label="Loading Card Wars">
+      <div class="loading-copy">
+        <h1 id="loadingTitle">Card Wars</h1>
+        <p id="loadingMessage">Shuffling the deck</p>
+        <div class="loading-track"><span></span></div>
+        <button class="loading-skip" id="loadingSkipButton" type="button">Skip</button>
+      </div>
+    </section>
+    <div class="app-shell">
+      <section class="view active home-screen" id="homeView">
+        <div class="home-account">
+          <span class="avatar" id="homeAvatar" aria-hidden="true">P</span>
+          <span class="home-profile-info"><strong id="homeProfileName">Player</strong><small id="homeProfileLevel">Level 1</small><span class="home-xp-progress"><b id="homeXpLabel">0 / 3 WINS</b><i><span id="homeXpBar"></span></i></span></span>
+          <span class="home-coins"><i aria-hidden="true"></i><b id="homeCoinCount">120</b></span>
+        </div>
+        <div class="home-actions">
+          <button class="play-sign" data-view="battle" type="button"><span>PLAY</span><small>Start new battle</small></button>
+          <div class="home-dock" aria-label="Main menu">
+            <button data-view="collection" type="button"><b>CARDS</b><small>Collection</small></button>
+            <button data-view="decks" type="button"><b>DECKS</b><small>Build</small></button>
+            <button data-view="campaign" type="button"><b>ACHIEVEMENTS</b><small>Milestones</small></button>
+            <button data-view="store" type="button"><b>SHOP</b><small>Cool chest</small></button>
+            <button data-view="rules" type="button"><b>RULES</b><small>How to play</small></button>
+            <button data-view="settings" type="button"><b>SETTINGS</b><small>Account</small></button>
+          </div>
+        </div>
+        <small class="fan-note">Unofficial fan game prototype</small>
+      </section>
+
+      <header class="topbar game-chrome">
+        <button class="brand" id="homeButton" type="button" aria-label="Go home">
+          <span class="brand-kicker">Adventure awaits in</span>
+          <strong>CARD WARS</strong>
+          <small id="saveStatus">Autosaved</small>
+        </button>
+        <div class="profile-board" aria-label="Player account">
+          <span class="avatar" id="profileAvatar" aria-hidden="true">P</span>
+          <span class="profile-name" id="profileName">Player</span>
+          <span class="profile-progress">
+            <span class="profile-progress-meta"><b class="level-badge" id="profileLevel">LV 1</b><small id="profileXpLabel">0 / 3 WINS</small></span>
+            <span class="profile-xp-track" aria-label="Wins toward next level"><span id="profileXpBar"></span></span>
+          </span>
+          <span class="coin-badge"><i aria-hidden="true"></i><b id="coinCount">0</b></span>
+        </div>
+      </header>
+
+      <nav class="section-return game-chrome" aria-label="Return to main menu">
+        <button class="tab home-tab" data-view="home" type="button" aria-label="Home"><span aria-hidden="true">&#8962;</span><b>Home</b></button>
+      </nav>
+
+      <main>
+        <section class="view" id="battleView">
+            <div class="battle-board">
+            <div class="camera-toolbar" aria-label="Board camera">
+              <button class="battle-home-button" data-view="home" type="button" aria-label="Home" title="Home"><span aria-hidden="true">&#8962;</span></button>
+              <div class="battle-log" id="battleLog" aria-live="polite"></div>
+              <div class="camera-switch">
+                <button data-camera="angled" class="active" type="button" aria-label="3D board view">3D</button>
+                <button data-camera="top" type="button" aria-label="2D board view">2D</button>
+              </div>
+              <button class="holo-toggle" data-holograms-toggle type="button" aria-label="Toggle board holograms" aria-pressed="true">Holo</button>
+            </div>
+            <div class="arena" id="battleLandscape">
+              <div class="opponent-zone fighter enemy">
+                <div><span id="enemyName">Training Imp</span><small id="enemyLevel">LV 1</small><small>Opponent</small></div>
+                <strong id="enemyHp">24</strong>
+                <meter id="enemyMeter" min="0" max="24" value="24"></meter>
+              </div>
+
+              <div class="table-stage" id="tableStage">
+                <div class="table-surface">
+                  <div class="board-mat">
+                    <div class="mat-skin enemy-mat-skin" id="enemyMatSkin" aria-hidden="true"></div>
+                    <div class="mat-skin player-mat-skin" id="playerMatSkin" aria-hidden="true"></div>
+                    <div class="board-label enemy-label" id="enemyMatLabel">Opponent</div>
+                    <div class="board-row card-slot-row enemy-card-slots" id="enemyBoardCards"></div>
+                    <div class="board-row landscape-row enemy-landscapes" id="enemyLandscapes"></div>
+                    <div class="center-river"><span>CARD WARS</span></div>
+                    <div class="board-row landscape-row player-landscapes" id="playerLandscapes"></div>
+                    <div class="board-row card-slot-row player-card-slots" id="playerBoardCards"></div>
+                    <div class="board-label player-label" id="playerMatLabel">Your side</div>
+                  </div>
+                </div>
+              </div>
+
+              <canvas class="three-board-layer" id="threeBoardLayer" aria-hidden="true"></canvas>
+
+              <div class="effect-layer" id="effectLayer" aria-hidden="true"></div>
+
+              <div class="player-zone fighter player">
+                <div><span id="playerName">Player</span><small id="playerLevel">LV 1</small><small id="activeDeckLabel">You</small></div>
+                <strong id="playerHp">30</strong>
+                <meter id="playerMeter" min="0" max="30" value="30"></meter>
+              </div>
+
+              <div class="battle-result" id="battleResult" hidden role="dialog" aria-modal="true" aria-labelledby="battleResultTitle">
+                <span id="battleResultKicker">DEFEAT</span>
+                <h2 id="battleResultTitle">GAME OVER</h2>
+                <p id="battleResultMessage">Your account progress is safe.</p>
+                <button class="wood-button" id="battleResultButton" type="button">MAIN MENU</button>
+              </div>
+            </div>
+
+            <section class="hand-tray">
+              <div class="hand-toolbar">
+                <div class="energy-orb"><span>Energy</span><strong id="energyCount">6/6</strong></div>
+                <div class="action-counter"><span>Actions</span><strong id="actionCount">2</strong></div>
+                <div class="turn-title"><span id="turnLabel">Your turn</span><small><b id="deckCount">40</b> cards in deck</small></div>
+                <button class="wood-button draw-card-button" id="drawCardButton" type="button">Draw</button>
+                <button class="wood-button" id="endTurnButton" type="button">End Turn</button>
+              </div>
+              <div class="hand" id="hand"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view parchment-page" id="collectionView">
+          <div class="panel-heading">
+            <div><span class="eyebrow" id="collectionCount">Card database</span><h1>Collection</h1></div>
+            <button class="wood-button" id="upgradeBestButton" type="button">Upgrade Best</button>
+          </div>
+          <div class="card-filters" aria-label="Collection filters">
+            <label class="field"><span>Type</span><select id="collectionTypeFilter"><option value="all">All types</option><option value="Creature">Creatures</option><option value="Building">Buildings</option><option value="Hero">Heroes</option><option value="Landscape">Landscapes</option></select></label>
+            <label class="field"><span>Element</span><select id="collectionFactionFilter"><option value="all">All elements</option><option value="Corn Fields">Corn Fields</option><option value="Blue Plains">Blue Plains</option><option value="Useless Swamp">Useless Swamp</option><option value="Nice Lands">Nice Lands</option><option value="Sandy Lands">Sandy Lands</option><option value="Icy Lands">Icy Lands</option><option value="Lava Flats">Lava Flats</option><option value="Rainbow">Rainbow</option></select></label>
+          </div>
+          <div class="card-grid" id="collectionGrid"></div>
+        </section>
+
+        <section class="view parchment-page" id="decksView">
+          <div class="panel-heading">
+            <div><span class="eyebrow">Five custom presets</span><h1>Deck Workshop</h1></div>
+            <button class="wood-button" id="setActiveDeckButton" type="button">Set Active</button>
+          </div>
+          <div class="deck-layout">
+            <aside class="deck-list" id="deckList"></aside>
+            <section class="deck-editor">
+              <label class="field deck-name-field">
+                <span>Deck name</span>
+                <input id="deckNameInput" maxlength="24" />
+              </label>
+              <div class="section-title deck-landscape-title"><h2 id="deckEditorTitle">Deck 1</h2><span>Four landscape cards</span></div>
+              <div class="landscape-picker" id="landscapePicker"></div>
+              <div class="section-title deck-cards-title"><h2 id="deckCardsTitle">0/40</h2></div>
+              <div class="deck-cards" id="deckCards"></div>
+              <div class="section-title deck-owned-title"><h2>Owned cards</h2></div>
+              <div class="card-filters deck-card-filters" aria-label="Deck card filters">
+                <div class="deck-category-tabs" role="tablist" aria-label="Deck card sections">
+                  <button class="deck-category-tab active" data-deck-type-filter="Creature" type="button" role="tab" aria-selected="true">Creatures</button>
+                  <button class="deck-category-tab" data-deck-type-filter="Building" type="button" role="tab" aria-selected="false">Buildings</button>
+                </div>
+                <label class="field"><span>Element</span><select id="deckFactionFilter"><option value="all">All elements</option><option value="Corn Fields">Corn Fields</option><option value="Blue Plains">Blue Plains</option><option value="Useless Swamp">Useless Swamp</option><option value="Nice Lands">Nice Lands</option><option value="Sandy Lands">Sandy Lands</option><option value="Icy Lands">Icy Lands</option><option value="Lava Flats">Lava Flats</option><option value="Rainbow">Rainbow</option></select></label>
+                <label class="field"><span>Search</span><input id="deckCardSearch" type="search" placeholder="Find card" autocomplete="off"></label>
+                <label class="field"><span>Sort</span><select id="deckCardSort"><option value="default">Default</option><option value="atk-high">ATK high</option><option value="atk-low">ATK low</option><option value="def-high">DEF high</option><option value="def-low">DEF low</option><option value="nrg-high">NRG high</option><option value="nrg-low">NRG low</option></select></label>
+              </div>
+              <div class="mini-card-grid" id="deckCollection"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view parchment-page" id="campaignView">
+          <div class="panel-heading">
+            <div><span class="eyebrow">Prove your legend</span><h1>Achievements</h1></div>
+            <button class="wood-button" id="claimRewardsButton" type="button">Claim Available</button>
+          </div>
+          <div class="earning-strip">
+            <div><span>Match victory</span><strong>5 coins</strong></div>
+            <div><span>Every third win streak</span><strong>+25 coins</strong></div>
+            <div><span>Level up</span><strong>10+ coins</strong></div>
+            <div><span>Win / loss ratio</span><strong id="battleRecord">0.00</strong></div>
+          </div>
+          <div class="stage-grid" id="stageGrid"></div>
+        </section>
+
+        <section class="view parchment-page" id="storeView">
+          <div class="panel-heading">
+            <div><span class="eyebrow">Spend wisely</span><h1>Wandering Shop</h1></div>
+          </div>
+          <div class="store-grid" id="storeGrid"></div>
+        </section>
+
+        <section class="view parchment-page" id="rulesView">
+          <div class="panel-heading">
+            <div><span class="eyebrow">The digital game flow</span><h1>How to Play</h1><p class="rules-intro">Build a compatible Creature deck, place cards across four Landscapes, and defeat the opposing Hero lane by lane.</p></div>
+          </div>
+          <div class="rules-layout">
+            <div class="rules-steps">
+              <section class="rule-step"><span>1</span><div><h2>Set up your deck</h2><p>Open Decks and build a deck of up to 40 cards, including four owned Landscape cards, one for each numbered lane. Fill the remaining slots with playable Creature cards, including Rainbow cards or Creatures that match those Landscapes.</p></div><img src="assets/landscapes/corn-fields/1.png" alt="Corn Fields Landscape card"></section>
+              <section class="rule-step"><span>2</span><div><h2>Start a battle</h2><p>Press Play from the home screen. You and the opponent draw five cards. The starting player is chosen at random, and the battle begins with 6 Energy and 2 Actions.</p></div><img src="assets/cards/database/Finn.png" alt="Finn Creature card"></section>
+              <section class="rule-step"><span>3</span><div><h2>Spend Energy to play</h2><p>Drag a card from your hand onto an open lane with a matching Landscape. Rainbow Creatures can use any lane. The card's cost uses Energy and each placement uses 1 Action.</p></div><img src="assets/cards/database/Jake.png" alt="Jake Creature card"></section>
+              <section class="rule-step"><span>4</span><div><h2>Use your Actions</h2><p>You have 2 Actions each turn. Playing a Creature costs 1 Action. You can spend 1 Action on Draw to take an extra card, or finish the turn with End Turn.</p></div><img src="assets/cards/database/Finn.png" alt="Creature card illustration"></section>
+              <section class="rule-step"><span>5</span><div><h2>Attack an enemy Creature</h2><p>Drag one of your cards on the board onto an opposing Creature. Each Creature can attack once per round. Its ATK damages the target, and the target strikes back with its ATK unless it already countered this round.</p></div><img src="assets/cards/database/Jake.png" alt="Creature battle illustration"></section>
+              <section class="rule-step"><span>6</span><div><h2>Break through a lane</h2><p>After the opening round, a Creature can hit the enemy Hero directly when there are no opposing Creatures on the board. Direct attacks deal the Creature's ATK to the enemy HP.</p></div><img src="assets/cards/database/Finn.png" alt="Finn Creature card"></section>
+              <section class="rule-step"><span>7</span><div><h2>Refill and collect</h2><p>End Turn gives the opponent a phase, then your Energy refills to 6 for the next round. Energy never goes above 6, and you always have exactly 2 Actions each turn. You draw one card each new round. Win battles for coins, levels, streak rewards, and achievements.</p></div><img src="assets/cards/database/Jake.png" alt="Jake Creature card"></section>
+              <aside class="prototype-rule-note"><strong>What is playable right now?</strong><p>This prototype's battle engine supports Creature cards only. Buildings and Spells can be collected, but they are marked Not playable yet and cannot be added to a battle deck. A card marked Wrong landscape needs a matching Landscape in one of your four lanes.</p></aside>
+              <div class="rules-links">
+                <a href="#" data-view="decks">Build a deck</a>
+                <a href="#" data-view="collection">Browse cards</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view parchment-page" id="settingsView">
+          <div class="panel-heading">
+            <div><span class="eyebrow">Your game, your progress</span><h1>Settings</h1></div>
+          </div>
+          <section class="settings-hero" aria-label="Account summary">
+            <div class="settings-player-card">
+              <button class="settings-avatar" id="settingsAvatar" type="button" aria-label="Choose profile picture" aria-haspopup="dialog" aria-expanded="false">P</button>
+              <div>
+                <span class="eyebrow">Local player</span>
+                <h2 id="settingsProfileName">Player</h2>
+                <p id="settingsProfileMeta">Level 1 - 0 coins</p>
+                <small class="settings-test-status" id="testModeStatus">Test mode locked</small>
+                <div class="settings-xp-progress"><span><b id="settingsXpLabel">0 / 3 WINS</b></span><i><span id="settingsXpBar"></span></i></div>
+              </div>
+            </div>
+            <div class="settings-stat-strip" aria-label="Progress summary">
+              <div><span>Cards</span><strong id="settingsCardCount">0</strong></div>
+              <div><span>Decks</span><strong id="settingsDeckCount">5</strong></div>
+                <div><span>Win / loss ratio</span><strong id="settingsRecord">0.00</strong></div>
+            </div>
+          </section>
+          <div class="settings-grid">
+            <section class="settings-block">
+              <div class="settings-block-heading"><span class="eyebrow">Profile</span><h2>Player Setup</h2></div>
+              <label class="field"><span>Username</span><input id="usernameInput" maxlength="18" /></label>
+              <div class="settings-toggles">
+                <label class="toggle-row"><input id="soundToggle" type="checkbox" /><span><b>Sound effects</b><small>Card hits, rewards, and menu feedback</small></span></label>
+                <label class="toggle-row"><input id="motionToggle" type="checkbox" /><span><b>Reduce motion</b><small>Shorter camera and battle animations</small></span></label>
+              </div>
+              <div class="settings-choice-grid">
+                <div class="settings-choice-card">
+                  <figure class="settings-preview settings-mat-preview">
+                    <img id="settingsMatPreview" src="assets/mats/ice-kingdom-official.jpg?v=2" alt="Equipped game mat preview">
+                    <select id="mapSelect" aria-label="Equipped game mat"></select>
+                  </figure>
+                </div>
+                <div class="settings-choice-card">
+                  <figure class="settings-preview settings-background-preview" id="settingsBackgroundPreview">
+                    <img src="assets/card-wars-home.png" alt="Equipped battle room background preview">
+                    <select id="backgroundSelect" aria-label="Battle room background"></select>
+                  </figure>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-block account-save-block">
+              <div class="settings-block-heading"><span class="eyebrow">Portable local account</span><h2>Account Save System</h2></div>
+              <div class="button-row">
+                <button class="primary-save" id="exportAccountButton" type="button">EXPORT ACCOUNT</button>
+                <button class="secondary-save" id="importAccountButton" type="button">IMPORT ACCOUNT</button>
+                <button class="secondary-save test-mode-button" id="testModeButton" type="button">TEST MODE</button>
+                <button class="danger" id="resetAccountButton" type="button">RESET ACCOUNT</button>
+                <input id="importAccountFile" type="file" accept="application/json,.json" hidden />
+              </div>
+              <button class="secondary-save test-map-open-button" id="openHologramTestMapButton" type="button">OPEN HOLOGRAM TEST MAP</button>
+              <div class="settings-info-panels">
+                <details class="settings-info-panel">
+                  <summary>Credits</summary>
+                  <div class="settings-info-content">
+                    <p><strong>Created by</strong> Rodrigo Menezes.</p>
+                    <p><strong>Coding assistant</strong> Codex by OpenAI.</p>
+                    <p><strong>Adventure Time</strong> created by Pendleton Ward.</p>
+                    <p><strong>Card Wars episode story</strong> by Pendleton Ward, Patrick McHale, and Kent Osborne.</p>
+                    <p><strong>Card Wars tabletop game design</strong> by Matt Hyra and Cory Jones.</p>
+                    <p>Unofficial fan game prototype. Adventure Time and Card Wars belong to their respective rights holders.</p>
+                  </div>
+                </details>
+                <details class="settings-info-panel">
+                  <summary>Patch Notes</summary>
+                  <ul class="settings-info-content">
+                    <li>Added expanded battle mats while preserving the original playable lanes.</li>
+                    <li>Added profile search, more character variants, and extra backgrounds.</li>
+                    <li>Added the Hologram Test Map with 2D, 3D, and HOLO views.</li>
+                    <li>Improved camera controls, mobile gestures, and custom shop pack art.</li>
+                  </ul>
+                </details>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view parchment-page hologram-test-page" id="hologramTestView">
+          <div class="hologram-test-card">
+            <header class="hologram-test-heading">
+              <div><span class="eyebrow">Developer testing</span><h1 id="hologramTestTitle">Hologram Test Map</h1></div>
+              <button class="wood-button hologram-test-settings-button" id="closeHologramTestMapButton" type="button">SETTINGS</button>
+            </header>
+            <div class="hologram-test-toolbar" aria-label="Hologram test map controls">
+              <button class="test-map-home-button" id="homeHologramTestMapButton" type="button">HOME</button>
+              <button class="camera-test-button active" data-test-camera="angled" type="button">3D</button>
+              <button class="camera-test-button" data-test-camera="top" type="button">2D</button>
+              <button class="holo-test-button" id="testMapHologramToggle" type="button" aria-pressed="false">HOLO</button>
+              <span class="hologram-test-help">WASD to move</span>
+            </div>
+            <div class="hologram-test-viewport" id="hologramTestViewport" tabindex="0" aria-label="Hologram test map">
+              <div class="hologram-test-surface" id="hologramTestSurface"></div>
+              <canvas id="hologramTestCanvas" aria-hidden="true"></canvas>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <dialog class="avatar-picker-dialog" id="avatarPickerDialog" aria-labelledby="avatarPickerTitle">
+        <form method="dialog" class="avatar-picker-card">
+          <div class="avatar-picker-heading">
+            <div><span class="eyebrow">Settings</span><h2 id="avatarPickerTitle">Profile picture</h2></div>
+            <button class="dialog-close" value="cancel" type="submit" aria-label="Close profile picture menu">&#10005;</button>
+          </div>
+          <label class="avatar-search field"><span>Search characters</span><input id="avatarSearchInput" type="search" placeholder="Search by full name" autocomplete="off" /></label>
+          <div id="avatarPicker" class="avatar-picker-grid"></div>
+          <p class="avatar-empty" id="avatarPickerEmpty" hidden>No profile pictures match that search.</p>
+        </form>
+      </dialog>
+
+      <dialog class="test-mode-dialog" id="testModeDialog" aria-labelledby="testModeTitle">
+        <form method="dialog" class="test-mode-card" id="testModeForm">
+          <span class="eyebrow">Developer testing</span>
+          <h2 id="testModeTitle">Test mode</h2>
+          <p>Enter the password to unlock everything.</p>
+          <label class="field"><span>Password</span><input id="testModePassword" type="password" inputmode="numeric" autocomplete="off" /></label>
+          <small class="test-mode-error" id="testModeError" aria-live="polite"></small>
+          <menu><button value="cancel" type="submit">CANCEL</button><button class="test-mode-button" id="confirmTestModeButton" type="submit">UNLOCK</button></menu>
+        </form>
+      </dialog>
+
+    </div>
+
+    <dialog class="account-setup-dialog" id="accountSetupDialog" aria-labelledby="accountSetupTitle">
+      <form method="dialog" class="account-setup-card">
+        <header class="account-setup-heading">
+          <div><span class="eyebrow">Welcome to Card Wars</span><h1 id="accountSetupTitle">Create your account</h1><p>Choose your name, face, and home kingdom to receive your starter collection.</p></div>
+        </header>
+        <label class="field setup-username-field"><span>Username</span><input id="setupUsername" maxlength="18" placeholder="Player" autocomplete="nickname"></label>
+        <section class="setup-section"><div class="settings-block-heading"><span class="eyebrow">Your face</span><h2>Profile picture</h2></div><div class="setup-avatar-picker" id="setupAvatarPicker"></div></section>
+        <section class="setup-section"><div class="settings-block-heading"><span class="eyebrow">Your home</span><h2>Choose a kingdom</h2></div><div class="kingdom-picker" id="setupKingdomPicker"></div></section>
+        <div class="account-setup-footer"><span>Get four Landscapes, 10 Creatures, 2 Buildings, and 1 Hero.</span><button class="primary-save" id="completeAccountSetupButton" value="confirm" type="button">CREATE ACCOUNT</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="battleHomeDialog" class="battle-confirm-dialog" aria-labelledby="battleHomeTitle">
+      <form method="dialog" class="battle-confirm-card">
+        <span class="eyebrow">Leave battle</span>
+        <div class="battle-confirm-icon" aria-hidden="true">!</div>
+        <h1 id="battleHomeTitle">Return to Home?</h1>
+        <p>Your battle progress will be lost, but your account progress is safe.</p>
+        <div class="battle-confirm-note">
+          <strong>Current match</strong>
+          <span>End this battle and return to the main menu.</span>
+        </div>
+        <menu>
+          <button class="secondary-save" value="cancel" type="submit">CANCEL</button>
+          <button class="battle-confirm-leave" id="confirmBattleHomeButton" value="confirm" type="button">LEAVE BATTLE</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="resetDialog" class="battle-confirm-dialog" aria-labelledby="resetTitle">
+      <form method="dialog" class="battle-confirm-card">
+        <span class="eyebrow">This device</span>
+        <div class="battle-confirm-icon" aria-hidden="true">!</div>
+        <h1 id="resetTitle">Reset local account?</h1>
+        <p>This permanently erases your cards, decks, progress, purchases, and settings from this device.</p>
+        <div class="battle-confirm-note">
+          <strong>Recommended first</strong>
+          <span>Export your account if you may want to restore this progress later.</span>
+        </div>
+        <menu>
+          <button class="secondary-save" value="cancel" type="submit">CANCEL</button>
+          <button class="battle-confirm-leave" id="confirmResetButton" value="confirm" type="button">CONFIRM RESET</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="importDialog">
+      <form method="dialog" class="import-card">
+        <span class="eyebrow">Account file verified</span>
+        <h1 id="importTitle">Import Account?</h1>
+        <p class="import-warning">This replaces the account currently saved on this device.</p>
+        <div class="import-summary" id="importSummary"></div>
+        <menu>
+          <button class="primary-save" id="confirmImportButton" value="confirm" type="button">IMPORT ACCOUNT</button>
+          <button class="secondary-save" value="cancel">CANCEL</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog class="pack-opening-dialog" id="packOpeningDialog">
+      <section class="pack-opening-card" aria-labelledby="packOpeningTitle">
+        <header class="pack-opening-heading">
+          <div><span class="eyebrow">New collection cards</span><h1 id="packOpeningTitle">Card Pack</h1></div>
+          <strong id="packOpeningCounter">5 cards inside</strong>
+        </header>
+        <div class="pack-opening-stage sealed" id="packOpeningStage">
+          <div class="pack-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <button class="pack-opening-pack" id="packOpeningPackButton" type="button" aria-label="Open card pack">
+            <img id="packOpeningPackImage" src="assets/store/hero-pack.png" alt="Unopened card pack">
+            <span>OPEN</span>
+          </button>
+          <button class="pack-reveal-card card-enter" id="packRevealButton" type="button" aria-label="Reveal next card" hidden>
+            <img id="packRevealImage" src="" alt="">
+            <strong id="packRevealName"></strong>
+            <span id="packRevealMeta"></span>
+          </button>
+        </div>
+        <button class="pack-skip" id="skipPackOpeningButton" type="button">Skip reveals</button>
+      </section>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="assets/data/card-database.js?v=3"></script>
+    <script src="app.js?v=138"></script>
+    <script type="module" src="three-board.js?v=32"></script>
+<script src="deck-inventory-availability-v2.js"></script>
+</body>
+</html>

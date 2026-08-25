@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#6cc3d7"/>
+      <stop offset=".54" stop-color="#9fd981"/>
+      <stop offset="1" stop-color="#537b43"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="48%" r="56%">
+      <stop offset="0" stop-color="#ffe77c" stop-opacity=".34"/>
+      <stop offset=".55" stop-color="#7dcf7b" stop-opacity=".1"/>
+      <stop offset="1" stop-color="#06100a" stop-opacity=".84"/>
+    </radialGradient>
+    <filter id="soft">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <g opacity=".48" filter="url(#soft)">
+    <path d="M-70 390 C250 265 505 330 735 240 C960 155 1140 245 1345 202 C1575 155 1755 210 2015 120 L2015 1110 L-70 1110 Z" fill="#315f3b"/>
+    <path d="M-90 550 C170 470 350 530 555 445 C805 342 1030 455 1238 372 C1510 262 1700 410 2010 332 L2010 1110 L-90 1110 Z" fill="#6aaa47"/>
+    <path d="M-65 710 C200 645 380 695 610 600 C865 494 1040 625 1295 522 C1515 432 1745 550 2005 480 L2005 1110 L-65 1110 Z" fill="#d7c05a"/>
+  </g>
+  <g opacity=".72">
+    <path d="M0 785 C260 720 470 825 720 750 C1020 660 1240 850 1535 740 C1695 680 1810 705 1920 675 L1920 1080 L0 1080 Z" fill="#48773b"/>
+    <path d="M-20 940 C230 830 444 960 735 870 C1020 782 1210 938 1480 850 C1650 795 1790 835 1940 790 L1940 1080 L-20 1080 Z" fill="#2f5737"/>
+  </g>
+  <path d="M350 795 C535 735 605 735 790 795 L790 940 C600 990 510 990 350 940 Z" fill="#397e85" opacity=".72"/>
+  <path d="M820 795 C1005 735 1075 735 1260 795 L1260 940 C1070 990 980 990 820 940 Z" fill="#977b2e" opacity=".72"/>
+  <g fill="none" stroke="#fff2b0" stroke-width="5" opacity=".45">
+    <path d="M355 828 H785 M355 870 H785 M355 912 H785"/>
+    <path d="M825 828 H1255 M825 870 H1255 M825 912 H1255"/>
+    <path d="M462 795 V950 M570 770 V970 M678 795 V950"/>
+    <path d="M932 795 V950 M1040 770 V970 M1148 795 V950"/>
+  </g>
+  <g fill="#f86f4d" opacity=".72">
+    <rect x="255" y="812" width="56" height="40" rx="5"/>
+    <rect x="255" y="870" width="56" height="40" rx="5"/>
+    <rect x="255" y="928" width="56" height="40" rx="5"/>
+    <rect x="1335" y="812" width="56" height="40" rx="5"/>
+    <rect x="1335" y="870" width="56" height="40" rx="5"/>
+    <rect x="1335" y="928" width="56" height="40" rx="5"/>
+  </g>
+  <rect width="1920" height="1080" fill="url(#glow)"/>
+</svg>
