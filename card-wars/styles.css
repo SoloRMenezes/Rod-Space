@@ -1506,9 +1506,9 @@ body.battle-active .arena {
   max-width: 100vw;
   overflow: hidden;
   --fixed-board-width: 1120px;
-  --fixed-board-height: 860px;
+  --fixed-board-height: 802px;
   --fixed-table-width: 1200px;
-  --fixed-table-height: 920px;
+  --fixed-table-height: 862px;
 }
 
 body.battle-active .table-stage {
