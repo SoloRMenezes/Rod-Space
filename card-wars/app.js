@@ -1059,9 +1059,9 @@ function canPlayerAttackHeroDirectly() {
 
 function canEnemyAttackHeroDirectly() {
   return Boolean(battle)
-    && battle.playerTurnsCompleted >= 1
-    && battle.enemyTurnsCompleted >= 1
-    && battle.round >= 2;
+    && battle.turn === "enemy"
+    && battle.round >= 3
+    && !battle.playerBoard.some(Boolean);
 }
 
 async function resolvePlayerOpenLaneAttacks() {
@@ -1073,7 +1073,7 @@ async function resolveEnemyCombat() {
   const targetedLanes = new Set();
   for (let attackerLane = 0; attackerLane < 4; attackerLane += 1) {
     const attacker = battle.enemyBoard[attackerLane];
-    if (!attacker || attacker.attackedRound === battle.round) continue;
+    if (!attacker || attacker.used || attacker.attackedRound === battle.round) continue;
 
     let targetLane = battle.playerBoard.findIndex((creature, lane) => creature && !targetedLanes.has(lane));
     if (targetLane < 0) targetLane = battle.playerBoard.findIndex(Boolean);
