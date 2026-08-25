@@ -199,7 +199,7 @@
               <section class="rule-step"><span>2</span><div><h2>Start a battle</h2><p>Press Play from the home screen. You and the opponent draw five cards. The starting player is chosen at random, and the battle begins with 6 Energy and 2 Actions.</p></div><img src="assets/cards/database/Finn.png" alt="Finn Creature card"></section>
               <section class="rule-step"><span>3</span><div><h2>Spend Energy to play</h2><p>Drag a card from your hand onto an open lane with a matching Landscape. Rainbow Creatures can use any lane. The card's cost uses Energy and each placement uses 1 Action.</p></div><img src="assets/cards/database/Jake.png" alt="Jake Creature card"></section>
               <section class="rule-step"><span>4</span><div><h2>Use your Actions</h2><p>You have 2 Actions each turn. Playing a Creature costs 1 Action. You can spend 1 Action on Draw to take an extra card, or finish the turn with End Turn.</p></div><img src="assets/cards/database/Finn.png" alt="Creature card illustration"></section>
-              <section class="rule-step"><span>5</span><div><h2>Attack an enemy Creature</h2><p>Drag one of your cards on the board onto an opposing Creature. Each Creature can attack once per round. Its ATK damages the target, and the target strikes back with its ATK unless it already countered this round.</p></div><img src="assets/cards/database/Jake.png" alt="Creature battle illustration"></section>
+              <section class="rule-step"><span>5</span><div><h2>Attack an enemy Creature</h2><p>Drag one of your cards on the board onto an opposing Creature. Each Creature can attack once per round. Its ATK damages the target, and the target is defeated only when its damage reaches its DEF.</p></div><img src="assets/cards/database/Jake.png" alt="Creature battle illustration"></section>
               <section class="rule-step"><span>6</span><div><h2>Break through a lane</h2><p>After the opening round, a Creature can hit the enemy Hero directly when there are no opposing Creatures on the board. Direct attacks deal the Creature's ATK to the enemy HP.</p></div><img src="assets/cards/database/Finn.png" alt="Finn Creature card"></section>
               <section class="rule-step"><span>7</span><div><h2>Refill and collect</h2><p>End Turn gives the opponent a phase, then your Energy refills to 6 for the next round. Energy never goes above 6, and you always have exactly 2 Actions each turn. You draw one card each new round. Win battles for coins, levels, streak rewards, and achievements.</p></div><img src="assets/cards/database/Jake.png" alt="Jake Creature card"></section>
               <aside class="prototype-rule-note"><strong>What is playable right now?</strong><p>This prototype's battle engine supports Creature cards only. Buildings and Spells can be collected, but they are marked Not playable yet and cannot be added to a battle deck. A card marked Wrong landscape needs a matching Landscape in one of your four lanes.</p></aside>
@@ -421,7 +421,7 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="assets/data/card-database.js?v=5"></script>
-    <script src="app.js?v=141"></script>
+    <script src="app.js?v=142"></script>
     <script type="module" src="three-board.js?v=32"></script>
 <script src="deck-inventory-availability-v2.js"></script>
 </body>

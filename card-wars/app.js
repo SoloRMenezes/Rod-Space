@@ -778,7 +778,7 @@ function buildBattleDeck(sourceCards, size = sourceCards.length) {
 }
 
 function getStartingHp(deckSize) {
-  return 25;
+  return 50;
 }
 
 function getOpponentLevel() {
@@ -1111,10 +1111,6 @@ async function resolveCreatureAttack(attackerOwner, attackerLane, defenderOwner,
   const attackerCard = getCard(attacker.id);
   const defenderCard = getCard(defender.id);
   const attack = getEffectiveAttack(attackerOwner, attackerLane);
-  const counter = defender.counteredRound === battle.round
-    ? 0
-    : getEffectiveAttack(defenderOwner, defenderLane);
-  if (counter > 0) defender.counteredRound = battle.round;
 
   window.dispatchEvent(new CustomEvent("cardwars:holo-attack", { detail: {
     owner: attackerOwner === "player" ? "Your" : "Enemy",
@@ -1126,8 +1122,7 @@ async function resolveCreatureAttack(attackerOwner, attackerLane, defenderOwner,
   await sleep(playerData.settings.reduceMotion ? 80 : 980);
 
   defender.damage += attack;
-  if (counter) attacker.damage += counter;
-  battle.log.unshift(`${attackerCard.name} attacks ${defenderCard.name} for ${attack}${counter ? `; ${defenderCard.name} strikes back for ${counter}` : ""}.`);
+  battle.log.unshift(`${attackerCard.name} attacks ${defenderCard.name} for ${attack}.`);
   renderBattle();
   await sleep(playerData.settings.reduceMotion ? 0 : 420);
 
@@ -1136,12 +1131,6 @@ async function resolveCreatureAttack(attackerOwner, attackerLane, defenderOwner,
     discard.push(defender.id);
     defenders[defenderLane] = null;
     battle.log.unshift(`${defenderCard.name} is defeated and goes to the ${defenderOwner === "player" ? "your" : "opponent's"} discard pile.`);
-  }
-  if (attacker.damage >= attacker.defense) {
-    const discard = attackerOwner === "player" ? battle.playerDiscard : battle.enemyDiscard;
-    discard.push(attacker.id);
-    attackers[attackerLane] = null;
-    battle.log.unshift(`${attackerCard.name} is defeated and goes to the ${attackerOwner === "player" ? "your" : "opponent's"} discard pile.`);
   }
   renderBattle();
 }
