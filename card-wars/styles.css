@@ -1557,7 +1557,7 @@ body.battle-active .table-stage.camera-top .board-mat {
   --enemy-landscape-top: 204px;
   --player-landscape-top: 412px;
   --player-creature-top: 586px;
-  --creature-row-nudge-x: 0px;
+  --creature-row-nudge-x: 10px;
 }
 
 body.battle-active .board-row {
