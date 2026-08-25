@@ -618,7 +618,7 @@ body.three-board-ready .table-stage:not(.camera-top) .terrain-piece { display: n
 .mat-skin::after { display: none; }
 .mat-skin[data-mat="default"] { background-image: url("assets/mats/tree-fort-hd.jpg?v=2"); }
 .mat-skin[data-mat="meadow-road"] { background-image: url("assets/mats/candy-kingdom-hd.jpg?v=2"); }
-.mat-skin[data-mat="moon-bridge"] { background-image: url("assets/mats/ice-kingdom-official.jpg?v=2"); }
+.mat-skin[data-mat="moon-bridge"] { background-image: url("assets/mats/ice-kingdom-official.jpg?v=3"); }
 .mat-skin[data-mat="cinder-pass"] { background-image: url("assets/mats/nightosphere-hd.jpg?v=2"); }
 .board-mat > :not(.mat-skin) { position: relative; z-index: 1; grid-column: 1; }
 .enemy-label { grid-row: 1; }
@@ -1550,9 +1550,9 @@ body.battle-active .table-stage.camera-top .board-mat {
   gap: 4px;
   padding: 8px;
   overflow: visible;
-  --lane-row-width: 544px;
-  --lane-card-width: 132px;
-  --lane-card-gap: 5px;
+  --lane-row-width: 568px;
+  --lane-card-width: 126px;
+  --lane-card-gap: 12px;
   --enemy-creature-top: 58px;
   --enemy-landscape-top: 204px;
   --player-landscape-top: 412px;

@@ -89,7 +89,7 @@ const starterKingdomIds = new Set(starterKingdomCatalog.map((kingdom) => kingdom
 const matCatalog = [
   { id: "default", name: "Tree Fort", image: "assets/mats/tree-fort-hd.jpg?v=2" },
   { id: "meadow-road", name: "Candy Kingdom", image: "assets/mats/candy-kingdom-hd.jpg?v=2" },
-  { id: "moon-bridge", name: "Ice Kingdom", image: "assets/mats/ice-kingdom-official.jpg?v=2", starter: true },
+  { id: "moon-bridge", name: "Ice Kingdom", image: "assets/mats/ice-kingdom-official.jpg?v=3", starter: true },
   { id: "cinder-pass", name: "Nightosphere", image: "assets/mats/nightosphere-hd.jpg?v=2", starter: true }
 ];
 const maps = matCatalog.map((mat) => mat.id);
