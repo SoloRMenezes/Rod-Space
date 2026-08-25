@@ -927,6 +927,8 @@ h2 { margin: 0; font-size: 1.15rem; }
 .card-filters .field { gap: 4px; }
 .card-filters .field > span { font-size: .64rem; }
 .card-filters select { min-height: 36px; padding: 5px 8px; }
+.collection-card-filters { grid-template-columns: minmax(130px, .6fr) minmax(180px, 1fr) minmax(160px, .8fr) minmax(150px, .6fr); align-items: end; }
+.collection-card-filters .field, .collection-card-filters select, .collection-card-filters input { width: 100%; max-width: 100%; }
 .deck-card-filters { grid-template-columns: minmax(0, max-content) minmax(180px, 1fr) minmax(160px, .75fr) minmax(150px, .55fr); align-items: end; margin: 0 0 12px; }
 .deck-card-filters .field { min-width: 0; margin-bottom: 0; }
 .deck-card-filters .field, .deck-card-filters select, .deck-card-filters input { width: 100%; max-width: 100%; }
@@ -1371,6 +1373,7 @@ menu button { min-width: 150px; }
 
 @media (max-width: 680px) {
   .card-filters { grid-template-columns: 1fr; margin-bottom: 12px; }
+  .collection-card-filters { grid-template-columns: 1fr; }
   .deck-card-filters { grid-template-columns: 1fr; }
   .rule-step { grid-template-columns: 34px minmax(0,1fr) 50px; gap: 8px; padding: 10px 4px; }
   .rule-step img { width: 50px; }

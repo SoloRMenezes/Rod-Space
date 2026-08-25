@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#203419" />
     <title>Card Wars</title>
-    <link rel="stylesheet" href="styles.css?v=132" />
+    <link rel="stylesheet" href="styles.css?v=133" />
   </head>
   <body class="home-active loading-active startup-loading">
     <div class="forest-backdrop" aria-hidden="true"></div>
@@ -128,11 +128,12 @@
         <section class="view parchment-page" id="collectionView">
           <div class="panel-heading">
             <div><span class="eyebrow" id="collectionCount">Card database</span><h1>Collection</h1></div>
-            <button class="wood-button" id="upgradeBestButton" type="button">Upgrade Best</button>
           </div>
-          <div class="card-filters" aria-label="Collection filters">
+          <div class="card-filters collection-card-filters" aria-label="Collection filters">
             <label class="field"><span>Type</span><select id="collectionTypeFilter"><option value="all">All types</option><option value="Creature">Creatures</option><option value="Building">Buildings</option><option value="Hero">Heroes</option><option value="Landscape">Landscapes</option></select></label>
             <label class="field"><span>Element</span><select id="collectionFactionFilter"><option value="all">All elements</option><option value="Corn Fields">Corn Fields</option><option value="Blue Plains">Blue Plains</option><option value="Useless Swamp">Useless Swamp</option><option value="Nice Lands">Nice Lands</option><option value="Sandy Lands">Sandy Lands</option><option value="Icy Lands">Icy Lands</option><option value="Lava Flats">Lava Flats</option><option value="Rainbow">Rainbow</option></select></label>
+            <label class="field"><span>Search</span><input id="collectionCardSearch" type="search" placeholder="Find card" autocomplete="off"></label>
+            <label class="field"><span>Sort</span><select id="collectionCardSort"><option value="default">Default</option><option value="atk-high">ATK high</option><option value="atk-low">ATK low</option><option value="def-high">DEF high</option><option value="def-low">DEF low</option><option value="nrg-high">NRG high</option><option value="nrg-low">NRG low</option></select></label>
           </div>
           <div class="card-grid" id="collectionGrid"></div>
         </section>
@@ -421,7 +422,7 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="assets/data/card-database.js?v=5"></script>
-    <script src="app.js?v=143"></script>
+    <script src="app.js?v=144"></script>
     <script type="module" src="three-board.js?v=32"></script>
 <script src="deck-inventory-availability-v2.js"></script>
 </body>

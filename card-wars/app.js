@@ -219,6 +219,8 @@ let playerData = loadAccount();
 let selectedDeck = playerData.activeDeck;
 let collectionTypeFilter = "all";
 let collectionFactionFilter = "all";
+let collectionSearchQuery = "";
+let collectionCardSort = "default";
 let deckTypeFilter = "Creature";
 let deckFactionFilter = "all";
 let deckCardSearchQuery = "";
@@ -683,24 +685,41 @@ function matchesCardFilters(card, typeFilter, factionFilter) {
 function filterCards(cards, typeFilter, factionFilter) {
   return cards.filter((card) => matchesCardFilters(card, typeFilter, factionFilter));
 }
-function matchesDeckCardSearch(card) {
-  const query = deckCardSearchQuery.trim().toLowerCase();
+function matchesCardSearch(card, queryText) {
+  const query = queryText.trim().toLowerCase();
   if (!query) return true;
   return [card.name, card.faction, card.type, card.ability].some((value) => String(value || "").toLowerCase().includes(query));
 }
-function getDeckSortValue(card, sort) {
+function matchesDeckCardSearch(card) {
+  return matchesCardSearch(card, deckCardSearchQuery);
+}
+function getCardSortValue(card, sort) {
   if (sort.startsWith("atk")) return Number(card?.attack) || 0;
   if (sort.startsWith("def")) return Number(card?.block) || 0;
   if (sort.startsWith("nrg")) return Number(card?.cost) || 0;
   return 0;
 }
+function sortCardsByOption(cards, sort) {
+  if (sort === "strongest") sort = "atk-high";
+  if (sort === "weakest") sort = "atk-low";
+  if (sort === "default") return cards;
+  const direction = sort.endsWith("low") ? 1 : -1;
+  return [...cards].sort((a, b) => (getCardSortValue(a, sort) - getCardSortValue(b, sort)) * direction || a.name.localeCompare(b.name));
+}
 function sortDeckCards(cards) {
-  if (deckCardSort === "strongest") deckCardSort = "atk-high";
-  if (deckCardSort === "weakest") deckCardSort = "atk-low";
-  if (deckCardSort === "default") return cards;
-  const direction = deckCardSort.endsWith("low") ? 1 : -1;
-  return [...cards].sort((a, b) => (getDeckSortValue(a, deckCardSort) - getDeckSortValue(b, deckCardSort)) * direction || a.name.localeCompare(b.name));
-  return cards;
+  return sortCardsByOption(cards, deckCardSort);
+}
+function sortCollectionCards(cards) {
+  if (collectionCardSort !== "default") return sortCardsByOption(cards, collectionCardSort);
+  return [...cards].sort((a, b) => {
+    if (a.type === "Landscape" || b.type === "Landscape") {
+      if (a.type !== b.type) return a.type === "Landscape" ? 1 : -1;
+      return a.faction.localeCompare(b.faction) || (a.variant || 0) - (b.variant || 0);
+    }
+    const aOwned = (playerData.collection[a.id]?.copies || 0) > 0;
+    const bOwned = (playerData.collection[b.id]?.copies || 0) > 0;
+    return Number(bOwned) - Number(aOwned) || a.name.localeCompare(b.name);
+  });
 }
 function getLevelWinTarget(level) { return Math.max(3, level * 2 + 1); }
 function getLevelReward(level) { return 10 + level * 5; }
@@ -1872,19 +1891,16 @@ function clearBoardTurningFlags() {
 }
 
 function renderCollection() {
-  const filteredCards = collectionTypeFilter === "Landscape"
-    ? filterCards(landscapeCardCatalog.map((card) => ({ ...card, type: "Landscape" })), collectionTypeFilter, collectionFactionFilter)
-    : filterCards(cardCatalog, collectionTypeFilter, collectionFactionFilter);
+  const sourceCards = collectionTypeFilter === "Landscape"
+    ? landscapeCardCatalog.map((card) => ({ ...card, type: "Landscape" }))
+    : cardCatalog;
+  const filteredCards = filterCards(sourceCards, collectionTypeFilter, collectionFactionFilter)
+    .filter((card) => matchesCardSearch(card, collectionSearchQuery));
   const totalCards = collectionTypeFilter === "Landscape" ? landscapeCardCatalog.length : cardCatalog.length;
-  $("collectionCount").textContent = collectionTypeFilter === "all" && collectionFactionFilter === "all"
+  $("collectionCount").textContent = collectionTypeFilter === "all" && collectionFactionFilter === "all" && !collectionSearchQuery.trim()
     ? `${cardCatalog.length} cards`
     : `${filteredCards.length} of ${totalCards} cards`;
-  const orderedCards = [...filteredCards].sort((a, b) => {
-    if (a.type === "Landscape" || b.type === "Landscape") return a.faction.localeCompare(b.faction) || a.variant - b.variant;
-    const aOwned = (playerData.collection[a.id]?.copies || 0) > 0;
-    const bOwned = (playerData.collection[b.id]?.copies || 0) > 0;
-    return Number(bOwned) - Number(aOwned);
-  });
+  const orderedCards = sortCollectionCards(filteredCards);
   $("collectionGrid").innerHTML = orderedCards.map((card) => card.type === "Landscape" ? renderLandscapeCard(card) : renderCard(card.id, { collection: true })).join("") || "<p class=\"quiet\">No cards match these filters.</p>";
 }
 
@@ -2332,7 +2348,6 @@ document.addEventListener("click", (event) => {
     renderBattle();
     return;
   }
-  if (target.id === "upgradeBestButton") upgradeBestCard();
   if (target.id === "claimRewardsButton") claimRewards();
   if (target.dataset.stage) claimAchievement(target.dataset.stage);
   if (target.dataset.selectDeck !== undefined) { selectedDeck = Number(target.dataset.selectDeck); renderDecks(); }
@@ -2505,6 +2520,8 @@ document.addEventListener("pointercancel", endBoardAttackDrag);
 $("loadingSkipButton").addEventListener("click", hideLoadingScreen);
 $("collectionTypeFilter").addEventListener("change", (event) => { collectionTypeFilter = event.target.value; renderCollection(); });
 $("collectionFactionFilter").addEventListener("change", (event) => { collectionFactionFilter = event.target.value; renderCollection(); });
+$("collectionCardSearch").addEventListener("input", (event) => { collectionSearchQuery = event.target.value; renderCollection(); });
+$("collectionCardSort").addEventListener("change", (event) => { collectionCardSort = event.target.value; renderCollection(); });
 $("deckFactionFilter").addEventListener("change", (event) => { deckFactionFilter = event.target.value; renderDecks(); });
 $("deckCardSearch").addEventListener("input", (event) => { deckCardSearchQuery = event.target.value; renderDecks(); });
 $("deckCardSort").addEventListener("change", (event) => { deckCardSort = event.target.value; renderDecks(); });
