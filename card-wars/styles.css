@@ -1551,7 +1551,7 @@ body.battle-active .table-stage.camera-top .board-mat {
   padding: 8px;
   overflow: visible;
   --lane-row-width: 568px;
-  --lane-card-width: 126px;
+  --lane-card-width: 122px;
   --lane-card-gap: 12px;
   --enemy-creature-top: 58px;
   --enemy-landscape-top: 204px;
