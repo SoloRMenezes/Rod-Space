@@ -684,10 +684,12 @@ body.three-board-ready .table-stage:not(.camera-top) .terrain-piece { display: n
 }
 .card-slot.occupied.used .board-card {
   transform: translateX(-50%) translateZ(7px) rotateZ(90deg);
-  animation: card-turn-sideways .28s cubic-bezier(.2,.8,.25,1) both;
 }
 .table-stage:not(.camera-top) .card-slot.occupied.used .board-card {
   transform: translateX(-50%) translateZ(7px) rotateX(0deg) rotateZ(90deg);
+}
+.card-slot.occupied.turning .board-card {
+  animation: card-turn-sideways .28s cubic-bezier(.2,.8,.25,1) both;
 }
 .piece-base { display: none; }
 .piece-standee { position: absolute; z-index: 6; left: 25%; right: 25%; bottom: 13%; height: 76%; overflow: hidden; border: 2px solid var(--holo); border-radius: 42% 42% 18% 18%; clip-path:polygon(50% 0,82% 10%,100% 42%,88% 100%,12% 100%,0 42%,18% 10%); background: color-mix(in srgb,var(--holo) 14%,transparent); box-shadow: 0 0 5px var(--holo), 0 0 18px color-mix(in srgb,var(--holo) 70%,transparent); transform: translateZ(32px) rotateX(-32deg); transform-origin: center bottom; animation: hologram-flicker 2.4s steps(2,end) .5s infinite; backface-visibility: hidden; opacity: .74; }

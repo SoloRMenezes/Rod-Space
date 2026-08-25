@@ -798,8 +798,17 @@ function drawCards(hand, pile, amount = 1) {
 
 function resetBoardUsage(board) {
   board.forEach((creature) => {
-    if (creature) creature.used = false;
+    if (creature) {
+      creature.used = false;
+      creature.turning = false;
+    }
   });
+}
+
+function markCreatureUsed(creature) {
+  if (!creature) return;
+  if (!creature.used) creature.turning = true;
+  creature.used = true;
 }
 
 function getBattleCardPool(landscapeCards) {
@@ -1057,7 +1066,7 @@ async function resolvePlayerOpenLaneAttacks() {
     if (!creature || creature.attackedRound === battle.round) continue;
     const attack = getEffectiveAttack("player", lane);
     creature.attackedRound = battle.round;
-    creature.used = true;
+    markCreatureUsed(creature);
     battle.enemyHp = Math.max(0, battle.enemyHp - attack);
     battle.log.unshift(`${getCard(creature.id).name} hits the opposing Hero for ${attack}.`);
     addDamageNumber(attack, "enemy-hit");
@@ -1079,7 +1088,7 @@ async function resolveEnemyCombat() {
       if (!hadPlayerCreaturesAtStart && canAttackHeroDirectly()) {
         const attack = getEffectiveAttack("enemy", attackerLane);
         attacker.attackedRound = battle.round;
-        attacker.used = true;
+        markCreatureUsed(attacker);
         battle.playerHp = Math.max(0, battle.playerHp - attack);
         battle.log.unshift(`${getCard(attacker.id).name} hits your Hero for ${attack}.`);
         addDamageNumber(attack, "player-hit");
@@ -1105,7 +1114,7 @@ async function resolveCreatureAttack(attackerOwner, attackerLane, defenderOwner,
   if (!attacker || !defender || attacker.attackedRound === battle.round) return;
 
   attacker.attackedRound = battle.round;
-  attacker.used = true;
+  markCreatureUsed(attacker);
   const attackerCard = getCard(attacker.id);
   const defenderCard = getCard(defender.id);
   const attack = getEffectiveAttack(attackerOwner, attackerLane);
@@ -1560,6 +1569,7 @@ function renderBattle() {
   $("enemyLandscapes").innerHTML = renderBoardLandscapes(battle.enemyLandscapes, battle.enemyLandscapeArt);
   $("playerBoardCards").innerHTML = renderBoardCards(battle.playerBoard, "Your");
   $("enemyBoardCards").innerHTML = renderBoardCards(battle.enemyBoard, "Enemy");
+  clearBoardTurningFlags();
   $("battleLog").innerHTML = battle.log.slice(0, 4).map((line) => `<div>${safeText(line)}</div>`).join("");
   $("battleResult").hidden = !battle.gameOver;
   if (battle.gameOver) {
@@ -1817,13 +1827,21 @@ function renderBoardCards(board, owner) {
     const pieceId = card ? slugify(card.id) : "";
     const pieceFaction = card ? slugify(card.faction || "Rainbow") : "";
     const usedState = creature?.used ? " used" : "";
-    return `<div class="card-slot ${card ? "occupied" : ""}${usedState}" data-lane="${index}" data-owner="${owner}" aria-label="${owner} card slot ${index + 1}${card ? `, ${card.name}` : ""}">${card ? `<div class="board-piece board-piece-${pieceType} board-piece-${pieceId} board-piece-${pieceFaction}">
+    const turningState = creature?.turning ? " turning" : "";
+    return `<div class="card-slot ${card ? "occupied" : ""}${usedState}${turningState}" data-lane="${index}" data-owner="${owner}" aria-label="${owner} card slot ${index + 1}${card ? `, ${card.name}` : ""}">${card ? `<div class="board-piece board-piece-${pieceType} board-piece-${pieceId} board-piece-${pieceFaction}">
       <img class="board-card" src="${card.image}" alt="${card.name}">
       <span class="piece-base" aria-hidden="true"></span>
       <span class="piece-standee" aria-hidden="true"><img src="${card.image}" alt=""></span>
       <span class="board-damage">${Math.max(0, creature.defense - damage)} DEF</span>
     </div>` : ""}</div>`;
   }).join("");
+}
+
+function clearBoardTurningFlags() {
+  if (!battle) return;
+  [...battle.playerBoard, ...battle.enemyBoard].forEach((creature) => {
+    if (creature) creature.turning = false;
+  });
 }
 
 function renderCollection() {
