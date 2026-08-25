@@ -927,7 +927,7 @@ async function playCard(id, index, cardElement, requestedLane = null) {
   battle.playerBoard[lane] = {
     id,
     damage: 0,
-    attack: card.attack + bonus,
+    attack: card.attack,
     defense: card.block + bonus,
     attackedRound: 0,
     counteredRound: 0,
@@ -1175,9 +1175,9 @@ function getEffectiveAttack(owner, lane) {
   const creature = ownBoard[lane];
   if (!creature) return 0;
   const card = getCard(creature.id);
-  let attack = creature.attack;
+  let attack = Number(card?.attack ?? creature.attack) || 0;
 
-  if (card.faction === "Corn Fields") {
+  if (card?.faction === "Corn Fields") {
     const pigsInPlay = [...battle.playerBoard, ...battle.enemyBoard].filter((piece) => piece?.id === "ember_squire").length;
     attack -= pigsInPlay;
   }
