@@ -684,6 +684,7 @@ body.three-board-ready .table-stage:not(.camera-top) .terrain-piece { display: n
 }
 .card-slot.occupied.used .board-card {
   transform: translateX(-50%) translateZ(7px) rotateZ(90deg);
+  animation: card-turn-sideways .28s cubic-bezier(.2,.8,.25,1) both;
 }
 .table-stage:not(.camera-top) .card-slot.occupied.used .board-card {
   transform: translateX(-50%) translateZ(7px) rotateX(0deg) rotateZ(90deg);
@@ -768,6 +769,7 @@ body.three-board-ready .table-stage:not(.camera-top) .terrain-piece { display: n
 .energy-orb strong.energy-pulse { animation: energy-pulse .35s ease-out; }
 
 @keyframes board-summon { from { opacity: 0; transform: translateZ(70px) scale(.35) rotate(-8deg); } to { opacity: 1; transform: translateZ(18px) scale(1); } }
+@keyframes card-turn-sideways { from { transform: translateX(-50%) translateZ(7px) rotateZ(0deg); } to { transform: translateX(-50%) translateZ(7px) rotateZ(90deg); } }
 @keyframes drag-card-float { from { transform: translateY(-2px); } to { transform: translateY(3px); } }
 @keyframes piece-rise { from { opacity: 0; transform: translateZ(6px) rotateX(0deg) scaleY(.12); } to { opacity: 1; transform: translateZ(32px) rotateX(-32deg) scaleY(1); } }
 @keyframes holo-pulse { 0%,100% { opacity:.7; filter:brightness(.9); } 50% { opacity:1; filter:brightness(1.35); } }
