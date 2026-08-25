@@ -717,15 +717,15 @@ body.three-board-ready .table-stage:not(.camera-top) .terrain-piece { display: n
 .landscape-terrain img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; }
 .landscape-popout { display:none; }
 .landscape-popout img { width: 100%; height: 165%; object-fit: cover; object-position: center 18%; filter:grayscale(.45) saturate(2.2) brightness(1.2) drop-shadow(0 0 3px var(--holo)); transform: translateY(-4%); }
-.arena[data-holograms="on"] .landscape-tile {
+.arena[data-holograms="on"] .table-stage.camera-top .landscape-tile {
   background:
     repeating-linear-gradient(90deg, color-mix(in srgb,var(--biome-dark) 24%,transparent) 0 2px, transparent 2px 18px),
     linear-gradient(180deg, color-mix(in srgb,var(--biome-light) 86%,white 14%), var(--biome));
   box-shadow: inset 0 0 0 2px color-mix(in srgb,var(--biome-light) 60%,white 20%), inset 0 0 22px color-mix(in srgb,var(--biome-dark) 60%,transparent);
 }
-.arena[data-holograms="on"] .landscape-card-face,
-.arena[data-holograms="on"] .landscape-popout,
-.arena[data-holograms="on"] .terrain-piece {
+.arena[data-holograms="on"] .table-stage.camera-top .landscape-card-face,
+.arena[data-holograms="on"] .table-stage.camera-top .landscape-popout,
+.arena[data-holograms="on"] .table-stage.camera-top .terrain-piece {
   display: none;
 }
 .landscape-corn-fields .landscape-popout { --holo:#ffe24f; }
