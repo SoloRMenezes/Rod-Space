@@ -1050,29 +1050,22 @@ async function enemyTurn(opening = false) {
   }
 }
 
-function canAttackHeroDirectly() {
-  return battle.playerTurnsCompleted >= 1
+function canPlayerAttackHeroDirectly() {
+  return Boolean(battle)
+    && battle.turn === "player"
+    && battle.round >= 3
+    && !battle.enemyBoard.some(Boolean);
+}
+
+function canEnemyAttackHeroDirectly() {
+  return Boolean(battle)
+    && battle.playerTurnsCompleted >= 1
     && battle.enemyTurnsCompleted >= 1
     && battle.round >= 2;
 }
 
 async function resolvePlayerOpenLaneAttacks() {
-  if (!canAttackHeroDirectly() || battle.enemyBoard.some(Boolean)) {
-    renderBattle();
-    return;
-  }
-  for (let lane = 0; lane < 4; lane += 1) {
-    const creature = battle.playerBoard[lane];
-    if (!creature || creature.attackedRound === battle.round) continue;
-    const attack = getEffectiveAttack("player", lane);
-    creature.attackedRound = battle.round;
-    markCreatureUsed(creature);
-    battle.enemyHp = Math.max(0, battle.enemyHp - attack);
-    battle.log.unshift(`${getCard(creature.id).name} hits the opposing Hero for ${attack}.`);
-    addDamageNumber(attack, "enemy-hit");
-  }
   renderBattle();
-  await sleep(playerData.settings.reduceMotion ? 0 : 300);
 }
 
 async function resolveEnemyCombat() {
@@ -1085,7 +1078,7 @@ async function resolveEnemyCombat() {
     let targetLane = battle.playerBoard.findIndex((creature, lane) => creature && !targetedLanes.has(lane));
     if (targetLane < 0) targetLane = battle.playerBoard.findIndex(Boolean);
     if (targetLane < 0) {
-      if (!hadPlayerCreaturesAtStart && canAttackHeroDirectly()) {
+      if (!hadPlayerCreaturesAtStart && canEnemyAttackHeroDirectly()) {
         const attack = getEffectiveAttack("enemy", attackerLane);
         attacker.attackedRound = battle.round;
         markCreatureUsed(attacker);
@@ -1158,10 +1151,32 @@ async function performSelectedAttack(playerLane, enemyLane) {
   const attacker = battle.playerBoard[playerLane];
   const defender = battle.enemyBoard[enemyLane];
   if (!attacker || !defender) return;
-  if (attacker.attackedRound === battle.round) return showToast("That creature already attacked this round");
+  if (attacker.used || attacker.attackedRound === battle.round) return showToast("That creature already attacked this round");
 
   battle.animating = true;
   await resolveCreatureAttack("player", playerLane, "enemy", enemyLane);
+  battle.animating = false;
+  renderBattle();
+}
+
+async function performDirectHeroAttack(playerLane) {
+  if (!battle || battle.animating || battle.turn !== "player") return;
+  const attacker = battle.playerBoard[playerLane];
+  if (!attacker || attacker.used || attacker.attackedRound === battle.round) return showToast("That creature already attacked this round");
+  if (battle.enemyBoard.some(Boolean)) return showToast("Attack an opposing creature first");
+  if (!canPlayerAttackHeroDirectly()) return showToast("Direct attacks unlock on your Round 3");
+
+  battle.animating = true;
+  const attack = getEffectiveAttack("player", playerLane);
+  const attackerCard = getCard(attacker.id);
+  attacker.attackedRound = battle.round;
+  markCreatureUsed(attacker);
+  battle.enemyHp = Math.max(0, battle.enemyHp - attack);
+  battle.log.unshift(`${attackerCard.name} hits the opposing Hero for ${attack}.`);
+  addDamageNumber(attack, "enemy-hit");
+  renderBattle();
+  await sleep(playerData.settings.reduceMotion ? 0 : 300);
+  if (battle.enemyHp <= 0) winBattle();
   battle.animating = false;
   renderBattle();
 }
@@ -1765,13 +1780,20 @@ function beginBoardAttackDrag(event) {
   const lane = Number(sourceSlot.dataset.lane);
   const creature = battle.playerBoard[lane];
   if (!creature) return;
-  if (creature.attackedRound === battle.round) return showToast("That creature already attacked this round");
-  if (!battle.enemyBoard.some(Boolean)) return showToast("There are no opposing creatures to attack");
+  if (creature.used || creature.attackedRound === battle.round) return showToast("That creature already attacked this round");
+  const enemyHasCreatures = battle.enemyBoard.some(Boolean);
+  if (!enemyHasCreatures && !canPlayerAttackHeroDirectly()) return showToast("Direct attacks unlock on your Round 3");
 
-  boardAttackDrag = { pointerId: event.pointerId, lane, sourceSlot };
+  boardAttackDrag = { pointerId: event.pointerId, lane, sourceSlot, mode: enemyHasCreatures ? "creature" : "hero" };
   sourceSlot.setPointerCapture?.(event.pointerId);
   sourceSlot.classList.add("attack-source");
-  document.querySelectorAll(".enemy-card-slots .card-slot.occupied").forEach((slot) => slot.classList.add("attack-target"));
+  if (enemyHasCreatures) {
+    document.querySelectorAll(".enemy-card-slots .card-slot.occupied").forEach((slot) => slot.classList.add("attack-target"));
+  } else {
+    document.querySelector(".fighter.enemy")?.classList.add("hero-attack-target");
+    $("enemyLandscapes")?.classList.add("hero-attack-target");
+    $("enemyBoardCards")?.classList.add("hero-attack-target");
+  }
   window.dispatchEvent(new CustomEvent("cardwars:holo-drag-start", { detail: { owner: "Your", lane, x: event.clientX, y: event.clientY } }));
   event.preventDefault();
   event.stopPropagation();
@@ -1788,11 +1810,22 @@ function findDropSlot(event, selector) {
   }) || null;
 }
 
+function findHeroAttackTarget(event) {
+  const targets = [document.querySelector(".fighter.enemy"), $("enemyLandscapes"), $("enemyBoardCards")].filter(Boolean);
+  return targets.find((target) => {
+    const rect = target.getBoundingClientRect();
+    return event.clientX >= rect.left && event.clientX <= rect.right
+      && event.clientY >= rect.top && event.clientY <= rect.bottom;
+  }) || null;
+}
+
 function moveBoardAttackDrag(event) {
   if (!boardAttackDrag || boardAttackDrag.pointerId !== event.pointerId) return;
-  document.querySelectorAll(".card-slot.attack-hover").forEach((slot) => slot.classList.remove("attack-hover"));
-  const target = findDropSlot(event, ".enemy-card-slots .card-slot.attack-target");
-  target?.classList.add("attack-hover");
+  document.querySelectorAll(".card-slot.attack-hover,.hero-attack-hover").forEach((slot) => slot.classList.remove("attack-hover", "hero-attack-hover"));
+  const target = boardAttackDrag.mode === "hero"
+    ? findHeroAttackTarget(event)
+    : findDropSlot(event, ".enemy-card-slots .card-slot.attack-target");
+  target?.classList.add(boardAttackDrag.mode === "hero" ? "hero-attack-hover" : "attack-hover");
   window.dispatchEvent(new CustomEvent("cardwars:holo-drag-move", { detail: { owner: "Your", lane: boardAttackDrag.lane, x: event.clientX, y: event.clientY } }));
   event.preventDefault();
 }
@@ -1800,11 +1833,16 @@ function moveBoardAttackDrag(event) {
 function endBoardAttackDrag(event) {
   if (!boardAttackDrag || boardAttackDrag.pointerId !== event.pointerId) return;
   const active = boardAttackDrag;
-  const target = event.type === "pointercancel" ? null : findDropSlot(event, ".enemy-card-slots .card-slot.attack-target");
+  const target = event.type === "pointercancel"
+    ? null
+    : active.mode === "hero"
+      ? findHeroAttackTarget(event)
+      : findDropSlot(event, ".enemy-card-slots .card-slot.attack-target");
   boardAttackDrag = null;
   active.sourceSlot.classList.remove("attack-source");
-  document.querySelectorAll(".card-slot.attack-target,.card-slot.attack-hover").forEach((slot) => slot.classList.remove("attack-target", "attack-hover"));
-  if (target) performSelectedAttack(active.lane, Number(target.dataset.lane));
+  document.querySelectorAll(".card-slot.attack-target,.card-slot.attack-hover,.hero-attack-target,.hero-attack-hover").forEach((slot) => slot.classList.remove("attack-target", "attack-hover", "hero-attack-target", "hero-attack-hover"));
+  if (target && active.mode === "hero") performDirectHeroAttack(active.lane);
+  else if (target) performSelectedAttack(active.lane, Number(target.dataset.lane));
   else window.dispatchEvent(new CustomEvent("cardwars:holo-drag-cancel", { detail: { owner: "Your", lane: active.lane } }));
   event.preventDefault();
 }
