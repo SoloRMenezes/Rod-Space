@@ -1561,13 +1561,12 @@ body.battle-active .table-stage.camera-top .board-mat {
   padding: 8px;
   overflow: visible;
   --lane-row-width: 568px;
-  --lane-card-width: 122px;
-  --lane-card-gap: 12px;
-  --enemy-creature-top: 58px;
+  --lane-card-width: 118px;
+  --lane-card-gap: 10px;
+  --enemy-creature-top: 48px;
   --enemy-landscape-top: 204px;
   --player-landscape-top: 412px;
   --player-creature-top: 586px;
-  --creature-row-nudge-x: 10px;
 }
 
 body.battle-active .board-row {
@@ -1600,7 +1599,7 @@ body.battle-active .enemy-card-slots,
 body.battle-active .enemy-landscapes,
 body.battle-active .player-landscapes,
 body.battle-active .player-card-slots {
-  height: 196px;
+  height: calc(var(--lane-card-width) * 520 / 369);
   padding-inline: 0;
 }
 
@@ -1608,11 +1607,6 @@ body.battle-active .enemy-card-slots { top: var(--enemy-creature-top); }
 body.battle-active .enemy-landscapes { top: var(--enemy-landscape-top); }
 body.battle-active .player-landscapes { top: var(--player-landscape-top); }
 body.battle-active .player-card-slots { top: var(--player-creature-top); }
-
-body.battle-active .enemy-card-slots,
-body.battle-active .player-card-slots {
-  transform: translateX(calc(-50% + var(--creature-row-nudge-x)));
-}
 
 body.battle-active .board-card {
   height: 100%;
