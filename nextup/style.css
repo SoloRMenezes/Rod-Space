@@ -1248,6 +1248,14 @@ p {
   padding: 12px;
 }
 
+.up-next-list {
+  margin-top: 12px;
+}
+
+.up-next-list .song-list {
+  max-height: none;
+}
+
 .toast {
   position: fixed;
   right: 14px;

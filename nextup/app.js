@@ -530,11 +530,7 @@ function renderPlayer() {
     el("div", "split-actions", [
       button("Song Finished", "primary", () => completeSong(song.id)),
       button("Back To Browse", "secondary", () => navigate("addSong"))
-    ]),
-    button("Video Unavailable", "danger", () => {
-      toast("Marked unavailable. Choose another video or remove it from the queue.");
-      navigate("queue");
-    })
+    ])
   ]);
 
   if (session.projectorOpen) {
@@ -550,6 +546,7 @@ function renderPlayer() {
         button("Back To Browse", "secondary", () => navigate("addSong"))
       ])
     ]));
+    view.append(renderUpNextList(song.id));
     scheduleHostProjectorRefresh(song.id);
     return;
   }
@@ -560,9 +557,27 @@ function renderPlayer() {
     ]),
     controls
   ]));
+  view.append(renderUpNextList(song.id));
   loadYouTubeApi().then(() => {
     if (route.name === "player" && document.querySelector("#youtubePlayer")) mountYouTubePlayer(song);
   });
+}
+
+function renderUpNextList(currentSongId) {
+  const session = state.activeSession;
+  const upcoming = session?.queue.filter((item) => item.id !== currentSongId && item.status !== "completed") || [];
+  return el("section", "card grid up-next-list", [
+    el("div", "section-head", [
+      el("div", "", [
+        el("h3", "section-title", "Up next"),
+        el("p", "muted", upcoming.length ? `${upcoming.length} songs waiting` : "No more songs after this")
+      ]),
+      button("Browse", "small-button", () => navigate("addSong"))
+    ]),
+    upcoming.length
+      ? el("div", "song-list", upcoming.map((next, index) => songCard(next, index + 1, "queue")))
+      : emptyInline("This is the last song.")
+  ]);
 }
 
 function scheduleHostProjectorRefresh(songId) {
