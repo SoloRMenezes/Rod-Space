@@ -443,6 +443,12 @@ function renderAddSong() {
     if (!videoId) return;
     titleField.input.value = await fetchYouTubeTitle(urlField.input.value.trim(), videoId);
   }, 450));
+  urlField.input.addEventListener("keydown", async (event) => {
+    if (event.key === "Enter") await addSongFromSelection();
+  });
+  titleField.input.addEventListener("keydown", async (event) => {
+    if (event.key === "Enter") await addSongFromSelection();
+  });
   searchField.input.addEventListener("keydown", async (event) => {
     if (event.key === "Enter") await runSongSearch(searchField.input.value, searchResults, addSongFromSelection);
   });
@@ -478,8 +484,7 @@ function renderAddSong() {
     ]),
     searchResults,
     el("h3", "section-title", "Singers"),
-    singerList,
-    button("Add To Queue", "primary", () => addSongFromSelection())
+    singerList
   ]));
   renderSingers();
 

@@ -258,7 +258,7 @@ button:disabled {
   top: max(10px, env(safe-area-inset-top));
   z-index: 20;
   display: grid;
-  grid-template-columns: var(--tap) 1fr var(--tap);
+  grid-template-columns: var(--tap) 1fr auto;
   gap: 8px;
   align-items: center;
   margin-bottom: 12px;
@@ -306,7 +306,10 @@ p {
 
 #topAction {
   width: auto;
-  padding: 0 13px;
+  min-width: 68px;
+  padding: 0 16px;
+  justify-self: end;
+  background: color-mix(in srgb, var(--surface-2) 76%, transparent);
   font-size: .92rem;
   font-weight: 950;
 }
@@ -941,6 +944,7 @@ p {
 
 .search-result {
   width: 100%;
+  cursor: pointer;
   min-height: 60px;
   display: grid;
   grid-template-columns: 54px 1fr;
