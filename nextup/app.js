@@ -433,41 +433,42 @@ function renderAddSong() {
     titleField.input.value = await fetchYouTubeTitle(urlField.input.value.trim(), videoId);
   }, 450));
   searchField.input.addEventListener("keydown", async (event) => {
-    if (event.key === "Enter") await runSongSearch(searchField.input.value, searchResults, urlField.input, titleField.input);
+    if (event.key === "Enter") await runSongSearch(searchField.input.value, searchResults, addSongFromSelection);
   });
+
+  async function addSongFromSelection(videoId = parseYouTubeId(urlField.input.value.trim()), titleText = titleField.input.value.trim()) {
+    if (!videoId) return toast("Add a valid YouTube link or video ID.");
+    if (!selectedSingers.size) return toast("Choose at least one singer.");
+    const embedCheck = await checkYouTubeEmbeddable(videoId);
+    if (!embedCheck.ok) return toast(embedCheck.message);
+    session.peopleIds = [...new Set([...session.peopleIds, ...selectedSingers])];
+    const song = {
+      id: id(),
+      videoId,
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      title: cleanYouTubeTitle(titleText || await fetchYouTubeTitle(`https://www.youtube.com/watch?v=${videoId}`, videoId)),
+      singerIds: [...selectedSingers],
+      status: "upcoming",
+      addedAt: Date.now()
+    };
+    session.queue.push(song);
+    rememberRecent(song);
+    saveState();
+    toast("Added to queue.");
+    replaceRoute("addSong");
+  }
 
   view.append(el("section", "card grid", [
     titleField.wrapper,
     urlField.wrapper,
     el("div", "search-row", [
       searchField.wrapper,
-      button("Search", "secondary", () => runSongSearch(searchField.input.value, searchResults, urlField.input, titleField.input))
+      button("Search", "secondary", () => runSongSearch(searchField.input.value, searchResults, addSongFromSelection))
     ]),
     searchResults,
     el("h3", "section-title", "Singers"),
     singerList,
-    button("Add To Queue", "primary", async () => {
-      const videoId = parseYouTubeId(urlField.input.value.trim());
-      if (!videoId) return toast("Add a valid YouTube link or video ID.");
-      if (!selectedSingers.size) return toast("Choose at least one singer.");
-      const embedCheck = await checkYouTubeEmbeddable(videoId);
-      if (!embedCheck.ok) return toast(embedCheck.message);
-      session.peopleIds = [...new Set([...session.peopleIds, ...selectedSingers])];
-      const song = {
-        id: id(),
-        videoId,
-        url: `https://www.youtube.com/watch?v=${videoId}`,
-        title: cleanYouTubeTitle(titleField.input.value.trim() || await fetchYouTubeTitle(urlField.input.value.trim(), videoId)),
-        singerIds: [...selectedSingers],
-        status: "upcoming",
-        addedAt: Date.now()
-      };
-      session.queue.push(song);
-      rememberRecent(song);
-      saveState();
-      toast("Added to queue.");
-      navigate("addSong");
-    })
+    button("Add To Queue", "primary", () => addSongFromSelection())
   ]));
   renderSingers();
 
@@ -1145,7 +1146,7 @@ function openYouTubeSearch(query) {
   window.open(url, "_blank");
 }
 
-async function runSongSearch(query, container, urlInput, titleInput) {
+async function runSongSearch(query, container, onSelect) {
   const clean = query.trim();
   if (!clean) return toast("Type a song to search.");
   const apiKey = state.settings.youtubeApiKey?.trim();
@@ -1181,11 +1182,7 @@ async function runSongSearch(query, container, urlInput, titleInput) {
         thumbnail(videoId),
         el("span", "", titleText)
       ], { type: "button" }));
-      container.lastElementChild.addEventListener("click", () => {
-        urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
-        titleInput.value = titleText;
-        container.innerHTML = "";
-      });
+      container.lastElementChild.addEventListener("click", () => onSelect(videoId, titleText));
     });
   } catch (error) {
     container.innerHTML = "";
