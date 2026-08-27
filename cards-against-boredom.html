@@ -6,14 +6,28 @@
     <title>Cards Against Boredom</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap');
+
+        :root {
+            --ink: #090b10;
+            --table: #111927;
+            --panel: rgba(16, 24, 39, 0.84);
+            --line: rgba(255, 255, 255, 0.11);
+            --muted: #9aa7b8;
+            --blue: #5aa9ff;
+            --amber: #ffd166;
+            --red: #ff5f76;
+            --green: #54e3a6;
+        }
 
         body {
-            background-color: #111827;
-            background-image: 
-                radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%),
-                radial-gradient(circle at center, #1f2937 0%, #111827 100%);
-            font-family: 'Open Sans', sans-serif;
+            background-color: var(--ink);
+            background-image:
+                linear-gradient(135deg, rgba(90,169,255,0.14), transparent 34%),
+                radial-gradient(circle at 75% 15%, rgba(255,209,102,0.13), transparent 28%),
+                radial-gradient(circle at 18% 82%, rgba(84,227,166,0.10), transparent 30%),
+                linear-gradient(180deg, #111827 0%, #090b10 100%);
+            font-family: 'Inter', sans-serif;
             color: #f3f4f6;
             overflow-x: hidden;
             min-height: 100vh;
@@ -21,69 +35,77 @@
         }
 
         h1, h2, h3, .logo-font {
-            font-family: 'Fredoka One', cursive;
-            letter-spacing: -0.02em;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: 0;
+        }
+
+        button, .btn-toggle, label {
+            -webkit-tap-highlight-color: transparent;
         }
 
         .card {
-            width: 100px;
-            height: 140px;
-            border-radius: 12px;
-            padding: 10px;
+            width: 108px;
+            height: 152px;
+            border-radius: 8px;
+            padding: 12px;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.36);
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
             cursor: pointer;
             user-select: none;
             overflow: hidden;
         }
 
         @media (min-width: 768px) {
-            .card { width: 140px; height: 190px; padding: 14px; }
+            .card { width: 144px; height: 196px; padding: 16px; }
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-6px);
             z-index: 20;
         }
 
         .card-black {
-            background-color: #000000;
+            background:
+                linear-gradient(145deg, rgba(255,255,255,0.08), transparent 26%),
+                #050505;
             color: #ffffff;
-            border: 1px solid #374151;
+            border: 1px solid rgba(255,255,255,0.16);
             transition: opacity 0.5s ease;
         }
 
         .card-white {
-            background-color: #ffffff;
+            background:
+                linear-gradient(145deg, rgba(90,169,255,0.16), transparent 28%),
+                #f8fafc;
             color: #111827;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(255,255,255,0.82);
         }
 
         .card-judging {
-            transform: scale(1.03);
+            animation: dealIn 0.28s ease both;
         }
 
         .card-winner {
-            border: 3px solid #eab308 !important;
-            box-shadow: 0 0 20px rgba(234, 179, 8, 0.3), 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+            border: 3px solid var(--amber) !important;
+            box-shadow: 0 0 0 5px rgba(255, 209, 102, 0.14), 0 24px 44px rgba(0, 0, 0, 0.46) !important;
             z-index: 40;
         }
 
         .card-selected {
-            transform: translateY(-15px) !important;
-            box-shadow: 0 0 0 4px #3b82f6, 0 15px 20px -5px rgba(0, 0, 0, 0.6) !important;
+            transform: translateY(-16px) rotate(-1deg) !important;
+            box-shadow: 0 0 0 4px var(--blue), 0 20px 36px rgba(0, 0, 0, 0.48) !important;
             z-index: 30;
         }
 
         .card-text {
-            font-size: 0.75rem;
+            font-size: 0.76rem;
             font-weight: 700;
-            line-height: 1.2;
-            max-height: 100px;
+            line-height: 1.25;
+            max-height: 112px;
             overflow-y: auto;
             scrollbar-width: none;
         }
@@ -95,9 +117,9 @@
         .card-brand {
             font-size: 0.5rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             font-weight: 800;
-            opacity: 0.4;
+            opacity: 0.5;
         }
 
         #game-table {
@@ -105,17 +127,18 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 10px;
+            padding: 14px;
             max-width: 1400px;
             margin: 0 auto;
         }
 
         #prompt-container {
-            background: rgba(0,0,0,0.25);
-            padding: 10px 20px;
-            border-radius: 100px;
-            margin-bottom: 2px;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            background: rgba(3,7,18,0.42);
+            padding: 12px 18px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            border: 1px solid var(--line);
+            box-shadow: inset 0 1px 18px rgba(0,0,0,0.38);
             display: flex;
             justify-content: center;
             transition: opacity 0.5s ease;
@@ -123,32 +146,38 @@
 
         #play-area {
             display: flex;
-            gap: 8px;
-            min-height: 70px;
+            gap: 10px;
+            min-height: 176px;
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
-            margin-bottom: 2px;
+            margin-bottom: 10px;
             width: 100%;
+            padding: 8px;
         }
 
         #player-hand {
             display: flex;
-            gap: 6px;
+            gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 2px;
-            padding: 10px;
+            margin-top: 8px;
+            padding: 14px;
             width: 100%;
-            background: rgba(0,0,0,0.2);
-            border-radius: 20px;
-            backdrop-filter: blur(8px);
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.22);
         }
 
         #start-menu {
             position: fixed;
             inset: 0;
-            background: #111827;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(90,169,255,0.14), transparent 30%),
+                radial-gradient(circle at 82% 14%, rgba(255,209,102,0.11), transparent 30%),
+                #090b10;
             z-index: 2000;
             display: flex;
             flex-direction: column;
@@ -159,12 +188,14 @@
         }
 
         .menu-card {
-            background: #1f2937;
-            padding: 25px;
-            border-radius: 24px;
+            background: rgba(17, 24, 39, 0.88);
+            padding: 26px;
+            border-radius: 18px;
             width: 100%;
-            max-width: 500px;
-            border: 1px solid #374151;
+            max-width: 560px;
+            border: 1px solid var(--line);
+            box-shadow: 0 24px 80px rgba(0,0,0,0.46);
+            backdrop-filter: blur(16px);
         }
 
         .input-row {
@@ -188,9 +219,9 @@
         }
 
         .number-input {
-            background: #374151;
-            border: 2px solid #4b5563;
-            border-radius: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
             padding: 10px 15px;
             color: white;
             font-weight: bold;
@@ -203,13 +234,14 @@
             font-size: 0.9rem;
             font-weight: 800;
             text-transform: uppercase;
-            color: #9ca3af;
+            color: var(--muted);
         }
 
         .btn-toggle {
-            background: #374151;
+            background: #0f172a;
+            border: 1px solid #263244;
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: bold;
             flex: 1;
             text-align: center;
@@ -218,8 +250,9 @@
         }
 
         .btn-toggle.active {
-            background: #3b82f6;
+            background: linear-gradient(135deg, #2563eb, #0ea5e9);
             color: white;
+            border-color: rgba(125, 211, 252, 0.55);
         }
 
         .hidden { display: none !important; }
@@ -228,11 +261,12 @@
             width: 100%;
             display: flex;
             justify-content: space-between;
-            background: rgba(17, 24, 39, 0.9);
-            padding: 10px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-            border: 1px solid #374151;
+            background: var(--panel);
+            padding: 10px 12px;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--line);
+            backdrop-filter: blur(16px);
         }
 
         #scores-container {
@@ -241,18 +275,78 @@
             overflow-x: auto;
             padding-bottom: 5px;
         }
+
+        .pack-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            background: rgba(15,23,42,0.72);
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+        }
+
+        .pack-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 46px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        .action-button {
+            border-radius: 10px;
+            box-shadow: 0 14px 30px rgba(0,0,0,0.28);
+            transition: transform 0.18s ease, filter 0.18s ease;
+        }
+
+        .action-button:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
+        }
+
+        .score-pill {
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(15,23,42,0.62);
+            border-radius: 10px;
+            padding: 6px 10px;
+        }
+
+        .score-pill.is-judge {
+            background: rgba(255, 209, 102, 0.14);
+            border-color: rgba(255, 209, 102, 0.42);
+        }
+
+        @keyframes dealIn {
+            from { opacity: 0; transform: translateY(16px) rotate(2deg); }
+            to { opacity: 1; transform: translateY(0) rotate(0); }
+        }
+
+        @media (max-width: 520px) {
+            .pack-grid { grid-template-columns: 1fr; }
+            #game-table { padding: 10px; }
+        }
     </style>
 </head>
 <body>
 
 <div id="start-menu">
     <div class="menu-card">
-        <h1 class="text-3xl md:text-4xl text-yellow-500 mb-8 logo-font text-center leading-tight">Cards Against Boredom</h1>
+        <div class="text-center mb-8">
+            <p class="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300 mb-2">Party Deck</p>
+            <h1 class="text-4xl md:text-5xl text-white logo-font leading-tight">Cards Against Boredom</h1>
+            <p class="text-xs text-gray-400 mt-3 font-bold uppercase tracking-wider">Sharper table, faster turns, meaner bot answers.</p>
+        </div>
         
         <div class="mb-6">
             <label class="input-label mb-2 block">Game Mode</label>
             <div class="flex gap-2">
-                <div id="mode-single" class="btn-toggle active" onclick="setMode('single')">Single Player</div>
+                <div id="mode-single" class="btn-toggle active" onclick="setMode('single')">Solo Table</div>
                 <div id="mode-multi" class="btn-toggle" onclick="setMode('multi')">Multiplayer</div>
             </div>
         </div>
@@ -269,28 +363,28 @@
 
         <div class="mb-8">
             <label class="input-label mb-2 block">Card Packs</label>
-            <div class="flex flex-col gap-3 bg-gray-800 p-3 rounded-xl border border-gray-700">
-              <label class="flex items-center gap-3">
+            <div class="pack-grid">
+              <label class="pack-option">
                 <input type="checkbox" id="pack-main" checked class="w-5 h-5 accent-blue-500">
                 <span class="text-sm font-bold">Main Pack (PG-13)</span>
               </label>
-              <label class="flex items-center gap-3">
+              <label class="pack-option">
                 <input type="checkbox" id="pack-unhinged" class="w-5 h-5 accent-red-500">
                 <span class="text-sm font-bold text-red-400">Unhinged Pack (18+)</span>
               </label>
-              <label class="flex items-center gap-3">
+              <label class="pack-option">
                 <input type="checkbox" id="pack-spicy" class="w-5 h-5 accent-pink-500">
                 <span class="text-sm font-bold text-pink-400">Spicy Pack (18+)</span>
               </label>
-              <label class="flex items-center gap-3">
+              <label class="pack-option">
                 <input type="checkbox" id="pack-holiday" class="w-5 h-5 accent-green-500">
                 <span class="text-sm font-bold text-green-400">Holiday Pack</span>
               </label>
-              <label class="flex items-center gap-3">
+              <label class="pack-option">
                 <input type="checkbox" id="pack-school" class="w-5 h-5 accent-yellow-500">
                 <span class="text-sm font-bold text-yellow-400">School Pack</span>
               </label>
-              <label class="flex items-center gap-3">
+              <label class="pack-option">
                 <input type="checkbox" id="pack-roadtrip" class="w-5 h-5 accent-orange-500">
                 <span class="text-sm font-bold text-orange-400">Road Trip Pack</span>
               </label>
@@ -299,7 +393,7 @@
 
         <div id="menu-error" class="text-red-400 text-xs font-bold uppercase mb-4 text-center hidden"></div>
 
-        <button onclick="validateAndStart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 text-lg rounded-xl shadow-lg transition-all uppercase">Start Game</button>
+        <button onclick="validateAndStart()" class="action-button w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 text-lg rounded-xl shadow-lg transition-all uppercase">Start Game</button>
     </div>
  </div>
 </div>
@@ -318,7 +412,7 @@
 
 <div id="pass-screen" class="fixed inset-0 bg-gray-900 z-[1500] flex flex-col items-center justify-center text-center hidden">
     <h2 id="pass-to-name" class="text-3xl logo-font text-white mb-8">Ready?</h2>
-    <button onclick="showPlayerHand()" class="bg-blue-600 text-white font-bold py-4 px-10 rounded-full uppercase">Show My Cards</button>
+    <button id="pass-action-btn" onclick="showPlayerHand()" class="action-button bg-blue-600 text-white font-bold py-4 px-10 rounded-xl uppercase">Show My Cards</button>
 </div>
 
 <div id="game-table">
@@ -339,12 +433,12 @@
     <div id="play-area"></div>
 
     <div class="flex gap-2 mb-2">
-        <button id="menu-btn" onclick="backToMenu()" class="bg-gray-700 text-white font-bold py-2 px-6 rounded-full uppercase text-xs">
+        <button id="menu-btn" onclick="backToMenu()" class="action-button bg-gray-700 text-white font-bold py-2 px-6 rounded-xl uppercase text-xs">
           Menu
         </button>
-        <button id="confirm-btn" onclick="confirmSelection()" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Play</button>
-        <button id="next-round-btn" onclick="nextRound()" class="bg-yellow-500 text-black font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Continue</button>
-        <button id="confirm-winner-btn" onclick="confirmWinner()" class="bg-green-600 text-white font-bold py-2 px-6 rounded-full hidden uppercase text-xs">Confirm Winner</button>
+        <button id="confirm-btn" onclick="confirmSelection()" class="action-button bg-blue-600 text-white font-bold py-2 px-6 rounded-xl hidden uppercase text-xs">Play</button>
+        <button id="next-round-btn" onclick="nextRound()" class="action-button bg-yellow-500 text-black font-bold py-2 px-6 rounded-xl hidden uppercase text-xs">Continue</button>
+        <button id="confirm-winner-btn" onclick="confirmWinner()" class="action-button bg-green-600 text-white font-bold py-2 px-6 rounded-xl hidden uppercase text-xs">Confirm Winner</button>
     </div>
 
     <div id="player-hand"></div>
@@ -804,10 +898,13 @@
     ];
 
     let gameMode = "single", players = [], activePlayerIndex = 0, currentJudgeIndex = 0;
-    let currentRound = 1, deckPrompts = [], deckAnswers = [], playedCards = [], selectedIndices = [];
+    let currentRound = 1, deckPrompts = [], deckAnswers = [], playedCards = [], visibleJudgingCards = [], selectedIndices = [];
     let blanksRequired = 1, maxRoundsLimit = 5;
     let selectedWinnerIndex = null;
+    let playedCardId = 0;
     const HAND_SIZE = 5;
+    let deckPromptsBackup = [], deckAnswersBackup = [];
+    const soloBotNames = ["Maya", "Dex", "Nova"];
 
     // Fisher-Yates Shuffle for better randomness
     function shuffle(array) {
@@ -840,7 +937,7 @@
     function validateAndStart() {
         const pCount = parseInt(document.getElementById('player-input').value);
         const rCount = parseInt(document.getElementById('rounds-input').value);
-        if (pCount < 3 || pCount > 12 || rCount < 1 || rCount > 10) {
+        if ((gameMode === 'multi' && (pCount < 3 || pCount > 12)) || rCount < 1 || rCount > 10) {
             document.getElementById('menu-error').innerText = "Invalid Input";
             document.getElementById('menu-error').classList.remove('hidden');
             return;
@@ -861,12 +958,11 @@
 
         maxRoundsLimit = rCount;
         if (gameMode === 'single') {
-          players = [{
-            name: "You",
-            hand: [],
-            score: 0,
-            isBot: false
-          }];
+          players = [
+            { name: "You", hand: [], score: 0, isBot: false },
+            ...soloBotNames.map(name => ({ name, hand: [], score: 0, isBot: true }))
+          ];
+          currentJudgeIndex = -1;
         } else {
           players = Array.from({ length: pCount }, (_, i) => ({
             name: `P${i + 1}`,
@@ -903,6 +999,7 @@
           answerPool = answerPool.concat(roadTripAnswers);
         }
         deckPrompts = shuffle(promptPool);
+        deckPromptsBackup = [...deckPrompts];
         deckAnswers = shuffle(answerPool);
         deckAnswersBackup = [...deckAnswers];
         players.forEach(p => { for (let i = 0; i < HAND_SIZE; i++) p.hand.push(drawAnswer(p.hand)); });
@@ -910,7 +1007,11 @@
         startRound();
     }
 
-    let deckAnswersBackup = [];
+    function drawPrompt() {
+      if (!deckPrompts.length) deckPrompts = shuffle([...deckPromptsBackup]);
+      return deckPrompts.pop();
+    }
+
     function drawAnswer(exclude = []) {
       let pool = deckAnswers.length ? deckAnswers : (deckAnswers = shuffle([...deckAnswersBackup]));
       let card;
@@ -926,11 +1027,11 @@
     }
 
     function startRound() {
-        playedCards = []; activePlayerIndex = 0; selectedIndices = [];
+        playedCards = []; visibleJudgingCards = []; activePlayerIndex = 0; selectedIndices = [];
         selectedWinnerIndex = null;
         document.getElementById('confirm-winner-btn').classList.add('hidden');
         document.getElementById('prompt-container').style.opacity = "1";
-        const prompt = (deckPrompts.length ? deckPrompts : deckPrompts = shuffle([...prompts])).pop();
+        const prompt = drawPrompt();
         document.querySelector('#active-prompt .card-text').innerText = prompt;
         blanksRequired = (prompt.match(/____/g) || [1]).length;
         document.getElementById('round-indicator').innerText = `R${currentRound}/${maxRoundsLimit}`;
@@ -942,23 +1043,24 @@
     }
 
     function setupPlayerTurn() {
-        if (gameMode === 'single') {
-            document.getElementById('status-msg').innerText = 'Pick your card';
-            renderHand();
-            return;
-        }
         if (activePlayerIndex >= players.length) { startJudging(); return; }
         const p = players[activePlayerIndex];
         if (p.isBot) {
             const chosen = [];
             for(let i=0; i<blanksRequired; i++) chosen.push(p.hand.splice(Math.floor(Math.random()*p.hand.length), 1)[0]);
-            playedCards.push({ owner: p.name, text: chosen.join(" / ") });
+            playedCards.push({ id: ++playedCardId, owner: p.name, text: chosen.join(" / ") });
             activePlayerIndex++; setupPlayerTurn();
-        } else if (activePlayerIndex === currentJudgeIndex) {
+        } else if (gameMode === 'multi' && activePlayerIndex === currentJudgeIndex) {
             activePlayerIndex++; setupPlayerTurn();
         } else {
-            document.getElementById('pass-screen').classList.remove('hidden');
-            document.getElementById('pass-to-name').innerText = `${p.name}'s Turn`;
+            if (gameMode === 'single') {
+                document.getElementById('status-msg').innerText = `Pick ${blanksRequired} - bots are locked in`;
+                renderHand();
+            } else {
+                document.getElementById('pass-screen').classList.remove('hidden');
+                document.getElementById('pass-to-name').innerText = `${p.name}'s Turn`;
+                document.getElementById('pass-action-btn').onclick = showPlayerHand;
+            }
         }
     }
 
@@ -988,18 +1090,14 @@
     function confirmSelection() {
         const p = players[activePlayerIndex];
         const chosen = selectedIndices.sort((a,b)=>b-a).map(i => p.hand.splice(i, 1)[0]);
-        playedCards.push({ owner: p.name, text: chosen.reverse().join(" / ") });
+        playedCards.push({ id: ++playedCardId, owner: p.name, text: chosen.reverse().join(" / ") });
         selectedIndices = [];
         document.getElementById('confirm-btn').classList.add('hidden');
         document.getElementById('player-hand').innerHTML = '';
 
         if (gameMode === 'single') {
-          document.getElementById('play-area').innerHTML = '';
-          const card = document.createElement('div');
-          card.className = 'card card-white card-winner';
-          card.innerHTML = `<div class="card-text">${playedCards[0].text}</div><div class="card-brand">You</div>`;
-          document.getElementById('play-area').appendChild(card);
-          document.getElementById('next-round-btn').classList.remove('hidden');
+          activePlayerIndex++;
+          setupPlayerTurn();
           return;
         }
 
@@ -1008,16 +1106,18 @@
     }
 
     function startJudging() {
-        if (gameMode === 'single') return;
         document.getElementById('player-hand').innerHTML = '';
         document.getElementById('prompt-container').style.opacity = "0.5";
         const judge = players[currentJudgeIndex];
-        document.getElementById('status-msg').innerText = `Judge: ${judge.name}`;
-        if (judge.isBot) revealCards(true);
+        if (gameMode === 'single') {
+            document.getElementById('status-msg').innerText = 'Table votes are in';
+            revealCards(true);
+        } else if (judge.isBot) revealCards(true);
         else {
+            document.getElementById('status-msg').innerText = `Judge: ${judge.name}`;
             document.getElementById('pass-screen').classList.remove('hidden');
             document.getElementById('pass-to-name').innerText = `Judge: ${judge.name}`;
-            document.querySelector('#pass-screen button').onclick = () => {
+            document.getElementById('pass-action-btn').onclick = () => {
                 document.getElementById('pass-screen').classList.add('hidden');
                 revealCards(false);
             };
@@ -1028,10 +1128,11 @@
         const area = document.getElementById('play-area'); area.innerHTML = '';
         selectedWinnerIndex = null;
         document.getElementById('confirm-winner-btn').classList.add('hidden');
-        const shuffledCards = shuffle([...playedCards]);
-        shuffledCards.forEach((c, i) => {
+        visibleJudgingCards = shuffle([...playedCards]);
+        visibleJudgingCards.forEach((c, i) => {
             const card = document.createElement('div');
             card.className = `card card-white card-judging`;
+            card.dataset.playedId = c.id;
             card.innerHTML = `<div class="card-text">${c.text}</div><div class="card-brand">???</div>`;
             if (!isBotJudge) {
                 card.onclick = () => {
@@ -1046,13 +1147,13 @@
             }
             area.appendChild(card);
         });
-        if (isBotJudge) setTimeout(() => selectWinner(playedCards[Math.floor(Math.random()*playedCards.length)]), 1500);
+        if (isBotJudge) setTimeout(() => selectWinner(visibleJudgingCards[Math.floor(Math.random()*visibleJudgingCards.length)]), 1200);
     }
 
     function confirmWinner() {
       if (selectedWinnerIndex === null) return;
       document.getElementById('confirm-winner-btn').classList.add('hidden');
-      const winnerData = playedCards[selectedWinnerIndex];
+      const winnerData = visibleJudgingCards[selectedWinnerIndex];
       selectedWinnerIndex = null;
       selectWinner(winnerData);
     }
@@ -1062,8 +1163,7 @@
         players.find(p => p.name === winnerData.owner).score++;
         document.getElementById('status-msg').innerText = `${winnerData.owner} wins!`;
         document.querySelectorAll('#play-area .card').forEach(el => {
-            const text = el.querySelector('.card-text').innerText;
-            const cardData = playedCards.find(pc => pc.text === text);
+            const cardData = visibleJudgingCards.find(pc => String(pc.id) === el.dataset.playedId);
             el.querySelector('.card-brand').innerText = cardData.owner;
             el.classList.remove('card-judging');
             if (cardData.owner === winnerData.owner) el.classList.add('card-winner');
@@ -1076,7 +1176,8 @@
         if (currentRound >= maxRoundsLimit) { endGame(); return; }
         selectedWinnerIndex = null;
         document.getElementById('confirm-winner-btn').classList.add('hidden');
-        currentRound++; currentJudgeIndex = (currentJudgeIndex + 1) % players.length;
+        currentRound++;
+        if (gameMode === 'multi') currentJudgeIndex = (currentJudgeIndex + 1) % players.length;
         players.forEach(p => { while(p.hand.length < HAND_SIZE) p.hand.push(drawAnswer(p.hand)); });
         startRound();
     }
@@ -1084,7 +1185,7 @@
     function updateScoreboard() {
         const container = document.getElementById('scores-container');
         container.innerHTML = players.map((p, i) => `
-            <div class="flex flex-col items-center min-w-[40px] ${i === currentJudgeIndex ? 'text-yellow-500' : 'text-gray-400'}">
+            <div class="score-pill flex flex-col items-center min-w-[48px] ${i === currentJudgeIndex ? 'is-judge text-yellow-500' : 'text-gray-300'}">
                 <span class="text-[8px] font-black">${p.name}</span>
                 <span class="text-xs font-bold">${p.score}</span>
             </div>
@@ -1101,11 +1202,14 @@
       // light reset, no reload
       players = [];
       playedCards = [];
+      visibleJudgingCards = [];
       selectedIndices = [];
       selectedWinnerIndex = null;
+      playedCardId = 0;
       currentRound = 1;
       activePlayerIndex = 0;
       currentJudgeIndex = 0;
+      document.getElementById('pass-action-btn').onclick = showPlayerHand;
 
       document.getElementById('start-menu').classList.remove('hidden');
       document.getElementById('overlay').classList.add('hidden');
