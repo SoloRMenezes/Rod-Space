@@ -1106,14 +1106,14 @@ async function runSongSearch(query, container, urlInput, titleInput) {
     }
     results.forEach((item) => {
       const videoId = item.id.videoId;
-      const titleText = item.snippet?.title || `YouTube video ${videoId}`;
+      const titleText = decodeHtml(item.snippet?.title || `YouTube video ${videoId}`);
       container.append(el("button", "search-result", [
         thumbnail(videoId),
         el("span", "", titleText)
       ], { type: "button" }));
       container.lastElementChild.addEventListener("click", () => {
         urlInput.value = `https://www.youtube.com/watch?v=${videoId}`;
-        titleInput.value = decodeHtml(titleText);
+        titleInput.value = titleText;
         container.innerHTML = "";
       });
     });

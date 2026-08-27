@@ -871,6 +871,41 @@ p {
   gap: 9px;
 }
 
+.search-results {
+  gap: 8px;
+}
+
+.search-result {
+  width: 100%;
+  min-height: 60px;
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background-color: var(--surface-2);
+  background-image: linear-gradient(140deg, var(--shade-a), transparent 56%);
+  color: var(--text);
+  text-align: left;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--bg) 60%, transparent);
+}
+
+.search-result .thumb {
+  width: 54px;
+  height: 54px;
+  align-self: center;
+}
+
+.search-result span {
+  min-width: 0;
+  align-self: center;
+  line-height: 1.15;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
 .picker-list {
   display: flex;
   gap: 8px;
