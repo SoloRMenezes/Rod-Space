@@ -1,4 +1,6 @@
 const STORAGE_KEY = "karaoke-app-v2-state";
+const ROUTE_STORAGE_KEY = `${STORAGE_KEY}-route`;
+const RESTORABLE_ROUTES = new Set(["addSong", "queue", "ready", "player"]);
 
 const defaultState = {
   version: 1,
@@ -36,6 +38,8 @@ function init() {
     route = { name: "projector", data: {} };
   } else if (!state.settings.firstRunComplete) {
     route = { name: "setup", data: {} };
+  } else {
+    route = loadSavedRoute() || route;
   }
   render();
 }
@@ -82,17 +86,45 @@ function navigate(name, data = {}, resetStack = false) {
   if (resetStack) routeStack = [];
   else routeStack.push(route);
   route = { name, data };
+  rememberRoute();
   render();
 }
 
 function replaceRoute(name, data = {}) {
   route = { name, data };
+  rememberRoute();
   render();
 }
 
 function goBack() {
   route = routeStack.pop() || { name: "home", data: {} };
+  rememberRoute();
   render();
+}
+
+function loadSavedRoute() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ROUTE_STORAGE_KEY) || "null");
+    if (!saved || !RESTORABLE_ROUTES.has(saved.name)) return null;
+    if (!state.activeSession) return null;
+    if (saved.name === "player") {
+      const songId = saved.data?.songId || state.activeSession.currentSongId;
+      const song = state.activeSession.queue.find((item) => item.id === songId);
+      return song ? { name: "player", data: { songId } } : { name: "ready", data: {} };
+    }
+    if ((saved.name === "ready" || saved.name === "queue" || saved.name === "addSong") && !state.activeSession.peopleIds?.length) return null;
+    return { name: saved.name, data: saved.data || {} };
+  } catch {
+    return null;
+  }
+}
+
+function rememberRoute() {
+  if (RESTORABLE_ROUTES.has(route.name)) {
+    localStorage.setItem(ROUTE_STORAGE_KEY, JSON.stringify(route));
+  } else if (route.name === "home" || route.name === "setup" || route.name === "complete") {
+    localStorage.removeItem(ROUTE_STORAGE_KEY);
+  }
 }
 
 function setHeader(screenTitle, sub = "NextUp") {
@@ -105,6 +137,7 @@ function setHeader(screenTitle, sub = "NextUp") {
     button.classList.toggle("active", button.dataset.nav === route.name);
   });
   const actionMap = {
+    addSong: ["Save", "Save playlist"],
     playlists: ["＋", "Create playlist"],
     playlistEditor: ["＋", "Add song"],
     queue: ["＋", "Add song"],
@@ -117,6 +150,7 @@ function setHeader(screenTitle, sub = "NextUp") {
 }
 
 function handleTopAction() {
+  if (route.name === "addSong") return saveQueueAsPlaylist();
   if (route.name === "playlists") return submitPlaylistCreator();
   if (route.name === "playlistEditor" || route.name === "queue" || route.name === "recent") return navigate("addSong");
 }
@@ -403,13 +437,13 @@ function renderAddSong() {
   });
 
   view.append(el("section", "card grid", [
+    titleField.wrapper,
+    urlField.wrapper,
     el("div", "search-row", [
       searchField.wrapper,
       button("Search", "secondary", () => runSongSearch(searchField.input.value, searchResults, urlField.input, titleField.input))
     ]),
     searchResults,
-    urlField.wrapper,
-    titleField.wrapper,
     el("h3", "section-title", "Singers"),
     singerList,
     button("Add To Queue", "primary", async () => {
@@ -443,7 +477,10 @@ function renderAddSong() {
         el("h3", "section-title", "Playlist"),
         el("p", "muted", session.queue.length ? `${session.queue.length} songs queued` : "Add songs above, then press Done")
       ]),
-      button("Projector", "small-button", openProjector)
+      el("div", "row-actions compact-actions", [
+        button("Save", "small-button", () => saveQueueAsPlaylist()),
+        button("Projector", "small-button", openProjector)
+      ])
     ]),
     session.queue.length
       ? el("div", "song-list", session.queue.map((song, index) => songCard(song, index, "queue")))
@@ -473,7 +510,7 @@ function renderReady() {
       }),
       button("Projector", "secondary", openProjector)
     ]),
-    button("Back To Queue", "secondary", () => navigate("queue"))
+    button("Back To Browse", "secondary", () => navigate("addSong"))
   ]));
 }
 
@@ -494,7 +531,7 @@ function renderPlayer() {
       ]),
       el("div", "split-actions", [
         button("Song Finished", "primary", () => completeSong(song.id)),
-        button("Back To Queue", "secondary", () => navigate("queue"))
+        button("Back To Browse", "secondary", () => navigate("addSong"))
       ]),
       button("Video Unavailable", "danger", () => {
         toast("Marked unavailable. Choose another video or remove it from the queue.");
