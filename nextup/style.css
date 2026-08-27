@@ -933,6 +933,22 @@ p {
   font-size: .9rem;
 }
 
+.person-pill.removable {
+  padding-right: 8px;
+}
+
+.pill-remove {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .person-pill.selected {
   border-color: color-mix(in srgb, var(--accent) 80%, white);
   background: color-mix(in srgb, var(--accent) 22%, var(--surface-2));
@@ -947,13 +963,39 @@ p {
 
 .song-card {
   display: grid;
-  grid-template-columns: 42px 1fr;
-  gap: 11px;
-  padding: 11px;
+  grid-template-columns: 64px 1fr;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
 }
 
 .song-card.dragging {
   opacity: .55;
+}
+
+.song-card .section-head {
+  align-items: center;
+}
+
+.thumb-drag {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  cursor: grab;
+  touch-action: none;
+}
+
+.thumb-drag:active {
+  cursor: grabbing;
+}
+
+.thumb-drag .thumb {
+  width: 64px;
+  height: 64px;
 }
 
 .thumb {
@@ -961,6 +1003,7 @@ p {
   height: 42px;
   border-radius: var(--radius);
   object-fit: cover;
+  object-position: center;
   background: var(--surface-2);
   display: grid;
   place-items: center;

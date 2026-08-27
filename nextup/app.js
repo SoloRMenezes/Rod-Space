@@ -14,6 +14,8 @@ let state = loadState();
 let route = { name: "home", data: {} };
 let routeStack = [];
 let draggedSongId = null;
+let draggedSongMode = null;
+let draggedPlaylist = null;
 let ytPlayer = null;
 let ytApiReady = false;
 let draftSessionSingerIds = new Set();
@@ -44,6 +46,7 @@ function bindShell() {
   });
   backButton.addEventListener("click", goBack);
   topAction.addEventListener("click", handleTopAction);
+  document.addEventListener("dragover", autoScrollDuringDrag);
 }
 
 function loadState() {
@@ -202,11 +205,19 @@ function renderNewSession() {
     list.innerHTML = "";
     if (!state.people.length) list.append(emptyInline("No saved people yet."));
     state.people.forEach((person) => {
-      const pill = button(person.name, `person-pill ${selected.has(person.id) ? "selected" : ""}`, () => {
+      const pill = button("", `person-pill removable ${selected.has(person.id) ? "selected" : ""}`, (event) => {
+        if (event.target.closest(".pill-remove")) {
+          selected.delete(person.id);
+          deletePerson(person.id, false);
+          draftSessionSingerIds = selected;
+          redraw();
+          return;
+        }
         selected.has(person.id) ? selected.delete(person.id) : selected.add(person.id);
         draftSessionSingerIds = selected;
         redraw();
-      });
+      }, `${selected.has(person.id) ? "Remove or unselect" : "Select"} ${person.name}`);
+      pill.append(el("span", "", person.name), el("span", "pill-remove", "×"));
       list.append(pill);
     });
   };
@@ -453,12 +464,15 @@ function renderReady() {
     el("p", "ready-label", "UP NEXT"),
     el("h2", "ready-title", song.title),
     el("p", "ready-singers", names(song.singerIds)),
-    button("READY", "primary", () => {
-      song.status = "current";
-      session.currentSongId = song.id;
-      saveState();
-      navigate("player", { songId: song.id });
-    }),
+    el("div", "split-actions", [
+      button("READY", "primary", () => {
+        song.status = "current";
+        session.currentSongId = song.id;
+        saveState();
+        navigate("player", { songId: song.id });
+      }),
+      button("Projector", "secondary", openProjector)
+    ]),
     button("Back To Queue", "secondary", () => navigate("queue"))
   ]));
 }
@@ -676,8 +690,13 @@ function renderSettings() {
 
 function songCard(song, index, mode, playlist = null) {
   const status = mode === "queue" ? song.status : "playlist";
+  const dragHandle = el("button", "thumb-drag", [thumbnail(song.videoId, index + 1)], {
+    type: "button",
+    draggable: "true",
+    "aria-label": "Drag to reorder song"
+  });
   const article = el("article", "song-card", [
-    thumbnail(song.videoId, index + 1),
+    dragHandle,
     el("div", "song-main", [
       el("div", "section-head", [
         el("div", "", [
@@ -694,13 +713,17 @@ function songCard(song, index, mode, playlist = null) {
         button("Remove", "small-button danger", () => removeSong(song.id, mode, playlist))
       ])
     ])
-  ], { draggable: "true" });
-  article.addEventListener("dragstart", () => {
+  ]);
+  dragHandle.addEventListener("dragstart", () => {
     draggedSongId = song.id;
+    draggedSongMode = mode;
+    draggedPlaylist = playlist;
     article.classList.add("dragging");
   });
-  article.addEventListener("dragend", () => {
+  dragHandle.addEventListener("dragend", () => {
     draggedSongId = null;
+    draggedSongMode = null;
+    draggedPlaylist = null;
     article.classList.remove("dragging");
   });
   article.addEventListener("dragover", (event) => event.preventDefault());
@@ -850,14 +873,16 @@ function updatePerson(personId, name) {
   render();
 }
 
-function deletePerson(personId) {
-  confirmAction("Delete this person?", () => {
+function deletePerson(personId, shouldConfirm = true) {
+  const remove = () => {
     state.people = state.people.filter((p) => p.id !== personId);
     state.activeSession?.peopleIds && (state.activeSession.peopleIds = state.activeSession.peopleIds.filter((idValue) => idValue !== personId));
     state.activeSession?.queue.forEach((song) => song.singerIds = song.singerIds.filter((idValue) => idValue !== personId));
     saveState();
     render();
-  });
+  };
+  if (shouldConfirm) confirmAction("Delete this person?", remove);
+  else remove();
 }
 
 function findPerson(personId) {
@@ -1046,6 +1071,14 @@ function reorderByDrop(sourceId, targetId, mode, playlist) {
   render();
 }
 
+function autoScrollDuringDrag(event) {
+  if (!draggedSongId) return;
+  const edge = 90;
+  const speed = 18;
+  if (event.clientY < edge) window.scrollBy({ top: -speed, behavior: "auto" });
+  if (window.innerHeight - event.clientY < edge) window.scrollBy({ top: speed, behavior: "auto" });
+}
+
 function removeSong(songId, mode, playlist) {
   confirmAction("Remove this song?", () => {
     if (mode === "playlist") playlist.songs = playlist.songs.filter((song) => song.id !== songId);
@@ -1160,36 +1193,25 @@ async function fetchYouTubeTitle(url, videoId) {
 
 function cleanYouTubeTitle(value) {
   let title = decodeHtml(value || "").replace(/[’‘]/g, "'").replace(/[“”]/g, "\"").replace(/\s+/g, " ").trim();
-  const extras = [];
-  title = title.replace(/\s*\/\s*([a-z ]*key|acoustic|piano|guitar)\b/gi, (_, extra) => {
-    const clean = cleanTitleExtra(extra);
-    if (clean) extras.push(clean);
-    return " ";
-  });
-  title = title.replace(/\s*[\[(]([^\])]+)[\])]/g, (_, inner) => {
-    const clean = cleanTitleExtra(inner);
-    if (clean) extras.push(clean);
-    return " ";
-  });
   title = title
+    .replace(/\s*\/\s*(?:male|female|original)?\s*key\b.*$/i, " ")
+    .replace(/\s*[\[(][^\])]*[\])]/g, " ")
     .replace(/\b(?:karaoke|version|official|audio|video|lyrics?|hq|hd|4k|sing king)\b/gi, " ")
+    .replace(/\b(?:male|female|original)\s+key\b/gi, " ")
+    .replace(/\b(?:piano|acoustic|instrumental|songs?\s+with)\b/gi, " ")
     .replace(/\s*[-–—|]\s*(?:karaoke|lyrics?|official|audio|video|hq|hd|4k).*$/i, " ")
     .replace(/\s+/g, " ")
     .replace(/\s*[-–—|]\s*$/g, "")
     .trim();
+  title = keepMainTitleParts(title);
   title = titleCaseIfShouting(title);
-  const uniqueExtras = [...new Set(extras.map(titleCaseIfShouting))];
-  return uniqueExtras.length ? `${title} (${uniqueExtras.join(", ")})` : title;
+  return title || "YouTube Karaoke";
 }
 
-function cleanTitleExtra(value) {
-  const clean = decodeHtml(value || "")
-    .replace(/\b(?:karaoke|version|official|audio|video|lyrics?|hq|hd|4k)\b/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!clean) return "";
-  if (!/(key|acoustic|piano|guitar|duet|male|female)/i.test(clean)) return "";
-  return titleCaseIfShouting(clean);
+function keepMainTitleParts(value) {
+  const parts = value.split(/\s[-–—|]\s/).map((part) => part.trim()).filter(Boolean);
+  if (parts.length <= 2) return value;
+  return parts.slice(0, 2).join(" - ");
 }
 
 function titleCaseIfShouting(value) {
