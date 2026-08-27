@@ -111,57 +111,21 @@
     }
 
     #scare::after {
-        content: "DROP DETECTED";
+        content: "";
         position: absolute;
-        bottom: 12%;
-        color: rgba(255,255,255,0.86);
-        font: 900 clamp(18px, 5vw, 44px)/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        animation: textTear 0.16s infinite;
+        inset: 0;
+        background: rgba(0,0,0,0.24);
+        animation: scareFlash 0.12s steps(2, end) infinite;
     }
 
     .scare-face {
         position: relative;
-        width: min(72vw, 520px);
-        aspect-ratio: 1;
-        border-radius: 50%;
-        background:
-            radial-gradient(circle at 35% 38%, #fff 0 5%, transparent 6%),
-            radial-gradient(circle at 65% 38%, #fff 0 5%, transparent 6%),
-            radial-gradient(ellipse at center, rgba(255,255,255,0.95) 0 10%, transparent 11%),
-            radial-gradient(circle at center, #0a0a0a 0 51%, transparent 52%);
-        filter: contrast(1.25);
+        z-index: 1;
+        width: min(86vw, 620px);
+        height: auto;
+        filter: contrast(1.55) brightness(1.2);
         transform: scale(0.82);
-        animation: faceRush 0.7s cubic-bezier(.11,.86,.19,1) both;
-    }
-
-    .scare-face::before,
-    .scare-face::after {
-        content: "";
-        position: absolute;
-        top: 32%;
-        width: 24%;
-        height: 15%;
-        border-radius: 50%;
-        background: #ff2d55;
-        box-shadow: 0 0 34px rgba(255,45,85,0.92);
-    }
-
-    .scare-face::before { left: 22%; transform: rotate(18deg); }
-    .scare-face::after { right: 22%; transform: rotate(-18deg); }
-
-    .mouth {
-        position: absolute;
-        left: 50%;
-        bottom: 20%;
-        width: 34%;
-        height: 30%;
-        transform: translateX(-50%);
-        border-radius: 50% 50% 45% 45%;
-        background: #000;
-        border: 8px solid rgba(255,255,255,0.92);
-        box-shadow: inset 0 24px 30px rgba(255,45,85,0.48);
+        animation: faceRush 0.62s cubic-bezier(.11,.86,.19,1) both;
     }
 
     @keyframes hardShake {
@@ -179,14 +143,9 @@
     }
 
     @keyframes faceRush {
-        0% { opacity: 0; transform: scale(0.18) rotate(-8deg); }
-        48% { opacity: 1; transform: scale(1.08) rotate(3deg); }
-        100% { opacity: 1; transform: scale(0.92) rotate(0); }
-    }
-
-    @keyframes textTear {
-        0%, 100% { transform: translateX(0); }
-        50% { transform: translateX(8px); }
+        0% { opacity: 0; transform: scale(0.12) rotate(-8deg); }
+        42% { opacity: 1; transform: scale(1.18) rotate(3deg); }
+        100% { opacity: 1; transform: scale(1.04) rotate(0); }
     }
 </style>
 </head>
@@ -199,7 +158,7 @@
 </div>
 
 <div id="scare" class="hidden">
-    <div class="scare-face"><div class="mouth"></div></div>
+    <img class="scare-face" src="assets/tilt-maze/jumpscare-face.png" alt="">
 </div>
 
 <canvas id="game"></canvas>
@@ -219,6 +178,7 @@ let state = { running: false, level: 1, falling: false, scareCooldown: false };
 let maze = [], cellSize = 0, trapCell = null, exitCell = null;
 let gravity = { x: 0, y: 0 }, keyGravity = { x: 0, y: 0 };
 let audioCtx = null;
+let noiseBuffer = null;
 
 const ball = { x: 0, y: 0, vx: 0, vy: 0, r: 0, trail: [] };
 
@@ -228,6 +188,31 @@ const manhattan = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 function getAudioCtx() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     return audioCtx;
+}
+
+async function unlockAudio() {
+    const ac = getAudioCtx();
+    if (ac.state === "suspended") await ac.resume();
+    const silent = ac.createBufferSource();
+    const gain = ac.createGain();
+    gain.gain.value = 0.001;
+    silent.buffer = ac.createBuffer(1, 1, ac.sampleRate);
+    silent.connect(gain);
+    gain.connect(ac.destination);
+    silent.start();
+}
+
+function getNoiseBuffer() {
+    const ac = getAudioCtx();
+    if (noiseBuffer) return noiseBuffer;
+    const length = Math.floor(ac.sampleRate * 0.75);
+    noiseBuffer = ac.createBuffer(1, length, ac.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < length; i++) {
+        const fade = 1 - i / length;
+        data[i] = (Math.random() * 2 - 1) * fade;
+    }
+    return noiseBuffer;
 }
 
 function playTone(freq, start, duration, gainValue, type = "sine") {
@@ -244,13 +229,33 @@ function playTone(freq, start, duration, gainValue, type = "sine") {
     osc.stop(ac.currentTime + start + duration);
 }
 
+function playNoise(start, duration, gainValue) {
+    const ac = getAudioCtx();
+    const source = ac.createBufferSource();
+    const gain = ac.createGain();
+    const filter = ac.createBiquadFilter();
+    source.buffer = getNoiseBuffer();
+    filter.type = "highpass";
+    filter.frequency.setValueAtTime(900, ac.currentTime + start);
+    gain.gain.setValueAtTime(gainValue, ac.currentTime + start);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + start + duration);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(ac.destination);
+    source.start(ac.currentTime + start);
+    source.stop(ac.currentTime + start + duration);
+}
+
 function playScareSound() {
-    playTone(42, 0, 0.58, 0.58, "sawtooth");
-    playTone(118, 0.02, 0.18, 0.34, "square");
-    playTone(780, 0.08, 0.32, 0.16, "triangle");
+    if (!audioCtx || audioCtx.state !== "running") return;
+    playNoise(0, 0.62, 0.72);
+    playTone(34, 0, 0.72, 0.62, "sawtooth");
+    playTone(92, 0.02, 0.22, 0.36, "square");
+    playTone(1220, 0.04, 0.18, 0.16, "triangle");
 }
 
 function playWinSound() {
+    if (!audioCtx || audioCtx.state !== "running") return;
     playTone(320, 0, 0.14, 0.16, "triangle");
     playTone(540, 0.12, 0.16, 0.16, "triangle");
     playTone(820, 0.24, 0.2, 0.16, "triangle");
@@ -528,6 +533,7 @@ addEventListener("resize", () => {
 });
 
 document.getElementById("startBtn").onclick = async () => {
+    await unlockAudio();
     if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
         const permission = await DeviceOrientationEvent.requestPermission();
         if (permission !== "granted") return;
