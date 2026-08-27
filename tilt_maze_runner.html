@@ -6,14 +6,10 @@
 <title>Tilt Maze Runner</title>
 <style>
     :root {
-        --bg: #05070b;
-        --panel: rgba(9, 13, 22, 0.78);
-        --line: rgba(255, 255, 255, 0.12);
+        --bg: #030405;
         --text: #f8fbff;
-        --muted: #93a0b5;
-        --acid: #a7f432;
+        --muted: #858b94;
         --danger: #ff2d55;
-        --cyan: #33d9ff;
     }
 
     * { box-sizing: border-box; }
@@ -21,10 +17,7 @@
     html, body {
         margin: 0;
         height: 100%;
-        background:
-            radial-gradient(circle at 50% -10%, rgba(51, 217, 255, 0.16), transparent 34%),
-            radial-gradient(circle at 20% 88%, rgba(167, 244, 50, 0.10), transparent 30%),
-            linear-gradient(180deg, #0b1020 0%, var(--bg) 100%);
+        background: #030405;
         color: var(--text);
         display: flex;
         justify-content: center;
@@ -41,45 +34,9 @@
 
     canvas {
         display: block;
-        background: #05070b;
-        border: 1px solid rgba(255,255,255,0.10);
-        box-shadow: 0 30px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(51,217,255,0.05);
-    }
-
-    #stats {
-        position: fixed;
-        top: 12px;
-        left: 12px;
-        right: 12px;
-        z-index: 5;
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        pointer-events: none;
-    }
-
-    .stat-pill {
-        min-width: 86px;
-        padding: 8px 10px;
-        border-radius: 8px;
-        background: var(--panel);
-        border: 1px solid var(--line);
-        color: var(--muted);
-        font: 800 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        backdrop-filter: blur(14px);
-    }
-
-    .stat-pill strong {
-        color: var(--text);
-        font-size: 13px;
-        letter-spacing: 0;
-    }
-
-    #dangerMeter {
-        color: var(--acid);
-        text-align: right;
+        background: #030405;
+        border: 0;
+        box-shadow: none;
     }
 
     #ui {
@@ -92,9 +49,7 @@
         align-items: center;
         padding: 24px;
         text-align: center;
-        background:
-            radial-gradient(circle at center, rgba(51,217,255,0.10), transparent 28%),
-            rgba(5, 7, 11, 0.94);
+        background: #030405;
     }
 
     #ui h1 {
@@ -120,13 +75,13 @@
         padding: 16px 28px;
         border: 1px solid rgba(255,255,255,0.18);
         border-radius: 8px;
-        background: linear-gradient(135deg, var(--acid), #5df2c4);
-        color: #06110b;
+        background: #e6e6e6;
+        color: #090909;
         cursor: pointer;
         font-size: 0.95rem;
         font-weight: 900;
         text-transform: uppercase;
-        box-shadow: 0 18px 44px rgba(93, 242, 196, 0.20);
+        box-shadow: none;
     }
 
     button:active {
@@ -237,15 +192,9 @@
 </head>
 <body>
 
-<div id="stats">
-    <div class="stat-pill">Depth<br><strong id="lvl">1</strong></div>
-    <div class="stat-pill">Grid<br><strong id="size">11x15</strong></div>
-    <div class="stat-pill" id="dangerMeter">Signal<br><strong id="danger">Clear</strong></div>
-</div>
-
 <div id="ui">
     <h1>Tilt Maze<br>Runner</h1>
-    <p>Guide the steel marble through the maze. Green holes take you deeper. Red holes reset the run.</p>
+    <p>Guide the steel marble through the maze. Find the hole and keep moving.</p>
     <button id="startBtn">Start Run</button>
 </div>
 
@@ -260,9 +209,6 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const ui = document.getElementById("ui");
 const scare = document.getElementById("scare");
-const lvlEl = document.getElementById("lvl");
-const sizeEl = document.getElementById("size");
-const dangerEl = document.getElementById("danger");
 
 const CAMERA_ZOOM = 2.45;
 const FRICTION = 0.945;
@@ -410,9 +356,6 @@ function initLevel() {
     ball.r = cellSize * 0.34;
     ball.trail = [];
     state.falling = false;
-    lvlEl.textContent = state.level;
-    sizeEl.textContent = `${w}x${h}`;
-    dangerEl.textContent = "Clear";
 }
 
 function triggerScare() {
@@ -466,19 +409,9 @@ function update() {
     if (!hitsWall(ball.x, ball.y + ball.vy)) ball.y += ball.vy;
     else ball.vy *= -0.34;
 
-    ball.trail.push({x: ball.x, y: ball.y, life: 1});
-    if (ball.trail.length > 16) ball.trail.shift();
-    ball.trail.forEach(p => p.life -= 0.08);
-
     const cx = Math.floor(ball.x / cellSize);
     const cy = Math.floor(ball.y / cellSize);
     const tile = maze[cy] && maze[cy][cx];
-
-    if (trapCell) {
-        const d = Math.hypot(cx - trapCell.x, cy - trapCell.y);
-        dangerEl.textContent = d < 3 ? "Close" : "Clear";
-        document.getElementById("dangerMeter").style.color = d < 3 ? "var(--danger)" : "var(--acid)";
-    }
 
     if (tile === 2) {
         state.falling = true;
@@ -500,27 +433,22 @@ function drawWalls() {
             const tile = maze[y][x];
 
             if (tile === 1) {
-                const shade = 20 + ((x + y) % 3) * 7;
-                ctx.fillStyle = `rgb(${shade}, ${shade + 4}, ${shade + 12})`;
+                const shade = 12 + ((x + y) % 3) * 5;
+                ctx.fillStyle = `rgb(${shade}, ${shade + 1}, ${shade + 3})`;
                 ctx.fillRect(px, py, cellSize, cellSize);
-                ctx.strokeStyle = "rgba(255,255,255,0.035)";
+                ctx.strokeStyle = "rgba(255,255,255,0.018)";
                 ctx.strokeRect(px + 0.5, py + 0.5, cellSize - 1, cellSize - 1);
             } else {
-                ctx.fillStyle = "#070b13";
+                ctx.fillStyle = "#070707";
                 ctx.fillRect(px, py, cellSize, cellSize);
 
                 if (tile === 2 || tile === 3) {
-                    const color = tile === 2 ? "167,244,50" : "255,45,85";
-                    ctx.fillStyle = `rgba(${color},0.12)`;
-                    ctx.beginPath();
-                    ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize * 0.5, 0, Math.PI * 2);
-                    ctx.fill();
                     ctx.fillStyle = "#000";
                     ctx.beginPath();
-                    ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize * 0.34, 0, Math.PI * 2);
+                    ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize * 0.38, 0, Math.PI * 2);
                     ctx.fill();
-                    ctx.strokeStyle = `rgba(${color},0.78)`;
-                    ctx.lineWidth = Math.max(2, cellSize * 0.08);
+                    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+                    ctx.lineWidth = Math.max(1, cellSize * 0.035);
                     ctx.stroke();
                 }
             }
@@ -529,14 +457,6 @@ function drawWalls() {
 }
 
 function drawBall() {
-    ball.trail.forEach(p => {
-        if (p.life <= 0) return;
-        ctx.fillStyle = `rgba(51,217,255,${p.life * 0.13})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, ball.r * (1 + p.life * 0.8), 0, Math.PI * 2);
-        ctx.fill();
-    });
-
     const gradient = ctx.createRadialGradient(ball.x - ball.r * 0.35, ball.y - ball.r * 0.42, ball.r * 0.08, ball.x, ball.y, ball.r);
     gradient.addColorStop(0, "#ffffff");
     gradient.addColorStop(0.36, "#d8e4f2");
@@ -548,6 +468,18 @@ function drawBall() {
     ctx.strokeStyle = "rgba(255,255,255,0.55)";
     ctx.lineWidth = Math.max(1, ball.r * 0.08);
     ctx.stroke();
+}
+
+function drawDarkness() {
+    const radius = Math.max(cellSize * 3.1, 92);
+    const fade = Math.max(cellSize * 2.2, 78);
+    const shadow = ctx.createRadialGradient(ball.x, ball.y, radius * 0.28, ball.x, ball.y, radius + fade);
+    shadow.addColorStop(0, "rgba(0,0,0,0)");
+    shadow.addColorStop(0.46, "rgba(0,0,0,0.18)");
+    shadow.addColorStop(0.75, "rgba(0,0,0,0.72)");
+    shadow.addColorStop(1, "rgba(0,0,0,0.97)");
+    ctx.fillStyle = shadow;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 function draw() {
@@ -567,6 +499,7 @@ function draw() {
 
     drawWalls();
     drawBall();
+    drawDarkness();
 
     requestAnimationFrame(draw);
 }
