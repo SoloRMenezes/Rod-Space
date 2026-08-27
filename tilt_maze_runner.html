@@ -162,6 +162,8 @@
     <img class="scare-face" src="assets/tilt-maze/jumpscare-face.png" alt="">
 </div>
 
+<audio id="scareSound" src="assets/tilt-maze/jumpscare-scream.mp3" preload="auto"></audio>
+
 <canvas id="game"></canvas>
 
 <script>
@@ -169,6 +171,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const ui = document.getElementById("ui");
 const scare = document.getElementById("scare");
+const scareSound = document.getElementById("scareSound");
 
 const CAMERA_ZOOM = 2.45;
 const FRICTION = 0.945;
@@ -202,6 +205,12 @@ async function unlockAudio() {
     silent.connect(gain);
     gain.connect(ac.destination);
     silent.start();
+    scareSound.muted = true;
+    scareSound.volume = 0.9;
+    await scareSound.play().catch(() => {});
+    scareSound.pause();
+    scareSound.currentTime = 0;
+    scareSound.muted = false;
 }
 
 function getNoiseBuffer() {
@@ -271,11 +280,15 @@ function playScream(start, duration, gainValue) {
 }
 
 function playScareSound() {
-    if (!audioCtx || audioCtx.state !== "running") return;
-    playNoise(0, 0.88, 0.28);
-    playScream(0.02, 0.84, 0.58);
-    playScream(0.08, 0.62, 0.32);
-    playTone(62, 0, 0.58, 0.44, "triangle");
+    scareSound.currentTime = 0;
+    scareSound.volume = 1;
+    scareSound.play().catch(() => {
+        if (!audioCtx || audioCtx.state !== "running") return;
+        playNoise(0, 0.88, 0.28);
+        playScream(0.02, 0.84, 0.58);
+        playScream(0.08, 0.62, 0.32);
+        playTone(62, 0, 0.58, 0.44, "triangle");
+    });
 }
 
 function playWinSound() {
@@ -289,9 +302,32 @@ function isDeadEnd(m, x, y) {
     if (m[y][x] !== 0) return false;
     let open = 0;
     for (const d of [{x:1,y:0}, {x:-1,y:0}, {x:0,y:1}, {x:0,y:-1}]) {
-        if (m[y + d.y] && m[y + d.y][x + d.x] === 0) open++;
+        if (m[y + d.y] && m[y + d.y][x + d.x] !== 1) open++;
     }
     return open === 1;
+}
+
+function getDeadEndCells(m, start) {
+    const cells = [];
+    for (let y = 1; y < m.length - 1; y++) {
+        for (let x = 1; x < m[0].length - 1; x++) {
+            if (x === start.x && y === start.y) continue;
+            if (isDeadEnd(m, x, y)) cells.push({x, y});
+        }
+    }
+    return cells;
+}
+
+function getSafeStartCell(m) {
+    const center = {x: Math.floor(m[0].length / 2), y: Math.floor(m.length / 2)};
+    const openCells = [];
+    for (let y = 1; y < m.length - 1; y++) {
+        for (let x = 1; x < m[0].length - 1; x++) {
+            if (m[y][x] === 0 && !isDeadEnd(m, x, y)) openCells.push({x, y});
+        }
+    }
+    if (!openCells.length) return center;
+    return openCells.sort((a, b) => manhattan(a, center) - manhattan(b, center))[0];
 }
 
 function getSolutionPath(m, start, end) {
@@ -329,10 +365,9 @@ function generateMaze(w, h) {
         if (value % 2 === 0) value--;
         return clamp(value, 1, size - 2);
     };
-    const start = {x: centeredOdd(w), y: centeredOdd(h)};
-    startCell = start;
-    const stack = [start];
-    m[start.y][start.x] = 0;
+    const carveStart = {x: centeredOdd(w), y: centeredOdd(h)};
+    const stack = [carveStart];
+    m[carveStart.y][carveStart.x] = 0;
 
     while (stack.length) {
         const c = stack[stack.length - 1];
@@ -351,21 +386,19 @@ function generateMaze(w, h) {
         }
     }
 
-    const deadEnds = [];
-    for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-            if (x === start.x && y === start.y) continue;
-            if (isDeadEnd(m, x, y)) deadEnds.push({x, y});
-        }
-    }
-
+    startCell = getSafeStartCell(m);
+    const deadEnds = getDeadEndCells(m, startCell);
     exitCell = deadEnds.length
-        ? deadEnds.sort((a, b) => manhattan(b, start) - manhattan(a, start))[0]
+        ? deadEnds.sort((a, b) => manhattan(b, startCell) - manhattan(a, startCell))[0]
         : {x: w - 2, y: h - 2};
     deadEnds.forEach(({x, y}) => {
         m[y][x] = x === exitCell.x && y === exitCell.y ? 2 : 3;
     });
     return m;
+}
+
+function isHoleTile(tile) {
+    return tile === 2 || tile === 3;
 }
 
 function initLevel() {
@@ -487,16 +520,30 @@ function drawWalls() {
                 ctx.fillStyle = "#070707";
                 ctx.fillRect(px, py, cellSize, cellSize);
 
-                if (tile === 2 || tile === 3) {
+                if (isHoleTile(tile)) {
                     ctx.fillStyle = "#000";
                     ctx.beginPath();
-                    ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize * 0.38, 0, Math.PI * 2);
+                    ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize * 0.48, 0, Math.PI * 2);
                     ctx.fill();
-                    ctx.strokeStyle = "rgba(255,255,255,0.08)";
-                    ctx.lineWidth = Math.max(1, cellSize * 0.035);
-                    ctx.stroke();
                 }
             }
+        }
+    }
+}
+
+function drawHoleVignette() {
+    for (let y = 1; y < maze.length - 1; y++) {
+        for (let x = 1; x < maze[0].length - 1; x++) {
+            if (!isHoleTile(maze[y][x])) continue;
+            const hx = x * cellSize + cellSize / 2;
+            const hy = y * cellSize + cellSize / 2;
+            const d = Math.hypot(ball.x - hx, ball.y - hy);
+            if (d > cellSize * 4.6) continue;
+            const alpha = clamp(1 - d / (cellSize * 4.6), 0, 1);
+            ctx.fillStyle = `rgba(0,0,0,${0.22 + alpha * 0.52})`;
+            ctx.beginPath();
+            ctx.arc(hx, hy, cellSize * (0.52 + alpha * 0.18), 0, Math.PI * 2);
+            ctx.fill();
         }
     }
 }
@@ -571,6 +618,7 @@ function draw() {
     drawWorldEdgeFade();
     drawBall();
     drawDarkness();
+    drawHoleVignette();
 
     requestAnimationFrame(draw);
 }
