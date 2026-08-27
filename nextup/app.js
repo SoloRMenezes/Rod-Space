@@ -412,7 +412,7 @@ function renderAddSong() {
         id: id(),
         videoId,
         url: `https://www.youtube.com/watch?v=${videoId}`,
-        title: titleField.input.value.trim() || await fetchYouTubeTitle(urlField.input.value.trim(), videoId),
+        title: cleanYouTubeTitle(titleField.input.value.trim() || await fetchYouTubeTitle(urlField.input.value.trim(), videoId)),
         singerIds: [...selectedSingers],
         status: "upcoming",
         addedAt: Date.now()
@@ -1106,7 +1106,7 @@ async function runSongSearch(query, container, urlInput, titleInput) {
     }
     results.forEach((item) => {
       const videoId = item.id.videoId;
-      const titleText = decodeHtml(item.snippet?.title || `YouTube video ${videoId}`);
+      const titleText = cleanYouTubeTitle(item.snippet?.title || `YouTube video ${videoId}`);
       container.append(el("button", "search-result", [
         thumbnail(videoId),
         el("span", "", titleText)
@@ -1152,10 +1152,53 @@ async function fetchYouTubeTitle(url, videoId) {
     const response = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url || `https://youtube.com/watch?v=${videoId}`)}&format=json`);
     if (!response.ok) throw new Error("No title");
     const data = await response.json();
-    return data.title || `YouTube Karaoke ${videoId}`;
+    return cleanYouTubeTitle(data.title || `YouTube Karaoke ${videoId}`);
   } catch {
     return `YouTube Karaoke ${videoId}`;
   }
+}
+
+function cleanYouTubeTitle(value) {
+  let title = decodeHtml(value || "").replace(/[’‘]/g, "'").replace(/[“”]/g, "\"").replace(/\s+/g, " ").trim();
+  const extras = [];
+  title = title.replace(/\s*\/\s*([a-z ]*key|acoustic|piano|guitar)\b/gi, (_, extra) => {
+    const clean = cleanTitleExtra(extra);
+    if (clean) extras.push(clean);
+    return " ";
+  });
+  title = title.replace(/\s*[\[(]([^\])]+)[\])]/g, (_, inner) => {
+    const clean = cleanTitleExtra(inner);
+    if (clean) extras.push(clean);
+    return " ";
+  });
+  title = title
+    .replace(/\b(?:karaoke|version|official|audio|video|lyrics?|hq|hd|4k|sing king)\b/gi, " ")
+    .replace(/\s*[-–—|]\s*(?:karaoke|lyrics?|official|audio|video|hq|hd|4k).*$/i, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\s*[-–—|]\s*$/g, "")
+    .trim();
+  title = titleCaseIfShouting(title);
+  const uniqueExtras = [...new Set(extras.map(titleCaseIfShouting))];
+  return uniqueExtras.length ? `${title} (${uniqueExtras.join(", ")})` : title;
+}
+
+function cleanTitleExtra(value) {
+  const clean = decodeHtml(value || "")
+    .replace(/\b(?:karaoke|version|official|audio|video|lyrics?|hq|hd|4k)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!clean) return "";
+  if (!/(key|acoustic|piano|guitar|duet|male|female)/i.test(clean)) return "";
+  return titleCaseIfShouting(clean);
+}
+
+function titleCaseIfShouting(value) {
+  if (!value) return value;
+  return value.split(/(\s[-–—]\s)/).map((part) => {
+    const letters = part.replace(/[^a-z]/gi, "");
+    if (!letters || letters !== letters.toUpperCase()) return part;
+    return part.toLowerCase().replace(/(^|[\s/(-])([a-z])/g, (_, lead, letter) => `${lead}${letter.toUpperCase()}`);
+  }).join("");
 }
 
 function thumbnail(videoId, fallback = "♪") {
