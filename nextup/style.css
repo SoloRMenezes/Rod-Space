@@ -484,6 +484,10 @@ p {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.split-actions.one-action {
+  grid-template-columns: 1fr;
+}
+
 .primary,
 .secondary,
 .danger,
@@ -527,6 +531,18 @@ p {
 .playlist-create {
   grid-template-columns: 1fr auto;
   align-items: end;
+}
+
+.playlist-tools {
+  gap: 10px;
+}
+
+.playlist-transfer {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.file-input {
+  display: none;
 }
 
 .search-row {

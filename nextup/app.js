@@ -155,6 +155,7 @@ function setHeader(screenTitle, sub = "NextUp") {
     queue: ["＋", "Add song"],
     recent: ["＋", "Add song"]
   };
+  if (route.name === "player" && !isMobileDevice()) actionMap.player = ["Projector", "Open projector screen"];
   const action = actionMap[route.name];
   topAction.textContent = action?.[0] || "";
   topAction.setAttribute("aria-label", action?.[1] || "No action");
@@ -163,6 +164,7 @@ function setHeader(screenTitle, sub = "NextUp") {
 
 function handleTopAction() {
   if (route.name === "addSong") return saveQueueAsPlaylist();
+  if (route.name === "player") return openProjector();
   if (route.name === "playlists") return submitPlaylistCreator();
   if (route.name === "playlistEditor" || route.name === "queue" || route.name === "recent") return navigate("addSong");
 }
@@ -489,7 +491,6 @@ function renderAddSong() {
   renderSingers();
 
   const browseActions = [button("Save", "small-button", () => saveQueueAsPlaylist())];
-  if (!isMobileDevice()) browseActions.push(button("Projector", "small-button", openProjector));
 
   view.append(el("section", "card grid browse-queue", [
     el("div", "section-head", [
@@ -520,13 +521,12 @@ function renderReady() {
     saveState();
     navigate("player", { songId: song.id });
   })];
-  if (!isMobileDevice()) readyActions.push(button("Projector", "secondary", openProjector));
 
   view.append(el("section", "ready", [
     el("p", "ready-label", "UP NEXT"),
     el("h2", "ready-title", song.title),
     el("p", "ready-singers", names(song.singerIds)),
-    el("div", "split-actions", readyActions),
+    el("div", "split-actions one-action", readyActions),
     button("Back To Browse", "secondary", () => navigate("addSong"))
   ]));
 }
@@ -557,9 +557,8 @@ function renderPlayer() {
         el("p", "muted", names(song.singerIds)),
         el("div", "split-actions", [
           button("Song Finished", "primary", () => completeSong(song.id)),
-          button("Open Projector", "secondary", openProjector)
-        ]),
-        button("Back To Browse", "secondary", () => navigate("addSong"))
+          button("Back To Browse", "secondary", () => navigate("addSong"))
+        ])
       ])
     ]));
     view.append(renderUpNextList(song.id));
@@ -705,6 +704,25 @@ function renderPlaylists() {
   view.append(el("section", "card playlist-create", [
     nameField.wrapper,
     button("＋", "primary add-only", () => createPlaylist(nameField.input.value, nameField.input), "Add playlist")
+  ]));
+  const importInput = el("input", "file-input", "", { type: "file", accept: "application/json,.json" });
+  importInput.addEventListener("change", () => {
+    const file = importInput.files?.[0];
+    if (file) importPlaylistsFromFile(file);
+    importInput.value = "";
+  });
+  view.append(el("section", "card grid playlist-tools", [
+    el("div", "section-head", [
+      el("div", "", [
+        el("h3", "section-title", "Transfer playlists"),
+        el("p", "muted", "Move playlists between devices")
+      ])
+    ]),
+    el("div", "split-actions playlist-transfer", [
+      button("Export", "secondary", exportPlaylists),
+      button("Import", "secondary", () => importInput.click())
+    ]),
+    importInput
   ]));
   const list = el("section", "song-list");
   if (!state.playlists.length) {
@@ -1087,6 +1105,79 @@ function saveQueueAsPlaylist() {
   saveState();
   toast("Playlist saved.");
   render();
+}
+
+function exportPlaylists() {
+  if (!state.playlists.length) return toast("No playlists to export yet.");
+  const payload = {
+    app: "NextUp",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    people: state.people.map((person) => ({ name: person.name })),
+    playlists: state.playlists.map((playlist) => ({
+      name: playlist.name,
+      songs: playlist.songs.map((song) => ({
+        videoId: song.videoId,
+        url: song.url,
+        title: song.title,
+        singers: (song.singerIds || []).map((personId) => findPerson(personId)?.name).filter(Boolean)
+      }))
+    }))
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "nextup-playlists-" + new Date().toISOString().slice(0, 10) + ".json";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  toast("Playlist export downloaded.");
+}
+
+function importPlaylistsFromFile(file) {
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      const payload = JSON.parse(String(reader.result || "{}"));
+      const playlists = Array.isArray(payload) ? payload : payload.playlists;
+      if (!Array.isArray(playlists) || !playlists.length) throw new Error("No playlists found in that file.");
+      const ensurePerson = (name) => {
+        const clean = String(name || "").trim();
+        if (!clean) return null;
+        const existing = state.people.find((person) => person.name.toLowerCase() === clean.toLowerCase());
+        if (existing) return existing.id;
+        const person = { id: id(), name: clean, createdAt: Date.now() };
+        state.people.push(person);
+        return person.id;
+      };
+      if (Array.isArray(payload.people)) payload.people.forEach((person) => ensurePerson(person.name));
+      const imported = playlists.map((playlist) => ({
+        id: id(),
+        name: String(playlist.name || "Imported Playlist").trim() || "Imported Playlist",
+        createdAt: Date.now(),
+        songs: (Array.isArray(playlist.songs) ? playlist.songs : []).map((song) => {
+          const singerNames = song.singers || song.singerNames || [];
+          return {
+            id: id(),
+            videoId: song.videoId || parseYouTubeId(song.url || ""),
+            url: song.url || (song.videoId ? "https://www.youtube.com/watch?v=" + song.videoId : ""),
+            title: cleanYouTubeTitle(song.title || "Imported song"),
+            singerIds: singerNames.map(ensurePerson).filter(Boolean)
+          };
+        }).filter((song) => song.videoId || song.url)
+      })).filter((playlist) => playlist.songs.length);
+      if (!imported.length) throw new Error("That file did not have usable playlist songs.");
+      state.playlists = [...imported, ...state.playlists];
+      saveState();
+      toast("Imported " + imported.length + " playlist" + (imported.length === 1 ? "" : "s") + ".");
+      render();
+    } catch (error) {
+      toast(error.message || "Could not import that playlist file.");
+    }
+  });
+  reader.addEventListener("error", () => toast("Could not read that file."));
+  reader.readAsText(file);
 }
 
 function createPlaylist(name = "", inputEl = null) {
