@@ -176,10 +176,11 @@ const ACCEL = 0.11;
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 let state = { running: false, level: 1, falling: false, scareCooldown: false };
-let maze = [], cellSize = 0, worldWidth = 0, worldHeight = 0, exitCell = null;
+let maze = [], cellSize = 0, worldWidth = 0, worldHeight = 0, startCell = null, exitCell = null;
 let gravity = { x: 0, y: 0 }, keyGravity = { x: 0, y: 0 };
 let audioCtx = null;
 let noiseBuffer = null;
+let fakeHoleCooldowns = new Map();
 
 const ball = { x: 0, y: 0, vx: 0, vy: 0, r: 0, trail: [] };
 
@@ -323,8 +324,15 @@ function getSolutionPath(m, start, end) {
 
 function generateMaze(w, h) {
     const m = Array(h).fill().map(() => Array(w).fill(1));
-    const stack = [{x: 1, y: 1}];
-    m[1][1] = 0;
+    const centeredOdd = (size) => {
+        let value = Math.floor(size / 2);
+        if (value % 2 === 0) value--;
+        return clamp(value, 1, size - 2);
+    };
+    const start = {x: centeredOdd(w), y: centeredOdd(h)};
+    startCell = start;
+    const stack = [start];
+    m[start.y][start.x] = 0;
 
     while (stack.length) {
         const c = stack[stack.length - 1];
@@ -343,15 +351,17 @@ function generateMaze(w, h) {
         }
     }
 
-    const start = {x: 1, y: 1};
     const deadEnds = [];
     for (let y = 1; y < h - 1; y++) {
         for (let x = 1; x < w - 1; x++) {
-            if (isDeadEnd(m, x, y) && manhattan({x, y}, start) > 5) deadEnds.push({x, y});
+            if (x === start.x && y === start.y) continue;
+            if (isDeadEnd(m, x, y)) deadEnds.push({x, y});
         }
     }
 
-    exitCell = deadEnds.length ? deadEnds[Math.floor(Math.random() * deadEnds.length)] : {x: w - 2, y: h - 2};
+    exitCell = deadEnds.length
+        ? deadEnds.sort((a, b) => manhattan(b, start) - manhattan(a, start))[0]
+        : {x: w - 2, y: h - 2};
     deadEnds.forEach(({x, y}) => {
         m[y][x] = x === exitCell.x && y === exitCell.y ? 2 : 3;
     });
@@ -359,26 +369,30 @@ function generateMaze(w, h) {
 }
 
 function initLevel() {
-    const grow = Math.floor((state.level - 1) / 4) * 4;
-    const w = 11 + grow;
-    const h = 15 + grow;
+    const grow = Math.floor((state.level - 1) / 3) * 4;
+    const w = 19 + grow;
+    const h = 27 + grow;
     maze = generateMaze(w, h);
-    cellSize = Math.floor(Math.min((innerWidth - 22) / w, (innerHeight - 70) / h));
+    cellSize = clamp(Math.floor(Math.min(innerWidth, innerHeight) / 15), 26, 48);
     worldWidth = w * cellSize;
     worldHeight = h * cellSize;
     canvas.width = innerWidth;
     canvas.height = innerHeight;
-    ball.x = cellSize * 1.5;
-    ball.y = cellSize * 1.5;
+    ball.x = cellSize * (startCell.x + 0.5);
+    ball.y = cellSize * (startCell.y + 0.5);
     ball.vx = 0;
     ball.vy = 0;
     ball.r = cellSize * 0.34;
     ball.trail = [];
     state.falling = false;
+    fakeHoleCooldowns = new Map();
 }
 
-function triggerScare() {
+function triggerScare(cx, cy) {
     if (state.falling || state.scareCooldown) return;
+    if (Number.isFinite(cx) && Number.isFinite(cy)) {
+        fakeHoleCooldowns.set(`${cx},${cy}`, Date.now() + 30000);
+    }
     state.falling = true;
     state.scareCooldown = true;
     if (isMobile && navigator.vibrate) navigator.vibrate([90, 35, 160, 35, 240]);
@@ -389,8 +403,6 @@ function triggerScare() {
     setTimeout(() => {
         scare.classList.add("hidden");
         document.body.classList.remove("shake");
-        ball.x = cellSize * 1.5;
-        ball.y = cellSize * 1.5;
         ball.vx = 0;
         ball.vy = 0;
         ball.trail = [];
@@ -431,6 +443,11 @@ function update() {
     const cx = Math.floor(ball.x / cellSize);
     const cy = Math.floor(ball.y / cellSize);
     const tile = maze[cy] && maze[cy][cx];
+    const now = Date.now();
+
+    fakeHoleCooldowns.forEach((expiresAt, key) => {
+        if (expiresAt <= now) fakeHoleCooldowns.delete(key);
+    });
 
     if (tile === 2) {
         state.falling = true;
@@ -441,7 +458,10 @@ function update() {
         }, 650);
     }
 
-    if (tile === 3) triggerScare();
+    if (tile === 3) {
+        const key = `${cx},${cy}`;
+        if ((fakeHoleCooldowns.get(key) || 0) <= now) triggerScare(cx, cy);
+    }
 }
 
 function drawWalls() {
