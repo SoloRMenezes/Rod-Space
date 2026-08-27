@@ -176,7 +176,7 @@ const ACCEL = 0.11;
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 let state = { running: false, level: 1, falling: false, scareCooldown: false };
-let maze = [], cellSize = 0, trapCell = null, exitCell = null;
+let maze = [], cellSize = 0, worldWidth = 0, worldHeight = 0, exitCell = null;
 let gravity = { x: 0, y: 0 }, keyGravity = { x: 0, y: 0 };
 let audioCtx = null;
 let noiseBuffer = null;
@@ -247,12 +247,34 @@ function playNoise(start, duration, gainValue) {
     source.stop(ac.currentTime + start + duration);
 }
 
+function playScream(start, duration, gainValue) {
+    const ac = getAudioCtx();
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    const filter = ac.createBiquadFilter();
+    osc.type = "sawtooth";
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(1800, ac.currentTime + start);
+    filter.Q.setValueAtTime(7, ac.currentTime + start);
+    osc.frequency.setValueAtTime(520, ac.currentTime + start);
+    osc.frequency.exponentialRampToValueAtTime(1760, ac.currentTime + start + duration * 0.34);
+    osc.frequency.exponentialRampToValueAtTime(920, ac.currentTime + start + duration);
+    gain.gain.setValueAtTime(0.001, ac.currentTime + start);
+    gain.gain.exponentialRampToValueAtTime(gainValue, ac.currentTime + start + 0.035);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + start + duration);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ac.destination);
+    osc.start(ac.currentTime + start);
+    osc.stop(ac.currentTime + start + duration);
+}
+
 function playScareSound() {
     if (!audioCtx || audioCtx.state !== "running") return;
-    playNoise(0, 0.62, 0.72);
-    playTone(34, 0, 0.72, 0.62, "sawtooth");
-    playTone(92, 0.02, 0.22, 0.36, "square");
-    playTone(1220, 0.04, 0.18, 0.16, "triangle");
+    playNoise(0, 0.88, 0.28);
+    playScream(0.02, 0.84, 0.58);
+    playScream(0.08, 0.62, 0.32);
+    playTone(62, 0, 0.58, 0.44, "triangle");
 }
 
 function playWinSound() {
@@ -330,20 +352,9 @@ function generateMaze(w, h) {
     }
 
     exitCell = deadEnds.length ? deadEnds[Math.floor(Math.random() * deadEnds.length)] : {x: w - 2, y: h - 2};
-    m[exitCell.y][exitCell.x] = 2;
-
-    const solution = getSolutionPath(m, start, exitCell);
-    const traps = [];
-    for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
-            if (!isDeadEnd(m, x, y) || solution.has(`${x},${y}`)) continue;
-            if (manhattan({x,y}, start) <= 3 || manhattan({x,y}, exitCell) <= 2) continue;
-            traps.push({x, y});
-        }
-    }
-
-    trapCell = traps.length ? traps[Math.floor(Math.random() * traps.length)] : null;
-    if (trapCell) m[trapCell.y][trapCell.x] = 3;
+    deadEnds.forEach(({x, y}) => {
+        m[y][x] = x === exitCell.x && y === exitCell.y ? 2 : 3;
+    });
     return m;
 }
 
@@ -353,8 +364,10 @@ function initLevel() {
     const h = 15 + grow;
     maze = generateMaze(w, h);
     cellSize = Math.floor(Math.min((innerWidth - 22) / w, (innerHeight - 70) / h));
-    canvas.width = w * cellSize;
-    canvas.height = h * cellSize;
+    worldWidth = w * cellSize;
+    worldHeight = h * cellSize;
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
     ball.x = cellSize * 1.5;
     ball.y = cellSize * 1.5;
     ball.vx = 0;
@@ -437,8 +450,14 @@ function drawWalls() {
             const px = x * cellSize;
             const py = y * cellSize;
             const tile = maze[y][x];
+            const isOuterWall = x === 0 || y === 0 || x === maze[0].length - 1 || y === maze.length - 1;
 
             if (tile === 1) {
+                if (isOuterWall) {
+                    ctx.fillStyle = "#030405";
+                    ctx.fillRect(px, py, cellSize, cellSize);
+                    continue;
+                }
                 const shade = 12 + ((x + y) % 3) * 5;
                 ctx.fillStyle = `rgb(${shade}, ${shade + 1}, ${shade + 3})`;
                 ctx.fillRect(px, py, cellSize, cellSize);
@@ -485,7 +504,32 @@ function drawDarkness() {
     shadow.addColorStop(0.75, "rgba(0,0,0,0.72)");
     shadow.addColorStop(1, "rgba(0,0,0,0.97)");
     ctx.fillStyle = shadow;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(-cellSize, -cellSize, worldWidth + cellSize * 2, worldHeight + cellSize * 2);
+}
+
+function drawWorldEdgeFade() {
+    const edge = cellSize * 1.7;
+    const fills = [
+        [0, 0, worldWidth, edge, ctx.createLinearGradient(0, 0, 0, edge)],
+        [0, worldHeight - edge, worldWidth, edge, ctx.createLinearGradient(0, worldHeight, 0, worldHeight - edge)],
+        [0, 0, edge, worldHeight, ctx.createLinearGradient(0, 0, edge, 0)],
+        [worldWidth - edge, 0, edge, worldHeight, ctx.createLinearGradient(worldWidth, 0, worldWidth - edge, 0)]
+    ];
+
+    fills.forEach(([, , , , gradient]) => {
+        gradient.addColorStop(0, "rgba(0,0,0,0.96)");
+        gradient.addColorStop(1, "rgba(0,0,0,0)");
+    });
+
+    fills.forEach(([x, y, w, h, gradient]) => {
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, y, w, h);
+    });
+}
+
+function cameraCenter(pos, viewSize, worldSize) {
+    if (worldSize <= viewSize) return worldSize / 2;
+    return clamp(pos, viewSize / 2, worldSize - viewSize / 2);
 }
 
 function draw() {
@@ -496,14 +540,15 @@ function draw() {
 
     const viewW = canvas.width / CAMERA_ZOOM;
     const viewH = canvas.height / CAMERA_ZOOM;
-    const camX = clamp(ball.x, viewW / 2, canvas.width - viewW / 2);
-    const camY = clamp(ball.y, viewH / 2, canvas.height - viewH / 2);
+    const camX = cameraCenter(ball.x, viewW, worldWidth);
+    const camY = cameraCenter(ball.y, viewH, worldHeight);
 
     ctx.translate(canvas.width / 2, canvas.height / 2);
     ctx.scale(CAMERA_ZOOM, CAMERA_ZOOM);
     ctx.translate(-camX, -camY);
 
     drawWalls();
+    drawWorldEdgeFade();
     drawBall();
     drawDarkness();
 
