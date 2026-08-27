@@ -2,8 +2,8 @@ const STORAGE_KEY = "karaoke-app-v2-state";
 
 const defaultState = {
   version: 1,
-  theme: "midnight",
-  settings: { thumbnails: true, youtubeApiKey: "", themeNamesV2: true },
+  theme: "light",
+  settings: { thumbnails: true, youtubeApiKey: "", themeNamesV2: true, firstRunComplete: false },
   people: [],
   playlists: [],
   recentSongs: [],
@@ -32,6 +32,8 @@ function init() {
   bindShell();
   if (new URLSearchParams(window.location.search).has("projector")) {
     route = { name: "projector", data: {} };
+  } else if (!state.settings.firstRunComplete) {
+    route = { name: "setup", data: {} };
   }
   render();
 }
@@ -118,6 +120,7 @@ function handleTopAction() {
 
 function render() {
   const routes = {
+    setup: renderSetup,
     home: renderHome,
     newSession: renderNewSession,
     queue: renderQueue,
@@ -134,6 +137,41 @@ function render() {
   };
   view.innerHTML = "";
   (routes[route.name] || renderHome)();
+}
+
+function renderSetup() {
+  setHeader("Setup", "NextUp");
+  const apiKeyField = inputField("YouTube API key", "Paste your key here");
+  apiKeyField.input.value = state.settings.youtubeApiKey || "";
+  apiKeyField.input.autocomplete = "off";
+  apiKeyField.input.spellcheck = false;
+
+  const finish = (saveKey) => {
+    if (saveKey) state.settings.youtubeApiKey = apiKeyField.input.value.trim();
+    state.settings.firstRunComplete = true;
+    saveState();
+    routeStack = [];
+    replaceRoute("home");
+    toast(saveKey && state.settings.youtubeApiKey ? "YouTube API key saved locally." : "You can add the key later in Settings.");
+  };
+
+  view.append(el("section", "card setup-card", [
+    el("div", "setup-intro", [
+      el("h2", "section-title", "Do you want to add a YouTube API?"),
+      el("p", "muted", "This lets Browse show video results inside NextUp instead of opening YouTube search.")
+    ]),
+    el("ol", "setup-steps", [
+      el("li", "", "Open Google Cloud Console."),
+      el("li", "", "Create or choose a project."),
+      el("li", "", "Enable YouTube Data API v3."),
+      el("li", "", "Go to Credentials, create an API key, then paste it here.")
+    ]),
+    apiKeyField.wrapper,
+    el("div", "split-actions", [
+      button("Save Key", "primary", () => finish(true)),
+      button("Skip", "secondary", () => finish(false))
+    ])
+  ]));
 }
 
 function renderHome() {
@@ -628,7 +666,8 @@ function renderSettings() {
       state = structuredClone(defaultState);
       saveState();
       applyTheme();
-      render();
+      routeStack = [];
+      replaceRoute("setup");
     })))
   ]));
 }

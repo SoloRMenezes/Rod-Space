@@ -691,6 +691,29 @@ p {
   gap: 12px;
 }
 
+.setup-card {
+  gap: 16px;
+}
+
+.setup-intro {
+  display: grid;
+  gap: 6px;
+}
+
+.setup-steps {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding-left: 22px;
+  color: var(--text);
+  font-weight: 750;
+}
+
+.setup-steps li::marker {
+  color: var(--accent);
+  font-weight: 950;
+}
+
 .home-panel {
   display: grid;
   gap: 12px;
