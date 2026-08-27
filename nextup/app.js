@@ -405,6 +405,8 @@ function renderAddSong() {
       const videoId = parseYouTubeId(urlField.input.value.trim());
       if (!videoId) return toast("Add a valid YouTube link or video ID.");
       if (!selectedSingers.size) return toast("Choose at least one singer.");
+      const embedCheck = await checkYouTubeEmbeddable(videoId);
+      if (!embedCheck.ok) return toast(embedCheck.message);
       session.peopleIds = [...new Set([...session.peopleIds, ...selectedSingers])];
       const song = {
         id: id(),
@@ -1090,6 +1092,7 @@ async function runSongSearch(query, container, urlInput, titleInput) {
       part: "snippet",
       type: "video",
       maxResults: "6",
+      videoEmbeddable: "true",
       q: `${clean} karaoke`
     }).toString();
     const response = await fetch(endpoint);
@@ -1118,6 +1121,30 @@ async function runSongSearch(query, container, urlInput, titleInput) {
     container.innerHTML = "";
     container.append(emptyInline(error.message || "YouTube search did not work."));
   }
+}
+
+async function checkYouTubeEmbeddable(videoId) {
+  const apiKey = state.settings.youtubeApiKey?.trim();
+  if (!apiKey || !videoId) return { ok: true };
+  try {
+    const endpoint = new URL("https://www.googleapis.com/youtube/v3/videos");
+    endpoint.search = new URLSearchParams({
+      key: apiKey,
+      part: "status",
+      id: videoId
+    }).toString();
+    const response = await fetch(endpoint);
+    const data = await response.json();
+    if (!response.ok) return { ok: true };
+    const video = data.items?.[0];
+    if (!video) return { ok: false, message: "YouTube could not find that video." };
+    if (video.status?.embeddable === false) {
+      return { ok: false, message: "That video cannot play inside NextUp. Pick another result or use Watch on YouTube." };
+    }
+  } catch {
+    return { ok: true };
+  }
+  return { ok: true };
 }
 
 async function fetchYouTubeTitle(url, videoId) {
