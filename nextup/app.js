@@ -97,9 +97,20 @@ function replaceRoute(name, data = {}) {
 }
 
 function goBack() {
+  if (route.name === "addSong") {
+    routeStack = [{ name: "home", data: {} }];
+    route = { name: "newSession", data: {} };
+    rememberRoute();
+    render();
+    return;
+  }
   route = routeStack.pop() || { name: "home", data: {} };
   rememberRoute();
   render();
+}
+
+function isMobileDevice() {
+  return window.matchMedia?.("(max-width: 760px), (pointer: coarse)")?.matches || window.innerWidth < 760;
 }
 
 function loadSavedRoute() {
@@ -219,7 +230,6 @@ function renderHome() {
     ]),
     el("div", "home-menu", [
       homeLink("Start Session"),
-      homeLink("Browse"),
       homeLink("Playlists"),
       homeLink("Recent"),
       homeLink("Settings")
@@ -291,7 +301,8 @@ function completeSessionSetup(selectedIds = draftSessionSingerIds) {
     queue: [],
     completedIds: [],
     currentSongId: null,
-    playlistId: null
+    playlistId: null,
+    projectorOpen: false
   };
   saveState();
   navigate("addSong");
@@ -320,7 +331,6 @@ function homeRecentSong(song) {
 function homeLink(label) {
   const routes = {
     "Start Session": "newSession",
-    Browse: "addSong",
     Playlists: "playlists",
     Recent: "recent",
     Settings: "settings"
@@ -472,16 +482,16 @@ function renderAddSong() {
   ]));
   renderSingers();
 
+  const browseActions = [button("Save", "small-button", () => saveQueueAsPlaylist())];
+  if (!isMobileDevice()) browseActions.push(button("Projector", "small-button", openProjector));
+
   view.append(el("section", "card grid browse-queue", [
     el("div", "section-head", [
       el("div", "", [
         el("h3", "section-title", "Playlist"),
         el("p", "muted", session.queue.length ? `${session.queue.length} songs queued` : "Add songs above, then press Done")
       ]),
-      el("div", "row-actions compact-actions", [
-        button("Save", "small-button", () => saveQueueAsPlaylist()),
-        button("Projector", "small-button", openProjector)
-      ])
+      el("div", "row-actions compact-actions", browseActions)
     ]),
     session.queue.length
       ? el("div", "song-list", session.queue.map((song, index) => songCard(song, index, "queue")))
@@ -498,19 +508,19 @@ function renderReady() {
   if (!session) return;
   const song = nextSong();
   if (!song) return replaceRoute("complete");
+  const readyActions = [button("READY", "primary", () => {
+    song.status = "current";
+    session.currentSongId = song.id;
+    saveState();
+    navigate("player", { songId: song.id });
+  })];
+  if (!isMobileDevice()) readyActions.push(button("Projector", "secondary", openProjector));
+
   view.append(el("section", "ready", [
     el("p", "ready-label", "UP NEXT"),
     el("h2", "ready-title", song.title),
     el("p", "ready-singers", names(song.singerIds)),
-    el("div", "split-actions", [
-      button("READY", "primary", () => {
-        song.status = "current";
-        session.currentSongId = song.id;
-        saveState();
-        navigate("player", { songId: song.id });
-      }),
-      button("Projector", "secondary", openProjector)
-    ]),
+    el("div", "split-actions", readyActions),
     button("Back To Browse", "secondary", () => navigate("addSong"))
   ]));
 }
@@ -533,7 +543,7 @@ function renderPlayer() {
     ])
   ]);
 
-  if (session.projectorOpen) {
+  if (session.projectorOpen && !isMobileDevice()) {
     view.append(el("section", "player-shell host-remote", [
       el("div", "host-remote-panel", [
         el("p", "ready-label", "PLAYING ON PROJECTOR"),
@@ -854,7 +864,8 @@ function getOrCreateSession() {
     queue: [],
     completedIds: [],
     currentSongId: null,
-    playlistId: null
+    playlistId: null,
+    projectorOpen: false
   };
   saveState();
   return state.activeSession;
@@ -877,6 +888,7 @@ function startReadyFromBrowse() {
 }
 
 function openProjector() {
+  if (isMobileDevice()) return toast("Projector is for larger screens.");
   if (state.activeSession) {
     state.activeSession.projectorOpen = true;
     saveState();
@@ -1136,7 +1148,8 @@ function loadPlaylist(playlist) {
     queue,
     completedIds: [],
     currentSongId: null,
-    playlistId: playlist.id
+    playlistId: playlist.id,
+    projectorOpen: false
   };
   saveState();
   navigate("queue");
