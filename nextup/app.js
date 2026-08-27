@@ -143,7 +143,8 @@ function setHeader(screenTitle, sub = "NextUp") {
   eyebrow.textContent = sub;
   document.body.classList.toggle("home-screen", route.name === "home");
   document.body.classList.remove("projector-screen");
-  backButton.classList.toggle("hidden", routeStack.length === 0);
+  const hasBackTarget = routeStack.length > 0 || !["home", "setup", "projector"].includes(route.name);
+  backButton.classList.toggle("hidden", !hasBackTarget);
   document.querySelectorAll("[data-nav]").forEach((button) => {
     button.classList.toggle("active", button.dataset.nav === route.name);
   });
