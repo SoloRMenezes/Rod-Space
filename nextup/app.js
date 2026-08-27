@@ -521,28 +521,62 @@ function renderPlayer() {
   if (!session) return;
   const song = session.queue.find((item) => item.id === route.data.songId) || nextSong();
   if (!song) return replaceRoute("complete");
+  if (song.status === "completed") return replaceRoute(nextSong() ? "ready" : "complete");
+  const controls = el("div", "player-controls", [
+    el("div", "", [
+      el("h2", "section-title", song.title),
+      el("p", "muted", names(song.singerIds))
+    ]),
+    el("div", "split-actions", [
+      button("Song Finished", "primary", () => completeSong(song.id)),
+      button("Back To Browse", "secondary", () => navigate("addSong"))
+    ]),
+    button("Video Unavailable", "danger", () => {
+      toast("Marked unavailable. Choose another video or remove it from the queue.");
+      navigate("queue");
+    })
+  ]);
+
+  if (session.projectorOpen) {
+    view.append(el("section", "player-shell host-remote", [
+      el("div", "host-remote-panel", [
+        el("p", "ready-label", "PLAYING ON PROJECTOR"),
+        el("h2", "section-title", song.title),
+        el("p", "muted", names(song.singerIds)),
+        el("div", "split-actions", [
+          button("Song Finished", "primary", () => completeSong(song.id)),
+          button("Open Projector", "secondary", openProjector)
+        ]),
+        button("Back To Browse", "secondary", () => navigate("addSong"))
+      ])
+    ]));
+    scheduleHostProjectorRefresh(song.id);
+    return;
+  }
+
   view.append(el("section", "player-shell", [
     el("div", "video-wrap", [
       el("div", "", "", { id: "youtubePlayer" })
     ]),
-    el("div", "player-controls", [
-      el("div", "", [
-        el("h2", "section-title", song.title),
-        el("p", "muted", names(song.singerIds))
-      ]),
-      el("div", "split-actions", [
-        button("Song Finished", "primary", () => completeSong(song.id)),
-        button("Back To Browse", "secondary", () => navigate("addSong"))
-      ]),
-      button("Video Unavailable", "danger", () => {
-        toast("Marked unavailable. Choose another video or remove it from the queue.");
-        navigate("queue");
-      })
-    ])
+    controls
   ]));
   loadYouTubeApi().then(() => {
     if (route.name === "player" && document.querySelector("#youtubePlayer")) mountYouTubePlayer(song);
   });
+}
+
+function scheduleHostProjectorRefresh(songId) {
+  setTimeout(() => {
+    if (route.name !== "player") return;
+    state = loadState();
+    const session = state.activeSession;
+    const song = session?.queue.find((item) => item.id === songId);
+    if (!song || song.status === "completed" || session?.currentSongId !== songId) {
+      replaceRoute(nextSong() ? "ready" : "complete");
+      return;
+    }
+    scheduleHostProjectorRefresh(songId);
+  }, 1000);
 }
 
 function loadYouTubeApi() {
@@ -566,25 +600,45 @@ function loadYouTubeApi() {
 
 function mountYouTubePlayer(song) {
   ytPlayer?.destroy?.();
-  ytPlayer = new YT.Player("youtubePlayer", {
+  ytPlayer = createYouTubePlayer("youtubePlayer", song, () => completeSong(state.activeSession.currentSongId));
+}
+
+function mountProjectorPlayer(song) {
+  ytPlayer?.destroy?.();
+  ytPlayer = createYouTubePlayer("projectorPlayer", song, () => completeProjectorSong(song.id));
+}
+
+function createYouTubePlayer(elementId, song, onEnded) {
+  return new YT.Player(elementId, {
     width: "100%",
     height: "100%",
     videoId: song.videoId,
     playerVars: {
       autoplay: 1,
+      controls: 1,
       playsinline: 1,
       rel: 0
     },
     events: {
       onReady: (event) => event.target.playVideo(),
       onStateChange: (event) => {
-        if (event.data === YT.PlayerState.ENDED && state.activeSession?.currentSongId) {
-          completeSong(state.activeSession.currentSongId);
-        }
+        if (event.data === YT.PlayerState.ENDED && state.activeSession?.currentSongId) onEnded();
       },
       onError: () => toast("YouTube could not play this video here. Try opening or replacing it.")
     }
   });
+}
+
+function completeProjectorSong(songId) {
+  state = loadState();
+  const session = state.activeSession;
+  const song = session?.queue.find((item) => item.id === songId);
+  if (!song) return;
+  song.status = "completed";
+  session.currentSongId = null;
+  if (!session.completedIds.includes(song.id)) session.completedIds.push(song.id);
+  saveState();
+  render();
 }
 
 function renderComplete() {
@@ -808,10 +862,15 @@ function startReadyFromBrowse() {
 }
 
 function openProjector() {
+  if (state.activeSession) {
+    state.activeSession.projectorOpen = true;
+    saveState();
+  }
   const url = new URL(window.location.href);
   url.searchParams.set("projector", "1");
   const projector = window.open(url.toString(), "nextup-projector", "popup=yes,width=1280,height=720");
   if (!projector) toast("Allow popups to open the projector display.");
+  render();
 }
 
 function renderProjector() {
@@ -822,23 +881,29 @@ function renderProjector() {
   const upcoming = nextSong();
   const song = current || upcoming;
   projectorSignature = getProjectorSignature();
-  view.append(el("section", "projector-stage", song ? [
-    el("p", "ready-label", current ? "NOW PLAYING" : "UP NEXT"),
-    el("h2", "ready-title", song.title),
-    el("p", "ready-singers", names(song.singerIds)),
+  const fullscreenButton = button("Fullscreen", "primary projector-fullscreen", () => document.documentElement.requestFullscreen?.());
+  view.append(el("section", `projector-stage ${current ? "projector-playing" : "projector-ready"}`, song ? [
+    el("div", "projector-meta", [
+      el("p", "ready-label", current ? "NOW PLAYING" : "UP NEXT"),
+      el("h2", "projector-title", song.title),
+      el("p", "ready-singers", names(song.singerIds))
+    ]),
     current ? el("div", "video-wrap projector-video", [
-      el("iframe", "", "", {
-        src: `https://www.youtube.com/embed/${current.videoId}?autoplay=1&rel=0&playsinline=1`,
-        title: current.title,
-        allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-        allowfullscreen: "true"
-      })
-    ]) : el("p", "muted", "Start the song from the host screen when everyone is ready."),
-    button("Fullscreen", "primary projector-fullscreen", () => document.documentElement.requestFullscreen?.())
+      el("div", "", "", { id: "projectorPlayer" })
+    ]) : el("p", "muted projector-waiting", "Start the song from the host screen when everyone is ready."),
+    fullscreenButton
   ] : [
-    el("h2", "ready-title", "NextUp"),
-    el("p", "ready-singers", "Waiting for a song")
+    el("div", "projector-meta", [
+      el("h2", "projector-title", "NextUp"),
+      el("p", "ready-singers", "Waiting for a song")
+    ]),
+    fullscreenButton
   ]));
+  if (current) {
+    loadYouTubeApi().then(() => {
+      if (route.name === "projector" && document.querySelector("#projectorPlayer")) mountProjectorPlayer(current);
+    });
+  }
   scheduleProjectorRefresh();
 }
 

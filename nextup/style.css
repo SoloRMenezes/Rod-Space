@@ -1166,31 +1166,80 @@ p {
 }
 
 .projector-stage {
+  width: 100vw;
   min-height: 100vh;
+  min-height: 100svh;
   display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 18px;
-  padding: 28px;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: clamp(10px, 1.4vh, 16px);
+  padding: clamp(10px, 1.8vw, 22px);
   text-align: center;
   background:
-    radial-gradient(circle at 50% 12%, var(--glow-a), transparent 28%),
+    radial-gradient(circle at 50% 10%, var(--glow-a), transparent 24%),
     #000;
+  overflow: hidden;
 }
 
-.projector-stage .ready-title {
-  max-width: 14ch;
+.projector-ready {
+  place-items: center;
+  align-content: center;
+}
+
+.projector-meta {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.projector-title {
+  max-width: min(92vw, 1100px);
+  margin: 0;
+  font-size: clamp(1.2rem, 4vw, 3rem);
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.projector-stage .ready-label {
+  font-size: clamp(.72rem, 1.7vw, 1rem);
+}
+
+.projector-stage .ready-singers {
+  font-size: clamp(.82rem, 1.6vw, 1.05rem);
+}
+
+.projector-waiting {
+  align-self: start;
 }
 
 .projector-video {
-  width: min(100vw, 1280px);
-  max-height: 72vh;
+  width: min(100%, 176vh);
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  justify-self: center;
+  align-self: stretch;
 }
 
 .projector-fullscreen {
   position: fixed;
-  right: 18px;
-  bottom: 18px;
+  right: max(12px, env(safe-area-inset-right));
+  top: max(12px, env(safe-area-inset-top));
+  z-index: 60;
+  min-height: 44px;
+}
+
+.host-remote {
+  padding: clamp(18px, 4vw, 34px);
+}
+
+.host-remote-panel {
+  min-height: min(58vh, 520px);
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  text-align: center;
 }
 
 .player-controls {
