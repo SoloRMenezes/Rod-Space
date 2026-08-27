@@ -673,18 +673,71 @@ p {
   }
 }
 
-.theme-midnight { background: linear-gradient(135deg, #030304, #090a0d 52%, #171820); }
-.theme-dark { background: linear-gradient(135deg, #15131a, #2d2936 58%, #ffb545); }
-.theme-light { background: linear-gradient(135deg, #f8f5ee, #ece8df 58%, #246bfe); color: #1e1a17; }
-.theme-blinding { background: linear-gradient(135deg, #fff, #fff 48%, #f5f5f5); color: #030303; }
-.theme-velvet { background: linear-gradient(135deg, #18070c, #381724 58%, #ff4f6d); }
-.theme-cherry { background: linear-gradient(135deg, #fff2fa, #ffe0f1 58%, #ff5bad); color: #27111e; }
-.theme-pink { background: linear-gradient(135deg, #ff8fc8, #ff69b4 58%, #ff2f9a); color: #2a0619; }
-.theme-purple { background: linear-gradient(135deg, #160822, #3b1b56 58%, #b66cff); }
-.theme-yellow { background: linear-gradient(135deg, #fff8d9, #ffe991 58%, #ffcb2e); color: #241b08; }
-.theme-green { background: linear-gradient(135deg, #07120d, #19382a 58%, #62e68f); }
-.theme-sky { background: linear-gradient(135deg, #ecf8ff, #d6edff 58%, #3ca7ff); color: #0f2436; }
-.theme-deepblue { background: linear-gradient(135deg, #061025, #182b52 58%, #4f8cff); }
+.theme-midnight {
+  background: linear-gradient(135deg, #030304, #090a0d 52%, #171820);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.theme-dark {
+  background: linear-gradient(135deg, #15131a, #2d2936 58%, #ffb545);
+  font-family: Avenir Next, Avenir, Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-light {
+  background: linear-gradient(135deg, #f8f5ee, #ece8df 58%, #246bfe);
+  color: #1e1a17;
+  font-family: Helvetica Neue, Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-blinding {
+  background: linear-gradient(135deg, #fff, #fff 48%, #f5f5f5);
+  color: #030303;
+  font-family: Arial, Helvetica Neue, ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-velvet {
+  background: linear-gradient(135deg, #18070c, #381724 58%, #ff4f6d);
+  font-family: Didot, Bodoni 72, Georgia, serif;
+}
+
+.theme-cherry {
+  background: linear-gradient(135deg, #fff2fa, #ffe0f1 58%, #ff5bad);
+  color: #27111e;
+  font-family: Trebuchet MS, Avenir Next, ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-pink {
+  background: linear-gradient(135deg, #ff8fc8, #ff69b4 58%, #ff2f9a);
+  color: #2a0619;
+  font-family: Arial Rounded MT Bold, Avenir Next, ui-rounded, system-ui, sans-serif;
+}
+
+.theme-purple {
+  background: linear-gradient(135deg, #160822, #3b1b56 58%, #b66cff);
+  font-family: Optima, Avenir Next, ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-yellow {
+  background: linear-gradient(135deg, #fff8d9, #ffe991 58%, #ffcb2e);
+  color: #241b08;
+  font-family: Gill Sans, Avenir Next, ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-green {
+  background: linear-gradient(135deg, #07120d, #19382a 58%, #62e68f);
+  font-family: Verdana, Geneva, ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-sky {
+  background: linear-gradient(135deg, #ecf8ff, #d6edff 58%, #3ca7ff);
+  color: #0f2436;
+  font-family: Trebuchet MS, Avenir Next, ui-sans-serif, system-ui, sans-serif;
+}
+
+.theme-deepblue {
+  background: linear-gradient(135deg, #061025, #182b52 58%, #4f8cff);
+  font-family: Copperplate, Avenir Next, ui-sans-serif, system-ui, sans-serif;
+}
 
 .grid {
   display: grid;
