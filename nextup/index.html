@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#12131a">
+    <title>NextUp</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="topbar">
+        <button id="backButton" class="icon-button hidden" type="button" aria-label="Back">‹</button>
+        <div>
+          <p id="eyebrow" class="eyebrow">NextUp</p>
+          <h1 id="screenTitle">Home</h1>
+        </div>
+        <button id="topAction" class="icon-button" type="button" aria-label="Add">＋</button>
+      </header>
+
+      <main id="view" class="view" aria-live="polite"></main>
+    </div>
+
+    <template id="personPickerTemplate">
+      <div class="picker-list"></div>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
