@@ -533,6 +533,10 @@ p {
   align-items: end;
 }
 
+.playlist-choose .primary {
+  width: 100%;
+}
+
 .playlist-tools {
   gap: 10px;
 }

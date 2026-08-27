@@ -150,7 +150,6 @@ function setHeader(screenTitle, sub = "NextUp") {
   });
   const actionMap = {
     addSong: ["Save", "Save playlist"],
-    playlists: ["＋", "Create playlist"],
     playlistEditor: ["＋", "Add song"],
     queue: ["＋", "Add song"],
     recent: ["＋", "Add song"]
@@ -165,7 +164,6 @@ function setHeader(screenTitle, sub = "NextUp") {
 function handleTopAction() {
   if (route.name === "addSong") return saveQueueAsPlaylist();
   if (route.name === "player") return openProjector();
-  if (route.name === "playlists") return submitPlaylistCreator();
   if (route.name === "playlistEditor" || route.name === "queue" || route.name === "recent") return navigate("addSong");
 }
 
@@ -705,6 +703,9 @@ function renderPlaylists() {
     nameField.wrapper,
     button("＋", "primary add-only", () => createPlaylist(nameField.input.value, nameField.input), "Add playlist")
   ]));
+  view.append(el("section", "card playlist-choose", [
+    button("Choose Songs", "primary", () => navigate(state.activeSession?.peopleIds?.length ? "addSong" : "newSession"))
+  ]));
   const importInput = el("input", "file-input", "", { type: "file", accept: "application/json,.json" });
   importInput.addEventListener("change", () => {
     const file = importInput.files?.[0];
@@ -735,7 +736,7 @@ function renderPlaylists() {
             el("strong", "", playlist.name),
             el("p", "muted", `${playlist.songs.length} songs`)
           ]),
-          button("Open", "small-button", () => navigate("playlistEditor", { playlistId: playlist.id }))
+          button("Choose Songs", "small-button", () => navigate("playlistEditor", { playlistId: playlist.id }))
         ]),
         el("div", "row-actions", [
           button("Load", "secondary", () => loadPlaylist(playlist)),
