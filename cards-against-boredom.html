@@ -1012,6 +1012,53 @@
       return deckPrompts.pop();
     }
 
+    function fitPromptToAnswerCards(prompt) {
+      const promptFixes = {
+        "I got banned from the zoo for ____.": "I got banned from the zoo because of ____.",
+        "My boss caught me ____.": "My boss caught me with ____.",
+        "The last thing I said before the lights went out: ____.": "The last thing I saw before the lights went out was ____.",
+        "I’m not saying I’m a god, but ____.": "I’m not saying I’m a god, but I did create ____.",
+        "I didn’t go to jail for ____.": "I didn’t go to jail, but I was questioned about ____.",
+        "The pope just confessed to ____.": "The pope just confessed he was hiding ____.",
+        "I’m not drunk, I’m ____.": "I’m not drunk, I’m being controlled by ____.",
+        "I only cry when ____.": "I only cry because of ____.",
+        "I got kicked out of church for ____.": "I got kicked out of church because of ____.",
+        "My favorite way to die is ____.": "My favorite way to go out involves ____.",
+        "The first thing I do after a breakup is ____.": "The first thing I do after a breakup is look for ____.",
+        "I’m not saying I’m evil, but ____.": "I’m not saying I’m evil, but I do own ____.",
+        "The only way to fix this is ____.": "The only way to fix this is with ____.",
+        "My spirit guide told me ____.": "My spirit guide warned me about ____.",
+        "The last thing I said before the explosion was ____.": "The last thing I saw before the explosion was ____.",
+        "If I could do it all over again, I’d ____.": "If I could do it all over again, I’d choose ____.",
+        "I moaned when ____.": "I moaned because of ____.",
+        "The dirtiest thing I’ve done was ____.": "The dirtiest thing I’ve done involved ____.",
+        "I came so hard when ____.": "I came so hard because of ____.",
+        "The riskiest place we fucked was ____.": "The riskiest hookup involved ____.",
+        "I want to be tied up and ____.": "I want to be tied up with ____.",
+        "The hottest thing my ex ever said was ____.": "The hottest thing my ex ever owned was ____.",
+        "The night I got caught was ____.": "The night I got caught involved ____.",
+        "I love it when they ____.": "I love it when they bring ____.",
+        "I need someone to ____.": "I need someone to bring me ____.",
+        "The best blowjob I’ve given was ____.": "The weirdest hookup souvenir was ____.",
+        "I want to be fucked like ____.": "I want to be desired with the confidence of ____.",
+        "The moment I knew I was hooked was ____.": "The moment I knew I was hooked involved ____.",
+        "The way they looked when I ____.": "The way they looked after seeing ____.",
+        "I love it when you ____.": "I love it when you bring ____.",
+        "I’d let them ____.": "I’d let them bring ____.",
+        "I need a partner who ____.": "I need a partner who can survive ____.",
+        "I love being ____.": "I love being around ____.",
+        "I get wet when ____.": "I get wet because of ____.",
+        "I want to be choked while ____.": "I want to be choked while holding ____.",
+        "The night we went all night was ____.": "The night we went all night involved ____."
+      };
+
+      if (promptFixes[prompt]) return promptFixes[prompt];
+      return prompt
+        .replace(/ because ____\.$/, " because of ____.")
+        .replace(/ when ____\.$/, " because of ____.")
+        .replace(/ for ____\.$/, " because of ____.");
+    }
+
     function drawAnswer(exclude = []) {
       let pool = deckAnswers.length ? deckAnswers : (deckAnswers = shuffle([...deckAnswersBackup]));
       let card;
@@ -1031,7 +1078,7 @@
         selectedWinnerIndex = null;
         document.getElementById('confirm-winner-btn').classList.add('hidden');
         document.getElementById('prompt-container').style.opacity = "1";
-        const prompt = drawPrompt();
+        const prompt = fitPromptToAnswerCards(drawPrompt());
         document.querySelector('#active-prompt .card-text').innerText = prompt;
         blanksRequired = (prompt.match(/____/g) || [1]).length;
         document.getElementById('round-indicator').innerText = `R${currentRound}/${maxRoundsLimit}`;
