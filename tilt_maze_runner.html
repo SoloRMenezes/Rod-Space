@@ -523,7 +523,7 @@ function drawWalls() {
                 if (isHoleTile(tile)) {
                     ctx.fillStyle = "#000";
                     ctx.beginPath();
-                    ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize * 0.48, 0, Math.PI * 2);
+                    ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize * 0.34, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
@@ -540,9 +540,9 @@ function drawHoleVignette() {
             const d = Math.hypot(ball.x - hx, ball.y - hy);
             if (d > cellSize * 4.6) continue;
             const alpha = clamp(1 - d / (cellSize * 4.6), 0, 1);
-            ctx.fillStyle = `rgba(0,0,0,${0.22 + alpha * 0.52})`;
+            ctx.fillStyle = `rgba(0,0,0,${0.16 + alpha * 0.36})`;
             ctx.beginPath();
-            ctx.arc(hx, hy, cellSize * (0.52 + alpha * 0.18), 0, Math.PI * 2);
+            ctx.arc(hx, hy, cellSize * (0.36 + alpha * 0.08), 0, Math.PI * 2);
             ctx.fill();
         }
     }
