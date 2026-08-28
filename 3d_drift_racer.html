@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DRIFT PRO 2</title>
+  <title>Tokyo Drifter</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,6 +61,10 @@
           </div>
           <div id="gear-val" class="px-1.5 py-0.5 bg-white text-black font-black italic text-[9px] rounded-sm">G1</div>
         </div>
+        <div class="flex justify-between text-[9px] uppercase tracking-wider text-neutral-400 font-bold font-mono border-t border-white/5 pt-1.5">
+          <span id="lap-val">LAP 1/3</span>
+          <span id="checkpoint-val">GATE 0/3</span>
+        </div>
         <!-- 5-Shields Armor Indicator -->
         <div class="flex items-center justify-between mt-1 border-t border-white/5 pt-1.5">
           <span class="text-[9px] uppercase tracking-wider text-neutral-400 font-bold font-mono">ARMOR</span>
@@ -90,6 +94,9 @@
         </button>
         <button id="home-btn" title="Exit to Menu" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
           <i data-lucide="home" class="w-4 h-4"></i>
+        </button>
+        <button id="reset-btn" title="Reset Car" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
         </button>
       </div>
 
@@ -154,9 +161,9 @@
       <!-- Screen 1: Main Menu -->
       <div id="screen-main-menu" class="flex flex-col items-center text-center gap-6">
         <div class="flex flex-col gap-1">
-          <div class="text-[10px] tracking-[0.3em] font-black text-neutral-400 uppercase font-mono">PRO DRIFT SIMULATION</div>
+          <div class="text-[10px] tracking-[0.3em] font-black text-cyan-300 uppercase font-mono">NIGHT RUN: SHUTO LOOP</div>
           <h1 class="text-5xl md:text-6xl font-black tracking-tighter bg-gradient-to-b from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent italic leading-none select-none font-display">
-            DRIFT PRO
+            TOKYO DRIFTER
           </h1>
         </div>
 
@@ -179,7 +186,7 @@
             <div id="menu-car-color" class="w-10 h-10 rounded-lg border border-white/10 shadow-inner flex-shrink-0" style="background-color: #ef4444;"></div>
             <div class="flex-1">
               <div id="menu-car-name" class="text-sm font-bold tracking-tight">Drift Spec Hachi</div>
-              <div id="menu-car-desc" class="text-[10px] text-neutral-400 line-clamp-1 mt-0.5">Perfect slip-angle controls. Retains speed during massive slides.</div>
+              <div id="menu-car-desc" class="text-[10px] text-neutral-400 line-clamp-1 mt-0.5">Perfect slip-angle controls for late-night city slides.</div>
             </div>
           </div>
         </div>
@@ -188,7 +195,7 @@
         <div class="flex flex-col gap-3 w-full">
           <button id="btn-start" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-lg uppercase tracking-wider shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 italic">
             <i data-lucide="play" class="w-5 h-5 fill-current"></i>
-            START TRIAL
+            START RUN
           </button>
           
           <div class="grid grid-cols-2 gap-3">
@@ -328,6 +335,10 @@
                 <span class="bg-neutral-800 border border-white/10 px-2 py-0.5 rounded font-mono font-bold text-white text-[10px]">SPACEBAR</span>
               </div>
               <div class="flex justify-between items-center">
+                <span class="text-neutral-450">Reset Car:</span>
+                <span class="bg-neutral-800 border border-white/10 px-2 py-0.5 rounded font-mono font-bold text-white text-[10px]">R KEY</span>
+              </div>
+              <div class="flex justify-between items-center">
                 <span class="text-neutral-450">Handbrake / Slide:</span>
                 <span class="bg-neutral-800 border border-white/10 px-2 py-0.5 rounded font-mono font-bold text-white text-[10px]">SHIFT KEY</span>
               </div>
@@ -344,7 +355,7 @@
           <div class="bg-neutral-900/45 rounded-xl p-4 border border-white/5 text-[11px] flex flex-col gap-1.5">
             <span class="text-[9px] font-black text-neutral-400 uppercase tracking-wider font-mono">DRIFTING PHYSICS TIPS</span>
             <p class="leading-relaxed text-neutral-400">
-              Build up your speed. Steer sharply into corners and hold <strong>SHIFT</strong> or slide. Once the back-end slips, steer in the opposite direction (counter-steer) to maintain balance. Keeping speed high during slides keeps your multiplier combo active!
+              Build speed, flick into corners, then counter-steer to hold the slide. Nitro is a short burst now, so use it to extend exits instead of holding it forever.
             </p>
           </div>
         </div>
@@ -758,6 +769,7 @@
       // Highscores persistent career stats
       bestLapTime: Infinity,
       maxCombo: 0,
+      bestScore: 0,
       totalDriftScore: 0,
 
       // Live match parameters
@@ -776,13 +788,38 @@
       keys: { KeyW: false, KeyS: false, KeyA: false, KeyD: false, Space: false, ShiftLeft: false }
     };
 
+    const storageKey = 'tokyo-drifter-records';
+
+    function loadRecords() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        if (Number.isFinite(saved.bestLapTime)) state.bestLapTime = saved.bestLapTime;
+        if (Number.isFinite(saved.maxCombo)) state.maxCombo = saved.maxCombo;
+        if (Number.isFinite(saved.bestScore)) state.bestScore = saved.bestScore;
+      } catch (e) {
+        state.bestScore = 0;
+      }
+    }
+
+    function saveRecords() {
+      localStorage.setItem(storageKey, JSON.stringify({
+        bestLapTime: state.bestLapTime,
+        maxCombo: state.maxCombo,
+        bestScore: state.bestScore
+      }));
+    }
+
+    function refreshMenuRecords() {
+      document.getElementById('menu-best-lap').innerText = formatTime(state.bestLapTime);
+      document.getElementById('menu-max-combo').innerText = `${state.maxCombo}x`;
+    }
+
     // --- 3. Three.js Scene Setup & Physics Core ---
     const canvas = document.getElementById('game-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.35));
+    renderer.shadowMap.enabled = false;
 
     const scene = new THREE.Scene();
     // Clear Tokyo night sky with enough lift to keep the track readable.
@@ -811,18 +848,8 @@
     const hemi = new THREE.HemisphereLight(0x8fb7ff, 0x1f2937, 0.42);
     scene.add(hemi);
 
-    const sun = new THREE.DirectionalLight(0xbfd7ff, 1.2);
+    const sun = new THREE.DirectionalLight(0xbfd7ff, 0.9);
     sun.position.set(120, 95, -180);
-    sun.castShadow = true;
-    sun.shadow.mapSize.width = 1024;
-    sun.shadow.mapSize.height = 1024;
-    sun.shadow.camera.near = 0.5;
-    sun.shadow.camera.far = 800;
-    const d = 300;
-    sun.shadow.camera.left = -d;
-    sun.shadow.camera.right = d;
-    sun.shadow.camera.top = d;
-    sun.shadow.camera.bottom = -d;
     scene.add(sun);
 
     // Procedural dark concrete grid landscape (high contrast, stylish)
@@ -848,7 +875,6 @@
     });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
     scene.add(ground);
 
     // --- Winding Race Track pathway ---
@@ -859,6 +885,7 @@
     const nitroDrainRate = 58;
     const nitroRechargeRate = 17;
     const nitroReadyThreshold = 45;
+    const bonusZoneFractions = [0.12, 0.37, 0.62, 0.86];
     const trackPoints = [
       new THREE.Vector3(0, 0.05, 0),
       new THREE.Vector3(0, 0.05, S),
@@ -1027,7 +1054,6 @@
         createTrackSideRibbon(trackWidth / 2, sidewalkOuter, side, 0.105, 22),
         sidewalkMat
       );
-      sidewalk.receiveShadow = true;
       scene.add(sidewalk);
     });
 
@@ -1117,7 +1143,6 @@
       emissiveIntensity: 1.25
     });
     const curbMesh = new THREE.Mesh(curbGeo, curbMat);
-    curbMesh.receiveShadow = true;
     scene.add(curbMesh);
 
     // --- City Block Building Scenery (Placed away from roads) ---
@@ -1159,8 +1184,6 @@
               const building = new THREE.Mesh(bGeo, bMat);
               building.scale.set(w, h, d);
               building.position.set(x, h / 2, z);
-              building.castShadow = true;
-              building.receiveShadow = true;
               scene.add(building);
               // Ground contact slab for better visual separation
               const base = new THREE.Mesh(
@@ -1203,6 +1226,35 @@
         });
       });
     });
+
+    function createNeonSign(text, color, position, rotationY = 0) {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 192;
+      const x = c.getContext('2d');
+      x.fillStyle = 'rgba(4,8,18,0.92)';
+      x.fillRect(0, 0, c.width, c.height);
+      x.strokeStyle = color;
+      x.lineWidth = 10;
+      x.strokeRect(12, 12, c.width - 24, c.height - 24);
+      x.shadowColor = color;
+      x.shadowBlur = 22;
+      x.fillStyle = color;
+      x.font = '900 54px Arial Black, sans-serif';
+      x.textAlign = 'center';
+      x.textBaseline = 'middle';
+      x.fillText(text, c.width / 2, c.height / 2);
+      const tex = new THREE.CanvasTexture(c);
+      const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
+      const sign = new THREE.Mesh(new THREE.PlaneGeometry(22, 8.25), mat);
+      sign.position.copy(position);
+      sign.rotation.y = rotationY;
+      scene.add(sign);
+      return sign;
+    }
+
+    createNeonSign('TOKYO DRIFTER', '#22d3ee', new THREE.Vector3(55, 18, 126), Math.PI);
+    createNeonSign('MIDNIGHT RUN', '#f472b6', new THREE.Vector3(-126, 15, -40), Math.PI / 2);
+    createNeonSign('SHUTO LOOP', '#facc15', new THREE.Vector3(124, 20, -144), -Math.PI / 2);
 
     // Tokyo Tower Landmark Spire (In the far distance)
     const towerGroup = new THREE.Group();
@@ -1267,10 +1319,6 @@
         bulb.position.set(-side * 0.95, 5.55, 0);
         lamp.add(bulb);
 
-        const light = new THREE.PointLight(0xffe8a3, 1.05, 42, 1.8);
-        light.position.set(-side * 0.95, 5.2, 0);
-        lamp.add(light);
-
         lamp.position.copy(basePos);
         lamp.lookAt(basePos.clone().add(tangent));
         scene.add(lamp);
@@ -1278,7 +1326,7 @@
     }
 
     // Sakura Cherry Blossom Trees
-    for (let i = 0; i < 200; i += 5) {
+    for (let i = 0; i < 200; i += 12) {
       const pos = trackCurve.getPointAt(i / 200);
       const tangent = trackCurve.getTangentAt(i / 200).normalize();
       const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
@@ -1291,7 +1339,7 @@
         trunk.position.y = 1.6;
         tree.add(trunk);
 
-        const canopy = new THREE.Mesh(new THREE.SphereGeometry(1.4, 5, 5), new THREE.MeshStandardMaterial({ color: 0xfbcfe8, roughness: 0.8 }));
+        const canopy = new THREE.Mesh(new THREE.SphereGeometry(1.4, 4, 4), new THREE.MeshBasicMaterial({ color: 0xfbcfe8 }));
         canopy.position.y = 3.2;
         tree.add(canopy);
 
@@ -1301,7 +1349,7 @@
     }
 
     // --- Dynamic Sakura Wind Particles ---
-    const sakuraCount = 45;
+    const sakuraCount = 24;
     const sakuraGeometry = new THREE.BufferGeometry();
     const sakuraPositions = new Float32Array(sakuraCount * 3);
     for (let i = 0; i < sakuraCount * 3; i += 3) {
@@ -1318,6 +1366,37 @@
     });
     const sakuraSystem = new THREE.Points(sakuraGeometry, sakuraMaterial);
     scene.add(sakuraSystem);
+
+    // --- Neon Style Zones ---
+    const styleZones = [];
+    const zoneMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.42, side: THREE.DoubleSide });
+    bonusZoneFractions.forEach((fraction, idx) => {
+      const pos = trackCurve.getPointAt(fraction);
+      const tangent = trackCurve.getTangentAt(fraction).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+      const zone = new THREE.Mesh(new THREE.PlaneGeometry(trackWidth * 0.82, 5.5), zoneMat.clone());
+      zone.position.copy(pos);
+      zone.position.y = 0.135;
+      zone.rotation.x = -Math.PI / 2;
+      zone.rotation.z = Math.atan2(tangent.x, tangent.z);
+      scene.add(zone);
+
+      const markerMat = new THREE.MeshBasicMaterial({ color: 0xf0f9ff });
+      [-1, 1].forEach(side => {
+        const strip = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 5.5), markerMat);
+        strip.position.copy(pos).add(normal.clone().multiplyScalar(side * trackWidth * 0.41));
+        strip.position.y = 0.18;
+        strip.rotation.y = Math.atan2(tangent.x, tangent.z);
+        scene.add(strip);
+      });
+
+      styleZones.push({
+        id: `zone_${idx}`,
+        position: pos,
+        mesh: zone,
+        cooldown: 0
+      });
+    });
 
     // --- Collectibles (Wrenches & Nitro canisters) ---
     const collectibles = [];
@@ -1475,31 +1554,26 @@
       // Chassis frame
       const frame = new THREE.Mesh(new THREE.BoxGeometry(1.6 * sc.x, 0.22 * sc.y, 3.2 * sc.z), blackMat);
       frame.position.y = 0.3 * sc.y;
-      frame.castShadow = true;
       bodyGroup.add(frame);
 
       // Front Hood section
       const hood = new THREE.Mesh(new THREE.BoxGeometry(1.58 * sc.x, 0.32 * sc.y, 1.1 * sc.z), bodyMat);
       hood.position.set(0, 0.44 * sc.y, 1.0 * sc.z);
-      hood.castShadow = true;
       bodyGroup.add(hood);
 
       // Trunk section
       const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.58 * sc.x, 0.38 * sc.y, 0.9 * sc.z), bodyMat);
       trunk.position.set(0, 0.47 * sc.y, -1.1 * sc.z);
-      trunk.castShadow = true;
       bodyGroup.add(trunk);
 
       // Center Passenger Cabin
       const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6 * sc.x, 0.45 * sc.y, 1.3 * sc.z), bodyMat);
       cabin.position.set(0, 0.48 * sc.y, 0);
-      cabin.castShadow = true;
       bodyGroup.add(cabin);
       carBodyMesh = cabin;
 
       const roof = new THREE.Mesh(new THREE.BoxGeometry(1.2 * sc.x, 0.5 * sc.y, 1.4 * sc.z), bodyMat);
       roof.position.set(0, 0.88 * sc.y, -0.1 * sc.z);
-      roof.castShadow = true;
       bodyGroup.add(roof);
 
       // Windshield
@@ -1518,7 +1592,6 @@
 
       const wing = new THREE.Mesh(new THREE.BoxGeometry(1.7 * sc.x, 0.05, 0.45 * sc.z), blackMat);
       wing.position.set(0, 0.85, -1.42 * sc.z);
-      wing.castShadow = true;
       bodyGroup.add(wing);
 
       // Taillight bar
@@ -1555,7 +1628,6 @@
         carGroup.add(pivot);
 
         const tire = new THREE.Mesh(tireGeo, blackMat);
-        tire.castShadow = true;
         pivot.add(tire);
         carWheels.push(tire);
 
@@ -1624,7 +1696,9 @@
     function updateHUD() {
       document.getElementById('speed-val').innerText = Math.floor(Math.abs(state.currentSpeed) * 230);
       document.getElementById('gear-val').innerText = `G${Math.max(1, Math.min(5, Math.floor(Math.abs(state.currentSpeed) * 4.2) + 1))}`;
-      document.getElementById('turbo-percent').innerText = `${Math.floor(state.turboAmount)}%`;
+      document.getElementById('lap-val').innerText = `LAP ${state.currentLap}/${state.totalLaps}`;
+      document.getElementById('checkpoint-val').innerText = `GATE ${state.checkpointProgress}/3`;
+      document.getElementById('turbo-percent').innerText = state.turboLocked ? 'RECHARGING' : `${Math.floor(state.turboAmount)}%`;
       document.getElementById('turbo-bar').style.width = `${state.turboAmount}%`;
       document.getElementById('turbo-bar').className = `h-full transition-all duration-75 ${state.turboLocked ? 'bg-neutral-500' : 'bg-cyan-300'}`;
       document.getElementById('score-total').innerText = state.totalDriftScore.toLocaleString();
@@ -1685,6 +1759,9 @@
       const c = Math.floor((ms % 1000) / 10);
       return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${c.toString().padStart(2, '0')}`;
     }
+
+    loadRecords();
+    refreshMenuRecords();
 
     // Dynamic Swatches generation
     const swatchesGrid = document.getElementById('color-presets-grid');
@@ -1787,6 +1864,21 @@
       showScreen('main-menu');
     };
 
+    function resetRunPosition() {
+      if (!state.isGameRunning) return;
+      resetCarToStart();
+      state.currentSpeed = 0;
+      state.checkpointProgress = 0;
+      state.turboAmount = Math.max(state.turboAmount, nitroReadyThreshold);
+      state.turboLocked = false;
+      showNotification("CAR RESET TO START LINE");
+    }
+
+    document.getElementById('reset-btn').onclick = (e) => {
+      e.stopPropagation();
+      resetRunPosition();
+    };
+
     // Camera Switch click
     document.getElementById('cam-btn').onclick = () => {
       const modes = ['chase', 'cockpit', 'overhead'];
@@ -1843,6 +1935,7 @@
       if (e.code === 'KeyD' || e.code === 'ArrowRight') state.keys.KeyD = true;
       if (e.code === 'Space') state.keys.Space = true;
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') state.keys.ShiftLeft = true;
+      if (e.code === 'KeyR') resetRunPosition();
     });
 
     window.addEventListener('keyup', (e) => {
@@ -1997,6 +2090,7 @@
                 const currentMultInt = Math.floor(activeDriftMultiplier);
                 if (currentMultInt > state.maxCombo) {
                   state.maxCombo = currentMultInt;
+                  saveRecords();
                 }
 
                 audio.playCollect();
@@ -2067,7 +2161,8 @@
             const finishedLapTime = state.currentLapTime;
             if (finishedLapTime < state.bestLapTime) {
               state.bestLapTime = finishedLapTime;
-              document.getElementById('menu-best-lap').innerText = formatTime(state.bestLapTime);
+              saveRecords();
+              refreshMenuRecords();
             }
 
             state.currentLap++;
@@ -2080,11 +2175,9 @@
               state.isGameRunning = false;
               audio.stopEngine();
 
-              // Update Career Best
-              if (state.totalDriftScore > state.totalDriftScore) {
-                state.totalDriftScore = state.totalDriftScore;
-              }
-              document.getElementById('menu-max-combo').innerText = `${state.maxCombo}x`;
+              if (state.totalDriftScore > state.bestScore) state.bestScore = state.totalDriftScore;
+              saveRecords();
+              refreshMenuRecords();
 
               // Update Victory screens
               document.getElementById('victory-score').innerText = `${state.totalDriftScore.toLocaleString()} PTS`;
@@ -2107,6 +2200,20 @@
               audio.playCheckpoint();
               showNotification(`CHECKPOINT ${gate.index} ACQUIRED!`);
             }
+          }
+        });
+
+        // Style zones reward committing to a drift through marked neon strips.
+        styleZones.forEach(zone => {
+          zone.cooldown = Math.max(0, zone.cooldown - dt);
+          zone.mesh.material.opacity = zone.cooldown > 0 ? 0.14 : 0.42 + Math.sin(now * 0.006) * 0.08;
+          if (zone.cooldown <= 0 && isDrifting && carGroup.position.distanceTo(zone.position) < 8.5) {
+            activeDriftScore += 900;
+            activeDriftMultiplier = Math.min(10.0, activeDriftMultiplier + 0.55);
+            driftCooldown = Math.max(driftCooldown, 1.3);
+            zone.cooldown = 6;
+            audio.playCheckpoint();
+            showNotification("STYLE ZONE +900");
           }
         });
 
