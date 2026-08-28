@@ -79,7 +79,7 @@
             <span id="turbo-percent">100%</span>
           </div>
           <div class="h-1 bg-neutral-800 rounded-full overflow-hidden">
-            <div id="turbo-bar" class="h-full bg-white transition-all duration-75" style="width: 100%"></div>
+            <div id="turbo-bar" class="h-full bg-cyan-300 transition-all duration-75" style="width: 100%"></div>
           </div>
         </div>
       </div>
@@ -880,7 +880,7 @@
     // --- Winding Race Track pathway ---
     const S = 100;
     const trackWidth = 24;
-    const sidewalkWidth = 7;
+    const sidewalkWidth = 12;
     const streetClearance = trackWidth / 2 + sidewalkWidth + 5;
     const nitroDrainRate = 58;
     const nitroRechargeRate = 17;
@@ -1022,18 +1022,21 @@
       const c = document.createElement('canvas');
       c.width = 256; c.height = 256;
       const x = c.getContext('2d');
-      x.fillStyle = '#586170';
+      x.fillStyle = '#cbd5e1';
       x.fillRect(0, 0, 256, 256);
-      x.strokeStyle = 'rgba(230,235,245,0.22)';
+      x.strokeStyle = 'rgba(255,255,255,0.45)';
       x.lineWidth = 2;
       for (let i = 0; i <= 256; i += 32) {
         x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 256); x.stroke();
         x.beginPath(); x.moveTo(0, i); x.lineTo(256, i); x.stroke();
       }
       for (let i = 0; i < 2500; i++) {
-        x.fillStyle = `rgba(20,25,35,${Math.random() * 0.08})`;
+        x.fillStyle = `rgba(30,41,59,${Math.random() * 0.09})`;
         x.fillRect(Math.random() * 256, Math.random() * 256, 1, 1);
       }
+      x.fillStyle = 'rgba(34,211,238,0.75)';
+      x.fillRect(0, 0, 7, 256);
+      x.fillRect(249, 0, 7, 256);
       const tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
       tex.repeat.set(1, 14);
@@ -1041,12 +1044,12 @@
     }
 
     const sidewalkMat = new THREE.MeshStandardMaterial({
-      color: 0x687382,
+      color: 0xe2e8f0,
       map: createSidewalkTex(),
-      roughness: 0.9,
+      roughness: 0.72,
       metalness: 0.02,
-      emissive: new THREE.Color(0x101722),
-      emissiveIntensity: 0.18
+      emissive: new THREE.Color(0x243244),
+      emissiveIntensity: 0.24
     });
     const sidewalkOuter = trackWidth / 2 + sidewalkWidth;
     [-1, 1].forEach(side => {
@@ -1173,8 +1176,15 @@
               const d = 24 + Math.random() * 8;
               const h = 45 + Math.random() * 120;
 
-              // Improved building palette for visibility
-              const colors = [0x32445d, 0x2d3a5d, 0x3d506e, 0x4a3f63, 0x3d5353];
+              // Varied Tokyo tower blocks so the city does not collapse into one dark wall.
+              const colors = [0x263b5e, 0x4c3f68, 0x2f5d62, 0x644737, 0x375a7f, 0x583451, 0x52616f, 0x31505f];
+              const windowColors = [
+                { color: 0xfde68a, emissive: 0xf59e0b },
+                { color: 0x93c5fd, emissive: 0x2563eb },
+                { color: 0xf9a8d4, emissive: 0xdb2777 },
+                { color: 0xa7f3d0, emissive: 0x059669 }
+              ];
+              const windowStyle = windowColors[Math.floor(Math.random() * windowColors.length)];
               const bMat = new THREE.MeshStandardMaterial({
                 color: colors[Math.floor(Math.random() * colors.length)],
                 roughness: 0.65,
@@ -1210,8 +1220,8 @@
               if (Math.random() > 0.3) {
                 const wGeo = new THREE.BoxGeometry(w + 0.1, h * 0.85, d + 0.1);
                 const wMat = new THREE.MeshStandardMaterial({
-                  color: 0xfde047, // Golden yellow windows
-                  emissive: 0xd97706, // Amber glowing windows
+                  color: windowStyle.color,
+                  emissive: windowStyle.emissive,
                   emissiveIntensity: 0.95,
                   transparent: true,
                   opacity: 0.55,
@@ -1603,10 +1613,14 @@
       const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.35, 8), chromeMat);
       pipe.rotateX(Math.PI / 2);
       pipe.position.set(0.45 * sc.x, 0.22 * sc.y, -1.6 * sc.z);
-      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.5, 8), new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.85 }));
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.85, 10), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.88 }));
       flame.rotateX(-Math.PI / 2);
-      flame.position.set(0, 0, -0.22);
+      flame.position.set(0, 0, -0.46);
       flame.visible = false;
+      const flameCore = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.58, 8), new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.95 }));
+      flameCore.rotateX(-Math.PI / 2);
+      flameCore.position.set(0, 0, -0.1);
+      flame.add(flameCore);
       pipe.add(flame);
       exhaustFlames.push(flame);
       bodyGroup.add(pipe);
@@ -1928,7 +1942,7 @@
 
     // --- Key Event Listeners ---
     window.addEventListener('keydown', (e) => {
-      audio.startEngine();
+      if (state.isGameRunning) audio.startEngine();
       if (e.code === 'KeyW' || e.code === 'ArrowUp') state.keys.KeyW = true;
       if (e.code === 'KeyS' || e.code === 'ArrowDown') state.keys.KeyS = true;
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') state.keys.KeyA = true;
@@ -1952,7 +1966,7 @@
     
     function mapTouch(elId, keyStateField) {
       const el = document.getElementById(elId);
-      const start = (e) => { e.preventDefault(); touchState[keyStateField] = true; audio.startEngine(); };
+      const start = (e) => { e.preventDefault(); touchState[keyStateField] = true; if (state.isGameRunning) audio.startEngine(); };
       const end = (e) => { e.preventDefault(); touchState[keyStateField] = false; };
       el.addEventListener('touchstart', start, { passive: false });
       el.addEventListener('touchend', end, { passive: false });
@@ -2029,7 +2043,7 @@
           exhaustFlames[0].visible = isTurbo;
           if (exhaustFlames[0].visible) {
             const s = 0.8 + Math.random() * 0.4;
-            exhaustFlames[0].scale.set(s, s, s * 1.2);
+            exhaustFlames[0].scale.set(s, s * 1.5, s);
           }
         }
 
