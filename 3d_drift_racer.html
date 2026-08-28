@@ -52,8 +52,8 @@
   <div id="hud-layer" class="absolute inset-0 z-10 pointer-events-none select-none flex flex-col justify-between p-4 md:p-6 hidden">
     <!-- Top Bar -->
     <div class="w-full flex justify-between items-start">
-      <!-- Top Left: Speed & Armor -->
-      <div class="flex flex-col gap-2 pointer-events-auto bg-neutral-950/80 border border-white/10 p-3 rounded-xl w-44 shadow-2xl backdrop-blur-md">
+      <!-- Top Left: Speed & Boost -->
+      <div class="flex flex-col gap-2 pointer-events-auto bg-neutral-950/70 border border-white/10 p-3 rounded-xl w-44 shadow-2xl backdrop-blur-md">
         <div class="flex items-baseline justify-between">
           <div class="text-3xl font-black italic text-white tracking-tighter font-display">
             <span id="speed-val">0</span>
@@ -61,19 +61,8 @@
           </div>
           <div id="gear-val" class="px-1.5 py-0.5 bg-white text-black font-black italic text-[9px] rounded-sm">G1</div>
         </div>
-        <div class="flex justify-between text-[9px] uppercase tracking-wider text-neutral-400 font-bold font-mono border-t border-white/5 pt-1.5">
-          <span id="lap-val">LAP 1/3</span>
-          <span id="checkpoint-val">GATE 0/3</span>
-        </div>
-        <!-- 5-Shields Armor Indicator -->
-        <div class="flex items-center justify-between mt-1 border-t border-white/5 pt-1.5">
-          <span class="text-[9px] uppercase tracking-wider text-neutral-400 font-bold font-mono">ARMOR</span>
-          <div id="armor-shields" class="flex gap-0.5">
-            <!-- Shields filled dynamically -->
-          </div>
-        </div>
         <!-- Nitro Boost Bar -->
-        <div class="flex flex-col gap-0.5 mt-1">
+        <div class="flex flex-col gap-0.5 border-t border-white/5 pt-2">
           <div class="flex justify-between text-[9px] font-bold text-neutral-400 font-mono">
             <span>BOOST (N2O)</span>
             <span id="turbo-percent">100%</span>
@@ -101,15 +90,10 @@
       </div>
 
       <!-- Top Right Scores -->
-      <div class="flex flex-col gap-1 pointer-events-auto bg-neutral-950/80 border border-white/10 p-3 rounded-xl w-44 shadow-2xl backdrop-blur-md">
+      <div class="flex flex-col gap-1 pointer-events-auto bg-neutral-950/70 border border-white/10 p-3 rounded-xl w-40 shadow-2xl backdrop-blur-md">
         <div class="text-right flex flex-col items-end">
           <span class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">DRIFT SCORE</span>
           <span id="score-total" class="text-2xl font-black italic text-white tracking-tight leading-none mt-0.5">0</span>
-        </div>
-        <div class="w-full h-[1px] bg-white/10 my-1"></div>
-        <div class="flex justify-between w-full text-[9px] font-bold text-neutral-400 font-mono">
-          <span>MAX COMBO</span>
-          <span id="combo-max" class="text-white font-black">0x</span>
         </div>
       </div>
     </div>
@@ -119,17 +103,17 @@
       <!-- Checkpoint message slider -->
       <div id="alert-banner" class="bg-neutral-950/95 border-l-4 border-white p-3.5 shadow-2xl backdrop-blur-md hidden transition-all duration-300 transform translate-y-4 opacity-0 max-w-sm">
         <div class="text-[9px] font-black uppercase tracking-widest text-neutral-400 font-mono">SYSTEM NOTIFICATION</div>
-        <div id="alert-text" class="text-xs font-black italic text-white mt-0.5">CHECKPOINT ACQUIRED!</div>
+        <div id="alert-text" class="text-xs font-black italic text-white mt-0.5">KEEP MOVING!</div>
       </div>
 
       <!-- Active Drift Combo Box -->
-      <div id="drift-combo-box" class="flex flex-col items-center justify-center p-4 bg-neutral-950/90 border border-white/10 rounded-xl min-w-[12rem] text-center shadow-2xl backdrop-blur-md opacity-0 scale-90 transition-all duration-150">
-        <div id="drift-mult" class="text-white text-4xl font-black italic font-display leading-none">x1.0</div>
-        <div class="text-[9px] uppercase tracking-widest font-bold text-neutral-400 font-mono mt-0.5">DRIFT MULTIPLIER</div>
-        <div id="drift-pts" class="text-lg font-mono font-black text-white mt-1.5">0 PTS</div>
+      <div id="drift-combo-box" class="flex flex-col items-center justify-center px-3 py-2 bg-neutral-950/45 border border-white/10 rounded-lg min-w-[7rem] text-center shadow-xl backdrop-blur-sm opacity-0 scale-90 transition-all duration-150">
+        <div id="drift-mult" class="text-white text-2xl font-black italic font-display leading-none">x1.0</div>
+        <div class="text-[7px] uppercase tracking-widest font-bold text-neutral-300 font-mono mt-0.5">MULTIPLIER</div>
+        <div id="drift-pts" class="text-xs font-mono font-black text-white mt-1">0 PTS</div>
         <!-- Progress to next level -->
-        <div class="mt-2 h-1 w-28 bg-neutral-800 rounded-full overflow-hidden">
-          <div id="drift-progress" class="h-full bg-white transition-all duration-150" style="width: 0%"></div>
+        <div class="mt-1.5 h-0.5 w-20 bg-white/15 rounded-full overflow-hidden">
+          <div id="drift-progress" class="h-full bg-white/80 transition-all duration-150" style="width: 0%"></div>
         </div>
       </div>
     </div>
@@ -170,12 +154,12 @@
         <!-- Highscore Dashboard -->
         <div class="grid grid-cols-2 gap-4 w-full">
           <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-white p-4 text-left rounded-r-lg">
-            <div class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">Best Lap Time</div>
-            <div id="menu-best-lap" class="text-xl font-black italic mt-1 text-white tracking-tight">--:--.--</div>
+            <div class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">Best Drift</div>
+            <div id="menu-best-score" class="text-xl font-black italic mt-1 text-white tracking-tight">0</div>
           </div>
           <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-neutral-400 p-4 text-left rounded-r-lg">
-            <div class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">Max Combo</div>
-            <div id="menu-max-combo" class="text-xl font-black italic mt-1 text-white">0x</div>
+            <div class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">Mode</div>
+            <div class="text-xl font-black italic mt-1 text-white">FREE DRIFT</div>
           </div>
         </div>
 
@@ -276,14 +260,14 @@
                 <div id="spec-drift-bar" class="h-full bg-white" style="width: 95%"></div>
               </div>
             </div>
-            <!-- Armor spec -->
+            <!-- Stability spec -->
             <div class="flex flex-col gap-1 w-full text-xs">
               <div class="flex justify-between text-neutral-400 font-bold uppercase text-[9px] font-mono">
-                <span>Armor Integrity</span>
-                <span id="spec-armor-num" class="text-white">5 / 5</span>
+                <span>Slide Stability</span>
+                <span id="spec-stability-num" class="text-white">5 / 5</span>
               </div>
               <div class="h-1.5 bg-neutral-850 rounded-full overflow-hidden">
-                <div id="spec-armor-bar" class="h-full bg-white" style="width: 100%"></div>
+                <div id="spec-stability-bar" class="h-full bg-white" style="width: 100%"></div>
               </div>
             </div>
           </div>
@@ -363,83 +347,6 @@
         <button id="btn-manual-ok" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm uppercase tracking-wider transition-all cursor-pointer italic">
           RACING GUIDE READY
         </button>
-      </div>
-
-      <!-- Screen 4: Game Over -->
-      <div id="screen-game-over" class="flex flex-col items-center text-center gap-6 hidden">
-        <div class="flex flex-col items-center gap-2">
-          <div class="w-16 h-16 rounded-full bg-red-950/30 border border-red-500/30 flex items-center justify-center animate-pulse shadow-xl">
-            <i data-lucide="shield-alert" class="w-8 h-8 text-red-500"></i>
-          </div>
-          <h2 class="text-3xl md:text-4xl font-black text-red-500 tracking-tighter uppercase italic font-display">
-            VEHICLE CRASHED
-          </h2>
-          <p class="text-xs text-neutral-400 max-w-sm mt-0.5 leading-relaxed">
-            Car structural integrity has dropped to 0%. The simulation was forcefully terminated due to critical collision damage.
-          </p>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4 w-full">
-          <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-red-500 p-4 text-left rounded-r-lg">
-            <span class="text-[9px] text-neutral-400 font-bold uppercase font-mono">Laps Run</span>
-            <div id="crash-laps" class="text-xl font-black italic mt-1 text-white">0 Laps</div>
-          </div>
-          <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-neutral-400 p-4 text-left rounded-r-lg">
-            <span class="text-[9px] text-neutral-400 font-bold uppercase font-mono">Match Score</span>
-            <div id="crash-score" class="text-xl font-black italic mt-1 text-white">0</div>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-3 w-full">
-          <button id="btn-restart-crash" class="w-full py-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-md uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xl italic">
-            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-            REDEPLOY SIMULATOR
-          </button>
-          <button id="btn-menu-crash" class="w-full py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-300 font-bold text-xs tracking-wider transition-all cursor-pointer">
-            RETURN TO GARAGE
-          </button>
-        </div>
-      </div>
-
-      <!-- Screen 5: Victory Complete -->
-      <div id="screen-victory" class="flex flex-col items-center text-center gap-6 hidden">
-        <div class="flex flex-col items-center gap-1">
-          <div class="w-16 h-16 rounded-full bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20 mb-2 animate-bounce shadow-xl">
-            <i data-lucide="trophy" class="w-8 h-8 text-yellow-500"></i>
-          </div>
-          <h2 class="text-3xl md:text-4xl font-black bg-gradient-to-r from-yellow-500 via-amber-200 to-yellow-600 bg-clip-text text-transparent tracking-tighter uppercase italic font-display">
-            GRAND FINALE!
-          </h2>
-          <p class="text-xs text-neutral-400 max-w-sm mt-0.5 leading-relaxed">
-            Congratulations! You successfully crossed all checkpoints and completed the full 3-Lap Time Trial challenge!
-          </p>
-        </div>
-
-        <div class="flex flex-col gap-2.5 w-full bg-neutral-900/60 rounded-xl p-4 border border-white/5">
-          <div class="text-[9px] font-black text-white uppercase tracking-widest text-left border-b border-white/5 pb-1.5 font-mono">TRIAL SUMMARY</div>
-          <div class="flex justify-between text-xs py-1 border-b border-white/5">
-            <span class="text-neutral-400">Total Drifting Score:</span>
-            <span id="victory-score" class="font-mono font-bold text-white">0 PTS</span>
-          </div>
-          <div class="flex justify-between text-xs py-1 border-b border-white/5">
-            <span class="text-neutral-400">Best Lap Record:</span>
-            <span id="victory-lap-time" class="font-mono font-bold text-white">01:45.22</span>
-          </div>
-          <div class="flex justify-between text-xs py-1">
-            <span class="text-neutral-400">Max Combo Achieved:</span>
-            <span id="victory-combo" class="font-mono font-bold text-white">0x</span>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-3 w-full">
-          <button id="btn-restart-victory" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-md uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xl italic">
-            <i data-lucide="rotate-ccw" class="w-4 h-4 fill-current"></i>
-            RACE AGAIN
-          </button>
-          <button id="btn-menu-victory" class="w-full py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-white/10 text-neutral-300 font-bold text-xs tracking-wider transition-all cursor-pointer">
-            RETURN TO GARAGE
-          </button>
-        </div>
       </div>
 
     </div>
@@ -707,7 +614,7 @@
         topSpeed: 0.95,
         acceleration: 0.016,
         driftHandling: 0.95,
-        armor: 5,
+        stability: 5,
         scale: { x: 1.0, y: 1.0, z: 1.0 }
       },
       {
@@ -718,18 +625,18 @@
         topSpeed: 1.25,
         acceleration: 0.024,
         driftHandling: 0.50,
-        armor: 4,
+        stability: 4,
         scale: { x: 1.0, y: 0.95, z: 1.05 }
       },
       {
         id: 'urban_tank',
         name: 'V8 Cyber Truck',
-        description: 'Heavy duty. Virtually indestructible armor, lower drift control.',
+        description: 'Heavy chassis with a planted feel, lower drift control.',
         color: '#64748b', // Cyber Slate Steel
         topSpeed: 0.85,
         acceleration: 0.012,
         driftHandling: 0.40,
-        armor: 8,
+        stability: 8,
         scale: { x: 1.15, y: 1.15, z: 1.2 }
       },
       {
@@ -740,7 +647,7 @@
         topSpeed: 1.10,
         acceleration: 0.021,
         driftHandling: 0.75,
-        armor: 3,
+        stability: 3,
         scale: { x: 0.95, y: 0.90, z: 0.95 }
       }
     ];
@@ -760,7 +667,7 @@
     // Global Interactive State
     const state = {
       isGameRunning: false,
-      activeScreen: 'main-menu', // main-menu, garage, manual, game-over, victory
+      activeScreen: 'main-menu', // main-menu, garage, manual
       cameraMode: 'chase', // chase, cockpit, overhead, orbital
       cameraZoom: 1,
       selectedArchetypeIndex: 0,
@@ -768,19 +675,11 @@
       isMuted: false,
       
       // Highscores persistent career stats
-      bestLapTime: Infinity,
-      maxCombo: 0,
       bestScore: 0,
       totalDriftScore: 0,
 
       // Live match parameters
-      currentLap: 1,
-      totalLaps: 3,
-      currentLapTime: 0,
-      checkpointProgress: 0, // 0 to 3
       checkpointMsgTimer: 0,
-      currentArmor: 5,
-      maxArmor: 5,
       currentSpeed: 0,
       turboAmount: 100,
       turboLocked: false,
@@ -794,8 +693,6 @@
     function loadRecords() {
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-        if (Number.isFinite(saved.bestLapTime)) state.bestLapTime = saved.bestLapTime;
-        if (Number.isFinite(saved.maxCombo)) state.maxCombo = saved.maxCombo;
         if (Number.isFinite(saved.bestScore)) state.bestScore = saved.bestScore;
       } catch (e) {
         state.bestScore = 0;
@@ -804,15 +701,12 @@
 
     function saveRecords() {
       localStorage.setItem(storageKey, JSON.stringify({
-        bestLapTime: state.bestLapTime,
-        maxCombo: state.maxCombo,
         bestScore: state.bestScore
       }));
     }
 
     function refreshMenuRecords() {
-      document.getElementById('menu-best-lap').innerText = formatTime(state.bestLapTime);
-      document.getElementById('menu-max-combo').innerText = `${state.maxCombo}x`;
+      document.getElementById('menu-best-score').innerText = state.bestScore.toLocaleString();
     }
 
     // --- 3. Three.js Scene Setup & Physics Core ---
@@ -824,9 +718,9 @@
 
     const scene = new THREE.Scene();
     // Clear Tokyo night sky with enough lift to keep the track readable.
-    const bgColor = 0x182033;
+    const bgColor = 0x24314d;
     scene.background = new THREE.Color(bgColor);
-    scene.fog = new THREE.FogExp2(bgColor, 0.0022);
+    scene.fog = new THREE.FogExp2(bgColor, 0.00165);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.5, 1200);
 
@@ -843,13 +737,13 @@
     resizeObserver.observe(canvas);
 
     // Ambient and moonlight keep the city nocturnal without crushing visibility.
-    const ambient = new THREE.AmbientLight(0x7c8fb3, 0.78);
+    const ambient = new THREE.AmbientLight(0xa8bbdd, 1.05);
     scene.add(ambient);
 
-    const hemi = new THREE.HemisphereLight(0x8fb7ff, 0x1f2937, 0.42);
+    const hemi = new THREE.HemisphereLight(0xb6d2ff, 0x334155, 0.65);
     scene.add(hemi);
 
-    const sun = new THREE.DirectionalLight(0xbfd7ff, 0.9);
+    const sun = new THREE.DirectionalLight(0xdbeafe, 1.1);
     sun.position.set(120, 95, -180);
     scene.add(sun);
 
@@ -860,8 +754,8 @@
       const c = document.createElement('canvas');
       c.width = 128; c.height = 128;
       const x = c.getContext('2d');
-      x.fillStyle = '#101827'; x.fillRect(0, 0, 128, 128);
-      x.strokeStyle = '#34445f'; x.lineWidth = 1;
+      x.fillStyle = '#17243a'; x.fillRect(0, 0, 128, 128);
+      x.strokeStyle = '#566982'; x.lineWidth = 1;
       x.strokeRect(0, 0, 128, 128);
       const tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -869,7 +763,7 @@
       return tex;
     }
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x1d2738,
+      color: 0x2d3b52,
       map: createGridTex(),
       roughness: 0.85,
       metalness: 0.1
@@ -882,11 +776,10 @@
     const S = 120;
     const trackWidth = 34;
     const sidewalkWidth = 14;
-    const streetClearance = trackWidth / 2 + sidewalkWidth + 8;
+    const streetClearance = trackWidth / 2 + sidewalkWidth + 2;
     const nitroDrainRate = 58;
     const nitroRechargeRate = 17;
     const nitroReadyThreshold = 45;
-    const bonusZoneFractions = [0.12, 0.37, 0.62, 0.86];
     const trackPoints = [
       new THREE.Vector3(0, 0.05, 0),
       new THREE.Vector3(70, 0.05, S),
@@ -1147,7 +1040,7 @@
 
     // --- City Block Building Scenery (Placed away from roads) ---
     const buildings = [];
-    const blockCenters = [-S * 1.5, -S * 0.5, S * 0.5, S * 1.5];
+    const blockCenters = [-S * 2, -S * 1.5, -S, -S * 0.5, 0, S * 0.5, S, S * 1.5, S * 2];
     const bGeo = new THREE.BoxGeometry(1, 1, 1);
 
     // Helper to check if a building overlaps streets
@@ -1162,16 +1055,16 @@
 
     blockCenters.forEach((bx) => {
       blockCenters.forEach((bz) => {
-        const subgrid = [-22, 22];
+        const subgrid = [0];
         subgrid.forEach((sdx) => {
           subgrid.forEach((sdz) => {
-            const x = bx + sdx + (Math.random() - 0.5) * 5;
-            const z = bz + sdz + (Math.random() - 0.5) * 5;
+            const x = bx + sdx + (Math.random() - 0.5) * 12;
+            const z = bz + sdz + (Math.random() - 0.5) * 12;
 
             if (!isOnStreet(x, z)) {
-              const w = 24 + Math.random() * 8;
-              const d = 24 + Math.random() * 8;
-              const h = 45 + Math.random() * 120;
+              const w = 20 + Math.random() * 12;
+              const d = 20 + Math.random() * 12;
+              const h = 50 + Math.random() * 130;
 
               // Varied Tokyo tower blocks so the city does not collapse into one dark wall.
               const colors = [0x263b5e, 0x4c3f68, 0x2f5d62, 0x644737, 0x375a7f, 0x583451, 0x52616f, 0x31505f];
@@ -1410,52 +1303,22 @@
     const sakuraSystem = new THREE.Points(sakuraGeometry, sakuraMaterial);
     scene.add(sakuraSystem);
 
-    // --- Neon Style Zones ---
+    // --- Free drift scoring has no required gates or score zones. ---
     const styleZones = [];
-    const zoneMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.42, side: THREE.DoubleSide });
-    bonusZoneFractions.forEach((fraction, idx) => {
-      const pos = trackCurve.getPointAt(fraction);
-      const tangent = trackCurve.getTangentAt(fraction).normalize();
-      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-      const zone = new THREE.Mesh(new THREE.PlaneGeometry(trackWidth * 0.82, 5.5), zoneMat.clone());
-      zone.position.copy(pos);
-      zone.position.y = 0.135;
-      zone.rotation.x = -Math.PI / 2;
-      zone.rotation.z = Math.atan2(tangent.x, tangent.z);
-      scene.add(zone);
 
-      const markerMat = new THREE.MeshBasicMaterial({ color: 0xf0f9ff });
-      [-1, 1].forEach(side => {
-        const strip = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.08, 5.5), markerMat);
-        strip.position.copy(pos).add(normal.clone().multiplyScalar(side * trackWidth * 0.41));
-        strip.position.y = 0.18;
-        strip.rotation.y = Math.atan2(tangent.x, tangent.z);
-        scene.add(strip);
-      });
-
-      styleZones.push({
-        id: `zone_${idx}`,
-        position: pos,
-        mesh: zone,
-        cooldown: 0
-      });
-    });
-
-    // --- Collectibles (Wrenches & Nitro canisters) ---
+    // --- Collectibles (Nitro canisters) ---
     const collectibles = [];
     const collectGeos = {
-      wrench: new THREE.BoxGeometry(0.3, 0.8, 0.3),
       boost: new THREE.CylinderGeometry(0.2, 0.2, 0.8, 8)
     };
     const collectMats = {
-      wrench: new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.9, roughness: 0.1 }),
-      boost: new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.5, roughness: 0.2 })
+      boost: new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0ea5e9, emissiveIntensity: 0.55, metalness: 0.5, roughness: 0.2 })
     };
 
-    // Spawn 10 collectibles along track
+    // Spawn nitro canisters along the loop.
     for (let i = 0; i < 10; i++) {
       const fract = (i * 20 + 8) / 200;
-      const type = i % 2 === 0 ? 'boost' : 'wrench';
+      const type = 'boost';
       const pos = trackCurve.getPointAt(fract);
       pos.y = 0.5;
 
@@ -1497,48 +1360,6 @@
         velocity: new THREE.Vector3()
       });
     }
-
-    // --- Time Trial Checkpoints ---
-    const checkpointCount = 4;
-    const checkpointGates = [];
-    // fractions for intermediate checkpoints
-    const checkpointFractions = [0.25, 0.50, 0.75];
-    const finishPos = trackCurve.getPointAt(0);
-
-    checkpointFractions.forEach((fraction, idx) => {
-      const pos = trackCurve.getPointAt(fraction);
-      const tangent = trackCurve.getTangentAt(fraction).normalize();
-      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-
-      const gate = new THREE.Group();
-      const postMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.6 });
-
-      const lPost = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 9, 8), postMat);
-      lPost.position.copy(pos).add(normal.clone().multiplyScalar(sidewalkOuter + 0.3));
-      lPost.position.y = 4.5;
-      gate.add(lPost);
-
-      const rPost = lPost.clone();
-      rPost.position.copy(pos).add(normal.clone().multiplyScalar(-(sidewalkOuter + 0.3)));
-      gate.add(rPost);
-
-      // overhead board
-      const bar = new THREE.Mesh(new THREE.BoxGeometry(sidewalkOuter * 2 + 1, 0.4, 0.4), postMat);
-      bar.position.copy(pos);
-      bar.position.y = 9.2;
-      bar.lookAt(pos.clone().add(tangent));
-      gate.add(bar);
-
-      // Neon sign lamp indicator
-      const led = new THREE.Mesh(new THREE.BoxGeometry(2, 0.8, 0.1), new THREE.MeshBasicMaterial({ color: 0xb45309 })); // amber glow
-      led.position.copy(pos);
-      led.position.y = 9.2;
-      led.lookAt(pos.clone().add(tangent));
-      gate.add(led);
-
-      scene.add(gate);
-      checkpointGates.push({ index: idx + 1, position: pos });
-    });
 
     // --- Starting Banner / Finish Arch ---
     const startBanner = new THREE.Group();
@@ -1767,22 +1588,10 @@
     function updateHUD() {
       document.getElementById('speed-val').innerText = Math.floor(Math.abs(state.currentSpeed) * 230);
       document.getElementById('gear-val').innerText = `G${Math.max(1, Math.min(5, Math.floor(Math.abs(state.currentSpeed) * 4.2) + 1))}`;
-      document.getElementById('lap-val').innerText = `LAP ${state.currentLap}/${state.totalLaps}`;
-      document.getElementById('checkpoint-val').innerText = `GATE ${state.checkpointProgress}/3`;
       document.getElementById('turbo-percent').innerText = state.turboLocked ? 'RECHARGING' : `${Math.floor(state.turboAmount)}%`;
       document.getElementById('turbo-bar').style.width = `${state.turboAmount}%`;
       document.getElementById('turbo-bar').className = `h-full transition-all duration-75 ${state.turboLocked ? 'bg-neutral-500' : 'bg-cyan-300'}`;
       document.getElementById('score-total').innerText = state.totalDriftScore.toLocaleString();
-      document.getElementById('combo-max').innerText = `${state.maxCombo}x`;
-
-      // Update Shields
-      const shieldContainer = document.getElementById('armor-shields');
-      shieldContainer.innerHTML = '';
-      for (let i = 0; i < state.maxArmor; i++) {
-        const shield = document.createElement('div');
-        shield.className = `w-3 h-3.5 rounded-sm border ${i < state.currentArmor ? 'bg-red-600 border-red-500' : 'bg-neutral-850 border-neutral-700'}`;
-        shieldContainer.appendChild(shield);
-      }
     }
 
     function showScreen(screenId) {
@@ -1790,7 +1599,7 @@
       document.getElementById('screens-overlay').classList.remove('hidden');
       
       // Hide all screens
-      ['screen-main-menu', 'screen-garage', 'screen-manual', 'screen-game-over', 'screen-victory'].forEach(id => {
+      ['screen-main-menu', 'screen-garage', 'screen-manual'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
       });
 
@@ -1877,8 +1686,8 @@
       document.getElementById('spec-drift-num').innerText = `${driftPct}%`;
       document.getElementById('spec-drift-bar').style.width = `${driftPct}%`;
 
-      document.getElementById('spec-armor-num').innerText = `${arch.armor} / 5`;
-      document.getElementById('spec-armor-bar').style.width = `${(arch.armor / 5) * 100}%`;
+      document.getElementById('spec-stability-num').innerText = `${arch.stability} / 8`;
+      document.getElementById('spec-stability-bar').style.width = `${(arch.stability / 8) * 100}%`;
 
       rebuildCar(arch.id, state.customCarColor);
     }
@@ -1939,7 +1748,9 @@
       if (!state.isGameRunning) return;
       resetCarToStart();
       state.currentSpeed = 0;
-      state.checkpointProgress = 0;
+      activeDriftScore = 0;
+      activeDriftMultiplier = 1.0;
+      state.totalDriftScore = 0;
       state.turboAmount = Math.max(state.turboAmount, nitroReadyThreshold);
       state.turboLocked = false;
       showNotification("CAR RESET TO START LINE");
@@ -1965,36 +1776,18 @@
 
       // Setup vehicle match parameters
       const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
-      state.currentArmor = arch.armor;
-      state.maxArmor = arch.armor;
       state.turboAmount = 100;
       state.turboLocked = false;
-      state.currentLap = 1;
       state.totalDriftScore = 0;
-      state.currentLapTime = 0;
-      state.checkpointProgress = 0;
+      activeDriftScore = 0;
+      activeDriftMultiplier = 1.0;
+      stoppedTimer = 0;
 
       // Launch match
       state.isGameRunning = true;
       audio.startEngine();
       resetCarToStart();
-      showNotification("SIMULATOR ARMED. TIME TRIAL START!");
-    };
-
-    // Crash restart clicks
-    document.getElementById('btn-restart-crash').onclick = () => {
-      document.getElementById('btn-start').click();
-    };
-    document.getElementById('btn-menu-crash').onclick = () => {
-      showScreen('main-menu');
-    };
-
-    // Victory restart clicks
-    document.getElementById('btn-restart-victory').onclick = () => {
-      document.getElementById('btn-start').click();
-    };
-    document.getElementById('btn-menu-victory').onclick = () => {
-      showScreen('main-menu');
+      showNotification("FREE DRIFT STARTED. KEEP MOVING!");
     };
 
     // --- Key Event Listeners ---
@@ -2082,6 +1875,7 @@
     let activeDriftScore = 0;
     let activeDriftMultiplier = 1.0;
     let driftCooldown = 0;
+    let stoppedTimer = 0;
 
     let lastTime = performance.now();
 
@@ -2104,8 +1898,6 @@
 
       // 1. CAR PHYSICS & ENGINE LOOP
       if (state.isGameRunning) {
-        state.currentLapTime += dt * 1000;
-
         // Drive acceleration
         const topLimit = arch.topSpeed * (isTurbo ? 1.4 : 1.0);
         if (isFwd) {
@@ -2176,6 +1968,12 @@
           // Point addition
           activeDriftScore += Math.floor(speedKmh * slipDiff * 0.8);
           activeDriftMultiplier = Math.min(10.0, activeDriftMultiplier + dt * 0.45);
+          state.totalDriftScore = Math.max(state.totalDriftScore, Math.floor(activeDriftScore * activeDriftMultiplier));
+          if (state.totalDriftScore > state.bestScore) {
+            state.bestScore = state.totalDriftScore;
+            saveRecords();
+            refreshMenuRecords();
+          }
           driftCooldown = 1.3;
 
           // Drifting helps recharge nitro, but not while actively burning it.
@@ -2193,28 +1991,25 @@
           if (driftCooldown > 0) {
             driftCooldown -= dt;
             if (driftCooldown <= 0) {
-              // Cash out combo points
-              if (activeDriftScore > 0) {
-                const payout = Math.floor(activeDriftScore * activeDriftMultiplier);
-                state.totalDriftScore += payout;
-                
-                const currentMultInt = Math.floor(activeDriftMultiplier);
-                if (currentMultInt > state.maxCombo) {
-                  state.maxCombo = currentMultInt;
-                  saveRecords();
-                }
-
-                audio.playCollect();
-
-                // Fade combo Box
-                comboEl.style.opacity = '0';
-                comboEl.style.transform = 'scale(0.9)';
-
-                activeDriftScore = 0;
-                activeDriftMultiplier = 1.0;
-              }
+              comboEl.style.opacity = '0';
+              comboEl.style.transform = 'scale(0.9)';
             }
           }
+        }
+
+        if (speedKmh < 6 && !isFwd && !isBwd) {
+          stoppedTimer += dt;
+          if (stoppedTimer > 0.75 && state.totalDriftScore > 0) {
+            state.totalDriftScore = 0;
+            activeDriftScore = 0;
+            activeDriftMultiplier = 1.0;
+            driftCooldown = 0;
+            comboEl.style.opacity = '0';
+            comboEl.style.transform = 'scale(0.9)';
+            showNotification("DRIFT SCORE RESET - KEEP MOVING");
+          }
+        } else {
+          stoppedTimer = 0;
         }
 
         // Use turbo
@@ -2230,6 +2025,7 @@
         const nextPos = carGroup.position.clone().add(velocity);
         const r = 1.2;
 
+        let crashedThisFrame = false;
         buildings.forEach(b => {
           if (nextPos.x + r > b.minX && nextPos.x - r < b.maxX &&
               nextPos.z + r > b.minZ && nextPos.z - r < b.maxZ) {
@@ -2238,9 +2034,18 @@
             velocity.set(0, 0, 0);
             nextPos.copy(carGroup.position); // bounce back
 
-            state.currentArmor = Math.max(0, state.currentArmor - 1);
-            audio.playCrash();
-            showNotification("VEHICLE IMPACT DETECTED! -1 ARMOR");
+            if (!crashedThisFrame) {
+              state.totalDriftScore = 0;
+              activeDriftScore = 0;
+              activeDriftMultiplier = 1.0;
+              driftCooldown = 0;
+              stoppedTimer = 0;
+              comboEl.style.opacity = '0';
+              comboEl.style.transform = 'scale(0.9)';
+              audio.playCrash();
+              showNotification("CRASHED - DRIFT SCORE RESET");
+              crashedThisFrame = true;
+            }
 
             // Damage Flash
             if (carBodyMesh) {
@@ -2249,83 +2054,15 @@
                 carBodyMesh.material.color.copy(new THREE.Color(state.customCarColor));
               }, 180);
             }
-
-            if (state.currentArmor <= 0) {
-              // Game Over
-              state.isGameRunning = false;
-              audio.stopEngine();
-              document.getElementById('crash-laps').innerText = `${state.currentLap - 1} Laps`;
-              document.getElementById('crash-score').innerText = state.totalDriftScore.toLocaleString();
-              showScreen('game-over');
-            }
           }
         });
 
         carGroup.position.copy(nextPos);
 
-        // 4. CHECKPOINT & FINISH PORTAL MATH
-        // Lap finishing line cross check
-        const dFinish = carGroup.position.distanceTo(finishPos);
-        if (dFinish < 11) {
-          // Must have passed checkpoint 3 (idx 2) to prevent reverse cheating
-          if (state.checkpointProgress === 3) {
-            const finishedLapTime = state.currentLapTime;
-            if (finishedLapTime < state.bestLapTime) {
-              state.bestLapTime = finishedLapTime;
-              saveRecords();
-              refreshMenuRecords();
-            }
-
-            state.currentLap++;
-            state.checkpointProgress = 0;
-            state.currentLapTime = 0;
-            audio.playCheckpoint();
-
-            if (state.currentLap > state.totalLaps) {
-              // Game victory completed
-              state.isGameRunning = false;
-              audio.stopEngine();
-
-              if (state.totalDriftScore > state.bestScore) state.bestScore = state.totalDriftScore;
-              saveRecords();
-              refreshMenuRecords();
-
-              // Update Victory screens
-              document.getElementById('victory-score').innerText = `${state.totalDriftScore.toLocaleString()} PTS`;
-              document.getElementById('victory-lap-time').innerText = formatTime(state.bestLapTime);
-              document.getElementById('victory-combo').innerText = `${state.maxCombo}x`;
-              
-              showScreen('victory');
-            } else {
-              showNotification(`LAP ${state.currentLap - 1} COMPLETE! ENTERING LAP ${state.currentLap}`);
-            }
-          }
-        }
-
-        // Check intermediate portals
-        checkpointGates.forEach(gate => {
-          if (state.checkpointProgress === gate.index - 1) {
-            const dist = carGroup.position.distanceTo(gate.position);
-            if (dist < 11) {
-              state.checkpointProgress = gate.index;
-              audio.playCheckpoint();
-              showNotification(`CHECKPOINT ${gate.index} ACQUIRED!`);
-            }
-          }
-        });
-
         // Style zones reward committing to a drift through marked neon strips.
         styleZones.forEach(zone => {
           zone.cooldown = Math.max(0, zone.cooldown - dt);
           zone.mesh.material.opacity = zone.cooldown > 0 ? 0.14 : 0.42 + Math.sin(now * 0.006) * 0.08;
-          if (zone.cooldown <= 0 && isDrifting && carGroup.position.distanceTo(zone.position) < 8.5) {
-            activeDriftScore += 900;
-            activeDriftMultiplier = Math.min(10.0, activeDriftMultiplier + 0.55);
-            driftCooldown = Math.max(driftCooldown, 1.3);
-            zone.cooldown = 6;
-            audio.playCheckpoint();
-            showNotification("STYLE ZONE +900");
-          }
         });
 
         // Collectible overlaps
@@ -2337,14 +2074,9 @@
               col.mesh.visible = false;
               audio.playCollect();
 
-              if (col.type === 'wrench') {
-                state.currentArmor = Math.min(state.maxArmor, state.currentArmor + 1);
-                showNotification("ARMOR INTEGRITY REPAIRED +1");
-              } else {
-                state.turboAmount = 100;
-                state.turboLocked = false;
-                showNotification("NITRO BOOST CAPACITY RECHARGED!");
-              }
+              state.turboAmount = 100;
+              state.turboLocked = false;
+              showNotification("NITRO BOOST CAPACITY RECHARGED!");
 
               // Respawn canister in 8 seconds
               setTimeout(() => {
