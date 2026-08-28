@@ -718,7 +718,7 @@
 
     const scene = new THREE.Scene();
     // Clear Tokyo night sky with enough lift to keep the track readable.
-    const bgColor = 0x24314d;
+    const bgColor = 0x2f3d57;
     scene.background = new THREE.Color(bgColor);
     scene.fog = new THREE.FogExp2(bgColor, 0.00165);
 
@@ -737,13 +737,13 @@
     resizeObserver.observe(canvas);
 
     // Ambient and moonlight keep the city nocturnal without crushing visibility.
-    const ambient = new THREE.AmbientLight(0xa8bbdd, 1.05);
+    const ambient = new THREE.AmbientLight(0xb6c7df, 1.18);
     scene.add(ambient);
 
-    const hemi = new THREE.HemisphereLight(0xb6d2ff, 0x334155, 0.65);
+    const hemi = new THREE.HemisphereLight(0xc7ddff, 0x43546d, 0.78);
     scene.add(hemi);
 
-    const sun = new THREE.DirectionalLight(0xdbeafe, 1.1);
+    const sun = new THREE.DirectionalLight(0xeaf3ff, 1.25);
     sun.position.set(120, 95, -180);
     scene.add(sun);
 
@@ -754,8 +754,8 @@
       const c = document.createElement('canvas');
       c.width = 128; c.height = 128;
       const x = c.getContext('2d');
-      x.fillStyle = '#17243a'; x.fillRect(0, 0, 128, 128);
-      x.strokeStyle = '#566982'; x.lineWidth = 1;
+      x.fillStyle = '#233047'; x.fillRect(0, 0, 128, 128);
+      x.strokeStyle = '#64748b'; x.lineWidth = 1;
       x.strokeRect(0, 0, 128, 128);
       const tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -763,7 +763,7 @@
       return tex;
     }
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x2d3b52,
+      color: 0x3b4b64,
       map: createGridTex(),
       roughness: 0.85,
       metalness: 0.1
@@ -775,8 +775,8 @@
     // --- Winding Race Track pathway ---
     const S = 120;
     const trackWidth = 34;
-    const sidewalkWidth = 14;
-    const streetClearance = trackWidth / 2 + sidewalkWidth + 2;
+    const sidewalkWidth = 11;
+    const streetClearance = trackWidth / 2 + sidewalkWidth + 3;
     const nitroDrainRate = 58;
     const nitroRechargeRate = 17;
     const nitroReadyThreshold = 45;
@@ -802,19 +802,18 @@
       const c = document.createElement('canvas');
       c.width = 512; c.height = 512;
       const x = c.getContext('2d');
-      x.fillStyle = '#9aa5b6'; x.fillRect(0, 0, 512, 512); // moonlit asphalt for visibility
+      x.fillStyle = '#252b36'; x.fillRect(0, 0, 512, 512); // readable night asphalt
       // Fine stone noise
       for (let i = 0; i < 15000; i++) {
-        x.fillStyle = `rgba(240,245,255,${Math.random() * 0.055})`;
+        x.fillStyle = `rgba(190,205,225,${Math.random() * 0.05})`;
         x.fillRect(Math.random() * 512, Math.random() * 512, 1.5, 1.5);
       }
       // Lane marker glow effect
-      x.shadowColor = 'rgba(255, 245, 200, 0.35)';
-      x.shadowBlur = 10;
-      // Paint beautiful gold dashed lane markers down the center
-      x.strokeStyle = 'rgba(255, 245, 200, 0.85)'; // higher contrast off-white racing line
-      x.lineWidth = 6;
-      x.setLineDash([20, 25]);
+      x.shadowColor = 'rgba(245, 220, 160, 0.22)';
+      x.shadowBlur = 5;
+      x.strokeStyle = 'rgba(246, 213, 130, 0.75)';
+      x.lineWidth = 4;
+      x.setLineDash([14, 28]);
       x.beginPath();
       x.moveTo(256, 0);
       x.lineTo(256, 512);
@@ -912,34 +911,34 @@
       const c = document.createElement('canvas');
       c.width = 256; c.height = 256;
       const x = c.getContext('2d');
-      x.fillStyle = '#cbd5e1';
+      x.fillStyle = '#c8d0db';
       x.fillRect(0, 0, 256, 256);
-      x.strokeStyle = 'rgba(255,255,255,0.45)';
+      x.strokeStyle = 'rgba(255,255,255,0.38)';
       x.lineWidth = 2;
       for (let i = 0; i <= 256; i += 32) {
         x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 256); x.stroke();
         x.beginPath(); x.moveTo(0, i); x.lineTo(256, i); x.stroke();
       }
       for (let i = 0; i < 2500; i++) {
-        x.fillStyle = `rgba(30,41,59,${Math.random() * 0.09})`;
+        x.fillStyle = `rgba(59,72,92,${Math.random() * 0.075})`;
         x.fillRect(Math.random() * 256, Math.random() * 256, 1, 1);
       }
-      x.fillStyle = 'rgba(34,211,238,0.75)';
-      x.fillRect(0, 0, 7, 256);
-      x.fillRect(249, 0, 7, 256);
+      x.fillStyle = 'rgba(248,250,252,0.72)';
+      x.fillRect(0, 0, 4, 256);
+      x.fillRect(252, 0, 4, 256);
       const tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(1, 14);
+      tex.repeat.set(1, 18);
       return tex;
     }
 
     const sidewalkMat = new THREE.MeshStandardMaterial({
-      color: 0xe2e8f0,
+      color: 0xd3d9e2,
       map: createSidewalkTex(),
       roughness: 0.72,
       metalness: 0.02,
-      emissive: new THREE.Color(0x243244),
-      emissiveIntensity: 0.24
+      emissive: new THREE.Color(0x3b4558),
+      emissiveIntensity: 0.18
     });
     const sidewalkOuter = trackWidth / 2 + sidewalkWidth;
     [-1, 1].forEach(side => {
@@ -973,8 +972,8 @@
       const tangent = trackCurve.getTangentAt(t % 1).normalize();
       const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
 
-      const wInnerL = sidewalkOuter;
-      const wOuterL = wInnerL + 0.65;
+      const wInnerL = trackWidth / 2 - 0.35;
+      const wOuterL = sidewalkOuter + 0.35;
 
       // Left Curb Inner
       const pLi = pos.clone().add(normal.clone().multiplyScalar(wInnerL));
@@ -988,8 +987,8 @@
       curbPoints.push(pLo.x, pLo.y, pLo.z);
       curbUvs.push(1, t * 50);
 
-      const wInnerR = -sidewalkOuter;
-      const wOuterR = wInnerR - 0.65;
+      const wInnerR = -(trackWidth / 2 - 0.35);
+      const wOuterR = -(sidewalkOuter + 0.35);
 
       // Right Curb Inner
       const pRi = pos.clone().add(normal.clone().multiplyScalar(wInnerR));
@@ -1033,21 +1032,21 @@
       roughness: 0.55,
       metalness: 0.2,
       emissive: new THREE.Color(0xffffff),
-      emissiveIntensity: 1.25
+      emissiveIntensity: 0.28
     });
     const curbMesh = new THREE.Mesh(curbGeo, curbMat);
     scene.add(curbMesh);
 
     // --- City Block Building Scenery (Placed away from roads) ---
     const buildings = [];
-    const blockCenters = [-S * 2, -S * 1.5, -S, -S * 0.5, 0, S * 0.5, S, S * 1.5, S * 2];
+    const blockCenters = [-S * 2, -S * 1.66, -S * 1.33, -S, -S * 0.66, -S * 0.33, 0, S * 0.33, S * 0.66, S, S * 1.33, S * 1.66, S * 2];
     const bGeo = new THREE.BoxGeometry(1, 1, 1);
 
     // Helper to check if a building overlaps streets
     function isOnStreet(x, z) {
       const gw = streetClearance;
-      for (let i = 0; i < 120; i++) {
-        const p = trackCurve.getPointAt(i / 120);
+      for (let i = 0; i < 160; i++) {
+        const p = trackCurve.getPointAt(i / 160);
         if (Math.hypot(x - p.x, z - p.z) < gw) return true;
       }
       return false;
@@ -1061,13 +1060,13 @@
             const x = bx + sdx + (Math.random() - 0.5) * 12;
             const z = bz + sdz + (Math.random() - 0.5) * 12;
 
-            if (!isOnStreet(x, z)) {
-              const w = 20 + Math.random() * 12;
-              const d = 20 + Math.random() * 12;
-              const h = 50 + Math.random() * 130;
+            if (!isOnStreet(x, z) && Math.hypot(x, z) < S * 2.45) {
+              const w = 14 + Math.random() * 12;
+              const d = 14 + Math.random() * 12;
+              const h = 28 + Math.random() * 145;
 
               // Varied Tokyo tower blocks so the city does not collapse into one dark wall.
-              const colors = [0x263b5e, 0x4c3f68, 0x2f5d62, 0x644737, 0x375a7f, 0x583451, 0x52616f, 0x31505f];
+              const colors = [0x8a9bb0, 0x6b7f94, 0x475569, 0x64748b, 0x7c6f64, 0x8b6f87, 0x567b7f, 0x755f4f, 0x2f3e55];
               const windowColors = [
                 { color: 0xfde68a, emissive: 0xf59e0b },
                 { color: 0x93c5fd, emissive: 0x2563eb },
@@ -1114,7 +1113,7 @@
                   emissive: windowStyle.emissive,
                   emissiveIntensity: 0.95,
                   transparent: true,
-                  opacity: 0.55,
+                  opacity: 0.68,
                   roughness: 0.1
                 });
                 const windowPlate = new THREE.Mesh(wGeo, wMat);
@@ -1128,24 +1127,24 @@
     });
 
     const forestFloor = new THREE.Mesh(
-      new THREE.RingGeometry(S * 2.75, 1250, 96),
+      new THREE.RingGeometry(S * 2.45, 1250, 128),
       new THREE.MeshBasicMaterial({ color: 0x07140d, side: THREE.DoubleSide })
     );
     forestFloor.rotation.x = -Math.PI / 2;
     forestFloor.position.y = 0.025;
     scene.add(forestFloor);
 
-    const forestTreeCount = 150;
-    const treeTrunkGeo = new THREE.CylinderGeometry(0.35, 0.5, 4, 5);
-    const treeLeafGeo = new THREE.ConeGeometry(2.5, 6.2, 6);
+    const forestTreeCount = 360;
+    const treeTrunkGeo = new THREE.CylinderGeometry(0.32, 0.48, 5, 5);
+    const treeLeafGeo = new THREE.ConeGeometry(2.9, 8, 6);
     const treeTrunks = new THREE.InstancedMesh(treeTrunkGeo, new THREE.MeshBasicMaterial({ color: 0x2b1c13 }), forestTreeCount);
     const treeLeaves = new THREE.InstancedMesh(treeLeafGeo, new THREE.MeshBasicMaterial({ color: 0x0d2b1b }), forestTreeCount);
     const treeDummy = new THREE.Object3D();
     for (let i = 0; i < forestTreeCount; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = S * 2.95 + Math.random() * 650;
-      const x = Math.cos(angle) * radius + (Math.random() - 0.5) * 60;
-      const z = Math.sin(angle) * radius + (Math.random() - 0.5) * 60;
+      const angle = (i / forestTreeCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.025;
+      const radius = S * 2.45 + Math.random() * 58;
+      const x = Math.cos(angle) * radius + (Math.random() - 0.5) * 16;
+      const z = Math.sin(angle) * radius + (Math.random() - 0.5) * 16;
       const scale = 0.75 + Math.random() * 1.25;
       treeDummy.position.set(x, 2 * scale, z);
       treeDummy.rotation.set(0, Math.random() * Math.PI, 0);
@@ -1203,34 +1202,6 @@
     towerGroup.add(spireTop);
     towerGroup.position.set(-250, 0, -580);
     scene.add(towerGroup);
-
-    // Torii Gate placing (Segment decorations)
-    const toriiPoints = [25, 160];
-    toriiPoints.forEach(idx => {
-      const pos = trackCurve.getPointAt(idx / 200);
-      const tangent = trackCurve.getTangentAt(idx / 200).normalize();
-      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-
-      const torii = new THREE.Group();
-      const pillarMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.5 }); // red
-
-      const left = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 11, 8), pillarMat);
-      left.position.copy(pos).add(normal.clone().multiplyScalar(sidewalkOuter + 0.5));
-      left.position.y = 5.5;
-      torii.add(left);
-
-      const right = left.clone();
-      right.position.copy(pos).add(normal.clone().multiplyScalar(-(sidewalkOuter + 0.5)));
-      torii.add(right);
-
-      const cross = new THREE.Mesh(new THREE.BoxGeometry(sidewalkOuter * 2 + 2.5, 0.5, 0.5), pillarMat);
-      cross.position.copy(pos);
-      cross.position.y = 10.2;
-      cross.lookAt(pos.clone().add(tangent));
-      torii.add(cross);
-
-      scene.add(torii);
-    });
 
     // Street lamps keep the night track readable and define the sidewalk edge.
     const lampPostMat = new THREE.MeshStandardMaterial({ color: 0x2f3b4f, metalness: 0.55, roughness: 0.3 });
@@ -1411,8 +1382,9 @@
       const blackMat = new THREE.MeshStandardMaterial({ color: 0x171717, roughness: 0.7 });
       const chromeMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.1 });
       const glassMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, transparent: true, opacity: 0.85 });
-      const lightMat = new THREE.MeshBasicMaterial({ color: 0xbdefff });
+      const lightMat = new THREE.MeshBasicMaterial({ color: 0xe0f7ff });
       const tailMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+      const accentMat = new THREE.MeshStandardMaterial({ color: 0x020617, roughness: 0.42, metalness: 0.35 });
 
       const bodyGroup = new THREE.Group();
       carGroup.add(bodyGroup);
@@ -1423,13 +1395,13 @@
       bodyGroup.add(frame);
 
       // Front Hood section
-      const hood = new THREE.Mesh(new THREE.BoxGeometry(1.72 * sc.x, 0.28 * sc.y, 1.18 * sc.z), bodyMat);
-      hood.position.set(0, 0.43 * sc.y, 1.02 * sc.z);
+      const hood = new THREE.Mesh(new THREE.BoxGeometry(1.72 * sc.x, 0.2 * sc.y, 1.18 * sc.z), bodyMat);
+      hood.position.set(0, 0.47 * sc.y, 1.03 * sc.z);
       bodyGroup.add(hood);
 
       // Trunk section
-      const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.72 * sc.x, 0.34 * sc.y, 0.92 * sc.z), bodyMat);
-      trunk.position.set(0, 0.47 * sc.y, -1.1 * sc.z);
+      const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.8 * sc.x, 0.28 * sc.y, 0.9 * sc.z), bodyMat);
+      trunk.position.set(0, 0.46 * sc.y, -1.13 * sc.z);
       bodyGroup.add(trunk);
 
       // Center Passenger Cabin
@@ -1438,9 +1410,13 @@
       bodyGroup.add(cabin);
       carBodyMesh = cabin;
 
-      const roof = new THREE.Mesh(new THREE.BoxGeometry(1.18 * sc.x, 0.42 * sc.y, 1.15 * sc.z), bodyMat);
-      roof.position.set(0, 0.88 * sc.y, -0.08 * sc.z);
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(1.1 * sc.x, 0.36 * sc.y, 0.98 * sc.z), bodyMat);
+      roof.position.set(0, 0.92 * sc.y, -0.1 * sc.z);
       bodyGroup.add(roof);
+
+      const roofGlass = new THREE.Mesh(new THREE.BoxGeometry(0.82 * sc.x, 0.035, 0.62 * sc.z), glassMat);
+      roofGlass.position.set(0, 1.12 * sc.y, -0.08 * sc.z);
+      bodyGroup.add(roofGlass);
 
       // Windshield
       const wind = new THREE.Mesh(new THREE.BoxGeometry(1.08 * sc.x, 0.36 * sc.y, 0.62 * sc.z), glassMat);
@@ -1448,22 +1424,45 @@
       wind.rotation.x = 0.5;
       bodyGroup.add(wind);
 
+      const rearWind = new THREE.Mesh(new THREE.BoxGeometry(1.0 * sc.x, 0.3 * sc.y, 0.48 * sc.z), glassMat);
+      rearWind.position.set(0, 0.85 * sc.y, -0.64 * sc.z);
+      rearWind.rotation.x = -0.45;
+      bodyGroup.add(rearWind);
+
+      const hoodStripe = new THREE.Mesh(new THREE.BoxGeometry(0.22 * sc.x, 0.025, 1.05 * sc.z), accentMat);
+      hoodStripe.position.set(0, 0.59 * sc.y, 1.04 * sc.z);
+      bodyGroup.add(hoodStripe);
+
       const splitter = new THREE.Mesh(new THREE.BoxGeometry(1.98 * sc.x, 0.06, 0.32 * sc.z), blackMat);
       splitter.position.set(0, 0.26 * sc.y, 1.72 * sc.z);
       bodyGroup.add(splitter);
 
+      const grille = new THREE.Mesh(new THREE.BoxGeometry(0.74 * sc.x, 0.14, 0.06), accentMat);
+      grille.position.set(0, 0.39 * sc.y, 1.68 * sc.z);
+      bodyGroup.add(grille);
+
       [-1, 1].forEach(side => {
-        const headlight = new THREE.Mesh(new THREE.BoxGeometry(0.42 * sc.x, 0.08, 0.08), lightMat);
-        headlight.position.set(side * 0.48 * sc.x, 0.48 * sc.y, 1.62 * sc.z);
+        const headlight = new THREE.Mesh(new THREE.BoxGeometry(0.36 * sc.x, 0.09, 0.07), lightMat);
+        headlight.position.set(side * 0.58 * sc.x, 0.49 * sc.y, 1.67 * sc.z);
         bodyGroup.add(headlight);
 
         const skirt = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 2.55 * sc.z), blackMat);
         skirt.position.set(side * 0.98 * sc.x, 0.3 * sc.y, 0);
         bodyGroup.add(skirt);
 
+        const sideGlass = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.28 * sc.y, 0.75 * sc.z), glassMat);
+        sideGlass.position.set(side * 0.79 * sc.x, 0.88 * sc.y, -0.08 * sc.z);
+        bodyGroup.add(sideGlass);
+
         const mirror = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.16), blackMat);
         mirror.position.set(side * 0.95 * sc.x, 0.83 * sc.y, 0.32 * sc.z);
         bodyGroup.add(mirror);
+
+        [-1.08, 1.08].forEach(z => {
+          const fender = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.26, 0.72 * sc.z), accentMat);
+          fender.position.set(side * 0.94 * sc.x, 0.51 * sc.y, z * sc.z);
+          bodyGroup.add(fender);
+        });
       });
 
       // Spoilers wing
@@ -1474,8 +1473,8 @@
       wingPostR.position.x = -0.5 * sc.x;
       bodyGroup.add(wingPostR);
 
-      const wing = new THREE.Mesh(new THREE.BoxGeometry(1.7 * sc.x, 0.05, 0.45 * sc.z), blackMat);
-      wing.position.set(0, 0.85, -1.42 * sc.z);
+      const wing = new THREE.Mesh(new THREE.BoxGeometry(1.9 * sc.x, 0.055, 0.38 * sc.z), blackMat);
+      wing.position.set(0, 0.86, -1.48 * sc.z);
       bodyGroup.add(wing);
 
       const diffuser = new THREE.Mesh(new THREE.BoxGeometry(1.6 * sc.x, 0.16, 0.22 * sc.z), blackMat);
@@ -1504,14 +1503,14 @@
       bodyGroup.add(pipe);
 
       // Four Star Alloys Tires
-      const tireGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.4, 16);
+      const tireGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.46, 18);
       tireGeo.rotateZ(Math.PI / 2);
 
       const positions = [
-        { x: 0.85 * sc.x, y: 0.42, z: 1.1 * sc.z, isFront: true },
-        { x: -0.85 * sc.x, y: 0.42, z: 1.1 * sc.z, isFront: true },
-        { x: 0.85 * sc.x, y: 0.42, z: -1.1 * sc.z, isFront: false },
-        { x: -0.85 * sc.x, y: 0.42, z: -1.1 * sc.z, isFront: false }
+        { x: 0.96 * sc.x, y: 0.41, z: 1.13 * sc.z, isFront: true },
+        { x: -0.96 * sc.x, y: 0.41, z: 1.13 * sc.z, isFront: true },
+        { x: 0.96 * sc.x, y: 0.41, z: -1.13 * sc.z, isFront: false },
+        { x: -0.96 * sc.x, y: 0.41, z: -1.13 * sc.z, isFront: false }
       ];
 
       positions.forEach(pos => {
@@ -1527,9 +1526,13 @@
           tire.userData = { isFront: true, pivot };
         }
 
-        const spokes = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.42, 8), chromeMat);
+        const spokes = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.48, 10), chromeMat);
         spokes.rotateZ(Math.PI / 2);
         tire.add(spokes);
+
+        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.5, 10), lightMat);
+        hub.rotateZ(Math.PI / 2);
+        tire.add(hub);
       });
 
       // Align to starting point on start
@@ -1835,7 +1838,7 @@
     let pinchStartZoom = 1;
 
     function clampCameraZoom(value) {
-      return THREE.MathUtils.clamp(value, 0.68, 1.45);
+      return THREE.MathUtils.clamp(value, 0.48, 1.9);
     }
 
     function getTouchDistance(touches) {
@@ -1847,7 +1850,7 @@
     window.addEventListener('wheel', (e) => {
       if (!state.isGameRunning) return;
       e.preventDefault();
-      state.cameraZoom = clampCameraZoom(state.cameraZoom + e.deltaY * 0.0012);
+      state.cameraZoom = clampCameraZoom(state.cameraZoom + e.deltaY * 0.003);
     }, { passive: false });
 
     window.addEventListener('touchstart', (e) => {
@@ -1862,7 +1865,7 @@
         e.preventDefault();
         const currentDistance = getTouchDistance(e.touches);
         if (currentDistance > 0) {
-          state.cameraZoom = clampCameraZoom(pinchStartZoom * (pinchStartDistance / currentDistance));
+          state.cameraZoom = clampCameraZoom(pinchStartZoom * Math.pow(pinchStartDistance / currentDistance, 1.85));
         }
       }
     }, { passive: false });
