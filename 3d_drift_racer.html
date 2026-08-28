@@ -25,8 +25,7 @@
       }
     }
   </script>
-  <!-- Three.js CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Three.js loads from the local vendor bundle inside the game script. -->
   <style>
     body {
       touch-action: none;
@@ -436,7 +435,9 @@
   </div>
 
   <!-- Sound/Synthesizer Engine & Physics Simulation Script -->
-  <script>
+  <script type="module">
+    import * as THREE from './assets/vendor/three.module.min.js';
+
     // --- 1. SoundEngine with Web Audio API (Fully procedurally synthesized) ---
     class SoundEngine {
       constructor() {
@@ -769,6 +770,7 @@
       maxArmor: 5,
       currentSpeed: 0,
       turboAmount: 100,
+      turboLocked: false,
 
       // Live keyboard mappings
       keys: { KeyW: false, KeyS: false, KeyA: false, KeyD: false, Space: false, ShiftLeft: false }
@@ -783,10 +785,10 @@
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     const scene = new THREE.Scene();
-    // Beautiful cinematic twilight deep charcoal sky and dense fog for depth
-    const bgColor = 0x0c0f17; // Deep Space Charcoal Black
+    // Clear Tokyo night sky with enough lift to keep the track readable.
+    const bgColor = 0x182033;
     scene.background = new THREE.Color(bgColor);
-    scene.fog = new THREE.FogExp2(bgColor, 0.0035);
+    scene.fog = new THREE.FogExp2(bgColor, 0.0022);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.5, 1200);
 
@@ -802,11 +804,14 @@
     });
     resizeObserver.observe(canvas);
 
-    // Ambient and Sunlight - cinematic warm sunset casting long soft shadows
-    const ambient = new THREE.AmbientLight(0x475569, 0.45); // Cool dusk atmosphere fill light
+    // Ambient and moonlight keep the city nocturnal without crushing visibility.
+    const ambient = new THREE.AmbientLight(0x7c8fb3, 0.78);
     scene.add(ambient);
 
-    const sun = new THREE.DirectionalLight(0xf59e0b, 1.45); // Warm golden sunset sun
+    const hemi = new THREE.HemisphereLight(0x8fb7ff, 0x1f2937, 0.42);
+    scene.add(hemi);
+
+    const sun = new THREE.DirectionalLight(0xbfd7ff, 1.2);
     sun.position.set(120, 95, -180);
     sun.castShadow = true;
     sun.shadow.mapSize.width = 1024;
@@ -827,8 +832,8 @@
       const c = document.createElement('canvas');
       c.width = 128; c.height = 128;
       const x = c.getContext('2d');
-      x.fillStyle = '#070a12'; x.fillRect(0, 0, 128, 128); // deeper cool asphalt base
-      x.strokeStyle = '#2a3b55'; x.lineWidth = 1; // cooler blue grid contrast
+      x.fillStyle = '#101827'; x.fillRect(0, 0, 128, 128);
+      x.strokeStyle = '#34445f'; x.lineWidth = 1;
       x.strokeRect(0, 0, 128, 128);
       const tex = new THREE.CanvasTexture(c);
       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -836,7 +841,7 @@
       return tex;
     }
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x111827,
+      color: 0x1d2738,
       map: createGridTex(),
       roughness: 0.85,
       metalness: 0.1
@@ -848,7 +853,12 @@
 
     // --- Winding Race Track pathway ---
     const S = 100;
-    const trackWidth = 14;
+    const trackWidth = 24;
+    const sidewalkWidth = 7;
+    const streetClearance = trackWidth / 2 + sidewalkWidth + 5;
+    const nitroDrainRate = 58;
+    const nitroRechargeRate = 17;
+    const nitroReadyThreshold = 45;
     const trackPoints = [
       new THREE.Vector3(0, 0.05, 0),
       new THREE.Vector3(0, 0.05, S),
@@ -875,17 +885,10 @@
       const c = document.createElement('canvas');
       c.width = 512; c.height = 512;
       const x = c.getContext('2d');
-      x.fillStyle = '#6b7280'; x.fillRect(0, 0, 512, 512); // lighter asphalt for visibility
-      // strong asphalt boundary vignette for edge readability
-      const g = x.createLinearGradient(0, 0, 512, 0);
-      g.addColorStop(0, 'rgba(0,0,0,0.5)');
-      g.addColorStop(0.5, 'rgba(0,0,0,0)');
-      g.addColorStop(1, 'rgba(0,0,0,0.5)');
-      x.fillStyle = g;
-      x.fillRect(0, 0, 512, 512);
+      x.fillStyle = '#9aa5b6'; x.fillRect(0, 0, 512, 512); // moonlit asphalt for visibility
       // Fine stone noise
       for (let i = 0; i < 15000; i++) {
-        x.fillStyle = `rgba(220,230,255,${Math.random() * 0.04})`;
+        x.fillStyle = `rgba(240,245,255,${Math.random() * 0.055})`;
         x.fillRect(Math.random() * 512, Math.random() * 512, 1.5, 1.5);
       }
       // Lane marker glow effect
@@ -948,17 +951,85 @@
     roadGeo.setIndex(roadIndices);
     roadGeo.computeVertexNormals();
 
-    const roadMat = new THREE.MeshStandardMaterial({
-      color: 0xbfc7d5,
-      map: createAsphaltTex(),
-      roughness: 0.8,
-      metalness: 0.05,
-      emissive: new THREE.Color(0x111111),
-      emissiveIntensity: 0.4
+    const roadMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      map: createAsphaltTex()
     });
     const roadMesh = new THREE.Mesh(roadGeo, roadMat);
-    roadMesh.receiveShadow = true;
+    roadMesh.receiveShadow = false;
     scene.add(roadMesh);
+
+    function createTrackSideRibbon(innerHalfWidth, outerHalfWidth, side, y, uvScale = 18) {
+      const points = [];
+      const indices = [];
+      const uvs = [];
+
+      for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        const pos = trackCurve.getPointAt(t % 1);
+        const tangent = trackCurve.getTangentAt(t % 1).normalize();
+        const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+        const inner = pos.clone().add(normal.clone().multiplyScalar(side * innerHalfWidth));
+        const outer = pos.clone().add(normal.clone().multiplyScalar(side * outerHalfWidth));
+        inner.y = y;
+        outer.y = y;
+        points.push(inner.x, inner.y, inner.z, outer.x, outer.y, outer.z);
+        uvs.push(0, t * uvScale, 1, t * uvScale);
+      }
+
+      for (let i = 0; i < segments; i++) {
+        const r0 = i * 2;
+        indices.push(r0, r0 + 1, r0 + 2);
+        indices.push(r0 + 1, r0 + 3, r0 + 2);
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+      geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      geo.setIndex(indices);
+      geo.computeVertexNormals();
+      return geo;
+    }
+
+    function createSidewalkTex() {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 256;
+      const x = c.getContext('2d');
+      x.fillStyle = '#586170';
+      x.fillRect(0, 0, 256, 256);
+      x.strokeStyle = 'rgba(230,235,245,0.22)';
+      x.lineWidth = 2;
+      for (let i = 0; i <= 256; i += 32) {
+        x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 256); x.stroke();
+        x.beginPath(); x.moveTo(0, i); x.lineTo(256, i); x.stroke();
+      }
+      for (let i = 0; i < 2500; i++) {
+        x.fillStyle = `rgba(20,25,35,${Math.random() * 0.08})`;
+        x.fillRect(Math.random() * 256, Math.random() * 256, 1, 1);
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(1, 14);
+      return tex;
+    }
+
+    const sidewalkMat = new THREE.MeshStandardMaterial({
+      color: 0x687382,
+      map: createSidewalkTex(),
+      roughness: 0.9,
+      metalness: 0.02,
+      emissive: new THREE.Color(0x101722),
+      emissiveIntensity: 0.18
+    });
+    const sidewalkOuter = trackWidth / 2 + sidewalkWidth;
+    [-1, 1].forEach(side => {
+      const sidewalk = new THREE.Mesh(
+        createTrackSideRibbon(trackWidth / 2, sidewalkOuter, side, 0.105, 22),
+        sidewalkMat
+      );
+      sidewalk.receiveShadow = true;
+      scene.add(sidewalk);
+    });
 
     // Procedural Red/White Striped Apex Curbs
     function createCurbTex() {
@@ -983,7 +1054,7 @@
       const tangent = trackCurve.getTangentAt(t % 1).normalize();
       const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
 
-      const wInnerL = trackWidth / 2;
+      const wInnerL = sidewalkOuter;
       const wOuterL = wInnerL + 0.65;
 
       // Left Curb Inner
@@ -998,7 +1069,7 @@
       curbPoints.push(pLo.x, pLo.y, pLo.z);
       curbUvs.push(1, t * 50);
 
-      const wInnerR = -trackWidth / 2;
+      const wInnerR = -sidewalkOuter;
       const wOuterR = wInnerR - 0.65;
 
       // Right Curb Inner
@@ -1056,7 +1127,7 @@
 
     // Helper to check if a building overlaps streets
     function isOnStreet(x, z) {
-      const gw = trackWidth / 2 + 5.0;
+      const gw = streetClearance;
       const xs = [-S * 2, -S, 0, S, S * 2];
       const zs = [-S * 2, -S, 0, S, S * 2];
       const isNearV = xs.some(gx => Math.abs(x - gx) < gw);
@@ -1078,7 +1149,7 @@
               const h = 45 + Math.random() * 120;
 
               // Improved building palette for visibility
-              const colors = [0x243447, 0x1f2a44, 0x2b3a55, 0x3b2f4a, 0x2f3f3f];
+              const colors = [0x32445d, 0x2d3a5d, 0x3d506e, 0x4a3f63, 0x3d5353];
               const bMat = new THREE.MeshStandardMaterial({
                 color: colors[Math.floor(Math.random() * colors.length)],
                 roughness: 0.65,
@@ -1118,7 +1189,7 @@
                 const wMat = new THREE.MeshStandardMaterial({
                   color: 0xfde047, // Golden yellow windows
                   emissive: 0xd97706, // Amber glowing windows
-                  emissiveIntensity: 0.6,
+                  emissiveIntensity: 0.95,
                   transparent: true,
                   opacity: 0.55,
                   roughness: 0.1
@@ -1156,15 +1227,15 @@
       const pillarMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.5 }); // red
 
       const left = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 11, 8), pillarMat);
-      left.position.copy(pos).add(normal.clone().multiplyScalar(trackWidth / 2 + 0.5));
+      left.position.copy(pos).add(normal.clone().multiplyScalar(sidewalkOuter + 0.5));
       left.position.y = 5.5;
       torii.add(left);
 
       const right = left.clone();
-      right.position.copy(pos).add(normal.clone().multiplyScalar(-(trackWidth / 2 + 0.5)));
+      right.position.copy(pos).add(normal.clone().multiplyScalar(-(sidewalkOuter + 0.5)));
       torii.add(right);
 
-      const cross = new THREE.Mesh(new THREE.BoxGeometry(trackWidth + 2.5, 0.5, 0.5), pillarMat);
+      const cross = new THREE.Mesh(new THREE.BoxGeometry(sidewalkOuter * 2 + 2.5, 0.5, 0.5), pillarMat);
       cross.position.copy(pos);
       cross.position.y = 10.2;
       cross.lookAt(pos.clone().add(tangent));
@@ -1173,13 +1244,46 @@
       scene.add(torii);
     });
 
+    // Street lamps keep the night track readable and define the sidewalk edge.
+    const lampPostMat = new THREE.MeshStandardMaterial({ color: 0x2f3b4f, metalness: 0.55, roughness: 0.3 });
+    const lampGlowMat = new THREE.MeshBasicMaterial({ color: 0xfff1a8 });
+    for (let i = 8; i < 200; i += 16) {
+      const pos = trackCurve.getPointAt(i / 200);
+      const tangent = trackCurve.getTangentAt(i / 200).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+      [-1, 1].forEach(side => {
+        const lamp = new THREE.Group();
+        const basePos = pos.clone().add(normal.clone().multiplyScalar(side * (sidewalkOuter - 1.4)));
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 5.8, 8), lampPostMat);
+        pole.position.y = 2.9;
+        lamp.add(pole);
+
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 0.12), lampPostMat);
+        arm.position.y = 5.7;
+        arm.position.x = -side * 0.45;
+        lamp.add(arm);
+
+        const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), lampGlowMat);
+        bulb.position.set(-side * 0.95, 5.55, 0);
+        lamp.add(bulb);
+
+        const light = new THREE.PointLight(0xffe8a3, 1.05, 42, 1.8);
+        light.position.set(-side * 0.95, 5.2, 0);
+        lamp.add(light);
+
+        lamp.position.copy(basePos);
+        lamp.lookAt(basePos.clone().add(tangent));
+        scene.add(lamp);
+      });
+    }
+
     // Sakura Cherry Blossom Trees
     for (let i = 0; i < 200; i += 5) {
       const pos = trackCurve.getPointAt(i / 200);
       const tangent = trackCurve.getTangentAt(i / 200).normalize();
       const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
       const side = i % 10 === 0 ? 1 : -1;
-      const itemPos = pos.clone().add(normal.clone().multiplyScalar(side * (trackWidth / 2 + 2.5)));
+      const itemPos = pos.clone().add(normal.clone().multiplyScalar(side * (sidewalkOuter + 2.5)));
 
       if (!isOnStreet(itemPos.x, itemPos.z)) {
         const tree = new THREE.Group();
@@ -1288,16 +1392,16 @@
       const postMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.6 });
 
       const lPost = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 9, 8), postMat);
-      lPost.position.copy(pos).add(normal.clone().multiplyScalar(trackWidth / 2 + 0.3));
+      lPost.position.copy(pos).add(normal.clone().multiplyScalar(sidewalkOuter + 0.3));
       lPost.position.y = 4.5;
       gate.add(lPost);
 
       const rPost = lPost.clone();
-      rPost.position.copy(pos).add(normal.clone().multiplyScalar(-(trackWidth / 2 + 0.3)));
+      rPost.position.copy(pos).add(normal.clone().multiplyScalar(-(sidewalkOuter + 0.3)));
       gate.add(rPost);
 
       // overhead board
-      const bar = new THREE.Mesh(new THREE.BoxGeometry(trackWidth + 1, 0.4, 0.4), postMat);
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(sidewalkOuter * 2 + 1, 0.4, 0.4), postMat);
       bar.position.copy(pos);
       bar.position.y = 9.2;
       bar.lookAt(pos.clone().add(tangent));
@@ -1321,15 +1425,15 @@
     const startNormal = new THREE.Vector3(-startTangent.z, 0, startTangent.x).normalize();
 
     const bannerLPost = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 10, 8), new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8 }));
-    bannerLPost.position.copy(startPos).add(startNormal.clone().multiplyScalar(trackWidth / 2 + 0.5));
+    bannerLPost.position.copy(startPos).add(startNormal.clone().multiplyScalar(sidewalkOuter + 0.5));
     bannerLPost.position.y = 5;
     startBanner.add(bannerLPost);
 
     const bannerRPost = bannerLPost.clone();
-    bannerRPost.position.copy(startPos).add(startNormal.clone().multiplyScalar(-(trackWidth / 2 + 0.5)));
+    bannerRPost.position.copy(startPos).add(startNormal.clone().multiplyScalar(-(sidewalkOuter + 0.5)));
     startBanner.add(bannerRPost);
 
-    const bannerBoard = new THREE.Mesh(new THREE.BoxGeometry(trackWidth + 1.2, 1.8, 0.3), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
+    const bannerBoard = new THREE.Mesh(new THREE.BoxGeometry(sidewalkOuter * 2 + 1.2, 1.8, 0.3), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
     bannerBoard.position.copy(startPos);
     bannerBoard.position.y = 10;
     bannerBoard.lookAt(startPos.clone().add(startTangent));
@@ -1522,6 +1626,7 @@
       document.getElementById('gear-val').innerText = `G${Math.max(1, Math.min(5, Math.floor(Math.abs(state.currentSpeed) * 4.2) + 1))}`;
       document.getElementById('turbo-percent').innerText = `${Math.floor(state.turboAmount)}%`;
       document.getElementById('turbo-bar').style.width = `${state.turboAmount}%`;
+      document.getElementById('turbo-bar').className = `h-full transition-all duration-75 ${state.turboLocked ? 'bg-neutral-500' : 'bg-cyan-300'}`;
       document.getElementById('score-total').innerText = state.totalDriftScore.toLocaleString();
       document.getElementById('combo-max').innerText = `${state.maxCombo}x`;
 
@@ -1700,6 +1805,7 @@
       state.currentArmor = arch.armor;
       state.maxArmor = arch.armor;
       state.turboAmount = 100;
+      state.turboLocked = false;
       state.currentLap = 1;
       state.totalDriftScore = 0;
       state.currentLapTime = 0;
@@ -1788,14 +1894,16 @@
       const isBwd = state.keys.KeyS || touchState.down;
       const isL = state.keys.KeyA || touchState.left;
       const isR = state.keys.KeyD || touchState.right;
-      const isTurbo = state.keys.Space || touchState.nitro;
+      const wantsTurbo = state.keys.Space || touchState.nitro;
+      if (state.turboLocked && state.turboAmount >= nitroReadyThreshold) state.turboLocked = false;
+      const isTurbo = wantsTurbo && isFwd && !state.turboLocked && state.turboAmount > 0;
 
       // 1. CAR PHYSICS & ENGINE LOOP
       if (state.isGameRunning) {
         state.currentLapTime += dt * 1000;
 
         // Drive acceleration
-        const topLimit = arch.topSpeed * (isTurbo && state.turboAmount > 5 ? 1.4 : 1.0);
+        const topLimit = arch.topSpeed * (isTurbo ? 1.4 : 1.0);
         if (isFwd) {
           state.currentSpeed = Math.min(topLimit, state.currentSpeed + arch.acceleration);
         } else if (isBwd) {
@@ -1825,7 +1933,7 @@
 
         // Exhaust turbo fire
         if (exhaustFlames.length > 0) {
-          exhaustFlames[0].visible = isTurbo && isFwd && state.turboAmount > 5;
+          exhaustFlames[0].visible = isTurbo;
           if (exhaustFlames[0].visible) {
             const s = 0.8 + Math.random() * 0.4;
             exhaustFlames[0].scale.set(s, s, s * 1.2);
@@ -1866,8 +1974,8 @@
           activeDriftMultiplier = Math.min(10.0, activeDriftMultiplier + dt * 0.45);
           driftCooldown = 1.3;
 
-          // Charge turbo
-          state.turboAmount = Math.min(100, state.turboAmount + dt * 15);
+          // Drifting helps recharge nitro, but not while actively burning it.
+          if (!isTurbo) state.turboAmount = Math.min(100, state.turboAmount + dt * 10);
 
           // Update Combo Box DOM
           comboEl.style.opacity = '1';
@@ -1905,11 +2013,12 @@
         }
 
         // Use turbo
-        if (isTurbo && isFwd && state.turboAmount > 5) {
-          state.turboAmount = Math.max(0, state.turboAmount - dt * 25);
-          if (Math.random() > 0.5) audio.playBoost();
+        if (isTurbo) {
+          state.turboAmount = Math.max(0, state.turboAmount - dt * nitroDrainRate);
+          if (state.turboAmount <= 0) state.turboLocked = true;
+          if (Math.random() > 0.65) audio.playBoost();
         } else {
-          state.turboAmount = Math.min(100, state.turboAmount + dt * 4);
+          state.turboAmount = Math.min(100, state.turboAmount + dt * nitroRechargeRate);
         }
 
         // 3. COLLISION CORRECTION WITH BUILDINGS
@@ -2015,6 +2124,7 @@
                 showNotification("ARMOR INTEGRITY REPAIRED +1");
               } else {
                 state.turboAmount = 100;
+                state.turboLocked = false;
                 showNotification("NITRO BOOST CAPACITY RECHARGED!");
               }
 
@@ -2136,7 +2246,7 @@
       // Update synth volumes based on live speed
       if (state.isGameRunning) {
         const absoluteFraction = Math.abs(state.currentSpeed) / (arch.topSpeed * 1.3);
-        audio.updateEngine(absoluteFraction, isTurbo && isFwd && state.turboAmount > 5);
+        audio.updateEngine(absoluteFraction, isTurbo);
       }
 
       renderer.render(scene, camera);
