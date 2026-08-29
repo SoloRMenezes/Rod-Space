@@ -767,25 +767,31 @@
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    // --- Winding Race Track pathway ---
-    const S = 120;
-    const trackWidth = 34;
-    const sidewalkWidth = 11;
-    const streetClearance = trackWidth / 2 + sidewalkWidth + 3;
+    // --- Square city-loop pathway and block-grid streets ---
+    const S = 112;
+    const trackWidth = 38;
+    const cityLimit = 340;
+    const streetCenters = [-240, -120, 0, 120, 240];
+    const gridRoadHalfWidth = 20;
+    const sidewalkWidth = 8;
+    const streetClearance = gridRoadHalfWidth + sidewalkWidth + 4;
+    const towerLegHalf = 2.4;
     const nitroDrainRate = 58;
     const nitroRechargeRate = 17;
     const nitroReadyThreshold = 45;
     const trackPoints = [
-      new THREE.Vector3(0, 0.05, 0),
-      new THREE.Vector3(70, 0.05, S),
-      new THREE.Vector3(190, 0.05, S * 1.1),
-      new THREE.Vector3(240, 0.05, 20),
-      new THREE.Vector3(170, 0.05, -S),
-      new THREE.Vector3(30, 0.05, -S * 1.55),
-      new THREE.Vector3(-125, 0.05, -S * 1.2),
-      new THREE.Vector3(-225, 0.05, -25),
-      new THREE.Vector3(-170, 0.05, S * 0.95),
-      new THREE.Vector3(-45, 0.05, S * 1.45)
+      new THREE.Vector3(-252, 0.05, -252),
+      new THREE.Vector3(-108, 0.05, -252),
+      new THREE.Vector3(36, 0.05, -252),
+      new THREE.Vector3(252, 0.05, -252),
+      new THREE.Vector3(252, 0.05, -108),
+      new THREE.Vector3(252, 0.05, 36),
+      new THREE.Vector3(252, 0.05, 252),
+      new THREE.Vector3(108, 0.05, 252),
+      new THREE.Vector3(-36, 0.05, 252),
+      new THREE.Vector3(-252, 0.05, 252),
+      new THREE.Vector3(-252, 0.05, 108),
+      new THREE.Vector3(-252, 0.05, -36)
     ];
 
     const trackCurve = new THREE.CatmullRomCurve3(trackPoints);
@@ -869,6 +875,7 @@
     const roadMesh = new THREE.Mesh(roadGeo, roadMat);
     roadMesh.receiveShadow = false;
     scene.add(roadMesh);
+    roadMesh.visible = false;
 
     function createTrackSideRibbon(innerHalfWidth, outerHalfWidth, side, y, uvScale = 18) {
       const points = [];
@@ -942,11 +949,51 @@
         sidewalkMat
       );
       scene.add(sidewalk);
+      sidewalk.visible = false;
+    });
+
+    function addCityRect(width, depth, x, z, y, mat) {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, 0.08, depth), mat);
+      mesh.position.set(x, y, z);
+      scene.add(mesh);
+      return mesh;
+    }
+
+    const gridRoadMat = new THREE.MeshBasicMaterial({ color: 0xb7bfcc, map: createAsphaltTex() });
+    const crosswalkMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
+    streetCenters.forEach(center => {
+      addCityRect(cityLimit * 2, gridRoadHalfWidth * 2, 0, center, 0.32, gridRoadMat);
+      addCityRect(gridRoadHalfWidth * 2, cityLimit * 2, center, 0, 0.325, gridRoadMat);
+    });
+
+    const sidewalkStripMat = new THREE.MeshStandardMaterial({
+      color: 0xaebdd0,
+      map: createSidewalkTex(),
+      roughness: 0.75,
+      metalness: 0.02,
+      emissive: new THREE.Color(0x55657d),
+      emissiveIntensity: 0.2
+    });
+    streetCenters.forEach(center => {
+      [-1, 1].forEach(side => {
+        const offset = side * (gridRoadHalfWidth + sidewalkWidth / 2);
+        addCityRect(cityLimit * 2, sidewalkWidth, 0, center + offset, 0.22, sidewalkStripMat);
+        addCityRect(sidewalkWidth, cityLimit * 2, center + offset, 0, 0.225, sidewalkStripMat);
+      });
+    });
+
+    streetCenters.forEach(x => {
+      streetCenters.forEach(z => {
+        for (let i = -2; i <= 2; i++) {
+          addCityRect(2.4, 9, x + i * 5.2, z, 0.34, crosswalkMat);
+          addCityRect(9, 2.4, x, z + i * 5.2, 0.345, crosswalkMat);
+        }
+      });
     });
 
     // --- City Block Building Scenery (Placed away from roads) ---
     const buildings = [];
-    const blockCenters = [-S * 2, -S * 1.66, -S * 1.33, -S, -S * 0.66, -S * 0.33, 0, S * 0.33, S * 0.66, S, S * 1.33, S * 1.66, S * 2];
+    const blockCenters = [-300, -180, -60, 60, 180, 300];
     const bGeo = new THREE.BoxGeometry(1, 1, 1);
     const shopSigns = ['居酒屋', 'ラーメン', '喫茶店', '薬局', '駅前', 'カラオケ', '寿司', 'ホテル', 'ゲーム', '書店', '新宿', '渋谷'];
     const shopSignColors = ['#22d3ee', '#f472b6', '#facc15', '#a7f3d0', '#fb7185', '#93c5fd'];
@@ -974,25 +1021,22 @@
 
     // Helper to check if a building overlaps streets
     function isOnStreet(x, z) {
-      const gw = streetClearance;
-      for (let i = 0; i < 160; i++) {
-        const p = trackCurve.getPointAt(i / 160);
-        if (Math.hypot(x - p.x, z - p.z) < gw) return true;
-      }
-      return false;
+      const onGridStreet = streetCenters.some(center => Math.abs(x - center) < streetClearance || Math.abs(z - center) < streetClearance);
+      const inTowerPlaza = Math.hypot(x, z) < 42;
+      return onGridStreet || inTowerPlaza;
     }
 
     blockCenters.forEach((bx) => {
       blockCenters.forEach((bz) => {
-        const subgrid = [0];
+        const subgrid = [-18, 18];
         subgrid.forEach((sdx) => {
           subgrid.forEach((sdz) => {
-            const x = bx + sdx + (Math.random() - 0.5) * 12;
-            const z = bz + sdz + (Math.random() - 0.5) * 12;
+            const x = bx + sdx + (Math.random() - 0.5) * 5;
+            const z = bz + sdz + (Math.random() - 0.5) * 5;
 
-            if (!isOnStreet(x, z) && Math.hypot(x, z) < S * 2.45) {
-              const w = 14 + Math.random() * 12;
-              const d = 14 + Math.random() * 12;
+            if (!isOnStreet(x, z) && Math.abs(x) < cityLimit && Math.abs(z) < cityLimit) {
+              const w = 16 + Math.random() * 6;
+              const d = 16 + Math.random() * 6;
               const h = 28 + Math.random() * 145;
 
               // Varied Tokyo tower blocks so the city does not collapse into one dark wall.
@@ -1067,7 +1111,7 @@
     });
 
     const forestFloor = new THREE.Mesh(
-      new THREE.RingGeometry(S * 2.45, 1250, 128),
+      new THREE.RingGeometry(cityLimit + 105, 1250, 128),
       new THREE.MeshBasicMaterial({ color: 0x07140d, side: THREE.DoubleSide })
     );
     forestFloor.rotation.x = -Math.PI / 2;
@@ -1082,7 +1126,7 @@
     const treeDummy = new THREE.Object3D();
     for (let i = 0; i < forestTreeCount; i++) {
       const angle = (i / forestTreeCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.025;
-      const radius = S * 2.45 + Math.random() * 58;
+      const radius = cityLimit + 105 + Math.random() * 70;
       const x = Math.cos(angle) * radius + (Math.random() - 0.5) * 16;
       const z = Math.sin(angle) * radius + (Math.random() - 0.5) * 16;
       const scale = 0.75 + Math.random() * 1.25;
@@ -1131,16 +1175,36 @@
     createNeonSign('深夜走行', '#f472b6', new THREE.Vector3(-126, 15, -40), Math.PI / 2);
     createNeonSign('首都高ループ', '#facc15', new THREE.Vector3(124, 20, -144), -Math.PI / 2);
 
-    // Tokyo Tower Landmark Spire (In the far distance)
+    // Tokyo Tower-style central landmark: drive-through middle, solid legs.
     const towerGroup = new THREE.Group();
-    const spireMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, metalness: 0.5 }); // crimson
-    const spirePillar = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 9, 70, 4), spireMat);
-    spirePillar.position.y = 35;
-    towerGroup.add(spirePillar);
-    const spireTop = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 1.2, 50, 4), spireMat);
-    spireTop.position.y = 95;
-    towerGroup.add(spireTop);
-    towerGroup.position.set(-250, 0, -580);
+    const towerRed = new THREE.MeshStandardMaterial({ color: 0xdc2626, emissive: 0x450a0a, emissiveIntensity: 0.35, metalness: 0.45, roughness: 0.38 });
+    const towerWhite = new THREE.MeshStandardMaterial({ color: 0xf8fafc, emissive: 0x475569, emissiveIntensity: 0.12, metalness: 0.35, roughness: 0.4 });
+    const legPositions = [
+      [-16, -16], [16, -16], [-16, 16], [16, 16]
+    ];
+    legPositions.forEach(([x, z], index) => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 2.1, 42, 6), index % 2 ? towerWhite : towerRed);
+      leg.position.set(x, 21, z);
+      leg.rotation.z = x > 0 ? -0.18 : 0.18;
+      leg.rotation.x = z > 0 ? 0.18 : -0.18;
+      towerGroup.add(leg);
+      buildings.push({ minX: x - towerLegHalf, maxX: x + towerLegHalf, minZ: z - towerLegHalf, maxZ: z + towerLegHalf });
+    });
+    [18, 32, 48, 64].forEach((y, i) => {
+      const deck = new THREE.Mesh(new THREE.BoxGeometry(42 - i * 7, 1.6, 42 - i * 7), i % 2 ? towerWhite : towerRed);
+      deck.position.y = y;
+      towerGroup.add(deck);
+    });
+    const core = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 7, 72, 6), towerRed);
+    core.position.y = 54;
+    towerGroup.add(core);
+    const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 1.4, 54, 6), towerWhite);
+    antenna.position.y = 112;
+    towerGroup.add(antenna);
+    const beacon = new THREE.Mesh(new THREE.SphereGeometry(2.1, 10, 10), new THREE.MeshBasicMaterial({ color: 0xfff1a8 }));
+    beacon.position.y = 141;
+    towerGroup.add(beacon);
+    towerGroup.position.set(0, 0, 0);
     scene.add(towerGroup);
 
     // Street lamps keep the night track readable and define the sidewalk edge.
