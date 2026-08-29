@@ -144,7 +144,7 @@
       position: relative;
       z-index: 1;
       display: grid;
-      grid-template-columns: minmax(300px, 1fr) minmax(220px, 300px);
+      grid-template-columns: 1fr;
       grid-template-rows: auto minmax(0, 1fr) auto;
       gap: clamp(12px, 2vw, 24px);
       align-items: center;
@@ -162,23 +162,12 @@
       backdrop-filter: blur(10px);
     }
 
-    .scoreboard,
-    .side-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 14px;
-    }
-
     .scoreboard {
       grid-column: 1 / -1;
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
       padding: 10px;
-    }
-
-    .side-panel {
-      align-self: center;
     }
 
     .player-card {
@@ -222,6 +211,11 @@
       justify-items: center;
       min-width: 0;
       align-self: center;
+    }
+
+    .status,
+    .scoreboard {
+      width: min(900px, 100%);
     }
 
     .status {
@@ -273,6 +267,17 @@
       isolation: isolate;
     }
 
+    .angle-wrap {
+      width: min(560px, 92vw);
+      height: 76px;
+      margin-top: -4px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(4, 9, 8, 0.38);
+      overflow: hidden;
+      box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.24);
+    }
+
     .board-wrap::before {
       content: "";
       position: absolute;
@@ -313,25 +318,21 @@
     }
 
     #angleCanvas {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
       width: 100%;
-      height: 172px;
+      height: 76px;
       pointer-events: none;
-      z-index: 3;
     }
 
     .throw-pad {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      display: flex;
+      justify-content: center;
       gap: 10px;
       width: min(620px, 100%);
     }
 
     .action-btn {
       min-height: 54px;
+      min-width: min(340px, 90vw);
       background: var(--panel-strong);
     }
 
@@ -340,45 +341,53 @@
       background: var(--ink);
     }
 
-    .stats {
+    .sound-toggle {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      right: max(12px, env(safe-area-inset-right));
+      z-index: 12;
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      background: rgba(7, 11, 12, 0.72);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(10px);
+      font-size: 1.24rem;
+      line-height: 1;
     }
 
-    .stat {
-      padding: 12px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.06);
-      font-variant-numeric: tabular-nums;
+    .sound-toggle svg {
+      width: 25px;
+      height: 25px;
+      fill: none;
+      stroke: #f6f1e8;
+      stroke-width: 2.3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
-    .stat strong {
+    .sound-toggle .speaker {
+      fill: rgba(246, 241, 232, 0.16);
+    }
+
+    .sound-toggle .sound-wave {
+      display: none;
+    }
+
+    .sound-toggle.is-on {
+      border-color: rgba(33, 181, 122, 0.55);
+      background: rgba(10, 35, 25, 0.82);
+    }
+
+    .sound-toggle.is-on .sound-wave {
       display: block;
-      margin-top: 5px;
-      font-size: 1.45rem;
-      font-style: italic;
     }
 
-    .log {
-      min-height: 178px;
-      max-height: 34vh;
-      overflow: hidden;
-      padding: 0;
-      list-style: none;
-      color: #d9e2dc;
-      font-size: 0.9rem;
-    }
-
-    .log li {
-      padding: 10px 0;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .help {
-      color: #b8c5be;
-      font-size: 0.9rem;
-      line-height: 1.45;
+    .sound-toggle.is-on .mute-slash {
+      display: none;
     }
 
     .hidden {
@@ -408,10 +417,6 @@
         font-size: 1.4rem;
       }
 
-      .side-panel {
-        display: none;
-      }
-
       .status {
         grid-template-columns: 1fr;
         justify-items: center;
@@ -431,7 +436,7 @@
         position: fixed;
         left: max(12px, env(safe-area-inset-left));
         right: max(12px, env(safe-area-inset-right));
-        bottom: max(92px, env(safe-area-inset-bottom));
+        bottom: max(14px, env(safe-area-inset-bottom));
         z-index: 5;
       }
 
@@ -450,7 +455,7 @@
       }
 
       .board-wrap {
-        width: min(92vw, 54vh);
+        width: min(92vw, 48vh);
       }
 
       .menu {
@@ -460,6 +465,14 @@
   </style>
 </head>
 <body>
+  <button id="soundBtn" class="sound-toggle" aria-label="Sound off" title="Sound off">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path class="speaker" d="M4 9v6h4l5 4V5L8 9H4Z"></path>
+      <path class="sound-wave" d="M16 9.5a4 4 0 0 1 0 5M18.5 7a7 7 0 0 1 0 10"></path>
+      <path class="mute-slash" d="M18 8 21 16"></path>
+    </svg>
+  </button>
+
   <div id="startScreen" class="screen">
     <section class="menu">
       <div class="eyebrow">Rod Space Party Game</div>
@@ -481,7 +494,11 @@
       <div class="status panel">
         <div id="lastHitLabel" class="hit-label">Ready?</div>
         <div id="instructionBox" class="pill">Set Angle</div>
-        <div id="turnMeta" class="turn-meta">Dart 1/3</div>
+        <div id="turnMeta" class="turn-meta">Throw 1</div>
+      </div>
+
+      <div class="angle-wrap">
+        <canvas id="angleCanvas"></canvas>
       </div>
 
       <div class="board-wrap">
@@ -489,32 +506,10 @@
       </div>
 
       <div class="throw-pad" aria-label="Throw controls">
-        <button id="backBtn" class="action-btn">Undo Dart</button>
         <button id="throwBtn" class="action-btn primary">Lock Angle</button>
-        <button id="soundBtn" class="action-btn">Sound Off</button>
       </div>
     </section>
-
-    <aside class="side-panel panel">
-      <div class="stats">
-        <div class="stat">
-          <div class="label">Turn</div>
-          <strong id="turnScore">0</strong>
-        </div>
-        <div class="stat">
-          <div class="label">Best Hit</div>
-          <strong id="bestHit">0</strong>
-        </div>
-      </div>
-      <div>
-        <div class="label">Throw Log</div>
-        <ol id="throwLog" class="log"></ol>
-      </div>
-      <div class="help">Controls: click, tap, or press Space/Enter to lock each step. The sequence is angle, horizontal aim, then vertical depth.</div>
-    </aside>
   </main>
-
-  <canvas id="angleCanvas"></canvas>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
@@ -525,11 +520,7 @@
     const lastHitLabel = document.getElementById("lastHitLabel");
     const instructionBox = document.getElementById("instructionBox");
     const turnMeta = document.getElementById("turnMeta");
-    const turnScoreEl = document.getElementById("turnScore");
-    const bestHitEl = document.getElementById("bestHit");
-    const throwLog = document.getElementById("throwLog");
     const throwBtn = document.getElementById("throwBtn");
-    const backBtn = document.getElementById("backBtn");
     const soundBtn = document.getElementById("soundBtn");
 
     const SIZE = 720;
@@ -539,7 +530,6 @@
     const PLAYER_COLORS = ["#ef4444", "#4aa3ff", "#21b57a", "#ffd84d"];
     const PLAYER_NAMES = ["You", "Maya", "Dex", "Nova"];
     const START_SCORE = 300;
-    const DARTS_PER_TURN = 3;
     const BASE_SPEED = 7.6;
     const MAX_SPEED = 13;
     const RINGS = {
@@ -563,15 +553,15 @@
     let scanDirY = -1;
     let speed = BASE_SPEED;
     let darts = [];
-    let turnThrows = [];
+    let throwCount = 1;
     let audioContext = null;
     let soundEnabled = false;
     let animationStarted = false;
 
     function resizeAngleCanvas() {
-      angleCanvas.width = window.innerWidth * window.devicePixelRatio;
-      angleCanvas.height = 172 * window.devicePixelRatio;
-      angleCanvas.style.height = "172px";
+      const rect = angleCanvas.getBoundingClientRect();
+      angleCanvas.width = Math.max(1, rect.width * window.devicePixelRatio);
+      angleCanvas.height = Math.max(1, rect.height * window.devicePixelRatio);
       actx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
     }
 
@@ -591,7 +581,7 @@
       state = "CHOOSE_ANGLE";
       speed = BASE_SPEED;
       darts = [];
-      turnThrows = [];
+      throwCount = 1;
       document.getElementById("startScreen").classList.add("hidden");
       renderScoreboard();
       prepareThrow();
@@ -625,7 +615,6 @@
 
     function renderScoreboard() {
       scoreboard.innerHTML = "";
-      scoreboard.style.gridTemplateColumns = `repeat(${players.length}, minmax(0, 1fr))`;
       players.forEach((player, index) => {
         const card = document.createElement("div");
         card.className = "player-card";
@@ -648,11 +637,8 @@
         const scoreEl = document.getElementById(`score-${index}`);
         if (scoreEl) scoreEl.textContent = player.score;
       });
-      const throwNumber = Math.min(turnThrows.length + 1, DARTS_PER_TURN);
-      turnMeta.textContent = `Dart ${throwNumber}/${DARTS_PER_TURN}`;
-      turnScoreEl.textContent = turnThrows.reduce((sum, item) => sum + item.points, 0);
-      bestHitEl.textContent = Math.max(0, ...players.flatMap(player => player.history.map(item => item.points)));
-      backBtn.disabled = turnThrows.length === 0 || state === "COOLDOWN";
+      const player = currentPlayer();
+      turnMeta.textContent = player ? `${player.name} - Throw ${throwCount}` : "Throw 1";
     }
 
     // The board is drawn in canvas so the file stays portable and fast as a single static game.
@@ -794,35 +780,42 @@
     function drawAnglePicker(color) {
       actx.clearRect(0, 0, angleCanvas.width, angleCanvas.height);
       const width = angleCanvas.width / window.devicePixelRatio;
-      const radius = Math.min(width * 0.42, 320);
+      const height = angleCanvas.height / window.devicePixelRatio;
+      const radius = Math.min(width * 0.44, 310);
       const cx = width / 2;
-      const cy = -radius * 0.36;
-      const start = Math.PI * 0.62;
-      const end = Math.PI * 0.38;
+      const cy = height + radius * 0.14;
+      const start = Math.PI * 1.16;
+      const end = Math.PI * 1.84;
       const angle = start + angleProgress * (end - start);
       const x = cx + Math.cos(angle) * radius;
       const y = cy + Math.sin(angle) * radius;
 
       actx.save();
       actx.lineCap = "round";
-      actx.strokeStyle = "rgba(255,255,255,0.17)";
-      actx.lineWidth = 12;
+      actx.strokeStyle = "rgba(255,255,255,0.2)";
+      actx.lineWidth = 10;
       actx.beginPath();
-      actx.arc(cx, cy, radius, start, end, true);
+      actx.arc(cx, cy, radius, start, end);
       actx.stroke();
 
       actx.strokeStyle = color;
-      actx.lineWidth = 5;
+      actx.lineWidth = 4;
       actx.beginPath();
-      actx.arc(cx, cy, radius, start, angle, end < start);
+      actx.arc(cx, cy, radius, start, angle);
       actx.stroke();
 
       actx.shadowColor = color;
       actx.shadowBlur = 18;
       actx.fillStyle = color;
       actx.beginPath();
-      actx.arc(x, y, 12, 0, Math.PI * 2);
+      actx.arc(x, y, 11, 0, Math.PI * 2);
       actx.fill();
+      actx.shadowBlur = 0;
+      actx.fillStyle = "rgba(255,255,255,0.82)";
+      actx.font = "900 11px Arial";
+      actx.textAlign = "center";
+      actx.textBaseline = "middle";
+      actx.fillText("ANGLE", cx, height - 15);
       actx.restore();
     }
 
@@ -891,8 +884,8 @@
       const player = currentPlayer();
 
       if (state === "CHOOSE_ANGLE") {
-        const start = Math.PI * 0.62;
-        const end = Math.PI * 0.38;
+        const start = Math.PI * 1.16;
+        const end = Math.PI * 1.84;
         scanAngle = start + angleProgress * (end - start) - Math.PI / 2;
         state = "AXIS_X";
         setInstruction("Set Horizontal");
@@ -926,14 +919,12 @@
         label: wouldScore ? hit.label : `Bust (${hit.label})`
       };
 
-      darts.push({ x, y, color: player.color, angle: scanAngle });
-      turnThrows.push(entry);
+      darts = [{ x, y, color: player.color, angle: scanAngle }];
       player.history.push(entry);
 
       if (wouldScore) player.score -= hit.points;
       lastHitLabel.textContent = entry.label;
       lastHitLabel.style.color = wouldScore ? "#f6f1e8" : "#ef4444";
-      addLog(`${player.name}: ${entry.label}`);
       playThrowSound(hit.points, wouldScore);
       updateHud();
 
@@ -945,39 +936,18 @@
       }
 
       window.setTimeout(() => {
-        if (turnThrows.length >= DARTS_PER_TURN) nextTurn();
-        else prepareThrow();
+        nextTurn();
       }, 620);
     }
 
     function nextTurn() {
-      turnThrows = [];
       currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
       if (currentPlayerIndex === 0) {
-        darts = [];
+        throwCount += 1;
         speed = Math.min(MAX_SPEED, speed + 0.28);
       }
       prepareThrow();
       updateHud();
-    }
-
-    function undoDart() {
-      if (turnThrows.length === 0 || state === "COOLDOWN") return;
-      const player = currentPlayer();
-      const removed = turnThrows.pop();
-      player.history.pop();
-      darts.pop();
-      player.score += removed.points;
-      lastHitLabel.textContent = "Dart Recalled";
-      updateHud();
-      playTone(220, 0.05, "sine", 0.04);
-    }
-
-    function addLog(text) {
-      const item = document.createElement("li");
-      item.textContent = text;
-      throwLog.prepend(item);
-      while (throwLog.children.length > 7) throwLog.lastChild.remove();
     }
 
     function scoreDart(x, y) {
@@ -1035,11 +1005,12 @@
 
     throwBtn.addEventListener("click", handleAction);
     canvas.addEventListener("pointerdown", handleAction);
-    backBtn.addEventListener("click", undoDart);
     soundBtn.addEventListener("click", () => {
       soundEnabled = !soundEnabled;
       unlockAudio();
-      soundBtn.textContent = soundEnabled ? "Sound On" : "Sound Off";
+      soundBtn.classList.toggle("is-on", soundEnabled);
+      soundBtn.setAttribute("aria-label", soundEnabled ? "Sound on" : "Sound off");
+      soundBtn.title = soundEnabled ? "Sound on" : "Sound off";
       playTone(640, 0.06, "sine", 0.05);
     });
 
@@ -1048,7 +1019,6 @@
         event.preventDefault();
         handleAction();
       }
-      if (event.key.toLowerCase() === "u") undoDart();
     });
 
     window.addEventListener("resize", resizeAngleCanvas);
