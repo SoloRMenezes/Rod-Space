@@ -145,13 +145,13 @@
       z-index: 1;
       display: grid;
       grid-template-columns: 1fr;
-      grid-template-rows: auto minmax(0, 1fr) auto;
-      gap: clamp(12px, 2vw, 24px);
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: clamp(8px, 1.5vw, 18px);
       align-items: center;
       width: min(1240px, 100%);
       height: 100dvh;
       margin: 0 auto;
-      padding: max(18px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
     }
 
     .panel {
@@ -175,8 +175,8 @@
       grid-template-columns: 12px 1fr auto;
       gap: 10px;
       align-items: center;
-      min-height: 58px;
-      padding: 10px;
+      min-height: 50px;
+      padding: 8px 10px;
       border: 1px solid transparent;
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.055);
@@ -199,7 +199,7 @@
     }
 
     .player-score {
-      font-size: 1.8rem;
+      font-size: 1.55rem;
       font-weight: 1000;
       font-style: italic;
       font-variant-numeric: tabular-nums;
@@ -207,10 +207,14 @@
 
     .stage {
       display: grid;
-      gap: 12px;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      gap: 8px;
       justify-items: center;
       min-width: 0;
+      min-height: 0;
+      height: 100%;
       align-self: center;
+      overflow: hidden;
     }
 
     .status,
@@ -224,12 +228,12 @@
       align-items: center;
       gap: 12px;
       width: min(620px, 100%);
-      padding: 10px 12px;
+      padding: 8px 12px;
     }
 
     .pill {
       justify-self: center;
-      padding: 9px 16px;
+      padding: 8px 15px;
       border-radius: 999px;
       color: var(--ink);
       background: rgba(255, 255, 255, 0.09);
@@ -260,7 +264,7 @@
 
     .board-wrap {
       position: relative;
-      width: min(64vh, 610px, 100%);
+      width: min(56vh, 560px, 82vw);
       aspect-ratio: 1;
       display: grid;
       place-items: center;
@@ -269,8 +273,8 @@
 
     .angle-wrap {
       width: min(560px, 92vw);
-      height: 76px;
-      margin-top: -4px;
+      height: 68px;
+      margin-top: 0;
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       background: rgba(4, 9, 8, 0.38);
@@ -319,7 +323,7 @@
 
     #angleCanvas {
       width: 100%;
-      height: 76px;
+      height: 68px;
       pointer-events: none;
     }
 
@@ -331,7 +335,7 @@
     }
 
     .action-btn {
-      min-height: 54px;
+      min-height: 50px;
       min-width: min(340px, 90vw);
       background: var(--panel-strong);
     }
@@ -396,48 +400,41 @@
 
     @media (max-width: 900px) {
       .game {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
         align-content: center;
-        gap: 10px;
+        gap: 8px;
       }
 
       .scoreboard {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
         gap: 8px;
         padding: 8px;
       }
 
       .player-card {
-        min-height: 48px;
-        padding: 8px;
+        min-height: 44px;
+        padding: 7px 8px;
       }
 
       .player-score {
-        font-size: 1.4rem;
+        font-size: 1.25rem;
       }
 
       .status {
-        grid-template-columns: 1fr;
-        justify-items: center;
-        text-align: center;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 8px;
+        padding: 7px 9px;
       }
 
-      .hit-label,
-      .turn-meta {
-        text-align: center;
+      .hit-label {
+        text-align: right;
       }
 
       .board-wrap {
-        width: min(86vw, 58vh);
+        width: min(78vw, 43vh);
       }
 
-      .throw-pad {
-        position: fixed;
-        left: max(12px, env(safe-area-inset-left));
-        right: max(12px, env(safe-area-inset-right));
-        bottom: max(14px, env(safe-area-inset-bottom));
-        z-index: 5;
+      .board-wrap::before {
+        inset: -3% -5%;
       }
 
       .player-grid {
@@ -447,15 +444,34 @@
 
     @media (max-width: 520px) {
       .game {
-        padding-top: max(10px, env(safe-area-inset-top));
+        padding-top: max(8px, env(safe-area-inset-top));
       }
 
       .scoreboard {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
       }
 
       .board-wrap {
-        width: min(92vw, 48vh);
+        width: min(84vw, 35vh);
+      }
+
+      .angle-wrap {
+        width: min(84vw, 420px);
+        height: 60px;
+      }
+
+      #angleCanvas {
+        height: 60px;
+      }
+
+      .status {
+        width: min(92vw, 430px);
+      }
+
+      .hit-label,
+      .turn-meta,
+      .pill {
+        font-size: 0.72rem;
       }
 
       .menu {
@@ -787,7 +803,7 @@
       actx.clearRect(0, 0, angleCanvas.width, angleCanvas.height);
       const width = angleCanvas.width / window.devicePixelRatio;
       const height = angleCanvas.height / window.devicePixelRatio;
-      const radius = Math.min(width * 0.44, 310);
+      const radius = Math.min(width * 0.44, 118);
       const cx = width / 2;
       const cy = height + radius * 0.14;
       const start = Math.PI * 1.16;
