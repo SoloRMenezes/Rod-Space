@@ -41,6 +41,49 @@
       background: rgba(255,255,255,0.15);
       border-radius: 3px;
     }
+    @media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+      #hud-layer {
+        padding: 0.55rem 0.75rem;
+      }
+      #hud-layer > div:first-child > div {
+        transform: scale(0.78);
+        transform-origin: top left;
+      }
+      #hud-layer > div:first-child > div:last-child {
+        transform-origin: top right;
+      }
+      #touch-controls {
+        padding: 0 1.5rem 1rem;
+      }
+      #touch-up,
+      #touch-nitro {
+        width: 4.6rem;
+        height: 4.6rem;
+      }
+      #touch-down {
+        width: 4.6rem;
+        height: 3.45rem;
+      }
+    }
+    @media (hover: none) and (pointer: coarse) and (orientation: portrait) {
+      #screens-overlay::after {
+        content: "Rotate sideways for mobile drift controls";
+        position: fixed;
+        left: 50%;
+        bottom: 1rem;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: calc(100vw - 2rem);
+        padding: 0.55rem 0.75rem;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 0.75rem;
+        background: rgba(0,0,0,0.72);
+        color: white;
+        font: 800 0.72rem Inter, sans-serif;
+        letter-spacing: 0;
+        pointer-events: none;
+      }
+    }
   </style>
 </head>
 <body class="bg-black text-white overflow-hidden h-screen w-screen select-none font-sans">
@@ -800,9 +843,9 @@
     const cityLimit = 340;
     const streetCenters = [-240, -120, 0, 120, 240];
     const gridRoadHalfWidth = 20;
-    const sidewalkWidth = 8;
+    const sidewalkWidth = 7;
     const sidewalkOuter = trackWidth / 2 + sidewalkWidth;
-    const streetClearance = gridRoadHalfWidth + sidewalkWidth + 4;
+    const streetClearance = gridRoadHalfWidth + sidewalkWidth + 3;
     const towerLegHalf = 2.4;
     const nitroDrainRate = 58;
     const nitroRechargeRate = 17;
@@ -902,7 +945,7 @@
     }
 
     const gridRoadMat = new THREE.MeshBasicMaterial({ color: 0xb7bfcc, map: createAsphaltTex() });
-    const crosswalkMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
+    const crosswalkMat = new THREE.MeshBasicMaterial({ color: 0xe5e7eb, transparent: true, opacity: 0.74 });
     const roadRects = [];
     streetCenters.forEach(center => {
       roadRects.push(
@@ -920,34 +963,51 @@
       emissive: new THREE.Color(0x55657d),
       emissiveIntensity: 0.2
     });
+    const streetEdges = [-cityLimit, ...streetCenters.flatMap(center => [center - gridRoadHalfWidth, center + gridRoadHalfWidth]), cityLimit].sort((a, b) => a - b);
+    const blockRanges = [];
+    for (let i = 0; i < streetEdges.length - 1; i++) {
+      const min = streetEdges[i];
+      const max = streetEdges[i + 1];
+      const center = (min + max) / 2;
+      const isRoadLane = streetCenters.some(street => Math.abs(center - street) < 1);
+      if (!isRoadLane && max - min > sidewalkWidth * 2 + 16) blockRanges.push({ min, max, center, size: max - min });
+    }
+
     const sidewalkRects = [];
-    streetCenters.forEach(center => {
-      [-1, 1].forEach(side => {
-        const offset = side * (gridRoadHalfWidth + sidewalkWidth / 2);
+    blockRanges.forEach(xRange => {
+      blockRanges.forEach(zRange => {
+        const insetX = Math.max(0, xRange.size - sidewalkWidth * 2);
+        const insetZ = Math.max(0, zRange.size - sidewalkWidth * 2);
         sidewalkRects.push(
-          { width: cityLimit * 2, depth: sidewalkWidth, x: 0, z: center + offset, y: 0.22 },
-          { width: sidewalkWidth, depth: cityLimit * 2, x: center + offset, z: 0, y: 0.225 }
+          { width: xRange.size, depth: sidewalkWidth, x: xRange.center, z: zRange.min + sidewalkWidth / 2, y: 0.22 },
+          { width: xRange.size, depth: sidewalkWidth, x: xRange.center, z: zRange.max - sidewalkWidth / 2, y: 0.22 },
+          { width: sidewalkWidth, depth: insetZ, x: xRange.min + sidewalkWidth / 2, z: zRange.center, y: 0.225 },
+          { width: sidewalkWidth, depth: insetZ, x: xRange.max - sidewalkWidth / 2, z: zRange.center, y: 0.225 }
         );
       });
     });
     addCityRects(sidewalkRects, sidewalkStripMat);
 
     const crosswalkRects = [];
-    streetCenters.forEach(x => {
-      streetCenters.forEach(z => {
-        for (let i = -2; i <= 2; i++) {
-          crosswalkRects.push(
-            { width: 2.4, depth: 9, x: x + i * 5.2, z, y: 0.34 },
-            { width: 9, depth: 2.4, x, z: z + i * 5.2, y: 0.345 }
-          );
-        }
+    streetCenters.forEach((x, xi) => {
+      streetCenters.forEach((z, zi) => {
+        if ((xi + zi) % 2 !== 0) return;
+        [-1, 1].forEach(side => {
+          const approachX = x + side * (gridRoadHalfWidth - 6);
+          const approachZ = z + side * (gridRoadHalfWidth - 6);
+          for (let i = -1.5; i <= 1.5; i++) {
+            crosswalkRects.push(
+              { width: 1.1, depth: 16, x: approachX + i * 3.2, z, y: 0.34 },
+              { width: 16, depth: 1.1, x, z: approachZ + i * 3.2, y: 0.345 }
+            );
+          }
+        });
       });
     });
     addCityRects(crosswalkRects, crosswalkMat);
 
     // --- City Block Building Scenery (Placed away from roads) ---
     const buildings = [];
-    const blockCenters = [-300, -180, -60, 60, 180, 300];
     const bGeo = new THREE.BoxGeometry(1, 1, 1);
     // Reuse material palettes instead of making a new material per building.
     // This keeps the same random city look while reducing GPU state churn.
@@ -1005,17 +1065,25 @@
       return onGridStreet || inTowerPlaza;
     }
 
-    blockCenters.forEach((bx) => {
-      blockCenters.forEach((bz) => {
-        const subgrid = [-18, 18];
-        subgrid.forEach((sdx) => {
-          subgrid.forEach((sdz) => {
-            const x = bx + sdx + (Math.random() - 0.5) * 5;
-            const z = bz + sdz + (Math.random() - 0.5) * 5;
+    blockRanges.forEach((xRange) => {
+      blockRanges.forEach((zRange) => {
+        const buildMinX = xRange.min + sidewalkWidth + 2;
+        const buildMaxX = xRange.max - sidewalkWidth - 2;
+        const buildMinZ = zRange.min + sidewalkWidth + 2;
+        const buildMaxZ = zRange.max - sidewalkWidth - 2;
+        const cols = 3;
+        const rows = 3;
+        const cellW = (buildMaxX - buildMinX) / cols;
+        const cellD = (buildMaxZ - buildMinZ) / rows;
+
+        for (let ix = 0; ix < cols; ix++) {
+          for (let iz = 0; iz < rows; iz++) {
+            const x = buildMinX + cellW * (ix + 0.5) + (Math.random() - 0.5) * 2;
+            const z = buildMinZ + cellD * (iz + 0.5) + (Math.random() - 0.5) * 2;
 
             if (!isOnStreet(x, z) && Math.abs(x) < cityLimit && Math.abs(z) < cityLimit) {
-              const w = 16 + Math.random() * 6;
-              const d = 16 + Math.random() * 6;
+              const w = Math.max(12, cellW - 4 + Math.random() * 3);
+              const d = Math.max(12, cellD - 4 + Math.random() * 3);
               const h = 28 + Math.random() * 145;
 
               // Varied Tokyo tower blocks so the city does not collapse into one dark wall.
@@ -1057,8 +1125,8 @@
                 scene.add(buildingSign);
               }
             }
-          });
-        });
+          }
+        }
       });
     });
 
@@ -1159,57 +1227,41 @@
     towerGroup.position.set(0, 0, 0);
     scene.add(towerGroup);
 
-    // Street lamps keep the night track readable and define the sidewalk edge.
+    // Street lamps sit on sidewalk edges, never in the drivable lane.
     const lampPostMat = new THREE.MeshStandardMaterial({ color: 0x2f3b4f, metalness: 0.55, roughness: 0.3 });
     const lampGlowMat = new THREE.MeshBasicMaterial({ color: 0xfff1a8 });
-    for (let i = 8; i < 200; i += 16) {
-      const pos = trackCurve.getPointAt(i / 200);
-      const tangent = trackCurve.getTangentAt(i / 200).normalize();
-      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-      [-1, 1].forEach(side => {
-        const lamp = new THREE.Group();
-        const basePos = pos.clone().add(normal.clone().multiplyScalar(side * (sidewalkOuter - 1.4)));
-        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 5.8, 8), lampPostMat);
-        pole.position.y = 2.9;
-        lamp.add(pole);
+    const lampPositions = [-300, -220, -140, -60, 60, 140, 220, 300];
 
-        const arm = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 0.12), lampPostMat);
-        arm.position.y = 5.7;
-        arm.position.x = -side * 0.45;
-        lamp.add(arm);
+    function addStreetLamp(x, z, faceX, faceZ) {
+      const lamp = new THREE.Group();
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 5.8, 8), lampPostMat);
+      pole.position.y = 2.9;
+      lamp.add(pole);
 
-        const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), lampGlowMat);
-        bulb.position.set(-side * 0.95, 5.55, 0);
-        lamp.add(bulb);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 0.12), lampPostMat);
+      arm.position.set(0.5, 5.7, 0);
+      lamp.add(arm);
 
-        lamp.position.copy(basePos);
-        lamp.lookAt(basePos.clone().add(tangent));
-        scene.add(lamp);
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), lampGlowMat);
+      bulb.position.set(1.0, 5.55, 0);
+      lamp.add(bulb);
+
+      lamp.position.set(x, 0, z);
+      lamp.lookAt(x + faceX, 0, z + faceZ);
+      scene.add(lamp);
+    }
+
+    streetCenters.forEach(center => {
+      lampPositions.forEach(pos => {
+        if (Math.abs(pos - center) < gridRoadHalfWidth + 18) return;
+        addStreetLamp(pos, center + gridRoadHalfWidth + sidewalkWidth - 1, 0, -1);
+        addStreetLamp(pos, center - gridRoadHalfWidth - sidewalkWidth + 1, 0, 1);
+        addStreetLamp(center + gridRoadHalfWidth + sidewalkWidth - 1, pos, -1, 0);
+        addStreetLamp(center - gridRoadHalfWidth - sidewalkWidth + 1, pos, 1, 0);
       });
-    }
+    });
 
-    // Sakura Cherry Blossom Trees
-    for (let i = 0; i < 200; i += 12) {
-      const pos = trackCurve.getPointAt(i / 200);
-      const tangent = trackCurve.getTangentAt(i / 200).normalize();
-      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-      const side = i % 10 === 0 ? 1 : -1;
-      const itemPos = pos.clone().add(normal.clone().multiplyScalar(side * (sidewalkOuter + 2.5)));
-
-      if (!isOnStreet(itemPos.x, itemPos.z)) {
-        const tree = new THREE.Group();
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.22, 3.2, 8), new THREE.MeshStandardMaterial({ color: 0x451a03 }));
-        trunk.position.y = 1.6;
-        tree.add(trunk);
-
-        const canopy = new THREE.Mesh(new THREE.SphereGeometry(1.4, 4, 4), new THREE.MeshBasicMaterial({ color: 0xfbcfe8 }));
-        canopy.position.y = 3.2;
-        tree.add(canopy);
-
-        tree.position.copy(itemPos);
-        scene.add(tree);
-      }
-    }
+    // Decorative trees are reserved for the map border; inner streets stay urban.
 
     // --- Dynamic Sakura Wind Particles ---
     const sakuraCount = 24;
@@ -1857,7 +1909,14 @@
     // Mobile keeps only gas/brake/nitro buttons; steering comes from device
     // tilt so the screen stays clear while drifting.
     const touchState = { up: false, down: false, nitro: false };
-    const tiltState = { steer: 0, enabled: false };
+    const tiltState = {
+      steer: 0,
+      enabled: false,
+      neutral: 0,
+      samples: [],
+      deadZone: 4.5,
+      maxTilt: 26
+    };
     
     function mapTouch(elId, keyStateField) {
       const el = document.getElementById(elId);
@@ -1879,13 +1938,35 @@
     }
 
     function updateTiltSteer(e) {
-      const rawTilt = Number.isFinite(e.gamma) ? e.gamma : 0;
-      tiltState.steer = THREE.MathUtils.clamp(rawTilt / 22, -1, 1);
+      const screenAngle = Number(screen.orientation?.angle ?? window.orientation ?? 0);
+      let lateralTilt = Number.isFinite(e.gamma) ? e.gamma : 0;
+
+      // In landscape the phone's physical left/right roll is usually reported
+      // on beta instead of gamma. We ignore front/back tilt for throttle.
+      if (Math.abs(screenAngle) === 90 && Number.isFinite(e.beta)) {
+        lateralTilt = screenAngle > 0 ? e.beta : -e.beta;
+      }
+
+      if (tiltState.samples.length < 12) {
+        tiltState.samples.push(lateralTilt);
+        tiltState.neutral = tiltState.samples.reduce((sum, value) => sum + value, 0) / tiltState.samples.length;
+      }
+
+      const offset = lateralTilt - tiltState.neutral;
+      const stableOffset = Math.abs(offset) <= tiltState.deadZone
+        ? 0
+        : offset - Math.sign(offset) * tiltState.deadZone;
+      const targetSteer = THREE.MathUtils.clamp(stableOffset / tiltState.maxTilt, -1, 1);
+      tiltState.steer = THREE.MathUtils.lerp(tiltState.steer, targetSteer, 0.22);
       tiltState.enabled = true;
     }
 
     async function enableTiltControls() {
-      if (!isMobileDevice || tiltState.enabled) return;
+      if (!isMobileDevice) return;
+      tiltState.samples = [];
+      tiltState.neutral = 0;
+      tiltState.steer = 0;
+      if (tiltState.enabled) return;
       try {
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
           const permission = await DeviceOrientationEvent.requestPermission();
@@ -1901,7 +1982,7 @@
     let pinchStartZoom = 1;
 
     function clampCameraZoom(value) {
-      return THREE.MathUtils.clamp(value, 0.48, 1.9);
+      return THREE.MathUtils.clamp(value, 0.42, 3.2);
     }
 
     function getTouchDistance(touches) {
@@ -1928,7 +2009,7 @@
         e.preventDefault();
         const currentDistance = getTouchDistance(e.touches);
         if (currentDistance > 0) {
-          state.cameraZoom = clampCameraZoom(pinchStartZoom * Math.pow(pinchStartDistance / currentDistance, 1.85));
+          state.cameraZoom = clampCameraZoom(pinchStartZoom * Math.pow(currentDistance / pinchStartDistance, 2.25));
         }
       }
     }, { passive: false });
