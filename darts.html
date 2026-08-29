@@ -8,6 +8,8 @@
     :root {
       --felt: #0b2218;
       --felt-light: #163728;
+      --wood: #2b160c;
+      --brass: #c58b2c;
       --ink: #f6f1e8;
       --muted: #aab6ad;
       --panel: rgba(8, 13, 14, 0.78);
@@ -36,11 +38,12 @@
       color: var(--ink);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 50% 18%, rgba(245, 197, 66, 0.14), transparent 24rem),
-        radial-gradient(circle at 13% 92%, rgba(74, 163, 255, 0.18), transparent 21rem),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 70px),
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 3px, transparent 3px 92px),
-        linear-gradient(180deg, var(--felt-light), var(--felt));
+        radial-gradient(circle at 50% 13%, rgba(245, 197, 66, 0.24), transparent 22rem),
+        radial-gradient(circle at 10% 88%, rgba(74, 163, 255, 0.14), transparent 18rem),
+        linear-gradient(180deg, transparent 0 67%, rgba(22, 10, 5, 0.72) 67% 100%),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.045) 0 2px, transparent 2px 54px),
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 2px, transparent 2px 82px),
+        linear-gradient(160deg, #173725 0%, #0b2017 55%, #120d0a 100%);
       touch-action: manipulation;
       user-select: none;
     }
@@ -141,7 +144,8 @@
       position: relative;
       z-index: 1;
       display: grid;
-      grid-template-columns: minmax(190px, 260px) minmax(290px, 650px) minmax(200px, 280px);
+      grid-template-columns: minmax(300px, 1fr) minmax(220px, 300px);
+      grid-template-rows: auto minmax(0, 1fr) auto;
       gap: clamp(12px, 2vw, 24px);
       align-items: center;
       width: min(1240px, 100%);
@@ -164,6 +168,17 @@
       flex-direction: column;
       gap: 12px;
       padding: 14px;
+    }
+
+    .scoreboard {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      padding: 10px;
+    }
+
+    .side-panel {
+      align-self: center;
     }
 
     .player-card {
@@ -206,6 +221,7 @@
       gap: 12px;
       justify-items: center;
       min-width: 0;
+      align-self: center;
     }
 
     .status {
@@ -250,20 +266,48 @@
 
     .board-wrap {
       position: relative;
-      width: min(72vh, 650px, 100%);
+      width: min(64vh, 610px, 100%);
       aspect-ratio: 1;
       display: grid;
       place-items: center;
+      isolation: isolate;
+    }
+
+    .board-wrap::before {
+      content: "";
+      position: absolute;
+      inset: -6% -10%;
+      z-index: -2;
+      border-radius: 8px;
+      border: 1px solid rgba(245, 197, 66, 0.18);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 18% 82%, rgba(255, 255, 255, 0.04)),
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 8px, transparent 8px 48px),
+        linear-gradient(145deg, #3a2113, #150d09);
+      box-shadow: 0 34px 90px rgba(0, 0, 0, 0.62);
+    }
+
+    .board-wrap::after {
+      content: "301";
+      position: absolute;
+      top: 4%;
+      right: -4%;
+      z-index: -1;
+      color: rgba(255, 255, 255, 0.13);
+      font-size: clamp(2.2rem, 8vw, 5rem);
+      font-weight: 1000;
+      font-style: italic;
+      transform: rotate(8deg);
     }
 
     #gameCanvas {
-      width: 100%;
-      height: 100%;
+      width: 88%;
+      height: 88%;
       border-radius: 50%;
-      background: radial-gradient(circle, #181818, #050505);
-      border: clamp(8px, 1.5vw, 14px) solid #1b1510;
+      background: radial-gradient(circle, #222, #050505);
+      border: clamp(8px, 1.5vw, 14px) solid #2d1b11;
       box-shadow:
-        inset 0 0 0 6px rgba(255, 255, 255, 0.04),
+        inset 0 0 0 5px rgba(197, 139, 44, 0.12),
         0 24px 70px rgba(0, 0, 0, 0.55);
       touch-action: none;
     }
@@ -298,7 +342,7 @@
 
     .stats {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 10px;
     }
 
@@ -344,13 +388,12 @@
     @media (max-width: 900px) {
       .game {
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
+        grid-template-rows: auto 1fr;
         align-content: center;
         gap: 10px;
       }
 
       .scoreboard {
-        display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
         padding: 8px;
@@ -381,7 +424,7 @@
       }
 
       .board-wrap {
-        width: min(78vw, 58vh);
+        width: min(86vw, 58vh);
       }
 
       .throw-pad {
@@ -582,6 +625,7 @@
 
     function renderScoreboard() {
       scoreboard.innerHTML = "";
+      scoreboard.style.gridTemplateColumns = `repeat(${players.length}, minmax(0, 1fr))`;
       players.forEach((player, index) => {
         const card = document.createElement("div");
         card.className = "player-card";
@@ -619,31 +663,50 @@
 
       const slice = Math.PI * 2 / 20;
       const start = -Math.PI / 2 - slice / 2;
+      const cork = ctx.createRadialGradient(-80, -110, 40, 0, 0, RADIUS);
+      cork.addColorStop(0, "#2b2b26");
+      cork.addColorStop(0.52, "#151615");
+      cork.addColorStop(1, "#070808");
 
-      drawCircle(RADIUS + 12, "#1f1711", "#4a3628", 10);
-      drawCircle(RADIUS, "#0c0c0c", "#252525", 2);
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
+      ctx.shadowBlur = 28;
+      ctx.shadowOffsetY = 18;
+      drawCircle(RADIUS + 18, "#120d09", "#4b3420", 12);
+      ctx.restore();
+
+      drawCircle(RADIUS + 3, "#25170f", "#89683e", 4);
+      drawCircle(RADIUS - 18, cork, "#0d0d0c", 2);
 
       for (let i = 0; i < 20; i++) {
         const a0 = start + i * slice;
         const a1 = a0 + slice;
         const light = i % 2 === 0;
-        drawWedge(0, RINGS.doubleOuter, a0, a1, light ? "#ece7dc" : "#111313", "#191919", 1);
-        drawWedge(RINGS.tripleInner, RINGS.tripleOuter, a0, a1, light ? "#b7212d" : "#168f60", "#130f0e", 1);
-        drawWedge(RINGS.doubleInner, RINGS.doubleOuter, a0, a1, light ? "#b7212d" : "#168f60", "#130f0e", 1);
+        drawWedge(0, RINGS.doubleOuter, a0, a1, light ? "#eee5d3" : "#151817", "rgba(0,0,0,0.46)", 1);
+        drawWedge(RINGS.tripleInner, RINGS.tripleOuter, a0, a1, light ? "#c92c33" : "#18a16e", "#17100d", 1.5);
+        drawWedge(RINGS.doubleInner, RINGS.doubleOuter, a0, a1, light ? "#c92c33" : "#18a16e", "#17100d", 1.5);
+        drawWedge(RINGS.doubleOuter, RADIUS - 20, a0, a1, "#19120e", "rgba(255,255,255,0.035)", 0.8);
 
         ctx.save();
         ctx.rotate(a0 + slice / 2);
-        ctx.fillStyle = "#f7f1e8";
-        ctx.font = "900 28px Arial";
+        ctx.translate(0, -314);
+        ctx.rotate(-(a0 + slice / 2));
+        ctx.fillStyle = "rgba(0, 0, 0, 0.34)";
+        ctx.beginPath();
+        ctx.roundRect(-22, -19, 44, 38, 6);
+        ctx.fill();
+        ctx.fillStyle = "#fff3dd";
+        ctx.font = "1000 28px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(NUMBERS[i], 0, -314);
+        ctx.fillText(NUMBERS[i], 0, 2);
         ctx.restore();
       }
 
-      drawCircle(RINGS.bullOuter, "#168f60", "#120f0d", 2);
-      drawCircle(RINGS.bullInner, "#b7212d", "#120f0d", 2);
+      drawCircle(RINGS.bullOuter, "#18a16e", "#120f0d", 2);
+      drawCircle(RINGS.bullInner, "#c92c33", "#120f0d", 2);
       drawWire();
+      drawBoardShine();
       ctx.restore();
     }
 
@@ -670,8 +733,8 @@
     }
 
     function drawWire() {
-      ctx.strokeStyle = "rgba(255,255,255,0.22)";
-      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = "rgba(255,255,255,0.34)";
+      ctx.lineWidth = 1.45;
       for (const radius of [RINGS.bullInner, RINGS.bullOuter, RINGS.tripleInner, RINGS.tripleOuter, RINGS.doubleInner, RINGS.doubleOuter]) {
         ctx.beginPath();
         ctx.arc(0, 0, radius, 0, Math.PI * 2);
@@ -684,6 +747,20 @@
         ctx.lineTo(Math.cos(angle) * RINGS.doubleOuter, Math.sin(angle) * RINGS.doubleOuter);
         ctx.stroke();
       }
+    }
+
+    function drawBoardShine() {
+      const shine = ctx.createLinearGradient(-RADIUS, -RADIUS, RADIUS, RADIUS);
+      shine.addColorStop(0, "rgba(255,255,255,0.10)");
+      shine.addColorStop(0.24, "rgba(255,255,255,0.02)");
+      shine.addColorStop(0.62, "rgba(0,0,0,0)");
+      shine.addColorStop(1, "rgba(0,0,0,0.28)");
+      ctx.globalCompositeOperation = "source-atop";
+      ctx.fillStyle = shine;
+      ctx.beginPath();
+      ctx.arc(0, 0, RADIUS + 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
     }
 
     function drawDarts() {
