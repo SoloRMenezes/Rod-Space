@@ -988,6 +988,20 @@
     });
     addCityRects(sidewalkRects, sidewalkStripMat);
 
+    const curbMat = new THREE.MeshBasicMaterial({ color: 0x101820 });
+    const curbRects = [];
+    blockRanges.forEach(xRange => {
+      blockRanges.forEach(zRange => {
+        curbRects.push(
+          { width: xRange.size, depth: 1.1, x: xRange.center, z: zRange.min, y: 0.36 },
+          { width: xRange.size, depth: 1.1, x: xRange.center, z: zRange.max, y: 0.36 },
+          { width: 1.1, depth: zRange.size, x: xRange.min, z: zRange.center, y: 0.365 },
+          { width: 1.1, depth: zRange.size, x: xRange.max, z: zRange.center, y: 0.365 }
+        );
+      });
+    });
+    addCityRects(curbRects, curbMat);
+
     const crosswalkRects = [];
     streetCenters.forEach((x, xi) => {
       streetCenters.forEach((z, zi) => {
@@ -1199,31 +1213,71 @@
     const towerGroup = new THREE.Group();
     const towerRed = new THREE.MeshStandardMaterial({ color: 0xdc2626, emissive: 0x450a0a, emissiveIntensity: 0.35, metalness: 0.45, roughness: 0.38 });
     const towerWhite = new THREE.MeshStandardMaterial({ color: 0xf8fafc, emissive: 0x475569, emissiveIntensity: 0.12, metalness: 0.35, roughness: 0.4 });
-    const legPositions = [
-      [-16, -16], [16, -16], [-16, 16], [16, 16]
+    const towerUp = new THREE.Vector3(0, 1, 0);
+
+    function addTowerBeam(start, end, radius, mat) {
+      const dir = end.clone().sub(start);
+      const len = dir.length();
+      const beam = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 6), mat);
+      beam.position.copy(start).add(end).multiplyScalar(0.5);
+      beam.quaternion.setFromUnitVectors(towerUp, dir.normalize());
+      towerGroup.add(beam);
+      return beam;
+    }
+
+    const towerLevels = [
+      { y: 0, half: 24 },
+      { y: 34, half: 13 },
+      { y: 64, half: 7 },
+      { y: 92, half: 3.2 }
     ];
-    legPositions.forEach(([x, z], index) => {
-      const leg = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 2.1, 42, 6), index % 2 ? towerWhite : towerRed);
-      leg.position.set(x, 21, z);
-      leg.rotation.z = x > 0 ? -0.18 : 0.18;
-      leg.rotation.x = z > 0 ? 0.18 : -0.18;
-      towerGroup.add(leg);
-      buildings.push({ minX: x - towerLegHalf, maxX: x + towerLegHalf, minZ: z - towerLegHalf, maxZ: z + towerLegHalf });
+    const cornerSigns = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+    cornerSigns.forEach(([sx, sz]) => {
+      const points = towerLevels.map(level => new THREE.Vector3(sx * level.half, level.y, sz * level.half));
+      for (let i = 0; i < points.length - 1; i++) {
+        addTowerBeam(points[i], points[i + 1], i === 0 ? 0.75 : 0.48, i === 1 ? towerWhite : towerRed);
+      }
+      buildings.push({ minX: sx * 24 - towerLegHalf, maxX: sx * 24 + towerLegHalf, minZ: sz * 24 - towerLegHalf, maxZ: sz * 24 + towerLegHalf });
     });
-    [18, 32, 48, 64].forEach((y, i) => {
-      const deck = new THREE.Mesh(new THREE.BoxGeometry(42 - i * 7, 1.6, 42 - i * 7), i % 2 ? towerWhite : towerRed);
-      deck.position.y = y;
-      towerGroup.add(deck);
+
+    for (let level = 1; level < towerLevels.length; level++) {
+      const current = towerLevels[level];
+      const mat = level % 2 ? towerWhite : towerRed;
+      const y = current.y;
+      const h = current.half;
+      addTowerBeam(new THREE.Vector3(-h, y, -h), new THREE.Vector3(h, y, -h), 0.38, mat);
+      addTowerBeam(new THREE.Vector3(h, y, -h), new THREE.Vector3(h, y, h), 0.38, mat);
+      addTowerBeam(new THREE.Vector3(h, y, h), new THREE.Vector3(-h, y, h), 0.38, mat);
+      addTowerBeam(new THREE.Vector3(-h, y, h), new THREE.Vector3(-h, y, -h), 0.38, mat);
+    }
+
+    [0, 1, 2].forEach(level => {
+      const lower = towerLevels[level];
+      const upper = towerLevels[level + 1];
+      cornerSigns.forEach(([sx, sz], index) => {
+        const next = cornerSigns[(index + 1) % cornerSigns.length];
+        addTowerBeam(
+          new THREE.Vector3(sx * lower.half, lower.y + 4, sz * lower.half),
+          new THREE.Vector3(next[0] * upper.half, upper.y - 4, next[1] * upper.half),
+          0.2,
+          towerRed
+        );
+      });
     });
-    const core = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 7, 72, 6), towerRed);
-    core.position.y = 54;
-    towerGroup.add(core);
-    const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 1.4, 54, 6), towerWhite);
-    antenna.position.y = 112;
+
+    const observationDeck = new THREE.Mesh(new THREE.BoxGeometry(19, 4, 19), towerWhite);
+    observationDeck.position.y = 56;
+    towerGroup.add(observationDeck);
+
+    const topMastRed = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 1.25, 34, 8), towerRed);
+    topMastRed.position.y = 108;
+    towerGroup.add(topMastRed);
+    const topMastWhite = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.7, 28, 8), towerWhite);
+    topMastWhite.position.y = 139;
+    towerGroup.add(topMastWhite);
+    const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.32, 22, 8), towerRed);
+    antenna.position.y = 164;
     towerGroup.add(antenna);
-    const beacon = new THREE.Mesh(new THREE.SphereGeometry(2.1, 10, 10), new THREE.MeshBasicMaterial({ color: 0xfff1a8 }));
-    beacon.position.y = 141;
-    towerGroup.add(beacon);
     towerGroup.position.set(0, 0, 0);
     scene.add(towerGroup);
 
@@ -1494,21 +1548,22 @@
       tailRed.position.set(0, 0.45 * sc.y, -1.56 * sc.z);
       bodyGroup.add(tailRed);
 
-      // Dynamic Exhaust pipe and Turbo flames
+      // Dynamic exhaust pipe plus a separate rear-facing nitro flame. Keep
+      // the flame outside the pipe group so pipe rotation cannot turn it up.
       const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.35, 8), chromeMat);
       pipe.rotateX(Math.PI / 2);
       pipe.position.set(0.45 * sc.x, 0.22 * sc.y, -1.6 * sc.z);
       const flame = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.85, 10), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.88 }));
       flame.rotateX(-Math.PI / 2);
-      flame.position.set(0, 0, -0.46);
+      flame.position.set(0.45 * sc.x, 0.22 * sc.y, -2.08 * sc.z);
       flame.visible = false;
       const flameCore = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.58, 8), new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.95 }));
       flameCore.rotateX(-Math.PI / 2);
-      flameCore.position.set(0, 0, -0.1);
+      flameCore.position.set(0, 0, -0.1 * sc.z);
       flame.add(flameCore);
-      pipe.add(flame);
       exhaustFlames.push(flame);
       bodyGroup.add(pipe);
+      bodyGroup.add(flame);
 
       // Four Star Alloys Tires
       const tireGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.46, 18);
@@ -2063,7 +2118,8 @@
         const isShift = state.keys.ShiftLeft || state.currentSpeed > 0.3; // automatic sliding at speed
         const steerFactor = 0.048 * arch.driftHandling * turnRadius * (isShift ? 1.5 : 1.0);
 
-        const keyboardSteer = (isL ? 1 : 0) - (isR ? 1 : 0);
+        let keyboardSteer = (isL ? 1 : 0) - (isR ? 1 : 0);
+        if (state.currentSpeed < -0.03) keyboardSteer *= -1;
         const tiltSteer = isMobileDevice ? tiltState.steer : 0;
         const steerInput = THREE.MathUtils.clamp(keyboardSteer + tiltSteer, -1, 1);
         carGroup.rotation.y += steerFactor * steerInput;
