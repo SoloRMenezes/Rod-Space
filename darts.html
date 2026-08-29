@@ -528,7 +528,7 @@
     const RADIUS = 338;
     const NUMBERS = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
     const PLAYER_COLORS = ["#ef4444", "#4aa3ff", "#21b57a", "#ffd84d"];
-    const PLAYER_NAMES = ["You", "Maya", "Dex", "Nova"];
+    const PLAYER_NAMES = ["Player 1", "Player 2", "Player 3", "Player 4"];
     const START_SCORE = 300;
     const BASE_SPEED = 7.6;
     const MAX_SPEED = 13;
@@ -753,26 +753,32 @@
       for (const dart of darts) {
         ctx.save();
         ctx.translate(dart.x, dart.y);
-        ctx.rotate(dart.angle + Math.PI / 2);
-        ctx.strokeStyle = "rgba(0,0,0,0.55)";
-        ctx.lineWidth = 7;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "rgba(0,0,0,0.7)";
+        ctx.lineWidth = 6;
         ctx.beginPath();
-        ctx.moveTo(0, 16);
-        ctx.lineTo(0, -14);
+        ctx.moveTo(-8, 0);
+        ctx.lineTo(8, 0);
+        ctx.moveTo(0, -8);
+        ctx.lineTo(0, 8);
         ctx.stroke();
+
         ctx.strokeStyle = dart.color;
         ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(0, 14);
-        ctx.lineTo(0, -17);
+        ctx.moveTo(-7, 0);
+        ctx.lineTo(7, 0);
+        ctx.moveTo(0, -7);
+        ctx.lineTo(0, 7);
         ctx.stroke();
-        ctx.fillStyle = dart.color;
+
+        ctx.fillStyle = "#f6f1e8";
+        ctx.strokeStyle = "rgba(0,0,0,0.65)";
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(0, -22);
-        ctx.lineTo(-5, -10);
-        ctx.lineTo(5, -10);
-        ctx.closePath();
+        ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
         ctx.fill();
+        ctx.stroke();
         ctx.restore();
       }
     }
@@ -828,7 +834,7 @@
       ctx.lineWidth = 4;
 
       if (state === "AXIS_X" || state === "AXIS_Y") {
-        ctx.strokeStyle = state === "AXIS_X" ? color : "rgba(255,255,255,0.25)";
+        ctx.strokeStyle = color;
         ctx.beginPath();
         ctx.moveTo(scanOffsetX, -RADIUS);
         ctx.lineTo(scanOffsetX, RADIUS);
