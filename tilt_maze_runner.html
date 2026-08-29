@@ -39,42 +39,6 @@
         box-shadow: none;
     }
 
-    #mobileControls {
-        position: fixed;
-        inset: auto 0 max(18px, env(safe-area-inset-bottom)) 0;
-        z-index: 20;
-        display: none;
-        grid-template-columns: repeat(3, 64px);
-        grid-template-rows: repeat(2, 64px);
-        gap: 10px;
-        justify-content: center;
-        pointer-events: none;
-    }
-
-    body.show-controls #mobileControls {
-        display: grid;
-    }
-
-    .tilt-pad {
-        pointer-events: auto;
-        display: grid;
-        place-items: center;
-        min-width: 0;
-        width: 64px;
-        height: 64px;
-        padding: 0;
-        border-radius: 999px;
-        background: rgba(12,12,13,0.72);
-        color: #f8fbff;
-        font-size: 28px;
-        backdrop-filter: blur(10px);
-    }
-
-    .tilt-pad[data-dir="up"] { grid-column: 2; grid-row: 1; }
-    .tilt-pad[data-dir="left"] { grid-column: 1; grid-row: 2; }
-    .tilt-pad[data-dir="down"] { grid-column: 2; grid-row: 2; }
-    .tilt-pad[data-dir="right"] { grid-column: 3; grid-row: 2; }
-
     #ui {
         position: fixed;
         inset: 0;
@@ -213,13 +177,6 @@
 
 <canvas id="game"></canvas>
 
-<div id="mobileControls" aria-label="Fallback maze controls">
-    <button class="tilt-pad" data-dir="up" aria-label="Move up">&uarr;</button>
-    <button class="tilt-pad" data-dir="left" aria-label="Move left">&larr;</button>
-    <button class="tilt-pad" data-dir="down" aria-label="Move down">&darr;</button>
-    <button class="tilt-pad" data-dir="right" aria-label="Move right">&rarr;</button>
-</div>
-
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -236,11 +193,10 @@ const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 let state = { running: false, level: 1, falling: false, scareCooldown: false };
 let maze = [], cellSize = 0, worldWidth = 0, worldHeight = 0, startCell = null, exitCell = null;
-let gravity = { x: 0, y: 0 }, keyGravity = { x: 0, y: 0 }, touchGravity = { x: 0, y: 0 };
+let gravity = { x: 0, y: 0 }, keyGravity = { x: 0, y: 0 };
 let audioCtx = null;
 let noiseBuffer = null;
 let fakeHoleCooldowns = new Map();
-let tiltPermissionGranted = false;
 let hasStarted = false;
 
 const ball = { x: 0, y: 0, vx: 0, vy: 0, r: 0, trail: [] };
@@ -272,21 +228,17 @@ async function unlockAudio() {
 }
 
 async function requestTiltPermission() {
-    if (!isMobile || typeof DeviceOrientationEvent === "undefined") return false;
+    if (!isMobile || typeof DeviceOrientationEvent === "undefined") return "not-needed";
     if (typeof DeviceOrientationEvent.requestPermission !== "function") {
-        tiltPermissionGranted = true;
-        return true;
+        return "granted";
     }
 
     try {
-        const permission = await DeviceOrientationEvent.requestPermission();
-        tiltPermissionGranted = permission === "granted";
+        return await DeviceOrientationEvent.requestPermission();
     } catch (error) {
-        tiltPermissionGranted = false;
         console.warn("Device orientation permission failed:", error);
+        return "error";
     }
-
-    return tiltPermissionGranted;
 }
 
 function getNoiseBuffer() {
@@ -526,8 +478,8 @@ function triggerScare(cx, cy) {
 function update() {
     if (!state.running || state.falling) return;
 
-    const gx = gravity.x + keyGravity.x + touchGravity.x;
-    const gy = gravity.y + keyGravity.y + touchGravity.y;
+    const gx = gravity.x + keyGravity.x;
+    const gy = gravity.y + keyGravity.y;
     ball.vx = (ball.vx + gx * ACCEL) * FRICTION;
     ball.vy = (ball.vy + gy * ACCEL) * FRICTION;
 
@@ -700,7 +652,6 @@ function draw() {
 }
 
 addEventListener("deviceorientation", e => {
-    tiltPermissionGranted = true;
     gravity.x = clamp(e.gamma || 0, -35, 35) * 0.15;
     gravity.y = clamp(e.beta || 0, -35, 35) * 0.15;
 });
@@ -723,30 +674,11 @@ addEventListener("resize", () => {
     if (state.running) initLevel();
 });
 
-document.querySelectorAll(".tilt-pad").forEach(button => {
-    const direction = button.dataset.dir;
-    const setDirection = (active) => {
-        const amount = active ? 3.2 : 0;
-        if (direction === "left") touchGravity.x = -amount;
-        if (direction === "right") touchGravity.x = amount;
-        if (direction === "up") touchGravity.y = -amount;
-        if (direction === "down") touchGravity.y = amount;
-    };
-    button.addEventListener("pointerdown", event => {
-        event.preventDefault();
-        button.setPointerCapture(event.pointerId);
-        setDirection(true);
-    });
-    button.addEventListener("pointerup", () => setDirection(false));
-    button.addEventListener("pointercancel", () => setDirection(false));
-    button.addEventListener("pointerleave", () => setDirection(false));
-});
-
 startBtn.onclick = async () => {
     if (hasStarted) return;
     hasStarted = true;
     startBtn.disabled = true;
-    startStatus.textContent = "Starting...";
+    startStatus.textContent = isMobile ? "Requesting tilt..." : "Starting...";
 
     try {
         await unlockAudio();
@@ -754,10 +686,12 @@ startBtn.onclick = async () => {
         console.warn("Audio unlock failed:", error);
     }
 
-    const canTilt = await requestTiltPermission();
-    if (isMobile && !canTilt) {
-        document.body.classList.add("show-controls");
-        startStatus.textContent = "Tilt blocked. Use buttons.";
+    const tiltPermission = await requestTiltPermission();
+    if (isMobile && !["granted", "not-needed"].includes(tiltPermission)) {
+        startStatus.textContent = "Tilt permission blocked. Allow Motion & Orientation, then try again.";
+        startBtn.disabled = false;
+        hasStarted = false;
+        return;
     }
 
     start();
