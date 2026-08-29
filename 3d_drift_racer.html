@@ -706,9 +706,34 @@
 
     // --- 3. Three.js Scene Setup & Physics Core ---
     const canvas = document.getElementById('game-canvas');
+    const isMobileDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const ui = {
+      speed: document.getElementById('speed-val'),
+      gear: document.getElementById('gear-val'),
+      turboPercent: document.getElementById('turbo-percent'),
+      turboBar: document.getElementById('turbo-bar'),
+      score: document.getElementById('score-total'),
+      comboBox: document.getElementById('drift-combo-box'),
+      driftMult: document.getElementById('drift-mult'),
+      driftPts: document.getElementById('drift-pts'),
+      driftProgress: document.getElementById('drift-progress'),
+      overlay: document.getElementById('screens-overlay'),
+      hudLayer: document.getElementById('hud-layer'),
+      alertBanner: document.getElementById('alert-banner'),
+      alertText: document.getElementById('alert-text')
+    };
+    const hudCache = {
+      speed: '',
+      gear: '',
+      turbo: '',
+      turboWidth: '',
+      turboLocked: null,
+      score: '',
+      lastUpdate: 0
+    };
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.35));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobileDevice ? 1.05 : 1.3));
     renderer.shadowMap.enabled = false;
 
     const scene = new THREE.Scene();
@@ -744,7 +769,7 @@
 
     // Procedural dark concrete grid landscape (high contrast, stylish)
     const groundGeo = new THREE.PlaneGeometry(2500, 2500);
-    // Create Grid Canvas Texture
+    // Tiny canvas textures are cheap and keep the single-file game editable.
     function createGridTex() {
       const c = document.createElement('canvas');
       c.width = 128; c.height = 128;
@@ -768,17 +793,22 @@
     scene.add(ground);
 
     // --- Square city-loop pathway and block-grid streets ---
-    const S = 112;
+    // Street constants are intentionally shared by rendering and collision
+    // placement. If the road width changes, update clearance with it so
+    // buildings still stay out of drivable space.
     const trackWidth = 38;
     const cityLimit = 340;
     const streetCenters = [-240, -120, 0, 120, 240];
     const gridRoadHalfWidth = 20;
     const sidewalkWidth = 8;
+    const sidewalkOuter = trackWidth / 2 + sidewalkWidth;
     const streetClearance = gridRoadHalfWidth + sidewalkWidth + 4;
     const towerLegHalf = 2.4;
     const nitroDrainRate = 58;
     const nitroRechargeRate = 17;
     const nitroReadyThreshold = 45;
+    // This hidden loop is used for spawning/reset flow only; the visible city
+    // roads below are square grid strips so the map reads like Tokyo blocks.
     const trackPoints = [
       new THREE.Vector3(-252, 0.05, -252),
       new THREE.Vector3(-108, 0.05, -252),
@@ -827,88 +857,6 @@
       return tex;
     }
 
-    // Create a perfect flat ribbon along track Curve with zero Z-fighting
-    const segments = 240;
-    const roadPoints = [];
-    const roadIndices = [];
-    const roadUvs = [];
-
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
-      const pos = trackCurve.getPointAt(t % 1);
-      const tangent = trackCurve.getTangentAt(t % 1).normalize();
-      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-
-      // Left edge
-      const pL = pos.clone().add(normal.clone().multiplyScalar(trackWidth / 2));
-      pL.y = 0.18;
-      roadPoints.push(pL.x, pL.y, pL.z);
-      roadUvs.push(0, t * 20);
-
-      // Right edge
-      const pR = pos.clone().add(normal.clone().multiplyScalar(-trackWidth / 2));
-      pR.y = 0.18;
-      roadPoints.push(pR.x, pR.y, pR.z);
-      roadUvs.push(1, t * 20);
-    }
-
-    for (let i = 0; i < segments; i++) {
-      const r0 = i * 2;
-      const r1 = r0 + 1;
-      const r2 = r0 + 2;
-      const r3 = r0 + 3;
-
-      roadIndices.push(r0, r1, r2);
-      roadIndices.push(r1, r3, r2);
-    }
-
-    const roadGeo = new THREE.BufferGeometry();
-    roadGeo.setAttribute('position', new THREE.Float32BufferAttribute(roadPoints, 3));
-    roadGeo.setAttribute('uv', new THREE.Float32BufferAttribute(roadUvs, 2));
-    roadGeo.setIndex(roadIndices);
-    roadGeo.computeVertexNormals();
-
-    const roadMat = new THREE.MeshBasicMaterial({
-      color: 0x9aa3b2,
-      map: createAsphaltTex()
-    });
-    const roadMesh = new THREE.Mesh(roadGeo, roadMat);
-    roadMesh.receiveShadow = false;
-    scene.add(roadMesh);
-    roadMesh.visible = false;
-
-    function createTrackSideRibbon(innerHalfWidth, outerHalfWidth, side, y, uvScale = 18) {
-      const points = [];
-      const indices = [];
-      const uvs = [];
-
-      for (let i = 0; i <= segments; i++) {
-        const t = i / segments;
-        const pos = trackCurve.getPointAt(t % 1);
-        const tangent = trackCurve.getTangentAt(t % 1).normalize();
-        const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-        const inner = pos.clone().add(normal.clone().multiplyScalar(side * innerHalfWidth));
-        const outer = pos.clone().add(normal.clone().multiplyScalar(side * outerHalfWidth));
-        inner.y = y;
-        outer.y = y;
-        points.push(inner.x, inner.y, inner.z, outer.x, outer.y, outer.z);
-        uvs.push(0, t * uvScale, 1, t * uvScale);
-      }
-
-      for (let i = 0; i < segments; i++) {
-        const r0 = i * 2;
-        indices.push(r0, r0 + 1, r0 + 2);
-        indices.push(r0 + 1, r0 + 3, r0 + 2);
-      }
-
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
-      geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-      geo.setIndex(indices);
-      geo.computeVertexNormals();
-      return geo;
-    }
-
     function createSidewalkTex() {
       const c = document.createElement('canvas');
       c.width = 256; c.height = 256;
@@ -934,37 +882,35 @@
       return tex;
     }
 
-    const sidewalkMat = new THREE.MeshStandardMaterial({
-      color: 0xd3d9e2,
-      map: createSidewalkTex(),
-      roughness: 0.72,
-      metalness: 0.02,
-      emissive: new THREE.Color(0x3b4558),
-      emissiveIntensity: 0.18
-    });
-    const sidewalkOuter = trackWidth / 2 + sidewalkWidth;
-    [-1, 1].forEach(side => {
-      const sidewalk = new THREE.Mesh(
-        createTrackSideRibbon(trackWidth / 2 + 0.55, sidewalkOuter, side, 0.14, 22),
-        sidewalkMat
-      );
-      scene.add(sidewalk);
-      sidewalk.visible = false;
-    });
+    // Static city surfaces are batched as instanced boxes. That keeps the
+    // grid-road look but avoids hundreds of tiny draw calls each frame.
+    const cityRectDummy = new THREE.Object3D();
+    const cityRectGeo = new THREE.BoxGeometry(1, 1, 1);
 
-    function addCityRect(width, depth, x, z, y, mat) {
-      const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, 0.08, depth), mat);
-      mesh.position.set(x, y, z);
+    function addCityRects(rects, mat) {
+      const mesh = new THREE.InstancedMesh(cityRectGeo, mat, rects.length);
+      rects.forEach((rect, index) => {
+        cityRectDummy.position.set(rect.x, rect.y, rect.z);
+        cityRectDummy.rotation.set(0, 0, 0);
+        cityRectDummy.scale.set(rect.width, 0.08, rect.depth);
+        cityRectDummy.updateMatrix();
+        mesh.setMatrixAt(index, cityRectDummy.matrix);
+      });
+      mesh.instanceMatrix.needsUpdate = true;
       scene.add(mesh);
       return mesh;
     }
 
     const gridRoadMat = new THREE.MeshBasicMaterial({ color: 0xb7bfcc, map: createAsphaltTex() });
     const crosswalkMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
+    const roadRects = [];
     streetCenters.forEach(center => {
-      addCityRect(cityLimit * 2, gridRoadHalfWidth * 2, 0, center, 0.32, gridRoadMat);
-      addCityRect(gridRoadHalfWidth * 2, cityLimit * 2, center, 0, 0.325, gridRoadMat);
+      roadRects.push(
+        { width: cityLimit * 2, depth: gridRoadHalfWidth * 2, x: 0, z: center, y: 0.32 },
+        { width: gridRoadHalfWidth * 2, depth: cityLimit * 2, x: center, z: 0, y: 0.325 }
+      );
     });
+    addCityRects(roadRects, gridRoadMat);
 
     const sidewalkStripMat = new THREE.MeshStandardMaterial({
       color: 0xaebdd0,
@@ -974,27 +920,60 @@
       emissive: new THREE.Color(0x55657d),
       emissiveIntensity: 0.2
     });
+    const sidewalkRects = [];
     streetCenters.forEach(center => {
       [-1, 1].forEach(side => {
         const offset = side * (gridRoadHalfWidth + sidewalkWidth / 2);
-        addCityRect(cityLimit * 2, sidewalkWidth, 0, center + offset, 0.22, sidewalkStripMat);
-        addCityRect(sidewalkWidth, cityLimit * 2, center + offset, 0, 0.225, sidewalkStripMat);
+        sidewalkRects.push(
+          { width: cityLimit * 2, depth: sidewalkWidth, x: 0, z: center + offset, y: 0.22 },
+          { width: sidewalkWidth, depth: cityLimit * 2, x: center + offset, z: 0, y: 0.225 }
+        );
       });
     });
+    addCityRects(sidewalkRects, sidewalkStripMat);
 
+    const crosswalkRects = [];
     streetCenters.forEach(x => {
       streetCenters.forEach(z => {
         for (let i = -2; i <= 2; i++) {
-          addCityRect(2.4, 9, x + i * 5.2, z, 0.34, crosswalkMat);
-          addCityRect(9, 2.4, x, z + i * 5.2, 0.345, crosswalkMat);
+          crosswalkRects.push(
+            { width: 2.4, depth: 9, x: x + i * 5.2, z, y: 0.34 },
+            { width: 9, depth: 2.4, x, z: z + i * 5.2, y: 0.345 }
+          );
         }
       });
     });
+    addCityRects(crosswalkRects, crosswalkMat);
 
     // --- City Block Building Scenery (Placed away from roads) ---
     const buildings = [];
     const blockCenters = [-300, -180, -60, 60, 180, 300];
     const bGeo = new THREE.BoxGeometry(1, 1, 1);
+    // Reuse material palettes instead of making a new material per building.
+    // This keeps the same random city look while reducing GPU state churn.
+    const buildingMats = [0x8a9bb0, 0x6b7f94, 0x475569, 0x64748b, 0x7c6f64, 0x8b6f87, 0x567b7f, 0x755f4f, 0x2f3e55].map(color => (
+      new THREE.MeshStandardMaterial({ color, roughness: 0.65, metalness: 0.2 })
+    ));
+    const windowMats = [
+      { color: 0xfde68a, emissive: 0xf59e0b },
+      { color: 0x93c5fd, emissive: 0x2563eb },
+      { color: 0xf9a8d4, emissive: 0xdb2777 },
+      { color: 0xa7f3d0, emissive: 0x059669 }
+    ].map(style => new THREE.MeshStandardMaterial({
+      color: style.color,
+      emissive: style.emissive,
+      emissiveIntensity: 0.95,
+      transparent: true,
+      opacity: 0.68,
+      roughness: 0.1
+    }));
+    const buildingBaseMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0f1a,
+      roughness: 1.0,
+      metalness: 0.0,
+      emissive: new THREE.Color(0x02040a),
+      emissiveIntensity: 0.2
+    });
     const shopSigns = ['居酒屋', 'ラーメン', '喫茶店', '薬局', '駅前', 'カラオケ', '寿司', 'ホテル', 'ゲーム', '書店', '新宿', '渋谷'];
     const shopSignColors = ['#22d3ee', '#f472b6', '#facc15', '#a7f3d0', '#fb7185', '#93c5fd'];
 
@@ -1040,35 +1019,15 @@
               const h = 28 + Math.random() * 145;
 
               // Varied Tokyo tower blocks so the city does not collapse into one dark wall.
-              const colors = [0x8a9bb0, 0x6b7f94, 0x475569, 0x64748b, 0x7c6f64, 0x8b6f87, 0x567b7f, 0x755f4f, 0x2f3e55];
-              const windowColors = [
-                { color: 0xfde68a, emissive: 0xf59e0b },
-                { color: 0x93c5fd, emissive: 0x2563eb },
-                { color: 0xf9a8d4, emissive: 0xdb2777 },
-                { color: 0xa7f3d0, emissive: 0x059669 }
-              ];
-              const windowStyle = windowColors[Math.floor(Math.random() * windowColors.length)];
-              const bMat = new THREE.MeshStandardMaterial({
-                color: colors[Math.floor(Math.random() * colors.length)],
-                roughness: 0.65,
-                metalness: 0.2
-              });
+              const bMat = buildingMats[Math.floor(Math.random() * buildingMats.length)];
 
               const building = new THREE.Mesh(bGeo, bMat);
               building.scale.set(w, h, d);
               building.position.set(x, h / 2, z);
               scene.add(building);
               // Ground contact slab for better visual separation
-              const base = new THREE.Mesh(
-                new THREE.BoxGeometry(w * 1.05, 0.04, d * 1.05),
-                new THREE.MeshStandardMaterial({
-                  color: 0x0a0f1a,
-                  roughness: 1.0,
-                  metalness: 0.0,
-                  emissive: new THREE.Color(0x02040a),
-                  emissiveIntensity: 0.2
-                })
-              );
+              const base = new THREE.Mesh(bGeo, buildingBaseMat);
+              base.scale.set(w * 1.05, 0.04, d * 1.05);
               base.position.set(x, 0.02, z);
               scene.add(base);
 
@@ -1081,16 +1040,9 @@
 
               // Add elegant warm glowing windows to simulate high-rises at twilight
               if (Math.random() > 0.3) {
-                const wGeo = new THREE.BoxGeometry(w + 0.1, h * 0.85, d + 0.1);
-                const wMat = new THREE.MeshStandardMaterial({
-                  color: windowStyle.color,
-                  emissive: windowStyle.emissive,
-                  emissiveIntensity: 0.95,
-                  transparent: true,
-                  opacity: 0.68,
-                  roughness: 0.1
-                });
-                const windowPlate = new THREE.Mesh(wGeo, wMat);
+                const wMat = windowMats[Math.floor(Math.random() * windowMats.length)];
+                const windowPlate = new THREE.Mesh(bGeo, wMat);
+                windowPlate.scale.set(w + 0.1, h * 0.85, d + 0.1);
                 windowPlate.position.set(x, h / 2, z);
                 scene.add(windowPlate);
               }
@@ -1554,56 +1506,139 @@
 
     // --- Dynamic Physics Engine & Particles ---
     const velocity = new THREE.Vector3();
+    const heading = new THREE.Vector3();
+    const driftHeading = new THREE.Vector3();
+    const targetVel = new THREE.Vector3();
+    const nextPos = new THREE.Vector3();
+    const lookTarget = new THREE.Vector3();
+    const cameraOffset = new THREE.Vector3();
+    const targetCam = new THREE.Vector3();
+    const headHeading = new THREE.Vector3();
+    const wheelWorldL = new THREE.Vector3();
+    const wheelWorldR = new THREE.Vector3();
+    const tmpVec = new THREE.Vector3();
+    // Runtime vectors and effect pools live outside the loop to avoid
+    // per-frame garbage collection spikes during long drifts.
     const smokeParticles = [];
+    const smokePool = [];
     const pGeo = new THREE.SphereGeometry(0.12, 4, 4);
     const pMat = new THREE.MeshBasicMaterial({ color: 0xd1d5db, transparent: true, opacity: 0.6 });
 
-    function emitSmoke(pos, isOrange = false) {
-      const p = new THREE.Mesh(pGeo, isOrange ? new THREE.MeshBasicMaterial({ color: 0xf97316 }) : pMat);
-      p.position.copy(pos);
-      p.scale.set(1, 1, 1);
-      scene.add(p);
-      smokeParticles.push({
-        mesh: p,
-        v: new THREE.Vector3((Math.random() - 0.5) * 1.5, Math.random() * 1.0 + 0.5, (Math.random() - 0.5) * 1.5),
-        life: 1.0
-      });
+    function getSmokeParticle() {
+      const pooled = smokePool.pop();
+      if (pooled) return pooled;
+      const mesh = new THREE.Mesh(pGeo, pMat.clone());
+      return {
+        mesh,
+        v: new THREE.Vector3(),
+        life: 0
+      };
+    }
+
+    function releaseSmokeParticle(p) {
+      p.mesh.visible = false;
+      scene.remove(p.mesh);
+      smokePool.push(p);
+    }
+
+    function emitSmoke(pos) {
+      if (smokeParticles.length > 42) releaseSmokeParticle(smokeParticles.shift());
+      const p = getSmokeParticle();
+      p.mesh.position.copy(pos);
+      p.mesh.scale.set(1, 1, 1);
+      p.mesh.material.opacity = 0.6;
+      p.mesh.visible = true;
+      p.v.set((Math.random() - 0.5) * 1.5, Math.random() * 1.0 + 0.5, (Math.random() - 0.5) * 1.5);
+      p.life = 1.0;
+      scene.add(p.mesh);
+      smokeParticles.push(p);
     }
 
     // --- Dynamic Skidmark segment buffers ---
     const skidmarkSegments = [];
     const skidMaterial = new THREE.MeshBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.65 });
+    const skidGeometry = new THREE.PlaneGeometry(0.4, 0.8);
+    skidGeometry.rotateX(-Math.PI / 2);
+    const skidPool = [];
+
+    function getSkidmark() {
+      const pooled = skidPool.pop();
+      if (pooled) return pooled;
+      return {
+        m: new THREE.Mesh(skidGeometry, skidMaterial.clone()),
+        life: 0
+      };
+    }
+
+    function releaseSkidmark(sk) {
+      sk.m.visible = false;
+      scene.remove(sk.m);
+      skidPool.push(sk);
+    }
 
     function addSkidmark(leftWheelWorld, rightWheelWorld) {
-      const g = new THREE.PlaneGeometry(0.4, 0.8);
-      g.rotateX(-Math.PI / 2);
-      const m1 = new THREE.Mesh(g, skidMaterial);
-      m1.position.copy(leftWheelWorld);
-      m1.position.y = 0.07;
-      scene.add(m1);
+      while (skidmarkSegments.length > 90) releaseSkidmark(skidmarkSegments.shift());
+      const sk1 = getSkidmark();
+      sk1.m.position.copy(leftWheelWorld);
+      sk1.m.position.y = 0.07;
+      sk1.m.material.opacity = 0.65;
+      sk1.m.visible = true;
+      sk1.life = 1.0;
+      scene.add(sk1.m);
 
-      const m2 = new THREE.Mesh(g, skidMaterial);
-      m2.position.copy(rightWheelWorld);
-      m2.position.y = 0.07;
-      scene.add(m2);
+      const sk2 = getSkidmark();
+      sk2.m.position.copy(rightWheelWorld);
+      sk2.m.position.y = 0.07;
+      sk2.m.material.opacity = 0.65;
+      sk2.m.visible = true;
+      sk2.life = 1.0;
+      scene.add(sk2.m);
 
-      skidmarkSegments.push({ m: m1, life: 1.0 });
-      skidmarkSegments.push({ m: m2, life: 1.0 });
+      skidmarkSegments.push(sk1, sk2);
     }
 
     // --- 4. User Interfaces & Dynamic DOM Binder ---
-    function updateHUD() {
-      document.getElementById('speed-val').innerText = Math.floor(Math.abs(state.currentSpeed) * 230);
-      document.getElementById('gear-val').innerText = `G${Math.max(1, Math.min(5, Math.floor(Math.abs(state.currentSpeed) * 4.2) + 1))}`;
-      document.getElementById('turbo-percent').innerText = state.turboLocked ? 'RECHARGING' : `${Math.floor(state.turboAmount)}%`;
-      document.getElementById('turbo-bar').style.width = `${state.turboAmount}%`;
-      document.getElementById('turbo-bar').className = `h-full transition-all duration-75 ${state.turboLocked ? 'bg-neutral-500' : 'bg-cyan-300'}`;
-      document.getElementById('score-total').innerText = state.totalDriftScore.toLocaleString();
+    // HUD writes are throttled and value-checked. Gameplay still updates every
+    // frame, but the browser only repaints text when the text actually changes.
+    function updateHUD(now, force = false) {
+      if (!force && now - hudCache.lastUpdate < 66) return;
+      hudCache.lastUpdate = now;
+
+      const speed = Math.floor(Math.abs(state.currentSpeed) * 230);
+      const gear = `G${Math.max(1, Math.min(5, Math.floor(Math.abs(state.currentSpeed) * 4.2) + 1))}`;
+      const turbo = state.turboLocked ? 'RECHARGING' : `${Math.floor(state.turboAmount)}%`;
+      const turboWidth = `${state.turboAmount}%`;
+      const score = state.totalDriftScore.toLocaleString();
+
+      if (hudCache.speed !== speed) {
+        ui.speed.innerText = speed;
+        hudCache.speed = speed;
+      }
+      if (hudCache.gear !== gear) {
+        ui.gear.innerText = gear;
+        hudCache.gear = gear;
+      }
+      if (hudCache.turbo !== turbo) {
+        ui.turboPercent.innerText = turbo;
+        hudCache.turbo = turbo;
+      }
+      if (hudCache.turboWidth !== turboWidth) {
+        ui.turboBar.style.width = turboWidth;
+        hudCache.turboWidth = turboWidth;
+      }
+      if (hudCache.turboLocked !== state.turboLocked) {
+        ui.turboBar.className = `h-full transition-all duration-75 ${state.turboLocked ? 'bg-neutral-500' : 'bg-cyan-300'}`;
+        hudCache.turboLocked = state.turboLocked;
+      }
+      if (hudCache.score !== score) {
+        ui.score.innerText = score;
+        hudCache.score = score;
+      }
     }
 
     function showScreen(screenId) {
       state.activeScreen = screenId;
-      document.getElementById('screens-overlay').classList.remove('hidden');
+      ui.overlay.classList.remove('hidden');
       
       // Hide all screens
       ['screen-main-menu', 'screen-garage', 'screen-manual'].forEach(id => {
@@ -1614,27 +1649,25 @@
       document.getElementById(`screen-${screenId}`).classList.remove('hidden');
 
       if (screenId === 'main-menu') {
-        document.getElementById('hud-layer').classList.add('hidden');
+        ui.hudLayer.classList.add('hidden');
         resetCarToStart();
       }
     }
 
     function showNotification(text) {
-      const banner = document.getElementById('alert-banner');
-      document.getElementById('alert-text').innerText = text;
-      banner.classList.remove('hidden');
+      ui.alertText.innerText = text;
+      ui.alertBanner.classList.remove('hidden');
       setTimeout(() => {
-        banner.classList.add('translate-y-0', 'opacity-100');
+        ui.alertBanner.classList.add('translate-y-0', 'opacity-100');
       }, 50);
 
       state.checkpointMsgTimer = 3.0;
     }
 
     function hideNotification() {
-      const banner = document.getElementById('alert-banner');
-      banner.classList.remove('translate-y-0', 'opacity-100');
+      ui.alertBanner.classList.remove('translate-y-0', 'opacity-100');
       setTimeout(() => {
-        banner.classList.add('hidden');
+        ui.alertBanner.classList.add('hidden');
       }, 300);
     }
 
@@ -1779,8 +1812,8 @@
     document.getElementById('btn-start').onclick = async () => {
       await enableTiltControls();
       // Hide Lobby Screens overlay
-      document.getElementById('screens-overlay').classList.add('hidden');
-      document.getElementById('hud-layer').classList.remove('hidden');
+      ui.overlay.classList.add('hidden');
+      ui.hudLayer.classList.remove('hidden');
 
       // Setup vehicle match parameters
       const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
@@ -1795,6 +1828,7 @@
       state.isGameRunning = true;
       audio.startEngine();
       resetCarToStart();
+      updateHUD(performance.now(), true);
       showNotification("FREE DRIFT STARTED. KEEP MOVING!");
     };
 
@@ -1820,7 +1854,8 @@
     });
 
     // --- Mobile Virtual Touch Bindings ---
-    const isMobileDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    // Mobile keeps only gas/brake/nitro buttons; steering comes from device
+    // tilt so the screen stays clear while drifting.
     const touchState = { up: false, down: false, nitro: false };
     const tiltState = { steer: 0, enabled: false };
     
@@ -1903,6 +1938,8 @@
     }, { passive: false });
 
     // --- 5. Main Game Loop Frame Updates ---
+    // Loop order: read input, update physics, resolve collisions, update
+    // effects/HUD, then move the camera and render.
     let activeDriftScore = 0;
     let activeDriftMultiplier = 1.0;
     let driftCooldown = 0;
@@ -1970,33 +2007,32 @@
         }
 
         // 2. SLIP-ANGLE & DRIFT DETECTOR
-        const heading = new THREE.Vector3(0, 0, 1).applyQuaternion(carGroup.quaternion);
-        const targetVel = heading.clone().multiplyScalar(state.currentSpeed);
+        heading.set(0, 0, 1).applyQuaternion(carGroup.quaternion);
+        targetVel.copy(heading).multiplyScalar(state.currentSpeed);
         
         const slip = 0.045 + (1 - arch.driftHandling) * 0.055;
         velocity.lerp(targetVel, isShift ? slip * 0.5 : slip);
 
         const movingForward = state.currentSpeed >= 0;
-        const driftHeading = movingForward ? heading : heading.clone().multiplyScalar(-1);
+        driftHeading.copy(heading);
+        if (!movingForward) driftHeading.multiplyScalar(-1);
         const slipDiff = velocity.lengthSq() > 0.0001 ? velocity.angleTo(driftHeading) : 0;
         const speedKmh = Math.floor(Math.abs(state.currentSpeed) * 230);
         const isDrifting = slipDiff > 0.16 && speedKmh > 20;
-
-        const comboEl = document.getElementById('drift-combo-box');
 
         if (isDrifting) {
           audio.setDrifting(true, slipDiff * 2);
           
           // Emit smokes
           if (carWheels.length >= 4) {
-            const wL = carWheels[2].parent.position.clone().applyMatrix4(carGroup.matrixWorld);
-            const wR = carWheels[3].parent.position.clone().applyMatrix4(carGroup.matrixWorld);
+            wheelWorldL.copy(carWheels[2].parent.position).applyMatrix4(carGroup.matrixWorld);
+            wheelWorldR.copy(carWheels[3].parent.position).applyMatrix4(carGroup.matrixWorld);
             if (Math.random() > 0.3) {
-              emitSmoke(wL);
-              emitSmoke(wR);
+              emitSmoke(wheelWorldL);
+              emitSmoke(wheelWorldR);
             }
             if (Math.random() > 0.4) {
-              addSkidmark(wL, wR);
+              addSkidmark(wheelWorldL, wheelWorldR);
             }
           }
 
@@ -2015,19 +2051,19 @@
           if (!isTurbo) state.turboAmount = Math.min(100, state.turboAmount + dt * 10);
 
           // Update Combo Box DOM
-          comboEl.style.opacity = '1';
-          comboEl.style.transform = 'scale(1.05)';
-          document.getElementById('drift-mult').innerText = `x${activeDriftMultiplier.toFixed(1)}`;
-          document.getElementById('drift-pts').innerText = `${activeDriftScore} PTS`;
-          document.getElementById('drift-progress').style.width = `${Math.min(100, (activeDriftScore / 1200) * 100)}%`;
+          ui.comboBox.style.opacity = '1';
+          ui.comboBox.style.transform = 'scale(1.05)';
+          ui.driftMult.innerText = `x${activeDriftMultiplier.toFixed(1)}`;
+          ui.driftPts.innerText = `${activeDriftScore} PTS`;
+          ui.driftProgress.style.width = `${Math.min(100, (activeDriftScore / 1200) * 100)}%`;
 
         } else {
           audio.setDrifting(false);
           if (driftCooldown > 0) {
             driftCooldown -= dt;
             if (driftCooldown <= 0) {
-              comboEl.style.opacity = '0';
-              comboEl.style.transform = 'scale(0.9)';
+              ui.comboBox.style.opacity = '0';
+              ui.comboBox.style.transform = 'scale(0.9)';
             }
           }
         }
@@ -2039,8 +2075,8 @@
             activeDriftScore = 0;
             activeDriftMultiplier = 1.0;
             driftCooldown = 0;
-            comboEl.style.opacity = '0';
-            comboEl.style.transform = 'scale(0.9)';
+            ui.comboBox.style.opacity = '0';
+            ui.comboBox.style.transform = 'scale(0.9)';
             showNotification("DRIFT SCORE RESET - KEEP MOVING");
           }
         } else {
@@ -2057,11 +2093,12 @@
         }
 
         // 3. COLLISION CORRECTION WITH BUILDINGS
-        const nextPos = carGroup.position.clone().add(velocity);
+        nextPos.copy(carGroup.position).add(velocity);
         const r = 1.2;
 
         let crashedThisFrame = false;
-        buildings.forEach(b => {
+        for (let i = 0; i < buildings.length; i++) {
+          const b = buildings[i];
           if (nextPos.x + r > b.minX && nextPos.x - r < b.maxX &&
               nextPos.z + r > b.minZ && nextPos.z - r < b.maxZ) {
             // Crash impact
@@ -2075,8 +2112,8 @@
               activeDriftMultiplier = 1.0;
               driftCooldown = 0;
               stoppedTimer = 0;
-              comboEl.style.opacity = '0';
-              comboEl.style.transform = 'scale(0.9)';
+              ui.comboBox.style.opacity = '0';
+              ui.comboBox.style.transform = 'scale(0.9)';
               audio.playCrash();
               showNotification("CRASHED - DRIFT SCORE RESET");
               crashedThisFrame = true;
@@ -2089,8 +2126,9 @@
                 carBodyMesh.material.color.copy(new THREE.Color(state.customCarColor));
               }, 180);
             }
+            break;
           }
-        });
+        }
 
         carGroup.position.copy(nextPos);
 
@@ -2103,8 +2141,8 @@
         // Collectible overlaps
         collectibles.forEach(col => {
           if (!col.collected) {
-            const dist = carGroup.position.distanceTo(col.mesh.position);
-            if (dist < 2.0) {
+            const distSq = carGroup.position.distanceToSquared(col.mesh.position);
+            if (distSq < 4.0) {
               col.collected = true;
               col.mesh.visible = false;
               audio.playCollect();
@@ -2124,8 +2162,8 @@
 
         // Obstacle cones physics
         obstacles.forEach(o => {
-          const dist = carGroup.position.distanceTo(o.mesh.position);
-          if (dist < 2.2) {
+          const distSq = carGroup.position.distanceToSquared(o.mesh.position);
+          if (distSq < 4.84) {
             // hit cone
             o.hit = true;
             audio.playCrash();
@@ -2154,7 +2192,7 @@
         }
 
         // Live HUD panels update
-        updateHUD();
+        updateHUD(now);
       }
 
       // 2. MAIN MENU IDLE SPIN CAM OR CAR UPDATE
@@ -2167,23 +2205,25 @@
         camera.lookAt(0, 0.5, 0);
       } else {
         // Update Chase/Cockpit following mode camera
-        const lookTarget = carGroup.position.clone().add(new THREE.Vector3(0, 0.4, 0));
+        lookTarget.copy(carGroup.position);
+        lookTarget.y += 0.4;
         const cameraZoom = state.cameraZoom;
 
         if (state.cameraMode === 'chase') {
-          const backOffset = new THREE.Vector3(0, 2.3 * cameraZoom, -6.2 * cameraZoom).applyQuaternion(carGroup.quaternion);
-          const targetCam = carGroup.position.clone().add(backOffset);
+          cameraOffset.set(0, 2.3 * cameraZoom, -6.2 * cameraZoom).applyQuaternion(carGroup.quaternion);
+          targetCam.copy(carGroup.position).add(cameraOffset);
           camera.position.lerp(targetCam, 0.12);
           camera.lookAt(lookTarget);
         } else if (state.cameraMode === 'cockpit') {
-          const frontOffset = new THREE.Vector3(0, 0.9, 0.3).applyQuaternion(carGroup.quaternion);
-          camera.position.copy(carGroup.position).add(frontOffset);
-          const headHeading = new THREE.Vector3(0, 0, 10).applyQuaternion(carGroup.quaternion);
-          camera.lookAt(carGroup.position.clone().add(headHeading));
+          cameraOffset.set(0, 0.9, 0.3).applyQuaternion(carGroup.quaternion);
+          camera.position.copy(carGroup.position).add(cameraOffset);
+          headHeading.set(0, 0, 10).applyQuaternion(carGroup.quaternion);
+          tmpVec.copy(carGroup.position).add(headHeading);
+          camera.lookAt(tmpVec);
         } else {
           // Overhead Mode
-          const overOffset = new THREE.Vector3(0, 30 * cameraZoom, -2.4 * cameraZoom).applyQuaternion(carGroup.quaternion);
-          const targetCam = carGroup.position.clone().add(overOffset);
+          cameraOffset.set(0, 30 * cameraZoom, -2.4 * cameraZoom).applyQuaternion(carGroup.quaternion);
+          targetCam.copy(carGroup.position).add(cameraOffset);
           camera.position.lerp(targetCam, 0.1);
           camera.lookAt(lookTarget);
         }
