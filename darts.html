@@ -478,6 +478,142 @@
         padding: 22px;
       }
     }
+
+    @media (max-width: 1100px), (max-height: 820px) {
+      .game {
+        gap: 6px;
+        align-items: stretch;
+        padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+      }
+
+      .scoreboard {
+        justify-self: start;
+        width: calc(100% - 58px);
+        min-height: 58px;
+        padding: 5px;
+      }
+
+      .player-card {
+        display: none;
+      }
+
+      .player-card.active {
+        display: grid;
+        grid-template-columns: 10px minmax(0, 1fr) auto;
+        min-height: 48px;
+        padding: 7px 9px;
+        gap: 9px;
+      }
+
+      .swatch {
+        width: 8px;
+        height: 34px;
+      }
+
+      .player-name {
+        font-size: 0.92rem;
+        line-height: 1;
+      }
+
+      .micro {
+        margin-top: 3px;
+        font-size: 0.56rem;
+        letter-spacing: 0.16em;
+      }
+
+      .player-score {
+        font-size: clamp(1.2rem, 7vw, 1.8rem);
+      }
+
+      .stage {
+        gap: 5px;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+      }
+
+      .status {
+        width: min(100%, 560px);
+        min-height: 48px;
+        padding: 6px 8px;
+        gap: 7px;
+      }
+
+      .hit-label {
+        font-size: clamp(0.95rem, 4vw, 1.45rem);
+      }
+
+      .pill {
+        padding: 7px 13px;
+        font-size: 0.66rem;
+        letter-spacing: 0.1em;
+        white-space: nowrap;
+      }
+
+      .turn-meta {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.78rem;
+      }
+
+      .angle-wrap {
+        width: min(100%, 520px);
+        height: 48px;
+      }
+
+      #angleCanvas {
+        height: 48px;
+      }
+
+      .board-wrap {
+        width: min(82vw, 46dvh, 520px);
+        align-self: center;
+      }
+
+      .board-wrap::before {
+        inset: -2% -4%;
+      }
+
+      .board-wrap::after {
+        font-size: clamp(1.9rem, 9vw, 3.8rem);
+      }
+
+      .throw-pad {
+        width: 100%;
+      }
+
+      .action-btn {
+        width: min(100%, 520px);
+        min-width: 0;
+        min-height: 48px;
+      }
+
+      .sound-toggle {
+        width: 44px;
+        height: 44px;
+      }
+    }
+
+    @media (max-width: 1100px) and (orientation: landscape) {
+      .board-wrap {
+        width: min(52vw, 72dvh, 520px);
+      }
+    }
+
+    @media (max-width: 760px) and (orientation: portrait) {
+      .board-wrap {
+        width: min(88vw, 42dvh, 520px);
+      }
+
+      .status {
+        grid-template-columns: 1fr auto;
+      }
+
+      .turn-meta {
+        grid-column: 1 / -1;
+        text-align: center;
+      }
+    }
   </style>
 </head>
 <body>
