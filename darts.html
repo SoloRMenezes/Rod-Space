@@ -985,7 +985,7 @@
         actx.clearRect(0, 0, angleCanvas.width, angleCanvas.height);
       }
 
-      if (state === "AXIS_X" || state === "AXIS_Y") {
+      if (state === "AXIS_X") {
         scanOffsetX += scanDirX * speed;
         if (scanOffsetX > RINGS.doubleOuter || scanOffsetX < -RINGS.doubleOuter) scanDirX *= -1;
       }
