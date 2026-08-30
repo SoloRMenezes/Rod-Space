@@ -632,7 +632,7 @@
 
     const SIZE = 720;
     const CENTER = SIZE / 2;
-    const RADIUS = 338;
+    const RADIUS = 326;
     const NUMBERS = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
     const PLAYER_COLORS = ["#ef4444", "#4aa3ff", "#21b57a", "#ffd84d"];
     const PLAYER_NAMES = ["Player 1", "Player 2", "Player 3", "Player 4"];
@@ -780,20 +780,19 @@
         drawWedge(RINGS.doubleInner, RINGS.doubleOuter, a0, a1, light ? "#c92c33" : "#18a16e", "#17100d", 1.5);
         drawWedge(RINGS.doubleOuter, RADIUS - 20, a0, a1, "#19120e", "rgba(255,255,255,0.035)", 0.8);
 
-        ctx.save();
-        ctx.rotate(a0 + slice / 2);
-        ctx.translate(0, -314);
-        ctx.rotate(-(a0 + slice / 2));
+        const labelAngle = a0 + slice / 2;
+        const labelRadius = 306;
+        const labelX = Math.cos(labelAngle) * labelRadius;
+        const labelY = Math.sin(labelAngle) * labelRadius;
         ctx.fillStyle = "rgba(0, 0, 0, 0.34)";
         ctx.beginPath();
-        ctx.roundRect(-22, -19, 44, 38, 6);
+        ctx.roundRect(labelX - 22, labelY - 19, 44, 38, 6);
         ctx.fill();
         ctx.fillStyle = "#fff3dd";
         ctx.font = "1000 28px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(NUMBERS[i], 0, 2);
-        ctx.restore();
+        ctx.fillText(NUMBERS[i], labelX, labelY + 2);
       }
 
       drawCircle(RINGS.bullOuter, "#18a16e", "#120f0d", 2);
