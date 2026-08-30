@@ -680,18 +680,18 @@ startBtn.onclick = async () => {
     startBtn.disabled = true;
     startStatus.textContent = isMobile ? "Requesting tilt..." : "Starting...";
 
-    try {
-        await unlockAudio();
-    } catch (error) {
-        console.warn("Audio unlock failed:", error);
-    }
-
     const tiltPermission = await requestTiltPermission();
     if (isMobile && !["granted", "not-needed"].includes(tiltPermission)) {
         startStatus.textContent = "Tilt permission blocked. Allow Motion & Orientation, then try again.";
         startBtn.disabled = false;
         hasStarted = false;
         return;
+    }
+
+    try {
+        await unlockAudio();
+    } catch (error) {
+        console.warn("Audio unlock failed:", error);
     }
 
     start();
