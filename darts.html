@@ -1115,8 +1115,20 @@
       button.addEventListener("click", () => startGame(Number(button.dataset.players)));
     });
 
-    throwBtn.addEventListener("click", handleAction);
-    canvas.addEventListener("pointerdown", handleAction);
+    document.querySelector(".game").addEventListener("pointerdown", event => {
+      if (event.target.closest("button") || !document.getElementById("startScreen").classList.contains("hidden")) return;
+      handleAction();
+    });
+
+    throwBtn.addEventListener("click", event => {
+      event.stopPropagation();
+      handleAction();
+    });
+
+    canvas.addEventListener("pointerdown", event => {
+      event.stopPropagation();
+      handleAction();
+    });
     soundBtn.addEventListener("click", () => {
       soundEnabled = !soundEnabled;
       unlockAudio();
