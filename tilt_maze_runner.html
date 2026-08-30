@@ -189,6 +189,7 @@ const startStatus = document.getElementById("startStatus");
 const CAMERA_ZOOM = 2.45;
 const FRICTION = 0.945;
 const ACCEL = 0.11;
+const SPAWN_HOLE_CLEARANCE = 5;
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 let state = { running: false, level: 1, falling: false, scareCooldown: false };
@@ -310,6 +311,11 @@ function playScream(start, duration, gainValue) {
 function playScareSound() {
     scareSound.currentTime = 0;
     scareSound.volume = 1;
+    if (audioCtx && audioCtx.state === "running") {
+        playNoise(0, 0.88, 0.2);
+        playScream(0.02, 0.84, 0.42);
+        playTone(62, 0, 0.58, 0.34, "triangle");
+    }
     scareSound.play().catch(() => {
         if (!audioCtx || audioCtx.state !== "running") return;
         playNoise(0, 0.88, 0.28);
@@ -348,6 +354,7 @@ function getDeadEndCells(m, start) {
 
 function getSafeStartCell(m) {
     const center = {x: Math.floor(m[0].length / 2), y: Math.floor(m.length / 2)};
+    const deadEnds = getDeadEndCells(m, {x: -1, y: -1});
     const openCells = [];
     for (let y = 1; y < m.length - 1; y++) {
         for (let x = 1; x < m[0].length - 1; x++) {
@@ -355,7 +362,11 @@ function getSafeStartCell(m) {
         }
     }
     if (!openCells.length) return center;
-    return openCells.sort((a, b) => manhattan(a, center) - manhattan(b, center))[0];
+    return openCells.sort((a, b) => {
+        const nearestA = deadEnds.length ? Math.min(...deadEnds.map(deadEnd => manhattan(a, deadEnd))) : 999;
+        const nearestB = deadEnds.length ? Math.min(...deadEnds.map(deadEnd => manhattan(b, deadEnd))) : 999;
+        return nearestB - nearestA || manhattan(a, center) - manhattan(b, center);
+    })[0];
 }
 
 function getSolutionPath(m, start, end) {
@@ -420,6 +431,7 @@ function generateMaze(w, h) {
         ? deadEnds.sort((a, b) => manhattan(b, startCell) - manhattan(a, startCell))[0]
         : {x: w - 2, y: h - 2};
     deadEnds.forEach(({x, y}) => {
+        if (!(x === exitCell.x && y === exitCell.y) && manhattan({x, y}, startCell) <= SPAWN_HOLE_CLEARANCE) return;
         m[y][x] = x === exitCell.x && y === exitCell.y ? 2 : 3;
     });
     return m;
@@ -644,9 +656,9 @@ function draw() {
 
     drawWalls();
     drawWorldEdgeFade();
-    drawBall();
     drawDarkness();
     drawHoleVignette();
+    drawBall();
 
     requestAnimationFrame(draw);
 }
@@ -673,6 +685,10 @@ addEventListener("keyup", e => {
 addEventListener("resize", () => {
     if (state.running) initLevel();
 });
+
+startBtn.addEventListener("pointerdown", () => {
+    unlockAudio().catch(error => console.warn("Audio prime failed:", error));
+}, { passive: true });
 
 startBtn.onclick = async () => {
     if (hasStarted) return;
