@@ -264,14 +264,15 @@
     }
 
     .angle-wrap {
-      width: min(560px, 92vw);
-      height: 72px;
-      margin: 0 0 -22px;
+      width: min(430px, 72vw);
+      height: 86px;
+      margin: 0 0 -64px;
       border: 0;
       border-radius: 8px;
       background: transparent;
       overflow: hidden;
       box-shadow: none;
+      z-index: 2;
     }
 
     .board-wrap::before {
@@ -294,7 +295,7 @@
 
     #angleCanvas {
       width: 100%;
-      height: 72px;
+      height: 86px;
       pointer-events: none;
     }
 
@@ -421,12 +422,13 @@
       }
 
       .angle-wrap {
-        width: min(84vw, 420px);
-        height: 60px;
+        width: min(72vw, 360px);
+        height: 70px;
+        margin-bottom: -52px;
       }
 
       #angleCanvas {
-        height: 60px;
+        height: 70px;
       }
 
       .status {
@@ -520,13 +522,13 @@
       }
 
       .angle-wrap {
-        width: min(100%, 520px);
-        height: 58px;
-        margin-bottom: -18px;
+        width: min(74vw, 420px);
+        height: 70px;
+        margin-bottom: -54px;
       }
 
       #angleCanvas {
-        height: 58px;
+        height: 70px;
       }
 
       .board-wrap {
@@ -894,9 +896,9 @@
       const width = angleCanvas.width / window.devicePixelRatio;
       const height = angleCanvas.height / window.devicePixelRatio;
       const pad = Math.max(18, width * 0.08);
-      const start = { x: pad, y: height * 0.82 };
-      const control = { x: width / 2, y: height * 0.08 };
-      const end = { x: width - pad, y: height * 0.82 };
+      const start = { x: pad, y: height * 0.9 };
+      const control = { x: width / 2, y: height * 0.04 };
+      const end = { x: width - pad, y: height * 0.9 };
       const pointAt = (t) => {
         const inv = 1 - t;
         return {
@@ -936,7 +938,7 @@
       actx.font = "900 10px Arial";
       actx.textAlign = "center";
       actx.textBaseline = "middle";
-      actx.fillText("ANGLE", width / 2, height * 0.44);
+      actx.fillText("ANGLE", width / 2, height * 0.38);
       actx.restore();
     }
 
@@ -945,10 +947,10 @@
       ctx.save();
       ctx.translate(CENTER, CENTER);
       ctx.rotate(scanAngle);
-      ctx.setLineDash([12, 12]);
       ctx.lineWidth = 4;
 
-      if (state === "AXIS_X" || state === "AXIS_Y") {
+      if (state === "AXIS_X") {
+        ctx.setLineDash([12, 12]);
         ctx.strokeStyle = color;
         ctx.beginPath();
         ctx.moveTo(scanOffsetX, -RADIUS);
@@ -957,6 +959,16 @@
       }
 
       if (state === "AXIS_Y") {
+        ctx.setLineDash([]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(scanOffsetX, -RADIUS);
+        ctx.lineTo(scanOffsetX, RADIUS);
+        ctx.stroke();
+
+        ctx.setLineDash([12, 12]);
+        ctx.lineWidth = 4;
         ctx.strokeStyle = color;
         ctx.beginPath();
         ctx.moveTo(-RADIUS, scanOffsetY);
