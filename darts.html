@@ -265,8 +265,8 @@
 
     .angle-wrap {
       width: min(560px, 92vw);
-      height: 34px;
-      margin: 2px 0 -4px;
+      height: 72px;
+      margin: 0 0 -22px;
       border: 0;
       border-radius: 8px;
       background: transparent;
@@ -294,7 +294,7 @@
 
     #angleCanvas {
       width: 100%;
-      height: 34px;
+      height: 72px;
       pointer-events: none;
     }
 
@@ -521,12 +521,12 @@
 
       .angle-wrap {
         width: min(100%, 520px);
-        height: 32px;
-        margin-bottom: -6px;
+        height: 58px;
+        margin-bottom: -18px;
       }
 
       #angleCanvas {
-        height: 32px;
+        height: 58px;
       }
 
       .board-wrap {
@@ -785,14 +785,13 @@
         const labelRadius = 306;
         const labelX = Math.cos(labelAngle) * labelRadius;
         const labelY = Math.sin(labelAngle) * labelRadius;
-        ctx.fillStyle = "rgba(0, 0, 0, 0.34)";
-        ctx.beginPath();
-        ctx.roundRect(labelX - 22, labelY - 19, 44, 38, 6);
-        ctx.fill();
-        ctx.fillStyle = "#fff3dd";
         ctx.font = "1000 28px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.62)";
+        ctx.strokeText(NUMBERS[i], labelX, labelY + 2);
+        ctx.fillStyle = "#fff3dd";
         ctx.fillText(NUMBERS[i], labelX, labelY + 2);
       }
 
@@ -895,39 +894,49 @@
       const width = angleCanvas.width / window.devicePixelRatio;
       const height = angleCanvas.height / window.devicePixelRatio;
       const pad = Math.max(18, width * 0.08);
-      const trackY = Math.floor(height * 0.58);
-      const trackStart = pad;
-      const trackEnd = width - pad;
-      const x = trackStart + angleProgress * (trackEnd - trackStart);
+      const start = { x: pad, y: height * 0.82 };
+      const control = { x: width / 2, y: height * 0.08 };
+      const end = { x: width - pad, y: height * 0.82 };
+      const pointAt = (t) => {
+        const inv = 1 - t;
+        return {
+          x: inv * inv * start.x + 2 * inv * t * control.x + t * t * end.x,
+          y: inv * inv * start.y + 2 * inv * t * control.y + t * t * end.y
+        };
+      };
+      const marker = pointAt(angleProgress);
 
       actx.save();
       actx.lineCap = "round";
       actx.strokeStyle = "rgba(255,255,255,0.24)";
       actx.lineWidth = 8;
       actx.beginPath();
-      actx.moveTo(trackStart, trackY);
-      actx.lineTo(trackEnd, trackY);
+      actx.moveTo(start.x, start.y);
+      actx.quadraticCurveTo(control.x, control.y, end.x, end.y);
       actx.stroke();
 
       actx.strokeStyle = color;
       actx.lineWidth = 3;
       actx.beginPath();
-      actx.moveTo(trackStart, trackY);
-      actx.lineTo(x, trackY);
+      actx.moveTo(start.x, start.y);
+      for (let i = 1; i <= 28; i++) {
+        const p = pointAt(angleProgress * i / 28);
+        actx.lineTo(p.x, p.y);
+      }
       actx.stroke();
 
       actx.shadowColor = color;
       actx.shadowBlur = 10;
       actx.fillStyle = color;
       actx.beginPath();
-      actx.arc(x, trackY, 8, 0, Math.PI * 2);
+      actx.arc(marker.x, marker.y, 8, 0, Math.PI * 2);
       actx.fill();
       actx.shadowBlur = 0;
       actx.fillStyle = "rgba(255,255,255,0.82)";
       actx.font = "900 10px Arial";
       actx.textAlign = "center";
       actx.textBaseline = "middle";
-      actx.fillText("ANGLE", width / 2, 8);
+      actx.fillText("ANGLE", width / 2, height * 0.44);
       actx.restore();
     }
 
