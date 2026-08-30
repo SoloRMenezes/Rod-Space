@@ -196,7 +196,7 @@
 
     .stage {
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
       gap: 4px;
       justify-items: center;
       min-width: 0;
@@ -206,50 +206,8 @@
       overflow: hidden;
     }
 
-    .status,
     .scoreboard {
       width: min(900px, 100%);
-    }
-
-    .status {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 12px;
-      width: min(620px, 100%);
-      padding: 8px 12px;
-    }
-
-    .pill {
-      justify-self: center;
-      padding: 8px 15px;
-      border-radius: 999px;
-      color: var(--ink);
-      background: rgba(255, 255, 255, 0.07);
-      font-size: 0.78rem;
-      font-weight: 1000;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .hit-label {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: clamp(1.05rem, 3vw, 1.6rem);
-      font-weight: 1000;
-      font-style: italic;
-      text-transform: uppercase;
-      text-align: right;
-    }
-
-    .turn-meta {
-      display: none;
-      text-align: left;
-      color: #dfe7e2;
-      font-weight: 900;
-      font-variant-numeric: tabular-nums;
     }
 
     .board-wrap {
@@ -374,10 +332,6 @@
         font-size: 1.25rem;
       }
 
-      .hit-label {
-        text-align: right;
-      }
-
       .board-wrap {
         width: min(78vw, 43vh);
       }
@@ -412,16 +366,6 @@
 
       #angleCanvas {
         height: 70px;
-      }
-
-      .status {
-        width: min(92vw, 430px);
-      }
-
-      .hit-label,
-      .turn-meta,
-      .pill {
-        font-size: 0.72rem;
       }
 
       .menu {
@@ -475,33 +419,7 @@
 
       .stage {
         gap: 3px;
-        grid-template-rows: auto minmax(0, 1fr);
-      }
-
-      .status {
-        width: min(100%, 560px);
-        min-height: 48px;
-        padding: 6px 8px;
-        gap: 7px;
-      }
-
-      .hit-label {
-        font-size: clamp(0.95rem, 4vw, 1.45rem);
-      }
-
-      .pill {
-        padding: 7px 13px;
-        font-size: 0.66rem;
-        letter-spacing: 0.1em;
-        white-space: nowrap;
-      }
-
-      .turn-meta {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 0.78rem;
+        grid-template-rows: minmax(0, 1fr);
       }
 
       .angle-wrap {
@@ -574,12 +492,6 @@
     <aside id="scoreboard" class="scoreboard panel" aria-label="Player scores"></aside>
 
     <section class="stage">
-      <div class="status panel">
-        <div id="lastHitLabel" class="hit-label">Ready?</div>
-        <div id="instructionBox" class="pill">Set Angle</div>
-        <div id="turnMeta" class="turn-meta">Throw 1</div>
-      </div>
-
       <div class="board-wrap">
         <div class="angle-wrap">
           <canvas id="angleCanvas"></canvas>
@@ -595,9 +507,10 @@
     const angleCanvas = document.getElementById("angleCanvas");
     const actx = angleCanvas.getContext("2d");
     const scoreboard = document.getElementById("scoreboard");
-    const lastHitLabel = document.getElementById("lastHitLabel");
-    const instructionBox = document.getElementById("instructionBox");
-    const turnMeta = document.getElementById("turnMeta");
+    const silentStatus = { textContent: "", style: {} };
+    const lastHitLabel = silentStatus;
+    const instructionBox = silentStatus;
+    const turnMeta = silentStatus;
     const soundBtn = document.getElementById("soundBtn");
 
     const SIZE = 720;
@@ -686,7 +599,6 @@
 
     function setInstruction(text) {
       instructionBox.textContent = text;
-      instructionBox.style.borderColor = currentPlayer()?.color || "transparent";
     }
 
     function renderScoreboard() {
