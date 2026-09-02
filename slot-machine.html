@@ -13,15 +13,29 @@
             --screen-depth: inset 10px 10px 20px rgba(0,0,0,0.8), inset -5px -5px 15px rgba(255,255,255,0.05);
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+            overflow: hidden;
+        }
+
         body {
             background-color: #080808;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            min-height: 100svh;
             margin: 0;
+            padding: 16px;
             font-family: 'Times New Roman', serif;
             perspective: 1000px;
+            touch-action: manipulation;
         }
 
         .cabinet {
@@ -30,12 +44,13 @@
             background-image: 
                 repeating-linear-gradient(90deg, transparent 0, transparent 50px, rgba(0,0,0,0.15) 51px, transparent 52px),
                 linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.4) 100%);
-            padding: 60px;
+            width: min(620px, calc(100vw - 32px));
+            max-height: calc(100svh - 32px);
+            padding: clamp(28px, 7vw, 60px);
             border-radius: 30px;
-            border: 14px solid #1a0f0a;
+            border: clamp(8px, 2.2vw, 14px) solid #1a0f0a;
             box-shadow: 0 50px 100px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.5), inset 0 0 60px rgba(0,0,0,0.6);
             text-align: center;
-            min-width: 460px;
             transform: rotateX(2deg);
         }
 
@@ -44,8 +59,8 @@
             background: linear-gradient(to bottom, #8a6d3b, #f9d976, #8a6d3b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-size: 2.8rem;
-            margin: 0 0 25px 0;
+            font-size: clamp(2.2rem, 9vw, 2.8rem);
+            margin: 0 0 clamp(18px, 4vw, 25px) 0;
             text-transform: uppercase;
             letter-spacing: 6px;
             filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.8));
@@ -62,16 +77,17 @@
             border: 3px solid #332211;
             color: #ff2222;
             font-family: 'Courier New', monospace;
-            padding: 15px;
-            margin-bottom: 25px;
-            font-size: 1.4rem;
+            padding: clamp(10px, 3vw, 15px);
+            margin-bottom: clamp(18px, 4vw, 25px);
+            font-size: clamp(1rem, 4.6vw, 1.4rem);
             border-radius: 10px;
             box-shadow: var(--screen-depth);
             text-shadow: 0 0 10px #ff0000;
+            white-space: nowrap;
         }
 
         .slot-window-outer {
-            padding: 15px;
+            padding: clamp(8px, 2.4vw, 15px);
             background: #1a1a1a;
             border-radius: 15px;
             box-shadow: inset 5px 5px 15px #000, 2px 2px 5px rgba(255,255,255,0.1);
@@ -80,9 +96,9 @@
 
         .slot-window {
             display: flex;
-            gap: 15px;
+            gap: clamp(6px, 2vw, 15px);
             background: #fff;
-            padding: 20px;
+            padding: clamp(10px, 3vw, 20px);
             border-radius: 5px;
             position: relative;
             overflow: hidden;
@@ -100,8 +116,8 @@
         }
 
         .reel {
-            width: 95px;
-            height: 120px;
+            width: clamp(70px, 24vw, 95px);
+            height: clamp(88px, 30vw, 120px);
             background: linear-gradient(to bottom, #ddd 0%, #fff 15%, #fff 85%, #ddd 100%);
             border-left: 1px solid #bbb;
             border-right: 1px solid #bbb;
@@ -118,11 +134,11 @@
         }
 
         .symbol {
-            height: 120px;
+            height: clamp(88px, 30vw, 120px);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
+            font-size: clamp(3rem, 15vw, 4rem);
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
         }
 
@@ -163,7 +179,7 @@
             transform: rotateX(65deg) scaleY(0.7);
         }
 
-        .controls { margin-top: 40px; }
+        .controls { margin-top: clamp(28px, 7vw, 40px); }
 
         #spin-btn {
             background: linear-gradient(#d4af37, #8a6d3b);
@@ -189,6 +205,65 @@
             box-shadow: 0 8px 0 #222;
             cursor: not-allowed;
             filter: grayscale(1);
+        }
+
+        @media (max-width: 560px) {
+            body {
+                padding: 10px;
+            }
+
+            .cabinet {
+                width: calc(100vw - 20px);
+                min-height: min(760px, calc(100svh - 20px));
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                border-radius: 22px;
+                transform: none;
+            }
+
+            h1 {
+                letter-spacing: clamp(2px, 2vw, 6px);
+            }
+
+            .display-panel {
+                white-space: normal;
+                line-height: 1.25;
+            }
+
+            .reel,
+            .symbol {
+                width: clamp(58px, 21vw, 82px);
+                height: clamp(76px, 27vw, 104px);
+            }
+
+            .lever-arm {
+                right: 10px;
+                top: 51%;
+                width: 38px;
+                height: 168px;
+                z-index: 20;
+                transform: translateY(-50%);
+            }
+
+            .lever-stick {
+                width: 12px;
+                height: 112px;
+                margin-left: 13px;
+            }
+
+            .lever-head {
+                width: 34px;
+                height: 34px;
+                top: -17px;
+                left: -12px;
+            }
+
+            #spin-btn {
+                width: min(290px, 82vw);
+                padding: 16px 18px;
+                font-size: 1.12rem;
+            }
         }
     </style>
 </head>
@@ -331,7 +406,8 @@
                     
                     const time = 2 + (i * 0.6);
                     container.style.transition = `top ${time}s cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
-                    container.style.top = `-${(container.children.length - 1) * 120}px`;
+                    const symbolHeight = container.children[0].getBoundingClientRect().height;
+                    container.style.top = `-${(container.children.length - 1) * symbolHeight}px`;
 
                     setTimeout(() => {
                         container.style.transition = 'none';
