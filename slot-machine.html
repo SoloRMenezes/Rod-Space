@@ -59,17 +59,25 @@
             background: linear-gradient(to bottom, #8a6d3b, #f9d976, #8a6d3b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            column-gap: .42em;
+            row-gap: .08em;
             font-size: clamp(2.2rem, 9vw, 2.8rem);
+            line-height: 1;
             margin: 0 0 clamp(18px, 4vw, 25px) 0;
             text-transform: uppercase;
             letter-spacing: 6px;
             filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.8));
         }
 
-        .secret-trigger {
-            cursor: pointer;
-            pointer-events: auto;
-            display: inline-block;
+        h1 .word {
+            white-space: nowrap;
+        }
+
+        h1 [data-secret] {
+            cursor: default;
         }
 
         .display-panel {
@@ -270,7 +278,10 @@
 <body>
 
     <div class="cabinet" id="machine">
-        <h1>G<span id="secret-r" class="secret-trigger">r</span>an<span id="secret-d" class="secret-trigger">d</span> Sl<span id="secret-o" class="secret-trigger">o</span>ts</h1>
+        <h1>
+            <span class="word">G<span data-secret="r">r</span>an<span data-secret="d">d</span></span>
+            <span class="word">Sl<span data-secret="o">o</span><span data-secret="t">t</span><span data-secret="s">s</span></span>
+        </h1>
         
         <div class="display-panel">
             CREDITS: $<span id="balance">0</span> | 
@@ -305,9 +316,7 @@
         const lever = document.getElementById('lever');
         const machine = document.getElementById('machine');
         
-        const secretO = document.getElementById('secret-o');
-        const secretR = document.getElementById('secret-r');
-        const secretD = document.getElementById('secret-d');
+        const secretLetters = document.querySelectorAll('[data-secret]');
         
         const reelContainers = [
             document.getElementById('reel1'),
@@ -318,32 +327,34 @@
         let money = 0;
         let spinning = false;
         let forceJackpot = false;
+        let secretSequence = '';
 
         const rickroll = () => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
 
-        // Cheat 1: Random Jackpot (O)
-        secretO.addEventListener('click', (e) => {
-            e.stopPropagation();
-            forceJackpot = true;
-            statusDisplay.textContent = "JACKPOT READY";
-        });
+        function handleSecretLetter(letter) {
+            secretSequence = (secretSequence + letter).slice(-3);
 
-        // Cheat 2: Reset Money (R) - Only if GREATER than 1000
-        secretR.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (money > 1000) {
-                money = 1000;
-                localStorage.setItem('lastPlayDate', new Date().toDateString());
-                saveBalance(money);
-                updateDisplay();
-                statusDisplay.textContent = "RESET";
+            if (secretSequence === 'rod') {
+                forceJackpot = true;
+                secretSequence = '';
             }
-        });
 
-        // Cheat 3: Manual Rickroll (D)
-        secretD.addEventListener('click', (e) => {
-            e.stopPropagation();
-            rickroll();
+            if (secretSequence === 'rst') {
+                if (money > 1000) {
+                    money = 1000;
+                    localStorage.setItem('lastPlayDate', new Date().toDateString());
+                    saveBalance(money);
+                    updateDisplay();
+                }
+                secretSequence = '';
+            }
+        }
+
+        secretLetters.forEach(letterEl => {
+            letterEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleSecretLetter(letterEl.dataset.secret);
+            });
         });
 
         function loadGameState() {
