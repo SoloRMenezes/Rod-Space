@@ -437,6 +437,14 @@
           </div>
         </div>
 
+        <div class="flex flex-col gap-2">
+          <div class="flex justify-between items-center">
+            <label for="zoom-sensitivity" class="text-[9px] font-black text-neutral-500 uppercase tracking-widest font-mono">Zoom Sensitivity</label>
+            <span id="zoom-sensitivity-val" class="text-xs font-mono text-neutral-400">2.0x</span>
+          </div>
+          <input id="zoom-sensitivity" type="range" min="1" max="4" step="0.25" value="2" class="w-full accent-cyan-300 cursor-pointer">
+        </div>
+
         <button id="btn-save-garage" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center italic">
           SAVE VEHICLE SETUP
         </button>
@@ -819,6 +827,7 @@
       activeScreen: 'main-menu', // main-menu, garage, manual
       cameraMode: 'chase', // chase, cockpit, overhead, orbital
       cameraZoom: 1.65,
+      zoomSensitivity: 2,
       selectedArchetypeIndex: 0,
       customCarColor: '#ef4444',
       isMuted: false,
@@ -843,6 +852,7 @@
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
         if (Number.isFinite(saved.bestScore)) state.bestScore = saved.bestScore;
+        if (Number.isFinite(saved.zoomSensitivity)) state.zoomSensitivity = THREE.MathUtils.clamp(saved.zoomSensitivity, 1, 4);
       } catch (e) {
         state.bestScore = 0;
       }
@@ -850,12 +860,15 @@
 
     function saveRecords() {
       localStorage.setItem(storageKey, JSON.stringify({
-        bestScore: state.bestScore
+        bestScore: state.bestScore,
+        zoomSensitivity: state.zoomSensitivity
       }));
     }
 
     function refreshMenuRecords() {
       document.getElementById('menu-best-score').innerText = state.bestScore.toLocaleString();
+      document.getElementById('zoom-sensitivity').value = state.zoomSensitivity;
+      document.getElementById('zoom-sensitivity-val').innerText = `${state.zoomSensitivity.toFixed(2).replace(/\.?0+$/, '')}x`;
     }
 
     // --- 3. Three.js Scene Setup & Physics Core ---
@@ -960,7 +973,7 @@
     const trackWidth = 38;
     const cityLimit = 340;
     const streetCenters = [-240, -120, 0, 120, 240];
-    const gridRoadHalfWidth = 20;
+    const gridRoadHalfWidth = 15;
     const sidewalkWidth = 7;
     const sidewalkOuter = trackWidth / 2 + sidewalkWidth;
     const streetClearance = gridRoadHalfWidth + sidewalkWidth + 3;
@@ -1940,6 +1953,12 @@
       rebuildCar(CAR_ARCHETYPES[state.selectedArchetypeIndex].id, color);
     };
 
+    document.getElementById('zoom-sensitivity').oninput = (e) => {
+      state.zoomSensitivity = Number(e.target.value);
+      document.getElementById('zoom-sensitivity-val').innerText = `${state.zoomSensitivity.toFixed(2).replace(/\.?0+$/, '')}x`;
+      saveRecords();
+    };
+
     // Update garage carousel UI info
     function updateGarageCarousel() {
       const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
@@ -2176,7 +2195,7 @@
     window.addEventListener('wheel', (e) => {
       if (!state.isGameRunning) return;
       e.preventDefault();
-      state.cameraZoom = clampCameraZoom(state.cameraZoom + e.deltaY * 0.003);
+      state.cameraZoom = clampCameraZoom(state.cameraZoom + e.deltaY * 0.003 * state.zoomSensitivity);
     }, { passive: false });
 
     window.addEventListener('touchstart', (e) => {
@@ -2191,7 +2210,7 @@
         e.preventDefault();
         const currentDistance = getTouchDistance(e.touches);
         if (currentDistance > 0) {
-          state.cameraZoom = clampCameraZoom(pinchStartZoom * Math.pow(currentDistance / pinchStartDistance, 2.25));
+          state.cameraZoom = clampCameraZoom(pinchStartZoom * Math.pow(currentDistance / pinchStartDistance, 1 + 0.65 * state.zoomSensitivity));
         }
       }
     }, { passive: false });
