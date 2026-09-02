@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tokyo Drifter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Tokyo Drift</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,9 +27,24 @@
   </script>
   <!-- Three.js loads from the local vendor bundle inside the game script. -->
   <style>
+    html,
     body {
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
+      margin: 0;
+      overflow: hidden;
       touch-action: none;
       -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+    #game-canvas,
+    #hud-layer,
+    #screens-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100dvw;
+      height: 100dvh;
     }
     .custom-scroll::-webkit-scrollbar {
       width: 6px;
@@ -803,7 +818,7 @@
       isGameRunning: false,
       activeScreen: 'main-menu', // main-menu, garage, manual
       cameraMode: 'chase', // chase, cockpit, overhead, orbital
-      cameraZoom: 1,
+      cameraZoom: 1.65,
       selectedArchetypeIndex: 0,
       customCarColor: '#ef4444',
       isMuted: false,
@@ -871,7 +886,6 @@
       lastUpdate: 0
     };
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobileDevice ? 1.05 : 1.3));
     renderer.shadowMap.enabled = false;
 
@@ -881,19 +895,27 @@
     scene.background = new THREE.Color(bgColor);
     scene.fog = new THREE.FogExp2(bgColor, 0.00165);
 
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.5, 1200);
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.5, 1200);
 
-    // Dynamic Camera resize handler
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        const width = entry.contentRect.width || window.innerWidth;
-        const height = entry.contentRect.height || window.innerHeight;
-        renderer.setSize(width, height);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-      }
-    });
-    resizeObserver.observe(canvas);
+    function getViewportSize() {
+      const viewport = window.visualViewport;
+      return {
+        width: Math.max(1, Math.round(viewport?.width || window.innerWidth || document.documentElement.clientWidth)),
+        height: Math.max(1, Math.round(viewport?.height || window.innerHeight || document.documentElement.clientHeight))
+      };
+    }
+
+    function syncViewportSize() {
+      const { width, height } = getViewportSize();
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    syncViewportSize();
+    window.addEventListener('resize', syncViewportSize);
+    window.addEventListener('orientationchange', () => setTimeout(syncViewportSize, 250));
+    window.visualViewport?.addEventListener('resize', syncViewportSize);
 
     // Ambient and moonlight keep the city nocturnal without crushing visibility.
     const ambient = new THREE.AmbientLight(0xb6c7df, 1.18);
@@ -2116,7 +2138,7 @@
       const stableOffset = Math.abs(offset) <= tiltState.deadZone
         ? 0
         : offset - Math.sign(offset) * tiltState.deadZone;
-      const targetSteer = THREE.MathUtils.clamp(stableOffset / tiltState.maxTilt, -1, 1);
+      const targetSteer = THREE.MathUtils.clamp(-stableOffset / tiltState.maxTilt, -1, 1);
       tiltState.steer = THREE.MathUtils.lerp(tiltState.steer, targetSteer, 0.22);
       tiltState.enabled = true;
     }
@@ -2142,7 +2164,7 @@
     let pinchStartZoom = 1;
 
     function clampCameraZoom(value) {
-      return THREE.MathUtils.clamp(value, 0.42, 3.2);
+      return THREE.MathUtils.clamp(value, 0.34, 4.4);
     }
 
     function getTouchDistance(touches) {
