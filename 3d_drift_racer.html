@@ -100,15 +100,24 @@
       }
     }
     #garage-preview-model {
-      --car-paint: #ef4444;
-      --car-x: 1;
-      --car-z: 1;
       position: relative;
       height: 12rem;
       overflow: hidden;
+      cursor: grab;
+      touch-action: none;
       background:
         radial-gradient(circle at 50% 35%, rgba(125, 211, 252, 0.18), transparent 38%),
         linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(3, 7, 18, 0.98));
+    }
+    #garage-preview-model:active {
+      cursor: grabbing;
+    }
+    #garage-preview-model canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
     }
     #garage-preview-model::before {
       content: "";
@@ -121,66 +130,6 @@
       background: rgba(0, 0, 0, 0.55);
       filter: blur(6px);
     }
-    .garage-car {
-      position: absolute;
-      left: 50%;
-      bottom: 2rem;
-      width: calc(10rem * var(--car-x));
-      height: calc(5.7rem * var(--car-z));
-      transform: translateX(-50%) rotateX(58deg) rotateZ(-22deg);
-      transform-style: preserve-3d;
-    }
-    .garage-car span {
-      position: absolute;
-      display: block;
-      border-radius: 0.2rem;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
-    }
-    .garage-body {
-      inset: 1.3rem 1.05rem 0.95rem;
-      background: linear-gradient(135deg, color-mix(in srgb, var(--car-paint), white 18%), var(--car-paint) 55%, color-mix(in srgb, var(--car-paint), black 38%));
-    }
-    .garage-hood {
-      left: 1.8rem;
-      right: 1.8rem;
-      top: 0.45rem;
-      height: 1.65rem;
-      background: var(--car-paint);
-    }
-    .garage-cabin {
-      left: 3.25rem;
-      right: 2.6rem;
-      top: 2.05rem;
-      height: 1.7rem;
-      background: linear-gradient(135deg, #111827, #020617);
-      border: 0.16rem solid color-mix(in srgb, var(--car-paint), black 25%);
-    }
-    .garage-wing {
-      left: 0.45rem;
-      right: 0.45rem;
-      bottom: 0.25rem;
-      height: 0.38rem;
-      background: #05070c;
-    }
-    .garage-tail {
-      left: 2.05rem;
-      right: 2.05rem;
-      bottom: 0.78rem;
-      height: 0.22rem;
-      background: #ff4040;
-      box-shadow: 0 0 12px rgba(248, 113, 113, 0.45);
-    }
-    .garage-wheel {
-      width: 1.35rem;
-      height: 1.35rem;
-      background: radial-gradient(circle, #111827 32%, #020617 34%);
-      border: 0.18rem solid #05070c;
-      border-radius: 999px;
-    }
-    .garage-wheel.fl { left: 0.15rem; top: 0.95rem; }
-    .garage-wheel.fr { right: 0.15rem; top: 0.95rem; }
-    .garage-wheel.rl { left: 0.15rem; bottom: 0.65rem; }
-    .garage-wheel.rr { right: 0.15rem; bottom: 0.65rem; }
   </style>
 </head>
 <body class="bg-black text-white overflow-hidden h-screen w-screen select-none font-sans">
@@ -361,19 +310,7 @@
           </div>
         </div>
 
-        <div id="garage-preview-model" class="rounded-xl border border-white/5">
-          <div id="garage-preview-car" class="garage-car" aria-hidden="true">
-            <span class="garage-wheel fl"></span>
-            <span class="garage-wheel fr"></span>
-            <span class="garage-wheel rl"></span>
-            <span class="garage-wheel rr"></span>
-            <span class="garage-body"></span>
-            <span class="garage-hood"></span>
-            <span class="garage-cabin"></span>
-            <span class="garage-wing"></span>
-            <span class="garage-tail"></span>
-          </div>
-        </div>
+        <div id="garage-preview-model" class="rounded-xl border border-white/5" aria-label="Draggable vehicle preview"></div>
 
         <!-- Benchmark Specs Bars -->
         <div class="bg-neutral-900/40 rounded-xl p-4 border border-white/5 flex flex-col gap-3">
@@ -523,6 +460,9 @@
         this.engineGain = null;
         this.engineSubOsc = null;
         this.engineSubGain = null;
+        this.enginePulseOsc = null;
+        this.enginePulseGain = null;
+        this.enginePulseFilter = null;
         this.squealOsc = null;
         this.squealGain = null;
         this.masterGain = null;
@@ -563,16 +503,28 @@
         this.engineSubOsc.type = 'triangle';
         this.engineSubOsc.frequency.setValueAtTime(20, this.ctx.currentTime);
 
+        this.enginePulseOsc = this.ctx.createOscillator();
+        this.enginePulseOsc.type = 'square';
+        this.enginePulseOsc.frequency.setValueAtTime(70, this.ctx.currentTime);
+
         this.engineFilter = this.ctx.createBiquadFilter();
         this.engineFilter.type = 'lowpass';
         this.engineFilter.frequency.setValueAtTime(250, this.ctx.currentTime);
         this.engineFilter.Q.setValueAtTime(3, this.ctx.currentTime);
+
+        this.enginePulseFilter = this.ctx.createBiquadFilter();
+        this.enginePulseFilter.type = 'bandpass';
+        this.enginePulseFilter.frequency.setValueAtTime(520, this.ctx.currentTime);
+        this.enginePulseFilter.Q.setValueAtTime(2.2, this.ctx.currentTime);
 
         this.engineGain = this.ctx.createGain();
         this.engineGain.gain.setValueAtTime(0, this.ctx.currentTime);
 
         this.engineSubGain = this.ctx.createGain();
         this.engineSubGain.gain.setValueAtTime(0, this.ctx.currentTime);
+
+        this.enginePulseGain = this.ctx.createGain();
+        this.enginePulseGain.gain.setValueAtTime(0, this.ctx.currentTime);
 
         this.engineOsc.connect(this.engineFilter);
         this.engineFilter.connect(this.engineGain);
@@ -581,8 +533,13 @@
         this.engineSubOsc.connect(this.engineSubGain);
         this.engineSubGain.connect(this.masterGain);
 
+        this.enginePulseOsc.connect(this.enginePulseFilter);
+        this.enginePulseFilter.connect(this.enginePulseGain);
+        this.enginePulseGain.connect(this.masterGain);
+
         this.engineOsc.start(0);
         this.engineSubOsc.start(0);
+        this.enginePulseOsc.start(0);
       }
 
       setupSqueal() {
@@ -619,8 +576,9 @@
         if (!this.ctx) return;
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const t = this.ctx.currentTime;
-        if (this.engineGain) this.engineGain.gain.linearRampToValueAtTime(0.18, t + 0.3);
-        if (this.engineSubGain) this.engineSubGain.gain.linearRampToValueAtTime(0.28, t + 0.3);
+        if (this.engineGain) this.engineGain.gain.linearRampToValueAtTime(0.11, t + 0.22);
+        if (this.engineSubGain) this.engineSubGain.gain.linearRampToValueAtTime(0.18, t + 0.22);
+        if (this.enginePulseGain) this.enginePulseGain.gain.linearRampToValueAtTime(0.035, t + 0.22);
       }
 
       stopEngine() {
@@ -628,6 +586,7 @@
         const t = this.ctx.currentTime;
         if (this.engineGain) this.engineGain.gain.linearRampToValueAtTime(0, t + 0.3);
         if (this.engineSubGain) this.engineSubGain.gain.linearRampToValueAtTime(0, t + 0.3);
+        if (this.enginePulseGain) this.enginePulseGain.gain.linearRampToValueAtTime(0, t + 0.3);
         if (this.squealGain) this.squealGain.gain.linearRampToValueAtTime(0, t + 0.1);
       }
 
@@ -635,18 +594,23 @@
         if (!this.ctx || this.isMuted) return;
         const t = this.ctx.currentTime;
         const speed = Math.max(0, Math.min(1, speedFraction));
-        const rpmFreq = 42 + speed * 125 + (isBoosting ? 55 : 0);
-        const filterFreq = 190 + speed * 750 + (isBoosting ? 250 : 0);
+        const rpmFreq = 36 + speed * 150 + (isBoosting ? 72 : 0);
+        const filterFreq = 220 + speed * 980 + (isBoosting ? 360 : 0);
+        const pulseFreq = 62 + speed * 210 + (isBoosting ? 95 : 0);
 
         if (this.engineOsc) this.engineOsc.frequency.setValueAtTime(rpmFreq, t);
         if (this.engineSubOsc) this.engineSubOsc.frequency.setValueAtTime(rpmFreq / 2, t);
         if (this.engineFilter) this.engineFilter.frequency.setValueAtTime(filterFreq, t);
+        if (this.enginePulseOsc) this.enginePulseOsc.frequency.setValueAtTime(pulseFreq, t);
+        if (this.enginePulseFilter) this.enginePulseFilter.frequency.setValueAtTime(filterFreq * 0.72, t);
 
-        const engineVol = 0.15 + speed * 0.15 + (isBoosting ? 0.12 : 0);
-        const subVol = 0.22 + speed * 0.12 + (isBoosting ? 0.08 : 0);
+        const engineVol = 0.12 + speed * 0.17 + (isBoosting ? 0.1 : 0);
+        const subVol = 0.18 + speed * 0.1 + (isBoosting ? 0.08 : 0);
+        const pulseVol = 0.025 + speed * 0.055 + (isBoosting ? 0.03 : 0);
 
         if (this.engineGain) this.engineGain.gain.setValueAtTime(engineVol, t);
         if (this.engineSubGain) this.engineSubGain.gain.setValueAtTime(subVol, t);
+        if (this.enginePulseGain) this.enginePulseGain.gain.setValueAtTime(pulseVol, t);
       }
 
       setDrifting(isDrifting, intensity = 1.0) {
@@ -766,46 +730,46 @@
       {
         id: 'drift_king',
         name: 'Drift Spec Hachi',
-        description: 'Perfect slip-angle controls. Retains speed during massive slides.',
+        description: 'Balanced street coupe with fast rotation and forgiving slides.',
         color: '#ef4444', // Vibrant Premium Cherry Crimson
-        topSpeed: 0.95,
-        acceleration: 0.016,
-        driftHandling: 0.95,
-        stability: 5,
-        scale: { x: 1.0, y: 1.0, z: 1.0 }
+        topSpeed: 0.98,
+        acceleration: 0.017,
+        driftHandling: 1.05,
+        stability: 6,
+        scale: { x: 1.0, y: 0.95, z: 1.0 }
       },
       {
         id: 'speed_demon',
         name: 'GT Supercharged',
-        description: 'Blistering acceleration and top speed, but high-risk drift grip.',
+        description: 'Fast highway build. Huge speed, heavier turn-in, big recovery boost.',
         color: '#f59e0b', // Glowing Sunset Gold/Orange
-        topSpeed: 1.25,
-        acceleration: 0.024,
-        driftHandling: 0.50,
+        topSpeed: 1.34,
+        acceleration: 0.026,
+        driftHandling: 0.62,
         stability: 4,
-        scale: { x: 1.0, y: 0.95, z: 1.05 }
+        scale: { x: 1.05, y: 0.9, z: 1.18 }
       },
       {
         id: 'urban_tank',
         name: 'V8 Cyber Truck',
-        description: 'Heavy chassis with a planted feel, lower drift control.',
+        description: 'Wide heavy chassis. Slow launch, high stability, pushes through cones.',
         color: '#64748b', // Cyber Slate Steel
-        topSpeed: 0.85,
-        acceleration: 0.012,
-        driftHandling: 0.40,
+        topSpeed: 0.82,
+        acceleration: 0.011,
+        driftHandling: 0.46,
         stability: 8,
-        scale: { x: 1.15, y: 1.15, z: 1.2 }
+        scale: { x: 1.24, y: 1.16, z: 1.25 }
       },
       {
         id: 'hyper_boost',
         name: 'Quantum EV',
-        description: 'Instant torque and rapid turbo regeneration. Lightweight chassis.',
+        description: 'Light electric sprint car. Snappy launch, twitchy slides, quick refill.',
         color: '#f3f4f6', // Pearl White
-        topSpeed: 1.10,
-        acceleration: 0.021,
-        driftHandling: 0.75,
+        topSpeed: 1.12,
+        acceleration: 0.031,
+        driftHandling: 0.86,
         stability: 3,
-        scale: { x: 0.95, y: 0.90, z: 0.95 }
+        scale: { x: 0.88, y: 0.82, z: 0.94 }
       }
     ];
 
@@ -1470,60 +1434,117 @@
     // --- Free drift scoring has no required gates or score zones. ---
     const styleZones = [];
 
-    // --- Collectibles (Nitro canisters) ---
+    // --- Collectibles (Nitro bottles) ---
     const collectibles = [];
-    const collectGeos = {
-      boost: new THREE.CylinderGeometry(0.2, 0.2, 0.8, 8)
-    };
     const collectMats = {
-      boost: new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0ea5e9, emissiveIntensity: 0.55, metalness: 0.5, roughness: 0.2 })
+      boost: new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0ea5e9, emissiveIntensity: 0.45, metalness: 0.15, roughness: 0.22 }),
+      cap: new THREE.MeshStandardMaterial({ color: 0xe0f2fe, emissive: 0x93c5fd, emissiveIntensity: 0.28, roughness: 0.28 })
     };
 
-    // Spawn nitro canisters along the loop.
-    for (let i = 0; i < 10; i++) {
-      const fract = (i * 20 + 8) / 200;
-      const type = 'boost';
-      const pos = trackCurve.getPointAt(fract);
-      pos.y = 0.5;
-
-      const mesh = new THREE.Mesh(collectGeos[type], collectMats[type]);
-      mesh.position.copy(pos);
-      scene.add(mesh);
-
-      collectibles.push({
-        id: `c_${i}`,
-        type,
-        mesh,
-        collected: false
-      });
+    function createNitroBottle() {
+      const bottle = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.23, 0.62, 12), collectMats.boost);
+      body.position.y = 0.31;
+      bottle.add(body);
+      const shoulder = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 0.18, 12), collectMats.boost);
+      shoulder.position.y = 0.71;
+      bottle.add(shoulder);
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.22, 10), collectMats.boost);
+      neck.position.y = 0.91;
+      bottle.add(neck);
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.08, 10), collectMats.cap);
+      cap.position.y = 1.06;
+      bottle.add(cap);
+      return bottle;
     }
+
+    // Bottles cluster around crosswalk/intersection moments so they read like
+    // street pickups instead of random blue posts.
+    const bottleSpots = [
+      { f: 0.02, offsets: [-6.2, 5.2] },
+      { f: 0.19, offsets: [-4.5, 0, 4.8] },
+      { f: 0.36, offsets: [-5.4, 5.6] },
+      { f: 0.53, offsets: [-3.6, 3.9] },
+      { f: 0.70, offsets: [-5.8, 0.5, 5.1] },
+      { f: 0.87, offsets: [-4.2, 4.4] }
+    ];
+    let bottleId = 0;
+    bottleSpots.forEach(spot => {
+      const pos = trackCurve.getPointAt(spot.f);
+      const tangent = trackCurve.getTangentAt(spot.f).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+      spot.offsets.forEach((offset, idx) => {
+        const type = 'boost';
+        const mesh = createNitroBottle();
+        mesh.position.copy(pos).add(normal.clone().multiplyScalar(offset));
+        mesh.position.add(tangent.clone().multiplyScalar((idx - (spot.offsets.length - 1) / 2) * 1.15));
+        mesh.position.y = 0.08;
+        mesh.rotation.y = Math.atan2(tangent.x, tangent.z) + (Math.random() - 0.5) * 0.8;
+        scene.add(mesh);
+
+        collectibles.push({
+          id: `c_${bottleId++}`,
+          type,
+          mesh,
+          collected: false
+        });
+      });
+    });
 
     // --- Collision Traffic Cones ---
     const obstacles = [];
-    const coneGeo = new THREE.ConeGeometry(0.35, 0.9, 8);
-    const coneMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.6 }); // red-rose cone
-    
-    // Spawn 8 cones
-    for (let i = 0; i < 8; i++) {
-      const fract = (i * 25 + 16) / 200;
-      const pos = trackCurve.getPointAt(fract);
-      // Put offset to side slightly
-      const tangent = trackCurve.getTangentAt(fract).normalize();
-      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-      const offsetPos = pos.clone().add(normal.clone().multiplyScalar((Math.random() - 0.5) * (trackWidth - 4)));
-      offsetPos.y = 0.5;
+    const coneGeo = new THREE.ConeGeometry(0.35, 0.9, 10);
+    const coneMat = new THREE.MeshStandardMaterial({ color: 0xf97316, emissive: 0x7c2d12, emissiveIntensity: 0.12, roughness: 0.58 });
+    const coneStripeMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
 
-      const mesh = new THREE.Mesh(coneGeo, coneMat);
-      mesh.position.copy(offsetPos);
-      scene.add(mesh);
-
-      obstacles.push({
-        id: `o_${i}`,
-        mesh,
-        hit: false,
-        velocity: new THREE.Vector3()
-      });
+    function createTrafficCone() {
+      const cone = new THREE.Group();
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.42, 0.08, 10), coneMat);
+      base.position.y = 0.04;
+      cone.add(base);
+      const body = new THREE.Mesh(coneGeo, coneMat);
+      body.position.y = 0.53;
+      cone.add(body);
+      const stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.25, 0.075, 10), coneStripeMat);
+      stripe.position.y = 0.5;
+      cone.add(stripe);
+      return cone;
     }
+    
+    // Cone rows are intentionally placed in short lines, so dodging or
+    // clipping them is readable and funny instead of feeling unfair.
+    const coneLines = [
+      { f: 0.10, side: -1, count: 5, curve: 0.7 },
+      { f: 0.27, side: 1, count: 4, curve: -0.45 },
+      { f: 0.48, side: -1, count: 6, curve: 0.3 },
+      { f: 0.64, side: 1, count: 5, curve: 0.85 },
+      { f: 0.82, side: -1, count: 4, curve: -0.55 }
+    ];
+
+    let coneId = 0;
+    coneLines.forEach(line => {
+      const tangent = trackCurve.getTangentAt(line.f).normalize();
+      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+      const center = trackCurve.getPointAt(line.f).add(normal.clone().multiplyScalar(line.side * (trackWidth * 0.24)));
+      for (let i = 0; i < line.count; i++) {
+        const step = i - (line.count - 1) / 2;
+        const offsetPos = center.clone()
+          .add(tangent.clone().multiplyScalar(step * 1.35))
+          .add(normal.clone().multiplyScalar(Math.sin(i * 0.9) * line.curve));
+        offsetPos.y = 0.04;
+        const mesh = createTrafficCone();
+        mesh.position.copy(offsetPos);
+        mesh.rotation.y = Math.atan2(tangent.x, tangent.z) + line.side * 0.25;
+        scene.add(mesh);
+
+        obstacles.push({
+          id: `o_${coneId++}`,
+          mesh,
+          hit: false,
+          velocity: new THREE.Vector3()
+        });
+      }
+    });
 
     // --- Starting Banner / Finish Arch ---
     const startBanner = new THREE.Group();
@@ -1555,6 +1576,13 @@
     let carWheels = [];
     let exhaustFlames = [];
     let carBodyMesh = null;
+    let garagePreviewRenderer = null;
+    let garagePreviewScene = null;
+    let garagePreviewCamera = null;
+    let garagePreviewCar = null;
+    let garagePreviewYaw = -0.65;
+    let garagePreviewDragging = false;
+    let garagePreviewLastX = 0;
 
     function rebuildCar(archetypeId, colorHex) {
       // Clear previous car parts
@@ -1735,11 +1763,132 @@
     }
 
     function updateGaragePreviewModel(arch, colorHex) {
-      const previewCar = document.getElementById('garage-preview-car');
-      if (!previewCar) return;
-      previewCar.style.setProperty('--car-paint', colorHex);
-      previewCar.style.setProperty('--car-x', String(arch.scale.x));
-      previewCar.style.setProperty('--car-z', String(arch.scale.z));
+      initGaragePreview();
+      if (!garagePreviewScene) return;
+      if (garagePreviewCar) garagePreviewScene.remove(garagePreviewCar);
+      garagePreviewCar = createGaragePreviewCar(arch, colorHex);
+      garagePreviewScene.add(garagePreviewCar);
+      renderGaragePreview(true);
+    }
+
+    function initGaragePreview() {
+      if (garagePreviewRenderer) return;
+      const previewEl = document.getElementById('garage-preview-model');
+      if (!previewEl) return;
+
+      garagePreviewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      garagePreviewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      previewEl.appendChild(garagePreviewRenderer.domElement);
+
+      garagePreviewScene = new THREE.Scene();
+      garagePreviewCamera = new THREE.PerspectiveCamera(34, 1, 0.1, 40);
+      garagePreviewCamera.position.set(0, 3.1, 7.2);
+      garagePreviewCamera.lookAt(0, 0.55, 0);
+
+      garagePreviewScene.add(new THREE.AmbientLight(0xdbeafe, 1.6));
+      const key = new THREE.DirectionalLight(0x93c5fd, 1.4);
+      key.position.set(4, 6, 5);
+      garagePreviewScene.add(key);
+      const rim = new THREE.DirectionalLight(0xfca5a5, 0.9);
+      rim.position.set(-5, 2.4, -4);
+      garagePreviewScene.add(rim);
+
+      const floor = new THREE.Mesh(
+        new THREE.CircleGeometry(2.8, 48),
+        new THREE.MeshBasicMaterial({ color: 0x020617, transparent: true, opacity: 0.55 })
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -0.04;
+      garagePreviewScene.add(floor);
+
+      const dragStart = (clientX) => {
+        garagePreviewDragging = true;
+        garagePreviewLastX = clientX;
+      };
+      const dragMove = (clientX) => {
+        if (!garagePreviewDragging) return;
+        garagePreviewYaw += (clientX - garagePreviewLastX) * 0.012;
+        garagePreviewLastX = clientX;
+        renderGaragePreview(true);
+      };
+      const dragEnd = () => { garagePreviewDragging = false; };
+
+      previewEl.addEventListener('pointerdown', (e) => {
+        dragStart(e.clientX);
+        previewEl.setPointerCapture?.(e.pointerId);
+      });
+      previewEl.addEventListener('pointermove', (e) => dragMove(e.clientX));
+      previewEl.addEventListener('pointerup', dragEnd);
+      previewEl.addEventListener('pointercancel', dragEnd);
+      window.addEventListener('resize', () => renderGaragePreview(true));
+    }
+
+    function createGaragePreviewCar(arch, colorHex) {
+      const group = new THREE.Group();
+      const sc = arch.scale;
+      const bodyMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(colorHex), roughness: 0.2, metalness: 0.65 });
+      const blackMat = new THREE.MeshStandardMaterial({ color: 0x05070c, roughness: 0.68 });
+      const glassMat = new THREE.MeshStandardMaterial({ color: 0x111827, transparent: true, opacity: 0.88, roughness: 0.25 });
+      const chromeMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8, roughness: 0.22 });
+      const tailMat = new THREE.MeshBasicMaterial({ color: 0xff4242 });
+      const headMat = new THREE.MeshBasicMaterial({ color: 0xe0f7ff });
+
+      const addBox = (name, size, pos, mat) => {
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(size.x * sc.x, size.y * sc.y, size.z * sc.z), mat);
+        mesh.name = name;
+        mesh.position.set(pos.x * sc.x, pos.y * sc.y, pos.z * sc.z);
+        group.add(mesh);
+        return mesh;
+      };
+
+      addBox('frame', { x: 2.15, y: 0.22, z: 3.55 }, { x: 0, y: 0.26, z: 0 }, blackMat);
+      addBox('hood', { x: 1.65, y: 0.22, z: 1.16 }, { x: 0, y: 0.48, z: 1.02 }, bodyMat);
+      addBox('trunk', { x: 1.78, y: 0.28, z: 0.98 }, { x: 0, y: 0.49, z: -1.1 }, bodyMat);
+      addBox('wide body', { x: 1.86, y: 0.36, z: 1.28 }, { x: 0, y: 0.52, z: -0.06 }, bodyMat);
+      addBox('roof', { x: 1.06, y: 0.38, z: 0.92 }, { x: 0, y: 0.94, z: -0.12 }, bodyMat);
+      addBox('roof glass', { x: 0.74, y: 0.04, z: 0.58 }, { x: 0, y: 1.15, z: -0.08 }, glassMat);
+      const windshield = addBox('windshield', { x: 1.02, y: 0.32, z: 0.5 }, { x: 0, y: 0.88, z: 0.48 }, glassMat);
+      windshield.rotation.x = 0.45;
+      const rearGlass = addBox('rear glass', { x: 0.96, y: 0.28, z: 0.44 }, { x: 0, y: 0.85, z: -0.62 }, glassMat);
+      rearGlass.rotation.x = -0.42;
+      addBox('splitter', { x: 2.12, y: 0.08, z: 0.28 }, { x: 0, y: 0.27, z: 1.75 }, blackMat);
+      addBox('rear wing', { x: 2.15, y: 0.08, z: 0.38 }, { x: 0, y: 0.92, z: -1.55 }, blackMat);
+      addBox('tail light', { x: 1.35, y: 0.08, z: 0.06 }, { x: 0, y: 0.48, z: -1.62 }, tailMat);
+      addBox('left headlight', { x: 0.34, y: 0.08, z: 0.06 }, { x: -0.55, y: 0.52, z: 1.69 }, headMat);
+      addBox('right headlight', { x: 0.34, y: 0.08, z: 0.06 }, { x: 0.55, y: 0.52, z: 1.69 }, headMat);
+
+      const tireGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.42, 18);
+      tireGeo.rotateZ(Math.PI / 2);
+      [
+        [0.98, 0.4, 1.1],
+        [-0.98, 0.4, 1.1],
+        [0.98, 0.4, -1.1],
+        [-0.98, 0.4, -1.1]
+      ].forEach(([x, y, z]) => {
+        const tire = new THREE.Mesh(tireGeo, blackMat);
+        tire.position.set(x * sc.x, y * sc.y, z * sc.z);
+        group.add(tire);
+        const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.44, 10), chromeMat);
+        hub.rotateZ(Math.PI / 2);
+        tire.add(hub);
+      });
+
+      group.rotation.y = garagePreviewYaw;
+      group.position.y = -0.15;
+      return group;
+    }
+
+    function renderGaragePreview(force = false) {
+      if (!garagePreviewRenderer || !garagePreviewScene || !garagePreviewCamera) return;
+      const previewEl = document.getElementById('garage-preview-model');
+      if (!previewEl || (!force && state.activeScreen !== 'garage')) return;
+      const rect = previewEl.getBoundingClientRect();
+      if (rect.width < 2 || rect.height < 2) return;
+      garagePreviewRenderer.setSize(rect.width, rect.height, false);
+      garagePreviewCamera.aspect = rect.width / rect.height;
+      garagePreviewCamera.updateProjectionMatrix();
+      if (garagePreviewCar) garagePreviewCar.rotation.y = garagePreviewYaw;
+      garagePreviewRenderer.render(garagePreviewScene, garagePreviewCamera);
     }
 
     function resetCarToStart() {
@@ -1899,6 +2048,7 @@
         ui.hudLayer.classList.add('hidden');
         resetCarToStart();
       }
+      if (screenId === 'garage') renderGaragePreview(true);
     }
 
     function showNotification(text) {
@@ -1966,9 +2116,9 @@
       document.getElementById('garage-car-desc').innerText = arch.description;
 
       // Spec values (0 to 100 scale)
-      const speedPct = Math.round((arch.topSpeed / 1.3) * 100);
-      const accelPct = Math.round((arch.acceleration / 0.026) * 100);
-      const driftPct = Math.round((arch.driftHandling / 1.0) * 100);
+      const speedPct = Math.min(100, Math.round((arch.topSpeed / 1.35) * 100));
+      const accelPct = Math.min(100, Math.round((arch.acceleration / 0.032) * 100));
+      const driftPct = Math.min(100, Math.round((arch.driftHandling / 1.1) * 100));
 
       document.getElementById('spec-speed-num').innerText = `${speedPct}%`;
       document.getElementById('spec-speed-bar').style.width = `${speedPct}%`;
@@ -2260,15 +2410,17 @@
         }
 
         // Steer angle wheels pivot
-        const turnRadius = Math.min(Math.abs(state.currentSpeed) * 3.8, 1);
+        const turnRadius = Math.min(Math.abs(state.currentSpeed) * 4.9, 1);
         const isShift = state.keys.ShiftLeft || state.currentSpeed > 0.3; // automatic sliding at speed
-        const steerFactor = 0.048 * arch.driftHandling * turnRadius * (isShift ? 1.5 : 1.0);
+        const steerFactor = 0.058 * arch.driftHandling * turnRadius * (isShift ? 2.05 : 1.1);
 
         let keyboardSteer = (isL ? 1 : 0) - (isR ? 1 : 0);
         if (state.currentSpeed < -0.03) keyboardSteer *= -1;
         const tiltSteer = isMobileDevice ? tiltState.steer : 0;
         const steerInput = THREE.MathUtils.clamp(keyboardSteer + tiltSteer, -1, 1);
         carGroup.rotation.y += steerFactor * steerInput;
+        const driftLean = THREE.MathUtils.clamp(steerInput * Math.abs(state.currentSpeed) * -0.09, -0.08, 0.08);
+        carGroup.rotation.z = THREE.MathUtils.lerp(carGroup.rotation.z, driftLean, 0.12);
 
         // Steer front wheel rotation mesh simulation
         if (carWheels.length >= 2) {
@@ -2293,8 +2445,8 @@
         heading.set(0, 0, 1).applyQuaternion(carGroup.quaternion);
         targetVel.copy(heading).multiplyScalar(state.currentSpeed);
         
-        const slip = 0.045 + (1 - arch.driftHandling) * 0.055;
-        velocity.lerp(targetVel, isShift ? slip * 0.5 : slip);
+        const slip = 0.042 + (1 - Math.min(arch.driftHandling, 1)) * 0.052;
+        velocity.lerp(targetVel, isShift ? slip * 0.42 : slip);
 
         const movingForward = state.currentSpeed >= 0;
         driftHeading.copy(heading);
@@ -2310,11 +2462,11 @@
           if (carWheels.length >= 4) {
             wheelWorldL.copy(carWheels[2].parent.position).applyMatrix4(carGroup.matrixWorld);
             wheelWorldR.copy(carWheels[3].parent.position).applyMatrix4(carGroup.matrixWorld);
-            if (Math.random() > 0.3) {
+            if (Math.random() > 0.16) {
               emitSmoke(wheelWorldL);
               emitSmoke(wheelWorldR);
             }
-            if (Math.random() > 0.4) {
+            if (Math.random() > 0.22) {
               addSkidmark(wheelWorldL, wheelWorldR);
             }
           }
@@ -2460,8 +2612,8 @@
             o.mesh.rotation.x += 0.1;
             o.mesh.rotation.y += 0.05;
 
-            if (o.mesh.position.y <= 0.45) {
-              o.mesh.position.y = 0.45;
+            if (o.mesh.position.y <= 0.04) {
+              o.mesh.position.y = 0.04;
               o.velocity.set(0, 0, 0);
               o.hit = false;
             }
@@ -2558,6 +2710,7 @@
         audio.updateEngine(absoluteFraction, isTurbo);
       }
 
+      renderGaragePreview();
       renderer.render(scene, camera);
     }
 
