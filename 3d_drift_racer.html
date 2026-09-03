@@ -992,9 +992,12 @@
     const sidewalkWidth = 9;
     const streetClearance = gridRoadHalfWidth + sidewalkWidth + 3;
     const towerLegHalf = 2.4;
-    const nitroDrainRate = 58;
-    const nitroRechargeRate = 17;
+    // A full tank lasts about twice as long as before, while passive recovery
+    // takes twice as long too. Bottles remain the fastest way to refill.
+    const nitroDrainRate = 29;
+    const nitroRechargeRate = 8.5;
     const nitroReadyThreshold = 45;
+    const nitroBottleRespawnMs = 120000;
     // This hidden loop is used for spawning/reset flow only; the visible city
     // roads below are square grid strips so the map reads like Tokyo blocks.
     const trackPoints = [
@@ -1492,36 +1495,25 @@
       return bottle;
     }
 
-    // Bottles cluster around crosswalk/intersection moments so they read like
-    // street pickups instead of random blue posts.
-    const bottleSpots = [
-      { f: 0.02, offsets: [-6.2, 5.2] },
-      { f: 0.19, offsets: [-4.5, 0, 4.8] },
-      { f: 0.36, offsets: [-5.4, 5.6] },
-      { f: 0.53, offsets: [-3.6, 3.9] },
-      { f: 0.70, offsets: [-5.8, 0.5, 5.1] },
-      { f: 0.87, offsets: [-4.2, 4.4] }
-    ];
+    // One bottle at every non-central intersection spreads refills evenly
+    // through the whole city while keeping the Tokyo Tower approach clear.
+    const bottleSpots = streetCenters.flatMap((x, xIndex) => (
+      streetCenters
+        .filter(z => x !== 0 || z !== 0)
+        .map((z, zIndex) => ({ x, z, rotation: (xIndex + zIndex) * Math.PI / 4 }))
+    ));
     let bottleId = 0;
     bottleSpots.forEach(spot => {
-      const pos = trackCurve.getPointAt(spot.f);
-      const tangent = trackCurve.getTangentAt(spot.f).normalize();
-      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-      spot.offsets.forEach((offset, idx) => {
-        const type = 'boost';
-        const mesh = createNitroBottle();
-        mesh.position.copy(pos).add(normal.clone().multiplyScalar(offset));
-        mesh.position.add(tangent.clone().multiplyScalar((idx - (spot.offsets.length - 1) / 2) * 1.15));
-        mesh.position.y = 0.08;
-        mesh.rotation.y = Math.atan2(tangent.x, tangent.z) + (Math.random() - 0.5) * 0.8;
-        scene.add(mesh);
+      const mesh = createNitroBottle();
+      mesh.position.set(spot.x, 0.08, spot.z);
+      mesh.rotation.y = spot.rotation;
+      scene.add(mesh);
 
-        collectibles.push({
-          id: `c_${bottleId++}`,
-          type,
-          mesh,
-          collected: false
-        });
+      collectibles.push({
+        id: `c_${bottleId++}`,
+        type: 'boost',
+        mesh,
+        collected: false
       });
     });
 
@@ -2638,11 +2630,11 @@
               state.turboLocked = false;
               showNotification("NITRO BOOST CAPACITY RECHARGED!");
 
-              // Respawn canister in 8 seconds
+              // Each intersection gets its bottle back after two minutes.
               setTimeout(() => {
                 col.collected = false;
                 col.mesh.visible = true;
-              }, 8000);
+              }, nitroBottleRespawnMs);
             }
           }
         });
