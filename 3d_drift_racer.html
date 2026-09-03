@@ -78,22 +78,16 @@
       width: 4.6rem;
       height: 3.45rem;
     }
-    body.is-touch-tall #screens-overlay::after {
-      content: "Rotate sideways for mobile drift controls";
-      position: fixed;
+    body.is-mobile-device.is-touch-tall #game-canvas,
+    body.is-mobile-device.is-touch-tall #hud-layer,
+    body.is-mobile-device.is-touch-tall #screens-overlay {
+      inset: auto;
+      top: 50%;
       left: 50%;
-      bottom: 1rem;
-      transform: translateX(-50%);
-      width: max-content;
-      max-width: calc(100vw - 2rem);
-      padding: 0.55rem 0.75rem;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 0.75rem;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font: 800 0.72rem Inter, sans-serif;
-      letter-spacing: 0;
-      pointer-events: none;
+      width: 100dvh;
+      height: 100dvw;
+      transform: translate(-50%, -50%) rotate(90deg);
+      transform-origin: center;
     }
     @media (hover: none) and (pointer: coarse) and (orientation: landscape) {
       #hud-layer {
@@ -117,25 +111,6 @@
       #touch-down {
         width: 4.6rem;
         height: 3.45rem;
-      }
-    }
-    @media (hover: none) and (pointer: coarse) and (orientation: portrait) {
-      #screens-overlay::after {
-        content: "Rotate sideways for mobile drift controls";
-        position: fixed;
-        left: 50%;
-        bottom: 1rem;
-        transform: translateX(-50%);
-        width: max-content;
-        max-width: calc(100vw - 2rem);
-        padding: 0.55rem 0.75rem;
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 0.75rem;
-        background: rgba(0,0,0,0.72);
-        color: white;
-        font: 800 0.72rem Inter, sans-serif;
-        letter-spacing: 0;
-        pointer-events: none;
       }
     }
     #garage-preview-model {
@@ -773,7 +748,7 @@
         color: '#ef4444', // Vibrant Premium Cherry Crimson
         topSpeed: 0.98,
         acceleration: 0.017,
-        driftHandling: 1.05,
+        driftHandling: 0.55,
         stability: 6,
         scale: { x: 1.0, y: 0.95, z: 1.0 }
       },
@@ -784,7 +759,7 @@
         color: '#f59e0b', // Glowing Sunset Gold/Orange
         topSpeed: 1.34,
         acceleration: 0.026,
-        driftHandling: 0.62,
+        driftHandling: 0.34,
         stability: 4,
         scale: { x: 1.05, y: 0.9, z: 1.18 }
       },
@@ -795,7 +770,7 @@
         color: '#64748b', // Cyber Slate Steel
         topSpeed: 0.82,
         acceleration: 0.011,
-        driftHandling: 0.46,
+        driftHandling: 0.28,
         stability: 8,
         scale: { x: 1.24, y: 1.16, z: 1.25 }
       },
@@ -806,7 +781,7 @@
         color: '#f3f4f6', // Pearl White
         topSpeed: 1.12,
         acceleration: 0.031,
-        driftHandling: 0.86,
+        driftHandling: 0.48,
         stability: 3,
         scale: { x: 0.88, y: 0.82, z: 0.94 }
       }
@@ -876,7 +851,9 @@
 
     // --- 3. Three.js Scene Setup & Physics Core ---
     const canvas = document.getElementById('game-canvas');
-    const isMobileDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const mobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    const iPadDesktopMode = /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+    const isMobileDevice = Boolean(navigator.userAgentData?.mobile || mobileUserAgent || iPadDesktopMode);
     const ui = {
       speed: document.getElementById('speed-val'),
       gear: document.getElementById('gear-val'),
@@ -923,13 +900,16 @@
 
     function syncTouchOrientationClass(width, height) {
       if (!isMobileDevice) return;
-      document.body.classList.toggle('is-touch-wide', width >= height);
+      document.body.classList.add('is-mobile-device');
+      document.body.classList.add('is-touch-wide');
       document.body.classList.toggle('is-touch-tall', height > width);
     }
 
     function syncViewportSize() {
-      const { width, height } = getViewportSize();
-      syncTouchOrientationClass(width, height);
+      const rawSize = getViewportSize();
+      syncTouchOrientationClass(rawSize.width, rawSize.height);
+      const width = isMobileDevice ? Math.max(rawSize.width, rawSize.height) : rawSize.width;
+      const height = isMobileDevice ? Math.min(rawSize.width, rawSize.height) : rawSize.height;
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
@@ -1139,21 +1119,15 @@
     }
 
     const sidewalkRects = [];
-    // Sidewalks belong beside street segments, not across intersections.
-    // Each segment between two crossing roads gets two raised pavement strips.
-    const streetSegmentRanges = [];
-    for (let i = 0; i < streetCenters.length - 1; i++) {
-      const min = streetCenters[i] + gridRoadHalfWidth;
-      const max = streetCenters[i + 1] - gridRoadHalfWidth;
-      if (max - min > sidewalkWidth * 2) streetSegmentRanges.push({ min, max, center: (min + max) / 2, size: max - min });
-    }
-    streetCenters.forEach(center => {
-      streetSegmentRanges.forEach(range => {
+    // Give every city block one continuous pavement border. Building blocks
+    // stay filled while intersections remain completely open to the road.
+    blockRanges.forEach(xRange => {
+      blockRanges.forEach(zRange => {
         sidewalkRects.push(
-          { width: range.size, depth: sidewalkWidth, x: range.center, z: center - gridRoadHalfWidth - sidewalkWidth / 2, y: 0.39 },
-          { width: range.size, depth: sidewalkWidth, x: range.center, z: center + gridRoadHalfWidth + sidewalkWidth / 2, y: 0.39 },
-          { width: sidewalkWidth, depth: range.size, x: center - gridRoadHalfWidth - sidewalkWidth / 2, z: range.center, y: 0.395 },
-          { width: sidewalkWidth, depth: range.size, x: center + gridRoadHalfWidth + sidewalkWidth / 2, z: range.center, y: 0.395 }
+          { width: xRange.size, depth: sidewalkWidth, x: xRange.center, z: zRange.min + sidewalkWidth / 2, y: 0.39 },
+          { width: xRange.size, depth: sidewalkWidth, x: xRange.center, z: zRange.max - sidewalkWidth / 2, y: 0.39 },
+          { width: sidewalkWidth, depth: zRange.size - sidewalkWidth * 2, x: xRange.min + sidewalkWidth / 2, z: zRange.center, y: 0.395 },
+          { width: sidewalkWidth, depth: zRange.size - sidewalkWidth * 2, x: xRange.max - sidewalkWidth / 2, z: zRange.center, y: 0.395 }
         );
       });
     });
@@ -1161,13 +1135,13 @@
 
     const curbMat = new THREE.MeshBasicMaterial({ color: 0x101820 });
     const curbRects = [];
-    streetCenters.forEach(center => {
-      streetSegmentRanges.forEach(range => {
+    blockRanges.forEach(xRange => {
+      blockRanges.forEach(zRange => {
         curbRects.push(
-          { width: range.size, depth: 0.75, x: range.center, z: center - gridRoadHalfWidth, y: 0.47 },
-          { width: range.size, depth: 0.75, x: range.center, z: center + gridRoadHalfWidth, y: 0.47 },
-          { width: 0.75, depth: range.size, x: center - gridRoadHalfWidth, z: range.center, y: 0.475 },
-          { width: 0.75, depth: range.size, x: center + gridRoadHalfWidth, z: range.center, y: 0.475 }
+          { width: xRange.size, depth: 0.75, x: xRange.center, z: zRange.min, y: 0.47 },
+          { width: xRange.size, depth: 0.75, x: xRange.center, z: zRange.max, y: 0.47 },
+          { width: 0.75, depth: zRange.size, x: xRange.min, z: zRange.center, y: 0.475 },
+          { width: 0.75, depth: zRange.size, x: xRange.max, z: zRange.center, y: 0.475 }
         );
       });
     });
