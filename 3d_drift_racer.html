@@ -1139,15 +1139,21 @@
     }
 
     const sidewalkRects = [];
-    blockRanges.forEach(xRange => {
-      blockRanges.forEach(zRange => {
-        const insetX = Math.max(0, xRange.size - sidewalkWidth * 2);
-        const insetZ = Math.max(0, zRange.size - sidewalkWidth * 2);
+    // Sidewalks belong beside street segments, not across intersections.
+    // Each segment between two crossing roads gets two raised pavement strips.
+    const streetSegmentRanges = [];
+    for (let i = 0; i < streetCenters.length - 1; i++) {
+      const min = streetCenters[i] + gridRoadHalfWidth;
+      const max = streetCenters[i + 1] - gridRoadHalfWidth;
+      if (max - min > sidewalkWidth * 2) streetSegmentRanges.push({ min, max, center: (min + max) / 2, size: max - min });
+    }
+    streetCenters.forEach(center => {
+      streetSegmentRanges.forEach(range => {
         sidewalkRects.push(
-          { width: xRange.size, depth: sidewalkWidth, x: xRange.center, z: zRange.min + sidewalkWidth / 2, y: 0.22 },
-          { width: xRange.size, depth: sidewalkWidth, x: xRange.center, z: zRange.max - sidewalkWidth / 2, y: 0.22 },
-          { width: sidewalkWidth, depth: insetZ, x: xRange.min + sidewalkWidth / 2, z: zRange.center, y: 0.225 },
-          { width: sidewalkWidth, depth: insetZ, x: xRange.max - sidewalkWidth / 2, z: zRange.center, y: 0.225 }
+          { width: range.size, depth: sidewalkWidth, x: range.center, z: center - gridRoadHalfWidth - sidewalkWidth / 2, y: 0.39 },
+          { width: range.size, depth: sidewalkWidth, x: range.center, z: center + gridRoadHalfWidth + sidewalkWidth / 2, y: 0.39 },
+          { width: sidewalkWidth, depth: range.size, x: center - gridRoadHalfWidth - sidewalkWidth / 2, z: range.center, y: 0.395 },
+          { width: sidewalkWidth, depth: range.size, x: center + gridRoadHalfWidth + sidewalkWidth / 2, z: range.center, y: 0.395 }
         );
       });
     });
@@ -1155,13 +1161,13 @@
 
     const curbMat = new THREE.MeshBasicMaterial({ color: 0x101820 });
     const curbRects = [];
-    blockRanges.forEach(xRange => {
-      blockRanges.forEach(zRange => {
+    streetCenters.forEach(center => {
+      streetSegmentRanges.forEach(range => {
         curbRects.push(
-          { width: xRange.size, depth: 1.1, x: xRange.center, z: zRange.min, y: 0.36 },
-          { width: xRange.size, depth: 1.1, x: xRange.center, z: zRange.max, y: 0.36 },
-          { width: 1.1, depth: zRange.size, x: xRange.min, z: zRange.center, y: 0.365 },
-          { width: 1.1, depth: zRange.size, x: xRange.max, z: zRange.center, y: 0.365 }
+          { width: range.size, depth: 0.75, x: range.center, z: center - gridRoadHalfWidth, y: 0.47 },
+          { width: range.size, depth: 0.75, x: range.center, z: center + gridRoadHalfWidth, y: 0.47 },
+          { width: 0.75, depth: range.size, x: center - gridRoadHalfWidth, z: range.center, y: 0.475 },
+          { width: 0.75, depth: range.size, x: center + gridRoadHalfWidth, z: range.center, y: 0.475 }
         );
       });
     });
