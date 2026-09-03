@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="screen-orientation" content="landscape">
+  <meta name="x5-orientation" content="landscape">
   <title>Tokyo Drift</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -88,6 +90,21 @@
       height: 100dvw;
       transform: translate(-50%, -50%) rotate(90deg);
       transform-origin: center;
+    }
+    /* Phones that hide their model from user-agent detection still get a
+       landscape game surface. Physical orientation locking is requested on Start. */
+    @media (hover: none) and (pointer: coarse) and (orientation: portrait) {
+      body:not(.is-touch-wide) #game-canvas,
+      body:not(.is-touch-wide) #hud-layer,
+      body:not(.is-touch-wide) #screens-overlay {
+        inset: auto;
+        top: 50%;
+        left: 50%;
+        width: 100dvh;
+        height: 100dvw;
+        transform: translate(-50%, -50%) rotate(90deg);
+        transform-origin: center;
+      }
     }
     @media (hover: none) and (pointer: coarse) and (orientation: landscape) {
       #hud-layer {
@@ -929,10 +946,14 @@
 
       try {
         if (screen.orientation?.lock) {
-          await screen.orientation.lock('landscape');
+          try {
+            await screen.orientation.lock('landscape-primary');
+          } catch (e) {
+            await screen.orientation.lock('landscape');
+          }
         }
       } catch (e) {
-        // iOS Safari does not support this API; the rotate prompt remains visible.
+        // iOS Safari may reject the lock; CSS still presents a landscape surface.
       }
 
       syncViewportSize();
@@ -991,7 +1012,6 @@
     const gridRoadHalfWidth = 15;
     const sidewalkWidth = 9;
     const streetClearance = gridRoadHalfWidth + sidewalkWidth + 3;
-    const towerLegHalf = 2.4;
     // A full tank lasts about twice as long as before, while passive recovery
     // takes twice as long too. Bottles remain the fastest way to refill.
     const nitroDrainRate = 29;
@@ -1153,7 +1173,63 @@
     addCityRects(curbRects, curbMat);
 
     // --- City Block Building Scenery (Placed away from roads) ---
-    const buildings = [];
+    // Static collision shapes are registered from the visible scene objects.
+    // This keeps rendering and collision in one source of truth.
+    const solidColliders = [];
+    function registerMeshBoxCollider(mesh) {
+      mesh.updateMatrixWorld(true);
+      const bounds = new THREE.Box3().setFromObject(mesh);
+      solidColliders.push({
+        type: 'box',
+        minX: bounds.min.x,
+        maxX: bounds.max.x,
+        minZ: bounds.min.z,
+        maxZ: bounds.max.z
+      });
+    }
+
+    function registerCircleCollider(x, z, radius) {
+      solidColliders.push({ type: 'circle', x, z, radius });
+    }
+
+    function registerLowBeamCollider(start, end, radius, collisionHeight = 2.4) {
+      const heightSpan = end.y - start.y;
+      const t = heightSpan > 0
+        ? THREE.MathUtils.clamp((collisionHeight - start.y) / heightSpan, 0, 1)
+        : 1;
+      solidColliders.push({
+        type: 'capsule',
+        ax: start.x,
+        az: start.z,
+        bx: THREE.MathUtils.lerp(start.x, end.x, t),
+        bz: THREE.MathUtils.lerp(start.z, end.z, t),
+        radius
+      });
+    }
+
+    function colliderOverlapsCircle(collider, x, z, radius) {
+      if (collider.type === 'box') {
+        return x + radius > collider.minX && x - radius < collider.maxX &&
+          z + radius > collider.minZ && z - radius < collider.maxZ;
+      }
+      if (collider.type === 'circle') {
+        const dx = x - collider.x;
+        const dz = z - collider.z;
+        const combinedRadius = radius + collider.radius;
+        return dx * dx + dz * dz < combinedRadius * combinedRadius;
+      }
+
+      const abX = collider.bx - collider.ax;
+      const abZ = collider.bz - collider.az;
+      const lengthSq = abX * abX + abZ * abZ;
+      const t = lengthSq > 0
+        ? THREE.MathUtils.clamp(((x - collider.ax) * abX + (z - collider.az) * abZ) / lengthSq, 0, 1)
+        : 0;
+      const dx = x - (collider.ax + abX * t);
+      const dz = z - (collider.az + abZ * t);
+      const combinedRadius = radius + collider.radius;
+      return dx * dx + dz * dz < combinedRadius * combinedRadius;
+    }
     const bGeo = new THREE.BoxGeometry(1, 1, 1);
     // Reuse material palettes instead of making a new material per building.
     // This keeps the same random city look while reducing GPU state churn.
@@ -1239,18 +1315,12 @@
               building.scale.set(w, h, d);
               building.position.set(x, h / 2, z);
               scene.add(building);
+              registerMeshBoxCollider(building);
               // Ground contact slab for better visual separation
               const base = new THREE.Mesh(bGeo, buildingBaseMat);
               base.scale.set(w * 1.05, 0.04, d * 1.05);
               base.position.set(x, 0.02, z);
               scene.add(base);
-
-              buildings.push({
-                minX: x - w / 2,
-                maxX: x + w / 2,
-                minZ: z - d / 2,
-                maxZ: z + d / 2
-              });
 
               // Add elegant warm glowing windows to simulate high-rises at twilight
               if (Math.random() > 0.3) {
@@ -1369,7 +1439,7 @@
       for (let i = 0; i < points.length - 1; i++) {
         addTowerBeam(points[i], points[i + 1], i === 0 ? 0.75 : 0.48, i === 1 ? towerWhite : towerRed);
       }
-      buildings.push({ minX: sx * 24 - towerLegHalf, maxX: sx * 24 + towerLegHalf, minZ: sz * 24 - towerLegHalf, maxZ: sz * 24 + towerLegHalf });
+      registerLowBeamCollider(points[0], points[1], 0.75);
     });
 
     for (let level = 1; level < towerLevels.length; level++) {
@@ -1420,30 +1490,35 @@
 
     function addStreetLamp(x, z, faceX, faceZ) {
       const lamp = new THREE.Group();
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 5.8, 8), lampPostMat);
-      pole.position.y = 2.9;
+      const lampHeight = 8.2;
+      const armLength = 1.7;
+      const poleRadius = 0.16;
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, poleRadius, lampHeight, 8), lampPostMat);
+      pole.position.y = lampHeight / 2;
       lamp.add(pole);
 
-      const arm = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 0.12), lampPostMat);
-      arm.position.set(0.5, 5.7, 0);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.13, armLength), lampPostMat);
+      arm.position.set(faceX * armLength / 2, lampHeight - 0.12, faceZ * armLength / 2);
+      arm.rotation.y = Math.atan2(faceX, faceZ);
       lamp.add(arm);
 
       const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), lampGlowMat);
-      bulb.position.set(1.0, 5.55, 0);
+      bulb.position.set(faceX * armLength, lampHeight - 0.3, faceZ * armLength);
       lamp.add(bulb);
 
       lamp.position.set(x, 0, z);
-      lamp.lookAt(x + faceX, 0, z + faceZ);
       scene.add(lamp);
+      registerCircleCollider(x, z, poleRadius);
     }
 
     streetCenters.forEach(center => {
       lampPositions.forEach(pos => {
         if (Math.abs(pos - center) < gridRoadHalfWidth + 18) return;
-        addStreetLamp(pos, center + gridRoadHalfWidth + sidewalkWidth - 1, 0, -1);
-        addStreetLamp(pos, center - gridRoadHalfWidth - sidewalkWidth + 1, 0, 1);
-        addStreetLamp(center + gridRoadHalfWidth + sidewalkWidth - 1, pos, -1, 0);
-        addStreetLamp(center - gridRoadHalfWidth - sidewalkWidth + 1, pos, 1, 0);
+        const lampCurbOffset = gridRoadHalfWidth + 1.6;
+        addStreetLamp(pos, center + lampCurbOffset, 0, -1);
+        addStreetLamp(pos, center - lampCurbOffset, 0, 1);
+        addStreetLamp(center + lampCurbOffset, pos, -1, 0);
+        addStreetLamp(center - lampCurbOffset, pos, 1, 0);
       });
     });
 
@@ -2220,7 +2295,6 @@
     document.getElementById('home-btn').onclick = () => {
       state.isGameRunning = false;
       audio.stopEngine();
-      screen.orientation?.unlock?.();
       showScreen('main-menu');
     };
 
@@ -2571,15 +2645,13 @@
           state.turboAmount = Math.min(100, state.turboAmount + dt * nitroRechargeRate);
         }
 
-        // 3. COLLISION CORRECTION WITH BUILDINGS
+        // 3. COLLISION CORRECTION AGAINST VISIBLE STATIC GEOMETRY
         nextPos.copy(carGroup.position).add(velocity);
         const r = 1.2;
 
         let crashedThisFrame = false;
-        for (let i = 0; i < buildings.length; i++) {
-          const b = buildings[i];
-          if (nextPos.x + r > b.minX && nextPos.x - r < b.maxX &&
-              nextPos.z + r > b.minZ && nextPos.z - r < b.maxZ) {
+        for (let i = 0; i < solidColliders.length; i++) {
+          if (colliderOverlapsCircle(solidColliders[i], nextPos.x, nextPos.z, r)) {
             // Crash impact
             state.currentSpeed = -state.currentSpeed * 0.4;
             velocity.set(0, 0, 0);
