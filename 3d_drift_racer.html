@@ -56,6 +56,45 @@
       background: rgba(255,255,255,0.15);
       border-radius: 3px;
     }
+    body.is-touch-wide #hud-layer {
+      padding: 0.55rem 0.75rem;
+    }
+    body.is-touch-wide #hud-layer > div:first-child > div {
+      transform: scale(0.78);
+      transform-origin: top left;
+    }
+    body.is-touch-wide #hud-layer > div:first-child > div:last-child {
+      transform-origin: top right;
+    }
+    body.is-touch-wide #touch-controls {
+      padding: 0 1.5rem 1rem;
+    }
+    body.is-touch-wide #touch-up,
+    body.is-touch-wide #touch-nitro {
+      width: 4.6rem;
+      height: 4.6rem;
+    }
+    body.is-touch-wide #touch-down {
+      width: 4.6rem;
+      height: 3.45rem;
+    }
+    body.is-touch-tall #screens-overlay::after {
+      content: "Rotate sideways for mobile drift controls";
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: calc(100vw - 2rem);
+      padding: 0.55rem 0.75rem;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 0.75rem;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font: 800 0.72rem Inter, sans-serif;
+      letter-spacing: 0;
+      pointer-events: none;
+    }
     @media (hover: none) and (pointer: coarse) and (orientation: landscape) {
       #hud-layer {
         padding: 0.55rem 0.75rem;
@@ -882,11 +921,43 @@
       };
     }
 
+    function syncTouchOrientationClass(width, height) {
+      if (!isMobileDevice) return;
+      document.body.classList.toggle('is-touch-wide', width >= height);
+      document.body.classList.toggle('is-touch-tall', height > width);
+    }
+
     function syncViewportSize() {
       const { width, height } = getViewportSize();
+      syncTouchOrientationClass(width, height);
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+    }
+
+    async function requestLongestSideLaunch() {
+      if (!isMobileDevice) return;
+      try {
+        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+          await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+        } else if (!document.fullscreenElement && document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        }
+      } catch (e) {
+        // Some mobile browsers reject fullscreen, but can still rotate normally.
+      }
+
+      try {
+        if (screen.orientation?.lock) {
+          await screen.orientation.lock('landscape');
+        }
+      } catch (e) {
+        // iOS Safari does not support this API; the rotate prompt remains visible.
+      }
+
+      syncViewportSize();
+      setTimeout(syncViewportSize, 120);
+      setTimeout(syncViewportSize, 420);
     }
 
     syncViewportSize();
@@ -2184,6 +2255,7 @@
     document.getElementById('home-btn').onclick = () => {
       state.isGameRunning = false;
       audio.stopEngine();
+      screen.orientation?.unlock?.();
       showScreen('main-menu');
     };
 
@@ -2213,6 +2285,7 @@
 
     // Start racing click
     document.getElementById('btn-start').onclick = async () => {
+      await requestLongestSideLaunch();
       await enableTiltControls();
       // Hide Lobby Screens overlay
       ui.overlay.classList.add('hidden');
