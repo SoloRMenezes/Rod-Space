@@ -407,19 +407,16 @@
     wrap.className = "rod-language-switcher";
     wrap.setAttribute("data-no-translate", "");
     wrap.innerHTML = `
-      <label class="rod-language-switcher__label" for="rod-language-select">Language</label>
-      <select id="rod-language-select" class="rod-language-switcher__select" aria-label="Language">
-        <option value="en">English</option>
-        <option value="pt">Português (Portugal)</option>
-      </select>
+      <button class="rod-language-switcher__btn" type="button" data-lang="en" aria-label="Switch to English">EN</button>
+      <button class="rod-language-switcher__btn" type="button" data-lang="pt" aria-label="Mudar para português">PT</button>
     `;
-    const select = wrap.querySelector("select");
-    select.value = language;
-    select.addEventListener("change", () => {
-      language = select.value;
-      storage.setItem(STORAGE_KEY, language);
-      document.documentElement.lang = language === "pt" ? "pt-PT" : "en";
-      translatePage();
+    wrap.querySelectorAll("[data-lang]").forEach(button => {
+      button.addEventListener("click", () => {
+        language = button.dataset.lang || DEFAULT_LANGUAGE;
+        storage.setItem(STORAGE_KEY, language);
+        document.documentElement.lang = language === "pt" ? "pt-PT" : "en";
+        translatePage();
+      });
     });
     return wrap;
   }
@@ -432,15 +429,15 @@
       .rod-language-switcher {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 2px;
         width: fit-content;
-        max-width: min(92vw, 320px);
-        padding: 8px 10px;
+        max-width: min(92vw, 160px);
+        padding: 4px;
         border: 1px solid rgba(255,255,255,.22);
-        border-radius: 10px;
+        border-radius: 999px;
         background: rgba(5, 8, 14, .76);
         color: #fff;
-        font: 700 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font: 900 12px/1 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         letter-spacing: 0;
         box-shadow: 0 10px 26px rgba(0,0,0,.28);
         backdrop-filter: blur(10px);
@@ -449,35 +446,41 @@
       }
       .rod-language-switcher--floating {
         position: fixed;
-        right: max(12px, env(safe-area-inset-right));
-        bottom: max(12px, env(safe-area-inset-bottom));
+        right: max(14px, env(safe-area-inset-right));
+        bottom: max(76px, calc(env(safe-area-inset-bottom) + 14px));
       }
       .rod-language-switcher--hidden { display: none; }
-      .rod-language-switcher__label {
-        margin: 0;
-        color: rgba(255,255,255,.78);
-        text-transform: uppercase;
-        white-space: nowrap;
-      }
-      .rod-language-switcher__select {
-        min-width: 116px;
-        color: #fff;
+      .rod-language-switcher__btn {
+        min-width: 38px;
+        height: 30px;
+        border: 0;
+        border-radius: 999px;
         background: rgba(255,255,255,.12);
-        border: 1px solid rgba(255,255,255,.24);
-        border-radius: 8px;
-        padding: 6px 28px 6px 8px;
+        color: rgba(255,255,255,.7);
         font: inherit;
+        cursor: pointer;
+        transition: background .16s ease, color .16s ease, transform .16s ease;
       }
-      .rod-language-switcher__select option {
-        color: #111827;
+      .rod-language-switcher__btn:hover {
+        color: #fff;
+        background: rgba(255,255,255,.2);
+      }
+      .rod-language-switcher__btn:active {
+        transform: translateY(1px);
+      }
+      .rod-language-switcher__btn.is-active {
+        color: #08111d;
+        background: #f8fafc;
       }
       @media (max-width: 560px) {
         .rod-language-switcher {
-          padding: 7px 8px;
-          font-size: 11px;
+          right: max(10px, env(safe-area-inset-right));
+          bottom: max(68px, calc(env(safe-area-inset-bottom) + 10px));
         }
-        .rod-language-switcher__select {
-          min-width: 102px;
+        .rod-language-switcher__btn {
+          min-width: 34px;
+          height: 28px;
+          font-size: 11px;
         }
       }
     `;
@@ -570,12 +573,13 @@
     textNodes.forEach(translateTextNode);
     Array.from(document.body.querySelectorAll("input, button, select, option, [title], [aria-label]")).forEach(translateElementAttributes);
     if (control) {
-      control.querySelector(".rod-language-switcher__label").textContent = language === "pt" ? "Idioma" : "Language";
-      Object.entries(LANGUAGES).forEach(([code, label]) => {
-        const option = control.querySelector(`option[value="${cssEscape(code)}"]`);
-        if (option) option.textContent = language === "pt" ? (code === "pt" ? "Português (Portugal)" : "Inglês") : label;
+      Object.keys(LANGUAGES).forEach(code => {
+        const button = control.querySelector(`[data-lang="${cssEscape(code)}"]`);
+        if (button) {
+          button.classList.toggle("is-active", code === language);
+          button.setAttribute("aria-pressed", code === language ? "true" : "false");
+        }
       });
-      control.querySelector("select").value = language;
     }
     translating = false;
   }
