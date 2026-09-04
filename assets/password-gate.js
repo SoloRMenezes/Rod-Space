@@ -3,21 +3,12 @@
   const password = script?.dataset?.password || "3112";
   const title = script?.dataset?.title || "16+ content";
   const storageKey = `rodSpacePasswordGate:${location.pathname}`;
-  const languageKey = "rodSpaceLanguagePreferenceV2";
 
   function storageGet(key) {
     try {
       return window.sessionStorage ? window.sessionStorage.getItem(key) : null;
     } catch (err) {
       return null;
-    }
-  }
-
-  function getLanguage() {
-    try {
-      return window.localStorage?.getItem(languageKey) || "en";
-    } catch (err) {
-      return "en";
     }
   }
 
@@ -141,20 +132,18 @@
   }
 
   function buildGate() {
-    const isPortuguese = getLanguage() === "pt";
     const gate = document.createElement("div");
     gate.id = "rod-password-gate";
-    gate.setAttribute("data-no-translate", "");
     gate.setAttribute("role", "dialog");
     gate.setAttribute("aria-modal", "true");
     gate.setAttribute("aria-labelledby", "rod-password-gate-title");
     gate.innerHTML = `
       <form class="rod-password-gate__panel">
-        <p class="rod-password-gate__eyebrow">${isPortuguese ? "Bloqueio de conteúdo" : "Content lock"}</p>
+        <p class="rod-password-gate__eyebrow">Content lock</p>
         <h1 id="rod-password-gate-title" class="rod-password-gate__title">${title}</h1>
-        <p class="rod-password-gate__copy">${isPortuguese ? "Este jogo pode incluir perguntas maduras, palavrões ou conteúdo de leitura 16+. Introduz a palavra-passe para continuar." : "This game can include mature prompts, swearing, or 16+ reading content. Enter the password to continue."}</p>
-        <input class="rod-password-gate__input" type="password" inputmode="numeric" autocomplete="off" placeholder="${isPortuguese ? "Palavra-passe" : "Password"}" aria-label="${isPortuguese ? "Palavra-passe" : "Password"}" />
-        <button class="rod-password-gate__button" type="submit">${isPortuguese ? "Entrar" : "Enter"}</button>
+        <p class="rod-password-gate__copy">This game can include mature prompts, swearing, or 16+ reading content. Enter the password to continue.</p>
+        <input class="rod-password-gate__input" type="password" inputmode="numeric" autocomplete="off" placeholder="Password" aria-label="Password" />
+        <button class="rod-password-gate__button" type="submit">Enter</button>
         <p class="rod-password-gate__error" aria-live="polite"></p>
       </form>
     `;
@@ -169,7 +158,7 @@
         return;
       }
       input.value = "";
-      error.textContent = isPortuguese ? "Palavra-passe errada." : "Wrong password.";
+      error.textContent = "Wrong password.";
       input.focus();
     });
 

@@ -30,6 +30,7 @@
     "Would You": "O que",
     "Rather": "preferias?",
     "Content lock": "Bloqueio de conteúdo",
+    "This game can include mature prompts, swearing, or 16+ reading content. Enter the password to continue.": "Este jogo pode incluir perguntas maduras, palavrões ou conteúdo de leitura 16+. Introduz a palavra-passe para continuar.",
     "Password": "Palavra-passe",
     "Enter": "Entrar",
     "Wrong password.": "Palavra-passe errada.",
@@ -330,6 +331,8 @@
 
   const SKIP_SELECTOR = "script, style, noscript, textarea, code, pre, svg, canvas, .rod-language-switcher, [data-no-translate]";
   const SETTINGS_SELECTORS = [
+    ".rod-password-gate__panel",
+    "#rod-password-gate",
     "#settings-panel",
     "#settings-menu",
     "#content-settings",
@@ -390,16 +393,28 @@
   function findSettingsHost() {
     for (const selector of SETTINGS_SELECTORS) {
       const hosts = Array.from(document.querySelectorAll(selector));
-      const host = hosts.find(el => !el.closest(SKIP_SELECTOR) && el !== document.body && el !== document.documentElement);
+      const host = hosts.find(el => !el.matches(SKIP_SELECTOR) && el !== document.body && el !== document.documentElement && isVisible(el));
       if (host) return host;
     }
     return null;
   }
 
-  function hasVisibleMenu() {
-    return MENU_SELECTORS.some(selector =>
-      Array.from(document.querySelectorAll(selector)).some(el => el !== control && isVisible(el))
-    );
+  function findMenuHost() {
+    for (const selector of MENU_SELECTORS) {
+      const hosts = Array.from(document.querySelectorAll(selector));
+      const host = hosts.find(el => !el.matches(SKIP_SELECTOR) && el !== control && isVisible(el));
+      if (host) return host;
+    }
+    return null;
+  }
+
+  function findPageHost() {
+    return Array.from(document.querySelectorAll("footer, main, .app, #app, .container, .page, body"))
+      .find(el => el !== control && isVisible(el)) || document.body;
+  }
+
+  function findLanguageHost() {
+    return findSettingsHost() || findMenuHost() || (!document.querySelector("canvas") ? findPageHost() : null);
   }
 
   function makeControl() {
@@ -427,11 +442,15 @@
     style.id = "rod-language-switcher-style";
     style.textContent = `
       .rod-language-switcher {
-        display: inline-flex;
+        display: flex;
         align-items: center;
+        justify-content: flex-end;
+        flex: 0 0 auto;
+        align-self: flex-end;
         gap: 2px;
         width: fit-content;
         max-width: min(92vw, 160px);
+        margin: 18px 0 0 auto;
         padding: 4px;
         border: 1px solid rgba(255,255,255,.22);
         border-radius: 999px;
@@ -444,10 +463,8 @@
         pointer-events: auto;
         z-index: 2147483000;
       }
-      .rod-language-switcher--floating {
-        position: fixed;
-        right: max(14px, env(safe-area-inset-right));
-        bottom: max(76px, calc(env(safe-area-inset-bottom) + 14px));
+      body > .rod-language-switcher {
+        margin: 22px max(18px, env(safe-area-inset-right)) 18px auto;
       }
       .rod-language-switcher--hidden { display: none; }
       .rod-language-switcher__btn {
@@ -474,8 +491,7 @@
       }
       @media (max-width: 560px) {
         .rod-language-switcher {
-          right: max(10px, env(safe-area-inset-right));
-          bottom: max(68px, calc(env(safe-area-inset-bottom) + 10px));
+          margin-top: 14px;
         }
         .rod-language-switcher__btn {
           min-width: 34px;
@@ -489,10 +505,9 @@
 
   function placeControl() {
     if (!control) control = makeControl();
-    if (control.parentElement !== document.body) document.body.appendChild(control);
-    control.classList.add("rod-language-switcher--floating");
-    const hasLanguageSurface = findSettingsHost() || hasVisibleMenu() || !document.querySelector("canvas");
-    control.classList.toggle("rod-language-switcher--hidden", !hasLanguageSurface);
+    const host = findLanguageHost();
+    if (host && control.parentElement !== host) host.appendChild(control);
+    control.classList.toggle("rod-language-switcher--hidden", !host);
   }
 
   function translateString(value) {
