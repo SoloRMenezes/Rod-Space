@@ -146,7 +146,7 @@
             </svg>
         </div>
         <h1 class="text-6xl font-bold mb-4 glow-text uppercase tracking-widest">Who Wants To Be A<br><span class="text-yellow-500">Millionaire</span></h1>
-        <p class="text-blue-300 text-xl mb-10 max-w-md">150+ Advanced Question Bank. 15 Per Round. High Stakes Knowledge. Are you ready?</p>
+        <p class="text-blue-300 text-xl mb-10 max-w-md">Harder mix. Faster clock. 15 questions between you and the million.</p>
         <button onclick="initGame()" class="bg-yellow-500 text-black px-12 py-4 rounded-full font-bold text-2xl hover:bg-yellow-400 transition-all hover:scale-110 shadow-2xl">
             START THE QUIZ
         </button>
@@ -218,7 +218,7 @@
 
     <script>
         const PRIZES = ["100", "200", "300", "500", "1,000", "2,000", "4,000", "8,000", "16,000", "32,000", "64,000", "125,000", "250,000", "500,000", "1,000,000"];
-        const QUESTION_TIME_LIMIT = 30;
+        const QUESTION_TIME_LIMIT = 24;
         
         const QUESTION_BANK = {
             tier1: [
@@ -447,11 +447,11 @@
             document.getElementById('game-ui').classList.remove('hidden');
             document.getElementById('end-screen').classList.add('hidden');
             
-            // Generate a fresh set of 15 questions for this round
-            const t1 = shuffle([...QUESTION_BANK.tier1]).slice(0, 4);
+            // Slightly tougher curve: fewer warmups, more high-tier questions.
+            const t1 = shuffle([...QUESTION_BANK.tier1]).slice(0, 2);
             const t2 = shuffle([...QUESTION_BANK.tier2]).slice(0, 4);
-            const t3 = shuffle([...QUESTION_BANK.tier3]).slice(0, 4);
-            const t4 = shuffle([...QUESTION_BANK.tier4]).slice(0, 3);
+            const t3 = shuffle([...QUESTION_BANK.tier3]).slice(0, 5);
+            const t4 = shuffle([...QUESTION_BANK.tier4]).slice(0, 4);
             
             currentQuestions = [...t1, ...t2, ...t3, ...t4];
             currentIndex = 0;
@@ -585,7 +585,7 @@
             document.getElementById('ll-phone').classList.add('used');
 
             const labels = ["A", "B", "C", "D"];
-            const chance = 0.85 - (currentIndex * 0.05);
+            const chance = Math.max(0.35, 0.76 - (currentIndex * 0.045));
             const pick = Math.random() < chance ? currentCorrectIdx : Math.floor(Math.random() * 4);
             setHostMsg(`Friend: "I'm about ${(chance*100).toFixed(0)}% sure the answer is ${labels[pick]}!"`);
         }
@@ -596,7 +596,10 @@
             document.getElementById('ll-host').classList.add('used');
 
             const labels = ["A", "B", "C", "D"];
-            setHostMsg(`Host: "Looking at the data, ${labels[currentCorrectIdx]} seems most likely."`);
+            const chance = Math.max(0.45, 0.82 - (currentIndex * 0.035));
+            const wrongOptions = [0,1,2,3].filter(i => i !== currentCorrectIdx);
+            const pick = Math.random() < chance ? currentCorrectIdx : wrongOptions[Math.floor(Math.random() * wrongOptions.length)];
+            setHostMsg(`Host: "I would lean toward ${labels[pick]}, but this one is not free."`);
         }
 
         function setHostMsg(msg) {
@@ -631,5 +634,6 @@
             document.getElementById('start-screen').classList.remove('hidden');
         }
     </script>
+  <script src="assets/language-switcher.js" defer></script>
 </body>
 </html>

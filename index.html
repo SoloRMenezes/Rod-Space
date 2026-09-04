@@ -254,12 +254,15 @@
         {
           id: "who-wants-to-be-a-millionaire",
           name: "Who Wants to be a Millionaire",
-          description: "Get Rich",
+          description: "Pressure quiz",
           url: BASE_URL + "Who Wants to be a Millionaire.html",
-          icon: "💰",
+          icon: "💎",
           type: "party",
           pill: "Game",
-          date: "2026-05-01"
+          date: "2026-05-01",
+          featured: true,
+          accent: "millionaire",
+          tags: ["Harder"]
         },
         {
           id: "card-wars",
@@ -731,10 +734,13 @@
       function buildCardHTML(proj, isPinnedItem) {
         const isFav = favorites.includes(proj.id);
         const isPin = pinned.includes(proj.id);
+        const isMillionaire = proj.accent === "millionaire";
 
         let pillStyles = "";
         if (proj.pill === "Game") {
-          pillStyles = "bg-rose-500/10 text-rose-400 border border-rose-500/20";
+          pillStyles = isMillionaire
+            ? "bg-amber-400/10 text-amber-300 border border-amber-300/30"
+            : "bg-rose-500/10 text-rose-400 border border-rose-500/20";
         } else if (proj.pill === "Tool") {
           pillStyles = "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20";
         } else {
@@ -758,16 +764,28 @@
         }
 
         const launchBtnClass = isPin ? "bg-blue-600 text-white hover:bg-blue-500 shadow-md" : "bg-[#0d1117] text-slate-300 border border-slate-800 hover:border-slate-700 hover:bg-slate-900 hover:text-white";
+        const articleClass = isMillionaire
+          ? "border-amber-300/30 bg-[radial-gradient(circle_at_20%_15%,rgba(245,158,11,0.16),transparent_34%),linear-gradient(145deg,#171b26_0%,#10151f_58%,#08111d_100%)] hover:border-amber-300/50 shadow-amber-950/20"
+          : isPin
+            ? "border-blue-500/30 bg-gradient-to-b from-blue-950/10 to-[#161b22]"
+            : "border-slate-800 hover:border-blue-500/30";
+        const iconClass = isMillionaire
+          ? "bg-gradient-to-br from-amber-300/20 via-[#0d1117] to-blue-700/20 border-amber-300/30 text-3xl shadow-[inset_0_0_18px_rgba(245,158,11,0.16)]"
+          : "bg-[#0d1117] border-slate-800 text-2xl shadow-inner";
+        const titleClass = isMillionaire ? "group-hover:text-amber-300" : "group-hover:text-blue-400";
+        const playLabel = isMillionaire ? "Enter" : (proj.pill === "Tool" ? "Open" : "Play");
 
         const formattedDate = new Date(proj.date).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
 
         return `
           <article
-            class="group relative flex flex-col h-full rounded-2xl bg-[#161b22] border p-6 transition-all duration-300 shadow-xl cursor-pointer hover:-translate-y-1 ${
-              isPin ? 'border-blue-500/30 bg-gradient-to-b from-blue-950/10 to-[#161b22]' : 'border-slate-800 hover:border-blue-500/30'
-            }"
+            class="group relative flex flex-col h-full overflow-hidden rounded-2xl bg-[#161b22] border p-6 transition-all duration-300 shadow-xl cursor-pointer hover:-translate-y-1 ${articleClass}"
             onclick="if (!event.target.closest('button')) { window.location.href = '${proj.url}' }"
           >
+            ${isMillionaire ? `
+              <div class="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-amber-300/70 to-transparent"></div>
+              <div class="pointer-events-none absolute -right-14 -top-14 h-32 w-32 rounded-full border border-amber-300/20"></div>
+            ` : ''}
             <!-- Top Action Row -->
             <div class="flex items-center justify-between mb-4">
               <span class="inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${pillStyles}">
@@ -793,11 +811,11 @@
 
             <!-- Emojis and details -->
             <div class="flex items-start gap-4 flex-1">
-              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#0d1117] border border-slate-800 shadow-inner text-2xl transition-transform group-hover:scale-110 duration-300 select-none">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border transition-transform group-hover:scale-110 duration-300 select-none ${iconClass}">
                 ${proj.icon}
               </div>
               <div class="min-w-0 flex-1">
-                <h4 class="font-display text-base font-semibold text-white tracking-tight group-hover:text-blue-400 transition-colors line-clamp-1">
+                <h4 class="font-display text-base font-semibold text-white tracking-tight transition-colors line-clamp-1 ${titleClass}">
                   ${proj.name}
                 </h4>
                 <p class="mt-1 text-xs text-slate-500 leading-relaxed line-clamp-2">
@@ -818,7 +836,7 @@
                 href="${proj.url}"
                 class="inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold cursor-pointer transition-all ${launchBtnClass}"
               >
-                <span>${proj.pill === "Tool" ? "Open" : "Play"}</span>
+                <span>${playLabel}</span>
                 <i data-lucide="chevron-right" class="h-3 w-3 transition-transform group-hover:translate-x-0.5"></i>
               </a>
             </div>
@@ -899,5 +917,6 @@
       renderCategories();
       render();
     </script>
-  </body>
+  <script src="assets/language-switcher.js" defer></script>
+</body>
 </html>
