@@ -7,13 +7,11 @@
   <meta name="x5-orientation" content="landscape">
   <title>Tokyo Drift</title>
   <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@700;900&display=swap" rel="stylesheet">
+  <link href="./assets/vendor/tokyo-fonts.css" rel="stylesheet">
   <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="./assets/vendor/tailwind.js"></script>
   <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="./assets/vendor/lucide.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -80,56 +78,37 @@
       width: 4.6rem;
       height: 3.45rem;
     }
-    body.is-mobile-device.is-touch-tall #game-canvas,
-    body.is-mobile-device.is-touch-tall #hud-layer,
-    body.is-mobile-device.is-touch-tall #screens-overlay {
-      inset: auto;
-      top: 50%;
-      left: 50%;
-      width: 100dvh;
-      height: 100dvw;
-      transform: translate(-50%, -50%) rotate(90deg);
-      transform-origin: center;
-    }
-    /* Phones that hide their model from user-agent detection still get a
-       landscape game surface. Physical orientation locking is requested on Start. */
-    @media (hover: none) and (pointer: coarse) and (orientation: portrait) {
-      body:not(.is-touch-wide) #game-canvas,
-      body:not(.is-touch-wide) #hud-layer,
-      body:not(.is-touch-wide) #screens-overlay {
-        inset: auto;
-        top: 50%;
-        left: 50%;
-        width: 100dvh;
-        height: 100dvw;
-        transform: translate(-50%, -50%) rotate(90deg);
-        transform-origin: center;
-      }
-    }
-    @media (hover: none) and (pointer: coarse) and (orientation: landscape) {
-      #hud-layer {
-        padding: 0.55rem 0.75rem;
-      }
-      #hud-layer > div:first-child > div {
-        transform: scale(0.78);
-        transform-origin: top left;
-      }
-      #hud-layer > div:first-child > div:last-child {
-        transform-origin: top right;
-      }
-      #touch-controls {
-        padding: 0 1.5rem 1rem;
-      }
-      #touch-up,
-      #touch-nitro {
-        width: 4.6rem;
-        height: 4.6rem;
-      }
-      #touch-down {
-        width: 4.6rem;
-        height: 3.45rem;
-      }
-    }
+    #rotate-device { display: none; z-index: 60; }
+    body.is-mobile-device.is-touch-tall #rotate-device { display: flex; }
+    body.is-mobile-device #hud-layer { padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+    body.is-mobile-device #hud-layer > div:first-child > div { transform: none; }
+    body.is-mobile-device #hud-layer > div:first-child > div:first-child { width: 125px; padding: 7px; }
+    body.is-mobile-device #hud-layer > div:first-child > div:last-child { width: 112px; padding: 7px; }
+    body.is-mobile-device #hud-layer > div:first-child button { min-width: 44px; min-height: 44px; }
+    body.is-mobile-device #touch-controls { display: flex; padding: 0; }
+    body.is-mobile-device #touch-controls > div:first-child { flex-direction: row; align-items: flex-end; gap: 12px; }
+    body.is-mobile-device #touch-up, body.is-mobile-device #touch-down, body.is-mobile-device #touch-nitro { width: 68px; height: 64px; border-radius: 15px; }
+    body.is-mobile-device #hud-layer > div:nth-child(2) { top: 80px; gap: 4px; }
+    body.is-mobile-device #alert-banner { padding: 6px 10px; }
+    body.is-mobile-device #drift-combo-box { padding: 4px 8px; }
+    body.is-mobile-device #drift-mult { font-size: 18px; }
+    body.is-mobile-device #screens-overlay { align-items: flex-start; }
+    body.is-mobile-device #screens-overlay > div { margin: auto; padding: 16px; }
+    body.is-mobile-device #screen-main-menu { gap: 10px; }
+    body.is-mobile-device #screen-main-menu h1 { font-size: 32px; }
+    body.is-mobile-device #screen-main-menu > .grid > div { padding: 8px; }
+    body.is-mobile-device #garage-preview-model { height: 125px; }
+    #motion-setup, #rotate-device { position: fixed; inset: 0; z-index: 50; background: #090d15; color: white; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-left)); text-align: center; }
+    #motion-setup:not(.hidden) { display: flex; }
+    #rotate-device { z-index: 60; }
+    #motion-setup > div { width: min(520px, 100%); }
+    #motion-status { min-height: 2.5em; color: #cbd5e1; font-size: 14px; margin: 10px 0; }
+    #wheel-indicator { display: inline-block; font-size: 48px; line-height: 1; }
+    #motion-setup button { min-height: 44px; padding: 10px 18px; border-radius: 8px; margin: 4px; background: #e2e8f0; color: #0f172a; font-weight: 800; }
+    #motion-setup button:disabled { opacity: .4; }
+    #mobile-centre { display: none; }
+    body.is-mobile-device #mobile-centre { display: block; position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); min-height: 44px; padding: 8px 12px; background: #111827dd; border-radius: 8px; pointer-events: auto; color: white; font-size: 11px; }
+    @media (max-width: 700px) { body.is-mobile-device #hud-layer > div:first-child { gap: 4px; } body.is-mobile-device #hud-layer > div:first-child > div:nth-child(2) { gap: 1px; padding: 2px; } }
     #garage-preview-model {
       position: relative;
       height: 12rem;
@@ -161,6 +140,9 @@
       background: rgba(0, 0, 0, 0.55);
       filter: blur(6px);
     }
+    #minimap { position: absolute; top: 24px; right: 24px; width: 144px; height: 144px; border-radius: 50%; border: 1px solid #64748b; background: #0a101b; }
+    body:not(.is-mobile-device) #score-panel { margin-top: 156px; }
+    body.is-mobile-device #minimap { display: none; }
   </style>
 </head>
 <body class="bg-black text-white overflow-hidden h-screen w-screen select-none font-sans">
@@ -195,10 +177,11 @@
 
       <!-- Top Center Controls -->
       <div class="flex gap-1.5 bg-neutral-950/80 border border-white/10 p-1.5 rounded-xl shadow-xl pointer-events-auto backdrop-blur-md">
-        <button id="cam-btn" title="Toggle Viewpoint" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
+        <button id="pause-btn" title="Pause (Escape)" class="w-8 h-8 rounded-lg bg-neutral-900 text-white flex items-center justify-center"><i data-lucide="pause" class="w-4 h-4"></i></button>
+        <button id="cam-btn" title="Toggle Viewpoint (C)" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
           <i data-lucide="eye" class="w-4 h-4"></i>
         </button>
-        <button id="mute-btn" title="Toggle Sound" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
+        <button id="mute-btn" title="Toggle Sound (M)" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
           <i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i>
         </button>
         <button id="home-btn" title="Exit to Menu" class="w-8 h-8 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-all">
@@ -210,7 +193,7 @@
       </div>
 
       <!-- Top Right Scores -->
-      <div class="flex flex-col gap-1 pointer-events-auto bg-neutral-950/70 border border-white/10 p-3 rounded-xl w-40 shadow-2xl backdrop-blur-md">
+      <div id="score-panel" class="flex flex-col gap-1 pointer-events-auto bg-neutral-950/70 border border-white/10 p-3 rounded-xl w-40 shadow-2xl backdrop-blur-md">
         <div class="text-right flex flex-col items-end">
           <span class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">DRIFT SCORE</span>
           <span id="score-total" class="text-2xl font-black italic text-white tracking-tight leading-none mt-0.5">0</span>
@@ -218,6 +201,7 @@
       </div>
     </div>
 
+    <canvas id="minimap" width="320" height="320" aria-label="North-up city minimap"></canvas>
     <!-- Active Drift Stats & Checkpoint Alerts (Upper-middle) -->
     <div class="absolute inset-x-0 top-24 flex flex-col items-center gap-3">
       <!-- Checkpoint message slider -->
@@ -252,7 +236,22 @@
     </div>
   </div>
 
+  <button id="mobile-centre" class="z-10" style="visibility:hidden">CENTRE WHEEL</button>
+  <div id="rotate-device"><div><h2 class="text-2xl font-black">ROTATE TO LANDSCAPE</h2><p class="mt-3">Hold your phone or tablet sideways, screen upright facing you.</p><p class="mt-2 text-neutral-400">Turn off portrait orientation lock if needed.</p></div></div>
+  <div id="motion-setup" class="hidden" role="dialog" aria-modal="true" aria-label="Steering setup"><div>
+    <h2 class="text-xl font-black">STEERING CHECK</h2>
+    <p class="text-sm mt-2">Hold the screen upright and sideways. Rotate it like a steering wheel.</p>
+    <div id="wheel-indicator" aria-hidden="true"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="currentColor" stroke-width="4"/><path d="M5 24L28 29L51 24M28 29V52" fill="none" stroke="currentColor" stroke-width="4"/></svg></div>
+    <p id="motion-status" role="status" aria-live="polite">Waiting for motion…</p>
+    <button id="motion-retry">ENABLE MOTION</button><button id="motion-ready" disabled>CENTRE &amp; DRIVE</button><button id="motion-back">BACK</button>
+  </div></div>
   <!-- Interactive Screens Overlay Panel -->
+  <div id="pause-overlay" class="hidden absolute inset-0 z-30 flex items-center justify-center bg-neutral-950/85 backdrop-blur-md">
+    <div class="text-center text-white"><h2 class="text-3xl font-black italic mb-3">RUN PAUSED</h2>
+      <p class="text-sm text-neutral-400 mb-6">Your run is safe. Escape to resume.</p>
+      <button id="resume-btn" class="bg-white text-black font-black px-8 py-3 rounded-lg">RESUME RUN</button><button id="pause-menu-btn" class="block mx-auto mt-4 px-6 py-3 text-neutral-300">EXIT TO MENU</button>
+    </div>
+  </div>
   <div id="screens-overlay" class="absolute inset-0 z-20 flex items-center justify-center bg-neutral-950/85 backdrop-blur-md p-4 overflow-y-auto">
     
     <div class="w-full max-w-lg bg-neutral-950 border border-white/10 rounded-2xl p-6 md:p-8 shadow-[0_0_60px_rgba(0,0,0,0.85)] relative flex flex-col gap-6 overflow-hidden">
@@ -413,6 +412,7 @@
           <input id="zoom-sensitivity" type="range" min="1" max="4" step="0.25" value="2" class="w-full accent-cyan-300 cursor-pointer">
         </div>
 
+        <label class="text-xs text-neutral-400">Night brightness <output id="brightness-value">100%</output><input id="brightness" type="range" min="70" max="180" value="100" step="5" class="w-full accent-cyan-300"></label>
         <button id="btn-save-garage" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-sm uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center italic">
           SAVE VEHICLE SETUP
         </button>
@@ -445,7 +445,7 @@
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-neutral-450">Reset Car:</span>
-                <span class="bg-neutral-800 border border-white/10 px-2 py-0.5 rounded font-mono font-bold text-white text-[10px]">R KEY</span>
+                <span class="bg-neutral-800 border border-white/10 px-2 py-0.5 rounded font-mono font-bold text-white text-[10px]">R · ESC PAUSE · C VIEW · M MUTE</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-neutral-450">Handbrake / Slide:</span>
@@ -457,14 +457,14 @@
           <div class="bg-neutral-900/45 rounded-xl p-4 border border-white/5 text-[11px] flex flex-col gap-1.5">
             <span class="text-[9px] font-black text-neutral-400 uppercase tracking-wider font-mono">TOUCH LAYOUT</span>
             <p class="leading-relaxed text-neutral-400">
-              When playing on mobile or tablets, intuitive interactive touch overlay controls automatically appear on screen. Steering wheels and engine throttle map directly to your thumbs.
+              Play in landscape with the screen upright. Rotate it left/right like a steering wheel; compass heading and forward/back leaning do not steer. Centre before driving. Gas/brake are on the left, nitro on the right. Two fingers on the empty road adjust zoom.
             </p>
           </div>
 
           <div class="bg-neutral-900/45 rounded-xl p-4 border border-white/5 text-[11px] flex flex-col gap-1.5">
             <span class="text-[9px] font-black text-neutral-400 uppercase tracking-wider font-mono">DRIFTING PHYSICS TIPS</span>
             <p class="leading-relaxed text-neutral-400">
-              Build speed, flick into corners, then counter-steer to hold the slide. Nitro is a short burst now, so use it to extend exits instead of holding it forever.
+              Build speed, flick into corners, then counter-steer to hold the slide. Use nitro to extend exits. Floating blue bottles refill your tank anywhere inside their ground ring; a full tank leaves the pickup for later.
             </p>
           </div>
         </div>
@@ -819,6 +819,7 @@
     // Global Interactive State
     const state = {
       isGameRunning: false,
+      isPaused: false,
       activeScreen: 'main-menu', // main-menu, garage, manual
       cameraMode: 'chase', // chase, cockpit, overhead, orbital
       cameraZoom: 1.65,
@@ -843,9 +844,11 @@
 
     const storageKey = 'tokyo-drifter-records';
 
+    state.brightness = 100;
     function loadRecords() {
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        if (Number.isFinite(saved.brightness)) state.brightness = THREE.MathUtils.clamp(saved.brightness, 70, 180);
         if (Number.isFinite(saved.bestScore)) state.bestScore = saved.bestScore;
         if (Number.isFinite(saved.zoomSensitivity)) state.zoomSensitivity = THREE.MathUtils.clamp(saved.zoomSensitivity, 1, 4);
       } catch (e) {
@@ -854,10 +857,11 @@
     }
 
     function saveRecords() {
-      localStorage.setItem(storageKey, JSON.stringify({
+      try { localStorage.setItem(storageKey, JSON.stringify({
+        brightness: state.brightness,
         bestScore: state.bestScore,
         zoomSensitivity: state.zoomSensitivity
-      }));
+      })); } catch (_) { /* Private browsing must not interrupt a run. */ }
     }
 
     function refreshMenuRecords() {
@@ -870,7 +874,7 @@
     const canvas = document.getElementById('game-canvas');
     const mobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     const iPadDesktopMode = /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-    const isMobileDevice = Boolean(navigator.userAgentData?.mobile || mobileUserAgent || iPadDesktopMode);
+    const isMobileDevice = Boolean(navigator.userAgentData?.mobile || mobileUserAgent || iPadDesktopMode || (navigator.maxTouchPoints > 0 && matchMedia('(pointer: coarse)').matches));
     const ui = {
       speed: document.getElementById('speed-val'),
       gear: document.getElementById('gear-val'),
@@ -901,7 +905,7 @@
 
     const scene = new THREE.Scene();
     // Clear Tokyo night sky with enough lift to keep the track readable.
-    const bgColor = 0x2f3d57;
+    const bgColor = 0x080e1c;
     scene.background = new THREE.Color(bgColor);
     scene.fog = new THREE.FogExp2(bgColor, 0.00165);
 
@@ -918,15 +922,15 @@
     function syncTouchOrientationClass(width, height) {
       if (!isMobileDevice) return;
       document.body.classList.add('is-mobile-device');
-      document.body.classList.add('is-touch-wide');
+      document.body.classList.toggle('is-touch-wide', width >= height);
       document.body.classList.toggle('is-touch-tall', height > width);
     }
 
     function syncViewportSize() {
       const rawSize = getViewportSize();
       syncTouchOrientationClass(rawSize.width, rawSize.height);
-      const width = isMobileDevice ? Math.max(rawSize.width, rawSize.height) : rawSize.width;
-      const height = isMobileDevice ? Math.min(rawSize.width, rawSize.height) : rawSize.height;
+      const width = rawSize.width;
+      const height = rawSize.height;
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
@@ -947,13 +951,13 @@
       try {
         if (screen.orientation?.lock) {
           try {
-            await screen.orientation.lock('landscape-primary');
+            await screen.orientation.lock('landscape');
           } catch (e) {
             await screen.orientation.lock('landscape');
           }
         }
       } catch (e) {
-        // iOS Safari may reject the lock; CSS still presents a landscape surface.
+        // Safari may reject locking; the landscape gate remains visible in portrait.
       }
 
       syncViewportSize();
@@ -967,13 +971,13 @@
     window.visualViewport?.addEventListener('resize', syncViewportSize);
 
     // Ambient and moonlight keep the city nocturnal without crushing visibility.
-    const ambient = new THREE.AmbientLight(0xb6c7df, 1.18);
+    const ambient = new THREE.AmbientLight(0xb6c7df, 0.65);
     scene.add(ambient);
 
     const hemi = new THREE.HemisphereLight(0xc7ddff, 0x43546d, 0.78);
     scene.add(hemi);
 
-    const sun = new THREE.DirectionalLight(0xeaf3ff, 1.25);
+    const sun = new THREE.DirectionalLight(0xeaf3ff, 0.7);
     sun.position.set(120, 95, -180);
     scene.add(sun);
 
@@ -1002,180 +1006,90 @@
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    // --- Square city-loop pathway and block-grid streets ---
-    // Street constants are intentionally shared by rendering and collision
-    // placement. If the road width changes, update clearance with it so
-    // buildings still stay out of drivable space.
-    const trackWidth = 38;
-    const cityLimit = 340;
-    const streetCenters = [-240, -120, 0, 120, 240];
-    const gridRoadHalfWidth = 15;
-    const sidewalkWidth = 9;
-    const streetClearance = gridRoadHalfWidth + sidewalkWidth + 3;
-    // A full tank lasts about twice as long as before, while passive recovery
-    // takes twice as long too. Bottles remain the fastest way to refill.
-    const nitroDrainRate = 29;
-    const nitroRechargeRate = 8.5;
-    const nitroReadyThreshold = 45;
-    const nitroBottleRespawnMs = 120000;
-    // This hidden loop is used for spawning/reset flow only; the visible city
-    // roads below are square grid strips so the map reads like Tokyo blocks.
-    const trackPoints = [
-      new THREE.Vector3(-252, 0.05, -252),
-      new THREE.Vector3(-108, 0.05, -252),
-      new THREE.Vector3(36, 0.05, -252),
-      new THREE.Vector3(252, 0.05, -252),
-      new THREE.Vector3(252, 0.05, -108),
-      new THREE.Vector3(252, 0.05, 36),
-      new THREE.Vector3(252, 0.05, 252),
-      new THREE.Vector3(108, 0.05, 252),
-      new THREE.Vector3(-36, 0.05, 252),
-      new THREE.Vector3(-252, 0.05, 252),
-      new THREE.Vector3(-252, 0.05, 108),
-      new THREE.Vector3(-252, 0.05, -36)
-    ];
-
-    const trackCurve = new THREE.CatmullRomCurve3(trackPoints);
-    trackCurve.closed = true;
-    trackCurve.curveType = 'centripetal';
-
-    // Create Asphalt Texture canvas
-    function createAsphaltTex() {
-      const c = document.createElement('canvas');
-      c.width = 512; c.height = 512;
-      const x = c.getContext('2d');
-      x.fillStyle = '#0e141d'; x.fillRect(0, 0, 512, 512); // readable night asphalt
-      // Fine stone noise
-      for (let i = 0; i < 15000; i++) {
-        x.fillStyle = `rgba(120,140,165,${Math.random() * 0.045})`;
-        x.fillRect(Math.random() * 512, Math.random() * 512, 1.5, 1.5);
-      }
-      // Lane marker glow effect
-      x.shadowColor = 'rgba(245, 220, 160, 0.22)';
-      x.shadowBlur = 5;
-      x.strokeStyle = 'rgba(246, 213, 130, 0.82)';
-      x.lineWidth = 4;
-      x.setLineDash([14, 28]);
-      x.beginPath();
-      x.moveTo(256, 0);
-      x.lineTo(256, 512);
-      x.stroke();
-      x.shadowBlur = 0;
-
-      const tex = new THREE.CanvasTexture(c);
-      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(1, 20); // repeat along the path
-      return tex;
-    }
-
-    function createSidewalkTex() {
-      const c = document.createElement('canvas');
-      c.width = 256; c.height = 256;
-      const x = c.getContext('2d');
-      x.fillStyle = '#dbe7f4';
-      x.fillRect(0, 0, 256, 256);
-      x.strokeStyle = 'rgba(255,255,255,0.38)';
-      x.lineWidth = 2;
-      for (let i = 0; i <= 256; i += 32) {
-        x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 256); x.stroke();
-        x.beginPath(); x.moveTo(0, i); x.lineTo(256, i); x.stroke();
-      }
-      for (let i = 0; i < 2500; i++) {
-        x.fillStyle = `rgba(59,72,92,${Math.random() * 0.052})`;
-        x.fillRect(Math.random() * 256, Math.random() * 256, 1, 1);
-      }
-      x.fillStyle = 'rgba(248,250,252,0.72)';
-      x.fillRect(0, 0, 4, 256);
-      x.fillRect(252, 0, 4, 256);
-      const tex = new THREE.CanvasTexture(c);
-      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(1, 18);
-      return tex;
-    }
-
-    // Static city surfaces are batched as instanced boxes. That keeps the
-    // grid-road look but avoids hundreds of tiny draw calls each frame.
-    const cityRectDummy = new THREE.Object3D();
-    const cityRectGeo = new THREE.BoxGeometry(1, 1, 1);
-
-    function addCityRects(rects, mat) {
-      const mesh = new THREE.InstancedMesh(cityRectGeo, mat, rects.length);
-      rects.forEach((rect, index) => {
-        cityRectDummy.position.set(rect.x, rect.y, rect.z);
-        cityRectDummy.rotation.set(0, 0, 0);
-        cityRectDummy.scale.set(rect.width, 0.08, rect.depth);
-        cityRectDummy.updateMatrix();
-        mesh.setMatrixAt(index, cityRectDummy.matrix);
-      });
-      mesh.instanceMatrix.needsUpdate = true;
-      scene.add(mesh);
-      return mesh;
-    }
-
-    const gridRoadMat = new THREE.MeshBasicMaterial({ color: 0x6f7e91, map: createAsphaltTex() });
-    const roadRects = [];
-    streetCenters.forEach(center => {
-      roadRects.push(
-        { width: cityLimit * 2, depth: gridRoadHalfWidth * 2, x: 0, z: center, y: 0.32 },
-        { width: gridRoadHalfWidth * 2, depth: cityLimit * 2, x: center, z: 0, y: 0.325 }
-      );
-    });
-    addCityRects(roadRects, gridRoadMat);
-
-    const sidewalkStripMat = new THREE.MeshStandardMaterial({
-      color: 0xd9e7f8,
-      map: createSidewalkTex(),
-      roughness: 0.75,
-      metalness: 0.02,
-      emissive: new THREE.Color(0x7d91ab),
-      emissiveIntensity: 0.28
-    });
-    const streetEdges = [-cityLimit, ...streetCenters.flatMap(center => [center - gridRoadHalfWidth, center + gridRoadHalfWidth]), cityLimit].sort((a, b) => a - b);
-    const blockRanges = [];
-    for (let i = 0; i < streetEdges.length - 1; i++) {
-      const min = streetEdges[i];
-      const max = streetEdges[i + 1];
-      const center = (min + max) / 2;
-      const isRoadLane = streetCenters.some(street => Math.abs(center - street) < 1);
-      if (!isRoadLane && max - min > sidewalkWidth * 2 + 16) blockRanges.push({ min, max, center, size: max - min });
-    }
-
-    const sidewalkRects = [];
-    // Build pavement only beside an actual street. Using every block interval
-    // includes the outer streets too, while each strip stops at a crossroad.
-    const sidewalkCornerGap = 2.5;
-    streetCenters.forEach(center => {
-      blockRanges.forEach(range => {
-        const stripSize = range.size - sidewalkCornerGap * 2;
-        sidewalkRects.push(
-          { width: stripSize, depth: sidewalkWidth, x: range.center, z: center - gridRoadHalfWidth - sidewalkWidth / 2, y: 0.39 },
-          { width: stripSize, depth: sidewalkWidth, x: range.center, z: center + gridRoadHalfWidth + sidewalkWidth / 2, y: 0.39 },
-          { width: sidewalkWidth, depth: stripSize, x: center - gridRoadHalfWidth - sidewalkWidth / 2, z: range.center, y: 0.395 },
-          { width: sidewalkWidth, depth: stripSize, x: center + gridRoadHalfWidth + sidewalkWidth / 2, z: range.center, y: 0.395 }
-        );
-      });
-    });
-    addCityRects(sidewalkRects, sidewalkStripMat);
-
-    const curbMat = new THREE.MeshBasicMaterial({ color: 0x101820 });
-    const curbRects = [];
-    streetCenters.forEach(center => {
-      blockRanges.forEach(range => {
-        const curbSize = range.size - sidewalkCornerGap * 2;
-        curbRects.push(
-          { width: curbSize, depth: 0.75, x: range.center, z: center - gridRoadHalfWidth, y: 0.47 },
-          { width: curbSize, depth: 0.75, x: range.center, z: center + gridRoadHalfWidth, y: 0.47 },
-          { width: 0.75, depth: curbSize, x: center - gridRoadHalfWidth, z: range.center, y: 0.475 },
-          { width: 0.75, depth: curbSize, x: center + gridRoadHalfWidth, z: range.center, y: 0.475 }
-        );
-      });
-    });
-    addCityRects(curbRects, curbMat);
-
-    // --- City Block Building Scenery (Placed away from roads) ---
-    // Static collision shapes are registered from the visible scene objects.
-    // This keeps rendering and collision in one source of truth.
+    // --- Circular Tokyo neighbourhood: dense centre, houses at the rim. ---
+    const worldRadius = 468, boundaryRadius = 464, outerRoadRadius = 447;
+    const gridRoadHalfWidth = 5.8, sidewalkWidth = 3.2, trackWidth = gridRoadHalfWidth * 2;
+    const cityLimit = outerRoadRadius;
+    const streetCenters = Array.from({ length: 15 }, (_, i) => (i - 7) * 60);
+    const roadSurfaceY = 0.365, vehicleScale = 1.65;
+    const nitroDrainRate = 29, nitroRechargeRate = 8.5, nitroReadyThreshold = 45;
+    const nitroBottleRespawnMs = 120000, nitroPickupRadius = 4.5;
     const solidColliders = [];
+    const citySummary = { buildings: [], parks: [], shrines: [], boundaryRadius, outerRoadRadius, roadWidth: trackWidth };
+    scene.userData.city = citySummary;
+    let citySeed = 9347;
+    function cityRandom() { citySeed = (Math.imul(citySeed, 1664525) + 1013904223) >>> 0; return citySeed / 4294967296; }
+    const trackPoints = Array.from({ length: 48 }, (_, i) => {
+      const angle = Math.PI + i / 48 * Math.PI * 2;
+      return new THREE.Vector3(Math.cos(angle) * (outerRoadRadius - 2.7), roadSurfaceY, Math.sin(angle) * (outerRoadRadius - 2.7));
+    });
+    const trackCurve = new THREE.CatmullRomCurve3(trackPoints, true, 'centripetal');
+    const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const palette = {
+      asphalt: new THREE.MeshStandardMaterial({ color: 0x141e29, roughness: 1 }),
+      pavement: new THREE.MeshStandardMaterial({ color: 0x758080, roughness: 1 }),
+      grass: new THREE.MeshStandardMaterial({ color: 0x344c3c, roughness: 1 }),
+      bark: new THREE.MeshStandardMaterial({ color: 0x594134, roughness: 1 }),
+      dark: new THREE.MeshStandardMaterial({ color: 0x26303c, roughness: 0.9 }),
+      stone: new THREE.MeshStandardMaterial({ color: 0x9c9c90, roughness: 1 }),
+      red: new THREE.MeshStandardMaterial({ color: 0xd44424, roughness: 0.65 }),
+      white: new THREE.MeshStandardMaterial({ color: 0xe8e4d8, roughness: 0.7 }),
+      yellow: new THREE.MeshBasicMaterial({ color: 0xe6c477 }),
+      warm: new THREE.MeshBasicMaterial({ color: 0xffd7a3 })
+    };
+    const petals = [0xdba0b7, 0xeebbc9, 0xc886a4].map(color => new THREE.MeshStandardMaterial({ color, roughness: 1 }));
+    function staticBox(w, h, d, x, y, z, mat, parent = scene) {
+      const mesh = new THREE.Mesh(boxGeometry, mat); mesh.scale.set(w, h, d); mesh.position.set(x, y, z); parent.add(mesh); return mesh;
+    }
+    function staticCylinder(top, bottom, height, x, y, z, mat, segments = 8, parent = scene) {
+      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(Number((top / bottom).toFixed(6)), 1, 1, segments), mat); mesh.scale.set(bottom, height, bottom); mesh.position.set(x, y, z); parent.add(mesh); return mesh;
+    }
+    function disk(radius, y, mat) {
+      const mesh = new THREE.Mesh(new THREE.CircleGeometry(radius, 128), mat); mesh.rotation.x = -Math.PI / 2; mesh.position.y = y; scene.add(mesh); return mesh;
+    }
+    function ring(inner, outer, y, mat) {
+      const mesh = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 192), mat); mesh.rotation.x = -Math.PI / 2; mesh.position.y = y; scene.add(mesh); return mesh;
+    }
+    if (typeof ground !== 'undefined') { ground.material.map = null; ground.material.color.setHex(0x1d3026); }
+    // One continuous paved surface: roads are painted as a union, so junctions
+    // cannot leave overlapping kerbs or strips across the carriageway.
+    const surfaceCanvas = document.createElement('canvas'); surfaceCanvas.width = surfaceCanvas.height = 4096;
+    const surface = surfaceCanvas.getContext('2d'), surfaceScale = 4096 / (worldRadius * 2);
+    surface.fillStyle = '#596069'; surface.fillRect(0, 0, 4096, 4096);
+    surface.strokeStyle = '#505760'; surface.lineWidth = 1;
+    for (let n = 0; n < 4096; n += 16) { surface.beginPath(); surface.moveTo(n, 0); surface.lineTo(n, 4096); surface.moveTo(0, n); surface.lineTo(4096, n); surface.stroke(); }
+    surface.translate(2048, 2048); surface.scale(surfaceScale, surfaceScale);
+    surface.strokeStyle = '#171e28'; surface.lineWidth = trackWidth; surface.lineCap = 'butt';
+    streetCenters.forEach(center => {
+      const extent = Math.sqrt(outerRoadRadius ** 2 - center ** 2);
+      surface.beginPath(); surface.moveTo(-extent, center); surface.lineTo(extent, center); surface.moveTo(center, -extent); surface.lineTo(center, extent); surface.stroke();
+    });
+    for (const radius of [outerRoadRadius, 45]) { surface.beginPath(); surface.arc(0, 0, radius, 0, Math.PI * 2); surface.lineWidth = radius === 45 ? 14 : trackWidth; surface.stroke(); }
+    surface.strokeStyle = '#c5ad65'; surface.lineWidth = 0.15;
+    streetCenters.forEach(center => {
+      const extent = Math.sqrt((outerRoadRadius - 12) ** 2 - center ** 2);
+      for (let along = -Math.floor(extent / 10) * 10; along < extent; along += 10) {
+        if (Math.hypot(along, center) < 57 || streetCenters.some(v => Math.abs(along - v) < 9)) continue;
+        surface.beginPath(); surface.moveTo(along, center); surface.lineTo(along + 3.5, center); surface.moveTo(center, along); surface.lineTo(center, along + 3.5); surface.stroke();
+      }
+    });
+    for (let i = 0; i < 280; i++) {
+      const a = i / 280 * Math.PI * 2, x = Math.cos(a) * outerRoadRadius, z = Math.sin(a) * outerRoadRadius;
+      if (streetCenters.some(v => Math.abs(x - v) < 9 || Math.abs(z - v) < 9)) continue;
+      surface.beginPath(); surface.arc(0, 0, outerRoadRadius, a, a + 0.008); surface.stroke();
+    }
+    const surfaceMap = new THREE.CanvasTexture(surfaceCanvas); surfaceMap.colorSpace = THREE.SRGBColorSpace; surfaceMap.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    disk(worldRadius, roadSurfaceY, new THREE.MeshStandardMaterial({ map: surfaceMap, roughness: 0.94 }));
+    // A raised island physically closes the old drive-through tower route.
+    disk(52, roadSurfaceY + 0.05, palette.asphalt);
+    staticCylinder(38, 38, 0.85, 0, 0.425, 0, palette.stone, 96);
+    staticCylinder(37.2, 37.2, 0.08, 0, 0.89, 0, palette.grass, 96);
+    solidColliders.push({ type: 'circle', x: 0, z: 0, radius: 38 });
+    for (let i = 0; i < 30; i++) {
+      const a = i / 30 * Math.PI * 2;
+      const dash = staticBox(2.6, 0.02, 0.14, Math.cos(a) * 45, roadSurfaceY + 0.07, Math.sin(a) * 45, palette.white);
+      dash.rotation.y = -a - Math.PI / 2;
+    }
     function registerMeshBoxCollider(mesh) {
       mesh.updateMatrixWorld(true);
       const bounds = new THREE.Box3().setFromObject(mesh);
@@ -1207,6 +1121,58 @@
       });
     }
 
+    // Oriented vehicle bounds follow the rendered model and rotate with it.
+    function colliderOverlapsCar(collider, x, z, yaw) {
+      const c = Math.cos(yaw), s = Math.sin(yaw);
+      if (collider.type === 'boundary') {
+        for (const lx of [carFootprint.min.x, carFootprint.max.x]) for (const lz of [carFootprint.min.z, carFootprint.max.z]) {
+          if (Math.hypot(x + c * lx + s * lz, z - s * lx + c * lz) > collider.radius) return true;
+        }
+        return false;
+      }
+      const halfX = (carFootprint.max.x - carFootprint.min.x) / 2;
+      const halfZ = (carFootprint.max.z - carFootprint.min.z) / 2;
+      const midX = (carFootprint.max.x + carFootprint.min.x) / 2;
+      const midZ = (carFootprint.max.z + carFootprint.min.z) / 2;
+      x += c * midX + s * midZ;
+      z += -s * midX + c * midZ;
+      if (collider.type === 'box') {
+        const bx = (collider.minX + collider.maxX) / 2;
+        const bz = (collider.minZ + collider.maxZ) / 2;
+        const bw = (collider.maxX - collider.minX) / 2;
+        const bh = (collider.maxZ - collider.minZ) / 2;
+        const dx = bx - x, dz = bz - z;
+        // Separating axis test on both the road and vehicle axes.
+        return Math.abs(dx) < bw + Math.abs(c) * halfX + Math.abs(s) * halfZ &&
+          Math.abs(dz) < bh + Math.abs(s) * halfX + Math.abs(c) * halfZ &&
+          Math.abs(c * dx - s * dz) < halfX + Math.abs(c) * bw + Math.abs(s) * bh &&
+          Math.abs(s * dx + c * dz) < halfZ + Math.abs(s) * bw + Math.abs(c) * bh;
+      }
+      const local = (px, pz) => ({ x: c * (px - x) - s * (pz - z), z: s * (px - x) + c * (pz - z) });
+      const a = collider.type === 'circle' ? local(collider.x, collider.z) : local(collider.ax, collider.az);
+      const b = collider.type === 'circle' ? a : local(collider.bx, collider.bz);
+      const pointRectDistanceSq = p => Math.max(0, Math.abs(p.x) - halfX) ** 2 + Math.max(0, Math.abs(p.z) - halfZ) ** 2;
+      let distanceSq = Math.min(pointRectDistanceSq(a), pointRectDistanceSq(b));
+      // Segment/rectangle intersection, then closest corner-to-segment distance.
+      let tMin = 0, tMax = 1;
+      for (const [start, delta, half] of [[a.x, b.x - a.x, halfX], [a.z, b.z - a.z, halfZ]]) {
+        if (Math.abs(delta) < 1e-9) {
+          if (Math.abs(start) > half) { tMin = 2; break; }
+        } else {
+          const t1 = (-half - start) / delta, t2 = (half - start) / delta;
+          tMin = Math.max(tMin, Math.min(t1, t2));
+          tMax = Math.min(tMax, Math.max(t1, t2));
+        }
+      }
+      if (tMin <= tMax) return true;
+      const dx = b.x - a.x, dz = b.z - a.z, lengthSq = dx * dx + dz * dz;
+      for (const px of [-halfX, halfX]) for (const pz of [-halfZ, halfZ]) {
+        const t = lengthSq ? Math.max(0, Math.min(1, ((px - a.x) * dx + (pz - a.z) * dz) / lengthSq)) : 0;
+        distanceSq = Math.min(distanceSq, (px - a.x - dx * t) ** 2 + (pz - a.z - dz * t) ** 2);
+      }
+      return distanceSq < collider.radius * collider.radius;
+    }
+
     function colliderOverlapsCircle(collider, x, z, radius) {
       if (collider.type === 'box') {
         return x + radius > collider.minX && x - radius < collider.maxX &&
@@ -1230,299 +1196,311 @@
       const combinedRadius = radius + collider.radius;
       return dx * dx + dz * dz < combinedRadius * combinedRadius;
     }
-    const bGeo = new THREE.BoxGeometry(1, 1, 1);
-    // Reuse material palettes instead of making a new material per building.
-    // This keeps the same random city look while reducing GPU state churn.
-    const buildingMats = [0x8a9bb0, 0x6b7f94, 0x475569, 0x64748b, 0x7c6f64, 0x8b6f87, 0x567b7f, 0x755f4f, 0x2f3e55].map(color => (
-      new THREE.MeshStandardMaterial({ color, roughness: 0.65, metalness: 0.2 })
-    ));
-    const windowMats = [
-      { color: 0xfde68a, emissive: 0xf59e0b },
-      { color: 0x93c5fd, emissive: 0x2563eb },
-      { color: 0xf9a8d4, emissive: 0xdb2777 },
-      { color: 0xa7f3d0, emissive: 0x059669 }
-    ].map(style => new THREE.MeshStandardMaterial({
-      color: style.color,
-      emissive: style.emissive,
-      emissiveIntensity: 0.95,
-      transparent: true,
-      opacity: 0.68,
-      roughness: 0.1
+
+    const blossomGeometry = new THREE.IcosahedronGeometry(1, 1);
+    function cherryTree(x, z, size = 1, baseY = 0) {
+      staticCylinder(0.24 * size, 0.42 * size, 4.7 * size, x, baseY + 2.35 * size, z, palette.bark);
+      if (Math.hypot(x, z) < boundaryRadius) registerCircleCollider(x, z, 0.42 * size);
+      for (let i = 0; i < 3; i++) {
+        const canopy = new THREE.Mesh(blossomGeometry, petals[i]);
+        canopy.position.set(x + (i - 1) * 1.5 * size, baseY + (5.1 + (i === 1 ? 0.7 : 0)) * size, z + (i % 2 ? 1 : -0.6) * size);
+        canopy.scale.set(2.7 * size, 1.8 * size, 2.3 * size); scene.add(canopy);
+      }
+    }
+    const facadeCache = new Map(), signCache = new Map();
+    function facadeMaterial(style, tall, rural = false) {
+      const key = `${style}:${tall}:${rural}`;
+      if (facadeCache.has(key)) return facadeCache.get(key);
+      const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = ['#4b565e', '#62534e', '#60686a', '#4b515a', '#807567'][style]; ctx.fillRect(0, 0, 128, 256);
+      for (let row = 0; row < (rural ? 2 : 8); row++) {
+        ctx.fillStyle = '#303a42'; ctx.fillRect(0, row * (rural ? 128 : 32) + (rural ? 124 : 30), 128, 2);
+        for (let col = 0; col < 5; col++) {
+          ctx.fillStyle = cityRandom() > 0.43 ? (style % 2 ? '#c7b382' : '#94adbc') : '#1d2b37';
+          ctx.fillRect(7 + col * 24, (rural ? 28 : 6) + row * (rural ? 128 : 32), 14, (rural ? 50 : 18));
+        }
+      }
+      const map = new THREE.CanvasTexture(canvas); map.wrapS = map.wrapT = THREE.RepeatWrapping; map.repeat.set(1, tall ? 3 : 1);
+      const mat = new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: 0x343434, emissiveIntensity: 0.24, roughness: 0.9 });
+      facadeCache.set(key, mat); return mat;
+    }
+    function streetSign(text, color, vertical = false) {
+      const key = `${text}:${color}:${vertical}`;
+      if (!signCache.has(key)) {
+        const canvas = document.createElement('canvas'); canvas.width = vertical ? 96 : 256; canvas.height = vertical ? 288 : 96;
+        const ctx = canvas.getContext('2d'); ctx.fillStyle = '#101521'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = color; ctx.fillRect(4, 4, 248, 3); ctx.fillRect(4, 89, 248, 3);
+        ctx.font = 'bold 42px "Hiragino Sans", "Yu Gothic", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; if (vertical) [...text].forEach((letter, i) => ctx.fillText(letter, 48, 48 + i * 88)); else ctx.fillText(text, 128, 48);
+        signCache.set(key, new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(canvas), side: THREE.DoubleSide }));
+      }
+      return new THREE.Mesh(new THREE.PlaneGeometry(vertical ? 2.5 : 8, vertical ? 7.5 : 3), signCache.get(key));
+    }
+    // Keep the pickup/sign helpers available to the rest of the game.
+    function createShopSign(text, color) { return streetSign(text, color); }
+    const shopSigns = ['居酒屋', 'ラーメン', '喫茶店', '薬局', 'カラオケ', '寿司', 'ホテル', 'ゲーム'];
+    const shopSignColors = ['#22d3ee', '#f472b6', '#facc15', '#a7f3d0'];
+    function fenceRect(x, z, w, d) {
+      for (const side of [-1, 1]) {
+        staticBox(w, 0.16, 0.18, x, 1.25, z + side * d / 2, palette.dark);
+        staticBox(0.18, 0.16, d, x + side * w / 2, 1.25, z, palette.dark);
+      }
+      for (let along = -w / 2; along <= w / 2; along += 3) for (const side of [-1, 1]) staticBox(0.15, 1.5, 0.15, x + along, 0.75, z + side * d / 2, palette.dark);
+    }
+    function park(x, z, playground) {
+      const size = 42;
+      const base = staticBox(size, 0.3, size, x, 0.3, z, palette.grass); registerMeshBoxCollider(base);
+      citySummary.parks.push({ x, z, size, playground });
+      fenceRect(x, z, size, size);
+      staticBox(3, 0.04, size - 2, x, 0.49, z, palette.stone);
+      for (const dx of [-13, 13]) for (const dz of [-13, 13]) cherryTree(x + dx, z + dz, 1.1);
+      for (const dx of [-7, 7]) { staticBox(3, 0.25, 1, x + dx, 0.9, z - 7, palette.bark); staticBox(3, 0.8, 0.2, x + dx, 1.25, z - 7.5, palette.bark); }
+      if (playground) {
+        for (const dx of [-4, 4]) staticBox(0.25, 4, 0.3, x + dx, 2, z + 6, palette.red);
+        staticBox(8.5, 0.3, 0.3, x, 4, z + 6, palette.red);
+        for (const dx of [-1.5, 1.5]) {
+          staticBox(0.06, 2.7, 0.06, x + dx, 2.6, z + 6, palette.dark);
+          staticBox(1.5, 0.18, 0.8, x + dx, 1.1, z + 6, palette.yellow);
+        }
+        const slide = staticBox(1.5, 0.2, 6, x + 9, 1.8, z + 4, palette.red); slide.rotation.x = 0.45;
+        // Small static park visitors stay behind the fence, outside driving space.
+        for (const dx of [-6, 5]) {
+          staticCylinder(0.22, 0.26, 0.9, x + dx, 0.9, z + 2, dx < 0 ? palette.red : palette.yellow);
+          const head = new THREE.Mesh(blossomGeometry, palette.warm); head.scale.setScalar(0.23); head.position.set(x + dx, 1.6, z + 2); scene.add(head);
+        }
+      }
+    }
+    const blockRanges = [];
+    for (let i = 0; i < streetCenters.length - 1; i++) blockRanges.push({ center: streetCenters[i] + 30 });
+    blockRanges.forEach((xr, ix) => blockRanges.forEach((zr, iz) => {
+      const blockRadius = Math.hypot(xr.center, zr.center);
+      if (blockRadius + 30 < 415 && blockRadius > 88 && (ix * 7 + iz * 11) % 23 === 0) { park(xr.center, zr.center, (ix + iz) % 2 === 0); return; }
+      for (const dx of [-11, 11]) for (const dz of [-11, 11]) {
+        const x = xr.center + dx, z = zr.center + dz, radius = Math.hypot(x, z);
+        const rural = radius > 305;
+        const w = rural ? 13 + cityRandom() * 3 : 17 + cityRandom() * 2;
+        const d = rural ? 13 + cityRandom() * 3 : 17 + cityRandom() * 2;
+        if (radius + Math.hypot(w, d) / 2 > outerRoadRadius - gridRoadHalfWidth - 3 || radius < 55 + Math.hypot(w, d) / 2) continue;
+        const h = rural ? 6 + cityRandom() * 6 : radius > 250 ? 24 + cityRandom() * 30 : cityRandom() < 0.18 ? 18 + cityRandom() * 14 : 85 + cityRandom() * 78;
+        const mat = facadeMaterial(Math.floor(cityRandom() * 5), h > 55, rural);
+        const lowerHeight = h > 55 ? h * 0.72 : h;
+        const building = staticBox(w, lowerHeight, d, x, roadSurfaceY + lowerHeight / 2, z, mat); registerMeshBoxCollider(building);
+        citySummary.buildings.push({ x, z, w, d, h, rural });
+        if (h > 55) staticBox(w * 0.76, h - lowerHeight, d * 0.76, x, roadSurfaceY + lowerHeight + (h - lowerHeight) / 2, z, mat);
+        if (rural) {
+          const roof = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 4), palette.dark);
+          roof.scale.set(w * 0.78, 3.5, d * 0.78); roof.rotation.y = Math.PI / 4; roof.position.set(x, h + 1.7 + roadSurfaceY, z); scene.add(roof);
+          if (cityRandom() < 0.2) cherryTree(x + w / 2 + 1.4, z, 0.6);
+        } else {
+          const sc = h > 55 ? 0.76 : 1;
+          staticBox(w * sc + 0.3, 0.5, d * sc + 0.3, x, h + 0.6, z, palette.dark);
+          staticBox(3, 2, 4, x + 2, h + 1.5, z - 2, palette.stone);
+        }
+        const roadX = streetCenters.reduce((a, v) => Math.abs(v - x) < Math.abs(a - x) ? v : a);
+        const roadZ = streetCenters.reduce((a, v) => Math.abs(v - z) < Math.abs(a - z) ? v : a);
+        const facesX = Math.abs(roadX - x) < Math.abs(roadZ - z), direction = Math.sign(facesX ? roadX - x : roadZ - z);
+        const front = new THREE.Group(); front.position.set(x + (facesX ? direction * (w / 2 + 0.1) : 0), 0, z + (facesX ? 0 : direction * (d / 2 + 0.1))); front.rotation.y = facesX ? direction * Math.PI / 2 : direction > 0 ? 0 : Math.PI; scene.add(front);
+        staticBox(rural ? 1.8 : 8, rural ? 2.8 : 3.3, 0.08, 0, 1.9, 0, palette.dark, front);
+        if (!rural) {
+          const sign = streetSign(shopSigns[Math.floor(cityRandom() * shopSigns.length)], shopSignColors[Math.floor(cityRandom() * shopSignColors.length)]); sign.position.set(0, 5.1, 0.12); front.add(sign);
+          staticBox(10, 0.18, 1, 0, 3.6, 0.5, palette.dark, front);
+          if (h > 55 && cityRandom() > 0.65) { const blade = streetSign('ホテル', '#f472b6', true); blade.position.set(w * 0.35, 12, 0.3); front.add(blade); }
+        }
+      }
     }));
-    const buildingBaseMat = new THREE.MeshStandardMaterial({
-      color: 0x0a0f1a,
-      roughness: 1.0,
-      metalness: 0.0,
-      emissive: new THREE.Color(0x02040a),
-      emissiveIntensity: 0.2
-    });
-    const shopSigns = ['居酒屋', 'ラーメン', '喫茶店', '薬局', '駅前', 'カラオケ', '寿司', 'ホテル', 'ゲーム', '書店', '新宿', '渋谷'];
-    const shopSignColors = ['#22d3ee', '#f472b6', '#facc15', '#a7f3d0', '#fb7185', '#93c5fd'];
-
-    function createShopSign(text, color) {
-      const c = document.createElement('canvas');
-      c.width = 256; c.height = 96;
-      const x = c.getContext('2d');
-      x.fillStyle = 'rgba(5, 9, 20, 0.9)';
-      x.fillRect(0, 0, c.width, c.height);
-      x.strokeStyle = color;
-      x.lineWidth = 5;
-      x.strokeRect(8, 8, c.width - 16, c.height - 16);
-      x.shadowColor = color;
-      x.shadowBlur = 16;
-      x.fillStyle = color;
-      x.font = '900 42px Arial Black, "Hiragino Sans", "Yu Gothic", sans-serif';
-      x.textAlign = 'center';
-      x.textBaseline = 'middle';
-      x.fillText(text, c.width / 2, c.height / 2);
-      const tex = new THREE.CanvasTexture(c);
-      const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
-      return new THREE.Mesh(new THREE.PlaneGeometry(11, 4.1), mat);
+    // Small detached homes occupy the curved parcels left beyond the grid lots.
+    for (let i = 0; i < 180; i++) {
+      const a = i / 180 * Math.PI * 2, r = 428, x = Math.cos(a) * r, z = Math.sin(a) * r, w = 9, d = 9, h = 7;
+      if (streetCenters.some(c => Math.abs(x - c) < 12 || Math.abs(z - c) < 12) || citySummary.buildings.some(b => Math.abs(b.x - x) < (b.w + w) / 2 + 2 && Math.abs(b.z - z) < (b.d + d) / 2 + 2)) continue;
+      const house = staticBox(w, h, d, x, roadSurfaceY + h / 2, z, facadeMaterial(i % 5, false, true)); registerMeshBoxCollider(house);
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 4), palette.dark); roof.scale.set(7, 3, 7); roof.rotation.y = Math.PI / 4; roof.position.set(x, h + 1.5 + roadSurfaceY, z); scene.add(roof);
+      staticBox(1.7, 2.6, 0.15, x, 1.8, z + d / 2, palette.dark);
+      citySummary.buildings.push({ x, z, w, d, h, rural: true });
     }
-
-    // Helper to check if a building overlaps streets
-    function isOnStreet(x, z) {
-      const onGridStreet = streetCenters.some(center => Math.abs(x - center) < streetClearance || Math.abs(z - center) < streetClearance);
-      const inTowerPlaza = Math.hypot(x, z) < 42;
-      return onGridStreet || inTowerPlaza;
+    // Sakura scenery outside a continuous physical boundary; never a traversable forest.
+    ring(boundaryRadius, boundaryRadius + 1.0, 1.0, palette.stone);
+    solidColliders.push({ type: 'boundary', radius: boundaryRadius });
+    for (let i = 0; i < 240; i++) {
+      const a = i / 240 * Math.PI * 2, x = Math.cos(a) * (boundaryRadius + 0.5), z = Math.sin(a) * (boundaryRadius + 0.5);
+      staticBox(0.28, 2, 0.28, x, 1, z, palette.dark);
+      const rail = staticBox(12.3, 0.18, 0.18, x, 1.6, z, palette.dark); rail.rotation.y = -a - Math.PI / 2;
+      if (i % 20 === 0) { const sign = streetSign('立入禁止', '#facc15'); sign.scale.setScalar(0.6); sign.position.set(x, 2.5, z); sign.rotation.y = Math.atan2(-x, -z); scene.add(sign); }
     }
-
-    blockRanges.forEach((xRange) => {
-      blockRanges.forEach((zRange) => {
-        const buildMinX = xRange.min + sidewalkWidth + 2;
-        const buildMaxX = xRange.max - sidewalkWidth - 2;
-        const buildMinZ = zRange.min + sidewalkWidth + 2;
-        const buildMaxZ = zRange.max - sidewalkWidth - 2;
-        const cols = 3;
-        const rows = 3;
-        const cellW = (buildMaxX - buildMinX) / cols;
-        const cellD = (buildMaxZ - buildMinZ) / rows;
-
-        for (let ix = 0; ix < cols; ix++) {
-          for (let iz = 0; iz < rows; iz++) {
-            const x = buildMinX + cellW * (ix + 0.5) + (Math.random() - 0.5) * 2;
-            const z = buildMinZ + cellD * (iz + 0.5) + (Math.random() - 0.5) * 2;
-
-            if (!isOnStreet(x, z) && Math.abs(x) < cityLimit && Math.abs(z) < cityLimit) {
-              const w = Math.max(12, cellW - 4 + Math.random() * 3);
-              const d = Math.max(12, cellD - 4 + Math.random() * 3);
-              const h = 28 + Math.random() * 145;
-
-              // Varied Tokyo tower blocks so the city does not collapse into one dark wall.
-              const bMat = buildingMats[Math.floor(Math.random() * buildingMats.length)];
-
-              const building = new THREE.Mesh(bGeo, bMat);
-              building.scale.set(w, h, d);
-              building.position.set(x, h / 2, z);
-              scene.add(building);
-              registerMeshBoxCollider(building);
-              // Ground contact slab for better visual separation
-              const base = new THREE.Mesh(bGeo, buildingBaseMat);
-              base.scale.set(w * 1.05, 0.04, d * 1.05);
-              base.position.set(x, 0.02, z);
-              scene.add(base);
-
-              // Add elegant warm glowing windows to simulate high-rises at twilight
-              if (Math.random() > 0.3) {
-                const wMat = windowMats[Math.floor(Math.random() * windowMats.length)];
-                const windowPlate = new THREE.Mesh(bGeo, wMat);
-                windowPlate.scale.set(w + 0.1, h * 0.85, d + 0.1);
-                windowPlate.position.set(x, h / 2, z);
-                scene.add(windowPlate);
-              }
-
-              if (Math.random() > 0.38) {
-                const signText = shopSigns[Math.floor(Math.random() * shopSigns.length)];
-                const signColor = shopSignColors[Math.floor(Math.random() * shopSignColors.length)];
-                const buildingSign = createShopSign(signText, signColor);
-                const faceZ = Math.random() > 0.5 ? 1 : -1;
-                buildingSign.position.set(x, Math.min(13, h * 0.35), z + faceZ * (d / 2 + 0.08));
-                buildingSign.rotation.y = faceZ > 0 ? 0 : Math.PI;
-                scene.add(buildingSign);
-              }
-            }
-          }
+    for (let i = 0; i < 340; i++) {
+      const angle = i / 340 * Math.PI * 2 + cityRandom() * 0.04, radius = worldRadius + 9 + cityRandom() * 90;
+      cherryTree(Math.cos(angle) * radius, Math.sin(angle) * radius, 1.2 + cityRandom() * 1.5);
+    }
+    for (let i = 0; i < 4; i++) {
+      const a = Math.PI / 4 + i * Math.PI / 2, gateRadius = 482;
+      const x = Math.cos(a) * gateRadius, z = Math.sin(a) * gateRadius;
+      const hill = new THREE.Mesh(new THREE.ConeGeometry(50, 27, 10), palette.grass); hill.position.set(Math.cos(a) * 521, 7, Math.sin(a) * 521); scene.add(hill);
+      const approach = staticBox(6, 0.12, 12, Math.cos(a) * 459, roadSurfaceY + 0.02, Math.sin(a) * 452, palette.stone); approach.rotation.y = Math.atan2(Math.cos(a), Math.sin(a));
+      const gate = new THREE.Group(); gate.position.set(x, 3, z); gate.rotation.y = Math.atan2(-x, -z); scene.add(gate);
+      for (const side of [-1, 1]) { staticCylinder(0.45, 0.65, 10, side * 5, 5, 0, palette.red, 10, gate); staticCylinder(0.7, 0.8, 1.5, side * 5, 0.75, 0, palette.stone, 10, gate); }
+      staticBox(14, 0.9, 1.5, 0, 10, 0, palette.dark, gate); staticBox(12, 0.65, 0.9, 0, 8, 0, palette.red, gate); staticBox(0.65, 2, 0.7, 0, 9, 0, palette.red, gate);
+      citySummary.shrines.push({ x, z, angle: a, accessible: false });
+      for (const side of [-1, 1]) cherryTree(x + side * 13, z + 5, 2.4, 2);
+    }
+    // Tokyo Tower: island visitor building, red lower lattice, alternating upper bands.
+    const towerGroup = new THREE.Group(); scene.add(towerGroup);
+    const towerRed = palette.red, towerWhite = palette.white;
+    const towerUp = new THREE.Vector3(0, 1, 0);
+    function addTowerBeam(start, end, radius, mat) {
+      const delta = end.clone().sub(start);
+      const beam = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 6), mat);
+      beam.scale.set(radius, delta.length(), radius);
+      beam.position.copy(start).add(end).multiplyScalar(0.5); beam.quaternion.setFromUnitVectors(towerUp, delta.normalize()); towerGroup.add(beam); return beam;
+    }
+    // Foot Town's broad, layered visitor podium and central observation lifts.
+    staticBox(34, 10, 28, 0, 5.9, 0, new THREE.MeshStandardMaterial({ color: 0x373034, roughness: 0.9 }), towerGroup);
+    for (let floor = 0; floor < 4; floor++) {
+      staticBox(34.6, 0.35, 28.6, 0, 2 + floor * 2.5, 0, palette.stone, towerGroup);
+      for (const side of [-1, 1]) staticBox(31, 1.1, 0.12, 0, 3 + floor * 2.1, side * 14.1, palette.dark, towerGroup);
+    }
+    staticBox(29, 1.8, 23, 0, 11.6, 0, palette.white, towerGroup);
+    staticBox(24, 0.4, 4, 0, 3.6, 15, palette.white, towerGroup);
+    staticBox(13, 7, 0.2, 0, 7.3, 14.2, palette.stone, towerGroup);
+    staticBox(8, 2.7, 0.2, 0, 2.3, 14.2, palette.dark, towerGroup);
+    staticBox(2.6, 80, 2.6, 0, 52, 0, palette.stone, towerGroup);
+    for (const side of [-1, 1]) staticBox(0.16, 80, 0.16, side * 1.5, 52, 1.5, towerRed, towerGroup);
+    const towerName = streetSign('東京タワー', '#facc15'); towerName.position.set(0, 7.5, 14.25); towerGroup.add(towerName);
+    const towerLevels = [{ y: 0.9, half: 24 }, { y: 56, half: 10 }, { y: 92, half: 3.8 }];
+    function towerHalfAt(y) { return y <= 56 ? THREE.MathUtils.lerp(24, 10, (y - 0.9) / 55.1) : THREE.MathUtils.lerp(10, 3.8, (y - 56) / 36); }
+    function towerBand(y) { return y < 5 ? towerWhite : y < 68 ? towerRed : y < 80 ? towerWhite : towerRed; }
+    const corners = [[-1,-1],[1,-1],[1,1],[-1,1]];
+    for (let y = 1; y < 92; y += 7) {
+      const top = Math.min(92, y + 7), low = towerHalfAt(y), high = towerHalfAt(top), mat = towerBand((y + top) / 2);
+      corners.forEach(([sx, sz], index) => {
+        const next = corners[(index + 1) % 4];
+        addTowerBeam(new THREE.Vector3(sx * low, y, sz * low), new THREE.Vector3(sx * high, top, sz * high), y < 56 ? 0.65 : 0.35, mat);
+        if (y > 10) {
+          addTowerBeam(new THREE.Vector3(sx * low, y, sz * low), new THREE.Vector3(next[0] * low, y, next[1] * low), 0.2, mat);
+          addTowerBeam(new THREE.Vector3(sx * low, y, sz * low), new THREE.Vector3(next[0] * high, top, next[1] * high), 0.14, mat);
+          addTowerBeam(new THREE.Vector3(next[0] * low, y, next[1] * low), new THREE.Vector3(sx * high, top, sz * high), 0.14, mat);
         }
       });
-    });
-
-    const forestFloor = new THREE.Mesh(
-      new THREE.RingGeometry(cityLimit + 105, 1250, 128),
-      new THREE.MeshBasicMaterial({ color: 0x07140d, side: THREE.DoubleSide })
-    );
-    forestFloor.rotation.x = -Math.PI / 2;
-    forestFloor.position.y = 0.025;
-    scene.add(forestFloor);
-
-    const forestTreeCount = 360;
-    const treeTrunkGeo = new THREE.CylinderGeometry(0.32, 0.48, 5, 5);
-    const treeLeafGeo = new THREE.ConeGeometry(2.9, 8, 6);
-    const treeTrunks = new THREE.InstancedMesh(treeTrunkGeo, new THREE.MeshBasicMaterial({ color: 0x2b1c13 }), forestTreeCount);
-    const treeLeaves = new THREE.InstancedMesh(treeLeafGeo, new THREE.MeshBasicMaterial({ color: 0x0d2b1b }), forestTreeCount);
-    const treeDummy = new THREE.Object3D();
-    for (let i = 0; i < forestTreeCount; i++) {
-      const angle = (i / forestTreeCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.025;
-      const radius = cityLimit + 105 + Math.random() * 70;
-      const x = Math.cos(angle) * radius + (Math.random() - 0.5) * 16;
-      const z = Math.sin(angle) * radius + (Math.random() - 0.5) * 16;
-      const scale = 0.75 + Math.random() * 1.25;
-      treeDummy.position.set(x, 2 * scale, z);
-      treeDummy.rotation.set(0, Math.random() * Math.PI, 0);
-      treeDummy.scale.set(scale, scale, scale);
-      treeDummy.updateMatrix();
-      treeTrunks.setMatrixAt(i, treeDummy.matrix);
-
-      treeDummy.position.set(x, 6.1 * scale, z);
-      treeDummy.rotation.set(0, Math.random() * Math.PI, 0);
-      treeDummy.scale.set(scale, scale, scale);
-      treeDummy.updateMatrix();
-      treeLeaves.setMatrixAt(i, treeDummy.matrix);
     }
-    treeTrunks.instanceMatrix.needsUpdate = true;
-    treeLeaves.instanceMatrix.needsUpdate = true;
-    scene.add(treeTrunks, treeLeaves);
-
-    function createNeonSign(text, color, position, rotationY = 0) {
-      const c = document.createElement('canvas');
-      c.width = 512; c.height = 192;
-      const x = c.getContext('2d');
-      x.fillStyle = 'rgba(4,8,18,0.92)';
-      x.fillRect(0, 0, c.width, c.height);
-      x.strokeStyle = color;
-      x.lineWidth = 10;
-      x.strokeRect(12, 12, c.width - 24, c.height - 24);
-      x.shadowColor = color;
-      x.shadowBlur = 22;
-      x.fillStyle = color;
-      x.font = '900 58px Arial Black, "Hiragino Sans", "Yu Gothic", sans-serif';
-      x.textAlign = 'center';
-      x.textBaseline = 'middle';
-      x.fillText(text, c.width / 2, c.height / 2);
-      const tex = new THREE.CanvasTexture(c);
-      const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
-      const sign = new THREE.Mesh(new THREE.PlaneGeometry(22, 8.25), mat);
-      sign.position.copy(position);
-      sign.rotation.y = rotationY;
-      scene.add(sign);
-      return sign;
-    }
-
-    createNeonSign('東京ドリフト', '#22d3ee', new THREE.Vector3(55, 18, 126), Math.PI);
-    createNeonSign('深夜走行', '#f472b6', new THREE.Vector3(-126, 15, -40), Math.PI / 2);
-    createNeonSign('首都高ループ', '#facc15', new THREE.Vector3(124, 20, -144), -Math.PI / 2);
-
-    // Tokyo Tower-style central landmark: drive-through middle, solid legs.
-    const towerGroup = new THREE.Group();
-    const towerRed = new THREE.MeshStandardMaterial({ color: 0xdc2626, emissive: 0x450a0a, emissiveIntensity: 0.35, metalness: 0.45, roughness: 0.38 });
-    const towerWhite = new THREE.MeshStandardMaterial({ color: 0xf8fafc, emissive: 0x475569, emissiveIntensity: 0.12, metalness: 0.35, roughness: 0.4 });
-    const towerUp = new THREE.Vector3(0, 1, 0);
-
-    function addTowerBeam(start, end, radius, mat) {
-      const dir = end.clone().sub(start);
-      const len = dir.length();
-      const beam = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 6), mat);
-      beam.position.copy(start).add(end).multiplyScalar(0.5);
-      beam.quaternion.setFromUnitVectors(towerUp, dir.normalize());
-      towerGroup.add(beam);
-      return beam;
-    }
-
-    const towerLevels = [
-      { y: 0, half: 24 },
-      { y: 34, half: 13 },
-      { y: 64, half: 7 },
-      { y: 92, half: 3.2 }
-    ];
-    const cornerSigns = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
-    cornerSigns.forEach(([sx, sz]) => {
-      const points = towerLevels.map(level => new THREE.Vector3(sx * level.half, level.y, sz * level.half));
-      for (let i = 0; i < points.length - 1; i++) {
-        addTowerBeam(points[i], points[i + 1], i === 0 ? 0.75 : 0.48, i === 1 ? towerWhite : towerRed);
+    for (const [y, width] of [[56, 23], [92, 11]]) {
+      staticBox(width, 3.4, width, 0, y, 0, palette.warm, towerGroup);
+      for (const offset of [-2, 2]) staticBox(width + 1, 0.8, width + 1, 0, y + offset, 0, towerWhite, towerGroup);
+      for (let offset = -width / 2; offset <= width / 2; offset += 2) for (const side of [-1, 1]) {
+        staticBox(0.18, 3.4, 0.18, offset, y, side * (width / 2 + 0.08), towerRed, towerGroup);
+        staticBox(0.18, 3.4, 0.18, side * (width / 2 + 0.08), y, offset, towerRed, towerGroup);
       }
-      registerLowBeamCollider(points[0], points[1], 0.75);
-    });
-
-    for (let level = 1; level < towerLevels.length; level++) {
-      const current = towerLevels[level];
-      const mat = level % 2 ? towerWhite : towerRed;
-      const y = current.y;
-      const h = current.half;
-      addTowerBeam(new THREE.Vector3(-h, y, -h), new THREE.Vector3(h, y, -h), 0.38, mat);
-      addTowerBeam(new THREE.Vector3(h, y, -h), new THREE.Vector3(h, y, h), 0.38, mat);
-      addTowerBeam(new THREE.Vector3(h, y, h), new THREE.Vector3(-h, y, h), 0.38, mat);
-      addTowerBeam(new THREE.Vector3(-h, y, h), new THREE.Vector3(-h, y, -h), 0.38, mat);
     }
-
-    [0, 1, 2].forEach(level => {
-      const lower = towerLevels[level];
-      const upper = towerLevels[level + 1];
-      cornerSigns.forEach(([sx, sz], index) => {
-        const next = cornerSigns[(index + 1) % cornerSigns.length];
-        addTowerBeam(
-          new THREE.Vector3(sx * lower.half, lower.y + 4, sz * lower.half),
-          new THREE.Vector3(next[0] * upper.half, upper.y - 4, next[1] * upper.half),
-          0.2,
-          towerRed
-        );
-      });
-    });
-
-    const observationDeck = new THREE.Mesh(new THREE.BoxGeometry(19, 4, 19), towerWhite);
-    observationDeck.position.y = 56;
-    towerGroup.add(observationDeck);
-
-    const topMastRed = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 1.25, 34, 8), towerRed);
-    topMastRed.position.y = 108;
-    towerGroup.add(topMastRed);
-    const topMastWhite = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.7, 28, 8), towerWhite);
-    topMastWhite.position.y = 139;
-    towerGroup.add(topMastWhite);
-    const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.32, 22, 8), towerRed);
-    antenna.position.y = 164;
-    towerGroup.add(antenna);
-    towerGroup.position.set(0, 0, 0);
-    scene.add(towerGroup);
-
-    // Street lamps sit on sidewalk edges, never in the drivable lane.
-    const lampPostMat = new THREE.MeshStandardMaterial({ color: 0x2f3b4f, metalness: 0.55, roughness: 0.3 });
-    const lampGlowMat = new THREE.MeshBasicMaterial({ color: 0xfff1a8 });
-    const lampPositions = [-300, -220, -140, -60, 60, 140, 220, 300];
-
+    staticCylinder(0.75, 2.6, 33, 0, 110.5, 0, towerRed, 10, towerGroup);
+    staticCylinder(0.42, 0.75, 29, 0, 141.5, 0, towerWhite, 10, towerGroup);
+    staticCylinder(0.1, 0.42, 23, 0, 167.5, 0, towerRed, 8, towerGroup);
+    const lampGlowCanvas = document.createElement('canvas'); lampGlowCanvas.width = lampGlowCanvas.height = 64;
+    const glowContext = lampGlowCanvas.getContext('2d'), glowGradient = glowContext.createRadialGradient(32, 32, 1, 32, 32, 32);
+    glowGradient.addColorStop(0, 'rgba(255,211,139,0.12)'); glowGradient.addColorStop(1, 'rgba(255,211,139,0)'); glowContext.fillStyle = glowGradient; glowContext.fillRect(0, 0, 64, 64);
+    const lampPoolMaterial = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(lampGlowCanvas), transparent: true, depthWrite: false });
+    const lampPoolGeometry = new THREE.PlaneGeometry(8, 8);
     function addStreetLamp(x, z, faceX, faceZ) {
-      const lamp = new THREE.Group();
-      const lampHeight = 8.2;
-      const armLength = 1.7;
-      const poleRadius = 0.16;
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, poleRadius, lampHeight, 8), lampPostMat);
-      pole.position.y = lampHeight / 2;
-      lamp.add(pole);
-
-      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.13, armLength), lampPostMat);
-      arm.position.set(faceX * armLength / 2, lampHeight - 0.12, faceZ * armLength / 2);
-      arm.rotation.y = Math.atan2(faceX, faceZ);
-      lamp.add(arm);
-
-      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), lampGlowMat);
-      bulb.position.set(faceX * armLength, lampHeight - 0.3, faceZ * armLength);
-      lamp.add(bulb);
-
-      lamp.position.set(x, 0, z);
-      scene.add(lamp);
-      registerCircleCollider(x, z, poleRadius);
+      if (Math.hypot(x, z) > outerRoadRadius - 10 || Math.hypot(x, z) < 55) return;
+      staticCylinder(0.10, 0.15, 7.3, x, 3.65, z, palette.dark);
+      const arm = staticBox(0.15, 0.15, 1.2, x + faceX * 0.6, 7.2, z + faceZ * 0.6, palette.dark); arm.rotation.y = Math.atan2(faceX, faceZ);
+      const lamp = new THREE.Mesh(blossomGeometry, palette.warm); lamp.scale.setScalar(0.22); lamp.position.set(x + faceX * 1.2, 7.1, z + faceZ * 1.2); scene.add(lamp);
+      staticCylinder(0.22, 0.28, 0.5, x, 0.25, z, palette.stone);
+      const pool = new THREE.Mesh(lampPoolGeometry, lampPoolMaterial); pool.rotation.x = -Math.PI / 2; pool.position.set(x + faceX * 2, roadSurfaceY + 0.012, z + faceZ * 2); scene.add(pool);
+      registerCircleCollider(x, z, 0.28);
     }
-
     streetCenters.forEach(center => {
-      lampPositions.forEach(pos => {
-        if (Math.abs(pos - center) < gridRoadHalfWidth + 18) return;
-        const lampCurbOffset = gridRoadHalfWidth + 1.6;
-        addStreetLamp(pos, center + lampCurbOffset, 0, -1);
-        addStreetLamp(pos, center - lampCurbOffset, 0, 1);
-        addStreetLamp(center + lampCurbOffset, pos, -1, 0);
-        addStreetLamp(center - lampCurbOffset, pos, 1, 0);
-      });
+      for (let along = -390; along <= 390; along += 60) {
+        addStreetLamp(along, center + gridRoadHalfWidth + 1.4, 0, -1);
+        addStreetLamp(center - gridRoadHalfWidth - 1.4, along, 1, 0);
+      }
     });
+    // One draw per repeated material/shape, including lamps, houses and sakura.
+    function batchStaticWorld() {
+      scene.updateMatrixWorld(true);
+      const batches = new Map(), remove = [];
+      scene.traverse(mesh => {
+        if (!mesh.isMesh || mesh.isInstancedMesh || Array.isArray(mesh.material) || !mesh.geometry.parameters) return;
+        const isBox = mesh.geometry.type === 'BoxGeometry';
+        const key = mesh.material.uuid + ':' + (isBox ? 'box' : mesh.geometry.type + JSON.stringify(mesh.geometry.parameters));
+        if (!batches.has(key)) batches.set(key, { geometry: isBox ? boxGeometry : mesh.geometry, material: mesh.material, matrices: [] });
+        const matrix = mesh.matrixWorld.clone();
+        if (isBox) { const p = mesh.geometry.parameters; matrix.multiply(new THREE.Matrix4().makeScale(p.width, p.height, p.depth)); }
+        batches.get(key).matrices.push(matrix); remove.push(mesh);
+      });
+      remove.forEach(mesh => mesh.removeFromParent());
+      batches.forEach(batch => {
+        const instances = new THREE.InstancedMesh(batch.geometry, batch.material, batch.matrices.length);
+        batch.matrices.forEach((matrix, i) => instances.setMatrixAt(i, matrix)); instances.instanceMatrix.needsUpdate = true; instances.computeBoundingSphere(); scene.add(instances);
+      });
+      citySummary.staticDrawBatches = batches.size;
+    }
+    batchStaticWorld();
 
-    // Decorative trees are reserved for the map border; inner streets stay urban.
+    // Query nearby geometry rather than scanning the entire city each frame.
+    const collisionGrid = new Map();
+    const collisionCellSize = 32;
+    const worldBoundary = solidColliders.find(c => c.type === 'boundary');
+    solidColliders.forEach(c => {
+      if (c.type === 'boundary') return;
+      const bounds = c.type === 'box' ? c : c.type === 'circle'
+        ? { minX: c.x - c.radius, maxX: c.x + c.radius, minZ: c.z - c.radius, maxZ: c.z + c.radius }
+        : { minX: Math.min(c.ax, c.bx) - c.radius, maxX: Math.max(c.ax, c.bx) + c.radius, minZ: Math.min(c.az, c.bz) - c.radius, maxZ: Math.max(c.az, c.bz) + c.radius };
+      for (let x = Math.floor(bounds.minX / collisionCellSize); x <= Math.floor(bounds.maxX / collisionCellSize); x++) {
+        for (let z = Math.floor(bounds.minZ / collisionCellSize); z <= Math.floor(bounds.maxZ / collisionCellSize); z++) {
+          const key = `${x},${z}`;
+          if (!collisionGrid.has(key)) collisionGrid.set(key, []);
+          collisionGrid.get(key).push(c);
+        }
+      }
+    });
+    function findCarCollision(x, z, yaw) {
+      if (worldBoundary && colliderOverlapsCar(worldBoundary, x, z, yaw)) return worldBoundary;
+      const radius = Math.hypot(Math.max(Math.abs(carFootprint.min.x), Math.abs(carFootprint.max.x)), Math.max(Math.abs(carFootprint.min.z), Math.abs(carFootprint.max.z)));
+      for (let gx = Math.floor((x - radius) / collisionCellSize); gx <= Math.floor((x + radius) / collisionCellSize); gx++) {
+        for (let gz = Math.floor((z - radius) / collisionCellSize); gz <= Math.floor((z + radius) / collisionCellSize); gz++) {
+          for (const collider of collisionGrid.get(`${gx},${gz}`) || []) if (colliderOverlapsCar(collider, x, z, yaw)) return collider;
+        }
+      }
+      return null;
+    }
+    function contactNormal(c, x, z, dx, dz) {
+      let nx, nz;
+      if (c.type === 'boundary') { nx = -x; nz = -z; }
+      else if (c.type === 'box') {
+        nx = x - Math.max(c.minX, Math.min(c.maxX, x));
+        nz = z - Math.max(c.minZ, Math.min(c.maxZ, z));
+      } else if (c.type === 'circle') { nx = x - c.x; nz = z - c.z; }
+      else {
+        const ax = c.bx - c.ax, az = c.bz - c.az;
+        const t = Math.max(0, Math.min(1, ((x - c.ax) * ax + (z - c.az) * az) / (ax * ax + az * az || 1)));
+        nx = x - c.ax - ax * t; nz = z - c.az - az * t;
+      }
+      const length = Math.hypot(nx, nz);
+      if (length < 1e-6) return Math.abs(dx) > Math.abs(dz) ? { x: -Math.sign(dx), z: 0 } : { x: 0, z: -Math.sign(dz) };
+      return { x: nx / length, z: nz / length };
+    }
+    function slideCarMotion(x, z, dx, dz, yaw) {
+      let hit = false;
+      const steps = Math.max(1, Math.ceil(Math.hypot(dx, dz) / 0.8));
+      const sx = dx / steps, sz = dz / steps;
+      for (let step = 0; step < steps; step++) {
+        const collider = findCarCollision(x + sx, z + sz, yaw);
+        if (!collider) { x += sx; z += sz; continue; }
+        hit = true;
+        const normal = contactNormal(collider, x, z, sx, sz);
+        const into = Math.min(0, sx * normal.x + sz * normal.z);
+        const tx = sx - normal.x * into, tz = sz - normal.z * into;
+        if (Math.hypot(tx, tz) > 1e-6 && !findCarCollision(x + tx, z + tz, yaw)) { x += tx; z += tz; }
+        else if (Math.abs(sx) >= Math.abs(sz) && !findCarCollision(x + sx, z, yaw)) x += sx;
+        else if (!findCarCollision(x, z + sz, yaw)) z += sz;
+        else if (!findCarCollision(x + sx, z, yaw)) x += sx;
+      }
+      return { x, z, hit };
+    }
+    let contactActive = false, lastContactTime = -Infinity, lastImpactSound = -Infinity;
+    function playImpactSound() {
+      if (runTime - lastImpactSound < 5) return false;
+      lastImpactSound = runTime;
+      audio.playCrash();
+      return true;
+    }
 
     // --- Dynamic Sakura Wind Particles ---
     const sakuraCount = 24;
@@ -1548,6 +1526,8 @@
 
     // --- Collectibles (Nitro bottles) ---
     const collectibles = [];
+    const pickupRingGeometry = new THREE.RingGeometry(nitroPickupRadius - 0.10, nitroPickupRadius, 48);
+    pickupRingGeometry.rotateX(-Math.PI / 2);
     const collectMats = {
       boost: new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0ea5e9, emissiveIntensity: 0.45, metalness: 0.15, roughness: 0.22 }),
       cap: new THREE.MeshStandardMaterial({ color: 0xe0f2fe, emissive: 0x93c5fd, emissiveIntensity: 0.28, roughness: 0.28 })
@@ -1567,27 +1547,44 @@
       const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.08, 10), collectMats.cap);
       cap.position.y = 1.06;
       bottle.add(cap);
+      // The bright band makes the slow spin readable from the chase camera.
+      const band = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.22, 0.08), collectMats.cap);
+      band.position.set(0, 0.39, 0.22);
+      bottle.add(band);
+      bottle.scale.setScalar(1.4);
       return bottle;
     }
 
     // One bottle at every non-central intersection spreads refills evenly
     // through the whole city while keeping the Tokyo Tower approach clear.
-    const bottleSpots = streetCenters.flatMap((x, xIndex) => (
-      streetCenters
-        .filter(z => x !== 0 || z !== 0)
-        .map((z, zIndex) => ({ x, z, rotation: (xIndex + zIndex) * Math.PI / 4 }))
-    ));
+    const bottleSpots = [];
+    for (let attempt = 0; attempt < 1600 && bottleSpots.length < 32; attempt++) {
+      const angle = cityRandom() * Math.PI * 2;
+      let x, z;
+      if (cityRandom() < 0.2) { x = Math.cos(angle) * outerRoadRadius; z = Math.sin(angle) * outerRoadRadius; }
+      else { const center = streetCenters[Math.floor(cityRandom() * streetCenters.length)]; const extent = Math.sqrt((outerRoadRadius - 14) ** 2 - center ** 2); const along = (cityRandom() * 2 - 1) * extent; if (cityRandom() < 0.5) { x = center; z = along; } else { x = along; z = center; } }
+      if (!Number.isFinite(x + z) || Math.hypot(x, z) < 65 || bottleSpots.some(p => Math.hypot(p.x - x, p.z - z) < 85)) continue;
+      bottleSpots.push({ x, z, rotation: angle });
+    }
     let bottleId = 0;
     bottleSpots.forEach(spot => {
       const mesh = createNitroBottle();
-      mesh.position.set(spot.x, 0.08, spot.z);
+      mesh.position.set(spot.x, 1.05, spot.z);
       mesh.rotation.y = spot.rotation;
       scene.add(mesh);
 
+      const ring = new THREE.Mesh(pickupRingGeometry, new THREE.MeshBasicMaterial({
+        color: 0x38bdf8, transparent: true, opacity: 0.36, depthWrite: false
+      }));
+      ring.position.set(spot.x, roadSurfaceY + 0.02, spot.z);
+      scene.add(ring);
       collectibles.push({
         id: `c_${bottleId++}`,
         type: 'boost',
         mesh,
+        ring,
+        phase: spot.rotation,
+        respawnRemaining: 0,
         collected: false
       });
     });
@@ -1632,7 +1629,7 @@
         const offsetPos = center.clone()
           .add(tangent.clone().multiplyScalar(step * 1.35))
           .add(normal.clone().multiplyScalar(Math.sin(i * 0.9) * line.curve));
-        offsetPos.y = 0.04;
+        offsetPos.y = roadSurfaceY;
         const mesh = createTrafficCone();
         mesh.position.copy(offsetPos);
         mesh.rotation.y = Math.atan2(tangent.x, tangent.z) + line.side * 0.25;
@@ -1650,6 +1647,8 @@
     // --- Car Rebuilding & Customizer Spawning ---
     let carGroup = new THREE.Group();
     scene.add(carGroup);
+    carGroup.scale.setScalar(vehicleScale);
+    const carFootprint = new THREE.Box3();
 
     let carWheels = [];
     let exhaustFlames = [];
@@ -1835,6 +1834,21 @@
         tire.add(hub);
       });
 
+      // Derive the driving footprint from the actual model, excluding boost fire.
+      carGroup.updateMatrixWorld(true);
+      const inverseCar = carGroup.matrixWorld.clone().invert();
+      carFootprint.makeEmpty();
+      carGroup.traverse(part => {
+        if (!part.isMesh || part === flame || part === flameCore) return;
+        part.geometry.computeBoundingBox();
+        const localBounds = part.geometry.boundingBox.clone().applyMatrix4(
+          new THREE.Matrix4().multiplyMatrices(inverseCar, part.matrixWorld)
+        );
+        carFootprint.union(localBounds);
+      });
+      carFootprint.min.multiplyScalar(vehicleScale);
+      carFootprint.max.multiplyScalar(vehicleScale);
+
       // Align to starting point on start
       resetCarToStart();
       updateGaragePreviewModel(arch, colorHex);
@@ -2006,6 +2020,7 @@
       const p = trackCurve.getPointAt(0);
       const tang = trackCurve.getTangentAt(0).normalize();
       carGroup.position.copy(p);
+      carGroup.position.y = roadSurfaceY + 0.04 * vehicleScale;
       carGroup.rotation.set(0, Math.atan2(tang.x, tang.z), 0);
       velocity.set(0, 0, 0);
       state.currentSpeed = 0;
@@ -2087,7 +2102,7 @@
       while (skidmarkSegments.length > 90) releaseSkidmark(skidmarkSegments.shift());
       const sk1 = getSkidmark();
       sk1.m.position.copy(leftWheelWorld);
-      sk1.m.position.y = 0.07;
+      sk1.m.position.y = roadSurfaceY + 0.015;
       sk1.m.material.opacity = 0.65;
       sk1.m.visible = true;
       sk1.life = 1.0;
@@ -2095,7 +2110,7 @@
 
       const sk2 = getSkidmark();
       sk2.m.position.copy(rightWheelWorld);
-      sk2.m.position.y = 0.07;
+      sk2.m.position.y = roadSurfaceY + 0.015;
       sk2.m.material.opacity = 0.65;
       sk2.m.visible = true;
       sk2.life = 1.0;
@@ -2156,6 +2171,7 @@
       document.getElementById(`screen-${screenId}`).classList.remove('hidden');
 
       if (screenId === 'main-menu') {
+        refreshMenuRecords();
         ui.hudLayer.classList.add('hidden');
         resetCarToStart();
       }
@@ -2188,7 +2204,15 @@
       return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${c.toString().padStart(2, '0')}`;
     }
 
+    function applyBrightness() {
+      const level = state.brightness / 100;
+      ambient.intensity = 0.65 * level; hemi.intensity = 0.42 * level; sun.intensity = 0.7 * level;
+      document.getElementById('brightness').value = state.brightness;
+      document.getElementById('brightness-value').textContent = `${state.brightness}%`;
+    }
+    document.getElementById('brightness').oninput = e => { state.brightness = Number(e.target.value); applyBrightness(); saveRecords(); };
     loadRecords();
+    applyBrightness();
     refreshMenuRecords();
 
     // Dynamic Swatches generation
@@ -2280,7 +2304,10 @@
       e.stopPropagation();
       const muted = audio.toggleMute();
       state.isMuted = muted;
-      const icon = document.getElementById('mute-btn').querySelector('i');
+      const button = document.getElementById('mute-btn');
+      button.innerHTML = '<i class="w-4 h-4"></i>';
+      button.setAttribute('aria-pressed', String(muted));
+      const icon = button.querySelector('i');
       if (muted) {
         icon.setAttribute('data-lucide', 'volume-x');
         icon.className = 'w-4 h-4 text-red-500';
@@ -2294,6 +2321,14 @@
     // Home back click
     document.getElementById('home-btn').onclick = () => {
       state.isGameRunning = false;
+      document.getElementById('mobile-centre').style.visibility = 'hidden';
+      document.getElementById('pause-overlay').classList.add('hidden');
+      document.getElementById('motion-setup').classList.add('hidden');
+      motionSetupOpen = false;
+      state.isPaused = false;
+      clearInputs();
+      saveRecords();
+      audio.setDrifting(false);
       audio.stopEngine();
       showScreen('main-menu');
     };
@@ -2302,6 +2337,11 @@
       if (!state.isGameRunning) return;
       resetCarToStart();
       state.currentSpeed = 0;
+      clearInputs();
+      contactActive = false;
+      driftCooldown = 0;
+      stoppedTimer = 0;
+      ui.comboBox.style.opacity = '0';
       activeDriftScore = 0;
       activeDriftMultiplier = 1.0;
       state.totalDriftScore = 0;
@@ -2322,10 +2362,7 @@
       state.cameraMode = modes[idx];
     };
 
-    // Start racing click
-    document.getElementById('btn-start').onclick = async () => {
-      await requestLongestSideLaunch();
-      await enableTiltControls();
+    function launchRun() {
       // Hide Lobby Screens overlay
       ui.overlay.classList.add('hidden');
       ui.hudLayer.classList.remove('hidden');
@@ -2340,112 +2377,212 @@
       stoppedTimer = 0;
 
       // Launch match
+      clearInputs();
+      state.isPaused = false;
+      driftCooldown = 0;
+      ui.comboBox.style.opacity = '0';
       state.isGameRunning = true;
+      document.getElementById('mobile-centre').style.visibility = 'visible';
       audio.startEngine();
       resetCarToStart();
       updateHUD(performance.now(), true);
       showNotification("FREE DRIFT STARTED. KEEP MOVING!");
+    }
+    document.getElementById('btn-start').onclick = async () => {
+      if (!isMobileDevice) { launchRun(); return; }
+      openMotionSetup();
+      // Permission must be requested directly from this user gesture on iOS.
+      await enableTiltControls();
+      await requestLongestSideLaunch();
     };
 
     // --- Key Event Listeners ---
     window.addEventListener('keydown', (e) => {
-      if (state.isGameRunning) audio.startEngine();
-      if (e.code === 'KeyW' || e.code === 'ArrowUp') state.keys.KeyW = true;
-      if (e.code === 'KeyS' || e.code === 'ArrowDown') state.keys.KeyS = true;
-      if (e.code === 'KeyA' || e.code === 'ArrowLeft') state.keys.KeyA = true;
-      if (e.code === 'KeyD' || e.code === 'ArrowRight') state.keys.KeyD = true;
-      if (e.code === 'Space') state.keys.Space = true;
-      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') state.keys.ShiftLeft = true;
-      if (e.code === 'KeyR') resetRunPosition();
+      const code = e.code || ({ ' ': 'Space', Shift: 'ShiftLeft' }[e.key] || (/^[a-z]$/i.test(e.key) ? `Key${e.key.toUpperCase()}` : e.key));
+      if (code === 'Escape' && !e.repeat) { togglePause(); return; }
+      if (!state.isGameRunning || state.isPaused) return;
+      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(code)) e.preventDefault();
+      audio.startEngine();
+      if (code === 'KeyW' || code === 'ArrowUp') state.keys.KeyW = true;
+      if (code === 'KeyS' || code === 'ArrowDown') state.keys.KeyS = true;
+      if (code === 'KeyA' || code === 'ArrowLeft') state.keys.KeyA = true;
+      if (code === 'KeyD' || code === 'ArrowRight') state.keys.KeyD = true;
+      if (code === 'Space') state.keys.Space = true;
+      if (code === 'ShiftLeft' || code === 'ShiftRight') state.keys.ShiftLeft = true;
+      if (code === 'KeyR' && !e.repeat) resetRunPosition();
+      if (code === 'KeyC' && !e.repeat) document.getElementById('cam-btn').click();
+      if (code === 'KeyM' && !e.repeat) document.getElementById('mute-btn').click();
     });
 
     window.addEventListener('keyup', (e) => {
-      if (e.code === 'KeyW' || e.code === 'ArrowUp') state.keys.KeyW = false;
-      if (e.code === 'KeyS' || e.code === 'ArrowDown') state.keys.KeyS = false;
-      if (e.code === 'KeyA' || e.code === 'ArrowLeft') state.keys.KeyA = false;
-      if (e.code === 'KeyD' || e.code === 'ArrowRight') state.keys.KeyD = false;
-      if (e.code === 'Space') state.keys.Space = false;
-      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') state.keys.ShiftLeft = false;
+      const code = e.code || ({ ' ': 'Space', Shift: 'ShiftLeft' }[e.key] || (/^[a-z]$/i.test(e.key) ? `Key${e.key.toUpperCase()}` : e.key));
+      if (code === 'KeyW' || code === 'ArrowUp') state.keys.KeyW = false;
+      if (code === 'KeyS' || code === 'ArrowDown') state.keys.KeyS = false;
+      if (code === 'KeyA' || code === 'ArrowLeft') state.keys.KeyA = false;
+      if (code === 'KeyD' || code === 'ArrowRight') state.keys.KeyD = false;
+      if (code === 'Space') state.keys.Space = false;
+      if (code === 'ShiftLeft' || code === 'ShiftRight') state.keys.ShiftLeft = false;
     });
 
-    // --- Mobile Virtual Touch Bindings ---
-    // Mobile keeps only gas/brake/nitro buttons; steering comes from device
-    // tilt so the screen stays clear while drifting.
-    const touchState = { up: false, down: false, nitro: false };
-    const tiltState = {
-      steer: 0,
-      enabled: false,
-      listening: false,
-      neutral: 0,
-      reference: null,
-      samples: [],
-      deadZone: 3.5,
-      maxSwing: 32
-    };
-    
-    function mapTouch(elId, keyStateField) {
-      const el = document.getElementById(elId);
-      const start = (e) => { e.preventDefault(); touchState[keyStateField] = true; if (state.isGameRunning) audio.startEngine(); };
-      const end = (e) => { e.preventDefault(); touchState[keyStateField] = false; };
-      el.addEventListener('touchstart', start, { passive: false });
-      el.addEventListener('touchend', end, { passive: false });
-      el.addEventListener('mousedown', start);
-      el.addEventListener('mouseup', end);
-      el.addEventListener('mouseleave', end);
+    function clearInputs() {
+      Object.keys(state.keys).forEach(key => state.keys[key] = false);
+      Object.keys(touchState).forEach(key => touchState[key] = false);
+      tiltState.steer = tiltState.target = 0;
+      heldPointers.clear();
+      ['touch-up', 'touch-down', 'touch-nitro'].forEach(id => document.getElementById(id).classList.remove('ring-2', 'ring-cyan-200'));
+      pinchStartDistance = 0;
     }
 
-    mapTouch('touch-up', 'up');
-    mapTouch('touch-down', 'down');
-    mapTouch('touch-nitro', 'nitro');
-
-    if (isMobileDevice) {
-      document.getElementById('touch-controls').classList.remove('md:hidden');
-    }
-
-    function signedHeadingDelta(angle, reference) {
-      return ((angle - reference + 540) % 360) - 180;
-    }
-
-    function updateTiltSteer(e) {
-      // Steering uses only alpha: swinging the whole phone left/right like a
-      // steering wheel. Front/back pitch and side roll are deliberately ignored.
-      if (!Number.isFinite(e.alpha)) return;
-      const heading = e.alpha;
-
-      if (tiltState.reference === null) tiltState.reference = heading;
-      if (tiltState.samples.length < 16) {
-        tiltState.samples.push(signedHeadingDelta(heading, tiltState.reference));
-        const averageDelta = tiltState.samples.reduce((sum, value) => sum + value, 0) / tiltState.samples.length;
-        tiltState.neutral = (tiltState.reference + averageDelta + 360) % 360;
+    function togglePause(force) {
+      if (!state.isGameRunning) return;
+      if (force === false && isMobileDevice && (!tiltState.calibrated || !tiltState.valid)) { openMotionSetup(); return; }
+      state.isPaused = typeof force === 'boolean' ? force : !state.isPaused;
+      clearInputs();
+      document.getElementById('pause-overlay').classList.toggle('hidden', !state.isPaused);
+      if (state.isPaused) {
+        audio.setDrifting(false);
+        audio.stopEngine();
+        saveRecords();
+      } else {
+        lastTime = performance.now();
+        audio.startEngine();
       }
-
-      const offset = signedHeadingDelta(heading, tiltState.neutral);
-      const stableOffset = Math.abs(offset) <= tiltState.deadZone
-        ? 0
-        : offset - Math.sign(offset) * tiltState.deadZone;
-      const targetSteer = THREE.MathUtils.clamp(-stableOffset / tiltState.maxSwing, -1, 1);
-      tiltState.steer = THREE.MathUtils.lerp(tiltState.steer, targetSteer, 0.22);
-      tiltState.enabled = true;
     }
+    document.getElementById('pause-btn').onclick = () => togglePause();
+    document.getElementById('resume-btn').onclick = () => togglePause(false);
+    document.getElementById('pause-menu-btn').onclick = () => document.getElementById('home-btn').click();
+    // Browser chrome and overlays can blur the window without hiding the game.
+    window.addEventListener('blur', clearInputs);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { clearInputs(); togglePause(true); saveRecords(); }
+    });
 
+    // Mobile uses screen-relative gravity, not compass heading (alpha).
+    // https://www.w3.org/TR/orientation-event/
+    // W3C Rz(alpha) Rx(beta) Ry(gamma): the last row gives world-up in device axes.
+    const touchState = { up: false, down: false, nitro: false };
+    const heldPointers = new Map();
+    const tiltState = { steer: 0, target: 0, neutral: 0, roll: 0, valid: false,
+      listening: false, status: 'idle', lastSample: 0, screenAngle: null, calibrated: false, stableSince: 0 };
+    let motionSetupOpen = false;
+    let motionResuming = false;
+    let motionRequestId = 0;
+
+    function screenAngle() {
+      return Number.isFinite(screen.orientation?.angle) ? screen.orientation.angle : Number(window.orientation) || 0;
+    }
+    function readWheelPose(beta, gamma, angle) {
+      if (!Number.isFinite(beta) || !Number.isFinite(gamma)) return null;
+      const b = beta * Math.PI / 180, g = gamma * Math.PI / 180, a = angle * Math.PI / 180;
+      const upX = -Math.cos(b) * Math.sin(g), upY = Math.sin(b);
+      const x = Math.cos(a) * upX - Math.sin(a) * upY;
+      const y = Math.sin(a) * upX + Math.cos(a) * upY;
+      const projection = Math.hypot(x, y);
+      return { roll: Math.atan2(x, y) * 180 / Math.PI, upright: projection >= 0.78 && y > 0.3 };
+    }
+    function wheelSteering(roll, neutral) {
+      const delta = ((roll - neutral + 540) % 360) - 180;
+      const magnitude = Math.max(0, Math.abs(delta) - 3);
+      return Math.sign(delta) * Math.min(1, magnitude / 29);
+    }
+    function updateTiltSteer(e) {
+      const angle = screenAngle();
+      const pose = readWheelPose(e.beta, e.gamma, angle);
+      if (!pose) return;
+      const now = performance.now();
+      if (tiltState.screenAngle !== angle) {
+        tiltState.screenAngle = angle;
+        tiltState.calibrated = false;
+        tiltState.stableSince = 0;
+      }
+      const landscape = getViewportSize().width > getViewportSize().height;
+      tiltState.valid = landscape && pose.upright;
+      if (!tiltState.valid || Math.abs(pose.roll - tiltState.roll) > 2) tiltState.stableSince = now;
+      tiltState.roll = pose.roll;
+      tiltState.lastSample = now;
+      tiltState.status = 'receiving';
+      tiltState.target = tiltState.valid && tiltState.calibrated ? wheelSteering(pose.roll, tiltState.neutral) : 0;
+      if (!tiltState.valid) tiltState.steer = 0;
+      if (motionSetupOpen) {
+        document.getElementById('wheel-indicator').style.transform = `rotate(${-pose.roll}deg)`;
+        const centred = tiltState.valid && Math.abs(pose.roll) < 15 && now - tiltState.stableSince > 250;
+        document.getElementById('motion-ready').disabled = !centred;
+        setMotionStatus(!landscape ? 'Rotate your device to landscape.' : !pose.upright ? 'Lift the screen upright, facing you. Flat/tabletop motion is ignored.' : centred ? 'Ready. Hold the wheel straight, then tap Centre & Drive.' : 'Hold the screen level and steady to centre the wheel.');
+      }
+    }
+    function setMotionStatus(text) {
+      const el = document.getElementById('motion-status');
+      if (el.textContent !== text) el.textContent = text;
+    }
+    function openMotionSetup() {
+      motionResuming = state.isGameRunning;
+      if (state.isGameRunning) togglePause(true);
+      motionSetupOpen = true;
+      tiltState.calibrated = false;
+      tiltState.target = tiltState.steer = 0;
+      tiltState.stableSince = performance.now();
+      document.getElementById('motion-setup').classList.remove('hidden');
+      document.getElementById('motion-ready').disabled = true;
+      setMotionStatus('Hold the phone sideways and upright. Enable motion if prompted.');
+    }
     async function enableTiltControls() {
       if (!isMobileDevice) return;
-      tiltState.samples = [];
-      tiltState.neutral = 0;
-      tiltState.reference = null;
-      tiltState.steer = 0;
-      if (tiltState.listening) return;
+      const requestId = ++motionRequestId;
+      if (!window.isSecureContext) { setMotionStatus('Motion requires HTTPS. Open the published HTTPS game on your phone; a computer’s local HTTP address cannot provide sensors.'); return; }
+      if (typeof DeviceOrientationEvent === 'undefined') { setMotionStatus('This browser does not provide orientation sensors. Try Safari or Chrome on your device.'); return; }
       try {
-        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
           const permission = await DeviceOrientationEvent.requestPermission();
-          if (permission !== 'granted') return;
+          if (permission !== 'granted') { setMotionStatus('Motion permission was denied. Allow Motion & Orientation for this site, then tap Enable Motion.'); return; }
         }
-        window.addEventListener('deviceorientation', updateTiltSteer, true);
-        tiltState.listening = true;
-      } catch (e) {
-        tiltState.steer = 0;
-      }
+        if (!tiltState.listening) {
+          window.addEventListener('deviceorientation', updateTiltSteer, true);
+          tiltState.listening = true;
+        }
+        tiltState.status = 'waiting';
+        setMotionStatus('Waiting for sensors. Keep the screen upright and sideways.');
+        setTimeout(() => {
+          if (requestId === motionRequestId && motionSetupOpen && performance.now() - tiltState.lastSample > 2500) setMotionStatus('No sensor readings received. Check this site’s motion permission and try Enable Motion again.');
+        }, 3000);
+      } catch (_) { setMotionStatus('Could not enable motion. Check this site’s permission, then try again.'); }
     }
+    document.getElementById('motion-retry').onclick = enableTiltControls;
+    document.getElementById('mobile-centre').onclick = () => { if (state.isGameRunning) openMotionSetup(); };
+    document.getElementById('motion-back').onclick = () => {
+      motionSetupOpen = false; motionRequestId++;
+      document.getElementById('motion-setup').classList.add('hidden');
+      // A paused run stays paused until its wheel is calibrated again.
+    };
+    document.getElementById('motion-ready').onclick = () => {
+      if (!tiltState.valid || Math.abs(tiltState.roll) > 15 || performance.now() - tiltState.lastSample > 500) return;
+      tiltState.neutral = tiltState.roll; tiltState.calibrated = true;
+      tiltState.steer = tiltState.target = 0;
+      motionSetupOpen = false;
+      document.getElementById('motion-setup').classList.add('hidden');
+      if (motionResuming) togglePause(false); else launchRun();
+    };
+    function mapTouch(elId, field) {
+      const el = document.getElementById(elId);
+      el.addEventListener('pointerdown', e => {
+        if (!state.isGameRunning || state.isPaused) return;
+        e.preventDefault();
+        el.setPointerCapture(e.pointerId);
+        heldPointers.set(e.pointerId, field);
+        touchState[field] = true;
+        el.classList.add('ring-2', 'ring-cyan-200');
+        audio.startEngine();
+      });
+      const release = e => {
+        heldPointers.delete(e.pointerId);
+        touchState[field] = [...heldPointers.values()].includes(field);
+        if (!touchState[field]) el.classList.remove('ring-2', 'ring-cyan-200');
+      };
+      ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => el.addEventListener(type, release));
+      el.addEventListener('contextmenu', e => e.preventDefault());
+    }
+    mapTouch('touch-up', 'up'); mapTouch('touch-down', 'down'); mapTouch('touch-nitro', 'nitro');
+    document.getElementById('touch-controls').classList.toggle('hidden', !isMobileDevice);
+    if (isMobileDevice) document.getElementById('touch-controls').classList.remove('md:hidden');
 
     let pinchStartDistance = 0;
     let pinchStartZoom = 1;
@@ -2466,15 +2603,15 @@
       state.cameraZoom = clampCameraZoom(state.cameraZoom + e.deltaY * 0.003 * state.zoomSensitivity);
     }, { passive: false });
 
-    window.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 2) {
+    canvas.addEventListener('touchstart', (e) => {
+      if (state.isGameRunning && !state.isPaused && e.touches.length === 2 && [...e.touches].every(t => t.target === canvas)) {
         pinchStartDistance = getTouchDistance(e.touches);
         pinchStartZoom = state.cameraZoom;
       }
     }, { passive: false });
 
-    window.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 2 && pinchStartDistance > 0) {
+    canvas.addEventListener('touchmove', (e) => {
+      if (state.isGameRunning && !state.isPaused && e.touches.length === 2 && [...e.touches].every(t => t.target === canvas) && pinchStartDistance > 0) {
         e.preventDefault();
         const currentDistance = getTouchDistance(e.touches);
         if (currentDistance > 0) {
@@ -2483,9 +2620,11 @@
       }
     }, { passive: false });
 
-    window.addEventListener('touchend', (e) => {
+    canvas.addEventListener('touchend', (e) => {
       if (e.touches.length < 2) pinchStartDistance = 0;
     }, { passive: false });
+
+    canvas.addEventListener('touchcancel', () => { pinchStartDistance = 0; });
 
     // --- 5. Main Game Loop Frame Updates ---
     // Loop order: read input, update physics, resolve collisions, update
@@ -2495,36 +2634,54 @@
     let driftCooldown = 0;
     let stoppedTimer = 0;
 
+    let runTime = 0;
+    let lastRecordSave = 0;
     let lastTime = performance.now();
 
     function loop(now) {
       requestAnimationFrame(loop);
 
-      const dt = Math.min(0.03, (now - lastTime) / 1000);
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
+      if (isMobileDevice && state.isGameRunning && !state.isPaused) {
+        const size = getViewportSize();
+        if (size.height > size.width || !tiltState.calibrated || performance.now() - tiltState.lastSample > 1500) {
+          openMotionSetup();
+          if (size.width > size.height) setMotionStatus('Motion stopped or orientation changed. Hold upright and centre again.');
+        }
+        tiltState.steer = THREE.MathUtils.lerp(tiltState.steer, tiltState.valid ? tiltState.target : 0, 1 - Math.exp(-dt * 12));
+      }
+      if (state.isPaused) return;
+      const frameScale = dt * 60;
+      const smooth = (amount) => 1 - Math.pow(1 - amount, frameScale);
 
       const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
 
       // Keyboard or Touch mappings combined
-      const isFwd = state.keys.KeyW || touchState.up;
-      const isBwd = state.keys.KeyS || touchState.down;
+      const isFwd = state.keys.KeyW || (touchState.up && tiltState.valid);
+      const isBwd = state.keys.KeyS || (touchState.down && tiltState.valid);
       const isL = state.keys.KeyA;
       const isR = state.keys.KeyD;
       const wantsTurbo = state.keys.Space || touchState.nitro;
       if (state.turboLocked && state.turboAmount >= nitroReadyThreshold) state.turboLocked = false;
-      const isTurbo = wantsTurbo && !state.turboLocked && state.turboAmount > 0 && (isFwd || state.currentSpeed > 0.05);
+      const isTurbo = !isBwd && wantsTurbo && !state.turboLocked && state.turboAmount > 0 && (isFwd || state.currentSpeed > 0.05);
 
       // 1. CAR PHYSICS & ENGINE LOOP
       if (state.isGameRunning) {
+        const previousYaw = carGroup.rotation.y;
+        runTime += dt;
         // Drive acceleration
-        const topLimit = arch.topSpeed * (isTurbo ? 1.4 : 1.0);
-        if (isFwd) {
-          state.currentSpeed = Math.min(topLimit, state.currentSpeed + arch.acceleration);
-        } else if (isBwd) {
-          state.currentSpeed = Math.max(-0.35, state.currentSpeed - arch.acceleration * 1.5);
+        if (isBwd) {
+          state.currentSpeed = Math.max(-0.35, state.currentSpeed - arch.acceleration * 1.5 * frameScale);
+        } else if (isTurbo) {
+          // No boost speed ceiling: chaining bottles can keep acceleration going.
+          state.currentSpeed += arch.acceleration * 1.8 * frameScale;
+        } else if (isFwd) {
+          state.currentSpeed = state.currentSpeed > arch.topSpeed
+            ? THREE.MathUtils.lerp(state.currentSpeed, arch.topSpeed, smooth(0.012))
+            : Math.min(arch.topSpeed, state.currentSpeed + arch.acceleration * frameScale);
         } else {
-          // Rolling friction drag
-          state.currentSpeed = THREE.MathUtils.lerp(state.currentSpeed, 0, 0.025);
+          state.currentSpeed = THREE.MathUtils.lerp(state.currentSpeed, 0, smooth(0.025));
         }
 
         // Steer angle wheels pivot
@@ -2534,9 +2691,9 @@
 
         let keyboardSteer = (isL ? 1 : 0) - (isR ? 1 : 0);
         if (state.currentSpeed < -0.03) keyboardSteer *= -1;
-        const tiltSteer = isMobileDevice ? tiltState.steer : 0;
+        const tiltSteer = isMobileDevice ? tiltState.steer * (state.currentSpeed < -0.03 ? -1 : 1) : 0;
         const steerInput = THREE.MathUtils.clamp(keyboardSteer + tiltSteer, -1, 1);
-        carGroup.rotation.y += steerFactor * steerInput;
+        carGroup.rotation.y += steerFactor * steerInput * frameScale;
         const driftLean = THREE.MathUtils.clamp(steerInput * Math.abs(state.currentSpeed) * -0.09, -0.08, 0.08);
         carGroup.rotation.z = THREE.MathUtils.lerp(carGroup.rotation.z, driftLean, 0.12);
 
@@ -2564,7 +2721,7 @@
         targetVel.copy(heading).multiplyScalar(state.currentSpeed);
         
         const slip = 0.042 + (1 - Math.min(arch.driftHandling, 1)) * 0.052;
-        velocity.lerp(targetVel, isShift ? slip * 0.42 : slip);
+        velocity.lerp(targetVel, smooth(isShift ? slip * 0.42 : slip));
 
         const movingForward = state.currentSpeed >= 0;
         driftHeading.copy(heading);
@@ -2580,6 +2737,7 @@
           if (carWheels.length >= 4) {
             wheelWorldL.copy(carWheels[2].parent.position).applyMatrix4(carGroup.matrixWorld);
             wheelWorldR.copy(carWheels[3].parent.position).applyMatrix4(carGroup.matrixWorld);
+            wheelWorldL.y = wheelWorldR.y = roadSurfaceY + 0.06;
             if (Math.random() > 0.16) {
               emitSmoke(wheelWorldL);
               emitSmoke(wheelWorldR);
@@ -2590,13 +2748,15 @@
           }
 
           // Point addition
-          activeDriftScore += Math.floor(speedKmh * slipDiff * 0.8);
+          activeDriftScore += speedKmh * slipDiff * 0.8 * frameScale;
           activeDriftMultiplier = Math.min(10.0, activeDriftMultiplier + dt * 0.45);
           state.totalDriftScore = Math.max(state.totalDriftScore, Math.floor(activeDriftScore * activeDriftMultiplier));
           if (state.totalDriftScore > state.bestScore) {
             state.bestScore = state.totalDriftScore;
-            saveRecords();
-            refreshMenuRecords();
+            if (now - lastRecordSave > 1000) {
+              saveRecords();
+              lastRecordSave = now;
+            }
           }
           driftCooldown = 1.3;
 
@@ -2607,7 +2767,7 @@
           ui.comboBox.style.opacity = '1';
           ui.comboBox.style.transform = 'scale(1.05)';
           ui.driftMult.innerText = `x${activeDriftMultiplier.toFixed(1)}`;
-          ui.driftPts.innerText = `${activeDriftScore} PTS`;
+          ui.driftPts.innerText = `${Math.floor(activeDriftScore)} PTS`;
           ui.driftProgress.style.width = `${Math.min(100, (activeDriftScore / 1200) * 100)}%`;
 
         } else {
@@ -2645,41 +2805,29 @@
           state.turboAmount = Math.min(100, state.turboAmount + dt * nitroRechargeRate);
         }
 
-        // 3. COLLISION CORRECTION AGAINST VISIBLE STATIC GEOMETRY
-        nextPos.copy(carGroup.position).add(velocity);
-        const r = 1.2;
-
-        let crashedThisFrame = false;
-        for (let i = 0; i < solidColliders.length; i++) {
-          if (colliderOverlapsCircle(solidColliders[i], nextPos.x, nextPos.z, r)) {
-            // Crash impact
-            state.currentSpeed = -state.currentSpeed * 0.4;
+        // Reject rotation into geometry, then remove only blocked movement.
+        if (findCarCollision(carGroup.position.x, carGroup.position.z, carGroup.rotation.y)) carGroup.rotation.y = previousYaw;
+        const motion = slideCarMotion(carGroup.position.x, carGroup.position.z, velocity.x * frameScale, velocity.z * frameScale, carGroup.rotation.y);
+        nextPos.set(motion.x, carGroup.position.y, motion.z);
+        if (motion.hit) {
+          if (!contactActive) {
+            // First contact ends this drift. Continued contact slides without repeated impacts.
+            state.currentSpeed = 0;
             velocity.set(0, 0, 0);
-            nextPos.copy(carGroup.position); // bounce back
-
-            if (!crashedThisFrame) {
-              state.totalDriftScore = 0;
-              activeDriftScore = 0;
-              activeDriftMultiplier = 1.0;
-              driftCooldown = 0;
-              stoppedTimer = 0;
-              ui.comboBox.style.opacity = '0';
-              ui.comboBox.style.transform = 'scale(0.9)';
-              audio.playCrash();
-              showNotification("CRASHED - DRIFT SCORE RESET");
-              crashedThisFrame = true;
-            }
-
-            // Damage Flash
-            if (carBodyMesh) {
-              carBodyMesh.material.color.setHex(0xff0000);
-              setTimeout(() => {
-                carBodyMesh.material.color.copy(new THREE.Color(state.customCarColor));
-              }, 180);
-            }
-            break;
+            nextPos.copy(carGroup.position);
+            state.totalDriftScore = activeDriftScore = 0;
+            activeDriftMultiplier = 1;
+            driftCooldown = stoppedTimer = 0;
+            ui.comboBox.style.opacity = '0';
+            audio.setDrifting(false);
+            if (playImpactSound()) showNotification('IMPACT — COMBO RESET');
+          } else {
+            velocity.set((motion.x - carGroup.position.x) / Math.max(frameScale, 0.001), 0, (motion.z - carGroup.position.z) / Math.max(frameScale, 0.001));
+            state.currentSpeed = Math.sign(state.currentSpeed) * velocity.length();
           }
-        }
+          contactActive = true;
+          lastContactTime = runTime;
+        } else if (runTime - lastContactTime > 0.25) contactActive = false;
 
         carGroup.position.copy(nextPos);
 
@@ -2689,35 +2837,37 @@
           zone.mesh.material.opacity = zone.cooldown > 0 ? 0.14 : 0.42 + Math.sin(now * 0.006) * 0.08;
         });
 
-        // Collectible overlaps
+        // Pickups use ground-plane distance so bobbing never changes reach.
         collectibles.forEach(col => {
-          if (!col.collected) {
-            const distSq = carGroup.position.distanceToSquared(col.mesh.position);
-            if (distSq < 4.0) {
-              col.collected = true;
-              col.mesh.visible = false;
-              audio.playCollect();
-
-              state.turboAmount = 100;
-              state.turboLocked = false;
-              showNotification("NITRO BOOST CAPACITY RECHARGED!");
-
-              // Each intersection gets its bottle back after two minutes.
-              setTimeout(() => {
-                col.collected = false;
-                col.mesh.visible = true;
-              }, nitroBottleRespawnMs);
-            }
+          if (col.collected) {
+            col.respawnRemaining = Math.max(0, col.respawnRemaining - dt);
+            col.ring.material.opacity = 0.05 + 0.15 * (1 - col.respawnRemaining / (nitroBottleRespawnMs / 1000));
+            if (col.respawnRemaining > 0) return;
+            col.collected = false;
+            col.mesh.visible = true;
+          }
+          col.mesh.rotation.y += dt * 1.15;
+          col.mesh.position.y = 1.05 + Math.sin(runTime * 2.4 + col.phase) * 0.3;
+          col.ring.material.opacity = 0.28 + Math.sin(runTime * 2.4 + col.phase) * 0.08;
+          const dx = carGroup.position.x - col.mesh.position.x;
+          const dz = carGroup.position.z - col.mesh.position.z;
+          if (dx * dx + dz * dz < nitroPickupRadius * nitroPickupRadius && state.turboAmount < 98) {
+            col.collected = true;
+            col.respawnRemaining = nitroBottleRespawnMs / 1000;
+            col.mesh.visible = false;
+            audio.playCollect();
+            state.turboAmount = 100;
+            state.turboLocked = false;
+            showNotification("NITRO REFILLED — FULL TANK");
           }
         });
 
         // Obstacle cones physics
         obstacles.forEach(o => {
-          const distSq = carGroup.position.distanceToSquared(o.mesh.position);
-          if (distSq < 4.84) {
+          if (!o.hit && colliderOverlapsCar({ type: 'circle', x: o.mesh.position.x, z: o.mesh.position.z, radius: 0.35 }, carGroup.position.x, carGroup.position.z, carGroup.rotation.y)) {
             // hit cone
             o.hit = true;
-            audio.playCrash();
+            playImpactSound();
             const headingAngle = Math.atan2(o.mesh.position.z - carGroup.position.z, o.mesh.position.x - carGroup.position.x);
             o.velocity.set(Math.cos(headingAngle) * 20, 8, Math.sin(headingAngle) * 20);
           }
@@ -2728,8 +2878,8 @@
             o.mesh.rotation.x += 0.1;
             o.mesh.rotation.y += 0.05;
 
-            if (o.mesh.position.y <= 0.04) {
-              o.mesh.position.y = 0.04;
+            if (o.mesh.position.y <= roadSurfaceY) {
+              o.mesh.position.y = roadSurfaceY;
               o.velocity.set(0, 0, 0);
               o.hit = false;
             }
@@ -2757,25 +2907,25 @@
       } else {
         // Update Chase/Cockpit following mode camera
         lookTarget.copy(carGroup.position);
-        lookTarget.y += 0.4;
+        lookTarget.y += 0.65 * vehicleScale;
         const cameraZoom = state.cameraZoom;
 
         if (state.cameraMode === 'chase') {
-          cameraOffset.set(0, 2.3 * cameraZoom, -6.2 * cameraZoom).applyQuaternion(carGroup.quaternion);
+          cameraOffset.set(0, 2.8 * cameraZoom, -7.0 * cameraZoom).applyQuaternion(carGroup.quaternion);
           targetCam.copy(carGroup.position).add(cameraOffset);
-          camera.position.lerp(targetCam, 0.12);
+          camera.position.lerp(targetCam, smooth(0.12));
           camera.lookAt(lookTarget);
         } else if (state.cameraMode === 'cockpit') {
-          cameraOffset.set(0, 0.9, 0.3).applyQuaternion(carGroup.quaternion);
+          cameraOffset.set(0, 1.18 * arch.scale.y * vehicleScale, 0.6 * arch.scale.z * vehicleScale).applyQuaternion(carGroup.quaternion);
           camera.position.copy(carGroup.position).add(cameraOffset);
           headHeading.set(0, 0, 10).applyQuaternion(carGroup.quaternion);
-          tmpVec.copy(carGroup.position).add(headHeading);
+          tmpVec.copy(camera.position).add(headHeading);
           camera.lookAt(tmpVec);
         } else {
           // Overhead Mode
           cameraOffset.set(0, 30 * cameraZoom, -2.4 * cameraZoom).applyQuaternion(carGroup.quaternion);
           targetCam.copy(carGroup.position).add(cameraOffset);
-          camera.position.lerp(targetCam, 0.1);
+          camera.position.lerp(targetCam, smooth(0.1));
           camera.lookAt(lookTarget);
         }
       }
@@ -2804,7 +2954,7 @@
         p.mesh.material.opacity = p.life * 0.6;
 
         if (p.life <= 0) {
-          scene.remove(p.mesh);
+          releaseSmokeParticle(p);
           smokeParticles.splice(i, 1);
         }
       }
@@ -2815,7 +2965,7 @@
         sk.life -= dt * 0.1; // decay slowly
         sk.m.material.opacity = sk.life * 0.65;
         if (sk.life <= 0) {
-          scene.remove(sk.m);
+          releaseSkidmark(sk);
           skidmarkSegments.splice(i, 1);
         }
       }
@@ -2826,8 +2976,28 @@
         audio.updateEngine(absoluteFraction, isTurbo);
       }
 
+      drawMinimap(now);
       renderGaragePreview();
       renderer.render(scene, camera);
+    }
+
+    const minimap = document.getElementById('minimap'), mini = minimap.getContext('2d');
+    const miniBase = document.createElement('canvas'); miniBase.width = miniBase.height = 320;
+    const baseMap = miniBase.getContext('2d');
+    baseMap.fillStyle = '#0a101b'; baseMap.fillRect(0, 0, 320, 320);
+    baseMap.save(); baseMap.translate(160, 160); baseMap.scale(0.31, 0.31);
+    baseMap.drawImage(surfaceCanvas, -worldRadius, -worldRadius, worldRadius * 2, worldRadius * 2);
+    baseMap.fillStyle = '#b8c2cc';
+    citySummary.buildings.forEach(b => baseMap.fillRect(b.x - b.w / 2, b.z - b.d / 2, b.w, b.d));
+    baseMap.fillStyle = '#446d52'; citySummary.parks.forEach(p => baseMap.fillRect(p.x - 21, p.z - 21, 42, 42));
+    baseMap.fillStyle = '#f08062'; baseMap.beginPath(); baseMap.arc(0, 0, 16, 0, Math.PI * 2); baseMap.fill(); baseMap.restore();
+    let lastMinimapFrame = 0;
+    function drawMinimap(now) {
+      if (isMobileDevice || !state.isGameRunning || now - lastMinimapFrame < 80) return;
+      lastMinimapFrame = now; mini.clearRect(0, 0, 320, 320); mini.drawImage(miniBase, 0, 0);
+      mini.fillStyle = '#ffffff'; mini.font = 'bold 22px sans-serif'; mini.textAlign = 'center'; mini.fillText('N', 160, 23);
+      mini.save(); mini.translate(160 + carGroup.position.x * 0.31, 160 + carGroup.position.z * 0.31); mini.rotate(-carGroup.rotation.y);
+      mini.beginPath(); mini.moveTo(0, 10); mini.lineTo(-7, -7); mini.lineTo(0, -3); mini.lineTo(7, -7); mini.closePath(); mini.fillStyle = '#67e8f9'; mini.strokeStyle = '#000'; mini.lineWidth = 2; mini.fill(); mini.stroke(); mini.restore();
     }
 
     // --- 6. Initialization Entry Point ---
