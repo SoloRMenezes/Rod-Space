@@ -240,7 +240,7 @@
   <div id="rotate-device"><div><h2 class="text-2xl font-black">ROTATE TO LANDSCAPE</h2><p class="mt-3">Hold your phone or tablet sideways, screen upright facing you.</p><p class="mt-2 text-neutral-400">Turn off portrait orientation lock if needed.</p></div></div>
   <div id="motion-setup" class="hidden" role="dialog" aria-modal="true" aria-label="Steering setup"><div>
     <h2 class="text-xl font-black">STEERING CHECK</h2>
-    <p class="text-sm mt-2">Hold the screen upright and sideways. Rotate it like a steering wheel.</p>
+    <p class="text-sm mt-2">Hold sideways at a comfortable angle. Centre saves this position. Tilt backward to handbrake.</p>
     <div id="wheel-indicator" aria-hidden="true"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="currentColor" stroke-width="4"/><path d="M5 24L28 29L51 24M28 29V52" fill="none" stroke="currentColor" stroke-width="4"/></svg></div>
     <p id="motion-status" role="status" aria-live="polite">Waiting for motion…</p>
     <button id="motion-retry">ENABLE MOTION</button><button id="motion-ready" disabled>CENTRE &amp; DRIVE</button><button id="motion-back">BACK</button>
@@ -291,6 +291,7 @@
 
         <!-- Main Buttons -->
         <div class="flex flex-col gap-3 w-full">
+          <button id="change-map" class="w-full py-3 rounded-xl border border-white/20 text-sm font-bold">CHANGE MAP · TOKYO</button>
           <button id="btn-start" class="w-full py-4 rounded-xl bg-white hover:bg-neutral-200 text-black font-black text-lg uppercase tracking-wider shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2 italic">
             <i data-lucide="play" class="w-5 h-5 fill-current"></i>
             START RUN
@@ -845,6 +846,7 @@
     const storageKey = 'tokyo-drifter-records';
 
     state.brightness = 100;
+    state.selectedMap = "tokyo";
     function loadRecords() {
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
@@ -1464,6 +1466,11 @@
       citySummary.staticDrawBatches = batches.size;
     }
     batchStaticWorld();
+    const tokyoMeshes = scene.children.filter(object => object.isMesh || object.isGroup);
+    const trainingGround = new THREE.Mesh(new THREE.CircleGeometry(worldRadius, 128), new THREE.MeshStandardMaterial({ color: 0x333b45, roughness: 1 }));
+    trainingGround.rotation.x = -Math.PI / 2; trainingGround.position.y = roadSurfaceY; trainingGround.visible = false; scene.add(trainingGround);
+    const trainingEdge = new THREE.Mesh(new THREE.RingGeometry(boundaryRadius, worldRadius, 192), new THREE.MeshBasicMaterial({ color: 0x94a3b8 }));
+    trainingEdge.rotation.x = -Math.PI / 2; trainingEdge.position.y = roadSurfaceY + 0.01; trainingEdge.visible = false; scene.add(trainingEdge);
 
     // Query nearby geometry rather than scanning the entire city each frame.
     const collisionGrid = new Map();
@@ -1484,6 +1491,7 @@
     });
     function findCarCollision(x, z, yaw) {
       if (worldBoundary && colliderOverlapsCar(worldBoundary, x, z, yaw)) return worldBoundary;
+      if (state.selectedMap === "training") return null;
       const radius = Math.hypot(Math.max(Math.abs(carFootprint.min.x), Math.abs(carFootprint.max.x)), Math.max(Math.abs(carFootprint.min.z), Math.abs(carFootprint.max.z)));
       for (let gx = Math.floor((x - radius) / collisionCellSize); gx <= Math.floor((x + radius) / collisionCellSize); gx++) {
         for (let gz = Math.floor((z - radius) / collisionCellSize); gz <= Math.floor((z + radius) / collisionCellSize); gz++) {
@@ -2026,7 +2034,7 @@
     }
 
     function resetCarToStart() {
-      const p = trackCurve.getPointAt(0);
+      const p = state.selectedMap === "training" ? new THREE.Vector3() : trackCurve.getPointAt(0);
       const tang = trackCurve.getTangentAt(0).normalize();
       carGroup.position.copy(p);
       carGroup.position.y = roadSurfaceY + 0.04 * vehicleScale;
@@ -2444,7 +2452,7 @@
 
     function togglePause(force) {
       if (!state.isGameRunning) return;
-      if (force === false && isMobileDevice && (!tiltState.calibrated || !tiltState.valid)) { openMotionSetup(); return; }
+      if (force === false && isMobileDevice && !tiltState.calibrated) centreMotion();
       state.isPaused = typeof force === 'boolean' ? force : !state.isPaused;
       clearInputs();
       document.getElementById('pause-overlay').classList.toggle('hidden', !state.isPaused);
@@ -2487,7 +2495,7 @@
       const x = Math.cos(a) * upX - Math.sin(a) * upY;
       const y = Math.sin(a) * upX + Math.cos(a) * upY;
       const projection = Math.hypot(x, y);
-      return { roll: Math.atan2(x, y) * 180 / Math.PI, upright: projection >= 0.78 && y > 0.3 };
+      return { roll: Math.atan2(x, y) * 180 / Math.PI, pitch: Math.asin(Math.max(-1, Math.min(1, Math.cos(b) * Math.cos(g)))) * 180 / Math.PI, upright: projection > 0.12 };
     }
     function wheelSteering(roll, neutral) {
       const delta = ((roll - neutral + 540) % 360) - 180;
@@ -2505,18 +2513,21 @@
         tiltState.stableSince = 0;
       }
       const landscape = getViewportSize().width > getViewportSize().height;
-      tiltState.valid = landscape && pose.upright;
+      tiltState.valid = landscape;
+      tiltState.pitch = pose.pitch;
+      tiltState.handbrake = tiltState.calibrated && pose.pitch - (tiltState.neutralPitch || 0) > 25;
       if (!tiltState.valid || Math.abs(pose.roll - tiltState.roll) > 2) tiltState.stableSince = now;
-      tiltState.roll = pose.roll;
+      if (pose.upright) tiltState.roll = pose.roll;
       tiltState.lastSample = now;
       tiltState.status = 'receiving';
-      tiltState.target = tiltState.valid && tiltState.calibrated ? wheelSteering(pose.roll, tiltState.neutral) : 0;
+      if (state.isGameRunning && !tiltState.calibrated && landscape) centreMotion();
+      tiltState.target = tiltState.valid && tiltState.calibrated ? wheelSteering(tiltState.roll, tiltState.neutral) : 0;
       if (!tiltState.valid) tiltState.steer = 0;
       if (motionSetupOpen) {
         document.getElementById('wheel-indicator').style.transform = `rotate(${-pose.roll}deg)`;
-        const centred = tiltState.valid && Math.abs(pose.roll) < 15 && now - tiltState.stableSince > 250;
+        const centred = tiltState.valid && now - tiltState.stableSince > 250;
         document.getElementById('motion-ready').disabled = !centred;
-        setMotionStatus(!landscape ? 'Rotate your device to landscape.' : !pose.upright ? 'Lift the screen upright, facing you. Flat/tabletop motion is ignored.' : centred ? 'Ready. Hold the wheel straight, then tap Centre & Drive.' : 'Hold the screen level and steady to centre the wheel.');
+        setMotionStatus(!landscape ? 'Rotate your device to landscape.' : centred ? 'Ready. Your current holding angle will become neutral.' : 'Hold comfortably and steady, then centre.');
       }
     }
     function setMotionStatus(text) {
@@ -2556,14 +2567,25 @@
       } catch (_) { setMotionStatus('Could not enable motion. Check this site’s permission, then try again.'); }
     }
     document.getElementById('motion-retry').onclick = enableTiltControls;
-    document.getElementById('mobile-centre').onclick = () => { if (state.isGameRunning) openMotionSetup(); };
+    function centreMotion() {
+      if (!tiltState.valid || performance.now() - tiltState.lastSample > 1500) return false;
+      tiltState.neutral = tiltState.roll; tiltState.neutralPitch = tiltState.pitch || 0;
+      tiltState.calibrated = true; tiltState.handbrake = false; tiltState.steer = tiltState.target = 0;
+      return true;
+    }
+    document.getElementById('mobile-centre').onclick = () => {
+      if (state.isGameRunning && centreMotion()) {
+        const button = document.getElementById('mobile-centre'); button.textContent = 'CENTRED';
+        setTimeout(() => { button.textContent = 'CENTRE WHEEL'; }, 1200);
+      }
+    };
     document.getElementById('motion-back').onclick = () => {
       motionSetupOpen = false; motionRequestId++;
       document.getElementById('motion-setup').classList.add('hidden');
       // A paused run stays paused until its wheel is calibrated again.
     };
     document.getElementById('motion-ready').onclick = () => {
-      if (!tiltState.valid || Math.abs(tiltState.roll) > 15 || performance.now() - tiltState.lastSample > 500) return;
+      if (!centreMotion()) return;
       tiltState.neutral = tiltState.roll; tiltState.calibrated = true;
       tiltState.steer = tiltState.target = 0;
       motionSetupOpen = false;
@@ -2655,8 +2677,8 @@
       if (isMobileDevice && state.isGameRunning && !state.isPaused) {
         const size = getViewportSize();
         if (size.height > size.width || !tiltState.calibrated || performance.now() - tiltState.lastSample > 1500) {
-          openMotionSetup();
-          if (size.width > size.height) setMotionStatus('Motion stopped or orientation changed. Hold upright and centre again.');
+          tiltState.target = tiltState.steer = 0;
+          tiltState.valid = false; tiltState.handbrake = false;
         }
         tiltState.steer = THREE.MathUtils.lerp(tiltState.steer, tiltState.valid ? tiltState.target : 0, 1 - Math.exp(-dt * 12));
       }
@@ -2667,21 +2689,26 @@
       const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
 
       // Keyboard or Touch mappings combined
-      const isFwd = state.keys.KeyW || (touchState.up && tiltState.valid);
+      const handbrake = isMobileDevice && tiltState.handbrake;
+      const isFwd = !handbrake && (state.keys.KeyW || (touchState.up && tiltState.valid));
       const isBwd = state.keys.KeyS || (touchState.down && tiltState.valid);
       const isL = state.keys.KeyA;
       const isR = state.keys.KeyD;
       const wantsTurbo = state.keys.Space || touchState.nitro;
       if (state.turboLocked && state.turboAmount >= nitroReadyThreshold) state.turboLocked = false;
-      const isTurbo = !isBwd && wantsTurbo && !state.turboLocked && state.turboAmount > 0 && (isFwd || state.currentSpeed > 0.05);
+      const isTurbo = !handbrake && !isBwd && wantsTurbo && !state.turboLocked && state.turboAmount > 0 && (isFwd || state.currentSpeed > 0.05);
 
       // 1. CAR PHYSICS & ENGINE LOOP
       if (state.isGameRunning) {
         const previousYaw = carGroup.rotation.y;
         runTime += dt;
         // Drive acceleration
-        if (isBwd) {
-          state.currentSpeed = Math.max(-0.35, state.currentSpeed - arch.acceleration * 1.5 * frameScale);
+        if (handbrake) {
+          state.currentSpeed *= Math.exp(-dt * 9); velocity.multiplyScalar(Math.exp(-dt * 9));
+          if (Math.abs(state.currentSpeed) < 0.005) { state.currentSpeed = 0; velocity.set(0, 0, 0); }
+        } else if (isBwd) {
+          const braking = state.currentSpeed > 0;
+          state.currentSpeed = Math.max(-0.075, state.currentSpeed - arch.acceleration * (braking ? 0.45 : 0.035) * frameScale);
         } else if (isTurbo) {
           // No boost speed ceiling: chaining bottles can keep acceleration going.
           state.currentSpeed += arch.acceleration * 0.5 * frameScale;
@@ -2848,6 +2875,7 @@
 
         // Pickups use ground-plane distance so bobbing never changes reach.
         collectibles.forEach(col => {
+          if (state.selectedMap === "training") return;
           if (col.collected) {
             col.respawnRemaining = Math.max(0, col.respawnRemaining - dt);
             col.ring.material.opacity = 0.05 + 0.15 * (1 - col.respawnRemaining / (nitroBottleRespawnMs / 1000));
@@ -2873,6 +2901,7 @@
 
         // Obstacle cones physics
         obstacles.forEach(o => {
+          if (state.selectedMap === "training") return;
           if (!o.hit && !o.settled && colliderOverlapsCar({ type: 'circle', x: o.mesh.position.x, z: o.mesh.position.z, radius: 0.35 }, carGroup.position.x, carGroup.position.z, carGroup.rotation.y)) {
             // hit cone
             o.hit = true;
@@ -3007,12 +3036,22 @@
     let lastMinimapFrame = 0;
     function drawMinimap(now) {
       if (isMobileDevice || !state.isGameRunning || now - lastMinimapFrame < 80) return;
-      lastMinimapFrame = now; mini.clearRect(0, 0, 320, 320); mini.drawImage(miniBase, 0, 0);
+      lastMinimapFrame = now; mini.clearRect(0, 0, 320, 320); if (state.selectedMap === "tokyo") mini.drawImage(miniBase, 0, 0); else { mini.fillStyle = "#333b45"; mini.fillRect(0, 0, 320, 320); }
       mini.fillStyle = '#ffffff'; mini.font = 'bold 22px sans-serif'; mini.textAlign = 'center'; mini.fillText('N', 160, 23);
       mini.save(); mini.translate(160 + carGroup.position.x * 0.31, 160 + carGroup.position.z * 0.31); mini.rotate(-carGroup.rotation.y);
       mini.beginPath(); mini.moveTo(0, 10); mini.lineTo(-7, -7); mini.lineTo(0, -3); mini.lineTo(7, -7); mini.closePath(); mini.fillStyle = '#67e8f9'; mini.strokeStyle = '#000'; mini.lineWidth = 2; mini.fill(); mini.stroke(); mini.restore();
     }
 
+    document.getElementById('change-map').onclick = () => {
+      state.selectedMap = state.selectedMap === 'tokyo' ? 'training' : 'tokyo';
+      const city = state.selectedMap === 'tokyo';
+      tokyoMeshes.forEach(mesh => { mesh.visible = city; });
+      trainingGround.visible = trainingEdge.visible = !city; sakuraSystem.visible = city;
+      collectibles.forEach(c => { c.mesh.visible = city && !c.collected; c.ring.visible = city; });
+      obstacles.forEach(o => { o.mesh.visible = city; });
+      document.getElementById('change-map').textContent = 'CHANGE MAP · ' + (city ? 'TOKYO' : 'BLANK PRACTICE');
+      resetCarToStart();
+    };
     // --- 6. Initialization Entry Point ---
     rebuildCar(CAR_ARCHETYPES[0].id, state.customCarColor);
     updateGarageCarousel();
