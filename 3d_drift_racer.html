@@ -237,7 +237,7 @@
   </div>
 
   <button id="mobile-centre" class="z-10" style="visibility:hidden">CENTRE WHEEL</button>
-  <div id="rotate-device"><div><h2 class="text-2xl font-black">ROTATE TO LANDSCAPE</h2><p class="mt-3">Hold your phone or tablet sideways, screen upright facing you.</p><p class="mt-2 text-neutral-400">Turn off portrait orientation lock if needed.</p></div></div>
+  <div id="rotate-device"><div><h2 class="text-2xl font-black">ROTATE TO LANDSCAPE</h2><p class="mt-3">Hold your phone or tablet sideways at a comfortable angle.</p><p class="mt-2 text-neutral-400">Turn off portrait orientation lock if needed.</p></div></div>
   <div id="motion-setup" class="hidden" role="dialog" aria-modal="true" aria-label="Steering setup"><div>
     <h2 class="text-xl font-black">STEERING CHECK</h2>
     <p class="text-sm mt-2">Hold sideways at a comfortable angle. Centre saves this position. Tilt backward to handbrake.</p>
@@ -458,7 +458,7 @@
           <div class="bg-neutral-900/45 rounded-xl p-4 border border-white/5 text-[11px] flex flex-col gap-1.5">
             <span class="text-[9px] font-black text-neutral-400 uppercase tracking-wider font-mono">TOUCH LAYOUT</span>
             <p class="leading-relaxed text-neutral-400">
-              Play in landscape with the screen upright. Rotate it left/right like a steering wheel; compass heading and forward/back leaning do not steer. Centre before driving. Gas/brake are on the left, nitro on the right. Two fingers on the empty road adjust zoom.
+              Play in landscape at a comfortable incline. Rotate left/right like a steering wheel. Centre Wheel instantly saves your current angle. Tilt backward 25° beyond that angle to handbrake; forward tilt does nothing. Gas and slow reverse are on the left, nitro on the right. Two fingers on the empty road adjust zoom.
             </p>
           </div>
 
@@ -2543,7 +2543,7 @@
       tiltState.stableSince = performance.now();
       document.getElementById('motion-setup').classList.remove('hidden');
       document.getElementById('motion-ready').disabled = true;
-      setMotionStatus('Hold the phone sideways and upright. Enable motion if prompted.');
+      setMotionStatus('Hold the phone sideways at a comfortable angle. Enable motion if prompted.');
     }
     async function enableTiltControls() {
       if (!isMobileDevice) return;
@@ -2560,7 +2560,7 @@
           tiltState.listening = true;
         }
         tiltState.status = 'waiting';
-        setMotionStatus('Waiting for sensors. Keep the screen upright and sideways.');
+        setMotionStatus('Waiting for sensors. Hold sideways at your preferred angle.');
         setTimeout(() => {
           if (requestId === motionRequestId && motionSetupOpen && performance.now() - tiltState.lastSample > 2500) setMotionStatus('No sensor readings received. Check this site’s motion permission and try Enable Motion again.');
         }, 3000);
