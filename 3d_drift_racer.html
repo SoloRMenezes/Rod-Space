@@ -1467,10 +1467,38 @@
     }
     batchStaticWorld();
     const tokyoMeshes = scene.children.filter(object => object.isMesh || object.isGroup);
-    const trainingGround = new THREE.Mesh(new THREE.CircleGeometry(worldRadius, 128), new THREE.MeshStandardMaterial({ color: 0x333b45, roughness: 1 }));
+    // Repeating concrete slabs give a clear sense of speed without obstacles.
+    const practiceTile = document.createElement('canvas'); practiceTile.width = practiceTile.height = 512;
+    const tile = practiceTile.getContext('2d'); tile.fillStyle = '#ddd9cd'; tile.fillRect(0, 0, 512, 512);
+    let surfaceSeed = 71;
+    const surfaceRandom = () => { surfaceSeed = (surfaceSeed * 1664525 + 1013904223) >>> 0; return surfaceSeed / 4294967296; };
+    for (let i = 0; i < 6500; i++) {
+      tile.fillStyle = i % 2 ? 'rgba(102,93,74,0.08)' : 'rgba(255,255,244,0.13)';
+      tile.fillRect(surfaceRandom() * 512, surfaceRandom() * 512, 1 + surfaceRandom() * 5, 1 + surfaceRandom() * 3);
+    }
+    tile.strokeStyle = '#77786f'; tile.lineWidth = 2;
+    for (let i = 0; i <= 512; i += 128) { tile.beginPath(); tile.moveTo(i, 0); tile.lineTo(i, 512); tile.moveTo(0, i); tile.lineTo(512, i); tile.stroke(); }
+    const practiceTexture = new THREE.CanvasTexture(practiceTile); practiceTexture.colorSpace = THREE.SRGBColorSpace;
+    practiceTexture.wrapS = practiceTexture.wrapT = THREE.RepeatWrapping; practiceTexture.repeat.set(worldRadius / 16, worldRadius / 16);
+    practiceTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    const trainingGround = new THREE.Mesh(new THREE.CircleGeometry(worldRadius, 128), new THREE.MeshStandardMaterial({ map: practiceTexture, roughness: 1 }));
     trainingGround.rotation.x = -Math.PI / 2; trainingGround.position.y = roadSurfaceY; trainingGround.visible = false; scene.add(trainingGround);
-    const trainingEdge = new THREE.Mesh(new THREE.RingGeometry(boundaryRadius, worldRadius, 192), new THREE.MeshBasicMaterial({ color: 0x94a3b8 }));
+    const trainingEdge = new THREE.Mesh(new THREE.RingGeometry(boundaryRadius, worldRadius, 192), new THREE.MeshBasicMaterial({ color: 0xbba16a }));
     trainingEdge.rotation.x = -Math.PI / 2; trainingEdge.position.y = roadSurfaceY + 0.01; trainingEdge.visible = false; scene.add(trainingEdge);
+    const practiceScenery = new THREE.Group(); practiceScenery.visible = false; scene.add(practiceScenery);
+    const apron = new THREE.Mesh(new THREE.CircleGeometry(900, 96), new THREE.MeshStandardMaterial({ color: 0xaca994, roughness: 1 }));
+    apron.rotation.x = -Math.PI / 2; apron.position.y = -0.05; practiceScenery.add(apron);
+    const practicePaint = [0x74878d, 0xa77e5c, 0x829172].map(color => new THREE.MeshStandardMaterial({ color, roughness: 0.85 }));
+    for (let i = 0; i < 12; i++) {
+      const angle = i / 12 * Math.PI * 2, station = new THREE.Group();
+      station.position.set(Math.cos(angle) * 495, 0, Math.sin(angle) * 495); station.rotation.y = -angle; practiceScenery.add(station);
+      // Low storage sheds, stacked barriers and tall pennants beyond the edge.
+      staticBox(12, 5, 8, 0, 2.5, 0, practicePaint[i % 3], station);
+      staticBox(12.5, 0.35, 8.5, 0, 5.2, 0, palette.stone, station);
+      staticBox(0.22, 15, 0.22, 10, 7.5, 0, palette.stone, station);
+      staticBox(4, 2.4, 0.08, 12, 13.5, 0, i % 2 ? palette.red : palette.white, station);
+      for (let j = 0; j < 3; j++) staticBox(4, 1, 1.4, -10, 0.5 + j, 0, j % 2 ? palette.white : practicePaint[i % 3], station);
+    }
 
     // Query nearby geometry rather than scanning the entire city each frame.
     const collisionGrid = new Map();
@@ -2223,7 +2251,9 @@
 
     function applyBrightness() {
       const level = state.brightness / 100;
-      ambient.intensity = 0.65 * level; hemi.intensity = 0.42 * level; sun.intensity = 0.7 * level;
+      const day = state.selectedMap === 'training';
+      ambient.intensity = (day ? 1.1 : 0.65) * level; hemi.intensity = (day ? 0.8 : 0.42) * level; sun.intensity = (day ? 1.3 : 0.7) * level;
+      scene.background.setHex(day ? 0xb8d5e8 : bgColor); scene.fog.color.copy(scene.background); scene.fog.density = day ? 0.00065 : 0.00165;
       document.getElementById('brightness').value = state.brightness;
       document.getElementById('brightness-value').textContent = `${state.brightness}%`;
     }
@@ -3036,7 +3066,7 @@
     let lastMinimapFrame = 0;
     function drawMinimap(now) {
       if (isMobileDevice || !state.isGameRunning || now - lastMinimapFrame < 80) return;
-      lastMinimapFrame = now; mini.clearRect(0, 0, 320, 320); if (state.selectedMap === "tokyo") mini.drawImage(miniBase, 0, 0); else { mini.fillStyle = "#333b45"; mini.fillRect(0, 0, 320, 320); }
+      lastMinimapFrame = now; mini.clearRect(0, 0, 320, 320); if (state.selectedMap === "tokyo") mini.drawImage(miniBase, 0, 0); else { mini.fillStyle = "#ddd9cd"; mini.fillRect(0, 0, 320, 320); }
       mini.fillStyle = '#ffffff'; mini.font = 'bold 22px sans-serif'; mini.textAlign = 'center'; mini.fillText('N', 160, 23);
       mini.save(); mini.translate(160 + carGroup.position.x * 0.31, 160 + carGroup.position.z * 0.31); mini.rotate(-carGroup.rotation.y);
       mini.beginPath(); mini.moveTo(0, 10); mini.lineTo(-7, -7); mini.lineTo(0, -3); mini.lineTo(7, -7); mini.closePath(); mini.fillStyle = '#67e8f9'; mini.strokeStyle = '#000'; mini.lineWidth = 2; mini.fill(); mini.stroke(); mini.restore();
@@ -3046,7 +3076,8 @@
       state.selectedMap = state.selectedMap === 'tokyo' ? 'training' : 'tokyo';
       const city = state.selectedMap === 'tokyo';
       tokyoMeshes.forEach(mesh => { mesh.visible = city; });
-      trainingGround.visible = trainingEdge.visible = !city; sakuraSystem.visible = city;
+      trainingGround.visible = trainingEdge.visible = practiceScenery.visible = !city;
+      applyBrightness(); sakuraSystem.visible = city;
       collectibles.forEach(c => { c.mesh.visible = city && !c.collected; c.ring.visible = city; });
       obstacles.forEach(o => { o.mesh.visible = city; });
       document.getElementById('change-map').textContent = 'CHANGE MAP · ' + (city ? 'TOKYO' : 'BLANK PRACTICE');
