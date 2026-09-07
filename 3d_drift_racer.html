@@ -874,7 +874,7 @@
     const canvas = document.getElementById('game-canvas');
     const mobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     const iPadDesktopMode = /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-    const isMobileDevice = Boolean(navigator.userAgentData?.mobile || mobileUserAgent || iPadDesktopMode || (navigator.maxTouchPoints > 0 && matchMedia('(pointer: coarse)').matches));
+    const isMobileDevice = Boolean(navigator.userAgentData?.mobile || mobileUserAgent || iPadDesktopMode);
     const ui = {
       speed: document.getElementById('speed-val'),
       gear: document.getElementById('gear-val'),
@@ -1012,6 +1012,7 @@
     const cityLimit = outerRoadRadius;
     const streetCenters = Array.from({ length: 15 }, (_, i) => (i - 7) * 60);
     const roadSurfaceY = 0.365, vehicleScale = 1.65;
+    const drivingDistanceScale = 2;
     const nitroDrainRate = 29, nitroRechargeRate = 8.5, nitroReadyThreshold = 45;
     const nitroBottleRespawnMs = 120000, nitroPickupRadius = 4.5;
     const solidColliders = [];
@@ -1270,18 +1271,38 @@
         }
       }
     }
+    citySummary.parkingLots = [];
+    const parkingSites = [{ x: 150, z: 150, cars: 0 }, { x: -150, z: 210, cars: 5 }, { x: 210, z: -150, cars: 12 }];
+    function parkingLot(site) {
+      const { x, z, cars } = site;
+      staticBox(44, 0.03, 44, x, roadSurfaceY + 0.02, z, palette.asphalt);
+      const parkedPaint = [palette.red, palette.white, palette.stone, palette.dark];
+      for (let row = 0; row < 2; row++) for (let bay = 0; bay < 6; bay++) {
+        const bx = x - 17.5 + bay * 7, bz = z + (row ? 13 : -13);
+        staticBox(0.13, 0.02, 9, bx - 3.4, roadSurfaceY + 0.055, bz, palette.white);
+        staticBox(6.8, 0.02, 0.13, bx, roadSurfaceY + 0.055, bz + (row ? 4.5 : -4.5), palette.white);
+        if ((bay * 5 + row * 7) % 12 >= cars) continue;
+        const body = staticBox(3.3, 1.1, 6.4, bx, 1.1, bz, parkedPaint[bay % 4]); registerMeshBoxCollider(body);
+        staticBox(2.8, 1, 3.2, bx, 2, bz, palette.dark);
+        for (const side of [-1, 1]) for (const end of [-1, 1]) staticBox(0.4, 1, 1.1, bx + side * 1.65, 0.85, bz + end * 2, palette.dark);
+      }
+      const sign = streetSign('P', '#67e8f9'); sign.scale.setScalar(0.6); sign.position.set(x + 20, 3, z - 22); scene.add(sign);
+      citySummary.parkingLots.push(site);
+    }
     const blockRanges = [];
     for (let i = 0; i < streetCenters.length - 1; i++) blockRanges.push({ center: streetCenters[i] + 30 });
     blockRanges.forEach((xr, ix) => blockRanges.forEach((zr, iz) => {
       const blockRadius = Math.hypot(xr.center, zr.center);
+      const parkingSite = parkingSites.find(p => p.x === xr.center && p.z === zr.center);
+      if (parkingSite) { parkingLot(parkingSite); return; }
       if (blockRadius + 30 < 415 && blockRadius > 88 && (ix * 7 + iz * 11) % 23 === 0) { park(xr.center, zr.center, (ix + iz) % 2 === 0); return; }
       for (const dx of [-11, 11]) for (const dz of [-11, 11]) {
         const x = xr.center + dx, z = zr.center + dz, radius = Math.hypot(x, z);
-        const rural = radius > 305;
+        const rural = radius > 345 || (radius > 255 && cityRandom() < (radius - 255) / 90);
         const w = rural ? 13 + cityRandom() * 3 : 17 + cityRandom() * 2;
         const d = rural ? 13 + cityRandom() * 3 : 17 + cityRandom() * 2;
         if (radius + Math.hypot(w, d) / 2 > outerRoadRadius - gridRoadHalfWidth - 3 || radius < 55 + Math.hypot(w, d) / 2) continue;
-        const h = rural ? 6 + cityRandom() * 6 : radius > 250 ? 24 + cityRandom() * 30 : cityRandom() < 0.18 ? 18 + cityRandom() * 14 : 85 + cityRandom() * 78;
+        const h = rural ? 6 + cityRandom() * 6 : radius > 250 ? 18 + cityRandom() * 32 : cityRandom() < 0.18 ? 18 + cityRandom() * 14 : 85 + cityRandom() * 78;
         const mat = facadeMaterial(Math.floor(cityRandom() * 5), h > 55, rural);
         const lowerHeight = h > 55 ? h * 0.72 : h;
         const building = staticBox(w, lowerHeight, d, x, roadSurfaceY + lowerHeight / 2, z, mat); registerMeshBoxCollider(building);
@@ -1333,9 +1354,20 @@
     for (let i = 0; i < 4; i++) {
       const a = Math.PI / 4 + i * Math.PI / 2, gateRadius = 482;
       const x = Math.cos(a) * gateRadius, z = Math.sin(a) * gateRadius;
-      const hill = new THREE.Mesh(new THREE.ConeGeometry(50, 27, 10), palette.grass); hill.position.set(Math.cos(a) * 521, 7, Math.sin(a) * 521); scene.add(hill);
-      const approach = staticBox(6, 0.12, 12, Math.cos(a) * 459, roadSurfaceY + 0.02, Math.sin(a) * 452, palette.stone); approach.rotation.y = Math.atan2(Math.cos(a), Math.sin(a));
-      const gate = new THREE.Group(); gate.position.set(x, 3, z); gate.rotation.y = Math.atan2(-x, -z); scene.add(gate);
+      const hillRadius = 54, hillCentre = 511;
+      const hill = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 12), palette.grass); hill.scale.set(hillRadius, 13, hillRadius); hill.position.set(Math.cos(a) * hillCentre, -6, Math.sin(a) * hillCentre); scene.add(hill);
+      const hillHeight = r => Math.max(0, 13 * Math.sqrt(Math.max(0, 1 - ((r - hillCentre) / hillRadius) ** 2)) - 6);
+      // A continuous stone approach starts at the outer pavement, passes behind
+      // the no-entry rail and climbs through the torii into the sakura grove.
+      const pathVertices = [];
+      for (let step = 0; step < 24; step++) {
+        const r0 = 453 + step * 2.8, r1 = r0 + 2.8;
+        const point = (r, side) => { const bend = r > 482 ? Math.sin((r - 482) / 38 * Math.PI) * 5 : 0; return [Math.cos(a) * r - Math.sin(a) * (bend + side * 2.4), Math.max(roadSurfaceY, hillHeight(r)) + 0.09, Math.sin(a) * r + Math.cos(a) * (bend + side * 2.4)]; };
+        const l0 = point(r0, -1), r0p = point(r0, 1), l1 = point(r1, -1), r1p = point(r1, 1);
+        pathVertices.push(...l0, ...l1, ...r0p, ...r0p, ...l1, ...r1p);
+      }
+      const pathGeometry = new THREE.BufferGeometry(); pathGeometry.setAttribute('position', new THREE.Float32BufferAttribute(pathVertices, 3)); pathGeometry.computeVertexNormals(); scene.add(new THREE.Mesh(pathGeometry, new THREE.MeshStandardMaterial({ color: 0x777871, roughness: 1, side: THREE.DoubleSide })));
+      const gate = new THREE.Group(); gate.position.set(x, hillHeight(gateRadius), z); gate.rotation.y = Math.atan2(-x, -z); scene.add(gate);
       for (const side of [-1, 1]) { staticCylinder(0.45, 0.65, 10, side * 5, 5, 0, palette.red, 10, gate); staticCylinder(0.7, 0.8, 1.5, side * 5, 0.75, 0, palette.stone, 10, gate); }
       staticBox(14, 0.9, 1.5, 0, 10, 0, palette.dark, gate); staticBox(12, 0.65, 0.9, 0, 8, 0, palette.red, gate); staticBox(0.65, 2, 0.7, 0, 9, 0, palette.red, gate);
       citySummary.shrines.push({ x, z, angle: a, accessible: false });
@@ -1611,36 +1643,13 @@
     
     // Cone rows are intentionally placed in short lines, so dodging or
     // clipping them is readable and funny instead of feeling unfair.
-    const coneLines = [
-      { f: 0.10, side: -1, count: 5, curve: 0.7 },
-      { f: 0.27, side: 1, count: 4, curve: -0.45 },
-      { f: 0.48, side: -1, count: 6, curve: 0.3 },
-      { f: 0.64, side: 1, count: 5, curve: 0.85 },
-      { f: 0.82, side: -1, count: 4, curve: -0.55 }
-    ];
-
+    // Mark three curbside maintenance bays, clear of junctions and travel lanes.
+    const coneLines = [{ x: -210, z: 184.4 }, { x: 90, z: -175.6 }, { x: 270, z: 64.4 }];
     let coneId = 0;
     coneLines.forEach(line => {
-      const tangent = trackCurve.getTangentAt(line.f).normalize();
-      const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
-      const center = trackCurve.getPointAt(line.f).add(normal.clone().multiplyScalar(line.side * (trackWidth * 0.24)));
-      for (let i = 0; i < line.count; i++) {
-        const step = i - (line.count - 1) / 2;
-        const offsetPos = center.clone()
-          .add(tangent.clone().multiplyScalar(step * 1.35))
-          .add(normal.clone().multiplyScalar(Math.sin(i * 0.9) * line.curve));
-        offsetPos.y = roadSurfaceY;
-        const mesh = createTrafficCone();
-        mesh.position.copy(offsetPos);
-        mesh.rotation.y = Math.atan2(tangent.x, tangent.z) + line.side * 0.25;
-        scene.add(mesh);
-
-        obstacles.push({
-          id: `o_${coneId++}`,
-          mesh,
-          hit: false,
-          velocity: new THREE.Vector3()
-        });
+      for (let i = 0; i < 4; i++) {
+        const mesh = createTrafficCone(); mesh.position.set(line.x - 9 + i * 6, roadSurfaceY, line.z); scene.add(mesh);
+        obstacles.push({ id: `o_${coneId++}`, mesh, hit: false, settled: false, velocity: new THREE.Vector3() });
       }
     });
 
@@ -2675,11 +2684,11 @@
           state.currentSpeed = Math.max(-0.35, state.currentSpeed - arch.acceleration * 1.5 * frameScale);
         } else if (isTurbo) {
           // No boost speed ceiling: chaining bottles can keep acceleration going.
-          state.currentSpeed += arch.acceleration * 1.8 * frameScale;
+          state.currentSpeed += arch.acceleration * 0.5 * frameScale;
         } else if (isFwd) {
           state.currentSpeed = state.currentSpeed > arch.topSpeed
             ? THREE.MathUtils.lerp(state.currentSpeed, arch.topSpeed, smooth(0.012))
-            : Math.min(arch.topSpeed, state.currentSpeed + arch.acceleration * frameScale);
+            : Math.min(arch.topSpeed, state.currentSpeed + arch.acceleration * 0.12 * frameScale);
         } else {
           state.currentSpeed = THREE.MathUtils.lerp(state.currentSpeed, 0, smooth(0.025));
         }
@@ -2807,7 +2816,7 @@
 
         // Reject rotation into geometry, then remove only blocked movement.
         if (findCarCollision(carGroup.position.x, carGroup.position.z, carGroup.rotation.y)) carGroup.rotation.y = previousYaw;
-        const motion = slideCarMotion(carGroup.position.x, carGroup.position.z, velocity.x * frameScale, velocity.z * frameScale, carGroup.rotation.y);
+        const motion = slideCarMotion(carGroup.position.x, carGroup.position.z, velocity.x * frameScale * drivingDistanceScale, velocity.z * frameScale * drivingDistanceScale, carGroup.rotation.y);
         nextPos.set(motion.x, carGroup.position.y, motion.z);
         if (motion.hit) {
           if (!contactActive) {
@@ -2822,7 +2831,7 @@
             audio.setDrifting(false);
             if (playImpactSound()) showNotification('IMPACT — COMBO RESET');
           } else {
-            velocity.set((motion.x - carGroup.position.x) / Math.max(frameScale, 0.001), 0, (motion.z - carGroup.position.z) / Math.max(frameScale, 0.001));
+            velocity.set((motion.x - carGroup.position.x) / Math.max(frameScale * drivingDistanceScale, 0.001), 0, (motion.z - carGroup.position.z) / Math.max(frameScale * drivingDistanceScale, 0.001));
             state.currentSpeed = Math.sign(state.currentSpeed) * velocity.length();
           }
           contactActive = true;
@@ -2864,7 +2873,7 @@
 
         // Obstacle cones physics
         obstacles.forEach(o => {
-          if (!o.hit && colliderOverlapsCar({ type: 'circle', x: o.mesh.position.x, z: o.mesh.position.z, radius: 0.35 }, carGroup.position.x, carGroup.position.z, carGroup.rotation.y)) {
+          if (!o.hit && !o.settled && colliderOverlapsCar({ type: 'circle', x: o.mesh.position.x, z: o.mesh.position.z, radius: 0.35 }, carGroup.position.x, carGroup.position.z, carGroup.rotation.y)) {
             // hit cone
             o.hit = true;
             playImpactSound();
@@ -2872,7 +2881,7 @@
             o.velocity.set(Math.cos(headingAngle) * 20, 8, Math.sin(headingAngle) * 20);
           }
 
-          if (o.hit) {
+          if (o.hit && !o.settled) {
             o.mesh.position.addScaledVector(o.velocity, dt);
             o.velocity.y -= 18 * dt; // gravity
             o.mesh.rotation.x += 0.1;
@@ -2881,7 +2890,7 @@
             if (o.mesh.position.y <= roadSurfaceY) {
               o.mesh.position.y = roadSurfaceY;
               o.velocity.set(0, 0, 0);
-              o.hit = false;
+              o.settled = true;
             }
           }
         });
@@ -2909,9 +2918,12 @@
         lookTarget.copy(carGroup.position);
         lookTarget.y += 0.65 * vehicleScale;
         const cameraZoom = state.cameraZoom;
+        const speedFov = 60 + Math.min(13, Math.abs(state.currentSpeed) * 10);
+        const nextFov = THREE.MathUtils.lerp(camera.fov, speedFov, smooth(0.05));
+        if (Math.abs(nextFov - camera.fov) > 0.01) { camera.fov = nextFov; camera.updateProjectionMatrix(); }
 
         if (state.cameraMode === 'chase') {
-          cameraOffset.set(0, 2.8 * cameraZoom, -7.0 * cameraZoom).applyQuaternion(carGroup.quaternion);
+          cameraOffset.set(0, 2.15 * cameraZoom, -6.3 * cameraZoom).applyQuaternion(carGroup.quaternion);
           targetCam.copy(carGroup.position).add(cameraOffset);
           camera.position.lerp(targetCam, smooth(0.12));
           camera.lookAt(lookTarget);
@@ -2990,6 +3002,7 @@
     baseMap.fillStyle = '#b8c2cc';
     citySummary.buildings.forEach(b => baseMap.fillRect(b.x - b.w / 2, b.z - b.d / 2, b.w, b.d));
     baseMap.fillStyle = '#446d52'; citySummary.parks.forEach(p => baseMap.fillRect(p.x - 21, p.z - 21, 42, 42));
+    baseMap.fillStyle = '#111923'; citySummary.parkingLots.forEach(p => baseMap.fillRect(p.x - 22, p.z - 22, 44, 44));
     baseMap.fillStyle = '#f08062'; baseMap.beginPath(); baseMap.arc(0, 0, 16, 0, Math.PI * 2); baseMap.fill(); baseMap.restore();
     let lastMinimapFrame = 0;
     function drawMinimap(now) {
