@@ -1486,6 +1486,25 @@
     const trainingEdge = new THREE.Mesh(new THREE.RingGeometry(boundaryRadius, worldRadius, 192), new THREE.MeshBasicMaterial({ color: 0xbba16a }));
     trainingEdge.rotation.x = -Math.PI / 2; trainingEdge.position.y = roadSurfaceY + 0.01; trainingEdge.visible = false; scene.add(trainingEdge);
     const practiceScenery = new THREE.Group(); practiceScenery.visible = false; scene.add(practiceScenery);
+    const practiceRoad = new THREE.Mesh(new THREE.RingGeometry(428, 450, 256), new THREE.MeshStandardMaterial({ color: 0x35383a, roughness: 0.95 }));
+    practiceRoad.rotation.x = -Math.PI / 2; practiceRoad.position.y = roadSurfaceY + 0.025; practiceScenery.add(practiceRoad);
+    // One vertex-coloured mesh keeps both alternating racing kerbs inexpensive.
+    const kerbPositions = [], kerbColors = [];
+    for (const [inner, outer] of [[426, 428], [450, 452]]) {
+      for (let i = 0; i < 256; i++) {
+        const a = i / 256 * Math.PI * 2, b = (i + 1) / 256 * Math.PI * 2;
+        const color = new THREE.Color(i % 2 ? 0xf4efe5 : 0xc92f32);
+        for (const [radius, angle] of [[inner,a],[outer,a],[outer,b],[inner,a],[outer,b],[inner,b]]) {
+          kerbPositions.push(Math.cos(angle)*radius, roadSurfaceY + 0.04, Math.sin(angle)*radius);
+          kerbColors.push(color.r, color.g, color.b);
+        }
+      }
+    }
+    const kerbGeometry = new THREE.BufferGeometry();
+    kerbGeometry.setAttribute('position', new THREE.Float32BufferAttribute(kerbPositions, 3));
+    kerbGeometry.setAttribute('color', new THREE.Float32BufferAttribute(kerbColors, 3));
+    kerbGeometry.computeVertexNormals();
+    practiceScenery.add(new THREE.Mesh(kerbGeometry, new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 1 })));
     const apron = new THREE.Mesh(new THREE.CircleGeometry(900, 96), new THREE.MeshStandardMaterial({ color: 0xaca994, roughness: 1 }));
     apron.rotation.x = -Math.PI / 2; apron.position.y = -0.05; practiceScenery.add(apron);
     const practicePaint = [0x74878d, 0xa77e5c, 0x829172].map(color => new THREE.MeshStandardMaterial({ color, roughness: 0.85 }));
@@ -1623,8 +1642,7 @@
       return bottle;
     }
 
-    // One bottle at every non-central intersection spreads refills evenly
-    // through the whole city while keeping the Tokyo Tower approach clear.
+    // Sparse city refills leave room to drive between pickups.
     const bottleSpots = [];
     for (let attempt = 0; attempt < 1600 && bottleSpots.length < 32; attempt++) {
       const angle = cityRandom() * Math.PI * 2;
@@ -1634,8 +1652,16 @@
       if (!Number.isFinite(x + z) || Math.hypot(x, z) < 65 || bottleSpots.some(p => Math.hypot(p.x - x, p.z - z) < 85)) continue;
       bottleSpots.push({ x, z, rotation: angle });
     }
+    bottleSpots.forEach(spot => { spot.map = 'tokyo'; });
+    const practiceBottleSpots = [];
+    for (let attempt = 0; attempt < 1000 && practiceBottleSpots.length < 7; attempt++) {
+      const rotation = Math.random() * Math.PI * 2, radius = Math.sqrt(Math.random()) * 405;
+      const x = Math.cos(rotation) * radius, z = Math.sin(rotation) * radius;
+      if (radius < 35 || practiceBottleSpots.some(p => Math.hypot(p.x-x, p.z-z) < 90)) continue;
+      practiceBottleSpots.push({ x, z, rotation, map: 'training' });
+    }
     let bottleId = 0;
-    bottleSpots.forEach(spot => {
+    [...bottleSpots, ...practiceBottleSpots].forEach(spot => {
       const mesh = createNitroBottle();
       mesh.position.set(spot.x, 1.05, spot.z);
       mesh.rotation.y = spot.rotation;
@@ -1646,9 +1672,11 @@
       }));
       ring.position.set(spot.x, roadSurfaceY + 0.02, spot.z);
       scene.add(ring);
+      mesh.visible = ring.visible = spot.map === state.selectedMap;
       collectibles.push({
         id: `c_${bottleId++}`,
         type: 'boost',
+        map: spot.map,
         mesh,
         ring,
         phase: spot.rotation,
@@ -2741,11 +2769,11 @@
           state.currentSpeed = Math.max(-0.075, state.currentSpeed - arch.acceleration * (braking ? 0.45 : 0.035) * frameScale);
         } else if (isTurbo) {
           // No boost speed ceiling: chaining bottles can keep acceleration going.
-          state.currentSpeed += arch.acceleration * 0.5 * frameScale;
+          state.currentSpeed += arch.acceleration * 0.08 * frameScale;
         } else if (isFwd) {
           state.currentSpeed = state.currentSpeed > arch.topSpeed
             ? THREE.MathUtils.lerp(state.currentSpeed, arch.topSpeed, smooth(0.012))
-            : Math.min(arch.topSpeed, state.currentSpeed + arch.acceleration * 0.12 * frameScale);
+            : Math.min(arch.topSpeed, state.currentSpeed + arch.acceleration * 0.04 * frameScale);
         } else {
           state.currentSpeed = THREE.MathUtils.lerp(state.currentSpeed, 0, smooth(0.025));
         }
@@ -2905,7 +2933,7 @@
 
         // Pickups use ground-plane distance so bobbing never changes reach.
         collectibles.forEach(col => {
-          if (state.selectedMap === "training") return;
+          if (col.map !== state.selectedMap) return;
           if (col.collected) {
             col.respawnRemaining = Math.max(0, col.respawnRemaining - dt);
             col.ring.material.opacity = 0.05 + 0.15 * (1 - col.respawnRemaining / (nitroBottleRespawnMs / 1000));
@@ -3066,7 +3094,7 @@
     let lastMinimapFrame = 0;
     function drawMinimap(now) {
       if (isMobileDevice || !state.isGameRunning || now - lastMinimapFrame < 80) return;
-      lastMinimapFrame = now; mini.clearRect(0, 0, 320, 320); if (state.selectedMap === "tokyo") mini.drawImage(miniBase, 0, 0); else { mini.fillStyle = "#ddd9cd"; mini.fillRect(0, 0, 320, 320); }
+      lastMinimapFrame = now; mini.clearRect(0, 0, 320, 320); if (state.selectedMap === "tokyo") mini.drawImage(miniBase, 0, 0); else { mini.fillStyle = "#ddd9cd"; mini.fillRect(0, 0, 320, 320); mini.beginPath(); mini.arc(160, 160, 439 * 0.31, 0, Math.PI * 2); mini.strokeStyle = "#35383a"; mini.lineWidth = 22 * 0.31; mini.stroke(); }
       mini.fillStyle = '#ffffff'; mini.font = 'bold 22px sans-serif'; mini.textAlign = 'center'; mini.fillText('N', 160, 23);
       mini.save(); mini.translate(160 + carGroup.position.x * 0.31, 160 + carGroup.position.z * 0.31); mini.rotate(-carGroup.rotation.y);
       mini.beginPath(); mini.moveTo(0, 10); mini.lineTo(-7, -7); mini.lineTo(0, -3); mini.lineTo(7, -7); mini.closePath(); mini.fillStyle = '#67e8f9'; mini.strokeStyle = '#000'; mini.lineWidth = 2; mini.fill(); mini.stroke(); mini.restore();
@@ -3078,7 +3106,7 @@
       tokyoMeshes.forEach(mesh => { mesh.visible = city; });
       trainingGround.visible = trainingEdge.visible = practiceScenery.visible = !city;
       applyBrightness(); sakuraSystem.visible = city;
-      collectibles.forEach(c => { c.mesh.visible = city && !c.collected; c.ring.visible = city; });
+      collectibles.forEach(c => { c.mesh.visible = c.map === state.selectedMap && !c.collected; c.ring.visible = c.map === state.selectedMap; });
       obstacles.forEach(o => { o.mesh.visible = city; });
       document.getElementById('change-map').textContent = 'CHANGE MAP · ' + (city ? 'TOKYO' : 'BLANK PRACTICE');
       resetCarToStart();
