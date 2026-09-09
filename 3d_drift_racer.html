@@ -98,14 +98,8 @@
     body.is-mobile-device #screen-main-menu h1 { font-size: 32px; }
     body.is-mobile-device #screen-main-menu > .grid > div { padding: 8px; }
     body.is-mobile-device #garage-preview-model { height: 125px; }
-    #motion-setup, #rotate-device { position: fixed; inset: 0; z-index: 50; background: #090d15; color: white; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-left)); text-align: center; }
-    #motion-setup:not(.hidden) { display: flex; }
+    #rotate-device { position: fixed; inset: 0; z-index: 50; background: #090d15; color: white; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-left)); text-align: center; }
     #rotate-device { z-index: 60; }
-    #motion-setup > div { width: min(520px, 100%); }
-    #motion-status { min-height: 2.5em; color: #cbd5e1; font-size: 14px; margin: 10px 0; }
-    #wheel-indicator { display: inline-block; font-size: 48px; line-height: 1; }
-    #motion-setup button { min-height: 44px; padding: 10px 18px; border-radius: 8px; margin: 4px; background: #e2e8f0; color: #0f172a; font-weight: 800; }
-    #motion-setup button:disabled { opacity: .4; }
     #mobile-centre { display: none; }
     body.is-mobile-device #mobile-centre { display: block; position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); min-height: 44px; padding: 8px 12px; background: #111827dd; border-radius: 8px; pointer-events: auto; color: white; font-size: 11px; }
     @media (max-width: 700px) { body.is-mobile-device #hud-layer > div:first-child { gap: 4px; } body.is-mobile-device #hud-layer > div:first-child > div:nth-child(2) { gap: 1px; padding: 2px; } }
@@ -238,13 +232,6 @@
 
   <button id="mobile-centre" class="z-10" style="visibility:hidden">CENTRE WHEEL</button>
   <div id="rotate-device"><div><h2 class="text-2xl font-black">ROTATE TO LANDSCAPE</h2><p class="mt-3">Hold your phone or tablet sideways at a comfortable angle.</p><p class="mt-2 text-neutral-400">Turn off portrait orientation lock if needed.</p></div></div>
-  <div id="motion-setup" class="hidden" role="dialog" aria-modal="true" aria-label="Steering setup"><div>
-    <h2 class="text-xl font-black">STEERING CHECK</h2>
-    <p class="text-sm mt-2">Hold sideways at a comfortable angle. Centre saves this position. Tilt backward to handbrake.</p>
-    <div id="wheel-indicator" aria-hidden="true"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="currentColor" stroke-width="4"/><path d="M5 24L28 29L51 24M28 29V52" fill="none" stroke="currentColor" stroke-width="4"/></svg></div>
-    <p id="motion-status" role="status" aria-live="polite">Waiting for motion…</p>
-    <button id="motion-retry">ENABLE MOTION</button><button id="motion-ready" disabled>CENTRE &amp; DRIVE</button><button id="motion-back">BACK</button>
-  </div></div>
   <!-- Interactive Screens Overlay Panel -->
   <div id="pause-overlay" class="hidden absolute inset-0 z-30 flex items-center justify-center bg-neutral-950/85 backdrop-blur-md">
     <div class="text-center text-white"><h2 class="text-3xl font-black italic mb-3">RUN PAUSED</h2>
@@ -2398,8 +2385,7 @@
       state.isGameRunning = false;
       document.getElementById('mobile-centre').style.visibility = 'hidden';
       document.getElementById('pause-overlay').classList.add('hidden');
-      document.getElementById('motion-setup').classList.add('hidden');
-      motionSetupOpen = false;
+      motionRequestId++;
       state.isPaused = false;
       clearInputs();
       saveRecords();
@@ -2463,12 +2449,13 @@
       updateHUD(performance.now(), true);
       showNotification("FREE DRIFT STARTED. KEEP MOVING!");
     }
-    document.getElementById('btn-start').onclick = async () => {
-      if (!isMobileDevice) { launchRun(); return; }
-      openMotionSetup();
-      // Permission must be requested directly from this user gesture on iOS.
-      await enableTiltControls();
-      await requestLongestSideLaunch();
+    document.getElementById('btn-start').onclick = () => {
+      launchRun();
+      if (isMobileDevice) {
+        // Start immediately; Centre requests sensor permission from its own tap.
+        void requestLongestSideLaunch();
+        showNotification('TAP CENTRE WHEEL TO ENABLE AND CENTRE STEERING');
+      }
     };
 
     // --- Key Event Listeners ---
@@ -2539,8 +2526,7 @@
     const heldPointers = new Map();
     const tiltState = { steer: 0, target: 0, neutral: 0, roll: 0, valid: false,
       listening: false, status: 'idle', lastSample: 0, screenAngle: null, calibrated: false, stableSince: 0 };
-    let motionSetupOpen = false;
-    let motionResuming = false;
+    let centrePending = false;
     let motionRequestId = 0;
 
     function screenAngle() {
@@ -2581,28 +2567,12 @@
       if (state.isGameRunning && !tiltState.calibrated && landscape) centreMotion();
       tiltState.target = tiltState.valid && tiltState.calibrated ? wheelSteering(tiltState.roll, tiltState.neutral) : 0;
       if (!tiltState.valid) tiltState.steer = 0;
-      if (motionSetupOpen) {
-        document.getElementById('wheel-indicator').style.transform = `rotate(${-pose.roll}deg)`;
-        const centred = tiltState.valid && now - tiltState.stableSince > 250;
-        document.getElementById('motion-ready').disabled = !centred;
-        setMotionStatus(!landscape ? 'Rotate your device to landscape.' : centred ? 'Ready. Your current holding angle will become neutral.' : 'Hold comfortably and steady, then centre.');
+      if (centrePending && landscape && centreMotion()) {
+        centrePending = false;
+        showNotification('STEERING CENTRED');
       }
     }
-    function setMotionStatus(text) {
-      const el = document.getElementById('motion-status');
-      if (el.textContent !== text) el.textContent = text;
-    }
-    function openMotionSetup() {
-      motionResuming = state.isGameRunning;
-      if (state.isGameRunning) togglePause(true);
-      motionSetupOpen = true;
-      tiltState.calibrated = false;
-      tiltState.target = tiltState.steer = 0;
-      tiltState.stableSince = performance.now();
-      document.getElementById('motion-setup').classList.remove('hidden');
-      document.getElementById('motion-ready').disabled = true;
-      setMotionStatus('Hold the phone sideways at a comfortable angle. Enable motion if prompted.');
-    }
+    function setMotionStatus(text) { showNotification(text); }
     async function enableTiltControls() {
       if (!isMobileDevice) return;
       const requestId = ++motionRequestId;
@@ -2611,7 +2581,7 @@
       try {
         if (typeof DeviceOrientationEvent.requestPermission === 'function') {
           const permission = await DeviceOrientationEvent.requestPermission();
-          if (permission !== 'granted') { setMotionStatus('Motion permission was denied. Allow Motion & Orientation for this site, then tap Enable Motion.'); return; }
+          if (permission !== 'granted') { setMotionStatus('Motion permission was denied. Allow Motion & Orientation for this site, then tap Centre Wheel.'); return; }
         }
         if (!tiltState.listening) {
           window.addEventListener('deviceorientation', updateTiltSteer, true);
@@ -2620,11 +2590,10 @@
         tiltState.status = 'waiting';
         setMotionStatus('Waiting for sensors. Hold sideways at your preferred angle.');
         setTimeout(() => {
-          if (requestId === motionRequestId && motionSetupOpen && performance.now() - tiltState.lastSample > 2500) setMotionStatus('No sensor readings received. Check this site’s motion permission and try Enable Motion again.');
+          if (requestId === motionRequestId && state.isGameRunning && performance.now() - tiltState.lastSample > 2500) setMotionStatus('No sensor readings received. Check this site’s motion permission and tap Centre Wheel again.');
         }, 3000);
       } catch (_) { setMotionStatus('Could not enable motion. Check this site’s permission, then try again.'); }
     }
-    document.getElementById('motion-retry').onclick = enableTiltControls;
     function centreMotion() {
       if (!tiltState.valid || performance.now() - tiltState.lastSample > 1500) return false;
       tiltState.neutral = tiltState.roll; tiltState.neutralPitch = tiltState.pitch || 0;
@@ -2632,23 +2601,12 @@
       return true;
     }
     document.getElementById('mobile-centre').onclick = () => {
-      if (state.isGameRunning && centreMotion()) {
-        const button = document.getElementById('mobile-centre'); button.textContent = 'CENTRED';
-        setTimeout(() => { button.textContent = 'CENTRE WHEEL'; }, 1200);
-      }
-    };
-    document.getElementById('motion-back').onclick = () => {
-      motionSetupOpen = false; motionRequestId++;
-      document.getElementById('motion-setup').classList.add('hidden');
-      // A paused run stays paused until its wheel is calibrated again.
-    };
-    document.getElementById('motion-ready').onclick = () => {
-      if (!centreMotion()) return;
-      tiltState.neutral = tiltState.roll; tiltState.calibrated = true;
-      tiltState.steer = tiltState.target = 0;
-      motionSetupOpen = false;
-      document.getElementById('motion-setup').classList.add('hidden');
-      if (motionResuming) togglePause(false); else launchRun();
+      if (!state.isGameRunning) return;
+      if (centreMotion()) { showNotification('STEERING CENTRED'); return; }
+      centrePending = true;
+      tiltState.calibrated = false;
+      // iOS permission is invoked synchronously inside this button gesture.
+      void enableTiltControls();
     };
     function mapTouch(elId, field) {
       const el = document.getElementById(elId);
