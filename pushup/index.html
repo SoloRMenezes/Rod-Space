@@ -66,7 +66,7 @@
             ><small>Maximum reps in a time limit</small></button
           ><button data-mode="reps" aria-pressed="false">
             <strong>Rep challenge</strong
-            ><small>Reach a target before time runs out</small>
+            ><small>Fastest time to a target · optional deadline</small>
           </button>
         </div>
         <div id="target-row" hidden>
@@ -81,6 +81,10 @@
             inputmode="numeric"
           />
         </div>
+        <label id="limit-toggle-row" hidden
+          ><input id="use-rep-limit" type="checkbox" checked /> Add a time
+          limit</label
+        >
         <div id="limit-row" hidden>
           <label for="rep-limit">Time limit (seconds)</label
           ><input

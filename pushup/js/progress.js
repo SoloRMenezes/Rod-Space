@@ -111,7 +111,7 @@ export function finishWorkout(
     }
   }
   state.personalBest = Math.max(state.personalBest, count);
-  if (workout.completed && workout.mode === "time") {
+  if (workout.completed && !workout.interrupted && workout.mode === "time") {
     const key = String(workout.target);
     state.records.time[key] = Math.max(state.records.time[key] || 0, count);
   }
@@ -122,9 +122,7 @@ export function finishWorkout(
     count >= workout.target &&
     (!workout.timeLimit || workout.elapsedMs <= workout.timeLimit * 1000)
   ) {
-    const key = workout.timeLimit
-      ? `${workout.target}@${workout.timeLimit}`
-      : String(workout.target);
+    const key = repRecordKey(workout.target, workout.timeLimit);
     state.records.reps[key] = Math.min(
       state.records.reps[key] ?? Infinity,
       workout.elapsedMs,
@@ -134,4 +132,8 @@ export function finishWorkout(
   state.active = null;
   reconcile(state, now);
   return state;
+}
+
+export function repRecordKey(target, timeLimit) {
+  return timeLimit ? `${target}@${timeLimit}` : String(target);
 }

@@ -589,3 +589,19 @@ dialog p {
   gap: 12px;
   margin-bottom: 22px;
 }
+
+#limit-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  min-height: 44px;
+  color: var(--muted);
+}
+#use-rep-limit {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: white;
+}

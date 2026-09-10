@@ -1,4 +1,10 @@
-import { localDate, freshState, reconcile, finishWorkout } from "./progress.js";
+import {
+  localDate,
+  freshState,
+  reconcile,
+  finishWorkout,
+  repRecordKey,
+} from "./progress.js";
 import { RepDetector, AutoCalibration } from "./detection.js";
 import * as storage from "./storage.js";
 import { requestCameraAccess, CameraTracker } from "./camera.js";
@@ -124,7 +130,8 @@ function render() {
   $("minimum-setting").textContent = state.dailyMinimum ?? "Not set";
   document.querySelector(".mode-tabs").hidden = false;
   $("prepare").textContent = initial ? "Begin max test" : "Begin";
-  $("limit-row").hidden = mode !== "reps";
+  $("limit-toggle-row").hidden = mode !== "reps";
+  $("limit-row").hidden = mode !== "reps" || !$("use-rep-limit").checked;
   $("target-row").hidden = mode === "free";
   $("max-note").hidden = !initial;
   document.querySelector(".progress-track").hidden = initial;
@@ -138,7 +145,7 @@ function render() {
   const record =
     mode === "time"
       ? state.records.time[target]
-      : state.records.reps[`${target}@${repLimit}`];
+      : state.records.reps[repRecordKey(target, repLimit)];
   $("mode-record").textContent =
     mode === "free" || record === undefined
       ? ""
@@ -248,6 +255,7 @@ function onSample(sample, now) {
     const day = localDate();
     workout.byDate[day] = (workout.byDate[day] || 0) + 1;
     workout.elapsedMs = now - startAt;
+    workout.updatedAt = new Date().toISOString();
     state.active = workout;
     if (!persist()) {
       end(false, "Storage became unavailable.");
@@ -360,7 +368,7 @@ function displayResult(note = "") {
   } else {
     previousRecord =
       workout.mode === "reps"
-        ? state.records.reps[`${workout.target}@${workout.timeLimit}`]
+        ? state.records.reps[repRecordKey(workout.target, workout.timeLimit)]
         : workout.mode === "time"
           ? state.records.time[workout.target]
           : undefined;
@@ -380,9 +388,11 @@ function displayResult(note = "") {
           ? "New best time. "
           : "Target reached. ") +
         `${workout.target} reps in ${exactTime(workout.elapsedMs)}.`
-      : workout.elapsedMs >= workout.timeLimit * 1000
+      : workout.timeLimit && workout.elapsedMs >= workout.timeLimit * 1000
         ? `Time’s up. ${count()} / ${workout.target} reps. Try again.`
-        : "Set ended. Beat the target before the timer to set a record.";
+        : workout.timeLimit
+          ? "Set ended. Beat the target before the timer to set a record."
+          : "Set ended. Reach the target to set a record.";
   }
   render();
 }
@@ -396,11 +406,14 @@ function validateTarget() {
   }
   if (mode === "reps") {
     const limit = Number($("rep-limit").value);
-    if (!Number.isInteger(limit) || limit < 10 || limit > 3600) {
+    if (
+      $("use-rep-limit").checked &&
+      (!Number.isInteger(limit) || limit < 10 || limit > 3600)
+    ) {
       error("Choose a time limit from 10 to 3600 seconds.");
       return false;
     }
-    repLimit = limit;
+    repLimit = $("use-rep-limit").checked ? limit : null;
   }
   target = value;
   return true;
@@ -443,6 +456,9 @@ for (const button of document.querySelectorAll("[data-mode]"))
       .forEach((b) => b.setAttribute("aria-pressed", b === button));
     render();
   };
+$("use-rep-limit").onchange = () => {
+  if (validateTarget()) render();
+};
 $("rep-limit").onchange = () => {
   if (validateTarget()) render();
 };
@@ -601,7 +617,7 @@ async function offline() {
   try {
     const registration = await navigator.serviceWorker.register("./sw.js");
     const check = async () => {
-      const cache = await caches.open("pushup-v5");
+      const cache = await caches.open("pushup-v6");
       const keys = await cache.keys();
       $("offline-status").textContent = keys.some((r) =>
         r.url.endsWith("/offline-ready"),
@@ -609,6 +625,23 @@ async function offline() {
         ? "Available offline · Stored on this device"
         : "Caching camera assets… Keep this app open.";
     };
+    const installing = registration.installing;
+    if (installing)
+      await new Promise((resolve, reject) => {
+        const checkInstall = () => {
+          if (installing.state === "redundant") {
+            installing.removeEventListener("statechange", checkInstall);
+            reject(Error("Offline installation failed"));
+          } else if (
+            ["installed", "activating", "activated"].includes(installing.state)
+          ) {
+            installing.removeEventListener("statechange", checkInstall);
+            resolve();
+          }
+        };
+        installing.addEventListener("statechange", checkInstall);
+        checkInstall();
+      });
     await navigator.serviceWorker.ready;
     await check();
     navigator.serviceWorker.addEventListener("message", (e) => {
