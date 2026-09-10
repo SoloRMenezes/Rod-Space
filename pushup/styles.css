@@ -1,0 +1,591 @@
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --ink: #ffffff;
+  --muted: #999999;
+  --line: #292929;
+  --accent: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+input {
+  font: inherit;
+}
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  cursor: pointer;
+  color: inherit;
+  touch-action: manipulation;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+[hidden] {
+  display: none !important;
+}
+.shell {
+  width: min(100%, 520px);
+  margin: auto;
+  padding: calc(18px + env(safe-area-inset-top)) 24px
+    calc(24px + env(safe-area-inset-bottom));
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  margin-bottom: 34px;
+}
+.wordmark {
+  font-size: 29px;
+  font-weight: 750;
+  letter-spacing: -1.4px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.wordmark span {
+  color: var(--accent);
+}
+.icon-button {
+  border: 0;
+  background: transparent;
+  width: 48px;
+  height: 48px;
+  font-size: 27px;
+  border-radius: 50%;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 1.8px;
+  color: var(--muted);
+}
+.daily-number {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 12px 0 0;
+  letter-spacing: -6px;
+  font-weight: 650;
+  line-height: 1;
+}
+.daily-number > span:first-child {
+  font-size: 112px;
+}
+.daily-number > span:last-child {
+  font-size: 30px;
+  letter-spacing: -1px;
+  color: var(--muted);
+}
+p {
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 14px 0;
+}
+.daily p {
+  color: var(--muted);
+}
+.progress-track {
+  height: 3px;
+  background: var(--line);
+  margin-top: 24px;
+}
+.progress-track div {
+  background: var(--accent);
+  height: 100%;
+  width: 0;
+  transition: width 0.3s;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 24px 0 28px;
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+}
+.metrics strong {
+  display: block;
+  font-size: 28px;
+  font-weight: 600;
+}
+.metrics span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+h1,
+h2 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.35px;
+  margin: 0;
+}
+h3 {
+  font-size: 16px;
+  margin: 26px 0 12px;
+}
+.section-title > span {
+  font-size: 13px;
+  color: var(--accent);
+}
+.workout-choice {
+  padding-top: 26px;
+}
+.mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  background: #111111;
+  padding: 4px;
+  margin-top: 18px;
+  border-radius: 10px;
+}
+.mode-tabs button {
+  background: none;
+  border: 0;
+  padding: 13px 5px;
+  border-radius: 7px;
+  font-size: 15px;
+  color: var(--muted);
+}
+.mode-tabs button[aria-pressed="true"] {
+  color: var(--ink);
+  background: #222222;
+}
+#target-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+input {
+  width: 110px;
+  padding: 10px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  text-align: center;
+  font-size: 18px;
+}
+#mode-description {
+  color: var(--muted);
+  font-size: 14px;
+  min-height: 22px;
+}
+.primary,
+.secondary,
+.danger {
+  border: 0;
+  border-radius: 3px;
+  width: 100%;
+  min-height: 56px;
+  padding: 15px 20px;
+  font-weight: 650;
+  font-size: 16px;
+}
+.primary {
+  background: var(--accent);
+  color: #000000;
+}
+.primary span {
+  float: right;
+}
+.secondary {
+  background: #222222;
+  margin-top: 12px;
+}
+.danger {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #555555;
+  margin-top: 14px;
+}
+.small {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.text-button {
+  background: none;
+  border: 0;
+  font-size: 14px;
+  padding: 12px 0;
+  color: var(--muted);
+  min-height: 44px;
+}
+.history {
+  margin-top: 30px;
+}
+.history-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+}
+.history-row strong {
+  font-size: 17px;
+  font-weight: 550;
+}
+.history-row small {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 5px;
+}
+.history-row > span {
+  text-align: right;
+  font-size: 22px;
+}
+.muted {
+  color: var(--muted);
+  font-size: 14px;
+}
+footer {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 30px;
+}
+.setup-body h1 {
+  font-size: 32px;
+  letter-spacing: -1px;
+}
+.setup-body > p {
+  color: var(--muted);
+}
+.preview {
+  height: 230px;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #111111;
+  margin-top: 24px;
+}
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform: scaleX(-1);
+}
+.face-guide {
+  position: absolute;
+  width: 42%;
+  height: 70%;
+  border: 1px solid #ffffff55;
+  border-radius: 50%;
+  top: 15%;
+  left: 29%;
+  pointer-events: none;
+}
+#tracking-status {
+  font-size: 14px;
+  min-height: 44px;
+}
+#capture-clock {
+  font-size: 56px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  margin: 8px 0;
+}
+#reuse {
+  display: block;
+  margin: 6px auto;
+}
+body.in-workout {
+  overflow: hidden;
+}
+body.in-workout #setup {
+  display: block !important;
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0.001;
+  padding: 0;
+  pointer-events: none;
+}
+#workout {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  height: 100dvh;
+  z-index: 10;
+}
+#workout-exit {
+  position: absolute;
+  right: calc(16px + env(safe-area-inset-right));
+  top: calc(12px + env(safe-area-inset-top));
+  border: 0;
+  background: transparent;
+  font-size: 37px;
+  font-weight: 200;
+  width: 54px;
+  height: 54px;
+}
+#rep-count {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(110px, 37vw, 240px);
+  font-weight: 650;
+  letter-spacing: -0.065em;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  padding-right: 0.065em;
+}
+#workout-time {
+  position: absolute;
+  bottom: calc(44px + env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 25px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+.result-body {
+  text-align: center;
+  padding-top: 30px;
+}
+#result-count {
+  font-size: 150px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -8px;
+}
+#result-time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+#result-message {
+  margin: 25px 0 36px;
+}
+dialog {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #111111;
+  color: var(--ink);
+  padding: 24px;
+  width: min(calc(100% - 28px), 480px);
+  max-height: 85dvh;
+  overflow: auto;
+}
+dialog::backdrop {
+  background: #000b;
+}
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+dialog p {
+  color: var(--muted);
+  font-size: 14px;
+}
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+@media (min-width: 800px) {
+  .shell {
+    padding-top: 40px;
+  }
+  header {
+    margin-bottom: 44px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  #rep-count {
+    font-size: 45vh;
+  }
+  #workout-time {
+    bottom: 18px;
+  }
+  .preview {
+    height: 150px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* Home: a single number, mode choice and action. Details live in Settings. */
+#home {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  max-width: 440px;
+}
+#home header {
+  margin-bottom: 0;
+}
+#home .wordmark {
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -1px;
+}
+#home .daily {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 0;
+  text-align: center;
+}
+#home .eyebrow {
+  text-transform: none;
+  font-size: 14px;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+#home .daily-number {
+  justify-content: center;
+  margin-top: 22px;
+  font-weight: 500;
+}
+#home .daily-number > span:first-child {
+  font-size: clamp(96px, 29vw, 136px);
+}
+#home .progress-track {
+  width: 100%;
+  height: 1px;
+  margin-top: 32px;
+}
+#home .workout-choice {
+  padding: 0 0 18px;
+}
+#home .mode-tabs {
+  background: transparent;
+  padding: 0;
+  margin: 0 0 22px;
+  gap: 20px;
+  border-radius: 0;
+}
+#home .mode-tabs button {
+  background: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid transparent;
+}
+#home .mode-tabs button[aria-pressed="true"] {
+  border-color: white;
+}
+#home #target-row {
+  margin: 0 0 22px;
+}
+#home #max-note {
+  text-align: center;
+  margin: 16px auto 0;
+  max-width: 250px;
+}
+#mode-record:empty {
+  display: none;
+}
+#mode-record:not(:empty) {
+  display: block;
+  margin-bottom: 16px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+@media (max-height: 600px) {
+  #home .daily {
+    padding: 28px 0;
+  }
+}
+
+#home .daily {
+  flex: 0;
+  padding: 36px 0;
+}
+#home .daily-number > span:first-child {
+  font-size: 80px;
+}
+#home .workout-choice {
+  flex: 1;
+  padding-top: 12px;
+}
+#home .mode-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 24px;
+}
+#home .mode-tabs button {
+  position: relative;
+  text-align: left;
+  padding: 18px 36px 18px 0;
+  border-bottom: 1px solid #292929;
+}
+#home .mode-tabs button strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 500;
+}
+#home .mode-tabs button small {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #999999;
+}
+#home .mode-tabs button[aria-pressed="true"] {
+  border-color: #666666;
+}
+#home .mode-tabs button[aria-pressed="true"]::after {
+  content: "✓";
+  position: absolute;
+  right: 4px;
+  top: 30px;
+}
+#limit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 22px;
+}

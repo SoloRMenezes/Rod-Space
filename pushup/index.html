@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Pushup" />
+    <meta
+      name="description"
+      content="Camera-counted push-ups. Your daily minimum, streaks and records, stored on your device."
+    />
+    <title>Pushup</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./js/app.js"></script>
+  </head>
+  <body>
+    <main id="home" class="shell">
+      <header>
+        <a class="wordmark" href="./" aria-label="Pushup home">pushup</a
+        ><button id="settings-open" class="icon-button" aria-label="Settings">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path d="M4 7h16M4 17h16" />
+            <circle cx="9" cy="7" r="2" fill="black" />
+            <circle cx="15" cy="17" r="2" fill="black" />
+          </svg>
+        </button>
+      </header>
+      <section class="daily">
+        <div class="eyebrow" id="day-label">YOUR DAILY MINIMUM</div>
+        <div class="daily-number">
+          <span id="daily-number">—</span><span id="daily-denominator"></span>
+        </div>
+        <p id="daily-copy" hidden>Your first set sets the standard.</p>
+        <div class="progress-track"><div id="daily-progress"></div></div>
+      </section>
+      <section class="workout-choice">
+        <div class="section-title">
+          <h1 class="visually-hidden">Workout mode</h1>
+          <span id="mode-record"></span>
+        </div>
+        <div class="mode-tabs" role="group" aria-label="Workout mode">
+          <button data-mode="free" aria-pressed="true">
+            <strong>Free</strong
+            ><small>Count reps · no time limit</small></button
+          ><button data-mode="time" aria-pressed="false">
+            <strong>Timed</strong
+            ><small>Maximum reps in a time limit</small></button
+          ><button data-mode="reps" aria-pressed="false">
+            <strong>Rep challenge</strong
+            ><small>Reach a target before time runs out</small>
+          </button>
+        </div>
+        <div id="target-row" hidden>
+          <label id="target-label" for="target">Seconds</label
+          ><input
+            id="target"
+            type="number"
+            min="10"
+            max="3600"
+            step="1"
+            value="60"
+            inputmode="numeric"
+          />
+        </div>
+        <div id="limit-row" hidden>
+          <label for="rep-limit">Time limit (seconds)</label
+          ><input
+            id="rep-limit"
+            type="number"
+            min="10"
+            max="3600"
+            step="1"
+            value="60"
+            inputmode="numeric"
+          />
+        </div>
+        <p id="mode-description" hidden>No target. Find your rhythm.</p>
+        <button id="prepare" class="primary">Begin</button>
+        <p id="max-note" class="small">
+          Complete a maximum test first to set your daily minimum. Then start
+          any mode.
+        </p>
+      </section>
+    </main>
+    <section id="setup" class="shell" hidden>
+      <header>
+        <span class="wordmark">Set up<span>·</span></span
+        ><button id="setup-exit" class="icon-button" aria-label="Cancel setup">
+          ×
+        </button>
+      </header>
+      <div class="setup-body">
+        <p class="eyebrow" id="setup-step">CAMERA</p>
+        <h1 id="setup-title">Place your phone flat.</h1>
+        <p id="setup-copy">
+          Screen facing up, camera below your face. Leave space so your face
+          stays fully in frame at the bottom.
+        </p>
+        <div class="preview">
+          <video
+            id="camera"
+            autoplay
+            muted
+            playsinline
+            disablepictureinpicture
+          ></video>
+          <div class="face-guide"></div>
+        </div>
+        <p id="tracking-status" role="status">Opening camera…</p>
+        <div id="capture-clock" aria-live="polite"></div>
+        <button id="capture" class="primary" disabled>
+          Calibrate top position</button
+        ><button id="reuse" class="text-button" hidden>
+          Use previous calibration</button
+        ><button id="start" class="primary" hidden>START</button>
+        <p class="small">
+          Hold each position when prompted. All camera processing stays on this
+          device.
+        </p>
+      </div>
+    </section>
+    <section id="workout" hidden aria-label="Workout">
+      <button id="workout-exit" aria-label="End workout">×</button>
+      <div id="rep-count" role="status" aria-live="off">3</div>
+      <time id="workout-time"></time>
+    </section>
+    <section id="result" class="shell" hidden>
+      <header>
+        <span class="wordmark">Set complete<span>·</span></span>
+      </header>
+      <div class="result-body">
+        <p class="eyebrow" id="result-label">FREE SET</p>
+        <div id="result-count">0</div>
+        <p id="result-time"></p>
+        <p id="result-message"></p>
+        <button id="result-save" class="primary">Done</button
+        ><button id="result-discard" class="text-button" hidden>
+          Discard this attempt
+        </button>
+      </div>
+    </section>
+    <dialog id="camera-access" aria-labelledby="camera-access-title">
+      <div class="dialog-header">
+        <h2 id="camera-access-title">Camera access</h2>
+        <button
+          class="icon-button"
+          data-close="camera-access"
+          aria-label="Close camera request"
+        >
+          ×
+        </button>
+      </div>
+      <p id="camera-access-copy" role="status">
+        Used to count your reps. Video stays on your device.
+      </p>
+      <button id="camera-allow" class="primary">Allow camera</button>
+    </dialog>
+    <dialog id="settings">
+      <div class="dialog-header">
+        <h2>Settings</h2>
+        <button
+          class="icon-button"
+          data-close="settings"
+          aria-label="Close settings"
+        >
+          ×
+        </button>
+      </div>
+      <h3>Your progress</h3>
+      <div class="metrics">
+        <div><strong id="streak">0</strong><span>day streak</span></div>
+        <div><strong id="freezes">0</strong><span>freezes</span></div>
+        <div><strong id="best">0</strong><span>best set</span></div>
+      </div>
+      <button id="history-open" class="text-button">History & records</button>
+      <div id="recent-history" hidden></div>
+      <div class="settings-row">
+        <span>Longest streak</span><strong id="longest">0 days</strong>
+      </div>
+      <div class="settings-row">
+        <span>Daily minimum</span><strong id="minimum-setting">Not set</strong>
+      </div>
+      <h3>How it works</h3>
+      <p>
+        Reps from all sets add up for the local calendar day. Your minimum stays
+        fixed until your streak is lost. The next maximum test sets a new
+        minimum.
+      </p>
+      <p>
+        Every Monday adds one freeze, starting the week you join if you join on
+        Monday. Each freeze protects one missed day. Protected days preserve
+        your streak; completed days increase it.
+      </p>
+      <h3>On iPhone</h3>
+      <p>
+        Open in Safari, then Share → Add to Home Screen. Wait for “Available
+        offline” before going offline. Camera access needs HTTPS (or localhost
+        on this device).
+      </p>
+      <p>
+        Keep your face visible in good light. Distance tracking counts movement,
+        not exercise form. Screen wake lock is used when available.
+      </p>
+      <button id="recalibrate" class="secondary">Clear calibration</button
+      ><button id="reset" class="danger">Reset all progress</button>
+      <p class="small">
+        Progress stays in this browser. Clearing website data removes it.
+        Private browsing may not retain it.
+      </p>
+      <footer id="offline-status">Preparing offline support…</footer>
+    </dialog>
+    <dialog id="history-dialog">
+      <div class="dialog-header">
+        <h2>Your sets</h2>
+        <button
+          class="icon-button"
+          data-close="history-dialog"
+          aria-label="Close history"
+        >
+          ×
+        </button>
+      </div>
+      <div id="all-history"></div>
+      <h3>Challenge records</h3>
+      <div id="all-records"></div>
+    </dialog>
+    <dialog id="error-dialog">
+      <h2 id="error-title">Something needs attention</h2>
+      <p id="error-message"></p>
+      <button class="primary" data-close="error-dialog">Got it</button>
+    </dialog>
+    <noscript
+      >This app needs JavaScript to count push-ups and save progress.</noscript
+    >
+  </body>
+</html>
