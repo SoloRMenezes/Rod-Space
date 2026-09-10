@@ -1,4 +1,4 @@
-const CACHE = "pushup-v4";
+const CACHE = "pushup-v5";
 const ASSETS = [
   "./",
   "./index.html",

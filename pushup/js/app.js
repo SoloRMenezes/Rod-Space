@@ -1,5 +1,5 @@
 import { localDate, freshState, reconcile, finishWorkout } from "./progress.js";
-import { RepDetector, calibrate } from "./detection.js";
+import { RepDetector, AutoCalibration } from "./detection.js";
 import * as storage from "./storage.js";
 import { requestCameraAccess, CameraTracker } from "./camera.js";
 const $ = (id) => document.getElementById(id);
@@ -11,13 +11,7 @@ let state,
   repLimit = 60,
   tracker,
   detector,
-  phase = "up",
-  samples = [],
-  upSamples = [],
-  lastSample = null,
-  lastSampleAt = 0,
-  captureUntil = 0,
-  captureTimer,
+  autoCalibration,
   workout,
   tickId,
   startAt = 0,
@@ -156,8 +150,7 @@ function stopCamera() {
   setupToken++;
   tracker?.stop();
   tracker = null;
-  clearInterval(captureTimer);
-  captureUntil = 0;
+  autoCalibration = null;
 }
 async function wake() {
   try {
@@ -175,37 +168,38 @@ function stopSession() {
   stopCamera();
   release();
 }
-function setPhase(next) {
-  phase = next;
-  samples = [];
-  captureUntil = 0;
-  $("capture-clock").textContent = "";
-  $("capture").disabled = false;
-  $("capture").hidden = false;
-  $("start").hidden = true;
-  $("setup-step").textContent =
-    next === "up" ? "01 / 02 · TOP" : "02 / 02 · BOTTOM";
-  $("setup-title").textContent =
-    next === "up" ? "Arms straight. Face down." : "Lower into your push-up.";
-  $("setup-copy").textContent =
-    next === "up"
-      ? "Tap below, then take the top position. You have 5 seconds to get into place; hold until the countdown ends."
-      : "Tap below, then lower toward the phone. Keep your whole face visible. Hold the bottom until the countdown ends.";
-  $("capture").textContent =
-    next === "up" ? "Capture top position" : "Capture bottom position";
-  $("reuse").hidden = next !== "up" || !state.calibration;
-}
-function calibrated() {
-  phase = "ready";
-  $("setup-step").textContent = "CALIBRATED";
-  $("setup-title").textContent = "Your next rep starts here.";
-  $("setup-copy").textContent =
-    "Press START, then take the top position during 3 → 2 → 1. Return to straight arms between reps. Tap × when you finish.";
-  $("capture").hidden = true;
-  $("reuse").hidden = true;
-  $("start").hidden = false;
-  $("start").disabled = false;
-  $("capture-clock").textContent = "";
+function renderCalibration(result) {
+  const instructions = {
+    up: [
+      "01 / 03 · TOP",
+      "Arms straight. Face down.",
+      "Place the phone flat. Hold the top position; your face is captured automatically.",
+    ],
+    down: [
+      "02 / 03 · BOTTOM",
+      "Lower and hold.",
+      "Move toward the camera and hold the bottom position. Keep your whole face in frame.",
+    ],
+    ready: [
+      "03 / 03 · RETURN",
+      "Back to straight arms.",
+      "Hold the top position. The countdown starts automatically.",
+    ],
+  };
+  if (result.phase === "done") {
+    state.calibration = {
+      ...result.calibration,
+      orientation: orientation(),
+      savedAt: new Date().toISOString(),
+    };
+    if (persist()) start();
+    return;
+  }
+  const [step, title, copy] = instructions[result.phase];
+  $("setup-step").textContent = step;
+  $("setup-title").textContent = title;
+  $("setup-copy").textContent = copy;
+  $("capture-clock").textContent = result.progress > 0 ? "Hold" : "";
 }
 async function prepare() {
   reconcile(state);
@@ -214,12 +208,8 @@ async function prepare() {
   if (storageBroken) return;
   if (mode !== "free" && !validateTarget()) return;
   show("setup");
-  lastSample = null;
-  lastSampleAt = 0;
-  upSamples = [];
-  setPhase("up");
-  $("capture").disabled = true;
-  $("reuse").hidden = true;
+  autoCalibration = null;
+  renderCalibration({ phase: "up", progress: 0 });
   $("tracking-status").textContent = "Opening camera and loading tracking…";
   tracker = new CameraTracker($("camera"), onSample, (e) => {
     if (view === "workout") end(false, "Tracking stopped.");
@@ -233,7 +223,7 @@ async function prepare() {
   try {
     await tracker.open();
     if (token !== setupToken || view !== "setup") return;
-    setPhase("up");
+    autoCalibration = new AutoCalibration(performance.now());
     wake();
   } catch (e) {
     if (token === setupToken) {
@@ -244,14 +234,11 @@ async function prepare() {
   }
 }
 function onSample(sample, now) {
-  lastSample = sample;
-  lastSampleAt = now;
   if (view === "setup") {
     $("tracking-status").textContent = sample
       ? "Face in frame. Keep the phone still."
       : "Keep one whole face in frame, with good lighting.";
-    if (captureUntil && now > captureUntil - 1400 && sample)
-      samples.push(sample.size);
+    if (autoCalibration) renderCalibration(autoCalibration.update(sample, now));
   }
   if (view === "workout" && startAt && detector.update(sample, now)) {
     if (deadline() && now - startAt >= deadline()) {
@@ -269,42 +256,6 @@ function onSample(sample, now) {
     $("rep-count").textContent = count();
     if (workout.mode === "reps" && count() >= workout.target) end(true);
   }
-}
-function capture() {
-  if (captureUntil) return;
-  samples = [];
-  captureUntil = performance.now() + 6500;
-  $("capture").disabled = true;
-  $("reuse").hidden = true;
-  captureTimer = setInterval(() => {
-    const left = captureUntil - performance.now();
-    $("capture-clock").textContent =
-      left > 1400 ? String(Math.ceil((left - 1400) / 1000)) : "Hold";
-    if (left > 0) return;
-    clearInterval(captureTimer);
-    captureUntil = 0;
-    try {
-      if (samples.length < 8)
-        throw Error(
-          "Your face was not visible long enough. Keep it fully in frame, hold still, and try again.",
-        );
-      if (phase === "up") {
-        upSamples = [...samples];
-        setPhase("down");
-      } else {
-        state.calibration = {
-          ...calibrate(upSamples, samples),
-          orientation: orientation(),
-          savedAt: new Date().toISOString(),
-        };
-        persist();
-        calibrated();
-      }
-    } catch (e) {
-      setPhase("up");
-      error(e.message, "Try calibration again");
-    }
-  }, 80);
 }
 function orientation() {
   return `${screen.orientation?.angle ?? window.orientation ?? (innerWidth > innerHeight ? 90 : 0)}`;
@@ -455,15 +406,6 @@ function validateTarget() {
   return true;
 }
 $("prepare").onclick = prepare;
-$("capture").onclick = capture;
-$("start").onclick = start;
-$("reuse").onclick = () => {
-  if (state.calibration.orientation !== orientation()) {
-    error("Your phone orientation changed. Calibrate again.");
-    return;
-  }
-  calibrated();
-};
 $("setup-exit").onclick = () => {
   stopCamera();
   release();
@@ -659,7 +601,7 @@ async function offline() {
   try {
     const registration = await navigator.serviceWorker.register("./sw.js");
     const check = async () => {
-      const cache = await caches.open("pushup-v4");
+      const cache = await caches.open("pushup-v5");
       const keys = await cache.keys();
       $("offline-status").textContent = keys.some((r) =>
         r.url.endsWith("/offline-ready"),

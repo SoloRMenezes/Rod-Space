@@ -82,3 +82,65 @@ export class RepDetector {
     return false;
   }
 }
+
+// Guided calibration driven entirely by continuous, stable face observations.
+export class AutoCalibration {
+  constructor(now) {
+    this.phase = "up";
+    this.notBefore = now + 4000;
+    this.window = [];
+    this.up = null;
+    this.calibration = null;
+    this.lastSeen = null;
+  }
+  update(sample, now) {
+    if (this.phase === "done") return { phase: "done", progress: 1 };
+    if (
+      !sample ||
+      !Number.isFinite(sample.size) ||
+      sample.size <= 0 ||
+      now < this.notBefore
+    ) {
+      this.window = [];
+      return { phase: this.phase, progress: 0 };
+    }
+    if (this.lastSeen !== null && now - this.lastSeen > 250) this.window = [];
+    this.lastSeen = now;
+    const eligible =
+      this.phase === "up" ||
+      (this.phase === "down"
+        ? sample.size >= median(this.up) * 1.3
+        : sample.size <= this.calibration.upper);
+    if (!eligible) {
+      this.window = [];
+      return { phase: this.phase, progress: 0 };
+    }
+    this.window.push({ ...sample, time: now });
+    const duration = this.phase === "ready" ? 900 : 1400;
+    while (this.window.length > 1 && this.window[1].time <= now - duration)
+      this.window.shift();
+    const sizes = this.window.map((s) => s.size),
+      center = median(sizes);
+    const range = (values) => Math.max(...values) - Math.min(...values);
+    if (
+      range(sizes) / center > 0.12 ||
+      range(this.window.map((s) => s.x)) > 0.08 ||
+      range(this.window.map((s) => s.y)) > 0.08
+    ) {
+      this.window = [{ ...sample, time: now }];
+      return { phase: this.phase, progress: 0 };
+    }
+    const progress = Math.min(1, (now - this.window[0].time) / duration);
+    if (progress < 1 || this.window.length < 8)
+      return { phase: this.phase, progress };
+    if (this.phase === "up") {
+      this.up = sizes;
+      this.phase = "down";
+    } else if (this.phase === "down") {
+      this.calibration = calibrate(this.up, sizes);
+      this.phase = "ready";
+    } else this.phase = "done";
+    this.window = [];
+    return { phase: this.phase, progress: 0, calibration: this.calibration };
+  }
+}
