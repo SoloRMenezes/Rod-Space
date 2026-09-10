@@ -44,14 +44,6 @@
           </svg>
         </button>
       </header>
-      <section class="daily">
-        <div class="eyebrow" id="day-label">YOUR DAILY MINIMUM</div>
-        <div class="daily-number">
-          <span id="daily-number">—</span><span id="daily-denominator"></span>
-        </div>
-        <p id="daily-copy" hidden>Your first set sets the standard.</p>
-        <div class="progress-track"><div id="daily-progress"></div></div>
-      </section>
       <section class="workout-choice">
         <div class="section-title">
           <h1 class="visually-hidden">Workout mode</h1>
@@ -197,33 +189,7 @@
       <div class="settings-row">
         <span>Daily minimum</span><strong id="minimum-setting">Not set</strong>
       </div>
-      <h3>How it works</h3>
-      <p>
-        Reps from all sets add up for the local calendar day. Your minimum stays
-        fixed until your streak is lost. The next maximum test sets a new
-        minimum.
-      </p>
-      <p>
-        Every Monday adds one freeze, starting the week you join if you join on
-        Monday. Each freeze protects one missed day. Protected days preserve
-        your streak; completed days increase it.
-      </p>
-      <h3>On iPhone</h3>
-      <p>
-        Open in Safari, then Share → Add to Home Screen. Wait for “Available
-        offline” before going offline. Camera access needs HTTPS (or localhost
-        on this device).
-      </p>
-      <p>
-        Keep your face visible in good light. Distance tracking counts movement,
-        not exercise form. Screen wake lock is used when available.
-      </p>
-      <button id="recalibrate" class="secondary">Clear calibration</button
-      ><button id="reset" class="danger">Reset all progress</button>
-      <p class="small">
-        Progress stays in this browser. Clearing website data removes it.
-        Private browsing may not retain it.
-      </p>
+      <button id="reset" class="danger">Reset all progress</button>
       <footer id="offline-status">Preparing offline support…</footer>
     </dialog>
     <dialog id="history-dialog">

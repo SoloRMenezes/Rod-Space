@@ -106,23 +106,7 @@ function renderHistory(container, items) {
   }
 }
 function render() {
-  const today = state.days[localDate()] || { total: 0 };
   const initial = !state.initialMaxCompleted;
-  $("day-label").textContent = initial
-    ? "First set"
-    : today.completed
-      ? "Today · complete"
-      : "Today";
-  $("daily-number").textContent = initial ? "0" : String(today.total);
-  $("daily-denominator").textContent = initial ? "" : `/ ${state.dailyMinimum}`;
-  $("daily-copy").textContent = initial
-    ? "One maximum set. Your own standard."
-    : today.completed
-      ? "You showed up. Every extra rep is yours."
-      : `${Math.max(0, state.dailyMinimum - today.total)} more to keep your streak moving.`;
-  $("daily-progress").style.width = initial
-    ? "0%"
-    : `${Math.min(100, (today.total / state.dailyMinimum) * 100)}%`;
   $("streak").textContent = state.currentStreak;
   $("freezes").textContent = state.freezes;
   $("best").textContent = state.personalBest;
@@ -134,7 +118,6 @@ function render() {
   $("limit-row").hidden = mode !== "reps" || !$("use-rep-limit").checked;
   $("target-row").hidden = mode === "free";
   $("max-note").hidden = !initial;
-  document.querySelector(".progress-track").hidden = initial;
   $("mode-description").textContent = initial
     ? "Start with a maximum test."
     : mode === "free"
@@ -486,11 +469,6 @@ $("history-open").onclick = () => {
 };
 for (const b of document.querySelectorAll("[data-close]"))
   b.onclick = () => $(b.dataset.close).close();
-$("recalibrate").onclick = () => {
-  state.calibration = null;
-  persist();
-  $("settings").close();
-};
 $("reset").onclick = () => {
   if (
     !confirm(
@@ -617,7 +595,7 @@ async function offline() {
   try {
     const registration = await navigator.serviceWorker.register("./sw.js");
     const check = async () => {
-      const cache = await caches.open("pushup-v6");
+      const cache = await caches.open("pushup-v7");
       const keys = await cache.keys();
       $("offline-status").textContent = keys.some((r) =>
         r.url.endsWith("/offline-ready"),
