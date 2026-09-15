@@ -90,7 +90,6 @@
     body.is-mobile-device #touch-up, body.is-mobile-device #touch-down, body.is-mobile-device #touch-nitro { width: 68px; height: 64px; border-radius: 15px; }
     body.is-mobile-device #hud-layer > div:nth-child(2) { top: 80px; gap: 4px; }
     body.is-mobile-device #alert-banner { padding: 6px 10px; }
-    body.is-mobile-device #drift-combo-box { padding: 4px 8px; }
     body.is-mobile-device #drift-mult { font-size: 18px; }
     body.is-mobile-device #screens-overlay { align-items: flex-start; }
     body.is-mobile-device #screens-overlay > div { margin: auto; padding: 16px; }
@@ -135,7 +134,6 @@
       filter: blur(6px);
     }
     #minimap { position: absolute; top: 24px; right: 24px; width: 144px; height: 144px; border-radius: 50%; border: 1px solid #64748b; background: #0a101b; }
-    body:not(.is-mobile-device) #score-panel { margin-top: 156px; }
     body.is-mobile-device #minimap { display: none; }
   </style>
 </head>
@@ -186,13 +184,7 @@
         </button>
       </div>
 
-      <!-- Top Right Scores -->
-      <div id="score-panel" class="flex flex-col gap-1 pointer-events-auto bg-neutral-950/70 border border-white/10 p-3 rounded-xl w-40 shadow-2xl backdrop-blur-md">
-        <div class="text-right flex flex-col items-end">
-          <span class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">DRIFT SCORE</span>
-          <span id="score-total" class="text-2xl font-black italic text-white tracking-tight leading-none mt-0.5">0</span>
-        </div>
-      </div>
+
     </div>
 
     <canvas id="minimap" width="320" height="320" aria-label="North-up city minimap"></canvas>
@@ -204,16 +196,7 @@
         <div id="alert-text" class="text-xs font-black italic text-white mt-0.5">KEEP MOVING!</div>
       </div>
 
-      <!-- Active Drift Combo Box -->
-      <div id="drift-combo-box" class="flex flex-col items-center justify-center px-3 py-2 bg-neutral-950/45 border border-white/10 rounded-lg min-w-[7rem] text-center shadow-xl backdrop-blur-sm opacity-0 scale-90 transition-all duration-150">
-        <div id="drift-mult" class="text-white text-2xl font-black italic font-display leading-none">x1.0</div>
-        <div class="text-[7px] uppercase tracking-widest font-bold text-neutral-300 font-mono mt-0.5">MULTIPLIER</div>
-        <div id="drift-pts" class="text-xs font-mono font-black text-white mt-1">0 PTS</div>
-        <!-- Progress to next level -->
-        <div class="mt-1.5 h-0.5 w-20 bg-white/15 rounded-full overflow-hidden">
-          <div id="drift-progress" class="h-full bg-white/80 transition-all duration-150" style="width: 0%"></div>
-        </div>
-      </div>
+
     </div>
 
     <!-- On-screen Floating Touch Controls (Visible only on mobile) -->
@@ -250,18 +233,6 @@
           <h1 class="text-5xl md:text-6xl font-black tracking-tighter bg-gradient-to-b from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent italic leading-none select-none font-display">
             TOKYO DRIFTER
           </h1>
-        </div>
-
-        <!-- Highscore Dashboard -->
-        <div class="grid grid-cols-2 gap-4 w-full">
-          <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-white p-4 text-left rounded-r-lg">
-            <div class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">Best Drift</div>
-            <div id="menu-best-score" class="text-xl font-black italic mt-1 text-white tracking-tight">0</div>
-          </div>
-          <div class="bg-neutral-900/60 border border-white/5 border-l-4 border-l-neutral-400 p-4 text-left rounded-r-lg">
-            <div class="text-[9px] uppercase tracking-widest text-neutral-400 font-bold font-mono">Mode</div>
-            <div class="text-xl font-black italic mt-1 text-white">FREE DRIFT</div>
-          </div>
         </div>
 
         <!-- Active Car Configuration Info -->
@@ -816,9 +787,6 @@
       customCarColor: '#ef4444',
       isMuted: false,
       
-      // Highscores persistent career stats
-      bestScore: 0,
-      totalDriftScore: 0,
 
       // Live match parameters
       checkpointMsgTimer: 0,
@@ -838,23 +806,19 @@
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
         if (Number.isFinite(saved.brightness)) state.brightness = THREE.MathUtils.clamp(saved.brightness, 70, 180);
-        if (Number.isFinite(saved.bestScore)) state.bestScore = saved.bestScore;
         if (Number.isFinite(saved.zoomSensitivity)) state.zoomSensitivity = THREE.MathUtils.clamp(saved.zoomSensitivity, 1, 4);
       } catch (e) {
-        state.bestScore = 0;
       }
     }
 
     function saveRecords() {
       try { localStorage.setItem(storageKey, JSON.stringify({
         brightness: state.brightness,
-        bestScore: state.bestScore,
         zoomSensitivity: state.zoomSensitivity
       })); } catch (_) { /* Private browsing must not interrupt a run. */ }
     }
 
     function refreshMenuRecords() {
-      document.getElementById('menu-best-score').innerText = state.bestScore.toLocaleString();
       document.getElementById('zoom-sensitivity').value = state.zoomSensitivity;
       document.getElementById('zoom-sensitivity-val').innerText = `${state.zoomSensitivity.toFixed(2).replace(/\.?0+$/, '')}x`;
     }
@@ -869,11 +833,6 @@
       gear: document.getElementById('gear-val'),
       turboPercent: document.getElementById('turbo-percent'),
       turboBar: document.getElementById('turbo-bar'),
-      score: document.getElementById('score-total'),
-      comboBox: document.getElementById('drift-combo-box'),
-      driftMult: document.getElementById('drift-mult'),
-      driftPts: document.getElementById('drift-pts'),
-      driftProgress: document.getElementById('drift-progress'),
       overlay: document.getElementById('screens-overlay'),
       hudLayer: document.getElementById('hud-layer'),
       alertBanner: document.getElementById('alert-banner'),
@@ -885,7 +844,6 @@
       turbo: '',
       turboWidth: '',
       turboLocked: null,
-      score: '',
       lastUpdate: 0
     };
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
@@ -1595,7 +1553,6 @@
     const sakuraSystem = new THREE.Points(sakuraGeometry, sakuraMaterial);
     scene.add(sakuraSystem);
 
-    // --- Free drift scoring has no required gates or score zones. ---
     const styleZones = [];
 
     // --- Collectibles (Nitro bottles) ---
@@ -2190,7 +2147,6 @@
       const gear = `G${Math.max(1, Math.min(5, Math.floor(Math.abs(state.currentSpeed) * 4.2) + 1))}`;
       const turbo = state.turboLocked ? 'RECHARGING' : `${Math.floor(state.turboAmount)}%`;
       const turboWidth = `${state.turboAmount}%`;
-      const score = state.totalDriftScore.toLocaleString();
 
       if (hudCache.speed !== speed) {
         ui.speed.innerText = speed;
@@ -2212,10 +2168,7 @@
         ui.turboBar.className = `h-full transition-all duration-75 ${state.turboLocked ? 'bg-neutral-500' : 'bg-cyan-300'}`;
         hudCache.turboLocked = state.turboLocked;
       }
-      if (hudCache.score !== score) {
-        ui.score.innerText = score;
-        hudCache.score = score;
-      }
+
     }
 
     function showScreen(screenId) {
@@ -2400,12 +2353,6 @@
       state.currentSpeed = 0;
       clearInputs();
       contactActive = false;
-      driftCooldown = 0;
-      stoppedTimer = 0;
-      ui.comboBox.style.opacity = '0';
-      activeDriftScore = 0;
-      activeDriftMultiplier = 1.0;
-      state.totalDriftScore = 0;
       state.turboAmount = Math.max(state.turboAmount, nitroReadyThreshold);
       state.turboLocked = false;
       showNotification("CAR RESET TO START LINE");
@@ -2432,22 +2379,16 @@
       const arch = CAR_ARCHETYPES[state.selectedArchetypeIndex];
       state.turboAmount = 100;
       state.turboLocked = false;
-      state.totalDriftScore = 0;
-      activeDriftScore = 0;
-      activeDriftMultiplier = 1.0;
-      stoppedTimer = 0;
 
       // Launch match
       clearInputs();
       state.isPaused = false;
-      driftCooldown = 0;
-      ui.comboBox.style.opacity = '0';
       state.isGameRunning = true;
       document.getElementById('mobile-centre').style.visibility = 'visible';
       audio.startEngine();
       resetCarToStart();
       updateHUD(performance.now(), true);
-      showNotification("FREE DRIFT STARTED. KEEP MOVING!");
+      showNotification("FREE DRIFT STARTED");
     }
     document.getElementById('btn-start').onclick = () => {
       launchRun();
@@ -2676,13 +2617,8 @@
     // --- 5. Main Game Loop Frame Updates ---
     // Loop order: read input, update physics, resolve collisions, update
     // effects/HUD, then move the camera and render.
-    let activeDriftScore = 0;
-    let activeDriftMultiplier = 1.0;
-    let driftCooldown = 0;
-    let stoppedTimer = 0;
 
     let runTime = 0;
-    let lastRecordSave = 0;
     let lastTime = performance.now();
 
     function loop(now) {
@@ -2799,53 +2735,11 @@
             }
           }
 
-          // Point addition
-          activeDriftScore += speedKmh * slipDiff * 0.8 * frameScale;
-          activeDriftMultiplier = Math.min(10.0, activeDriftMultiplier + dt * 0.45);
-          state.totalDriftScore = Math.max(state.totalDriftScore, Math.floor(activeDriftScore * activeDriftMultiplier));
-          if (state.totalDriftScore > state.bestScore) {
-            state.bestScore = state.totalDriftScore;
-            if (now - lastRecordSave > 1000) {
-              saveRecords();
-              lastRecordSave = now;
-            }
-          }
-          driftCooldown = 1.3;
-
           // Drifting helps recharge nitro, but not while actively burning it.
           if (!isTurbo) state.turboAmount = Math.min(100, state.turboAmount + dt * 10);
 
-          // Update Combo Box DOM
-          ui.comboBox.style.opacity = '1';
-          ui.comboBox.style.transform = 'scale(1.05)';
-          ui.driftMult.innerText = `x${activeDriftMultiplier.toFixed(1)}`;
-          ui.driftPts.innerText = `${Math.floor(activeDriftScore)} PTS`;
-          ui.driftProgress.style.width = `${Math.min(100, (activeDriftScore / 1200) * 100)}%`;
-
         } else {
           audio.setDrifting(false);
-          if (driftCooldown > 0) {
-            driftCooldown -= dt;
-            if (driftCooldown <= 0) {
-              ui.comboBox.style.opacity = '0';
-              ui.comboBox.style.transform = 'scale(0.9)';
-            }
-          }
-        }
-
-        if (speedKmh < 6 && !isFwd && !isBwd) {
-          stoppedTimer += dt;
-          if (stoppedTimer > 0.75 && state.totalDriftScore > 0) {
-            state.totalDriftScore = 0;
-            activeDriftScore = 0;
-            activeDriftMultiplier = 1.0;
-            driftCooldown = 0;
-            ui.comboBox.style.opacity = '0';
-            ui.comboBox.style.transform = 'scale(0.9)';
-            showNotification("DRIFT SCORE RESET - KEEP MOVING");
-          }
-        } else {
-          stoppedTimer = 0;
         }
 
         // Use turbo
@@ -2867,12 +2761,8 @@
             state.currentSpeed = 0;
             velocity.set(0, 0, 0);
             nextPos.copy(carGroup.position);
-            state.totalDriftScore = activeDriftScore = 0;
-            activeDriftMultiplier = 1;
-            driftCooldown = stoppedTimer = 0;
-            ui.comboBox.style.opacity = '0';
             audio.setDrifting(false);
-            if (playImpactSound()) showNotification('IMPACT — COMBO RESET');
+            playImpactSound();
           } else {
             velocity.set((motion.x - carGroup.position.x) / Math.max(frameScale * drivingDistanceScale, 0.001), 0, (motion.z - carGroup.position.z) / Math.max(frameScale * drivingDistanceScale, 0.001));
             state.currentSpeed = Math.sign(state.currentSpeed) * velocity.length();
