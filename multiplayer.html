@@ -3,12 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Immersive 3D Platformer</title>
+    <title>Multiplayer Test — Parkour Worlds</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; touch-action: none; background-color: #111827; color: #fff; font-family: 'Inter', sans-serif; }
         #game-canvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        #course-hud { position:absolute; top:24px; left:50%; transform:translateX(-50%); text-align:center; pointer-events:none; display:flex; align-items:center; gap:14px; }
+        #course-hud button { pointer-events:auto; background:none; border:0; color:white; font-size:32px; padding:4px 8px; cursor:pointer; text-shadow:0 1px 5px #0008; }
+        #course-hud button:disabled { opacity:.2; cursor:default; }
+        #course-time { font-size:32px; font-weight:500; font-variant-numeric:tabular-nums; color:white; text-shadow:0 1px 5px #0008; }
+        #course-stage, #course-message { display:none; }
+        #course-hud.finished::after { content:'Finished · R to restart'; display:block; font-size:12px; margin-top:4px; color:white; }
+        #btn-home { position:absolute; top:24px; left:24px; background:none; border:0; color:white; cursor:pointer; pointer-events:auto; padding:6px; opacity:.8; }
+        #btn-home:hover { opacity:1; }
+        #home-screen { position:absolute; inset:0; z-index:30; overflow:auto; background:rgba(12,19,25,.9); display:grid; place-items:center; padding:28px; }
+        .home-content { width:min(100%,640px); }
+        .home-header { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:32px; }
+        .home-header h1 { font-size:32px; font-weight:700; letter-spacing:-1px; margin:0; }
+        .home-settings { color:#aebac3; background:none; border:0; cursor:pointer; font-size:14px; padding:10px 0 10px 16px; }
+        .home-label { color:#96a5b0; font-size:12px; text-transform:uppercase; letter-spacing:2px; margin:0 0 12px; }
+        #map-list { border-top:1px solid #ffffff20; }
+        .map-choice { width:100%; text-align:left; display:flex; align-items:center; gap:16px; padding:16px 12px; border:0; border-bottom:1px solid #ffffff20; background:transparent; color:#fff; cursor:pointer; }
+        .map-choice:hover { background:#ffffff08; }
+        .map-choice[aria-pressed="true"] { background:#ffffff0d; box-shadow:inset 3px 0 var(--map-color); }
+        .map-number { font-size:12px; color:var(--map-color); font-variant-numeric:tabular-nums; }
+        .map-choice strong { display:block; font-size:17px; font-weight:500; }
+        .map-choice small { display:block; margin-top:4px; color:#9caeb9; font-size:13px; }
+        .map-choice[aria-pressed="true"]::after { content:'✓'; margin-left:auto; color:var(--map-color); }
+        .home-actions { display:flex; gap:12px; margin-top:24px; }
+        .home-actions button { padding:13px 24px; border-radius:5px; font-size:15px; font-weight:600; cursor:pointer; }
+        #btn-play { background:#edf4f0; border:1px solid #edf4f0; color:#17251e; flex:1; }
+        #btn-resume { border:1px solid #72818b; background:transparent; color:white; }
+        .home-controls { color:#91a0ab; font-size:12px; line-height:1.8; margin-top:18px; text-align:center; }
+        #tab-analytics, #btn-reset-pos { display:none; }
+        @media(max-width:480px) { #home-screen { padding:24px 18px; } .home-header { margin-bottom:22px; } .home-header h1 { font-size:28px; } .map-choice { padding:13px 10px; } .map-choice small { font-size:12px; } #course-time { font-size:28px; } }
+        #touch-look-zone { pointer-events: auto; }
         /* UI Overlays */
         #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; }
         .pointer-events-auto { pointer-events: auto; }
@@ -67,32 +99,9 @@
     <canvas id="game-canvas"></canvas>
     
     <!-- UI Layer -->
-    <div id="ui-layer">
-        <!-- Top Bar -->
-        <div class="p-4 flex justify-between items-start pointer-events-auto">
-            <div class="glass-panel p-3 flex flex-col gap-1">
-                <div class="text-xs text-gray-400 uppercase tracking-widest font-semibold">Performance</div>
-                <div id="fps-counter" class="text-xl font-mono font-bold text-green-400">60 FPS</div>
-                <div id="save-status" class="text-xs text-gray-500 mt-1">Syncing...</div>
-            </div>
-            
-            <button id="btn-menu" class="glass-panel p-3 hover:bg-gray-800 transition-colors flex items-center gap-2 group">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-90 transition-transform"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                <span class="font-semibold hidden sm:inline">Settings</span>
-            </button>
-        </div>
-
-        <!-- Crosshair -->
-        <div id="crosshair"></div>
-        
-        <!-- Desktop Instructions -->
-        <div id="instructions" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-auto cursor-pointer group z-50">
-            <div class="glass-panel px-8 py-6 transition-transform group-hover:scale-105 shadow-2xl">
-                <p class="text-3xl font-bold mb-2 text-white drop-shadow-md">Click to Play</p>
-                <p class="text-sm text-gray-300 font-medium">WASD to Move • SPACE to Jump • O to Toggle Camera • SHIFT for Shiftlock</p>
-            </div>
-        </div>
-
+    <div id="ui-layer" hidden><div id="lock-reticle" hidden style="position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:white;transform:translate(-50%,-50%);box-shadow:0 0 3px #000"></div><div id="look-notice" hidden style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);color:white;font-size:13px;text-shadow:0 1px 3px black;text-align:center"></div>
+        <button id="btn-home" aria-label="Home" title="Home (Esc)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 10 12 3l9 7M5 9v12h5v-7h4v7h5V9"/></svg></button>
+        <div id="course-hud"><div id="course-stage"></div><button id="level-prev" title="Previous level (←). Tab releases cursor." aria-label="Previous conquered level" disabled>‹</button><div id="course-time">0.00s</div><button id="level-next" title="Next level (→). Tab releases cursor." aria-label="Next conquered level" disabled>›</button><div id="course-message"></div></div>
         <!-- Mobile Controls -->
         <div id="mobile-controls">
             <div class="flex items-end mb-4">
@@ -106,12 +115,24 @@
                  <div id="touch-look-zone" class="absolute bottom-0 right-0 w-[50vw] h-[50vh] -mr-10 -mb-5" style="touch-action: none;"></div>
                  
                  <div class="flex flex-col gap-4 z-10">
-                    <button class="action-btn" id="btn-mobile-shift">SHFT</button>
+                    <button class="action-btn" id="btn-mobile-shift">RUN</button>
                     <button class="action-btn" id="btn-mobile-jump">JUMP</button>
                  </div>
             </div>
         </div>
     </div>
+
+    <section id="home-screen" aria-label="Parkour home">
+        <div class="home-content">
+            <div class="home-header"><h1>Parkour</h1><button id="btn-menu" class="home-settings">Settings</button></div>
+            <p class="home-label">One continuous climb</p>
+            <p style="color:#b9c5cc;line-height:1.8;margin:24px 0 36px">Rooftops → Midnight Library → Clockwork Well → Coral Lab → Paper Sky</p>
+            <p style="color:#91a0ab;font-size:14px;line-height:1.7">80 platforms. Reach the first platform of each new level to unlock its checkpoint. Sprint for the longer jumps.</p>
+            <div class="home-actions"><button id="btn-play">Start run</button><button id="btn-resume" hidden>Resume</button></div>
+            <p class="home-controls">WASD move · Space jump · Ctrl sprint · Shift lock · R restart level · Esc home<br>← / → unlocked levels · Tab cursor<br>Touch: move with the joystick, drag to look.</p>
+        </div>
+    </section>
+    <span id="save-status" hidden></span>
 
     <!-- Main Menu / Settings / Analytics Modal -->
     <div id="menu-overlay">
@@ -130,21 +151,21 @@
                 <div class="space-y-6">
                     <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
                         <div class="flex justify-between items-center mb-2">
-                            <label class="font-medium">Camera Perspective</label>
-                            <span id="cam-mode-label" class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">Third Person</span>
+                            <label for="camera-sensitivity" class="font-medium">Camera Sensitivity</label>
+                            <span id="sensitivity-value" class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">1.0×</span>
                         </div>
-                        <p class="text-sm text-gray-400 mb-4">Toggle between 1st and 3rd person views (Shortcut: 'O')</p>
-                        <input type="range" id="cam-zoom-slider" min="0" max="10" value="5" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        <p class="text-sm text-gray-400 mb-4">Adjust how quickly the camera turns. Scroll or pinch to zoom.</p>
+                        <input type="range" id="camera-sensitivity" min="0.2" max="3" step="0.1" value="1" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                         <div class="flex justify-between text-xs text-gray-500 mt-2">
-                            <span>First Person</span>
-                            <span>Third Person</span>
+                            <span>Slower</span>
+                            <span>Faster</span>
                         </div>
                     </div>
                     
                     <div class="bg-gray-800/50 p-4 rounded-xl border border-gray-700 flex justify-between items-center">
                         <div>
                             <div class="font-medium">Shiftlock</div>
-                            <div class="text-sm text-gray-400">Lock camera behind character</div>
+                            <div class="text-sm text-gray-400">Press Shift to lock the mouse and turn with the camera</div>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="toggle-shiftlock" class="sr-only peer">
@@ -153,7 +174,7 @@
                     </div>
 
                     <button id="btn-reset-pos" class="w-full py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl font-semibold transition-colors border border-red-500/30">
-                        Reset Character Position
+                        Restart Course
                     </button>
                 </div>
             </div>
@@ -162,7 +183,7 @@
             <div id="content-analytics" class="p-6 overflow-y-auto flex-1 hidden">
                 <div class="flex justify-between items-end mb-6">
                     <h3 class="text-xl font-bold">Player Analytics</h3>
-                    <span class="text-xs text-gray-400">Synced to Cloud</span>
+                    <span class="text-xs text-gray-400">Session statistics</span>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4">
@@ -236,6 +257,7 @@
         const GameState = {
             preferences: {
                 zoomLevel: 5, // 0 = FP, >0 = TP
+                sensitivity: 1,
                 shiftlock: false
             },
             analytics: {
@@ -375,12 +397,12 @@
         const worldColliders = []; // Array of THREE.Box3
 
         const playerAABB = new THREE.Box3();
-        const playerSize = new THREE.Vector3(2, 5, 2); // R6 approximate bounds
+        const playerSize = new THREE.Vector3(2.8, 5.25, 1.5); // Match the runner silhouette; feet support is checked separately
         let playerVelocity = new THREE.Vector3();
         let isGrounded = false;
-        const gravity = -40;
-        const jumpForce = 18;
-        const moveSpeed = 12;
+        const gravity = -90;
+        const jumpForce = 27;
+        const moveSpeed = 18;
         const sprintMultiplier = 1.6;
 
         // --- R6 Player Model ---
@@ -455,11 +477,30 @@
         rightLegGroup.add(rightLeg);
         playerBody.add(rightLegGroup);
 
+        shirtMat.color.setHex(0xe87945);
+        pantsMat.color.setHex(0x203543);
+        torso.scale.set(.85,1,1.05);
+        leftArmGroup.position.x=-1.13; rightArmGroup.position.x=1.13;
+        leftArm.scale.set(.55,1,.7); rightArm.scale.set(.55,1,.7);
+        for(const arm of [leftArmGroup,rightArmGroup]) {
+            const sleeve=createPart(.62,.8,.78,shirtMat); sleeve.position.y=-.4; arm.add(sleeve);
+        }
+        for(const leg of [leftLegGroup,rightLegGroup]) {
+            const shoe=createPart(.92,.35,1.35,pantsMat); shoe.position.set(0,-1.82,.15); leg.add(shoe);
+            const sole=createPart(.94,.12,1.38,new THREE.MeshStandardMaterial({color:0xf2eadb})); sole.position.set(0,-1.94,.15); leg.add(sole);
+        }
+        const hairMat=new THREE.MeshStandardMaterial({color:0x29222b,roughness:1});
+        const hair=createPart(1.28,.35,1.28,hairMat); hair.position.y=.55; headGroup.add(hair);
+        const pack=createPart(1.2,1.4,.5,pantsMat); pack.position.set(0,3,-.7); playerBody.add(pack);
+        for(const x of [-.58,.58]) {
+            const strap=createPart(.14,1.8,.08,pantsMat); strap.position.set(x,3,.56); playerBody.add(strap);
+        }
+
         // Animation state
         let walkCycleTime = 0;
 
         // --- Procedural World Generation ---
-        const worldGroup = new THREE.Group();
+        let worldGroup = new THREE.Group();
         scene.add(worldGroup);
 
         const grassMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.9, metalness: 0.0 });
@@ -498,204 +539,205 @@
             return mesh;
         }
 
-        // Spawn Area Floor
-        createWorldBlock(0, -0.5, 0, 200, 1, 200, grassMat);
-
-        // Create Main Dirt Roads (Cross shape)
-        createWorldBlock(0, -0.45, 0, 160, 1.02, 8, pathMat); // North-South road
-        createWorldBlock(0, -0.45, 0, 8, 1.02, 160, pathMat); // East-West road
-
-        // Procedural village generation (Grid-based with streets)
-        const gridSize = 24; // Increased spacing for larger houses
-        const villageRadius = 120; // Expanded generation radius
-
-        for (let gridX = -villageRadius; gridX <= villageRadius; gridX += gridSize) {
-            for (let gridZ = -villageRadius; gridZ <= villageRadius; gridZ += gridSize) {
-                // Keep the ENTIRE length of the main roads clear
-                if (Math.abs(gridX) < 20 || Math.abs(gridZ) < 20) continue;
-
-                // Reserve the North-East quadrant for the Parkour Area
-                if (gridX > 30 && gridZ < -30) continue;
-
-                // Add organic jitter to positions so it's not perfectly rigid
-                const x = gridX + (Math.random() * 6 - 3);
-                const z = gridZ + (Math.random() * 6 - 3);
-                
-                const randType = Math.random();
-                
-                // Define "street adjacent" zones (properties right next to the main roads)
-                const isNearMainRoad = (Math.abs(gridX) <= 30 || Math.abs(gridZ) <= 30);
-
-                if (isNearMainRoad && randType < 0.7) {
-                    // House (Larger scale)
-                    const w = 10 + Math.random() * 6; // Width 10-16
-                    const d = 10 + Math.random() * 6; // Depth 10-16
-                    const h = 8 + Math.random() * 4;  // Height 8-12 (Player is 5 units tall)
-                    
-                    // Wall
-                    createWorldBlock(x, h/2, z, w, h, d, wallMat);
-                    
-                    // Pitched Roof
-                    const roofHeight = 4 + Math.random() * 3;
-                    const roof = new THREE.Mesh(roofGeo, roofMat);
-                    roof.scale.set(w * 1.1, roofHeight, d * 1.1);
-                    roof.position.set(x, h + roofHeight/2, z);
-                    roof.castShadow = true;
-                    roof.receiveShadow = true;
-                    worldGroup.add(roof);
-                    addBoxCollider(roof);
-
-                    // Door logic: Face the closest main road
-                    let doorX = x;
-                    let doorZ = z;
-                    let doorW = 0.2;
-                    let doorD = 3;
-                    let doorH = 5.5; // Taller door for the 5-unit tall player
-                    
-                    if (Math.abs(gridX) < Math.abs(gridZ)) {
-                        // Closer to X=0 road (North-South road)
-                        doorX = x + (x > 0 ? -w/2 - 0.05 : w/2 + 0.05);
-                        doorD = 3;
-                        doorW = 0.2;
-                        
-                        // Add driveway to main road
-                        const pathLen = Math.max(0.1, Math.abs(x) - 4 - w/2);
-                        const pathCx = x > 0 ? x - w/2 - pathLen/2 : x + w/2 + pathLen/2;
-                        createWorldBlock(pathCx, -0.45, doorZ, pathLen, 1.02, 4, pathMat); // Wider driveway
-                        
-                    } else {
-                        // Closer to Z=0 road (East-West road)
-                        doorZ = z + (z > 0 ? -d/2 - 0.05 : d/2 + 0.05);
-                        doorD = 0.2;
-                        doorW = 3;
-                        
-                        // Add driveway to main road
-                        const pathLen = Math.max(0.1, Math.abs(z) - 4 - d/2);
-                        const pathCz = z > 0 ? z - d/2 - pathLen/2 : z + d/2 + pathLen/2;
-                        createWorldBlock(doorX, -0.45, pathCz, 4, 1.02, pathLen, pathMat); // Wider driveway
+        // Deterministic route: each rise stays below the 4.05-unit jump apex.
+        const concrete = new THREE.MeshStandardMaterial({color: 0x344c60, roughness: .85});
+        let trim = new THREE.MeshStandardMaterial({color: 0x55dfb0, roughness: .5});
+        const checkpointMat = new THREE.MeshStandardMaterial({color: 0xffc568, roughness: .5});
+        const dark = new THREE.MeshStandardMaterial({color: 0x172936, roughness: .8});
+        const glass = new THREE.MeshStandardMaterial({color: 0x8ed5df, metalness: .35, roughness: .25});
+        const rooftopRoute = [
+            [0,0,0,14,14], [0,1.5,-13,8,8], [5,3,-24,7,8],
+            [-1,4.5,-35,8,7], [-8,6,-45,12,12], [-20,7.5,-48,7,7],
+            [-31,9,-43,7,7], [-42,10,-48,8,7], [-47,11,-60,12,12],
+            [-39,12.5,-72,6,8], [-29,14,-78,8,6], [-18,15,-73,7,7],
+            [-6,16,-78,12,12], [5,17.5,-85,7,7], [14,19,-94,7,7], [14,20,-107,16,14]
+        ];
+        const checkpointIndices = [0,4,8,12];
+        function decoration(x,y,z,w,h,d,mat) {
+            const m = new THREE.Mesh(baseBoxGeo,mat);
+            m.position.set(x,y,z); m.scale.set(w,h,d); m.castShadow=true; m.receiveShadow=true;
+            worldGroup.add(m); return m;
+        }
+        function sign(text,x,y,z) {
+            const c=document.createElement('canvas'); c.width=512; c.height=128;
+            const ctx=c.getContext('2d'); ctx.fillStyle='#172936'; ctx.fillRect(0,0,512,128);
+            ctx.fillStyle='#b8ffe5'; ctx.font='bold 42px sans-serif'; ctx.textAlign='center'; ctx.fillText(text,256,80);
+            const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c)}));
+            sprite.position.set(x,y,z); sprite.scale.set(8,2,1); worldGroup.add(sprite);
+        }
+        const maps = {
+            rooftop: {name:'Rooftop Run', hint:'Follow the mint rooftops. Gold = checkpoint.', sky:0x3ba5ff, horizon:0xffffff, fog:0xdbeafe, surface:0x397e99, accent:0x55dfb0,
+                stages:['THE WARMUP','WESTWARD','THE SWITCHBACK','FINAL ASCENT'], route:rooftopRoute},
+            library: {name:'Midnight Library', hint:'Climb the books. Narrow shelves need a steady landing.', sky:0x17152e, horizon:0x6f4e71, fog:0x49384f, surface:0x261d30, accent:0xcfa8ff,
+                stages:['FIRST EDITION','THE BOOKENDS','NARROW MARGINS','LAST CHAPTER'], route:[
+                    [0,0,0,14,12],[0,1.5,-12,7,7],[8,3,-20,9,5],[18,4.5,-24,5,10],
+                    [27,6,-32,12,12],[27,7.5,-45,4,12],[19,9,-55,10,4],[7,10.5,-55,7,7],
+                    [-5,12,-59,12,12],[-15,13.5,-67,4,11],[-15,15,-81,4,11],[-6,16.5,-90,10,4],
+                    [7,18,-90,12,12],[18,19.5,-98,8,5],[24,21,-109,5,9],[24,22.5,-122,16,12]]},
+            clockwork: {name:'Clockwork Well',hint:'Wind around the spindle. The brass ledges stay still.',sky:0x282c38,horizon:0xa77b58,fog:0x736452,surface:0x292c34,accent:0xe7b85b,
+                stages:['WIND UP','QUARTER TURN','THE ESCAPEMENT','TWELVE O’CLOCK'],route:[
+                    [0,0,0,14,12],[0,1.5,-12,7,7],[6,3,-22,7,7],[17,4.5,-27,8,5],
+                    [29,6,-25,12,12],[39,7.5,-17,5,9],[42,9,-5,7,7],[38,10.5,7,7,7],
+                    [28,12,16,12,12],[15,13.5,18,9,4],[4,15,12,7,7],[-3,16.5,2,6,7],
+                    [-6,18,-11,12,12],[-1,19.5,-24,7,7],[10,21,-32,8,5],[23,22.5,-34,14,12]]},
+            coral: {name:'Coral Lab',hint:'Hop between reef pods. Gold decks are safe checkpoints.',sky:0x075d76,horizon:0x91eddd,fog:0x51b0b7,surface:0x116c82,accent:0x80f3e1,
+                stages:['AIRLOCK','REEF WALK','DEEP WATER','SURFACE STATION'],route:[
+                    [0,0,0,14,12],[0,1,-12,8,8],[-9,2,-21,8,6],[-19,1,-28,6,8],
+                    [-27,2.5,-38,12,12],[-19,4,-50,6,8],[-8,5.5,-55,7,7],[3,4,-61,8,6],
+                    [12,5.5,-72,12,12],[21,7,-83,5,8],[16,8.5,-94,6,6],[5,7,-101,8,5],
+                    [-7,8.5,-106,12,12],[-18,10,-115,6,8],[-15,11.5,-128,7,7],[-5,13,-138,16,14]]},
+            paper: {name:'Paper Sky',hint:'Follow the notebook pages. Thin pencil bridges test your aim.',sky:0x7eabd5,horizon:0xffeac8,fog:0xf3dfcc,surface:0xddbd97,accent:0xfff3d7,
+                stages:['ROUGH SKETCH','BETWEEN THE LINES','PENCIL BRIDGES','FINAL DRAFT'],route:[
+                    [0,0,0,14,14],[0,1.5,-13,8,8],[10,3,-21,9,6],[21,4.5,-19,7,7],
+                    [32,6,-26,12,12],[33,7.5,-40,3.5,12],[25,9,-51,9,6],[13,10.5,-53,9,6],
+                    [1,12,-60,12,12],[-11,13.5,-65,12,3.5],[-24,15,-70,8,6],[-29,16.5,-81,6,8],
+                    [-22,18,-93,12,12],[-9,19.5,-99,10,3.5],[3,21,-104,8,6],[12,22.5,-115,16,14]]}
+        };
+        const levelKeys=Object.keys(maps);
+        const levels=[], platforms=[];
+        let activeLevel=0, unlockedLevel=0, activeMap=maps.rooftop, route=[], stageNames=[];
+        let checkpoint=0, furthest=0, runTime=0, started=false, finished=false;
+        let landedPlatform=-1;
+        let animatedScenery=[], mapMaterials=new Set();
+        // Spread successive decks by their visible edges, rather than arbitrary centre distances.
+        function spacedRoute(original) {
+            const result=[original[0].slice()];
+            for(let i=1;i<original.length;i++) {
+                const a=original[i-1],b=original[i],dx=b[0]-a[0],dz=b[2]-a[2],len=Math.hypot(dx,dz),ux=dx/len,uz=dz/len;
+                const edge=(p)=>Math.min(Math.abs(ux)>.001?p[3]/2/Math.abs(ux):Infinity,Math.abs(uz)>.001?p[4]/2/Math.abs(uz):Infinity);
+                const gap=7.5+(i%4)*.65;
+                const distance=edge(a)+edge(b)+gap,prev=result[i-1];
+                result.push([prev[0]+ux*distance,b[1],prev[2]+uz*distance,b[3],b[4]]);
+            }
+            return result;
+        }
+        // All walkable surfaces use the same visible rectangular geometry as their collider.
+        // Sculptural details sit beneath or outside those surfaces.
+        function sculpture(geometry,material,x,y,z) {
+            const mesh=new THREE.Mesh(geometry,material);mesh.position.set(x,y,z);mesh.castShadow=true;
+            worldGroup.add(mesh);return mesh;
+        }
+        function buildMap(key) {
+            activeMap=maps[key];route=spacedRoute(activeMap.route);stageNames=activeMap.stages;
+            trim=new THREE.MeshStandardMaterial({color:activeMap.accent,roughness:.5});
+            function material(color,extras={}) {return new THREE.MeshStandardMaterial({color,roughness:.7,...extras});}
+            const palette=key==='library'?[0x955065,0x326c75,0x8967a5]:key==='paper'?[0xe4806b,0x7eafbf,0xe8be68]:[0x338c9c,0xdd9161,0x675986];
+            const colors=palette.map(c=>material(c));
+            const customMaterials=new Set(colors);mapMaterials=customMaterials;
+            const podGlass=material(0xa0f8ed,{transparent:true,opacity:.28,depthWrite:false,metalness:.1});customMaterials.add(podGlass);
+            const special=material(key==='clockwork'?0x886044:key==='paper'?0x385e8c:0xa0e4e4,{metalness:key==='clockwork'?.6:.1});customMaterials.add(special);
+            route.forEach(([x,y,z,w,d],i)=>{
+                const cp=i===0;
+                createWorldBlock(x,y-.35,z,w,.7,d,cp?checkpointMat:trim);
+                if(key==='rooftop') {
+                    createWorldBlock(x,(y-30)/2-.7,z,w-.5,y+30,d-.5,concrete);
+                    for(let level=-24;level<y-2;level+=4) {
+                        decoration(x,level,z+d/2-.22,w*.7,1.3,.04,glass);
+                        decoration(x+w/2-.22,level,z,.04,1.3,d*.65,glass);
                     }
-                    
-                    createWorldBlock(doorX, doorH/2, doorZ, doorW, doorH, doorD, doorMat);
-
-                } else if (randType < 0.85) {
-                    // Tree (Scaled up)
-                    const trunkH = 5 + Math.random() * 6;
-                    
-                    // Trunk
-                    const trunk = new THREE.Mesh(trunkGeo, woodMat);
-                    trunk.scale.set(1.5, trunkH, 1.5); // Thicker trunk
-                    trunk.position.set(x, trunkH/2, z);
-                    trunk.castShadow = true;
-                    trunk.receiveShadow = true;
-                    worldGroup.add(trunk);
-                    addBoxCollider(trunk);
-
-                    // Leaves (Multiple overlapping spheres for nicer look)
-                    const leafSize = 4 + Math.random() * 3;
-                    const yOffset = trunkH - 1;
-                    
-                    const leafPos = [
-                        { dx: 0, dy: 0, dz: 0, s: 1 },
-                        { dx: -1.5, dy: -0.5, dz: 1.5, s: 0.8 },
-                        { dx: 1.5, dy: -0.2, dz: -1.5, s: 0.9 },
-                        { dx: 0, dy: 1.2, dz: 0, s: 0.7 }
-                    ];
-
-                    leafPos.forEach(p => {
-                        const leaves = new THREE.Mesh(leafGeo, leafMat);
-                        const s = leafSize * p.s;
-                        leaves.scale.set(s, s, s);
-                        leaves.position.set(x + p.dx, yOffset + leafSize/2 + p.dy, z + p.dz);
-                        leaves.castShadow = true;
-                        leaves.receiveShadow = true;
-                        worldGroup.add(leaves);
-                    });
-                    
-                    // Simplified leaf collision to prevent lag
-                    const leafHitbox = new THREE.Box3().setFromCenterAndSize(
-                        new THREE.Vector3(x, yOffset + leafSize/2, z),
-                        new THREE.Vector3(leafSize*1.5, leafSize*1.5, leafSize*1.5)
-                    );
-                    worldColliders.push(leafHitbox);
-
+                } else if(key==='library') {
+                    // Oversized stacked books with page blocks and contrasting spines.
+                    for(let j=0;j<3;j++) {
+                        const yy=y-.9-j*1.5;
+                        decoration(x,yy-.45,z,w*.96,1.05,d*.96,wallMat);
+                        decoration(x,yy+.1,z,w,.18,d,colors[(i+j)%3]);
+                        decoration(x-w*.47,yy-.4,z,.3,1.15,d,colors[(i+j)%3]);
+                        for(let line=0;line<3;line++) decoration(x,yy-.15-line*.22,z+d*.481,w*.88,.025,.025,dark);
+                    }
+                } else if(key==='clockwork') {
+                    decoration(x,y-1.2,z,w,.9,d,concrete);
+                    decoration(x,y-2,z,1.4,2,1.4,special);
+                    const gear=sculpture(new THREE.CylinderGeometry(Math.min(w,d)*.65,Math.min(w,d)*.65,.5,12),special,x,y-2.8,z);
+                    animatedScenery.push({mesh:gear,speed:(i%2?1:-1)*.25});
+                    for(let j=0;j<12;j++) {
+                        const tooth=new THREE.Mesh(baseBoxGeo,special),angle=j*Math.PI/6,r=Math.min(w,d)*.66;
+                        tooth.position.set(Math.cos(angle)*r,0,Math.sin(angle)*r);tooth.scale.set(1,.5,1);gear.add(tooth);
+                    }
+                } else if(key==='coral') {
+                    sculpture(new THREE.CylinderGeometry(Math.min(w,d)*.43,Math.min(w,d)*.43,5,12),podGlass,x,y-3.2,z);
+                    decoration(x,y-5.9,z,w*.82,.35,d*.82,dark);
+                    for(let j=0;j<3;j++) {
+                        const branch=sculpture(new THREE.ConeGeometry(.7,2+j*.6,5),colors[j],x+(j-1)*1.2,y-4.5,z);
+                        branch.rotation.z=(j-1)*.35;
+                    }
                 } else {
-                    // Low-poly Organic Rocks
-                    const rockSize = 3 + Math.random() * 4;
-                    const rock = new THREE.Mesh(rockGeo, stoneMat);
-                    
-                    // Scale randomly on axes to make it look jagged and organic
-                    rock.scale.set(
-                        rockSize * (0.8 + Math.random() * 0.4),
-                        rockSize * (0.5 + Math.random() * 0.4), // Flatter on the Y axis
-                        rockSize * (0.8 + Math.random() * 0.4)
-                    );
-                    
-                    // Rotate randomly
-                    rock.rotation.set(
-                        Math.random() * Math.PI,
-                        Math.random() * Math.PI,
-                        Math.random() * Math.PI
-                    );
-                    
-                    // Sink slightly into the ground
-                    rock.position.set(x, rock.scale.y * 0.4, z);
-                    rock.castShadow = true;
-                    rock.receiveShadow = true;
-                    worldGroup.add(rock);
-                    addBoxCollider(rock);
-                    
-                    // 50% chance to spawn a smaller companion rock next to it
-                    if (Math.random() > 0.5) {
-                        const smallRockSize = rockSize * 0.6;
-                        const smallRock = new THREE.Mesh(rockGeo, stoneMat);
-                        smallRock.scale.set(
-                            smallRockSize * (0.8 + Math.random() * 0.4),
-                            smallRockSize * (0.5 + Math.random() * 0.4),
-                            smallRockSize * (0.8 + Math.random() * 0.4)
-                        );
-                        smallRock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-                        
-                        const offsetX = x + (Math.random() > 0.5 ? rockSize : -rockSize) * 0.7;
-                        const offsetZ = z + (Math.random() > 0.5 ? rockSize : -rockSize) * 0.7;
-                        
-                        smallRock.position.set(offsetX, smallRock.scale.y * 0.4, offsetZ);
-                        smallRock.castShadow = true;
-                        smallRock.receiveShadow = true;
-                        worldGroup.add(smallRock);
-                        addBoxCollider(smallRock);
+                    // A pencil is a deliberately narrow rectangular walking beam; paper decks have ruled lines.
+                    const pencil=w<4||d<4;
+                    if(pencil) {
+                        decoration(x,y-.95,z,w,.5,d,colors[2]);
+                        decoration(x,y+.02,z,Math.min(w,.2),.025,d*.85,special);
+                    } else {
+                        for(let j=0;j<4;j++) decoration(x,y-.78-j*.14,z,w,.08,d,wallMat);
+                        for(let j=-2;j<=2;j++) decoration(x,y+.015,z+j*d/7,w*.82,.025,.035,special);
+                        decoration(x-w*.3,y+.02,z,.035,.025,d*.88,colors[0]);
                     }
                 }
+                if(key!=='paper') decoration(x,y+.015,z,1.5,.025,2,dark);
+                if(i===0) sign(activeMap.name.toUpperCase(),x-12,y+5,z);
+                else if(key==='paper'&&i===route.length-1) sign('FINISH',x,y+4,z);
+                else sign(String(i+1).padStart(2,'0'),x,y+3,z-d/2+.5);
+            });
+            // Theme details stay on the decks; no invisible landscape colliders.
+        }
+        function buildCourse() {
+            const root=worldGroup;
+            let previous=null;
+            levelKeys.forEach((key,level)=>{
+                worldGroup=new THREE.Group();root.add(worldGroup);
+                const colliderStart=worldColliders.length;
+                buildMap(key);
+                const localRoute=route;
+                // Append each start beyond the full preceding level, with a jumpable bridge.
+                const offset=previous?new THREE.Vector3(previous[0],previous[1]+1.5,previous[2]-previous[4]/2-localRoute[0][4]/2-8):new THREE.Vector3();
+                worldGroup.position.copy(offset);
+                const translated=localRoute.map(p=>[p[0]+offset.x,p[1]+offset.y,p[2]+offset.z,p[3],p[4]]);
+                for(let i=colliderStart;i<worldColliders.length;i++) worldColliders[i].translate(offset);
+                translated.forEach((p,index)=>platforms.push({deck:p,level,index}));
+                levels.push({key,route:translated,start:platforms.length-translated.length});
+                previous=translated.at(-1);
+            });
+            worldGroup=root;
+            setLevel(0);
+        }
+        function setLevel(index) {
+            activeLevel=index;activeMap=maps[levels[index].key];route=levels[index].route;checkpoint=0;
+            skyMaterial.uniforms.topColor.value.setHex(activeMap.sky);
+            skyMaterial.uniforms.bottomColor.value.setHex(activeMap.horizon);
+            scene.fog.color.setHex(activeMap.fog);
+            document.title='Parkour — '+activeMap.name;
+            document.getElementById('level-prev').disabled=index===0;
+            document.getElementById('level-next').disabled=index>=unlockedLevel;
+        }
+
+        function respawn(restart=false) {
+            if(restart) {runTime=0;started=false;finished=false;document.getElementById('course-hud').classList.remove('finished');}
+            const [x,y,z]=route[0];playerBody.position.set(x,y+.001,z);
+            playerVelocity.set(0,0,0);isGrounded=false;landedPlatform=-1;playerBody.rotation.y=Math.PI;
+            cameraRig.rotation.set(0,0,0);camera.rotation.set(0,0,0);
+        }
+        function visitLevel(index) {
+            if(index<0||index>unlockedLevel||index===activeLevel) return;
+            clearInputs();setLevel(index);respawn(true);updateCourse(0);updateCamera();
+        }
+        document.getElementById('level-prev').addEventListener('click',()=>visitLevel(activeLevel-1));
+        document.getElementById('level-next').addEventListener('click',()=>visitLevel(activeLevel+1));
+        function updateCourse(dt) {
+            if(started&&!finished) runTime+=dt;
+            if(!started&&(inputs.forward||inputs.backward||inputs.left||inputs.right||inputs.mobileMoveX||inputs.mobileMoveY)) started=true;
+            if(isGrounded&&landedPlatform>=0) {
+                const landed=platforms[landedPlatform];
+                if(landed.level<activeLevel) {respawn();}
+                else if(landed.level>activeLevel) {
+                    if(landed.level===activeLevel+1&&landed.index===0) {
+                        unlockedLevel=Math.max(unlockedLevel,landed.level);setLevel(landed.level);
+                        runTime=0;started=false;finished=false;
+                    } else respawn();
+                } else if(activeLevel===levels.length-1&&landed.index===15) {
+                    finished=true;document.getElementById('course-hud').classList.add('finished');
+                }
             }
+            document.getElementById('course-time').textContent=runTime.toFixed(2)+'s';
         }
-
-        // --- Parkour Course Generation ---
-        // Create a starting platform in the reserved NE quadrant
-        let px = 50;
-        let pz = -50;
-        let py = 1;
-        createWorldBlock(px, 0.5, pz, 16, 1, 16, parkourMat); // Styled cyan starting pad
-
-        // Generate a sequence of floating platforms
-        for (let i = 0; i < 20; i++) {
-            // Calculate the gap for the next jump (increasingly difficult)
-            const gapX = (Math.random() > 0.5 ? 1 : -1) * (3 + Math.random() * 5);
-            const gapZ = - (5 + Math.random() * 7); // Always move generally 'North' (negative Z)
-            const gapY = 1.5 + Math.random() * 3.5; // Jump height increases
-            
-            px += gapX;
-            pz += gapZ;
-            py += gapY;
-            
-            // Platforms get progressively smaller
-            const platSize = Math.max(3, 9 - (i * 0.3));
-            const platThick = 0.5;
-            
-            createWorldBlock(px, py, pz, platSize, platThick, platSize, parkourMat);
-        }
-        
-        // Final Reward Platform
-        createWorldBlock(px, py + 2, pz - 12, 24, 1.5, 24, goldMat);
-
 
         // --- Controls & Inputs ---
         const inputs = {
@@ -708,23 +750,79 @@
         // Desktop Pointer Lock
         const controls = new PointerLockControls(cameraRig, document.body);
         
-        document.getElementById('instructions').addEventListener('click', () => {
-            if (!isMenuOpen) controls.lock();
-        });
-
-        controls.addEventListener('lock', () => {
-            document.getElementById('instructions').style.display = 'none';
-        });
-
-        controls.addEventListener('unlock', () => {
-            if(window.innerWidth > 768) { // Only show instructions on desktop
-                document.getElementById('instructions').style.display = 'block';
+        let playing=false, dragging=false, homeOpen=true, hasRun=false, cursorMode=false;
+        const homeScreen=document.getElementById('home-screen');
+        const gameUI=document.getElementById('ui-layer');
+        function showHome() {
+            homeOpen=true;playing=false;cursorMode=false;clearInputs();dragging=false;
+            homeScreen.hidden=false;gameUI.hidden=true;
+            document.getElementById('btn-resume').hidden=!hasRun;
+            if(controls.isLocked) controls.unlock();
+        }
+        async function startGame(restart) {
+            if(restart) {unlockedLevel=0;setLevel(0);respawn(true);updateCourse(0);}
+            hasRun=true;homeOpen=false;playing=true;cursorMode=false;
+            homeScreen.hidden=true;gameUI.hidden=false;
+            updateCamera();
+            if(GameState.preferences.shiftlock&&!isTouchDevice) await setShiftLock(true);
+        }
+        document.getElementById('btn-play').addEventListener('click',()=>startGame(true));
+        document.getElementById('btn-resume').addEventListener('click',()=>startGame(false));
+        document.getElementById('btn-home').addEventListener('click',showHome);
+        let lockRequest=0, noticeTimer;
+        function syncLockIndicator() {
+            document.getElementById('lock-reticle').hidden=!(controls.isLocked&&!homeOpen);
+        }
+        async function setShiftLock(enabled) {
+            const request=++lockRequest;
+            dragging=false;cursorMode=false;
+            GameState.preferences.shiftlock=enabled;
+            if(!enabled) {
+                if(controls.isLocked) controls.unlock();
+                syncSettingsToUI();syncLockIndicator();return;
             }
+            if(!playing||homeOpen||isMenuOpen||isTouchDevice) {syncSettingsToUI();return;}
+            try {await document.body.requestPointerLock();}
+            catch {
+                if(request!==lockRequest) return;
+                GameState.preferences.shiftlock=false;
+                const notice=document.getElementById('look-notice');
+                notice.textContent='Mouse lock was blocked. Click the game and press Shift again.';
+                notice.hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.hidden=true,4000);
+            }
+            if(request!==lockRequest&&!GameState.preferences.shiftlock&&controls.isLocked) controls.unlock();
+            syncSettingsToUI();syncLockIndicator();
+        }
+        canvas.addEventListener('pointerdown',e=>{
+            if(homeOpen||isMenuOpen||e.button!==0||e.pointerType==='touch') return;
+            dragging=true;
+        });
+        window.addEventListener('pointerup',()=>dragging=false);
+        window.addEventListener('pointermove',e=>{
+            if(!dragging||controls.isLocked||homeOpen||isMenuOpen||e.pointerType==='touch') return;
+            cameraRig.rotation.order='YXZ';
+            cameraRig.rotation.y-=e.movementX*.003*GameState.preferences.sensitivity;
+            cameraRig.rotation.x=THREE.MathUtils.clamp(cameraRig.rotation.x-e.movementY*.003*GameState.preferences.sensitivity,-1.2,1.2);
+        });
+        controls.addEventListener('lock',()=>{
+            GameState.preferences.shiftlock=true;dragging=false;syncSettingsToUI();syncLockIndicator();
+        });
+        controls.addEventListener('unlock',()=>{
+            // Releasing Shift lock returns to drag mode, never to the home screen.
+            if(!homeOpen&&!isMenuOpen) GameState.preferences.shiftlock=false;
+            dragging=false;syncSettingsToUI();syncLockIndicator();
         });
 
         // Keyboard
         window.addEventListener('keydown', (e) => {
+            if(e.code==='Escape') {if(isMenuOpen) toggleMenu();else if(!homeOpen) showHome();return;}
+            if (isMenuOpen || homeOpen || !playing) return;
+            if(e.code==='Tab') {e.preventDefault();clearInputs();setShiftLock(false);return;}
+            if(e.code==='ArrowLeft'||e.code==='ArrowRight') {e.preventDefault();if(!e.repeat) visitLevel(activeLevel+(e.code==='ArrowLeft'?-1:1));return;}
+            if(['KeyW','KeyA','KeyS','KeyD','Space'].includes(e.code)) started=true;
+            if (['Space','KeyR'].includes(e.code)) e.preventDefault();
             switch(e.code) {
+                case 'KeyR': if(!e.repeat) {clearInputs();respawn(true);updateCourse(0);} break;
                 case 'KeyW': inputs.forward = true; break;
                 case 'KeyS': inputs.backward = true; break;
                 case 'KeyA': inputs.left = true; break;
@@ -734,11 +832,10 @@
                     inputs.jump = true; 
                     break;
                 case 'ShiftLeft': 
-                case 'ShiftRight': 
-                    inputs.sprint = true; break;
-                case 'KeyO': 
-                    toggleCameraPerspective(); 
-                    break;
+                case 'ShiftRight':
+                    e.preventDefault();if(!e.repeat) setShiftLock(!GameState.preferences.shiftlock);break;
+                case 'ControlLeft':
+                case 'ControlRight': inputs.sprint=true;break;
                 case 'Escape':
                     // menu handling
                     break;
@@ -752,22 +849,56 @@
                 case 'KeyA': inputs.left = false; break;
                 case 'KeyD': inputs.right = false; break;
                 case 'Space': inputs.jump = false; break;
-                case 'ShiftLeft': 
-                case 'ShiftRight': 
-                    inputs.sprint = false; break;
+                case 'ControlLeft':
+                case 'ControlRight': inputs.sprint=false;break;
             }
         });
 
+        window.addEventListener('blur', clearInputs);
+        controls.addEventListener('unlock', clearInputs);
+        function clearInputs() { for(const k of Object.keys(inputs)) inputs[k]=typeof inputs[k]==='boolean'?false:0; }
+
         // Mouse Wheel (Zoom)
         window.addEventListener('wheel', (e) => {
-            if (!controls.isLocked) return;
-            let currentZoom = GameState.preferences.zoomLevel;
-            currentZoom += e.deltaY > 0 ? 1 : -1;
-            currentZoom = Math.max(0, Math.min(10, currentZoom));
-            GameState.preferences.zoomLevel = currentZoom;
-            syncSettingsToUI();
-        });
+            if(homeOpen||isMenuOpen||!playing) return;
+            e.preventDefault();
+            const delta=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?window.innerHeight:1);
+            changeZoom(delta*.01);
+        }, {passive:false});
 
+
+        function changeZoom(delta) {
+            GameState.preferences.zoomLevel=THREE.MathUtils.clamp(GameState.preferences.zoomLevel+delta,0,10);
+        }
+        let pinch=null;
+        const pinchTouches=e=>Array.from(e.touches).filter(t=>!t.target.closest('button, input, select, #joystick-move, #home-screen, #menu-overlay'));
+        document.addEventListener('touchstart',e=>{
+            if(homeOpen||isMenuOpen||!playing) return;
+            const touches=pinchTouches(e);
+            if(touches.length<2) return;
+            const [a,b]=touches;
+            pinch={ids:[a.identifier,b.identifier],distance:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)};
+            lookTouchId=null;dragging=false;
+            e.preventDefault();e.stopImmediatePropagation();
+        },{capture:true,passive:false});
+        document.addEventListener('touchmove',e=>{
+            if(!pinch||homeOpen||isMenuOpen) return;
+            const [a,b]=pinch.ids.map(id=>Array.from(e.touches).find(t=>t.identifier===id));
+            if(!a||!b) return;
+            const distance=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+            changeZoom((pinch.distance-distance)*.025);
+            pinch.distance=distance;
+            e.preventDefault();e.stopImmediatePropagation();
+        },{capture:true,passive:false});
+        function endPinch(e) {
+            if(!pinch) return;
+            if(pinch.ids.every(id=>Array.from(e.touches).some(t=>t.identifier===id))) return;
+            pinch=null;lookTouchId=null;
+            const remaining=pinchTouches(e)[0];
+            if(remaining) {lookTouchId=remaining.identifier;lastLookTouch={x:remaining.clientX,y:remaining.clientY};}
+        }
+        document.addEventListener('touchend',endPinch,true);
+        document.addEventListener('touchcancel',endPinch,true);
 
         // --- Mobile Touch Controls ---
         const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
@@ -879,11 +1010,12 @@
                     const dx = touch.clientX - lastLookTouch.x;
                     const dy = touch.clientY - lastLookTouch.y;
                     
-                    cameraRig.rotation.y -= dx * LOOK_SENSITIVITY;
+                    cameraRig.rotation.y -= dx * LOOK_SENSITIVITY * GameState.preferences.sensitivity;
                     // Pitch camera
-                    let pitch = camera.rotation.x - dy * LOOK_SENSITIVITY;
+                    cameraRig.rotation.order='YXZ';
+                    let pitch = cameraRig.rotation.x - dy * LOOK_SENSITIVITY * GameState.preferences.sensitivity;
                     pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, pitch));
-                    camera.rotation.x = pitch;
+                    cameraRig.rotation.x = pitch;
 
                     lastLookTouch.x = touch.clientX;
                     lastLookTouch.y = touch.clientY;
@@ -909,12 +1041,6 @@
             if (navigator.vibrate) navigator.vibrate(30); // Haptic feedback
         }
 
-        function toggleCameraPerspective() {
-            GameState.preferences.zoomLevel = GameState.preferences.zoomLevel === 0 ? 5 : 0;
-            syncSettingsToUI();
-        }
-
-
         // --- UI & Menu Systems ---
         let isMenuOpen = false;
         const menuOverlay = document.getElementById('menu-overlay');
@@ -925,8 +1051,8 @@
         const contentSettings = document.getElementById('content-settings');
         const contentAnalytics = document.getElementById('content-analytics');
 
-        const camZoomSlider = document.getElementById('cam-zoom-slider');
-        const camModeLabel = document.getElementById('cam-mode-label');
+        const sensitivitySlider = document.getElementById('camera-sensitivity');
+        const sensitivityValue = document.getElementById('sensitivity-value');
         const toggleShiftlock = document.getElementById('toggle-shiftlock');
         const btnResetPos = document.getElementById('btn-reset-pos');
         
@@ -953,6 +1079,7 @@
         function toggleMenu() {
             isMenuOpen = !isMenuOpen;
             if (isMenuOpen) {
+                clearInputs();
                 if (controls.isLocked) controls.unlock();
                 menuOverlay.classList.add('active');
                 syncSettingsToUI();
@@ -965,27 +1092,29 @@
         btnMenu.addEventListener('click', toggleMenu);
         btnCloseMenu.addEventListener('click', toggleMenu);
 
+
         // Settings Inputs
-        camZoomSlider.addEventListener('input', (e) => {
-            GameState.preferences.zoomLevel = parseInt(e.target.value);
+        sensitivitySlider.addEventListener('input', (e) => {
+            GameState.preferences.sensitivity = Number(e.target.value);
             syncSettingsToUI(false); // don't update slider value while dragging
         });
 
         toggleShiftlock.addEventListener('change', (e) => {
-            GameState.preferences.shiftlock = e.target.checked;
+            setShiftLock(e.target.checked);
         });
 
         btnResetPos.addEventListener('click', () => {
-            playerBody.position.set(0, 10, 0);
-            playerVelocity.set(0,0,0);
+            respawn(true);
             toggleMenu();
         });
 
         function syncSettingsToUI(updateSlider = true) {
-            if (updateSlider) camZoomSlider.value = GameState.preferences.zoomLevel;
-            toggleShiftlock.checked = GameState.preferences.shiftlock;
-            camModeLabel.innerText = GameState.preferences.zoomLevel === 0 ? 'First Person' : 'Third Person';
-            camModeLabel.className = GameState.preferences.zoomLevel === 0 ? 'text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded' : 'text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded';
+            const sensitivity=THREE.MathUtils.clamp(Number(GameState.preferences.sensitivity)||1,.2,3);
+            GameState.preferences.sensitivity=sensitivity;
+            controls.pointerSpeed=sensitivity*1.5;
+            if(updateSlider) sensitivitySlider.value=sensitivity;
+            sensitivityValue.textContent=sensitivity.toFixed(1)+'×';
+            toggleShiftlock.checked=GameState.preferences.shiftlock;
         }
 
         function updateAnalyticsUI() {
@@ -998,8 +1127,7 @@
 
         // --- Core Game Loop & Physics Update ---
         const clock = new THREE.Clock();
-        let frames = 0;
-        let lastFpsTime = 0;
+
 
         function checkCollisions(box) {
             let collided = false;
@@ -1017,7 +1145,7 @@
             const moveDir = new THREE.Vector3();
             let currentSpeed = inputs.sprint ? moveSpeed * sprintMultiplier : moveSpeed;
 
-            if (!isMenuOpen) {
+            if (!isMenuOpen && !homeOpen && playing) {
                 // Get accurate forward and right vectors based on camera rotation
                 const camForward = new THREE.Vector3(0, 0, -1).applyQuaternion(cameraRig.quaternion);
                 camForward.y = 0;
@@ -1047,73 +1175,46 @@
             playerVelocity.z = moveDir.z * currentSpeed;
             playerVelocity.y += gravity * dt; // Apply gravity
 
-            // Record intended position
-            const nextPos = playerBody.position.clone();
-            
-            // 1. Y-Axis Collision (Vertical)
-            // BUGFIX: Use the CURRENT X and Z to check for Y-collisions. 
-            // This prevents diagonal movement into walls from registering as a "head hit".
-            nextPos.y += playerVelocity.y * dt;
-            playerAABB.setFromCenterAndSize(new THREE.Vector3(playerBody.position.x, nextPos.y + playerSize.y/2, playerBody.position.z), playerSize);
-            
-            isGrounded = false;
-            for (let collider of worldColliders) {
-                if (playerAABB.intersectsBox(collider)) {
-                    if (playerVelocity.y < 0) {
-                        // Falling onto something
-                        nextPos.y = collider.max.y;
-                        playerVelocity.y = 0;
-                        isGrounded = true;
-                        // Haptic land
-                        if (playerVelocity.y < -20 && navigator.vibrate) navigator.vibrate(10);
-                    } else if (playerVelocity.y > 0) {
-                        // Hitting head
-                        nextPos.y = collider.min.y - playerSize.y;
-                        playerVelocity.y = 0;
+            const before=playerBody.position.clone();
+            const yaw=playerBody.rotation.y;
+            const halfX=(Math.abs(Math.cos(yaw))*playerSize.x+Math.abs(Math.sin(yaw))*playerSize.z)/2;
+            const halfZ=(Math.abs(Math.sin(yaw))*playerSize.x+Math.abs(Math.cos(yaw))*playerSize.z)/2;
+            const p=playerBody.position;
+            const overlap=(a,b,c,d)=>a<d-.0001&&b>c+.0001;
+            for(const axis of ['x','z']) {
+                const other=axis==='x'?'z':'x',half=axis==='x'?halfX:halfZ,oh=axis==='x'?halfZ:halfX;
+                const delta=playerVelocity[axis]*dt;
+                let target=p[axis]+delta;
+                for(const box of worldColliders) {
+                    if(!overlap(p.y+.005,p.y+playerSize.y,box.min.y,box.max.y)||!overlap(p[other]-oh,p[other]+oh,box.min[other],box.max[other])) continue;
+                    if(delta>0&&p[axis]+half<=box.min[axis]+.001&&target+half>box.min[axis]) target=Math.min(target,box.min[axis]-half);
+                    if(delta<0&&p[axis]-half>=box.max[axis]-.001&&target-half<box.max[axis]) target=Math.max(target,box.max[axis]+half);
+                }
+                p[axis]=target;
+            }
+            let targetY=p.y+playerVelocity.y*dt;
+            isGrounded=false;landedPlatform=-1;
+            // Feet occupy the model's shoe footprint, not the much wider arms.
+            const footX=(Math.abs(Math.cos(yaw))*1.94+Math.abs(Math.sin(yaw))*1.38)/2;
+            const footZ=(Math.abs(Math.sin(yaw))*1.94+Math.abs(Math.cos(yaw))*1.38)/2;
+            if(playerVelocity.y<=0) {
+                let landing=-Infinity;
+                platforms.forEach(({deck:[x,y,z,w,d]},index)=>{
+                    if(p.y>=y-.002&&targetY<=y&&y>landing&&overlap(p.x-footX,p.x+footX,x-w/2,x+w/2)&&overlap(p.z-footZ,p.z+footZ,z-d/2,z+d/2)) {
+                        landing=y;landedPlatform=index;
+                    }
+                });
+                if(landedPlatform>=0) {targetY=landing;playerVelocity.y=0;isGrounded=true;}
+            } else {
+                for(const box of worldColliders) {
+                    if(p.y+playerSize.y<=box.min.y+.001&&targetY+playerSize.y>=box.min.y&&overlap(p.x-halfX,p.x+halfX,box.min.x,box.max.x)&&overlap(p.z-halfZ,p.z+halfZ,box.min.z,box.max.z)) {
+                        targetY=Math.min(targetY,box.min.y-playerSize.y);playerVelocity.y=0;
                     }
                 }
             }
-            playerBody.position.y = nextPos.y;
-
-            // FIX: Shrink horizontal AABB slightly and raise it to prevent dragging on the floor
-            const horizontalSize = new THREE.Vector3(playerSize.x, playerSize.y - 0.2, playerSize.z);
-            const horizontalCenterY = playerBody.position.y + playerSize.y/2 + 0.1;
-
-            // 2. X-Axis Collision
-            nextPos.x += playerVelocity.x * dt;
-            playerAABB.setFromCenterAndSize(new THREE.Vector3(nextPos.x, horizontalCenterY, playerBody.position.z), horizontalSize);
-            for (let collider of worldColliders) {
-                if (playerAABB.intersectsBox(collider)) {
-                    // Slide along the wall instead of a dead stop
-                    if (playerVelocity.x > 0) nextPos.x = collider.min.x - horizontalSize.x/2 - 0.001;
-                    else if (playerVelocity.x < 0) nextPos.x = collider.max.x + horizontalSize.x/2 + 0.001;
-                    playerVelocity.x = 0;
-                }
-            }
-            playerBody.position.x = nextPos.x;
-
-            // 3. Z-Axis Collision
-            nextPos.z += playerVelocity.z * dt;
-            playerAABB.setFromCenterAndSize(new THREE.Vector3(playerBody.position.x, horizontalCenterY, nextPos.z), horizontalSize);
-            for (let collider of worldColliders) {
-                if (playerAABB.intersectsBox(collider)) {
-                    // Slide along the wall instead of a dead stop
-                    if (playerVelocity.z > 0) nextPos.z = collider.min.z - horizontalSize.z/2 - 0.001;
-                    else if (playerVelocity.z < 0) nextPos.z = collider.max.z + horizontalSize.z/2 + 0.001;
-                    playerVelocity.z = 0;
-                }
-            }
-            playerBody.position.z = nextPos.z;
-
-            // Update Distance Analytics
-            const distMoved = Math.sqrt((playerVelocity.x*dt)**2 + (playerVelocity.z*dt)**2);
-            GameState.analytics.distance += distMoved;
-            
-            // Death plane
-            if (playerBody.position.y < -20) {
-                playerBody.position.set(0, 10, 0);
-                playerVelocity.set(0,0,0);
-            }
+            p.y=targetY;
+            GameState.analytics.distance+=Math.hypot(p.x-before.x,p.z-before.z);
+            if(p.y<route[0][1]-18) respawn();
 
             // Sync GameState position occasionally (handled by save timer)
             GameState.progress.position = { x: playerBody.position.x, y: playerBody.position.y, z: playerBody.position.z };
@@ -1148,70 +1249,27 @@
         }
 
         function updateCamera() {
-            const zoom = GameState.preferences.zoomLevel;
-            const isFirstPerson = zoom === 0;
-            const isShiftlock = GameState.preferences.shiftlock;
-
-            // Visibility
-            headGroup.visible = !isFirstPerson;
-
-            if (isFirstPerson) {
-                // First Person Camera
-                cameraRig.position.copy(playerBody.position);
-                cameraRig.position.y += 4.5; // Eye height
-                
-                // Character rotates with camera
-                playerBody.rotation.y = cameraRig.rotation.y;
-                camera.position.set(0,0,0); // Reset camera local position
-            } else {
-                // Third Person Camera
-                // Base target position
-                cameraRig.position.copy(playerBody.position);
-                cameraRig.position.y += 3; // Look at upper body
-
-                if (isShiftlock) {
-                    // Shiftlock: Camera offset right, character rotates with camera
-                    playerBody.rotation.y = cameraRig.rotation.y;
-                    const offset = new THREE.Vector3(1.5, 0.5, zoom * 1.5);
-                    camera.position.lerp(offset, 0.1); // Smooth transition
-                } else {
-                    // Normal Third Person: Character rotates towards movement direction
-                    const offset = new THREE.Vector3(0, 1, zoom * 2);
-                    camera.position.lerp(offset, 0.1);
-                    
-                    // Rotate character to face movement (if moving)
-                    if ((inputs.forward || inputs.backward || inputs.left || inputs.right || inputs.mobileMoveX || inputs.mobileMoveY) && !isMenuOpen) {
-                        const angle = Math.atan2(playerVelocity.x, playerVelocity.z);
-                        // Smoothly rotate to angle
-                        const currentRot = playerBody.rotation.y;
-                        // Normalize angle diff
-                        let diff = angle - currentRot;
-                        while (diff < -Math.PI) diff += Math.PI * 2;
-                        while (diff > Math.PI) diff -= Math.PI * 2;
-                        playerBody.rotation.y += diff * 0.15;
-                    }
-                }
-                
-                // Prevent camera clipping through walls (Simple Raycast)
-                // Cast ray from player body to desired camera position
-                const start = cameraRig.position.clone();
-                const end = new THREE.Vector3().copy(camera.position).applyMatrix4(cameraRig.matrixWorld);
-                const dir = end.clone().sub(start);
-                const dist = dir.length();
-                dir.normalize();
-
-                const raycaster = new THREE.Raycaster(start, dir, 0, dist);
-                // In a real scenario we'd test against world blocks, we can map colliders back to meshes
-                // For simplicity in this 1-file setup with AABBs, we'll skip camera collision 
-                // to avoid expensive AABB raycasting, or implement a simple AABB raycast if needed.
-                // Given performance constraints, we accept slight clipping or use a simple distance check.
+            const zoom=GameState.preferences.zoomLevel;
+            const firstPerson=zoom===0;
+            const locked=controls.isLocked||(isTouchDevice&&GameState.preferences.shiftlock);
+            playerBody.visible=!firstPerson;
+            cameraRig.position.copy(playerBody.position);
+            cameraRig.position.y+=firstPerson?4.5:3;
+            camera.rotation.set(0,0,0);
+            camera.position.set(firstPerson?0:(locked?1.5:0),firstPerson?0:1,firstPerson?0:zoom*2);
+            if(locked) playerBody.rotation.y=cameraRig.rotation.y+Math.PI;
+            else if(!homeOpen&&!isMenuOpen&&(Math.abs(playerVelocity.x)+Math.abs(playerVelocity.z)>.01)) {
+                const angle=Math.atan2(playerVelocity.x,playerVelocity.z);
+                const diff=Math.atan2(Math.sin(angle-playerBody.rotation.y),Math.cos(angle-playerBody.rotation.y));
+                playerBody.rotation.y+=diff*.15;
             }
         }
 
         function animate() {
             requestAnimationFrame(animate);
 
-            if (isMenuOpen) {
+            if (isMenuOpen || homeOpen) {
+                clock.getDelta();
                 // Minimal update when menu open (freeze logic)
                 renderer.render(scene, camera);
                 return;
@@ -1219,17 +1277,12 @@
 
             const dt = Math.min(clock.getDelta(), 0.1); // Cap dt to prevent huge jumps
             
-            const isMoving = updatePhysics(dt);
+            let isMoving = false;
+            for(let remaining=dt;remaining>0;) { const step=Math.min(remaining,1/120); isMoving=updatePhysics(step); updateCourse(step); remaining-=step; }
+
+            for(const item of animatedScenery) {if(item.bob) item.mesh.position.y=item.baseY+Math.sin(clock.elapsedTime+item.phase)*1.4;else item.mesh.rotation.y+=dt*item.speed;}
             updateAnimations(isMoving, dt);
             updateCamera();
-
-            // FPS Counter
-            frames++;
-            if (performance.now() - lastFpsTime >= 1000) {
-                document.getElementById('fps-counter').innerText = `${frames} FPS`;
-                frames = 0;
-                lastFpsTime = performance.now();
-            }
 
             renderer.render(scene, camera);
         }
@@ -1245,6 +1298,10 @@
         window.onload = async () => {
             await initFirebase();
             syncSettingsToUI();
+            buildCourse();
+            respawn(true);
+            updateCourse(0);
+            updateCamera();
             
             // Fade out loading screen
             const loader = document.getElementById('loading-screen');

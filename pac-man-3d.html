@@ -118,9 +118,27 @@
   .panel h3{margin-top:0}
   .kbd{padding:2px 6px;border:1px solid #607dff;background:#0c1326;border-radius:6px}
   .range{width:80%}
+
+#touchControls { display:none; position:fixed; inset:0; z-index:10; pointer-events:none; }
+#touchControls[hidden] { display:none !important; }
+#moveStick { position:absolute; left:max(22px, env(safe-area-inset-left)); bottom:max(24px, env(safe-area-inset-bottom)); width:116px; height:116px; border:1px solid #bfe9ff80; border-radius:50%; background:#03060f66; pointer-events:auto; touch-action:none; }
+#stickThumb { position:absolute; left:36px; top:36px; width:44px; height:44px; border-radius:50%; background:#bfe9ff99; pointer-events:none; }
+#touchButtons { position:absolute; top:max(14px, env(safe-area-inset-top)); right:14px; display:flex; gap:8px; }
+#touchButtons button { pointer-events:auto; width:auto; padding:10px 14px; touch-action:manipulation; }
+@media (any-pointer:coarse) {
+  #touchControls { display:block; }
+  #game { touch-action:none; }
+  .menu { box-sizing:border-box; max-height:94dvh; overflow:auto; }
+  #mapFrame.show { bottom:158px; }
+  #hudMini { bottom:400px; }
+}
 </style>
 </head>
 <body>
+<div id="touchControls" hidden>
+  <div id="moveStick" role="group" aria-label="Movement joystick"><div id="stickThumb"></div></div>
+  <div id="touchButtons"><button id="touchMap" aria-label="Toggle minimap">Map</button><button id="touchPause">Pause</button></div>
+</div>
   <canvas id="game"></canvas>
 
   <!-- Compact HUD above minimap -->
@@ -530,6 +548,62 @@ function resetGame(full = true) {
 const keys = {};
 let pointerLocked = false;
 let mapVisible = false;
+const touchControls = document.getElementById('touchControls');
+const moveStick = document.getElementById('moveStick');
+const stickThumb = document.getElementById('stickThumb');
+const touchMove = { x:0, z:0 };
+let movePointer = null, lookPointer = null, lookX = 0, lookY = 0;
+function clearTouch() {
+  movePointer = lookPointer = null;
+  touchMove.x = touchMove.z = 0;
+  stickThumb.style.transform = '';
+}
+function updateStick(e) {
+  const r = moveStick.getBoundingClientRect();
+  const dx = e.clientX - r.left - r.width/2, dy = e.clientY - r.top - r.height/2;
+  const length = Math.hypot(dx, dy), scale = Math.min(1, 36 / (length || 1));
+  touchMove.x = length < 5 ? 0 : dx * scale / 36;
+  touchMove.z = length < 5 ? 0 : dy * scale / 36;
+  stickThumb.style.transform = `translate(${dx*scale}px, ${dy*scale}px)`;
+}
+moveStick.addEventListener('pointerdown', e => {
+  if (!state.playing || state.paused || movePointer !== null) return;
+  e.preventDefault(); movePointer = e.pointerId;
+  moveStick.setPointerCapture(e.pointerId); updateStick(e);
+});
+moveStick.addEventListener('pointermove', e => { if (e.pointerId === movePointer) updateStick(e); });
+for (const event of ['pointerup','pointercancel','lostpointercapture']) {
+  moveStick.addEventListener(event, e => {
+    if (e.pointerId !== movePointer) return;
+    movePointer = null; touchMove.x = touchMove.z = 0; stickThumb.style.transform = '';
+  });
+  canvas.addEventListener(event, e => { if (e.pointerId === lookPointer) lookPointer = null; });
+}
+canvas.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' || !state.playing || state.paused || lookPointer !== null) return;
+  e.preventDefault(); lookPointer = e.pointerId; lookX = e.clientX; lookY = e.clientY;
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', e => {
+  if (e.pointerId !== lookPointer || !state.playing || state.paused) return;
+  yaw -= (e.clientX-lookX) * mouseSensitivity * 2;
+  pitch = Math.max(-Math.PI/2+0.2, Math.min(Math.PI/2-0.2, pitch-(e.clientY-lookY)*mouseSensitivity*2));
+  lookX=e.clientX; lookY=e.clientY;
+});
+window.addEventListener('blur', () => { clearTouch(); for (const key in keys) keys[key]=false; });
+document.getElementById('touchMap').addEventListener('click', () => {
+  mapVisible = !mapVisible;
+  document.getElementById('mapFrame').classList.toggle('show', mapVisible);
+});
+document.getElementById('touchPause').addEventListener('click', () => {
+  clearTouch(); state.paused=true; menuSubtitle.textContent='Paused'; btnStart.textContent='Resume'; startScreen.style.display='grid';
+});
+function requestMouseLock() {
+  if (matchMedia('(pointer:coarse)').matches || !canvas.requestPointerLock) return;
+  const request = canvas.requestPointerLock();
+  if (request?.catch) request.catch(() => {});
+}
+
 
 const mouseBase = 0.0025;
 let mouseSensitivityFactor = 5.0;
@@ -554,7 +628,7 @@ document.addEventListener('keydown', e => {
         document.exitPointerLock();
       } else {
         startScreen.style.display = 'none';
-        canvas.requestPointerLock();
+        requestMouseLock();
       }
     }
   }
@@ -587,7 +661,7 @@ document.addEventListener('keydown', e => {
     if (pointerLocked) {
       document.exitPointerLock();
     } else if (state.playing && !state.paused) {
-      canvas.requestPointerLock();
+      requestMouseLock();
     }
   }
 });
@@ -622,7 +696,7 @@ btnStart.addEventListener('click', () => {
   state.paused = false;
   menuSubtitle.textContent = 'Arcade maze in first-person';
   btnStart.textContent = 'Start Game';
-  canvas.requestPointerLock();
+  requestMouseLock();
 });
 
 btnKeys.addEventListener('click', () => {
@@ -660,14 +734,14 @@ function canMoveTo(x, z) {
 
 function movePlayer(dt) {
   const speed = 7;
-  let mx = 0, mz = 0;
+  let mx = touchMove.x, mz = touchMove.z;
   if (keys['KeyW']) mz -= 1;
   if (keys['KeyS']) mz += 1;
   if (keys['KeyA']) mx -= 1;
   if (keys['KeyD']) mx += 1;
 
   if (mx !== 0 || mz !== 0) {
-    const len = Math.hypot(mx, mz);
+    const len = Math.max(1, Math.hypot(mx, mz));
     mx /= len; mz /= len;
 
     const sin = Math.sin(yaw);
@@ -1449,6 +1523,9 @@ let prev = performance.now();
 function loop(now) {
   const dt = Math.min(0.033, (now - prev) / 1000);
   prev = now;
+
+  touchControls.hidden = !state.playing || state.paused;
+  if (touchControls.hidden) clearTouch();
 
   // Pellet glow
   pelletMat.emissiveIntensity = 1.2 + Math.sin(now * 0.004) * 0.28;
