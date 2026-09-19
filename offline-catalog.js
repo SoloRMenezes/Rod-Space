@@ -15,8 +15,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "assets/vendor/three160/three.module.js",
-        "bytes": 1272972,
-        "hash": "76dea8151bc9352aef3528b4262e249b2604f62543828328db978d060d61a495"
+        "bytes": 1272971,
+        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
       },
       {
         "path": "assets/vendor/three160/controls/PointerLockControls.js",
@@ -24,8 +24,8 @@ self.OFFLINE_CATALOG = {
         "hash": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca"
       }
     ],
-    "bytes": 1754680,
-    "version": "00bcac13ba367398"
+    "bytes": 1754679,
+    "version": "aef55b617f11ee13"
   },
   "3d-drift": {
     "name": "Tokyo Drift",
@@ -106,12 +106,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "assets/vendor/three160/three.module.js",
-        "bytes": 1272972,
-        "hash": "76dea8151bc9352aef3528b4262e249b2604f62543828328db978d060d61a495"
+        "bytes": 1272971,
+        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
       }
     ],
-    "bytes": 1322697,
-    "version": "1084a01037dab01b"
+    "bytes": 1322696,
+    "version": "08ba1f4a2bfa088e"
   },
   "reaction": {
     "name": "Reaction",
