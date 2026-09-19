@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Parkour</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./assets/vendor/tailwind.js"></script>
     <style>
         body { margin: 0; overflow: hidden; touch-action: none; background-color: #111827; color: #fff; font-family: 'Inter', sans-serif; }
         #game-canvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
@@ -69,8 +69,8 @@
     <script type="importmap">
         {
             "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+                "three": "./assets/vendor/three160/three.module.js",
+                "three/addons/": "./assets/vendor/three160/"
             }
         }
     </script>
@@ -203,12 +203,10 @@
 
     <!-- Application Logic -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import * as THREE from 'three';
         import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
+        let initializeApp, getAuth, signInAnonymously, signInWithCustomToken, getFirestore, doc, getDoc, setDoc;
         // --- Firebase Setup ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-platformer-app';
         let firebaseConfig;
@@ -228,6 +226,10 @@
                 return;
             }
             try {
+                if (!navigator.onLine) return;
+                ({ initializeApp } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'));
+                ({ getAuth, signInAnonymously, signInWithCustomToken } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js'));
+                ({ getFirestore, doc, getDoc, setDoc } = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js'));
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
