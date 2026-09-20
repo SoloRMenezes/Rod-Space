@@ -672,8 +672,7 @@
         { id: "solo", label: "Solo Games" },
         { id: "party", label: "Party Games" },
         { id: "tool", label: "Tools" },
-        { id: "favorites", label: "Starred ★" },
-        { id: "pinned", label: "Pinned 📌" }
+        { id: "favorites", label: "Starred ★" }
       ];
 
       function renderCategories() {
@@ -690,10 +689,8 @@
         let items = PROJECTS_DATA.filter(proj => {
           if (window.offlineOnly && !window.offlineDownloads?.has(proj.id)) return false;
           const isFav = favorites.includes(proj.id);
-          const isPinned = pinned.includes(proj.id);
 
           if (activeCategory === "favorites") return isFav;
-          if (activeCategory === "pinned") return isPinned;
           if (activeCategory === "solo") return proj.type === "solo";
           if (activeCategory === "party") return proj.type === "party";
           if (activeCategory === "tool") return proj.type === "tool";
