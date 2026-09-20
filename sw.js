@@ -1,5 +1,5 @@
 importScripts('./offline-catalog.js');
-const SHELL = 'rod-shell-d7d551fdde791046';
+const SHELL = 'rod-shell-e1e022e602cc8952';
 const PREFIX = 'rod-game-';
 const BASE = new URL('./', self.location.href);
 const absolute = p => new URL(p, BASE).href;
@@ -72,8 +72,26 @@ self.addEventListener('fetch', e => {
   e.respondWith((async()=>{
     url.search='';url.hash='';
     for(const item of await installed(false)) {
+      if(e.request.mode==='navigate') {
+        const canonical=item.files.find(f=>f.path.endsWith('.html') && (absolute(f.path).replace(/(?:\/index)?\.html$/, '')===url.href.replace(/\/$/,'')));
+        if(canonical) return Response.redirect(absolute(canonical.path),302);
+      }
       const hit=await (await caches.open(item.key)).match(url.href);
-      if(hit) return hit;
+      if(hit) {
+        const range=e.request.headers?.get('range');
+        if(range) {
+          const bytes=await hit.arrayBuffer(), match=/^bytes=(\d*)-(\d*)$/.exec(range);
+          if(match) {
+            const start=match[1]?Number(match[1]):Math.max(0,bytes.byteLength-Number(match[2]));
+            const end=match[1]&&match[2]?Math.min(Number(match[2]),bytes.byteLength-1):bytes.byteLength-1;
+            if(start>end||start>=bytes.byteLength) return new Response(null,{status:416,headers:{'Content-Range':`bytes */${bytes.byteLength}`}});
+            const headers=new Headers(hit.headers);headers.set('Content-Range',`bytes ${start}-${end}/${bytes.byteLength}`);headers.set('Content-Length',end-start+1);headers.set('Accept-Ranges','bytes');
+            return new Response(bytes.slice(start,end+1),{status:206,headers});
+          }
+          return new Response(bytes,{headers:hit.headers});
+        }
+        return hit;
+      }
     }
     try {return await fetch(e.request);} catch(error) {
       const hit=await (await caches.open(SHELL)).match(url.href);

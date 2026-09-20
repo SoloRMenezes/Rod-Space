@@ -171,7 +171,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.151.3/build/three.min.js"></script>
+    <script src="./assets/vendor/offline-8eacf4588bcf.js"></script>
     <script>
         // --- DOM references ---
         const canvas = document.getElementById('screen'); // Used as WebGLRenderer target
@@ -439,7 +439,7 @@ function initAudio() {
 
             // Walls (scaled 2x width/depth, positions)
             // Load wall texture
-            const wallTexture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/brick_diffuse.jpg');
+            const wallTexture = new THREE.TextureLoader().load('./assets/vendor/nextbot-brick.jpg');
             wallTexture.wrapS = THREE.RepeatWrapping;
             wallTexture.wrapT = THREE.RepeatWrapping;
             wallTexture.repeat.set(1, 1);
@@ -471,7 +471,7 @@ function initAudio() {
 
             // --- BOT SPAWN ---
 const loader = new THREE.TextureLoader();
-const botTexture = loader.load('https://i.imgur.com/8RKXAIV.png');
+const botTexture = loader.load('./assets/vendor/nextbot.png');
 for (let b = 0; b < botSpawns.length; b++) {
     const botMaterial = new THREE.SpriteMaterial({ map: botTexture });
     const bot = new THREE.Sprite(botMaterial);

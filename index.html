@@ -134,14 +134,14 @@
         </div>
 
         <!-- Category Filter Badges -->
-        <div class="flex flex-wrap items-center gap-2 overflow-x-auto pb-1 scrollbar-none" id="categoriesContainer">
-          <!-- Rendered dynamically -->
-        </div>
+        <label class="flex items-center gap-3 text-xs text-slate-400">Filter
+          <select id="categoryFilter" class="bg-[#161b22] border border-slate-800 rounded-lg px-3 py-2 text-slate-200" aria-label="Filter games"></select>
+        </label>
       </div>
 
       <!-- Project List Container -->
           <section id="offline-bar" style="max-width:1280px;margin:16px auto;padding:0 24px;color:#94a3b8;font-size:13px">
-      <button id="offline-filter" type="button" style="color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px 12px">Offline games · <span id="offline-count">0 / 5</span></button>
+      <span>Downloads · <span id="offline-count">0 / 5</span></span>
       <span id="offline-storage"></span>
       <p id="offline-status" role="status" aria-live="polite">Preparing offline downloads…</p>
     </section>
@@ -567,7 +567,7 @@
 
       // Dynamic states
       let searchQuery = "";
-      let activeCategory = "all";
+      let activeCategory = window.offlineOnly ? "downloads" : "all";
       let sortBy = "newest";
 
       // Persistent lists
@@ -639,7 +639,7 @@
       const clearSearchBtn = document.getElementById("clearSearchBtn");
       const searchShortcut = document.getElementById("searchShortcut");
       const sortSelect = document.getElementById("sortSelect");
-      const categoriesContainer = document.getElementById("categoriesContainer");
+      const categoriesContainer = document.getElementById("categoryFilter");
       const projectsSection = document.getElementById("projectsSection");
 
       // Set input event handlers
@@ -671,6 +671,7 @@
       // Categories setup
       const CATEGORIES = [
         { id: "all", label: "All Works" },
+        { id: "downloads", label: "Downloads" },
         { id: "solo", label: "Solo Games" },
         { id: "party", label: "Party Games" },
         { id: "tool", label: "Tools" },
@@ -679,24 +680,14 @@
       ];
 
       function renderCategories() {
-        categoriesContainer.innerHTML = "";
-        CATEGORIES.forEach(cat => {
-          const btn = document.createElement("button");
-          const isActive = activeCategory === cat.id;
-          btn.className = `relative rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer border ${
-            isActive
-              ? "bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-950/20"
-              : "bg-[#161b22] border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
-          }`;
-          btn.textContent = cat.label;
-          btn.onclick = () => {
-            activeCategory = cat.id;
-            renderCategories();
-            render();
-          };
-          categoriesContainer.appendChild(btn);
-        });
+        categoriesContainer.innerHTML = CATEGORIES.map(cat => `<option value="${cat.id}">${cat.label}</option>`).join('');
+        categoriesContainer.value = activeCategory;
       }
+      categoriesContainer.onchange = () => {
+        activeCategory = categoriesContainer.value;
+        window.offlineOnly = activeCategory === 'downloads';
+        render();
+      };
 
       function getFilteredAndSorted() {
         let items = PROJECTS_DATA.filter(proj => {
@@ -905,7 +896,7 @@
       }
 
       // Initial Bootstrap
-      window.refreshOfflineCards = render;
+      window.refreshOfflineCards = () => { if(window.offlineOnly) activeCategory='downloads'; renderCategories(); render(); };
       renderCategories();
       render();
     </script>

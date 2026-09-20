@@ -121,7 +121,7 @@
 
 #touchControls { display:none; position:fixed; inset:0; z-index:10; pointer-events:none; }
 #touchControls[hidden] { display:none !important; }
-#moveStick { position:absolute; left:max(22px, env(safe-area-inset-left)); bottom:max(24px, env(safe-area-inset-bottom)); width:116px; height:116px; border:1px solid #bfe9ff80; border-radius:50%; background:#03060f66; pointer-events:auto; touch-action:none; }
+#moveStick { opacity:.3; transition:opacity .12s; position:absolute; left:max(22px, env(safe-area-inset-left)); bottom:max(24px, env(safe-area-inset-bottom)); width:116px; height:116px; border:1px solid #bfe9ff80; border-radius:50%; background:#03060f66; pointer-events:none; touch-action:none; }
 #stickThumb { position:absolute; left:36px; top:36px; width:44px; height:44px; border-radius:50%; background:#bfe9ff99; pointer-events:none; }
 #touchButtons { position:absolute; top:max(14px, env(safe-area-inset-top)); right:14px; display:flex; gap:8px; }
 #touchButtons button { pointer-events:auto; width:auto; padding:10px 14px; touch-action:manipulation; }
@@ -557,6 +557,7 @@ function clearTouch() {
   movePointer = lookPointer = null;
   touchMove.x = touchMove.z = 0;
   stickThumb.style.transform = '';
+  for(const key of ['position','left','top','bottom','opacity']) moveStick.style[key]='';
 }
 function updateStick(e) {
   const r = moveStick.getBoundingClientRect();
@@ -566,21 +567,25 @@ function updateStick(e) {
   touchMove.z = length < 5 ? 0 : dy * scale / 36;
   stickThumb.style.transform = `translate(${dx*scale}px, ${dy*scale}px)`;
 }
-moveStick.addEventListener('pointerdown', e => {
-  if (!state.playing || state.paused || movePointer !== null) return;
-  e.preventDefault(); movePointer = e.pointerId;
-  moveStick.setPointerCapture(e.pointerId); updateStick(e);
-});
-moveStick.addEventListener('pointermove', e => { if (e.pointerId === movePointer) updateStick(e); });
-for (const event of ['pointerup','pointercancel','lostpointercapture']) {
-  moveStick.addEventListener(event, e => {
-    if (e.pointerId !== movePointer) return;
-    movePointer = null; touchMove.x = touchMove.z = 0; stickThumb.style.transform = '';
-  });
-  canvas.addEventListener(event, e => { if (e.pointerId === lookPointer) lookPointer = null; });
+function endMovePointer(e) {
+  if(e.pointerId!==movePointer) return;
+  movePointer=null; touchMove.x=touchMove.z=0; stickThumb.style.transform='';
+  for(const key of ['position','left','top','bottom','opacity']) moveStick.style[key]='';
+}
+canvas.addEventListener('pointermove', e => { if(e.pointerId===movePointer) updateStick(e); });
+for(const event of ['pointerup','pointercancel','lostpointercapture']) {
+  canvas.addEventListener(event,endMovePointer);
+  canvas.addEventListener(event,e=>{if(e.pointerId===lookPointer)lookPointer=null;});
 }
 canvas.addEventListener('pointerdown', e => {
-  if (e.pointerType === 'mouse' || !state.playing || state.paused || lookPointer !== null) return;
+  if (e.pointerType === 'mouse' || !state.playing || state.paused) return;
+  if(e.clientX<innerWidth/2) {
+    if(movePointer!==null) return;
+    e.preventDefault(); movePointer=e.pointerId;
+    Object.assign(moveStick.style,{position:'fixed',left:(e.clientX-58)+'px',top:(e.clientY-58)+'px',bottom:'auto',opacity:'.9'});
+    canvas.setPointerCapture(e.pointerId);updateStick(e);return;
+  }
+  if(lookPointer!==null) return;
   e.preventDefault(); lookPointer = e.pointerId; lookX = e.clientX; lookY = e.clientY;
   canvas.setPointerCapture(e.pointerId);
 });

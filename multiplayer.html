@@ -44,7 +44,7 @@
             #instructions { display: none !important; }
         }
         
-        .joystick-zone { width: clamp(100px, 15vw, 140px); height: clamp(100px, 15vw, 140px); background: rgba(255,255,255,0.1); border-radius: 50%; position: relative; pointer-events: auto; touch-action: none; border: 2px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px); }
+        .joystick-zone { opacity:.3; pointer-events:none !important; transition:opacity .12s; width: clamp(100px, 15vw, 140px); height: clamp(100px, 15vw, 140px); background: rgba(255,255,255,0.1); border-radius: 50%; position: relative; pointer-events: auto; touch-action: none; border: 2px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px); }
         .joystick-knob { width: 40%; height: 40%; background: rgba(255,255,255,0.7); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 
         .action-btn { width: clamp(55px, 12vw, 75px); height: clamp(55px, 12vw, 75px); background: rgba(255,255,255,0.15); border-radius: 50%; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(12px, 2.5vw, 16px); border: 2px solid rgba(255,255,255,0.3); backdrop-filter: blur(4px); user-select: none; transition: transform 0.1s, background 0.1s; }
@@ -849,7 +849,7 @@
 
         window.addEventListener('blur', clearInputs);
         controls.addEventListener('unlock', clearInputs);
-        function clearInputs() { for(const k of Object.keys(inputs)) inputs[k]=typeof inputs[k]==='boolean'?false:0; }
+        function clearInputs() { for(const k of Object.keys(inputs)) inputs[k]=typeof inputs[k]==='boolean'?false:0; resetMoveStick(); lookTouchId=null; }
 
         // Mouse Wheel (Zoom)
         window.addEventListener('wheel', (e) => {
@@ -864,7 +864,7 @@
             GameState.preferences.zoomLevel=THREE.MathUtils.clamp(GameState.preferences.zoomLevel+delta,0,10);
         }
         let pinch=null;
-        const pinchTouches=e=>Array.from(e.touches).filter(t=>!t.target.closest('button, input, select, #joystick-move, #home-screen, #menu-overlay'));
+        const pinchTouches=e=>Array.from(e.touches).filter(t=>t.clientX>=innerWidth/2&&!t.target.closest('button, input, select, #joystick-move, #home-screen, #menu-overlay'));
         document.addEventListener('touchstart',e=>{
             if(homeOpen||isMenuOpen||!playing) return;
             const touches=pinchTouches(e);
@@ -906,10 +906,10 @@
 
         if (isTouchDevice) {
             // Movement Joystick
-            joystickMove.addEventListener('touchstart', handleMoveStart, {passive: false});
-            joystickMove.addEventListener('touchmove', handleMoveDrag, {passive: false});
-            joystickMove.addEventListener('touchend', handleMoveEnd);
-            joystickMove.addEventListener('touchcancel', handleMoveEnd);
+            document.addEventListener('touchstart', handleMoveStart, {passive: false});
+            document.addEventListener('touchmove', handleMoveDrag, {passive: false});
+            document.addEventListener('touchend', handleMoveEnd, {passive:false});
+            document.addEventListener('touchcancel', handleMoveEnd, {passive:false});
 
             // Look Area
             touchLookZone.addEventListener('touchstart', handleLookStart, {passive: false});
@@ -931,16 +931,21 @@
         }
 
         function handleMoveStart(e) {
+            if(homeOpen||isMenuOpen||!playing||moveTouchId!==null) return;
+            const touch=Array.from(e.changedTouches).find(t=>t.clientX<innerWidth/2 && !t.target.closest('button,input,select,#home-screen,#menu-overlay'));
+            if(!touch) return;
             e.preventDefault();
-            const touch = e.changedTouches[0];
+            const size=joystickMove.getBoundingClientRect().width;
+            Object.assign(joystickMove.style,{position:'fixed',left:(touch.clientX-size/2)+'px',top:(touch.clientY-size/2)+'px',opacity:'.9'});
             moveTouchId = touch.identifier;
             updateMoveJoystick(touch);
         }
 
         function handleMoveDrag(e) {
-            e.preventDefault();
+            if(moveTouchId===null) return;
             for (let i = 0; i < e.changedTouches.length; i++) {
                 if (e.changedTouches[i].identifier === moveTouchId) {
+                    e.preventDefault();
                     updateMoveJoystick(e.changedTouches[i]);
                     break;
                 }
@@ -970,11 +975,16 @@
             inputs.mobileMoveY = dy / maxDist;
         }
 
+        function resetMoveStick() {
+            moveTouchId=null;
+            for(const key of ['position','left','top','opacity']) joystickMove.style[key]='';
+            knobMove.style.transform='translate(-50%, -50%)';
+            inputs.mobileMoveX=inputs.mobileMoveY=0;
+        }
         function handleMoveEnd(e) {
-            e.preventDefault();
             for (let i = 0; i < e.changedTouches.length; i++) {
                 if (e.changedTouches[i].identifier === moveTouchId) {
-                    moveTouchId = null;
+                    resetMoveStick();
                     knobMove.style.transform = `translate(-50%, -50%)`;
                     inputs.mobileMoveX = 0;
                     inputs.mobileMoveY = 0;

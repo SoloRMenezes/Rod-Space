@@ -5,13 +5,11 @@ const offlineSize=n=>n<1024*1024?`${Math.ceil(n/1024)} KB`:`${(n/1024/1024).toFi
 window.offlineCardHTML=id=>{
   const game=OFFLINE_CATALOG[id];if(!game)return '';
   const saved=offlineDownloads.get(id),busy=offlineBusy===id;
-  return `<div style="margin-top:14px;display:flex;gap:8px;align-items:center;font-size:12px;color:#94a3b8"><button type="button" data-offline-id="${id}" ${!offlineWorker||offlineBusy?'disabled':''} style="border:1px solid #334155;border-radius:6px;padding:6px 9px;color:#cbd5e1;cursor:pointer;opacity:${!offlineWorker||offlineBusy?.length?'.5':'1'}">${busy?'Downloading…':saved?'Offload':'↓ Download'}</button><span>${saved?'✓ Offline · ':''}${offlineSize(saved?.bytes||game.bytes)}</span>${saved&&saved.version!==game.version?`<button data-offline-update="${id}" ${offlineBusy?'disabled':''}>Update</button>`:''}</div>`;
+  return `${game.note?`<p style="font-size:11px;color:#94a3b8;margin-top:10px">${game.note}</p>`:''}<div style="margin-top:14px;display:flex;gap:8px;align-items:center;font-size:12px;color:#94a3b8"><button type="button" data-offline-id="${id}" ${!offlineWorker||offlineBusy?'disabled':''} style="border:1px solid #334155;border-radius:6px;padding:6px 9px;color:#cbd5e1;cursor:pointer;opacity:${!offlineWorker||offlineBusy?.length?'.5':'1'}">${busy?'Downloading…':saved?'Offload':'↓ Download'}</button><span>${saved?'✓ Offline · ':''}${offlineSize(saved?.bytes||game.bytes)}</span>${saved&&saved.version!==game.version?`<button data-offline-update="${id}" ${offlineBusy?'disabled':''}>Update</button>`:''}</div>`;
 };
 function offlineRefresh(){
   document.getElementById('offline-count').textContent=`${offlineDownloads.size} / 5`;
   document.getElementById('offline-storage').textContent=' · '+offlineSize([...offlineDownloads.values()].reduce((n,g)=>n+g.bytes,0))+' downloaded';
-  document.getElementById('offline-filter').setAttribute('aria-pressed',String(offlineOnly));
-  document.getElementById('offline-filter').style.background=offlineOnly?'#1e3a5f':'transparent';
   window.refreshOfflineCards?.();
 }
 function offlineCall(action,id,onProgress){return new Promise((resolve,reject)=>{
@@ -43,7 +41,6 @@ document.addEventListener('click',e=>{
   const button=e.target.closest('[data-offline-id],[data-offline-update]');
   if(button){e.preventDefault();e.stopPropagation();offlineAction(button.dataset.offlineId||button.dataset.offlineUpdate,!!button.dataset.offlineUpdate);}
 });
-document.getElementById('offline-filter').onclick=()=>{offlineOnly=!offlineOnly;offlineRefresh();};
 window.addEventListener('offline',()=>{offlineOnly=true;offlineRefresh();document.getElementById('offline-status').textContent='You’re offline. Downloaded games are ready to play.';});
 window.addEventListener('online',()=>{document.getElementById('offline-status').textContent='Back online. You can download or update games.';});
 (async()=>{
