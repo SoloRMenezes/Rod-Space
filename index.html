@@ -140,11 +140,8 @@
       </div>
 
       <!-- Project List Container -->
-          <section id="offline-bar" style="max-width:1280px;margin:16px auto;padding:0 24px;color:#94a3b8;font-size:13px">
-      <span>Downloads · <span id="offline-count">0 / 5</span></span>
-      <span id="offline-storage"></span>
-      <p id="offline-status" role="status" aria-live="polite">Preparing offline downloads…</p>
-    </section>
+          <p id="offline-status" role="status" aria-live="polite" style="color:#94a3b8;font-size:13px"></p>
+    <style>#offline-status:empty { display:none; } #offline-status:not(:empty) { margin:16px 0; }</style>
 
 <div id="projectsSection" class="space-y-12">
         <!-- Rendered dynamically -->

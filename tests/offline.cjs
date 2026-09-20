@@ -11,15 +11,15 @@ async function request(path,mode='navigate'){let pending;handlers.fetch({request
  assert.equal(Object.keys(context.self.OFFLINE_CATALOG).length,36);
  corrupt=true;assert.match((await message('download',ids[0])).error,/changed/);assert.equal((await message('status')).items.length,0);corrupt=false;
  for(const id of ids.slice(0,5))assert.equal((await message('download',id)).items.some(g=>g.id===id),true);
- assert.match((await message('download',ids[5])).error,/Five games/);
+ assert.equal((await message('download',ids[5])).items.length,6);
  online=false;
- for(const id of ids.slice(0,5)){const g=context.self.OFFLINE_CATALOG[id];for(const f of g.files)assert.equal((await request(f.path,'cors')).status,200);}
+ for(const id of ids){const g=context.self.OFFLINE_CATALOG[id];for(const f of g.files)assert.equal((await request(f.path,'cors')).status,200);}
  assert.match(await (await request('')).text(),/ROD/);
  assert.equal((await request('not-downloaded.html')).status,503);
- assert.equal((await message('offload',ids[0])).items.length,4);
- online=true;assert.equal((await message('download',ids[5])).items.length,5);
+ assert.equal((await message('offload',ids[0])).items.length,5);
+ online=true;assert.equal((await message('download',ids[0])).items.length,6);
  assert.equal((await request('nextup')).status,302);
  let rangeResponse;handlers.fetch({request:{url:'https://example.test/Rod-Space/nextup/index.html',method:'GET',mode:'cors',headers:new Headers({range:'bytes=0-9'})},respondWith:p=>rangeResponse=p});
  assert.equal((await rangeResponse).status,206);assert.equal((await (await rangeResponse).arrayBuffer()).byteLength,10);
- console.log('PASS: corrupt download rollback, five-game cap, all cached assets offline, offline hub, missing-game fallback, offload and replacement.');
+ console.log('PASS: corrupt download rollback, more than five downloads, all cached assets offline, offline hub, missing-game fallback, offload and replacement.');
 })().catch(e=>{console.error(e);process.exitCode=1});

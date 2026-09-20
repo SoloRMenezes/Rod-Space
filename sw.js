@@ -1,5 +1,5 @@
 importScripts('./offline-catalog.js');
-const SHELL = 'rod-shell-e1e022e602cc8952';
+const SHELL = 'rod-shell-42830123f57c3573';
 const PREFIX = 'rod-game-';
 const BASE = new URL('./', self.location.href);
 const absolute = p => new URL(p, BASE).href;
@@ -41,7 +41,6 @@ self.addEventListener('message', e => {
           for(const key of await caches.keys()) if(key.startsWith(PREFIX+id+'-')) await caches.delete(key);
         } else if(action==='download') {
           const game=self.OFFLINE_CATALOG[id]; if(!game) throw Error('This game is not available offline yet.');
-          if(!current.some(x=>x.id===id)&&current.length>=5) throw Error('Five games are downloaded. Offload one first.');
           const key=PREFIX+id+'-'+game.version;
           if(current.some(x=>x.key===key)) {port.postMessage({done:true,items:current});return;}
           await caches.delete(key);
