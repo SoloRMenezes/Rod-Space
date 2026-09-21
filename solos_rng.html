@@ -54,6 +54,13 @@
         .brand { margin: .5rem 0 1.5rem; display:flex;justify-content:space-between;align-items:end;border-bottom:1px solid #272b35;padding-bottom:1.2rem; }
         .brand h1 { margin: 0; font-size: clamp(2.1rem, 10vw, 3.5rem); letter-spacing: -.08em; line-height: .9; }
         .brand p { color: var(--text-dim); margin: .65rem 0 0; }
+        #screen-home { min-height: calc(100vh - 3rem); justify-content:center; }
+        #screen-home .brand { display:block;border:0;margin:0 0 3rem;padding:0; }
+        #screen-home .brand h1 { font-size:clamp(4rem,20vw,7rem); }
+        #screen-home .brand p { font-size:1.05rem;max-width:330px;line-height:1.5; }
+        .home-progress { color:var(--text-dim);font-size:.78rem;font-weight:800;letter-spacing:.08em;margin-bottom:1rem; }
+        body.home-mode .header, body.home-mode .nav-bar { display:none; }
+        .home-button { border:0;background:transparent;color:var(--text-dim);font-size:.75rem;font-weight:900;cursor:pointer;padding:6px 8px 6px 0; }
 
         /* SCREEN TRANSITIONS */
         .screen { 
@@ -273,19 +280,25 @@
         .rarity-table td:last-child { text-align: right; color: var(--text-main); font-weight: bold; }
     </style>
 </head>
-<body>
+<body class="home-mode">
 
 <div id="msg-box">Message</div>
 
 <div class="game-container">
-    <div class="brand"><div><h1>SOLO'S<br>RNG</h1><p>Build the collection. Chase the impossible drops.</p></div><div id="collection-count" style="font-weight:900;color:var(--text-dim)">0 / 0</div></div>
     <div class="header">
+        <button class="home-button" onclick="showScreen('home')">← HOME</button>
         <div class="currency-display">🪙 <span id="coin-balance">0</span></div>
         <div style="font-size: 0.7rem; color: var(--text-dim);" id="header-inv-cap">Bag: 0/10</div>
     </div>
 
     <!-- SCREENS -->
-    <div id="screen-game" class="screen active-screen">
+    <div id="screen-home" class="screen active-screen">
+        <div class="brand"><h1>SOLO'S<br>RNG</h1><p>Build a collection of ordinary treasures and impossibly rare artifacts.</p></div>
+        <div class="home-progress">COLLECTION <span id="collection-count">0 / 0</span></div>
+        <button class="btn-primary" onclick="showScreen('game')">PLAY</button>
+    </div>
+
+    <div id="screen-game" class="screen">
         <div class="display-area" id="main-display">
             <div id="item-emoji" class="item-emoji-display">📦</div>
             <div class="item-name" id="item-name">The Archive</div>
@@ -426,7 +439,8 @@
         document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active-screen'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById('screen-' + s).classList.add('active-screen');
-        document.getElementById('nav-' + s).classList.add('active');
+        document.getElementById('nav-' + s)?.classList.add('active');
+        document.body.classList.toggle('home-mode',s==='home');
         if (s === 'collection') renderCollection();
     }
 
