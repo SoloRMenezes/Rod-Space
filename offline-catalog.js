@@ -1,4 +1,27 @@
 self.OFFLINE_CATALOG = {
+  "shit-spiral": {
+    "name": "Shit Spiral",
+    "page": "shit-spiral.html",
+    "files": [
+      {
+        "path": "disaster-cards.js",
+        "bytes": 27489,
+        "hash": "b09fc1257686f666ea134bf6b7f0c3334b31ab11961ae92cfc16037dd1b31f26"
+      },
+      {
+        "path": "disaster-game.js",
+        "bytes": 8783,
+        "hash": "f586399746f068b29f7e6de4e4faa12cacda05d70b73f9b05f252965a923d27a"
+      },
+      {
+        "path": "shit-spiral.html",
+        "bytes": 7575,
+        "hash": "d60dec4c40360a8a18f5367f9460c9941ec3d7a2d57027ab0d506cc743f4f674"
+      }
+    ],
+    "bytes": 43847,
+    "version": "9f2fab2548fb6f6e"
+  },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
     "page": "DND.html",
@@ -28,12 +51,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "piano.html",
-        "bytes": 6782,
-        "hash": "9af7ea9ff4134fe85f6de0f8e439651fee949e91125b3442d2d176a871adfbbe"
+        "bytes": 7431,
+        "hash": "94434acb6bbd33bc6892d2e6b31dfb382b3757cf3859de8cdcdd3ab2b4e34c56"
       }
     ],
-    "bytes": 6782,
-    "version": "bbf606c659d68447"
+    "bytes": 7431,
+    "version": "a8c401a301bf0f97"
   },
   "counter": {
     "name": "Counter",
@@ -5335,12 +5358,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "orbit-boss.html",
-        "bytes": 9414,
-        "hash": "26e5eec73d7c2de2d72f3b87ec2a6e204593d7dc811ad9526b910e1a11c6854a"
+        "bytes": 8045,
+        "hash": "30342dd54a95e468af63cb6240c74a5ca6d60e421d45015638b6192fbb3c8b77"
       }
     ],
-    "bytes": 9414,
-    "version": "60ef4a019c1bdd6f"
+    "bytes": 8045,
+    "version": "c763194362d795b6"
   },
   "pac-man-3d": {
     "name": "Pac-Man 3D",
@@ -5353,12 +5376,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50032,
-        "hash": "c133b50000b1129e9b7612aa028740b8b27f235ea36ef2ce79dac7ae9405da3d"
+        "bytes": 50730,
+        "hash": "139a322cce6fec833287ba953adee02e53f9a07748fb04c8769f60d823081e18"
       }
     ],
-    "bytes": 1323003,
-    "version": "78eae8ac0b1e5c6a"
+    "bytes": 1323701,
+    "version": "022b35a1f4cf25c4"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",

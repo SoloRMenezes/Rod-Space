@@ -1,196 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piano</title>
-    <style>
-        body {
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #0f172a;
-            font-family: sans-serif;
-            overflow: hidden;
-            touch-action: manipulation;
-        }
-
-        .piano {
-            display: flex;
-            background: #020617;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.7);
-            position: relative;
-        }
-
-        .key {
-            width: 50px;
-            height: 200px;
-            background: linear-gradient(to bottom, #eee 0%, #fff 100%);
-            border: 1px solid #94a3b8;
-            border-radius: 0 0 6px 6px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 15px;
-            color: #64748b;
-            font-weight: bold;
-            transition: transform 0.05s, box-shadow 0.05s, background 0.1s;
-            user-select: none;
-            position: relative;
-        }
-
-        .key.black {
-            width: 34px;
-            height: 120px;
-            background: linear-gradient(to bottom, #334155 0%, #1e293b 100%);
-            border: none;
-            margin-left: -17px;
-            margin-right: -17px;
-            z-index: 2;
-            color: #94a3b8;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
-        }
-
-        @media (min-width: 768px) {
-            .piano { padding: 35px; }
-            .key { width: 80px; height: 300px; font-size: 1.2rem; }
-            .key.black { width: 54px; height: 180px; margin-left: -27px; margin-right: -27px; }
-        }
-
-        .key:active, .key.active {
-            background: #8fc0e3;
-            color: #020617;
-            transform: translateY(6px);
-            box-shadow: inset 0 5px 10px rgba(0,0,0,0.2);
-        }
-
-        .key.black:active, .key.black.active {
-            background: #475569;
-            color: #fff;
-        }
-    </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Piano</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100svh;background:#111518;color:#edf0ed;font:15px system-ui,sans-serif;display:grid;place-items:center;padding:24px max(12px,env(safe-area-inset-left));touch-action:manipulation}main{width:min(100%,940px)}header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}h1{font-size:24px;margin:0}header p{color:#97a29e;margin:6px 0 0}.controls{display:flex;align-items:center;gap:16px;flex-wrap:wrap}button{font:inherit;color:inherit;background:#222a2b;border:1px solid #475453;border-radius:6px;padding:10px 14px;cursor:pointer}button[aria-pressed=true]{color:#17211d;background:#bbddcb}label{display:flex;align-items:center;gap:8px;color:#abb7b1}input{accent-color:#bbddcb;width:90px}.piano{position:relative;display:flex;width:100%;padding:12px 8px 8px;background:#080b0d;border-radius:8px;touch-action:none;user-select:none;-webkit-user-select:none}.key{flex:1;min-width:0;height:clamp(185px,32vw,310px);padding:0 0 16px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;border:1px solid #99a39f;border-radius:0 0 5px 5px;background:#eeeae0;color:#424b48;touch-action:none}.key.black{position:absolute;top:12px;width:6%;height:60%;z-index:2;background:#252c2c;color:#d4ddd8;border-color:#060909;box-shadow:0 5px 0 #080b0d}.key.active{background:#b4dcca;color:#162a21;box-shadow:inset 0 5px 8px #36483d55}.key.black.active{background:#638e7b;color:white;box-shadow:0 2px 0 #080b0d}.key small{opacity:.6;font-size:10px}.hint{text-align:center;color:#8c9992;line-height:1.7;margin-top:22px;font-size:13px}#status{color:#dbb583;min-height:18px;text-align:center}@media(max-width:600px){header{align-items:flex-start;flex-direction:column}.controls{width:100%;justify-content:space-between}.key{font-size:11px}.key small{display:none}.key.black{font-size:9px}header p{font-size:13px}}@media(max-height:440px){body{padding-top:10px;padding-bottom:10px}header{margin-bottom:10px;flex-direction:row}.key{height:175px}.hint{margin:8px 0}#status:empty{display:none}}
+</style>
 </head>
-<body>
-
-    <div class="piano">
-        <div class="key" data-note="261.63" data-key="a">A</div>
-        <div class="key black" data-note="277.18" data-key="w">W</div>
-        <div class="key" data-note="293.66" data-key="s">S</div>
-        <div class="key black" data-note="311.13" data-key="e">E</div>
-        <div class="key" data-note="329.63" data-key="d">D</div>
-        <div class="key" data-note="349.23" data-key="f">F</div>
-        <div class="key black" data-note="369.99" data-key="t">T</div>
-        <div class="key" data-note="392.00" data-key="g">G</div>
-        <div class="key black" data-note="415.30" data-key="y">Y</div>
-        <div class="key" data-note="440.00" data-key="h">H</div>
-        <div class="key black" data-note="466.16" data-key="u">U</div>
-        <div class="key" data-note="493.88" data-key="j">J</div>
-        <div class="key" data-note="523.25" data-key="k">K</div>
-        <div class="key black" data-note="554.37" data-key="o">O</div>
-        <div class="key" data-note="587.33" data-key="l">L</div>
-        <div class="key black" data-note="622.25" data-key="p">P</div>
-        <div class="key" data-note="659.25" data-key="ç">Ç</div>
-    </div>
-
+<body><main>
+<header><div><h1>Piano</h1><p>Hold a note. Slide a melody. Play a chord.</p></div><div class="controls"><button id="sustain" aria-pressed="false">Sustain</button><label>Volume <input id="volume" type="range" min="0" max="100" value="65"></label></div></header>
+<div class="piano" id="piano" aria-label="Piano keyboard"></div>
+<p class="hint">Touch or click the keys · A–L and ; for white keys · W E T Y U O P for black keys<br>Hold Shift for sustain · Release to let the notes fade</p><div id="status" role="status"></div>
+</main>
 <script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let isSustaining = false;
-    let isSoft = false;
-    const activeNotes = new Set();
-
-    function playPianoNote(freq) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const now = audioCtx.currentTime;
-        
-        const osc = audioCtx.createOscillator();
-        const masterGain = audioCtx.createGain();
-        
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now);
-        
-        const volume = isSoft ? 0.15 : 0.4;
-        // Natural decay is short (1.5s), Sustained decay is long (4.0s)
-        const decayTime = isSustaining ? 4.0 : (isSoft ? 0.4 : 1.5);
-
-        masterGain.gain.setValueAtTime(0, now);
-        masterGain.gain.linearRampToValueAtTime(volume, now + 0.02);
-        
-        // Always set an exponential ramp to stop so notes don't ring forever
-        masterGain.gain.exponentialRampToValueAtTime(0.0001, now + decayTime);
-
-        osc.connect(masterGain);
-        masterGain.connect(audioCtx.destination);
-        
-        osc.start(now);
-        osc.stop(now + decayTime);
-        
-        const noteObj = { osc, gain: masterGain, startTime: now };
-        activeNotes.add(noteObj);
-
-        // Cleanup the set once the note has naturally faded out
-        setTimeout(() => activeNotes.delete(noteObj), decayTime * 1000);
-    }
-
-    function stopSustain() {
-        const now = audioCtx.currentTime;
-        activeNotes.forEach(note => {
-            // Quickly fade out whatever is currently ringing when Shift is released
-            note.gain.gain.cancelScheduledValues(now);
-            note.gain.gain.setValueAtTime(note.gain.gain.value, now);
-            note.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
-            note.osc.stop(now + 0.3);
-        });
-        activeNotes.clear();
-    }
-
-    const handleInput = (el) => {
-        if (!el) return;
-        playPianoNote(parseFloat(el.dataset.note));
-        el.classList.add('active');
-    };
-
-    const removeActive = (el) => el && el.classList.remove('active');
-
-    document.querySelectorAll('.key').forEach(key => {
-        key.addEventListener('mousedown', () => handleInput(key));
-        key.addEventListener('mouseup', () => removeActive(key));
-        key.addEventListener('mouseleave', () => removeActive(key));
-    });
-
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'Shift') {
-            isSustaining = true;
-            return;
-        }
-        if (e.key === 'Control') {
-            isSoft = true;
-            return;
-        }
-        if (e.repeat) return;
-        const keyVal = e.key === 'Ç' || e.key === 'ç' ? 'ç' : e.key.toLowerCase();
-        const keyEl = document.querySelector(`.key[data-key="${keyVal}"]`);
-        handleInput(keyEl);
-    });
-
-    window.addEventListener('keyup', (e) => {
-        if (e.key === 'Shift') {
-            isSustaining = false;
-            stopSustain();
-            return;
-        }
-        if (e.key === 'Control') {
-            isSoft = false;
-            return;
-        }
-        const keyVal = e.key === 'Ç' || e.key === 'ç' ? 'ç' : e.key.toLowerCase();
-        const keyEl = document.querySelector(`.key[data-key="${keyVal}"]`);
-        removeActive(keyEl);
-    });
-</script>
-</body>
-</html>
+const notes=[['C4','a',60],['C♯','w',61],['D4','s',62],['D♯','e',63],['E4','d',64],['F4','f',65],['F♯','t',66],['G4','g',67],['G♯','y',68],['A4','h',69],['A♯','u',70],['B4','j',71],['C5','k',72],['C♯','o',73],['D5','l',74],['D♯','p',75],['E5',';',76]];
+const piano=document.getElementById('piano'), sustainButton=document.getElementById('sustain'), volume=document.getElementById('volume');
+const keyMap=new Map(), held=new Map(), voices=new Set();let audio,master,compressor,sustain=false,shift=false;
+let white=0;
+for(const [name,letter,midi] of notes){const black=name.includes('♯');const key=document.createElement('button');key.className='key'+(black?' black':'');key.dataset.midi=midi;key.setAttribute('aria-label',name+' ('+letter.toUpperCase()+')');key.innerHTML=name+'<small>'+letter.toUpperCase()+'</small>';if(black)key.style.left=`calc(8px + (100% - 16px) * ${white/10} - 3%)`;else white++;keyMap.set(letter,key);piano.append(key);}
+keyMap.set('ç',keyMap.get(';'));
+function ensureAudio(){if(!audio){audio=new (window.AudioContext||window.webkitAudioContext)();master=audio.createGain();master.gain.value=Number(volume.value)/100*.32;compressor=audio.createDynamicsCompressor();master.connect(compressor);compressor.connect(audio.destination);}if(audio.state==='suspended')audio.resume().catch(()=>{document.getElementById('status').textContent='Tap a key to enable sound.';});}
+function paint(key){key.classList.toggle('active',[...held.values()].some(v=>v.key===key));}
+function release(voice,immediate=false){if(voice.released)return;voice.released=true;const t=audio.currentTime;voice.gain.gain.cancelScheduledValues(t);voice.gain.gain.setTargetAtTime(.0001,t,immediate?.015:.12);for(const osc of voice.oscs)osc.stop(t+(immediate?.08:.7));}
+function noteOff(id){const v=held.get(id);if(!v)return;held.delete(id);paint(v.key);if(!sustain&&!shift)release(v);}
+function noteOn(id,key){if(held.get(id)?.key===key)return;noteOff(id);if(!key)return;try{ensureAudio();}catch{document.getElementById('status').textContent='Audio is unavailable in this browser.';return;}if(voices.size>=32)release([...voices].find(v=>!v.released)||[...voices][0],true);
+const gain=audio.createGain(),t=audio.currentTime,f=440*2**((Number(key.dataset.midi)-69)/12);gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(.55,t+.008);gain.gain.exponentialRampToValueAtTime(.18,t+.3);gain.gain.exponentialRampToValueAtTime(.001,t+7);gain.connect(master);
+const partials=[];const oscs=[1,2,3].map((harmonic,i)=>{const osc=audio.createOscillator(),partial=audio.createGain();osc.type='sine';osc.frequency.value=f*harmonic;partials.push(partial);partial.gain.value=[1,.24,.08][i];osc.connect(partial);partial.connect(gain);osc.start(t);osc.stop(t+8);osc.onended=()=>{osc.disconnect();partial.disconnect();};return osc;});
+const voice={key,gain,oscs,released:false};oscs[0].onended=()=>{oscs[0].disconnect();partials[0].disconnect();gain.disconnect();voices.delete(voice);};voices.add(voice);held.set(id,voice);paint(key);document.getElementById('status').textContent='';}
+function updateSustain(){sustainButton.setAttribute('aria-pressed',String(sustain||shift));if(!sustain&&!shift)for(const v of voices)if(![...held.values()].includes(v))release(v);}
+sustainButton.onclick=()=>{sustain=!sustain;updateSustain();};volume.oninput=()=>{if(master)master.gain.setTargetAtTime(Number(volume.value)/100*.32,audio.currentTime,.02);};
+piano.addEventListener('pointerdown',e=>{if(e.button!==0)return;const key=e.target.closest('.key');if(!key)return;e.preventDefault();piano.setPointerCapture(e.pointerId);noteOn('p'+e.pointerId,key);});
+piano.addEventListener('pointermove',e=>{if(!piano.hasPointerCapture(e.pointerId))return;const key=document.elementFromPoint(e.clientX,e.clientY)?.closest('.key');noteOn('p'+e.pointerId,key&&piano.contains(key)?key:null);});
+for(const event of ['pointerup','pointercancel','lostpointercapture'])piano.addEventListener(event,e=>noteOff('p'+e.pointerId));
+addEventListener('keydown',e=>{if(e.target.matches('input'))return;if(e.key==='Shift'){shift=true;updateSustain();return;}const key=keyMap.get(e.key.toLowerCase());if(key&&!e.repeat){e.preventDefault();noteOn('k'+e.code,key);}});
+addEventListener('keyup',e=>{if(e.key==='Shift'){shift=false;updateSustain();}noteOff('k'+e.code);});
+function silence(){for(const id of [...held.keys()])noteOff(id);for(const v of voices)release(v,true);shift=false;updateSustain();}
+addEventListener('blur',silence);document.addEventListener('visibilitychange',()=>{if(document.hidden)silence();});
+</script></body></html>

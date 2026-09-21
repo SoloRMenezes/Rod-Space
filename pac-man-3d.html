@@ -46,6 +46,7 @@
     padding:0 10px;
     margin-bottom:6px;
   }
+  #mapScoreValue{font-size:36px}
   .mapDot{
     width:26px;
     height:26px;
@@ -125,12 +126,18 @@
 #stickThumb { position:absolute; left:36px; top:36px; width:44px; height:44px; border-radius:50%; background:#bfe9ff99; pointer-events:none; }
 #touchButtons { position:absolute; top:max(14px, env(safe-area-inset-top)); right:14px; display:flex; gap:8px; }
 #touchButtons button { pointer-events:auto; width:auto; padding:10px 14px; touch-action:manipulation; }
-@media (any-pointer:coarse) {
+@media (any-pointer:coarse), (max-width:600px) {
   #touchControls { display:block; }
   #game { touch-action:none; }
   .menu { box-sizing:border-box; max-height:94dvh; overflow:auto; }
-  #mapFrame.show { bottom:158px; }
-  #hudMini { bottom:400px; }
+  #mapFrame, #mapFrame.show { left:max(10px,env(safe-area-inset-left)); top:max(10px,env(safe-area-inset-top)); bottom:auto; width:clamp(110px,28vw,150px); height:auto; padding:6px; border-radius:10px; pointer-events:none; transform:translateY(-12px); transition:opacity .2s,transform .2s; }
+  #mapFrame.show { transform:translateY(0); }
+  #mapTopBar { height:20px; min-height:20px; padding:0; margin:0 0 3px; background:transparent; }
+  #mapScoreValue { font-size:18px; }
+  .mapDot { display:none; }
+  #map { width:100%; height:auto; aspect-ratio:1; box-sizing:border-box; }
+  #hudMini { left:12px; top:180px; bottom:auto; }
+  @media (max-height:480px) { #mapFrame, #mapFrame.show { width:105px; } #hudMini { top:145px; } }
 }
 </style>
 </head>
@@ -151,7 +158,7 @@
   <!-- Minimap -->
   <div id="mapFrame">
     <div id="mapTopBar">
-      <strong id="mapScoreValue" style="font-size:36px;font-weight:900;color:#e7f3ff;margin:0 auto;margin-top:0px;">0</strong>
+      <strong id="mapScoreValue" style="font-weight:900;color:#e7f3ff;margin:0 auto;margin-top:0px;">0</strong>
     </div>
     <canvas id="map" width="230" height="230" aria-label="Minimap"></canvas>
   </div>
