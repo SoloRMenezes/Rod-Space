@@ -798,206 +798,206 @@ const DISASTER_CARDS = [
   {
     "id": 159,
     "score": 80.0,
-    "text": "Your new house has termites and the survey described them as “active timber features”."
+    "text": "You wake up after a blackout drunk night married to your ex's dad. Neither of you remembers whose idea it was."
   },
   {
     "id": 160,
     "score": 80.5,
-    "text": "You get dumped via a shared grocery list. The final item is “my things by Friday”."
+    "text": "Your partner dumps you by adding ‘new boyfriend's condoms’ to your shared grocery list."
   },
   {
     "id": 161,
     "score": 81.0,
-    "text": "Your hard drive dies and the backup turns out to be a shortcut to the hard drive."
+    "text": "Your hard drive dies with your life's work and an unreleased sex tape. The recovery shop restores only the sex tape."
   },
   {
     "id": 162,
     "score": 81.5,
-    "text": "You crash a rental car into the sign explaining the damage charges."
+    "text": "You total a rental hearse during a funeral procession and the coffin keeps going without you."
   },
   {
     "id": 163,
     "score": 82.0,
-    "text": "You discover the contractor renovating your bathroom learned plumbing yesterday from a podcast."
+    "text": "Your toilet explodes during a dinner party and coats every guest from the waist down."
   },
   {
     "id": 164,
     "score": 82.5,
-    "text": "Your partner proposes a break and introduces their “break coordinator” the same evening."
+    "text": "Your partner asks for an open relationship, then reveals everyone at the table already knew except you."
   },
   {
     "id": 165,
     "score": 83.0,
-    "text": "Your small business goes viral for a typo that makes the product sound like a threat."
+    "text": "Your business accidentally ships edible underwear instead of school uniforms to three hundred parents."
   },
   {
     "id": 166,
     "score": 83.5,
-    "text": "Your wedding cake collapses onto the only surviving copy of your vows."
+    "text": "Your wedding cake contains the ring, a used condom, and absolutely no explanation from the baker."
   },
   {
     "id": 167,
     "score": 84.0,
-    "text": "You accidentally transfer your rent to a stranger whose reply is “absolute legend”."
+    "text": "You accidentally send your rent money to your ex with the reference ‘one last ride’. Their new partner replies."
   },
   {
     "id": 168,
     "score": 84.5,
-    "text": "A sewage pipe bursts in your newly renovated kitchen during the housewarming."
+    "text": "The sewage main erupts through your toilet during sex and floods the entire building before either of you can get dressed."
   },
   {
     "id": 169,
     "score": 85.0,
-    "text": "Your insurer rejects your claim because the disaster technically happened on a Tuesday."
+    "text": "Your insurer rejects your house-fire claim because your smoke alarm was one day past its replacement date."
   },
   {
     "id": 170,
     "score": 85.5,
-    "text": "Your boss replaces you with a chatbot trained on your messages. Its first act is to complain about your boss."
+    "text": "Your boss screenshares your private messages about everyone in the office, then asks you to finish the presentation."
   },
   {
     "id": 171,
     "score": 86.0,
-    "text": "You come home to find your partner and their new partner assembling your furniture badly."
+    "text": "You come home early to find your partner, your boss, and your childhood bully sharing your bed and your takeaway."
   },
   {
     "id": 172,
     "score": 86.5,
-    "text": "Your home is declared unsafe, and the only available hotel hosts a month-long brass-band festival."
+    "text": "Your home is condemned because a corpse has been decomposing inside the shared wall since before you moved in."
   },
   {
     "id": 173,
     "score": 87.0,
-    "text": "You spend your savings on a food truck that legally cannot carry food."
+    "text": "You spend your savings opening a restaurant. Its grand opening becomes the city's largest recorded food-poisoning outbreak."
   },
   {
     "id": 174,
     "score": 87.5,
-    "text": "Your identity thief takes out a loan to start a podcast in your name."
+    "text": "Your identity thief starts an adult channel in your name and becomes more successful than you have ever been."
   },
   {
     "id": 175,
     "score": 88.0,
-    "text": "Your landlord evicts you so their nephew can “explore becoming an indoor DJ”."
+    "text": "Your landlord evicts you, lists your belongings as furnished, and rents the place to the person your partner cheated with."
   },
   {
     "id": 176,
     "score": 88.5,
-    "text": "You find out your supposedly paid tax bill went to a convincing website run by a man called TaxDaddy."
+    "text": "You learn your accountant spent your tax money on a sex dungeon registered under your name."
   },
   {
     "id": 177,
     "score": 89.0,
-    "text": "Your house sale falls through after the buyer's survey finds an undocumented basement full of bees."
+    "text": "The police find a secret room under your house containing restraints, cameras, and documents with your name on them."
   },
   {
     "id": 178,
     "score": 89.5,
-    "text": "You are stranded abroad with no passport, no wallet, and a phone on one percent."
+    "text": "You wake up naked on a foreign beach with no passport, no memory, and a fresh tattoo reading ‘PROPERTY OF GARY’."
   },
   {
     "id": 179,
     "score": 90.0,
-    "text": "Your partner announces your breakup during a quiz night and your team still has to finish the round."
+    "text": "Your partner announces your breakup onstage, then proposes to your teammate while the pub scores your reaction."
   },
   {
     "id": 180,
     "score": 90.5,
-    "text": "Your pension fund turns out to be three men and a spreadsheet called trust_me_final_FINAL."
+    "text": "Your pension disappears into a crypto coin named after a cartoon testicle. Your dad convinced the whole family to buy it."
   },
   {
     "id": 181,
     "score": 91.0,
-    "text": "You take a year off to write a novel. Your laptop gets stolen on the way to back it up."
+    "text": "Your unpublished autobiography leaks. Every person you insulted receives a highlighted copy from an anonymous sender."
   },
   {
     "id": 182,
     "score": 91.5,
-    "text": "Your entire wedding budget disappears with a planner whose business address is a closed kebab shop."
+    "text": "Your wedding planner vanishes with the budget and reappears online marrying your fiancé at the venue you paid for."
   },
   {
     "id": 183,
     "score": 92.0,
-    "text": "Your business partner empties the account and leaves a motivational quote on the office wall."
+    "text": "Your parents' homemade sex tape opens instead of the film at family movie night. The television remote stops working."
   },
   {
     "id": 184,
     "score": 92.5,
-    "text": "A tree falls through your roof. The tree surgeon invoices you for “express access”."
+    "text": "A tree crushes your bedroom while you are having sex. The rescue footage shows everything live on national television."
   },
   {
     "id": 185,
     "score": 93.0,
-    "text": "You discover your house was sold using forged documents while you were on holiday."
+    "text": "You return from holiday to strangers living in your legally sold house. Your signature, passport and lawyer were all fake."
   },
   {
     "id": 186,
     "score": 93.5,
-    "text": "Your neighbour's illegal fireworks display destroys your car and wins a local photography award."
+    "text": "Your neighbour's illegal firework enters your bathroom, explodes beneath you, and the doorbell camera captures the escape."
   },
   {
     "id": 187,
     "score": 94.0,
-    "text": "You spend six months caring for a sick relative and lose your job for “reduced enthusiasm”."
+    "text": "You donate a kidney to your partner. They recover, leave you for the surgeon, and take the dog."
   },
   {
     "id": 188,
     "score": 94.5,
-    "text": "Your life savings go into a restaurant that shuts after a rat wins an argument with a health inspector."
+    "text": "You invest your life savings in your brother's business and discover it is a brothel operating from your address."
   },
   {
     "id": 189,
     "score": 95.0,
-    "text": "Your partner of ten years admits your anniversary has been wrong since the beginning. So has their surname."
+    "text": "Your partner of ten years admits they have another spouse, another family, and the same pet names for all of you."
   },
   {
     "id": 190,
     "score": 95.5,
-    "text": "You are wrongly arrested in a country where you cannot speak the language or reach anyone you know."
+    "text": "You are arrested abroad after airport security finds a bag of drugs surgically hidden inside your souvenir."
   },
   {
     "id": 191,
     "score": 96.0,
-    "text": "A flood destroys your home and every photograph of someone you can no longer call."
+    "text": "A flash flood destroys your home, your pets are missing, and your family albums wash up on strangers' social feeds."
   },
   {
     "id": 192,
     "score": 96.5,
-    "text": "Your medical treatment leaves you unable to work, and the bills keep arriving with cheerful branding."
+    "text": "A routine operation removes the wrong organ. The hospital sends flowers to the patient who received yours."
   },
   {
     "id": 193,
     "score": 97.0,
-    "text": "Your closest friend drains the emergency fund you trusted them to manage."
+    "text": "Your closest friend empties your emergency fund, frames you for the theft, and uses your money to hire the lawyer."
   },
   {
     "id": 194,
     "score": 97.5,
-    "text": "Your house burns down the day after your insurance lapses because the renewal email went to spam."
+    "text": "Your house burns down during your surprise birthday orgy. Everyone escapes naked except you, who must explain it to the fire brigade."
   },
   {
     "id": 195,
     "score": 98.0,
-    "text": "You lose your home and your job in the same week. Your wellbeing app suggests drinking water."
+    "text": "Your parents invite you to their swingers retreat. A booking error leaves one room, one bed, and a name tag saying ‘participant’."
   },
   {
     "id": 196,
     "score": 98.5,
-    "text": "Your life savings vanish in a scam endorsed by the relative who still insists it will bounce back."
+    "text": "Your life savings vanish in a cult run by your mum, who uses the money to erect a nude statue of herself outside your home."
   },
   {
     "id": 197,
     "score": 99.0,
-    "text": "A serious accident permanently changes your mobility, and your building's lift has been broken for years."
+    "text": "A freak accident permanently changes your mobility. It was caused by the sex toy you publicly warned everyone was perfectly safe."
   },
   {
     "id": 198,
     "score": 99.5,
-    "text": "The person who raised you dies before you make the call you kept postponing."
+    "text": "At a funeral, the coffin opens and reveals the wrong person. Your missing relative answers your postponed call from inside the crematorium."
   },
   {
     "id": 199,
     "score": 100.0,
-    "text": "You lose everyone and everything you were building your future around. The bank still charges a monthly fee."
+    "text": "A DNA test proves your spouse is your unknown half-sibling, your father knew, and your pregnancy announcement is already viral."
   }
 ];
