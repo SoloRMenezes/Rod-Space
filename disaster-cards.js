@@ -598,82 +598,82 @@ const DISASTER_CARDS = [
   {
     "id": 119,
     "score": 60.0,
-    "text": "You get a tattoo of coordinates that point to a motorway service station."
+    "text": "Your tattoo artist sneezes halfway through the portrait. Your mum now has three eyes and a moustache."
   },
   {
     "id": 120,
     "score": 60.5,
-    "text": "Your landlord puts “cosy indoor waterfall” in the listing instead of fixing the ceiling leak."
+    "text": "Your ceiling collapses into your bed while you are sleeping. The landlord calls it an open-plan feature."
   },
   {
     "id": 121,
     "score": 61.0,
-    "text": "A restaurant names its food-poisoning incident after your booking."
+    "text": "Your homemade dinner gives the entire wedding food poisoning, including the ambulance crew."
   },
   {
     "id": 122,
     "score": 61.5,
-    "text": "You send the wedding invitations with the wrong date. Everyone prefers that date."
+    "text": "You send the wedding invitations with the wrong date. Half the guests book flights before anyone notices."
   },
   {
     "id": 123,
     "score": 62.0,
-    "text": "Your neighbours form a committee about the noise your bed makes. You were building furniture."
+    "text": "Your neighbours upload a noise complaint with audio. It becomes a remix played at your workplace."
   },
   {
     "id": 124,
     "score": 62.5,
-    "text": "Your mum prints your dating profile to ask relatives for feedback at lunch."
+    "text": "Your mum prints your entire dating history and runs a family presentation titled ‘Patterns of Failure’."
   },
   {
     "id": 125,
     "score": 63.0,
-    "text": "You buy concert tickets and discover they are for a tribute act called Definitely Not Them."
+    "text": "You spend your holiday money on fake concert tickets, then see the scammer enjoying the show from the front row."
   },
   {
     "id": 126,
     "score": 63.5,
-    "text": "Your boss announces mandatory trust falls. You are the only person nobody catches."
+    "text": "Your boss fires you during a trust fall. Everyone steps aside and the meeting continues over you."
   },
   {
     "id": 127,
     "score": 64.0,
-    "text": "You pay for a surprise party. The surprise is that nobody comes."
+    "text": "Nobody comes to your surprise party, except your ex, who arrives with your replacement."
   },
   {
     "id": 128,
     "score": 64.5,
-    "text": "You accidentally post your unfiltered customer-service rant on the company's main account."
+    "text": "You post an unfiltered rant from the company account, tag every customer, and discover screen recording exists."
   },
   {
     "id": 129,
     "score": 65.0,
-    "text": "A stranger names a newly discovered fungus after you because of the resemblance."
+    "text": "Doctors name a contagious rash after you because your holiday photos caused the first public alert."
   },
   {
     "id": 130,
     "score": 65.5,
-    "text": "Your upstairs neighbour buys tap shoes, a treadmill, and an espresso habit in the same week."
+    "text": "Your upstairs neighbour opens a 24-hour tap-dancing gym directly above your bedroom."
   },
   {
     "id": 131,
     "score": 66.0,
-    "text": "Your “luxury sea-view room” is a cupboard facing a fish tank."
+    "text": "Your non-refundable honeymoon hotel is an active construction site with one mattress and a haunted fish tank."
   },
   {
     "id": 132,
     "score": 66.5,
-    "text": "Your car gets towed while your friend is inside taking a nap."
+    "text": "Your car gets towed with your friend asleep inside. They wake up at the scrapyard and blame you forever."
   },
   {
     "id": 133,
     "score": 67.0,
-    "text": "You find your private diary being used as dramatic reading material at a family dinner."
+    "text": "Your private diary becomes a family audiobook, complete with impressions and a chapter about everyone present."
   },
   {
     "id": 134,
     "score": 67.5,
-    "text": "You accidentally book your honeymoon at a hotel hosting your ex's wedding."
+    "text": "Your honeymoon hotel is hosting your ex's wedding, and the only spare room opens directly onto their reception."
   },
   {
     "id": 135,
@@ -683,7 +683,7 @@ const DISASTER_CARDS = [
   {
     "id": 136,
     "score": 68.5,
-    "text": "You discover your “rare collectible” is a cereal-box toy still available for free."
+    "text": "Your life savings went on a ‘rare collectible’ that came free in cereal and is still in production."
   },
   {
     "id": 137,
@@ -698,22 +698,22 @@ const DISASTER_CARDS = [
   {
     "id": 139,
     "score": 70.0,
-    "text": "You get mistaken for the guest speaker and spend forty minutes pretending to understand cryptocurrency."
+    "text": "You are mistaken for a surgeon, panic, and only expose the mistake after confidently entering the operating theatre."
   },
   {
     "id": 140,
     "score": 70.5,
-    "text": "Your landlord sells the building and gives your new owner the key while you are in the shower."
+    "text": "Your landlord sells your occupied flat as ‘vacant’ and the new owner moves in while you are in the shower."
   },
   {
     "id": 141,
     "score": 71.0,
-    "text": "Your best man's speech is mostly quotes from your teenage social-media posts."
+    "text": "Your best man's speech reveals the affair you confessed to him in confidence. Both families hear it before your partner does."
   },
   {
     "id": 142,
     "score": 71.5,
-    "text": "Your luggage goes to Tokyo. You go to a rainy conference in Birmingham."
+    "text": "Your luggage goes to Tokyo with your medication and passport copy. You reach Birmingham with one wet sock."
   },
   {
     "id": 143,
@@ -728,27 +728,27 @@ const DISASTER_CARDS = [
   {
     "id": 145,
     "score": 73.0,
-    "text": "Your car breaks down on a first date outside your ex's house."
+    "text": "Your car catches fire on a first date outside your ex's house. Your ex comes out filming."
   },
   {
     "id": 146,
     "score": 73.5,
-    "text": "Your neighbour converts their shed into an experimental nightclub called Bass Hole."
+    "text": "Your neighbour converts the shared wall into a nightclub speaker test lab that operates until sunrise."
   },
   {
     "id": 147,
     "score": 74.0,
-    "text": "You discover the wedding venue has double-booked you with a competitive ferret exhibition."
+    "text": "Your wedding venue double-books a ferret exhibition. The ferrets eat the cake and escape into the ceremony."
   },
   {
     "id": 148,
     "score": 74.5,
-    "text": "Your landlord asks you to repaint the flat because the mould clashes with the curtains."
+    "text": "Black mould covers your flat, ruins your belongings, and your landlord invoices you for ‘unauthorised biology’."
   },
   {
     "id": 149,
     "score": 75.0,
-    "text": "You accidentally send your entire contact list an invitation to an appointment labelled “weird rash”."
+    "text": "Your clinic sends your entire contact list the photos from an appointment labelled ‘aggressive mystery rash’."
   },
   {
     "id": 150,

@@ -5,22 +5,22 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "disaster-cards.js",
-        "bytes": 27489,
-        "hash": "b09fc1257686f666ea134bf6b7f0c3334b31ab11961ae92cfc16037dd1b31f26"
+        "bytes": 28076,
+        "hash": "189aa484f1905f83c744d82916b577796803fe30c763014fdb1262286549ad08"
       },
       {
         "path": "disaster-game.js",
-        "bytes": 8783,
-        "hash": "f586399746f068b29f7e6de4e4faa12cacda05d70b73f9b05f252965a923d27a"
+        "bytes": 7236,
+        "hash": "e57b88d184391a827b8d933557c6d7d1200a38ffcbcea5d8489b11cc44b8f655"
       },
       {
         "path": "shit-spiral.html",
-        "bytes": 7575,
-        "hash": "d60dec4c40360a8a18f5367f9460c9941ec3d7a2d57027ab0d506cc743f4f674"
+        "bytes": 6774,
+        "hash": "8b99aa1ad51af687d00a77bbc9fe3efe154512e50ccdd3751dad2f73513c17b4"
       }
     ],
-    "bytes": 43847,
-    "version": "9f2fab2548fb6f6e"
+    "bytes": 42086,
+    "version": "a8a493aec1eb3d26"
   },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
@@ -5309,12 +5309,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "hood_brawlers.html",
-        "bytes": 25781,
-        "hash": "7f4d0df24d83d749734facc1ce4454743c8a2ca9a932595a14f9453add86477a"
+        "bytes": 38196,
+        "hash": "19a257c97437343eefcfda0a66e98c209217ad04d178d03268a45cd87b2108c5"
       }
     ],
-    "bytes": 25781,
-    "version": "5d3316cd217e8977"
+    "bytes": 38196,
+    "version": "30230fd4871cd570"
   },
   "planet-architect": {
     "name": "Planet Architect",
