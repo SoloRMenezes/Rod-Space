@@ -178,6 +178,9 @@
             padding: 1rem 2.5rem; font-size: 1.5rem; font-weight: 800; border-radius: 1rem;
             cursor: pointer; transition: all 0.2s; min-width: 100px;
         }
+        #round-status{position:fixed;top:28px;left:50%;transform:translateX(-50%);z-index:500;font-weight:1000;letter-spacing:.18em;font-size:clamp(1rem,4vw,1.5rem);padding:12px 20px;border:1px solid #334155;background:rgba(2,6,23,.8);backdrop-filter:blur(10px);border-radius:8px;display:none}
+        #home-btn{position:fixed;top:24px;left:24px;z-index:600;display:none;background:#0f172a;color:#cbd5e1;border:1px solid #334155;border-radius:8px;padding:10px 13px;font-weight:900;cursor:pointer}
+        body.go-state #round-status{color:#67e8f9;border-color:#22d3ee;box-shadow:0 0 35px rgba(34,211,238,.3);transform:translateX(-50%) scale(1.08)}
 
         #hand-layer { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -202,13 +205,15 @@
 
     <div id="setup-screen">
         <h1 class="menu-title">THEFT</h1>
-        <p style="opacity: 0.6; font-weight: 800; letter-spacing: 2px; margin-bottom: 20px;">CHOOSE CREW SIZE</p>
+        <p style="opacity: 0.6; max-width:420px;text-align:center;line-height:1.6;margin:0 20px 14px;">Wait for the diamond to glow, then be the first player to grab it. Move early and you are locked out.</p>
+        <p style="opacity:.8;font-weight:800;letter-spacing:2px;margin:0 0 8px">CHOOSE CREW SIZE</p>
         <div class="button-group" style="display: flex; gap: 1rem;">
             <button class="menu-btn" onclick="startGame(2)">2</button>
             <button class="menu-btn" onclick="startGame(3)">3</button>
             <button class="menu-btn" onclick="startGame(4)">4</button>
         </div>
     </div>
+    <button id="home-btn" onclick="goHome()">← HOME</button><div id="round-status">WAIT…</div>
 
     <div id="hand-layer">
         <svg style="display:none">
@@ -240,7 +245,8 @@
 
     <div id="win-modal">
         <h1 id="winner-text">HEIST COMPLETE!</h1>
-        <button class="menu-btn" onclick="location.reload()">PLAY AGAIN</button>
+        <p style="color:#94a3b8">The first thief to five diamonds wins.</p>
+        <div style="display:flex;gap:10px"><button class="menu-btn" onclick="restartMatch()">PLAY AGAIN</button><button class="menu-btn" onclick="goHome()">HOME</button></div>
     </div>
 
     <script>
@@ -300,7 +306,9 @@
         window.onload = createFlashlights;
 
         function startGame(count) {
+            Object.values(players).forEach(p=>{clearTimeout(p.timer);p.score=0;p.penalized=false;p.active=false;document.getElementById(`score-${p.id}`).innerText='0';document.getElementById(`zone-${p.id}`).className=`player-zone p${p.id}`});
             setupScreen.style.display = 'none';
+            document.getElementById('win-modal').style.display='none';document.getElementById('home-btn').style.display='block';document.getElementById('round-status').style.display='block';
             gameArena.style.visibility = 'visible';
             gameActive = true;
             if (count === 2) { players['z'].active = true; players['p'].active = true; }
@@ -315,6 +323,7 @@
             roundInProgress = true;
             isGoSignalActive = false;
             document.body.classList.remove('go-state');
+            document.getElementById('round-status').textContent='WAIT…';
             diamondBox.style.transform = 'translate(0, 0) scale(1)';
             activeHandContainer.innerHTML = '';
             setTimeout(() => { if (roundInProgress) triggerGoSignal(); }, Math.random() * 3000 + 1000);
@@ -323,6 +332,7 @@
         function triggerGoSignal() {
             isGoSignalActive = true;
             document.body.classList.add('go-state');
+            document.getElementById('round-status').textContent='GRAB!';
         }
 
         function handleAction(key) {
@@ -338,6 +348,7 @@
             if (p.penalized) return;
             p.penalized = true;
             document.getElementById(`zone-${p.id}`).classList.add('penalty-active');
+            document.getElementById('round-status').textContent=`PLAYER ${p.id} MOVED EARLY`;
             clearTimeout(p.timer);
             p.timer = setTimeout(() => {
                 p.penalized = false;
@@ -349,6 +360,7 @@
             roundInProgress = false;
             isGoSignalActive = false;
             const p = players[key];
+            document.getElementById('round-status').textContent=`PLAYER ${p.id} STOLE IT`;
             animateHand(p);
             setTimeout(() => {
                 p.score++;
@@ -396,6 +408,8 @@
             txt.style.color = getComputedStyle(document.documentElement).getPropertyValue(`--p${id}-color`);
             modal.style.display = 'flex';
         }
+        function restartMatch(){const count=Object.values(players).filter(p=>p.active).length;startGame(count)}
+        function goHome(){gameActive=false;roundInProgress=false;isGoSignalActive=false;document.body.classList.remove('go-state');document.getElementById('win-modal').style.display='none';document.getElementById('home-btn').style.display='none';document.getElementById('round-status').style.display='none';gameArena.style.visibility='hidden';document.querySelectorAll('.player-zone').forEach(z=>z.classList.remove('active','penalty-active'));setupScreen.style.display='flex'}
 
         window.addEventListener('keydown', e => {
             const key = e.key.toLowerCase();

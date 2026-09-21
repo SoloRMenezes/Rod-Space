@@ -5099,12 +5099,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "tic-tac-toe.html",
-        "bytes": 8886,
-        "hash": "027f9551cbc5da06b3f6aa0dc79fec9933e81fec00790f61d2ccfa9966878958"
+        "bytes": 11440,
+        "hash": "a9225dff036ada162a1555cee16363979cb4101166f6c340bb4839fe5f4498d3"
       }
     ],
-    "bytes": 8886,
-    "version": "1b93e16ffc46933f"
+    "bytes": 11440,
+    "version": "6d262a9d8f062f34"
   },
   "dots-boxes": {
     "name": "Dots & Boxes",
@@ -5112,12 +5112,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "dots&boxes.html",
-        "bytes": 12349,
-        "hash": "7ecc2c16d277ca36f0403328d465554647deb7ee4d7fd25f94e00c91f37e68fe"
+        "bytes": 14421,
+        "hash": "19a9b778839f0c5088e5bcec47e7b7e967ec3e5f159121f4473e17c5d9ffae90"
       }
     ],
-    "bytes": 12349,
-    "version": "3f30c14568425383"
+    "bytes": 14421,
+    "version": "108b79b1b8bca345"
   },
   "theft": {
     "name": "Theft",
@@ -5125,12 +5125,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "theft.html",
-        "bytes": 18213,
-        "hash": "733daec36209a3059f20e88b029f40faa256d40a4c507675c8e3b5c37691c76e"
+        "bytes": 20683,
+        "hash": "d537294065b9976195788836cb65aa4d6bad7e77960a76f325ff14cf9da67540"
       }
     ],
-    "bytes": 18213,
-    "version": "1d5d51c22f3e8212"
+    "bytes": 20683,
+    "version": "d4fe8441220c3d5f"
   },
   "cards-against": {
     "name": "Cards Against Boredom",

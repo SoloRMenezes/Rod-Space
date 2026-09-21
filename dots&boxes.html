@@ -40,6 +40,7 @@
             align-items: center;
             justify-content: center;
             gap: 30px;
+            background:radial-gradient(circle at 30% 20%,#172554 0,transparent 38%),var(--bg);
         }
 
         .btn-group {
@@ -63,6 +64,8 @@
             transform: scale(1.1);
             border-color: white;
         }
+        .top-actions{position:fixed;top:18px;left:18px;z-index:50;display:flex;gap:8px}.small-btn{background:#161b22;border:1px solid #30363d;color:#cbd5e1;padding:9px 12px;border-radius:8px;font-weight:800;cursor:pointer}
+        #endScreen{position:fixed;inset:0;z-index:90;background:rgba(5,8,14,.88);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center}.winner-title{font-size:clamp(2.5rem,9vw,5rem);margin:0 0 12px}.winner-score{color:#94a3b8;margin-bottom:28px}
 
         .game-header {
             text-align: center;
@@ -126,7 +129,9 @@
 
         .line-visual.taken {
             background: currentColor;
+            animation:lineClaim .2s ease-out;
         }
+        @keyframes lineClaim{from{transform:scale(.25);filter:brightness(2)}to{transform:scale(1)}}
 
         .box {
             position: absolute;
@@ -170,14 +175,16 @@
 <body>
 
     <div id="startScreen">
-        <h1 style="letter-spacing: 6px; font-size: 2rem;">DOTS & BOXES</h1>
-        <p style="font-family: sans-serif; opacity: 0.6; margin-top: -20px;">CHOOSE PLAYER NUMBER</p>
+        <h1 style="letter-spacing: -2px; font-size: clamp(2.5rem,10vw,5rem);margin:0;">DOTS & BOXES</h1>
+        <p style="font-family: sans-serif; opacity: 0.6; margin: -15px 0 0;">Complete a box to keep your turn.</p>
         <div class="btn-group">
             <button class="start-btn" onclick="initGame(2)">2</button>
             <button class="start-btn" onclick="initGame(3)">3</button>
             <button class="start-btn" onclick="initGame(4)">4</button>
         </div>
     </div>
+    <div class="top-actions" id="topActions" style="display:none"><button class="small-btn" onclick="goHome()">← HOME</button><button class="small-btn" onclick="restartGame()">RESTART</button></div>
+    <div id="endScreen"><h2 class="winner-title" id="endTitle">PLAYER 1 WINS</h2><div class="winner-score" id="endScore"></div><div class="btn-group"><button class="start-btn" onclick="restartGame()">PLAY AGAIN</button><button class="start-btn" onclick="goHome()">HOME</button></div></div>
 
     <div class="game-header">
         <div id="turnIndicator">READY?</div>
@@ -222,9 +229,13 @@
             }
             
             document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('topActions').style.display='flex';
+            document.getElementById('endScreen').style.display='none';
             renderBoard();
             updateUI();
         }
+        function restartGame(){initGame(numPlayers)}
+        function goHome(){document.getElementById('endScreen').style.display='none';document.getElementById('topActions').style.display='none';document.getElementById('startScreen').style.display='flex'}
 
         function renderBoard() {
             gameEl.innerHTML = '';
@@ -372,9 +383,11 @@
                     turnEl.style.color = playerColors[winners[0] - 1];
                 }
                 
-                setTimeout(() => {
-                    if(confirm("Play again?")) location.reload();
-                }, 1500);
+                const title=winners.length>1?'TIE GAME':`PLAYER ${winners[0]} WINS`;
+                document.getElementById('endTitle').textContent=title;
+                document.getElementById('endTitle').style.color=winners.length>1?'white':playerColors[winners[0]-1];
+                document.getElementById('endScore').textContent=playerScores.map((s,i)=>`P${i+1} ${s}`).join('  ·  ');
+                setTimeout(()=>document.getElementById('endScreen').style.display='flex',700);
             }
         }
     </script>

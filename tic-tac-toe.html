@@ -168,6 +168,16 @@ body {
 
 .restart.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
 .restart:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(255,255,255,0.2); }
+.home-screen { position:fixed;inset:0;z-index:30;background:#05070a;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center; }
+.home-screen h1 { font:900 clamp(3rem,12vw,6rem)/.9 'Rubik Mono One',sans-serif;margin:0;letter-spacing:-.06em; }
+.home-screen p { color:#94a3b8;max-width:380px;line-height:1.6;margin:24px 0 32px; }
+.mode-row { display:flex;gap:12px;flex-wrap:wrap;justify-content:center; }
+.mode-btn,.home-btn { border:1px solid #334155;background:#111827;color:#fff;padding:14px 22px;border-radius:10px;font-weight:900;cursor:pointer; }
+.mode-btn.primary { background:#fff;color:#05070a; }
+.match-bar { position:fixed;top:20px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;z-index:8;font-weight:800;color:#94a3b8; }
+.scoreboard { display:flex;gap:18px; }.scoreboard b{color:#fff}.home-btn{padding:9px 12px;background:#0f172a}
+.cell.pop { animation:cellPop .22s ease-out; } @keyframes cellPop{0%{transform:scale(.45);opacity:.2}70%{transform:scale(1.1)}100%{transform:scale(1)}}
+@media(max-width:520px){.game{grid-template-columns:repeat(3,26vw);grid-template-rows:repeat(3,26vw);gap:10px}.game-container{padding:12px;border-radius:24px}.cell{font-size:3rem;border-radius:14px}.status{font-size:1.15rem;margin-bottom:22px}.match-bar{top:12px}}
 </style>
 </head>
 <body style="--current-turn: 'X'">
@@ -177,6 +187,9 @@ body {
 <div class="grid-overlay"></div>
 <div class="orb" style="width: 400px; height: 400px; background: var(--accent-1); top: -100px; left: -100px;"></div>
 <div class="orb" style="width: 300px; height: 300px; background: var(--accent-2); bottom: -50px; right: -50px; animation-delay: -5s;"></div>
+
+<div class="home-screen" id="homeScreen"><h1>TIC TAC<br>TOE</h1><p>Quick local rounds or a match against the computer. First to line up three wins.</p><div class="mode-row"><button class="mode-btn primary" onclick="startMatch('cpu')">VS COMPUTER</button><button class="mode-btn" onclick="startMatch('local')">TWO PLAYERS</button></div></div>
+<div class="match-bar"><button class="home-btn" onclick="goHome()">← HOME</button><div class="scoreboard"><span>X <b id="scoreX">0</b></span><span>DRAW <b id="scoreD">0</b></span><span>O <b id="scoreO">0</b></span></div></div>
 
 <div class="status" id="status">PLAYER X</div>
 
@@ -205,7 +218,7 @@ body {
 
     let board = Array(9).fill(null);
     let current = 'X';
-    let gameOver = false;
+    let gameOver = false, mode='local', scores={X:0,O:0,D:0},cpuThinking=false;
 
     const wins = [
         { combo: [0,1,2], type: 'h', pos: 55 },
@@ -239,51 +252,16 @@ body {
         }
     }
 
-    cells.forEach((cell, i) => {
-        cell.addEventListener('click', () => {
-            if (board[i] || gameOver) return;
-
-            board[i] = current;
-            cell.textContent = current;
-            cell.classList.add('taken', current.toLowerCase());
-
-            const winningCombo = wins.find(w => w.combo.every(idx => board[idx] === current));
-
-            if (winningCombo) {
-                status.textContent = `PLAYER ${current} WINS`;
-                status.classList.add('win-text');
-                drawStrike(winningCombo);
-                gameOver = true;
-                restartBtn.classList.add('visible');
-                return;
-            }
-
-            if (!board.includes(null)) {
-                status.textContent = 'DRAW';
-                gameOver = true;
-                restartBtn.classList.add('visible');
-                return;
-            }
-
-            current = current === 'X' ? 'O' : 'X';
-            document.body.style.setProperty('--current-turn', `'${current}'`);
-            status.textContent = `PLAYER ${current}`;
-        });
-    });
+    function place(i){if(board[i]||gameOver||cpuThinking&&current==='O')return;board[i]=current;const cell=cells[i];cell.textContent=current;cell.classList.add('taken',current.toLowerCase(),'pop');setTimeout(()=>cell.classList.remove('pop'),240);const win=wins.find(w=>w.combo.every(idx=>board[idx]===current));if(win){status.textContent=`${current} WINS`;status.classList.add('win-text');drawStrike(win);gameOver=true;scores[current]++;updateScores();restartBtn.classList.add('visible');return}if(!board.includes(null)){status.textContent='DRAW';gameOver=true;scores.D++;updateScores();restartBtn.classList.add('visible');return}current=current==='X'?'O':'X';document.body.style.setProperty('--current-turn',`'${current}'`);status.textContent=mode==='cpu'&&current==='O'?'COMPUTER':'PLAYER '+current;if(mode==='cpu'&&current==='O'){cpuThinking=true;setTimeout(cpuMove,420)}}
+    function cpuMove(){if(gameOver)return;const open=board.map((v,i)=>v===null?i:null).filter(i=>i!==null);const winning=open.find(i=>{board[i]='O';const yes=wins.some(w=>w.combo.every(n=>board[n]==='O'));board[i]=null;return yes});const block=open.find(i=>{board[i]='X';const yes=wins.some(w=>w.combo.every(n=>board[n]==='X'));board[i]=null;return yes});const pick=winning??block??(board[4]===null?4:open[Math.floor(Math.random()*open.length)]);cpuThinking=false;place(pick)}
+    cells.forEach((cell,i)=>cell.addEventListener('click',()=>place(i)));
+    function updateScores(){scoreX.textContent=scores.X;scoreO.textContent=scores.O;scoreD.textContent=scores.D}
+    function startMatch(nextMode){mode=nextMode;scores={X:0,O:0,D:0};updateScores();homeScreen.style.display='none';resetRound()}
+    function goHome(){homeScreen.style.display='flex';resetRound()}
+    function resetRound(){board=Array(9).fill(null);cells.forEach(c=>{c.textContent='';c.classList.remove('taken','x','o')});current='X';cpuThinking=false;document.body.style.setProperty('--current-turn',"'X'");gameOver=false;status.classList.remove('win-text');status.textContent='PLAYER X';restartBtn.classList.remove('visible');strike.style.display='none'}
 
     restartBtn.addEventListener('click', () => {
-        board = Array(9).fill(null);
-        cells.forEach(c => {
-            c.textContent = '';
-            c.classList.remove('taken', 'x', 'o');
-        });
-        current = 'X';
-        document.body.style.setProperty('--current-turn', `'X'`);
-        gameOver = false;
-        status.classList.remove('win-text');
-        status.textContent = 'PLAYER X';
-        restartBtn.classList.remove('visible');
-        strike.style.display = 'none';
+        resetRound();
     });
 </script>
 </body>
