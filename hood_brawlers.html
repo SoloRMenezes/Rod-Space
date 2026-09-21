@@ -355,7 +355,8 @@
         let gameOver = false;
         let timer = 99;
         let running=false,paused=false,mode='cpu',lastTime=0,accumulator=0,clockFrames=0;
-        let cpuThink=0,cpuDirection=0;
+        let cpuThink=0,cpuDirection=0,screenShake=0,impactFreeze=0,roundBanner=0;
+        const particles=[];
         const STEP=1000/60;
         const movement=new Set();
         const touch={x:0,block:false,pointer:null,originX:0,originY:0};
@@ -437,7 +438,7 @@
             document.getElementById('winner-text').innerText=!winner?'DRAW':winner===player1?'P1 WINS':mode==='cpu'?'COMPUTER WINS':'P2 WINS';
         }
         function startGame() {
-            cancelAnimationFrame(animationId);running=true;paused=false;gameOver=false;timer=99;clockFrames=0;accumulator=0;lastTime=performance.now();cpuThink=0;
+            cancelAnimationFrame(animationId);running=true;paused=false;gameOver=false;timer=99;clockFrames=0;accumulator=0;lastTime=performance.now();cpuThink=0;screenShake=0;impactFreeze=0;roundBanner=72;particles.length=0;
             clearInput();document.body.dataset.screen='fight';
             document.getElementById('timer').innerText=timer;
             for(const id of ['start-screen','char-select-screen','game-over','pause-screen'])document.getElementById(id).style.display='none';
@@ -463,31 +464,28 @@
         }
 
         function drawBackground(target) {
-            // Sky Gradient
             const sky = target.createLinearGradient(0, 0, 0, canvas.height);
-            sky.addColorStop(0, '#020617');
-            sky.addColorStop(1, '#1e1b4b');
+            sky.addColorStop(0, '#05070f');
+            sky.addColorStop(.55, '#121634');
+            sky.addColorStop(1, '#3a1837');
             target.fillStyle = sky;
             target.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Moon
-            target.fillStyle = '#fefce8';
-            target.shadowBlur = 40;
-            target.shadowColor = '#fefce8';
+            target.fillStyle = '#ffe9b0';
+            target.shadowBlur = 55;
+            target.shadowColor = '#ff9f68';
             target.beginPath();
             target.arc(850, 100, 40, 0, Math.PI * 2);
             target.fill();
             target.shadowBlur = 0;
 
-            // Stars
-            target.fillStyle = '#fff';
+            target.fillStyle = 'rgba(255,255,255,.7)';
             for(let i=0; i<30; i++) {
                 let sX = (Math.sin(i * 1234) * 0.5 + 0.5) * canvas.width;
                 let sY = (Math.cos(i * 5678) * 0.5 + 0.5) * 300;
                 target.fillRect(sX, sY, 2, 2);
             }
 
-            // Distant City (Darker)
             target.fillStyle = '#0f172a';
             const bWidths = [120, 180, 150, 200, 140, 160];
             let currentX = 20;
@@ -504,24 +502,20 @@
                 currentX += w + 40;
             });
 
-            // Mid City (More detail)
-            target.fillStyle = '#1e293b';
+            target.fillStyle = '#151b2d';
             target.fillRect(0, canvas.height - 300, 150, 220);
             target.fillRect(200, canvas.height - 380, 250, 300);
             target.fillRect(550, canvas.height - 320, 180, 240);
             target.fillRect(850, canvas.height - 400, 180, 320);
 
-            // Windows with light
-            target.fillStyle = '#eab308';
-            target.fillRect(250, canvas.height - 350, 20, 30);
-            target.fillRect(280, canvas.height - 350, 20, 30);
-            target.fillRect(900, canvas.height - 370, 30, 40);
+            target.fillStyle = '#ffbf69';
+            for(const [wx,wy] of [[250,226],[282,226],[250,276],[585,286],[900,206],[940,206],[900,262]])target.fillRect(wx,wy,18,24);
+            target.save();target.shadowBlur=18;target.shadowColor='#38bdf8';target.strokeStyle='#38bdf8';target.lineWidth=4;target.strokeRect(70,310,92,48);target.font='900 18px sans-serif';target.fillStyle='#38bdf8';target.fillText('BRAWL',80,341);target.restore();
+            target.strokeStyle='#242a40';target.lineWidth=5;target.beginPath();target.moveTo(414,196);target.lineTo(414,95);target.lineTo(441,62);target.stroke();
 
-            // Rooftop Floor
-            target.fillStyle = '#0f172a';
+            target.fillStyle = '#0b0d15';
             target.fillRect(0, canvas.height - 80, canvas.width, 80);
             
-            // Floor Detail (Grip/Texture)
             target.strokeStyle = '#1e293b';
             target.lineWidth = 2;
             for(let i=0; i<canvas.width; i+=40) {
@@ -531,9 +525,10 @@
                 target.stroke();
             }
 
-            // Top edge line
-            target.fillStyle = '#334155';
+            target.fillStyle = '#64748b';
             target.fillRect(0, canvas.height - 85, canvas.width, 5);
+            target.fillStyle='#141826';target.fillRect(45,446,120,45);target.fillStyle='#232a3b';target.fillRect(55,437,100,10);
+            target.fillStyle='#10131d';target.fillRect(790,430,165,61);target.fillStyle='#2b3144';target.fillRect(778,421,188,12);
         }
 
         const arenaCanvas=document.createElement('canvas');arenaCanvas.width=1024;arenaCanvas.height=576;
@@ -566,8 +561,9 @@
 
             draw(targetCtx = ctx, isStatic = false) {
 
-                const breathe = Math.sin(this.frame) * 3;
-                const legMove = Math.cos(this.frame) * 12;
+                const breathe = Math.sin(this.frame) * 2;
+                const speed=Math.min(1,Math.abs(this.velocity.x)/6);
+                const legMove = Math.sin(this.frame*1.65) * 11*speed;
                 
                 let x = this.position.x;
                 let y = this.position.y;
@@ -577,27 +573,21 @@
                 if (this.isCrouching) { h *= 0.6; y += 60; }
                 if (this.isWinner) y += Math.sin(this.frame * 2) * 15;
 
-                // Player Shadow / Ground Glow
                 if (!isStatic) {
-                    ctx.save();
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = this.color;
-                    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                    ctx.beginPath();
-                    ctx.ellipse(x + 30, canvas.height - 75, 40, 8, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
+                    targetCtx.save();targetCtx.fillStyle='rgba(0,0,0,.48)';targetCtx.beginPath();targetCtx.ellipse(x+30,canvas.height-75,42,9,0,0,Math.PI*2);targetCtx.fill();targetCtx.restore();
                 }
 
                 targetCtx.save();
+                const attackElapsed=(this.attackType==='kick'?28:18)-this.attackFrames;
+                const lean=this.stun?-0.12:this.isAttacking?(this.attackType==='kick'?.13:.08):this.velocity.x/150;
+                targetCtx.translate(x+w/2,y+h);targetCtx.rotate(lean);targetCtx.translate(-(x+w/2),-(y+h));
                 if (this.facing === 'left') {
                     targetCtx.translate(x + w, 0);
                     targetCtx.scale(-1, 1);
                     x = 0;
                 }
 
-                // Legs
-                targetCtx.fillStyle = '#1e293b'; 
+                targetCtx.fillStyle = '#171923';
                 const onGround = this.position.y >= (canvas.height - 80 - this.height - 1);
                 const isMoving = Math.abs(this.velocity.x) > 0;
                 let lLegOff = (isMoving && onGround) ? legMove : 0;
@@ -605,51 +595,38 @@
                 targetCtx.fillRect(x + 12 + lLegOff, y + h - 45, 16, 45);
                 targetCtx.fillRect(x + 32 + rLegOff, y + h - 45, 16, 45);
 
-                // Shoes
-                targetCtx.fillStyle = '#000';
-                targetCtx.fillRect(x + 10 + lLegOff, y + h - 5, 20, 8);
-                targetCtx.fillRect(x + 30 + rLegOff, y + h - 5, 20, 8);
+                targetCtx.fillStyle = '#050608';
+                targetCtx.beginPath();targetCtx.roundRect(x+7+lLegOff,y+h-7,27,10,4);targetCtx.roundRect(x+27+rLegOff,y+h-7,27,10,4);targetCtx.fill();
 
-                // Shirt
                 targetCtx.fillStyle = this.color;
+                targetCtx.shadowBlur=this.isWinner?22:8;targetCtx.shadowColor=this.color;
                 targetCtx.beginPath();
-                targetCtx.roundRect(x + 5, y + 40 + breathe, 50, h - 85 - breathe, 5);
+                targetCtx.roundRect(x + 3, y + 38 + breathe, 54, h - 82 - breathe, 12);
                 targetCtx.fill();
+                targetCtx.shadowBlur=0;targetCtx.fillStyle='rgba(0,0,0,.22)';targetCtx.fillRect(x+10,y+47+breathe,40,5);
 
-                // Arms
                 targetCtx.fillStyle = this.color;
                 if (this.isAttacking && this.attackType === 'punch') {
-                    targetCtx.fillRect(x + 40, y + 55 + breathe, 45, 18);
+                    const reach=Math.min(1,attackElapsed/5);targetCtx.fillRect(x+38,y+54+breathe,22+36*reach,17);
                     targetCtx.fillStyle = this.skinTone;
-                    targetCtx.fillRect(x + 85, y + 55 + breathe, 15, 18);
+                    targetCtx.beginPath();targetCtx.arc(x+62+36*reach,y+62+breathe,10,0,Math.PI*2);targetCtx.fill();
                 } else {
-                    targetCtx.fillRect(x - 5, y + 60 + breathe, 15, 35);
+                    const guard=this.isCrouching?-17:0;targetCtx.fillRect(x-3,y+58+breathe+guard,16,37);
                     targetCtx.fillStyle = this.skinTone;
-                    targetCtx.fillRect(x - 5, y + 95 + breathe, 15, 12);
+                    targetCtx.beginPath();targetCtx.arc(x+5,y+98+breathe+guard,9,0,Math.PI*2);targetCtx.fill();
                 }
 
                 if(this.isAttacking && this.attackType==='kick') {
                     targetCtx.fillStyle='#1e293b';targetCtx.fillRect(x+30,y+h-42,85,20);
                     targetCtx.fillStyle='#080b10';targetCtx.fillRect(x+112,y+h-44,18,24);
                 }
-                // Head
+                // Hood, face and eye line
+                targetCtx.fillStyle=this.color;targetCtx.beginPath();targetCtx.arc(x+30,y+21+breathe,28,0,Math.PI*2);targetCtx.fill();
                 targetCtx.fillStyle = this.skinTone;
                 targetCtx.beginPath();
-                targetCtx.arc(x + 30, y + 20 + breathe, 22, 0, Math.PI * 2);
+                targetCtx.arc(x + 32, y + 23 + breathe, 19, 0, Math.PI * 2);
                 targetCtx.fill();
-
-                // Hair
-                targetCtx.fillStyle = '#2d1b1a';
-                targetCtx.beginPath();
-                targetCtx.arc(x + 30, y + 15 + breathe, 23, Math.PI, 0);
-                targetCtx.fill();
-
-                // Face
-                targetCtx.fillStyle = '#000';
-                targetCtx.fillRect(x + 38, y + 15 + breathe, 4, 4);
-                targetCtx.beginPath();
-                targetCtx.arc(x + 40, y + 28 + breathe, 5, 0.2, Math.PI - 0.2);
-                targetCtx.stroke();
+                targetCtx.fillStyle='#141414';targetCtx.fillRect(x+31,y+17+breathe,14,4);targetCtx.fillStyle='#fff';targetCtx.fillRect(x+40,y+18+breathe,4,2);
 
                 targetCtx.restore();
 
@@ -694,7 +671,16 @@
             const blocking=target.isCrouching&&target.grounded()&&((target.facing==='left')===(attacker.position.x<target.position.x));
             target.health=Math.max(0,target.health-(blocking?2:attacker.attackType==='kick'?14:9));
             target.knockback=(attacker.position.x<target.position.x?1:-1)*(blocking?3:9);
-            target.stun=blocking?4:12;updateHealth();
+            target.stun=blocking?4:12;screenShake=blocking?3:10;impactFreeze=blocking?2:4;
+            const px=target.position.x+30,py=target.position.y+65;
+            for(let i=0;i<(blocking?5:14);i++)particles.push({x:px,y:py,vx:(Math.random()*7+2)*(attacker.position.x<target.position.x?1:-1),vy:Math.random()*8-4,life:18+Math.random()*10,color:blocking?'#93c5fd':i%3?'#fde047':'#fff'});
+            updateHealth();
+        }
+        function drawEffects() {
+            ctx.save();
+            for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.life--;ctx.globalAlpha=Math.max(0,p.life/28);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,2+p.life/10,0,Math.PI*2);ctx.fill();if(p.life<=0)particles.splice(i,1);}
+            ctx.restore();
+            if(roundBanner>0){const t=roundBanner>42?'ROUND 1':'FIGHT!';ctx.save();ctx.globalAlpha=Math.min(1,(72-roundBanner)/10,roundBanner/10);ctx.textAlign='center';ctx.font='italic 900 76px sans-serif';ctx.fillStyle=roundBanner>42?'#fff':'#fde047';ctx.shadowBlur=25;ctx.shadowColor='#000';ctx.fillText(t,512,260);ctx.restore();}
         }
         function separateFighters() {
             const a=player1.bounds(),b=player2.bounds();if(a.y>=b.y+b.h||b.y>=a.y+a.h)return;
@@ -715,6 +701,8 @@
         }
         function stepGame() {
             if(gameOver||paused)return;
+            if(roundBanner>0)roundBanner--;
+            if(impactFreeze>0){impactFreeze--;return;}
             player1.isCrouching=(movement.has('KeyS')||touch.block)&&player1.grounded();
             player1.velocity.x=player1.stun||player1.isCrouching?0:((movement.has('KeyD')?1:0)-(movement.has('KeyA')?1:0)+touch.x)*6;
             player1.velocity.x=Math.max(-6,Math.min(6,player1.velocity.x));
@@ -735,7 +723,8 @@
             if(!running)return;
             accumulator+=paused?0:Math.min(100,Math.max(0,now-lastTime));lastTime=now;
             while(accumulator>=STEP){stepGame();accumulator-=STEP;}
-            ctx.drawImage(arenaCanvas,0,0);player1.draw();player2.draw();
+            const sx=screenShake?(Math.random()-.5)*screenShake:0,sy=screenShake?(Math.random()-.5)*screenShake:0;if(screenShake)screenShake*=.72;
+            ctx.save();ctx.translate(sx,sy);ctx.drawImage(arenaCanvas,0,0);player1.draw();player2.draw();drawEffects();ctx.restore();
             animationId=requestAnimationFrame(gameLoop);
         }
         const controlCodes=new Set(['KeyA','KeyD','KeyS','KeyW','KeyQ','KeyE','ArrowLeft','ArrowRight','ArrowDown','ArrowUp','KeyK','KeyL']);

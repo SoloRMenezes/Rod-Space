@@ -8,7 +8,7 @@ async function request(path,mode='navigate'){let pending;handlers.fetch({request
 (async()=>{
  let pending;handlers.install({waitUntil:p=>pending=p});await pending;
  const ids=['reaction','multiplayer-test','web_weavers','backrooms','sling-champ','nextup'];
- assert.equal(Object.keys(context.self.OFFLINE_CATALOG).length,37);
+ assert.equal(Object.keys(context.self.OFFLINE_CATALOG).length,36);
  corrupt=true;assert.match((await message('download',ids[0])).error,/changed/);assert.equal((await message('status')).items.length,0);corrupt=false;
  for(const id of ids.slice(0,5))assert.equal((await message('download',id)).items.some(g=>g.id===id),true);
  assert.equal((await message('download',ids[5])).items.length,6);

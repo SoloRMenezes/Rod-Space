@@ -5008,24 +5008,6 @@ self.OFFLINE_CATALOG = {
     "bytes": 165153648,
     "version": "e66e4a82f1d87601"
   },
-  "monthly-grind": {
-    "name": "The Monthly Grind",
-    "page": "the-monthly-grind.html",
-    "files": [
-      {
-        "path": "assets/vendor/tailwind.js",
-        "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
-      },
-      {
-        "path": "the-monthly-grind.html",
-        "bytes": 20973,
-        "hash": "42b0143c9548c1fc4d96a7c058e174559b4f7e60594adf58960ff7be5184100f"
-      }
-    ],
-    "bytes": 428252,
-    "version": "20d0ad4b2e61302e"
-  },
   "truth-or-dare": {
     "name": "Truth or Dare",
     "page": "truth-or-dare.html",
@@ -5192,12 +5174,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "solos_rng.html",
-        "bytes": 28894,
-        "hash": "a8f2e2eea0bdb9f9583a7f9ec0ba1818e88ce156d03b61b7b9396ea12d8d1208"
+        "bytes": 25945,
+        "hash": "170ad0ca64f9037231b7d42b9b2195ada7798ff4492f4593d2348c5e6b3ec42e"
       }
     ],
-    "bytes": 28894,
-    "version": "9b2cf3ad90fc100b"
+    "bytes": 25945,
+    "version": "fc9b74d0b0f3c54f"
   },
   "blackjack": {
     "name": "Black Jack",
@@ -5309,12 +5291,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "hood_brawlers.html",
-        "bytes": 38196,
-        "hash": "19a257c97437343eefcfda0a66e98c209217ad04d178d03268a45cd87b2108c5"
+        "bytes": 40373,
+        "hash": "bc0e0e1f6501216eefd5e47ae7a6375bbc0493c8b3f5860f0ee7524d22e6b237"
       }
     ],
-    "bytes": 38196,
-    "version": "30230fd4871cd570"
+    "bytes": 40373,
+    "version": "c9cced7f96de5c09"
   },
   "planet-architect": {
     "name": "Planet Architect",
