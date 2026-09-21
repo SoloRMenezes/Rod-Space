@@ -5174,12 +5174,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "solos_rng.html",
-        "bytes": 25945,
-        "hash": "170ad0ca64f9037231b7d42b9b2195ada7798ff4492f4593d2348c5e6b3ec42e"
+        "bytes": 27429,
+        "hash": "026462e89266fcae498b5de2719de9f8edeb709a11a2a9e57c24caa37e87bcd2"
       }
     ],
-    "bytes": 25945,
-    "version": "fc9b74d0b0f3c54f"
+    "bytes": 27429,
+    "version": "393086a975c3d129"
   },
   "blackjack": {
     "name": "Black Jack",

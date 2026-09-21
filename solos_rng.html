@@ -7,8 +7,8 @@
     <style>
         :root {
             --bg: #0a0a0c;
-            --card: #151518;
-            --accent: #3b82f6;
+            --card: #12151b;
+            --accent: #6d8cff;
             --common: #94a3b8;
             --uncommon: #22c55e;
             --rare: #3b82f6;
@@ -51,7 +51,7 @@
             padding: 1.5rem;
             margin: 0 auto;
         }
-        .brand { margin: 0 0 1.25rem; }
+        .brand { margin: .5rem 0 1.5rem; display:flex;justify-content:space-between;align-items:end;border-bottom:1px solid #272b35;padding-bottom:1.2rem; }
         .brand h1 { margin: 0; font-size: clamp(2.1rem, 10vw, 3.5rem); letter-spacing: -.08em; line-height: .9; }
         .brand p { color: var(--text-dim); margin: .65rem 0 0; }
 
@@ -82,7 +82,7 @@
             align-items: center;
             background: var(--card);
             padding: 12px 20px;
-            border-radius: 20px;
+            border-radius: 8px;
             margin-bottom: 1.5rem;
             border: 1px solid #27272a;
         }
@@ -95,10 +95,10 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle at center, #1e1e22 0%, #151518 100%);
-            border-radius: 28px;
+            background: linear-gradient(145deg, #171b24, #0d0f14);
+            border-radius: 10px;
             margin-bottom: 1.5rem;
-            border: 2px solid #27272a;
+            border: 1px solid #343947;
             position: relative;
             overflow: hidden;
             transition: all 0.3s var(--spring);
@@ -146,7 +146,7 @@
         .inv-slot {
             aspect-ratio: 1;
             background: #1e1e22;
-            border-radius: 16px;
+            border-radius: 7px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -167,7 +167,7 @@
             display: flex;
             gap: 8px;
             padding: 8px;
-            border-radius: 28px;
+            border-radius: 12px;
             background: rgba(21, 21, 24, 0.85);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255,255,255,0.08);
@@ -185,7 +185,7 @@
             color: #71717a;
             font-weight: 700;
             cursor: pointer;
-            border-radius: 20px;
+            border-radius: 7px;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
@@ -197,14 +197,14 @@
 
         .btn-primary { 
             background: var(--accent); color: white; border: none; padding: 16px; 
-            border-radius: 18px; font-weight: 700; cursor: pointer; width: 100%; 
+            border-radius: 7px; font-weight: 800; cursor: pointer; width: 100%;
             transition: all 0.2s;
         }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .checkout-card {
             background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
-            border-radius: 24px;
+            border-radius: 9px;
             padding: 24px;
             margin: 20px 0;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
@@ -278,7 +278,7 @@
 <div id="msg-box">Message</div>
 
 <div class="game-container">
-    <div class="brand"><h1>SOLO'S<br>RNG</h1><p>Pull strange artifacts. Build the impossible collection.</p></div>
+    <div class="brand"><div><h1>SOLO'S<br>RNG</h1><p>Build the collection. Chase the impossible drops.</p></div><div id="collection-count" style="font-weight:900;color:var(--text-dim)">0 / 0</div></div>
     <div class="header">
         <div class="currency-display">🪙 <span id="coin-balance">0</span></div>
         <div style="font-size: 0.7rem; color: var(--text-dim);" id="header-inv-cap">Bag: 0/10</div>
@@ -289,14 +289,14 @@
         <div class="display-area" id="main-display">
             <div id="item-emoji" class="item-emoji-display">📦</div>
             <div class="item-name" id="item-name">The Archive</div>
-            <div class="item-rarity" id="item-rarity" style="color:var(--text-dim); font-size:0.8rem;">10 coins per pull</div>
+            <div class="item-rarity" id="item-rarity" style="color:var(--text-dim); font-size:0.8rem;">15 coins per pull</div>
             <div class="pity-container"><div id="pity-progress"></div></div>
-            <div style="font-size: 0.6rem; color: #71717a; margin-top: 8px;">Legendary pity: <span id="pity-val">0</span>/40</div>
+            <div style="font-size: 0.6rem; color: #71717a; margin-top: 8px;">Legendary pity: <span id="pity-val">0</span>/75</div>
         </div>
 
         <div style="display: flex; gap: 12px;">
-            <button class="btn-primary" id="roll-1-btn" onclick="spin(1)">Pull once · 10</button>
-            <button class="btn-primary" id="roll-10-btn" style="background: #27272a;" onclick="spin(5)">Pull five · 50</button>
+            <button class="btn-primary" id="roll-1-btn" onclick="spin(1)">Pull once · 15</button>
+            <button class="btn-primary" id="roll-10-btn" style="background: #27272a;" onclick="spin(5)">Pull five · 75</button>
         </div>
 
         <div style="margin-top: 2.5rem;">
@@ -325,7 +325,7 @@
 
         <div class="shop-card"><h3>🧲 Luck magnet <span id="luck-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Slightly improves every rare drop.</p><button class="btn-primary" onclick="buyUpgrade('luck')">Upgrade · <span id="luck-price">150</span></button></div>
         <div class="shop-card"><h3>🎒 Bigger bag <span id="bag-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Adds four inventory spaces.</p><button class="btn-primary" onclick="buyUpgrade('bag')">Upgrade · <span id="bag-price">120</span></button></div>
-        <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A quick scrap run keeps a bad streak from ending the game.</p><button class="btn-primary" onclick="scrapRun()">Scrap run · +25</button></div>
+        <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives one recovery every ten minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +30</button></div>
     </div>
 
     <div id="screen-stats" class="screen">
@@ -344,12 +344,12 @@
         <div style="background:var(--card); padding:20px; border-radius:20px; border:1px solid #27272a; margin-bottom: 20px;">
             <div style="font-size:0.7rem; color:var(--text-dim); margin-bottom: 10px; letter-spacing: 1px;">DROP CHANCES</div>
             <table class="rarity-table">
-                <tr><td class="rarity-Common">Common</td><td>51.0%</td></tr>
-                <tr><td class="rarity-Uncommon">Uncommon</td><td>25.5%</td></tr>
-                <tr><td class="rarity-Rare">Rare</td><td>12.8%</td></tr>
-                <tr><td class="rarity-Epic">Epic</td><td>6.1%</td></tr>
-                <tr><td class="rarity-Legendary">Legendary</td><td>3.1%</td></tr>
-                <tr><td class="rarity-Mythic">Mythic</td><td>1.5%</td></tr>
+                <tr><td class="rarity-Common">Common</td><td>66%</td></tr>
+                <tr><td class="rarity-Uncommon">Uncommon</td><td>22%</td></tr>
+                <tr><td class="rarity-Rare">Rare</td><td>8%</td></tr>
+                <tr><td class="rarity-Epic">Epic</td><td>3%</td></tr>
+                <tr><td class="rarity-Legendary">Legendary</td><td>0.8%</td></tr>
+                <tr><td class="rarity-Mythic">Mythic</td><td>0.2%</td></tr>
             </table>
         </div>
 
@@ -372,20 +372,20 @@
 </div>
 
 <script>
-    const SPIN_COST = 10;
+    const SPIN_COST = 15, PITY_LIMIT=75;
     const generatePool = () => {
         const pool = [];
         const config = [
-            { r: "Common", w: 100, s: 4, e: [["🔩","Last Useful Screw"],["🍞","Emergency Bread"],["🧪","Suspicious Sample"],["🍃","Leaf With Wi-Fi"],["📎","Management Paperclip"],["🍎","Newton's Backup Apple"],["🪨","Emotionally Available Rock"],["⚙️","Gear From Something Important"],["🪀","Executive Yo-Yo"],["🥕","Night-Vision Carrot"]] },
-            { r: "Uncommon", w: 48, s: 9, e: [["🔍","Detective's Monocle"],["🗡️","Sword of Mild Danger"],["🏹","Wi-Fi Longbow"],["🛡️","Terms & Conditions Shield"],["🕯️","Candle of Bad Ideas"]] },
-            { r: "Rare", w: 22, s: 22, e: [["🔋","Infinite 1% Battery"],["🏺","Vase From the Future"],["🧭","Compass to Anywhere Else"],["⚖️","Rigged Scales"],["🔮","Orb of Unread Messages"]] },
-            { r: "Epic", w: 9, s: 58, e: [["🗺️","Map of Missing Places"],["💎","Compressed Moonlight"],["🪶","Gravity Feather"],["🔥","Pocket Sun"],["❄️","Last Snowflake"]] },
-            { r: "Legendary", w: 3.5, s: 190, e: [["🛰️","Lost Satellite"],["👑","Crown of Nobody"],["🐉","Unhatched Dragon"],["🧬","Human Patch Notes"]] },
-            { r: "Mythic", w: 1, s: 900, e: [["🕳️","Portable Void"],["🎞️","Ending Credits"],["🪐","Pocket Universe"]] }
+            { r:"Common",s:3,e:[["🔩","Iron Bolt"],["🍞","Loaf of Bread"],["🧪","Glass Vial"],["🍃","Oak Leaf"],["📎","Paper Clip"],["🍎","Red Apple"],["🪨","River Stone"],["⚙️","Steel Gear"],["🪀","Red Yo-Yo"],["🥕","Carrot"],["🧵","Spool of Thread"],["🪙","Copper Coin"],["🧲","Small Magnet"],["🔑","Old Key"],["🕯️","Wax Candle"],["🪵","Oak Log"],["🧱","Clay Brick"],["🥄","Silver Spoon"]]},
+            { r:"Uncommon",s:7,e:[["🔍","Magnifying Glass"],["🗡️","Iron Sword"],["🏹","Hunting Bow"],["🛡️","Round Shield"],["🏮","Paper Lantern"],["⌚","Pocket Watch"],["📻","Portable Radio"],["🎻","Old Violin"],["🧰","Toolbox"],["🪬","Blue Talisman"],["🧭","Brass Compass"],["🏺","Painted Vase"]]},
+            { r:"Rare",s:18,e:[["🔋","Power Cell"],["⚖️","Golden Scales"],["🔮","Crystal Ball"],["💍","Ruby Ring"],["📜","Ancient Scroll"],["🗿","Stone Idol"],["🪶","Phoenix Feather"],["🗝️","Royal Key"],["🧿","Watcher Eye"],["⚔️","Twin Blades"]]},
+            { r:"Epic",s:45,e:[["🗺️","Lost World Map"],["💎","Blue Diamond"],["🔥","Eternal Flame"],["❄️","Frozen Heart"],["🪄","Archmage Wand"],["🦴","Dragon Bone"],["🏆","Champion's Trophy"],["🛸","Alien Core"]]},
+            { r:"Legendary",s:130,e:[["🛰️","Lost Satellite"],["👑","Sun King's Crown"],["🐉","Dragon Egg"],["🧬","Genesis Sample"],["⚡","Storm Core"],["🗡️","Excalibur"]]},
+            { r:"Mythic",s:650,e:[["🕳️","Portable Void"],["🎞️","Final Timeline"],["🪐","Pocket Universe"],["🌌","Galaxy Shard"]]}
         ];
         config.forEach(c => {
             c.e.forEach(([emoji,name]) => {
-                pool.push({ name, rarity: c.r, weight: c.w, sell: c.s, emoji });
+                pool.push({ name, rarity: c.r, sell: c.s, emoji });
             });
         });
         return pool;
@@ -399,14 +399,15 @@
     ];
 
     let state = {
-        coins: Number.isFinite(parseInt(localStorage.getItem('rng_coins')))?parseInt(localStorage.getItem('rng_coins')):150,
+        coins: Number.isFinite(parseInt(localStorage.getItem('rng_coins')))?parseInt(localStorage.getItem('rng_coins')):120,
         pity: parseInt(localStorage.getItem('rng_pity')) || 0,
         maxInv: Math.max(16,parseInt(localStorage.getItem('rng_bag'))||16),
         luck: Math.max(0,parseInt(localStorage.getItem('rng_luck'))||0),
         totalRolls: parseInt(localStorage.getItem('rng_rolls')) || 0,
         totalLegendary: parseInt(localStorage.getItem('rng_legendaries')) || 0,
         inventory: JSON.parse(localStorage.getItem('rng_inventory')) || [],
-        collection: JSON.parse(localStorage.getItem('rng_collection')) || []
+        collection: JSON.parse(localStorage.getItem('rng_collection')) || [],
+        lastScrap:parseInt(localStorage.getItem('rng_last_scrap'))||0
     };
 
     function save() {
@@ -417,6 +418,7 @@
         localStorage.setItem('rng_inventory', JSON.stringify(state.inventory));
         localStorage.setItem('rng_collection', JSON.stringify(state.collection));
         localStorage.setItem('rng_bag',state.maxInv);localStorage.setItem('rng_luck',state.luck);
+        localStorage.setItem('rng_last_scrap',state.lastScrap);
         updateUI();
     }
 
@@ -456,6 +458,7 @@
     }
 
     function finishSpin(count) {
+        const display=document.getElementById('main-display');
         state.coins -= SPIN_COST * count;
         state.totalRolls += count;
         
@@ -463,14 +466,15 @@
         for (let i = 0; i < count; i++) {
             state.pity++;
             let item;
-            if (state.pity >= 40) {
+            if (state.pity >= PITY_LIMIT) {
                 const high = lootPool.filter(l => l.rarity === "Legendary" || l.rarity === "Mythic");
                 item = high[Math.floor(Math.random() * high.length)];
                 state.pity = 0;
             } else {
-                const totalW = lootPool.reduce((s, x) => s + x.weight/(x.rarity==='Common'?1+state.luck*.1:1), 0);
-                let rnd = Math.random() * totalW;
-                for (const x of lootPool) { const weight=x.weight/(x.rarity==='Common'?1+state.luck*.1:1);if (rnd < weight) { item = x; break; } rnd -= weight; }
+                const weights={Common:66-state.luck*1.5,Uncommon:22,Rare:8+state.luck*.7,Epic:3+state.luck*.45,Legendary:.8+state.luck*.25,Mythic:.2+state.luck*.1};
+                let rnd=Math.random()*Object.values(weights).reduce((a,b)=>a+b,0),rarity='Common';
+                for(const [name,weight] of Object.entries(weights)){if(rnd<weight){rarity=name;break}rnd-=weight}
+                const choices=lootPool.filter(x=>x.rarity===rarity);item=choices[Math.floor(Math.random()*choices.length)];
             }
             
             if (item.rarity === "Legendary" || item.rarity === "Mythic") {
@@ -487,6 +491,8 @@
         document.getElementById('item-name').innerText = last.name;
         document.getElementById('item-name').className = `item-name rarity-${last.rarity}`;
         document.getElementById('item-rarity').innerText = last.rarity;
+        const rarityColor=getComputedStyle(document.documentElement).getPropertyValue(`--${last.rarity.toLowerCase()}`).trim();
+        display.style.borderColor=rarityColor;display.style.boxShadow=`0 18px 60px ${rarityColor}24, inset 0 0 45px ${rarityColor}12`;
         save();
     }
 
@@ -494,9 +500,10 @@
         document.getElementById('coin-balance').innerText = Math.floor(state.coins);
         document.getElementById('header-inv-cap').innerText = `Bag: ${state.inventory.length}/${state.maxInv}`;
         document.getElementById('pity-val').innerText = state.pity;
-        document.getElementById('pity-progress').style.width = (state.pity/40*100) + "%";
+        document.getElementById('pity-progress').style.width = (state.pity/PITY_LIMIT*100) + "%";
         document.getElementById('stat-rolls').innerText = state.totalRolls;
         document.getElementById('stat-legendary').innerText = state.totalLegendary;
+        document.getElementById('collection-count').innerText=`${state.collection.filter(c=>lootPool.some(i=>i.name===c.name)).length} / ${lootPool.length}`;
         document.getElementById('luck-level').innerText=`Lv ${state.luck}`;document.getElementById('bag-level').innerText=`${state.maxInv} slots`;document.getElementById('luck-price').innerText=150*(state.luck+1);document.getElementById('bag-price').innerText=120+Math.max(0,state.maxInv-16)*20;
 
         const list = document.getElementById('inventory-list');
@@ -516,7 +523,7 @@
 
     function hardReset() {
         if (confirm("Are you sure? This will wipe ALL progress (Coins, Rolls, Collection).")) {
-            ['rng_coins','rng_pity','rng_rolls','rng_legendaries','rng_inventory','rng_collection','rng_bag','rng_luck'].forEach(key=>localStorage.removeItem(key));
+            ['rng_coins','rng_pity','rng_rolls','rng_legendaries','rng_inventory','rng_collection','rng_bag','rng_luck','rng_last_scrap'].forEach(key=>localStorage.removeItem(key));
             location.reload();
         }
     }
@@ -533,8 +540,8 @@
         notify("Bought " + item.name + "!");
         save();
     }
-    function buyUpgrade(type){const price=type==='luck'?150*(state.luck+1):120+Math.max(0,state.maxInv-16)*20;if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':'Bag expanded');save();}
-    function scrapRun(){if(state.coins>=SPIN_COST)return notify('Use this when you are broke');state.coins+=25;notify('Found 25 coins in the junk pile');save();}
+    function buyUpgrade(type){const price=type==='luck'?250*(state.luck+1):180+Math.max(0,state.maxInv-16)*25;if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':'Bag expanded');save();}
+    function scrapRun(){const wait=600000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=30;notify('Recovered 30 coins');save();}
 
     function renderCollection() {
         const grid = document.getElementById('collection-list');
