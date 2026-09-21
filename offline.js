@@ -5,7 +5,7 @@ const offlineSize=n=>n<1024*1024?`${Math.ceil(n/1024)} KB`:`${(n/1024/1024).toFi
 window.offlineCardHTML=id=>{
   const game=OFFLINE_CATALOG[id];if(!game)return '';
   const saved=offlineDownloads.get(id),busy=offlineBusy===id;
-  return `${game.note?`<p style="font-size:11px;color:#94a3b8;margin-top:10px">${game.note}</p>`:''}<div style="margin-top:14px;display:flex;gap:8px;align-items:center;font-size:12px;color:#94a3b8"><button type="button" data-offline-id="${id}" ${!offlineWorker||offlineBusy?'disabled':''} style="border:1px solid #334155;border-radius:6px;padding:6px 9px;color:#cbd5e1;cursor:pointer;opacity:${!offlineWorker||offlineBusy?.length?'.5':'1'}">${busy?'Downloading…':saved?'Offload':'↓ Download'}</button><span>${saved?'✓ Offline · ':''}${offlineSize(saved?.bytes||game.bytes)}</span>${saved&&saved.version!==game.version?`<button data-offline-update="${id}" ${offlineBusy?'disabled':''}>Update</button>`:''}</div>`;
+  return `<div style="margin-top:14px;display:flex;gap:8px;align-items:center;font-size:12px;color:#94a3b8"><button type="button" data-offline-id="${id}" ${!offlineWorker||offlineBusy?'disabled':''} style="border:1px solid #334155;border-radius:6px;padding:6px 9px;color:#cbd5e1;cursor:pointer;opacity:${!offlineWorker||offlineBusy?.length?'.5':'1'}">${busy?'Downloading…':saved?'Offload':'↓ Download'}</button><span>${saved?'✓ Offline · ':''}${offlineSize(saved?.bytes||game.bytes)}</span>${saved&&saved.version!==game.version?`<button data-offline-update="${id}" ${offlineBusy?'disabled':''}>Update</button>`:''}</div>`;
 };
 function offlineRefresh(){
   window.refreshOfflineCards?.();
