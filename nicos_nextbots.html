@@ -392,14 +392,32 @@ function initAudio() {
             for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1){transform.makeTranslation((x+.5)*2,9.5,(y+.5)*2);(isEdge(x,y)?walls:pillars).setMatrixAt(isEdge(x,y)?wallIndex++:pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
-            // The upper deck and high roof make this a true two-storey garage.
-            const upperDeck=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#383c41',true),color:0xb8bcc1,side:THREE.DoubleSide,shininess:5}));
+            // The upper deck has real openings above every ramp instead of cutting
+            // straight through the ramp entrance.
+            const deckShape=new THREE.Shape();
+            deckShape.moveTo(-MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,MAP_SIZE_Y);deckShape.lineTo(-MAP_SIZE_X,MAP_SIZE_Y);deckShape.closePath();
+            for(const ramp of RAMPS){
+                const left=ramp.x1*2-MAP_SIZE_X-2,right=ramp.x2*2-MAP_SIZE_X+2;
+                const near=MAP_SIZE_Y-ramp.y2*2-2,far=MAP_SIZE_Y-ramp.y1*2+2;
+                const opening=new THREE.Path();opening.moveTo(left,near);opening.lineTo(right,near);opening.lineTo(right,far);opening.lineTo(left,far);opening.closePath();deckShape.holes.push(opening);
+            }
+            const upperDeck=new THREE.Mesh(new THREE.ShapeGeometry(deckShape),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#383c41',true),color:0xb8bcc1,side:THREE.DoubleSide,shininess:5}));
             upperDeck.rotation.x=-Math.PI/2;upperDeck.position.set(MAP_SIZE_X,FLOOR_HEIGHT,MAP_SIZE_Y);scene.add(upperDeck);
             const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
             ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,19,MAP_SIZE_Y);scene.add(ceiling);
 
             const rampMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#55575a',true),color:0xb7b8b4,shininess:3});
-            for(const ramp of RAMPS){const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1);const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set((ramp.x1+ramp.x2),FLOOR_HEIGHT/2,(ramp.y1+ramp.y2));mesh.rotation.z=angle;scene.add(mesh)}
+            const railMat=new THREE.MeshPhongMaterial({color:0xd6d2c4,shininess:4});
+            const warningMat=new THREE.MeshBasicMaterial({color:0xe5c94f});
+            for(const ramp of RAMPS){
+                const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1),cx=ramp.x1+ramp.x2,cz=ramp.y1+ramp.y2;
+                const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
+                // Solid curbs make the slope read as a proper parking-garage ramp and
+                // stop players slipping off its sides.
+                for(const side of [-1,1]){const curb=new THREE.Mesh(new THREE.BoxGeometry(length,1.25,.36),railMat);curb.position.set(cx,FLOOR_HEIGHT/2+.62,cz+side*(width/2-.18));curb.rotation.z=angle;scene.add(curb)}
+                // Yellow entrance bars clearly mark both ways onto the ramp.
+                for(const end of [ramp.x1*2,ramp.x2*2]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,end===ramp.x1*2?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12),cz);scene.add(bar)}
+            }
 
             // Proper parking bays and centre-lane markings.
             const markings=[];
@@ -440,7 +458,7 @@ const BOT_TYPES=[
  {name:'MOYAI',src:'./assets/nextbots/moyai.svg'},
  {name:'CRYING CAT',src:'./assets/nextbots/crying-cat.svg'}
 ];
-function makeBotLabel(text){const c=document.createElement('canvas');c.width=512;c.height=96;const x=c.getContext('2d');x.font='900 42px sans-serif';x.textAlign='center';x.strokeStyle='#000';x.lineWidth=10;x.strokeText(text,256,58);x.fillStyle='#fff';x.fillText(text,256,58);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));sprite.scale.set(7,1.3,1);sprite.renderOrder=6;scene.add(sprite);return sprite}
+function makeBotLabel(text){const c=document.createElement('canvas');c.width=512;c.height=96;const x=c.getContext('2d');x.font='900 42px sans-serif';x.textAlign='center';x.strokeStyle='#000';x.lineWidth=10;x.strokeText(text,256,58);x.fillStyle='#fff';x.fillText(text,256,58);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:true,depthWrite:false}));sprite.scale.set(7,1.3,1);sprite.renderOrder=6;scene.add(sprite);return sprite}
 for (let b = 0; b < botSpawns.length; b++) {
     const type=BOT_TYPES[b];
     const backing = new THREE.Sprite(new THREE.SpriteMaterial({color:0xf4f1e8,depthWrite:false}));
@@ -760,10 +778,10 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const now=performance.now();
                 const localTarget={id:'local',x:player.x,y:player.y,floorY:player.floorY,alive:!isGameOver};
                 const targets=[localTarget,...Array.from(remotePlayers.values())];
-                let locked=targets.find(candidate=>candidate.id===bot.targetId&&candidate.alive);
+                let locked=targets.find(candidate=>candidate.id===bot.targetId&&candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<2.5);
                 if(locked&&Math.hypot(botMapX-locked.x,botMapY-locked.y)>38){bot.targetId=null;locked=null}
                 if(!locked){
-                    locked=targets.filter(candidate=>candidate.alive&&Math.hypot(botMapX-candidate.x,botMapY-candidate.y)<=24).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0];
+                    locked=targets.filter(candidate=>candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<2.5&&Math.hypot(botMapX-candidate.x,botMapY-candidate.y)<=24).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0];
                     if(locked)bot.targetId=locked.id;
                 }
                 if(!locked&&(now>bot.wanderUntil||Math.hypot(botMapX-bot.wanderX,botMapY-bot.wanderY)<3)){
@@ -843,6 +861,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             if (bots && bots.length > 0) {
                 mCtx.fillStyle = '#44f';
                 for (let i = 0; i < bots.length; i++) {
+                    if(Math.abs(bots[i].floorY-player.floorY)>=2.5)continue;
                     // Convert bot world position to map units for minimap
                     mCtx.beginPath();
                     mCtx.arc(
