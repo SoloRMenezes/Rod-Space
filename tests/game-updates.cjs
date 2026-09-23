@@ -2,6 +2,8 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const root=path.resolve(__dirname,'..');
 const cards=vm.runInNewContext(fs.readFileSync(root+'/disaster-cards.js','utf8')+'\nDISASTER_CARDS');
 const rules=require('../disaster-game.js');
+const lan=require('../disaster-lan.js');
+const pairing={type:'offer',sdp:'v=0\r\na=candidate:local network ✓'};assert.deepEqual(lan.decode(lan.encode(pairing)),pairing);
 assert.equal(cards.length,200);assert.equal(new Set(cards.map(c=>c.text)).size,200);assert.equal(new Set(cards.map(c=>c.score)).size,200);assert.equal(Math.min(...cards.map(c=>c.score)),.5);assert.equal(Math.max(...cards.map(c=>c.score)),100);
 const correctSlot=g=>g.players[g.active].lane.filter(id=>cards[id].score<cards[g.current].score).length;
 let game=rules.create(['One','Two','Three'],cards,()=>.4),original=game.current;
