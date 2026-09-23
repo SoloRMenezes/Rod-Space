@@ -24,6 +24,8 @@ assert(!nicoHtml.includes('RingGeometry'), 'Nico bots should not have ground war
 assert(nicoHtml.includes('ceiling.position.set(MAP_SIZE_X,11,MAP_SIZE_Y)'), 'Nico garage should use the higher ceiling');
 assert(nicoHtml.includes("cell===2&&player.z>=1.55"), 'Nico cars should block running but allow a high jump');
 assert(nicoHtml.includes("new THREE.SpriteMaterial({color:0xf4f1e8"), 'Nico portraits should have a visible backing');
+assert(nicoHtml.includes('new THREE.PerspectiveCamera(95,'), 'Nico should use a fixed 95 degree FOV');
+assert(!nicoHtml.includes('id="fov-slider"'), 'Nico should not expose a variable FOV control');
 assert.match(nicoHtml,/speed: 0\.12/);
 assert.match(nicoHtml,/baseSpeed: 34/);
 assert.ok(fs.statSync(root+'/assets/nextbot-chaser.png').size<400_000,'optimized chaser texture');
