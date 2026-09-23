@@ -5390,23 +5390,18 @@ self.OFFLINE_CATALOG = {
         "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
       },
       {
-        "path": "assets/vendor/nextbot-brick.jpg",
-        "bytes": 1090649,
-        "hash": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe"
-      },
-      {
         "path": "assets/vendor/offline-8eacf4588bcf.js",
         "bytes": 626868,
         "hash": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd"
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 53620,
-        "hash": "aaa2a882206d8dd0964011e5231931855048bf4d4cb838be57ed0e1b868a9106"
+        "bytes": 55490,
+        "hash": "b536dbc7ea5479dca16b17efdc14d9c34a1fe10b8d2bd57ded4135fd58345905"
       }
     ],
-    "bytes": 2029282,
-    "version": "40d26860b65bbbc7"
+    "bytes": 940503,
+    "version": "b9d9cf2b9877fd6f"
   },
   "backrooms": {
     "name": "The Backrooms",

@@ -198,8 +198,12 @@ const MAP = (() => {
             const map = Array.from({length:height},(_,y)=>Array.from({length:width},(_,x)=>x===0||y===0||x===width-1||y===height-1?1:0));
             // Support columns form parking bays while broad lanes leave room to dodge.
             for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14){map[y][x]=1;map[y][x+1]=1;map[y+1][x]=1;map[y+1][x+1]=1;}
-            // Divider walls have alternating drive-through gaps, giving each chaser different routes.
-            for(const y of [27,53])for(let x=7;x<width-7;x++)if(x%22>5)map[y][x]=1;
+            // Short concrete dividers guide routes without turning the garage into a brick maze.
+            for(const y of [27,53])for(let x=8;x<width-8;x++)if(x%28>20)map[y][x]=1;
+            // Parked cars are real obstacles, leaving the central drive lanes open.
+            const cars=[[16,17],[31,17],[46,17],[76,17],[91,17],[106,17],[16,62],[31,62],[61,62],[76,62],[91,62],[106,62]];
+            for(const [cx,cy] of cars)for(let y=cy-2;y<=cy+2;y++)for(let x=cx-1;x<=cx+1;x++)map[y][x]=2;
+            map.carSpots=cars;
             return map;
         })();
         const MAP_SIZE_Y = MAP.length;
@@ -224,7 +228,7 @@ const botSpawns = [
             z: 0,     // vertical offset for jump
             zVel: 0,
             isJumping: false,
-            speed: 0.045 * 2, // doubled speed for 2x world scale
+            speed: 0.12, // fast arcade movement in map units per frame
             rotSpeed: 0.0025,
             sensitivity: 1.0,
             isSprinting: false,
@@ -314,7 +318,7 @@ function initAudio() {
             scene = new THREE.Scene();
             // Scene color: backrooms yellow
             scene.background = new THREE.Color(0x15171a);
-            scene.fog = new THREE.Fog(0x15171a, 35, 150);
+            scene.fog = new THREE.Fog(0x15171a, 55, 205);
 
             // Camera
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 280);
@@ -328,9 +332,9 @@ function initAudio() {
             renderer.setSize(window.innerWidth, window.innerHeight);
 
             // Lighting
-            ambientLight = new THREE.AmbientLight(0xf6e7a1, 0.45);
+            ambientLight = new THREE.AmbientLight(0xd7deea, 0.62);
             scene.add(ambientLight);
-            dirLight = new THREE.DirectionalLight(0xffffff, 0.25);
+            dirLight = new THREE.DirectionalLight(0xffffff, 0.18);
             dirLight.position.set(0, 10, 0);
             scene.add(dirLight);
 
@@ -345,33 +349,41 @@ function initAudio() {
             floorMesh.position.set(MAP_SIZE_X, 0, MAP_SIZE_Y);
             scene.add(floorMesh);
 
-            // Garage walls use one geometry, one material and one draw call.
-            const wallTexture = new THREE.TextureLoader().load('./assets/vendor/nextbot-brick.jpg');
-            wallTexture.wrapS = THREE.RepeatWrapping;
-            wallTexture.wrapT = THREE.RepeatWrapping;
-            wallTexture.repeat.set(1, 1);
+            // Concrete structure stays cheap: one instanced draw for walls and columns.
             wallGroup = new THREE.Group();
-            const wallGeo = new THREE.BoxGeometry(2, 5, 2);
-            const wallMat = new THREE.MeshPhongMaterial({map:wallTexture,color:0x8b9096,shininess:6});
-            const wallCount=MAP.reduce((sum,row)=>sum+row.filter(Boolean).length,0);
+            const wallGeo = new THREE.BoxGeometry(2, 7, 2);
+            const wallMat = new THREE.MeshPhongMaterial({color:0x747980,shininess:3});
+            const wallCount=MAP.reduce((sum,row)=>sum+row.filter(cell=>cell===1).length,0);
             const walls=new THREE.InstancedMesh(wallGeo,wallMat,wallCount);
             const transform=new THREE.Matrix4();let wallIndex=0;
-            for (let y = 0; y < MAP_SIZE_Y; y++) {
-                for (let x = 0; x < MAP_SIZE_X; x++) {
-                    if (MAP[y][x] === 1) {
-                        transform.makeTranslation((x + 0.5) * 2,1.5,(y + 0.5) * 2);
-                        walls.setMatrixAt(wallIndex++,transform);
-                    }
-                }
-            }
-            walls.instanceMatrix.needsUpdate=true;wallGroup.add(walls);
-            scene.add(wallGroup);
+            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1){transform.makeTranslation((x+.5)*2,3.5,(y+.5)*2);walls.setMatrixAt(wallIndex++,transform)}
+            walls.instanceMatrix.needsUpdate=true;wallGroup.add(walls);scene.add(wallGroup);
 
-            // Low concrete ceiling and parking stripes make the open layout read as a garage.
-            const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshBasicMaterial({color:0x23262a,side:THREE.DoubleSide}));
-            ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,4,MAP_SIZE_Y);scene.add(ceiling);
-            const stripeMat=new THREE.MeshBasicMaterial({color:0xd8bd48});
-            for(let x=14;x<MAP_SIZE_X*2-10;x+=28){const stripe=new THREE.Mesh(new THREE.PlaneGeometry(.18,MAP_SIZE_Y*2-8),stripeMat);stripe.rotation.x=-Math.PI/2;stripe.position.set(x,.012,MAP_SIZE_Y);scene.add(stripe);}
+            // Raised slab ceiling is close enough to read, high enough to keep the chase open.
+            const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({color:0x4d5157,side:THREE.DoubleSide,shininess:2}));
+            ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,7,MAP_SIZE_Y);scene.add(ceiling);
+
+            // Proper parking bays and centre-lane markings.
+            const markings=[];
+            for(const z of [24,56,104,136])for(let x=8;x<MAP_SIZE_X*2-8;x+=12)markings.push([x,z,0.12,9]);
+            for(const z of [80])for(let x=10;x<MAP_SIZE_X*2-10;x+=8)markings.push([x,z,4,.14]);
+            const markGeo=new THREE.BoxGeometry(1,.025,1),markMat=new THREE.MeshBasicMaterial({color:0xe5d26c}),marks=new THREE.InstancedMesh(markGeo,markMat,markings.length);
+            markings.forEach(([x,z,w,d],i)=>{transform.compose(new THREE.Vector3(x,.025,z),new THREE.Quaternion(),new THREE.Vector3(w,1,d));marks.setMatrixAt(i,transform)});marks.instanceMatrix.needsUpdate=true;scene.add(marks);
+
+            // Fluorescent fixtures are emissive-looking props only; they add no costly dynamic lights.
+            const lampPositions=[];for(let z=14;z<MAP_SIZE_Y*2-10;z+=24)for(let x=14;x<MAP_SIZE_X*2-10;x+=28)lampPositions.push([x,z]);
+            const lampGeo=new THREE.BoxGeometry(8,.10,.65),lampMat=new THREE.MeshBasicMaterial({color:0xeaf6dd}),lamps=new THREE.InstancedMesh(lampGeo,lampMat,lampPositions.length);
+            lampPositions.forEach(([x,z],i)=>{transform.makeTranslation(x,6.88,z);lamps.setMatrixAt(i,transform)});lamps.instanceMatrix.needsUpdate=true;scene.add(lamps);
+
+            // Low-poly parked cars create cover without expensive models or textures.
+            const carColors=[0x9e2f32,0x315c83,0x44474b,0xb6b7b0,0x6d5132,0x284f43];
+            MAP.carSpots.forEach(([cx,cy],i)=>{
+                const car=new THREE.Group(),color=carColors[i%carColors.length],bodyMat=new THREE.MeshPhongMaterial({color,shininess:35});
+                const body=new THREE.Mesh(new THREE.BoxGeometry(3.5,.85,7),bodyMat);body.position.y=.65;car.add(body);
+                const cabin=new THREE.Mesh(new THREE.BoxGeometry(3,1,3.6),new THREE.MeshPhongMaterial({color,shininess:45}));cabin.position.set(0,1.45,-.2);car.add(cabin);
+                const glass=new THREE.Mesh(new THREE.BoxGeometry(3.04,.62,2.1),new THREE.MeshPhongMaterial({color:0x18232d,shininess:70}));glass.position.set(0,1.55,-.15);car.add(glass);
+                car.position.set(cx*2+1,0,cy*2+1);if(i%2)car.rotation.y=Math.PI;scene.add(car);
+            });
 
             // --- PLAYER SPAWN: fixed y=12 ---
             player.position = new THREE.Vector3(60, 12, 40);
@@ -390,7 +402,7 @@ for (let b = 0; b < botSpawns.length; b++) {
     scene.add(bot);
     bots.push({
         mesh: bot,
-        baseSpeed: 15 * 2,
+        baseSpeed: 42,
         speedMult: 1
     });
             }
@@ -605,7 +617,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             // UI status
             const isMoving = keys['w'] || keys['s'] || keys['a'] || keys['d'];
             const actuallySprinting = player.isSprinting && isMoving;
-            const currentSpeed = actuallySprinting ? player.speed * 1.9 : player.speed;
+            const currentSpeed = actuallySprinting ? player.speed * 2.15 : player.speed;
             movementStatusDisplay.innerText = actuallySprinting ? "STATUS: EXERTION" : (player.isSprinting ? "STATUS: READY TO RUN" : "STATUS: CALM");
             movementStatusDisplay.style.color = actuallySprinting ? "#ff4444" : (player.isSprinting ? "#d1b45d" : "#f1d37e");
 
