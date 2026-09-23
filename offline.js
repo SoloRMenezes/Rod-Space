@@ -42,6 +42,7 @@ window.addEventListener('offline',()=>{offlineOnly=true;offlineRefresh();documen
 window.addEventListener('online',()=>{document.getElementById('offline-status').textContent='';});
 (async()=>{
   try{
+    if(location.protocol==='file:')return;
     if(!('serviceWorker'in navigator))throw Error('Offline downloads are not supported in this browser.');
     let registration=await navigator.serviceWorker.getRegistration('./');
     if (!registration?.active) {
