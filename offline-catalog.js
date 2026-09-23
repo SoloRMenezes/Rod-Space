@@ -25,12 +25,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "shit-spiral.html",
-        "bytes": 13735,
-        "hash": "f404c4677061621ba4d22c43a7cf44fd0bf001445f89c92612257b6188b5ffdd"
+        "bytes": 13768,
+        "hash": "b433fa1731e9562aee606af1f879228eedf4f7e1ad18f759f2562bc66fa9477e"
       }
     ],
-    "bytes": 56033,
-    "version": "531efab2a338a1a0"
+    "bytes": 56066,
+    "version": "4a32f4e1181da492"
   },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
