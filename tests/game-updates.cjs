@@ -4,6 +4,12 @@ const cards=vm.runInNewContext(fs.readFileSync(root+'/disaster-cards.js','utf8')
 const rules=require('../disaster-game.js');
 const lan=require('../disaster-lan.js');
 const pairing={type:'offer',sdp:'v=0\r\na=candidate:local network ✓'};
+const nicoHtml=fs.readFileSync(root+'/nicos_nextbots.html','utf8');
+assert.match(nicoHtml,/const width = 120, height = 80/);
+assert.match(nicoHtml,/new THREE\.InstancedMesh/);
+assert.match(nicoHtml,/assets\/nextbot-chaser\.png/);
+assert.match(nicoHtml,/Gentle separation keeps overlapping chasers/);
+assert.ok(fs.statSync(root+'/assets/nextbot-chaser.png').size<400_000,'optimized chaser texture');
 assert.match(fs.readFileSync(root+'/disaster-lan.js','utf8'),/CompressionStream\('deflate-raw'\)/);
 const spiralHtml=fs.readFileSync(root+'/shit-spiral.html','utf8');assert.match(spiralHtml,/data-password="3112" data-title="Shit Spiral"/);
 assert.match(spiralHtml,/id="single-player">Single player<\/button><button id="multiplayer">Multiplayer<\/button><button id="lan-play">LAN<\/button>/);

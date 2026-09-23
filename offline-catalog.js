@@ -5380,14 +5380,14 @@ self.OFFLINE_CATALOG = {
     "page": "nicos_nextbots.html",
     "files": [
       {
+        "path": "assets/nextbot-chaser.png",
+        "bytes": 258145,
+        "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
+      },
+      {
         "path": "assets/vendor/nextbot-brick.jpg",
         "bytes": 1090649,
         "hash": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe"
-      },
-      {
-        "path": "assets/vendor/nextbot.png",
-        "bytes": 19359,
-        "hash": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9"
       },
       {
         "path": "assets/vendor/offline-8eacf4588bcf.js",
@@ -5396,12 +5396,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 74079,
-        "hash": "bf36688d4634fe1b0e1b96e1bc6bb298a4e819bff461bca3714322f3e305b751"
+        "bytes": 53620,
+        "hash": "aaa2a882206d8dd0964011e5231931855048bf4d4cb838be57ed0e1b868a9106"
       }
     ],
-    "bytes": 1810955,
-    "version": "a591799f62427c43"
+    "bytes": 2029282,
+    "version": "40d26860b65bbbc7"
   },
   "backrooms": {
     "name": "The Backrooms",
