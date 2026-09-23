@@ -5,8 +5,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "disaster-cards.js",
-        "bytes": 29038,
-        "hash": "88b4ce2749449cd28f304b7eece216a02f4dabba74a72a0495ba39416074b8ed"
+        "bytes": 21814,
+        "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
       },
       {
         "path": "disaster-game.js",
@@ -19,8 +19,8 @@ self.OFFLINE_CATALOG = {
         "hash": "8b99aa1ad51af687d00a77bbc9fe3efe154512e50ccdd3751dad2f73513c17b4"
       }
     ],
-    "bytes": 43048,
-    "version": "2971165d8e9c56b2"
+    "bytes": 35824,
+    "version": "1b18eb559fd0508b"
   },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
