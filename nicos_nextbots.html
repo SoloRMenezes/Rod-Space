@@ -119,25 +119,32 @@
             align-items: center;
             gap: 8px;
         }
-        .lobby-card{width:min(92vw,520px);background:#17191b;border:1px solid #d1b45d;padding:24px;color:#fff;box-shadow:0 18px 60px #000}
-        .lobby-card h1{color:#f1d37e;letter-spacing:.08em;margin-bottom:8px}.lobby-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+        #start-screen{background:radial-gradient(circle at 50% 38%,rgba(52,53,55,.42),rgba(0,0,0,.9) 68%);backdrop-filter:blur(3px)}
+        body.menu-active #ui-overlay,body.menu-active #minimap-container,body.menu-active #crosshair{display:none}
+        .lobby-card{position:relative;width:min(92vw,620px);background:linear-gradient(145deg,rgba(28,30,31,.97),rgba(12,13,14,.97));border:1px solid #d1b45d;padding:clamp(24px,5vw,46px);color:#fff;box-shadow:0 24px 90px #000,inset 0 0 45px rgba(209,180,93,.035)}
+        .menu-kicker{color:#d1b45d;font-size:.72rem;font-weight:800;letter-spacing:.32em;margin-bottom:12px}.lobby-card h1{font-size:clamp(2.4rem,8vw,5rem);line-height:.84;color:#f1d37e;letter-spacing:-.055em;margin-bottom:18px;text-shadow:0 5px 26px rgba(241,211,126,.16)}.menu-subtitle{max-width:430px;color:#c7c7c7;line-height:1.45}
+        .lobby-actions{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;margin-top:24px}
         .lobby-card button,.lobby-card input{font:inherit;border:1px solid #75683e;background:#101214;color:#fff;padding:11px}.lobby-card button{cursor:pointer;font-weight:700}.lobby-card button:hover{border-color:#f1d37e;color:#f1d37e}
+        #solo-start{background:#f1d37e;color:#111;border-color:#f1d37e}#solo-start:hover{background:#fff0a9;color:#111}.home-link{display:inline-block;margin-top:18px;color:#aaa;font-size:.8rem;text-decoration:none}.home-link:hover{color:#fff}.controls-strip{display:flex;gap:16px;flex-wrap:wrap;padding-top:18px;margin-top:18px;border-top:1px solid #353535;color:#999;font-size:.76rem}.controls-strip b{color:#eee}
         #room-panel{display:none;margin-top:16px}.room-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #353535;padding:10px 0}.room-row button{padding:7px 12px}
         .lobby-fields{display:grid;grid-template-columns:1fr 120px;gap:8px;margin-top:12px}.lobby-note{color:#aaa;font-size:.82rem;margin-top:10px}#lobby-status{min-height:1.3em;color:#f1d37e;margin-top:10px}
-        @media(max-width:560px){.lobby-actions{grid-template-columns:1fr}.lobby-fields{grid-template-columns:1fr}}
+        @media(max-width:560px){.lobby-card{padding:24px}.lobby-actions{grid-template-columns:1fr}.lobby-fields{grid-template-columns:1fr}.controls-strip{gap:9px}}
     </style>
 </head>
-<body>
+<body class="menu-active">
 
     <div id="game-container">
         <!-- Start Screen Overlay -->
-        <div id="start-screen" style="position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;">
+        <div id="start-screen" style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;">
             <div class="lobby-card">
-                <h1>NICO'S NEXTBOTS</h1><p>Survive the parking garage.</p>
+                <div class="menu-kicker">PARKING GARAGE</div>
+                <h1>NICO'S<br>NEXTBOTS</h1><p class="menu-subtitle">Thirty seconds to run. Then the garage starts hunting you.</p>
                 <div class="lobby-fields"><input id="player-name" maxlength="18" placeholder="Your name"><input id="room-pin" inputmode="numeric" maxlength="4" placeholder="PIN optional"></div>
-                <div class="lobby-actions"><button id="solo-start">SOLO</button><button id="host-start">HOST</button><button id="join-open">JOIN</button></div>
+                <div class="lobby-actions"><button id="solo-start">PLAY SOLO</button><button id="host-start">HOST GAME</button><button id="join-open">JOIN GAME</button></div>
                 <div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div>
-                <div id="lobby-status"></div><div class="lobby-note">Host and players need internet for room discovery. Gameplay travels directly between devices when the network allows it.</div>
+                <div id="lobby-status"></div>
+                <div class="controls-strip"><span><b>WASD</b> MOVE</span><span><b>SPACE</b> JUMP</span><span><b>Z</b> RUN</span><span><b>P</b> SETTINGS</span></div>
+                <a class="home-link" href="./index.html">← ROD SPACE</a>
             </div>
         </div>
         <canvas id="screen"></canvas>
@@ -1011,6 +1018,7 @@ for (let b = 0; b < botSpawns.length; b++) {
         function startGame() {
             if (gameStarted) return;
             gameStarted = true;
+            document.body.classList.remove('menu-active');
             botReleaseAt=performance.now()+30000;
             // Hide start screen overlay
             const startScreen = document.getElementById('start-screen');
