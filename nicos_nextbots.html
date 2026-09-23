@@ -214,10 +214,10 @@ const MAP = (() => {
         // We'll use a THREE.Vector3 for position
         const botSpawnY = 1; // fixed bot spawn y
 const botSpawns = [
-    new THREE.Vector3(85, botSpawnY, 97),
-    new THREE.Vector3(197, botSpawnY, 97),
-    new THREE.Vector3(141, botSpawnY, 41),
-    new THREE.Vector3(141, botSpawnY, 153)
+    new THREE.Vector3(137, botSpawnY, 93),
+    new THREE.Vector3(145, botSpawnY, 93),
+    new THREE.Vector3(137, botSpawnY, 101),
+    new THREE.Vector3(145, botSpawnY, 101)
 ];
 
         // --- Player state ---
@@ -287,6 +287,7 @@ const botSpawns = [
 let bots = [];
 let screenWidth, screenHeight;
 let audioCtx, humNode, chaseNode, chaseGain;
+let botReleaseAt=Infinity;
 
 function initAudio() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -391,10 +392,12 @@ function initAudio() {
                 car.position.set(cx*2+1,0,cy*2+1);if(i%2)car.rotation.y=Math.PI;scene.add(car);
             });
 
-            // --- PLAYER SPAWN: fixed y=12 ---
-            player.position = new THREE.Vector3(70, 12, 48);
-            player.x = 70;
-            player.y = 48;
+            // Start away from the centre so every round opens differently.
+            const openSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)openSpawns.push([x+.5,y+.5]);
+            const spawn=openSpawns[Math.floor(Math.random()*openSpawns.length)];
+            player.position = new THREE.Vector3(spawn[0], 12, spawn[1]);
+            player.x = spawn[0];
+            player.y = spawn[1];
 
             // --- BOT SPAWN ---
 const loader = new THREE.TextureLoader();
@@ -412,7 +415,8 @@ for (let b = 0; b < botSpawns.length; b++) {
         mesh: bot,
         warning,
         baseSpeed: 34,
-        speedMult: 1
+        speedMult: 1,
+        vx:0,vz:0,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0
     });
             }
         }
@@ -627,8 +631,11 @@ for (let b = 0; b < botSpawns.length; b++) {
             const isMoving = keys['w'] || keys['s'] || keys['a'] || keys['d'];
             const actuallySprinting = player.isSprinting && isMoving;
             const currentSpeed = actuallySprinting ? player.speed * 2.15 : player.speed;
-            movementStatusDisplay.innerText = actuallySprinting ? "STATUS: EXERTION" : (player.isSprinting ? "STATUS: READY TO RUN" : "STATUS: CALM");
-            movementStatusDisplay.style.color = actuallySprinting ? "#ff4444" : (player.isSprinting ? "#d1b45d" : "#f1d37e");
+            const releaseRemaining = Math.max(0, botReleaseAt - performance.now());
+            movementStatusDisplay.innerText = releaseRemaining > 0
+                ? `BOTS RELEASE IN ${Math.ceil(releaseRemaining / 1000)}s`
+                : (actuallySprinting ? "STATUS: EXERTION" : (player.isSprinting ? "STATUS: READY TO RUN" : "STATUS: CALM"));
+            movementStatusDisplay.style.color = releaseRemaining > 0 ? "#f1d37e" : (actuallySprinting ? "#ff4444" : (player.isSprinting ? "#d1b45d" : "#f1d37e"));
 
             // --- Stop update if game over ---
             if (isGameOver) return;
@@ -781,266 +788,58 @@ for (let b = 0; b < botSpawns.length; b++) {
                 }
                 return null;
             }
-            // --- Multi-bot pathfinding with Bot 1 avoiding Bot 0's path ---
-            // Bot 0's path storage for Bot 1 to avoid
-            let bot0PathCells = null;
+            // --- Independent bot pursuit and wandering ---
             for (let i = 0; i < bots.length; i++) {
                 const bot = bots[i];
                 // Map bot and player positions to grid (map units)
                 const botMapX = Math.floor((bot.mesh.position.x - 1) / 2);
                 const botMapY = Math.floor((bot.mesh.position.z - 1) / 2);
 
-                // Approach from different garage lanes so the four chasers do not merge into one sprite.
-                const flank=[[0,0],[6,0],[-6,0],[0,6]][i%4];
-                const playerDistance=Math.hypot(botMapX-player.x,botMapY-player.y);
-                let targetX = Math.floor(player.x+(playerDistance>8?flank[0]:0));
-                let targetY = Math.floor(player.y+(playerDistance>8?flank[1]:0));
+                // A bot locks onto the first player entering its detection radius. It keeps
+                // that target until they die or escape the larger lose-track radius.
+                const now=performance.now();
+                const localTarget={id:'local',x:player.x,y:player.y,alive:!isGameOver};
+                const targets=[localTarget];
+                let locked=targets.find(candidate=>candidate.id===bot.targetId&&candidate.alive);
+                if(locked&&Math.hypot(botMapX-locked.x,botMapY-locked.y)>38){bot.targetId=null;locked=null}
+                if(!locked){
+                    locked=targets.filter(candidate=>candidate.alive&&Math.hypot(botMapX-candidate.x,botMapY-candidate.y)<=24).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0];
+                    if(locked)bot.targetId=locked.id;
+                }
+                if(!locked&&(now>bot.wanderUntil||Math.hypot(botMapX-bot.wanderX,botMapY-bot.wanderY)<3)){
+                    for(let tries=0;tries<40;tries++){const x=3+Math.floor(Math.random()*(MAP_SIZE_X-6)),y=3+Math.floor(Math.random()*(MAP_SIZE_Y-6));if(MAP[y][x]===0){bot.wanderX=x;bot.wanderY=y;break}}
+                    bot.wanderUntil=now+3500+Math.random()*4500;
+                }
+                let targetX=Math.floor(locked?locked.x:bot.wanderX),targetY=Math.floor(locked?locked.y:bot.wanderY);
                 targetX=Math.max(1,Math.min(MAP_SIZE_X-2,targetX));targetY=Math.max(1,Math.min(MAP_SIZE_Y-2,targetY));
-                if(MAP[targetY][targetX]!==0){targetX=Math.floor(player.x);targetY=Math.floor(player.y);}
+                if(MAP[targetY][targetX]!==0){targetX=botMapX;targetY=botMapY;}
 
-                // For Bot 1, need to avoid Bot 0's path
-                let astarMap = MAP;
-                let penalizedCells = {};
-                let penaltyValue = 15; // Cost penalty for Bot 1 to avoid Bot 0's path
+                let needsPath = (!bot._path || !bot._path.length || bot._lastTargetX!==targetX || bot._lastTargetY!==targetY || bot._lastStartX!==botMapX || bot._lastStartY!==botMapY);
+                if(needsPath){
+                    const path=astar(botMapX,botMapY,targetX,targetY,MAP);
+                    bot._path=path&&path.length>1?path:null;bot._lastTargetX=targetX;bot._lastTargetY=targetY;bot._lastStartX=botMapX;bot._lastStartY=botMapY;bot._pathStep=1;
+                }
+                if(now<botReleaseAt){bot.vx=0;bot.vz=0;continue}
 
-                // Simple cache for path to avoid recomputing every frame
-                let needsPath = (!bot._path || !bot._path.length ||
-                    bot._lastTargetX !== targetX || bot._lastTargetY !== targetY ||
-                    bot._lastStartX !== botMapX || bot._lastStartY !== botMapY);
-
-                // Bot 0: normal A*
-                if (i === 0) {
-                    if (needsPath) {
-                        const path = astar(botMapX, botMapY, targetX, targetY, MAP);
-                        bot._path = path && path.length > 1 ? path : null;
-                        bot._lastTargetX = targetX;
-                        bot._lastTargetY = targetY;
-                        bot._lastStartX = botMapX;
-                        bot._lastStartY = botMapY;
-                        bot._pathStep = 1;
-                        // Store Bot 0's path cells for Bot 1
-                        if (bot._path) {
-                            bot0PathCells = new Set(bot._path.map(([x, y]) => `${x},${y}`));
-                        } else {
-                            bot0PathCells = null;
-                        }
-                    } else {
-                        // Maintain bot0PathCells for Bot 1
-                        if (bot._path) {
-                            bot0PathCells = new Set(bot._path.map(([x, y]) => `${x},${y}`));
-                        } else {
-                            bot0PathCells = null;
-                        }
-                    }
+                let steerX=targetX*2+1,steerZ=targetY*2+1;
+                if(bot._path&&bot._pathStep<bot._path.length){
+                    const [cellX,cellY]=bot._path[bot._pathStep];steerX=cellX*2+1;steerZ=cellY*2+1;
+                    if(Math.hypot(steerX-bot.mesh.position.x,steerZ-bot.mesh.position.z)<.45)bot._pathStep++;
                 }
-                // Bot 1: pathfinds to player, but penalizes Bot 0's path
-                else {
-                    // Only penalize if Bot 0's path is available
-                    function astarPenalized(startX, startY, endX, endY, map, penalizedCells, penaltyValue) {
-                        const W = map[0].length, H = map.length;
-                        const open = [], closed = new Set();
-                        const cameFrom = {};
-                        function nodeKey(x, y) { return x + ',' + y; }
-                        function heuristic(x, y) {
-                            return Math.hypot(x - endX, y - endY);
-                        }
-                        open.push({
-                            x: startX, y: startY,
-                            g: 0, f: heuristic(startX, startY)
-                        });
-                        const neighborOffsets = [
-                            [1,0], [-1,0], [0,1], [0,-1],
-                            [1,1], [1,-1], [-1,1], [-1,-1]
-                        ];
-                        while (open.length > 0) {
-                            open.sort((a, b) => a.f - b.f);
-                            const current = open.shift();
-                            if (current.x === endX && current.y === endY) {
-                                const path = [];
-                                let k = nodeKey(endX, endY);
-                                while (cameFrom[k]) {
-                                    path.push([parseInt(k.split(',')[0]), parseInt(k.split(',')[1])]);
-                                    k = cameFrom[k];
-                                }
-                                path.push([startX, startY]);
-                                path.reverse();
-                                return path;
-                            }
-                            closed.add(nodeKey(current.x, current.y));
-                            for (const [dx, dy] of neighborOffsets) {
-                                const nx = current.x + dx, ny = current.y + dy;
-                                if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
-                                if (map[ny][nx] !== 0) continue;
-                                // Prevent diagonal movement through corners (corner cutting)
-                                if (Math.abs(dx) === 1 && Math.abs(dy) === 1) {
-                                    if (map[current.y][nx] !== 0 || map[ny][current.x] !== 0) continue;
-                                }
-                                const nkey = nodeKey(nx, ny);
-                                if (closed.has(nkey)) continue;
-                                // Cost: 1 for straight, sqrt(2) for diagonal, plus penalty if on Bot 0's path
-                                let stepCost = (dx === 0 || dy === 0) ? 1 : Math.SQRT2;
-                                if (penalizedCells && penalizedCells[nkey]) {
-                                    stepCost += penaltyValue;
-                                }
-                                const g = current.g + stepCost;
-                                let found = open.find(n => n.x === nx && n.y === ny);
-                                if (!found) {
-                                    open.push({
-                                        x: nx, y: ny,
-                                        g: g,
-                                        f: g + heuristic(nx, ny)
-                                    });
-                                    cameFrom[nkey] = nodeKey(current.x, current.y);
-                                } else if (g < found.g) {
-                                    found.g = g;
-                                    found.f = g + heuristic(nx, ny);
-                                    cameFrom[nkey] = nodeKey(current.x, current.y);
-                                }
-                            }
-                        }
-                        return null;
-                    }
-                    // Build penalizedCells from Bot 0's path
-                    if (bot0PathCells) {
-                        penalizedCells = {};
-                        for (let cell of bot0PathCells) {
-                            penalizedCells[cell] = true;
-                        }
-                    }
-                    if (needsPath) {
-                        const path = astarPenalized(botMapX, botMapY, targetX, targetY, MAP, penalizedCells, penaltyValue);
-                        bot._path = path && path.length > 1 ? path : null;
-                        bot._lastTargetX = targetX;
-                        bot._lastTargetY = targetY;
-                        bot._lastStartX = botMapX;
-                        bot._lastStartY = botMapY;
-                        bot._pathStep = 1;
-                    }
-                }
-                // Move bot along path, with wall sliding
-                if (bot._path && bot._path.length > 1 && bot._pathStep < bot._path.length) {
-                    const [nextCellX, nextCellY] = bot._path[bot._pathStep];
-                    let offsetX = 0, offsetZ = 0;
-                    if (
-                        nextCellX > 0 && nextCellX < MAP_SIZE_X - 1 &&
-                        MAP[nextCellY][nextCellX - 1] === 0 &&
-                        MAP[nextCellY][nextCellX + 1] === 0 &&
-                        MAP[nextCellY][nextCellX] === 0
-                    ) {
-                        offsetX = 0.5;
-                    } else if (
-                        nextCellY > 0 && nextCellY < MAP_SIZE_Y - 1 &&
-                        MAP[nextCellY - 1][nextCellX] === 0 &&
-                        MAP[nextCellY + 1][nextCellX] === 0 &&
-                        MAP[nextCellY][nextCellX] === 0
-                    ) {
-                        offsetZ = 0.5;
-                    } else {
-                        if (
-                            nextCellX > 0 &&
-                            MAP[nextCellY][nextCellX] === 0 &&
-                            MAP[nextCellY][nextCellX - 1] === 0 &&
-                            (nextCellX === 1 || MAP[nextCellY][nextCellX - 2] === 1)
-                        ) {
-                            offsetX = 0.5;
-                        } else if (
-                            nextCellX < MAP_SIZE_X - 1 &&
-                            MAP[nextCellY][nextCellX] === 0 &&
-                            MAP[nextCellY][nextCellX + 1] === 0 &&
-                            (nextCellX === MAP_SIZE_X - 2 || MAP[nextCellY][nextCellX + 2] === 1)
-                        ) {
-                            offsetX = 0.5;
-                        }
-                        if (
-                            nextCellY > 0 &&
-                            MAP[nextCellY][nextCellX] === 0 &&
-                            MAP[nextCellY - 1][nextCellX] === 0 &&
-                            (nextCellY === 1 || MAP[nextCellY - 2][nextCellX] === 1)
-                        ) {
-                            offsetZ = 0.5;
-                        } else if (
-                            nextCellY < MAP_SIZE_Y - 1 &&
-                            MAP[nextCellY][nextCellX] === 0 &&
-                            MAP[nextCellY + 1][nextCellX] === 0 &&
-                            (nextCellY === MAP_SIZE_Y - 2 || MAP[nextCellY + 2][nextCellX] === 1)
-                        ) {
-                            offsetZ = 0.5;
-                        }
-                    }
-                    // Target in world coordinates (2x2 per map unit)
-                    const targetWorldX = (nextCellX + offsetX) * 2 + 1;
-                    const targetWorldZ = (nextCellY + offsetZ) * 2 + 1;
-                    const dx = targetWorldX - bot.mesh.position.x;
-                    const dz = targetWorldZ - bot.mesh.position.z;
-                    const distance = Math.hypot(dx, dz);
-                    const moveStep = bot.baseSpeed * 0.01 * bot.speedMult;
-                    if (distance < 0.1) { // slightly increased for larger scale
-                        bot._pathStep++;
-                    } else {
-                        let nextX = bot.mesh.position.x, nextZ = bot.mesh.position.z;
-                        // Try X
-                        if (Math.abs(dx) > 0.001) {
-                            const stepX = Math.sign(dx) * Math.min(Math.abs(dx), moveStep);
-                            const tryX = bot.mesh.position.x + stepX;
-                            const mapX = Math.floor((tryX - 1) / 2);
-                            const mapY = Math.floor((bot.mesh.position.z - 1) / 2);
-                            if (MAP[mapY] && MAP[mapY][mapX] === 0) {
-                                nextX = tryX;
-                            }
-                        }
-                        // Try Z
-                        if (Math.abs(dz) > 0.001) {
-                            const stepZ = Math.sign(dz) * Math.min(Math.abs(dz), moveStep);
-                            const tryZ = bot.mesh.position.z + stepZ;
-                            const mapX = Math.floor((nextX - 1) / 2);
-                            const mapY = Math.floor((tryZ - 1) / 2);
-                            if (MAP[mapY] && MAP[mapY][mapX] === 0) {
-                                nextZ = tryZ;
-                            }
-                        }
-                        bot.mesh.position.x = nextX;
-                        bot.mesh.position.z = nextZ;
-                        bot.warning.position.x = nextX;
-                        bot.warning.position.z = nextZ;
-                    }
-                } else {
-                    // If no path, fallback to direct movement with wall sliding
-                    // Use same target as above
-                    const dx = (targetX * 2 + 1) - bot.mesh.position.x;
-                    const dz = (targetY * 2 + 1) - bot.mesh.position.z;
-                    const distance = Math.hypot(dx, dz);
-                    if (distance > 0.2) {
-                        const moveStep = bot.baseSpeed * 0.01 * bot.speedMult;
-                        let nextX = bot.mesh.position.x, nextZ = bot.mesh.position.z;
-                        // Try X
-                        if (Math.abs(dx) > 0.001) {
-                            const stepX = Math.sign(dx) * Math.min(Math.abs(dx), moveStep);
-                            const tryX = bot.mesh.position.x + stepX;
-                            const mapX = Math.floor((tryX - 1) / 2);
-                            const mapY = Math.floor((bot.mesh.position.z - 1) / 2);
-                            if (MAP[mapY] && MAP[mapY][mapX] === 0) {
-                                nextX = tryX;
-                            }
-                        }
-                        // Try Z
-                        if (Math.abs(dz) > 0.001) {
-                            const stepZ = Math.sign(dz) * Math.min(Math.abs(dz), moveStep);
-                            const tryZ = bot.mesh.position.z + stepZ;
-                            const mapX = Math.floor((nextX - 1) / 2);
-                            const mapY = Math.floor((tryZ - 1) / 2);
-                            if (MAP[mapY] && MAP[mapY][mapX] === 0) {
-                                nextZ = tryZ;
-                            }
-                        }
-                        bot.mesh.position.x = nextX;
-                        bot.mesh.position.z = nextZ;
-                        bot.warning.position.x = nextX;
-                        bot.warning.position.z = nextZ;
-                    }
-                }
+                const dx=steerX-bot.mesh.position.x,dz=steerZ-bot.mesh.position.z,distance=Math.hypot(dx,dz)||1;
+                const maxSpeed=bot.baseSpeed*.01*bot.speedMult,accel=.018;
+                bot.vx+=dx/distance*accel;bot.vz+=dz/distance*accel;
+                const velocity=Math.hypot(bot.vx,bot.vz);if(velocity>maxSpeed){bot.vx=bot.vx/velocity*maxSpeed;bot.vz=bot.vz/velocity*maxSpeed}
+                // Low friction gives the chasers weight: they skid wide, brake, then accelerate into a turn.
+                bot.vx*=.992;bot.vz*=.992;
+                const tryX=bot.mesh.position.x+bot.vx,mapX=Math.floor((tryX-1)/2),mapY=Math.floor((bot.mesh.position.z-1)/2);
+                if(MAP[mapY]?.[mapX]===0)bot.mesh.position.x=tryX;else bot.vx*=-.28;
+                const tryZ=bot.mesh.position.z+bot.vz,nextMapX=Math.floor((bot.mesh.position.x-1)/2),nextMapY=Math.floor((tryZ-1)/2);
+                if(MAP[nextMapY]?.[nextMapX]===0)bot.mesh.position.z=tryZ;else bot.vz*=-.28;
+                bot.warning.position.x=bot.mesh.position.x;bot.warning.position.z=bot.mesh.position.z;
             }
             // Gentle separation keeps overlapping chasers visually and tactically distinct.
-            for(let i=0;i<bots.length;i++)for(let j=i+1;j<bots.length;j++){
+            if(performance.now()>=botReleaseAt) for(let i=0;i<bots.length;i++)for(let j=i+1;j<bots.length;j++){
                 const a=bots[i].mesh.position,b=bots[j].mesh.position,dx=a.x-b.x,dz=a.z-b.z,d=Math.hypot(dx,dz);
                 if(d>0&&d<3){const push=(3-d)*.04;a.x+=dx/d*push;a.z+=dz/d*push;b.x-=dx/d*push;b.z-=dz/d*push;}
             }
@@ -1161,6 +960,7 @@ for (let b = 0; b < botSpawns.length; b++) {
         function startGame() {
             if (gameStarted) return;
             gameStarted = true;
+            botReleaseAt=performance.now()+30000;
             // Hide start screen overlay
             const startScreen = document.getElementById('start-screen');
             if (startScreen) startScreen.style.display = 'none';

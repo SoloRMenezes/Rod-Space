@@ -5406,12 +5406,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 57203,
-        "hash": "bd46d1c18561dcfbb7dfe1e59cd427d87e123de2961d6948757ff35015668179"
+        "bytes": 47694,
+        "hash": "b239ab2fe653a5a2992502d6b5d10877109b52c6e6cd8e875095278f43234ac7"
       }
     ],
-    "bytes": 2032865,
-    "version": "aefed2619d6afe67"
+    "bytes": 2023356,
+    "version": "9f4d0ec3ae075efc"
   },
   "backrooms": {
     "name": "The Backrooms",
