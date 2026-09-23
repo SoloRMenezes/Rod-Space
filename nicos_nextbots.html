@@ -194,14 +194,15 @@
         // Each map unit now corresponds to a 2x2 block in world coordinates.
         // Player (1.5,1.5) and bot (10.5,10.5) are valid open positions (multiplied by 2 for world coords).
 const MAP = (() => {
-            const width = 120, height = 80;
+            const width = 140, height = 96;
             const map = Array.from({length:height},(_,y)=>Array.from({length:width},(_,x)=>x===0||y===0||x===width-1||y===height-1?1:0));
             // Support columns form parking bays while broad lanes leave room to dodge.
             for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14){map[y][x]=1;map[y][x+1]=1;map[y+1][x]=1;map[y+1][x+1]=1;}
             // Short concrete dividers guide routes without turning the garage into a brick maze.
-            for(const y of [27,53])for(let x=8;x<width-8;x++)if(x%28>20)map[y][x]=1;
+            for(const y of [32,64])for(let x=8;x<width-8;x++)if(x%30>22)map[y][x]=1;
             // Parked cars are real obstacles, leaving the central drive lanes open.
-            const cars=[[16,17],[31,17],[46,17],[76,17],[91,17],[106,17],[16,62],[31,62],[61,62],[76,62],[91,62],[106,62]];
+            const cars=[];
+            for(const cy of [18,78])for(let cx=16;cx<width-12;cx+=15)if(Math.abs(cx-70)>9)cars.push([cx,cy]);
             for(const [cx,cy] of cars)for(let y=cy-2;y<=cy+2;y++)for(let x=cx-1;x<=cx+1;x++)map[y][x]=2;
             map.carSpots=cars;
             return map;
@@ -213,10 +214,10 @@ const MAP = (() => {
         // We'll use a THREE.Vector3 for position
         const botSpawnY = 1; // fixed bot spawn y
 const botSpawns = [
-    new THREE.Vector3(12, botSpawnY, 12),
-    new THREE.Vector3(228, botSpawnY, 148),
-    new THREE.Vector3(228, botSpawnY, 12),
-    new THREE.Vector3(12, botSpawnY, 148)
+    new THREE.Vector3(85, botSpawnY, 97),
+    new THREE.Vector3(197, botSpawnY, 97),
+    new THREE.Vector3(141, botSpawnY, 41),
+    new THREE.Vector3(141, botSpawnY, 153)
 ];
 
         // --- Player state ---
@@ -340,10 +341,13 @@ function initAudio() {
 
             // Floor (scaled 2x: each map unit is 2x2 world units)
             const floorGeo = new THREE.PlaneGeometry(MAP_SIZE_X * 2, MAP_SIZE_Y * 2);
-            const floorMat = new THREE.MeshPhongMaterial({
-                color: 0x30343a,
-                shininess: 12
-            });
+            const makeConcreteTexture=(base,lines=false)=>{
+                const tile=document.createElement('canvas');tile.width=tile.height=256;const ctx=tile.getContext('2d');ctx.fillStyle=base;ctx.fillRect(0,0,256,256);
+                const image=ctx.getImageData(0,0,256,256);for(let i=0;i<image.data.length;i+=4){const grain=(Math.random()-.5)*22;image.data[i]+=grain;image.data[i+1]+=grain;image.data[i+2]+=grain;}ctx.putImageData(image,0,0);
+                if(lines){ctx.strokeStyle='rgba(10,12,15,.28)';ctx.lineWidth=3;ctx.strokeRect(1.5,1.5,253,253);ctx.beginPath();ctx.moveTo(0,128);ctx.lineTo(256,128);ctx.stroke()}
+                const texture=new THREE.CanvasTexture(tile);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(MAP_SIZE_X/7,MAP_SIZE_Y/7);texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());return texture;
+            };
+            const floorMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture('#30343a',true),color:0xb8bcc1,shininess:7});
             floorMesh = new THREE.Mesh(floorGeo, floorMat);
             floorMesh.rotation.x = -Math.PI / 2;
             floorMesh.position.set(MAP_SIZE_X, 0, MAP_SIZE_Y);
@@ -351,8 +355,10 @@ function initAudio() {
 
             // Concrete structure stays cheap: one instanced draw for walls and columns.
             wallGroup = new THREE.Group();
+            const wallTexture = new THREE.TextureLoader().load('./assets/vendor/nextbot-brick.jpg');
+            wallTexture.wrapS=wallTexture.wrapT=THREE.RepeatWrapping;wallTexture.repeat.set(1,1);
             const wallGeo = new THREE.BoxGeometry(2, 7, 2);
-            const wallMat = new THREE.MeshPhongMaterial({color:0x747980,shininess:3});
+            const wallMat = new THREE.MeshPhongMaterial({map:wallTexture,color:0x8f949a,shininess:3});
             const wallCount=MAP.reduce((sum,row)=>sum+row.filter(cell=>cell===1).length,0);
             const walls=new THREE.InstancedMesh(wallGeo,wallMat,wallCount);
             const transform=new THREE.Matrix4();let wallIndex=0;
@@ -360,13 +366,13 @@ function initAudio() {
             walls.instanceMatrix.needsUpdate=true;wallGroup.add(walls);scene.add(wallGroup);
 
             // Raised slab ceiling is close enough to read, high enough to keep the chase open.
-            const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({color:0x4d5157,side:THREE.DoubleSide,shininess:2}));
+            const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
             ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,7,MAP_SIZE_Y);scene.add(ceiling);
 
             // Proper parking bays and centre-lane markings.
             const markings=[];
-            for(const z of [24,56,104,136])for(let x=8;x<MAP_SIZE_X*2-8;x+=12)markings.push([x,z,0.12,9]);
-            for(const z of [80])for(let x=10;x<MAP_SIZE_X*2-10;x+=8)markings.push([x,z,4,.14]);
+            for(const z of [24,56,136,168])for(let x=8;x<MAP_SIZE_X*2-8;x+=12)markings.push([x,z,0.12,9]);
+            for(const z of [96])for(let x=10;x<MAP_SIZE_X*2-10;x+=8)markings.push([x,z,4,.14]);
             const markGeo=new THREE.BoxGeometry(1,.025,1),markMat=new THREE.MeshBasicMaterial({color:0xe5d26c}),marks=new THREE.InstancedMesh(markGeo,markMat,markings.length);
             markings.forEach(([x,z,w,d],i)=>{transform.compose(new THREE.Vector3(x,.025,z),new THREE.Quaternion(),new THREE.Vector3(w,1,d));marks.setMatrixAt(i,transform)});marks.instanceMatrix.needsUpdate=true;scene.add(marks);
 
@@ -386,23 +392,26 @@ function initAudio() {
             });
 
             // --- PLAYER SPAWN: fixed y=12 ---
-            player.position = new THREE.Vector3(60, 12, 40);
-            player.x = 60;
-            player.y = 40;
+            player.position = new THREE.Vector3(70, 12, 48);
+            player.x = 70;
+            player.y = 48;
 
             // --- BOT SPAWN ---
 const loader = new THREE.TextureLoader();
 const botTexture = loader.load('./assets/nextbot-chaser.png');
 for (let b = 0; b < botSpawns.length; b++) {
-    const botMaterial = new THREE.SpriteMaterial({ map: botTexture });
+    const botMaterial = new THREE.SpriteMaterial({ map: botTexture,alphaTest:.04,color:0xffffff });
     const bot = new THREE.Sprite(botMaterial);
     bot.position.copy(botSpawns[b]);
-    bot.scale.set(5.4, 4.4, 1);
-    bot.position.y = 2.2;
+    bot.scale.set(6, 4.6, 1);
+    bot.position.y = 2.35;
+    bot.renderOrder=4;
     scene.add(bot);
+    const warning=new THREE.Mesh(new THREE.RingGeometry(2.15,2.65,24),new THREE.MeshBasicMaterial({color:0xef3f31,transparent:true,opacity:.62,side:THREE.DoubleSide}));warning.rotation.x=-Math.PI/2;warning.position.set(bot.position.x,.04,bot.position.z);scene.add(warning);
     bots.push({
         mesh: bot,
-        baseSpeed: 42,
+        warning,
+        baseSpeed: 34,
         speedMult: 1
     });
             }
@@ -991,6 +1000,8 @@ for (let b = 0; b < botSpawns.length; b++) {
                         }
                         bot.mesh.position.x = nextX;
                         bot.mesh.position.z = nextZ;
+                        bot.warning.position.x = nextX;
+                        bot.warning.position.z = nextZ;
                     }
                 } else {
                     // If no path, fallback to direct movement with wall sliding
@@ -1023,6 +1034,8 @@ for (let b = 0; b < botSpawns.length; b++) {
                         }
                         bot.mesh.position.x = nextX;
                         bot.mesh.position.z = nextZ;
+                        bot.warning.position.x = nextX;
+                        bot.warning.position.z = nextZ;
                     }
                 }
             }
