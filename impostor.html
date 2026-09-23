@@ -113,7 +113,7 @@
 
         #lan-panel{position:fixed;inset:0;z-index:80;background:#050507;display:none;place-items:center;padding:18px}
         #lan-panel.open{display:grid} .lan-card{width:min(560px,100%);max-height:94vh;overflow:auto;background:#0a0a0c;border:1px solid #7f1d1d;padding:22px;border-radius:10px}
-        .lan-card textarea,.lan-card input{width:100%;background:#000;border:1px solid #27272a;color:#ddd;padding:10px;border-radius:5px;margin:6px 0;box-sizing:border-box}.lan-row{display:flex;gap:8px}.lan-row>*{flex:1}.lan-card button{padding:11px;border-radius:5px;font-weight:800}.lan-status{font-size:11px;color:#a1a1aa;min-height:18px;margin:8px 0}
+        .lan-card input{width:100%;background:#000;border:1px solid #27272a;color:#ddd;padding:11px;border-radius:5px;margin:6px 0;box-sizing:border-box}.lan-row{display:flex;gap:8px}.lan-row>*{flex:1}.lan-card button{padding:11px;border-radius:5px;font-weight:800}.lan-status{font-size:11px;color:#a1a1aa;min-height:18px;margin:8px 0}.lan-room-list{display:grid;gap:8px;margin:10px 0}.lan-room{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;background:#050507;border:1px solid #27272a;color:#e4e4e7}.lan-room:hover{border-color:#991b1b}.lan-room small{display:block;color:#71717a;margin-top:3px}.lan-empty{padding:18px;border:1px dashed #27272a;color:#71717a;text-align:center;font-size:11px}.lan-pin-row{display:flex;gap:8px;align-items:center}.lan-pin-row input{flex:1}.lan-back{background:transparent!important;border-color:transparent!important;color:#71717a!important}
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -240,33 +240,50 @@
 
 
     <section id="lan-panel" aria-label="LAN setup"><div class="lan-card space-y-3">
-      <h2 class="text-2xl font-black text-red-600">LAN GAME</h2><p class="text-xs text-zinc-500">Pair every phone directly with the host. No server or account.</p>
-      <input id="lan-name" maxlength="18" placeholder="YOUR NAME">
-      <div class="lan-row"><button class="btn-danger" onclick="lanHostInvite()">HOST · ADD DEVICE</button><button class="btn-primary" onclick="lanShowJoin()">JOIN</button></div>
-      <div id="lan-host-box" hidden><label class="text-xs">SEND THIS INVITE</label><textarea id="lan-offer" rows="3" readonly></textarea><button class="btn-primary" onclick="copyLan('lan-offer')">COPY INVITE</button><label class="text-xs">PASTE THEIR REPLY</label><textarea id="lan-answer" rows="3"></textarea><button class="btn-danger" onclick="lanAccept()">CONNECT DEVICE</button></div>
-      <div id="lan-join-box" hidden><label class="text-xs">PASTE HOST INVITE</label><textarea id="lan-join-offer" rows="3"></textarea><button class="btn-danger" onclick="lanMakeReply()">CREATE REPLY</button><textarea id="lan-reply" rows="3" readonly></textarea><button class="btn-primary" onclick="copyLan('lan-reply')">COPY REPLY</button></div>
-      <p id="lan-status" class="lan-status">Not connected</p><button class="btn-primary w-full" onclick="closeLan()">DONE</button>
+      <h2 class="text-2xl font-black text-red-600">LAN GAME</h2><p class="text-xs text-zinc-500">Host on one device. Everyone else joins from the room list.</p>
+      <input id="lan-name" maxlength="18" autocomplete="nickname" placeholder="YOUR NAME">
+      <div id="lan-choice" class="lan-row"><button class="btn-danger" onclick="lanShowHost()">HOST</button><button class="btn-primary" onclick="lanShowJoin()">JOIN</button></div>
+      <div id="lan-host-box" hidden>
+        <p class="text-xs font-bold text-zinc-400">OPTIONAL 4-DIGIT PIN</p>
+        <input id="lan-host-pin" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="NO PIN">
+        <button id="lan-host-button" class="btn-danger w-full" onclick="lanStartHost()">OPEN ROOM</button>
+        <div id="lan-host-live" hidden class="mt-3 p-4 border border-red-950 rounded"><div class="text-xs text-zinc-500">ROOM IS LIVE</div><div id="lan-host-name" class="font-black mt-1"></div><div id="lan-connected" class="text-xs text-zinc-500 mt-2">Waiting for players…</div></div>
+      </div>
+      <div id="lan-join-box" hidden><p class="text-xs font-bold text-zinc-400">ROOMS</p><div id="lan-rooms" class="lan-room-list"><div class="lan-empty">Looking for rooms…</div></div></div>
+      <p id="lan-status" class="lan-status">Choose Host or Join</p><button class="btn-primary w-full lan-back" onclick="closeLan()">CANCEL</button>
     </div></section>
     <script src="party-lan.js"></script>
+    <script type="module" src="party-rooms.js"></script>
     <script>
         const STORAGE_KEY = 'impostor_game_players';
 
-        let lanHost=null,lanPending=null,lanClient=null,lanGuest=false;
+        let lanHost=null,lanClient=null,lanGuest=false,lanRoomsStop=null,lanRooms=[];
         const lanStatus=text=>document.getElementById('lan-status').textContent=text;
-        function openLan(){document.getElementById('lan-panel').classList.add('open')}
-        function closeLan(){document.getElementById('lan-panel').classList.remove('open')}
-        function lanShowJoin(){document.getElementById('lan-host-box').hidden=true;document.getElementById('lan-join-box').hidden=false}
-        async function copyLan(id){const el=document.getElementById(id);await navigator.clipboard.writeText(el.value);lanStatus('Copied')}
-        async function lanHostInvite(){
-          const name=document.getElementById('lan-name').value.trim();if(!name)return lanStatus('Enter the host name first');
-          if(!currentPlayers.includes(name)){currentPlayers.unshift(name);saveToStorage();renderPlayerChips()}
-          if(!lanHost){lanHost=PartyLan.host();lanHost.on('message',({peer,data})=>{if(data.type==='hello'){peer.meta.name=data.payload.name;if(!currentPlayers.includes(data.payload.name)){currentPlayers.push(data.payload.name);saveToStorage();renderPlayerChips();updateImpostorOptions()}lanStatus(data.payload.name+' connected')}})}
-          lanPending=await lanHost.invite();document.getElementById('lan-offer').value=lanPending.code;document.getElementById('lan-host-box').hidden=false;document.getElementById('lan-join-box').hidden=true;lanStatus('Send the invite, then paste this device’s reply')
+        const escapeHtml=text=>String(text).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+        const roomService=()=>window.PartyRooms?Promise.resolve(window.PartyRooms):new Promise(resolve=>addEventListener('partyroomsready',()=>resolve(window.PartyRooms),{once:true}));
+        function openLan(){document.getElementById('lan-panel').classList.add('open');document.getElementById('lan-choice').hidden=false;document.getElementById('lan-host-box').hidden=true;document.getElementById('lan-join-box').hidden=true;lanStatus('Choose Host or Join')}
+        function closeLan(){document.getElementById('lan-panel').classList.remove('open');lanRoomsStop?.();lanRoomsStop=null}
+        function lanShowHost(){document.getElementById('lan-choice').hidden=true;document.getElementById('lan-host-box').hidden=false;document.getElementById('lan-join-box').hidden=true;lanStatus('Choose a PIN or leave it open')}
+        async function lanShowJoin(){
+          document.getElementById('lan-choice').hidden=true;document.getElementById('lan-host-box').hidden=true;document.getElementById('lan-join-box').hidden=false;lanStatus('Choose a room');
+          try{lanRoomsStop=await (await roomService()).watch('impostor',rooms=>{lanRooms=rooms;const list=document.getElementById('lan-rooms');list.innerHTML=rooms.length?rooms.map((room,index)=>`<button class="lan-room" onclick="lanJoinRoom(${index})"><span><b>${escapeHtml(room.name)}</b><small>${room.players||1} connected</small></span><span>${room.locked?'🔒':'JOIN'}</span></button>`).join(''):'<div class="lan-empty">No rooms yet. Start one on the host device.</div>'},error=>lanStatus('Room list unavailable · '+error.message))}catch(error){lanStatus('Room list unavailable · '+error.message)}
         }
-        async function lanAccept(){try{await lanPending.accept(document.getElementById('lan-answer').value);lanStatus('Connecting… create another invite to add another phone')}catch(e){lanStatus(e.message)}}
-        async function lanMakeReply(){
+        async function lanStartHost(){
+          const name=document.getElementById('lan-name').value.trim();if(!name)return lanStatus('Enter the host name first');
+          const pin=document.getElementById('lan-host-pin').value.trim();if(pin&&!/^\d{4}$/.test(pin))return lanStatus('PIN must be exactly 4 numbers');
+          document.getElementById('lan-host-button').disabled=true;lanStatus('Opening room…');
+          if(!currentPlayers.includes(name)){currentPlayers.unshift(name);saveToStorage();renderPlayerChips()}
+          try{
+            lanHost=await (await roomService()).createHost({game:'impostor',name,pin,onStatus:lanStatus,onConnected:guest=>{const guestName=guest.meta.name;if(!currentPlayers.includes(guestName)){currentPlayers.push(guestName);saveToStorage();renderPlayerChips();updateImpostorOptions()}document.getElementById('lan-connected').textContent=currentPlayers.slice(1).join(' · ')||'Waiting for players…';lanStatus(guestName+' connected')}});
+            document.getElementById('lan-host-live').hidden=false;document.getElementById('lan-host-name').textContent=name+(pin?' · PIN '+pin:' · OPEN');lanStatus('Room visible · keep this screen open');
+          }catch(error){document.getElementById('lan-host-button').disabled=false;lanStatus('Could not open room · '+error.message)}
+        }
+        async function lanJoinRoom(index){
           const name=document.getElementById('lan-name').value.trim();if(!name)return lanStatus('Enter your name first');
-          try{lanClient=await PartyLan.join(document.getElementById('lan-join-offer').value,{name});document.getElementById('lan-reply').value=lanClient.answer;lanGuest=true;lanClient.on('open',()=>{lanClient.send('hello',{name});lanStatus('Connected · wait for the host')});lanClient.on('message',({data})=>handleLanMessage(data));lanStatus('Send the reply to the host')}catch(e){lanStatus(e.message)}
+          const room=lanRooms[index];if(!room)return;
+          let pin='';if(room.locked){pin=prompt('Enter the 4-digit PIN')||'';if(!pin)return}
+          lanStatus('Joining '+room.name+'…');
+          try{const joined=await (await roomService()).join(room,{name,pin,onStatus:lanStatus});lanClient=joined.client;lanGuest=true;lanClient.on('message',({data})=>handleLanMessage(data));lanRoomsStop?.();lanRoomsStop=null}catch(error){lanStatus(error.message)}
         }
         function handleLanMessage(data){
           if(data.type==='role'){closeLan();showScreen('role-select-screen');document.querySelector('#role-select-screen .terminal-box').innerHTML=`<h2 class="text-xl font-bold text-red-600">${data.payload.name}</h2><div class="mt-8">${data.payload.impostor?'<h3 class="text-4xl font-black text-red-600">IMPOSTOR</h3><p class="mt-4 text-zinc-500">'+(data.payload.hint||'Infiltrate the group.')+'</p>':'<h3 class="text-3xl font-black text-white">'+data.payload.word+'</h3><p class="mt-4 text-zinc-500">VALID PERSONNEL</p>'}</div><p class="mt-10 text-xs text-zinc-600">Keep this screen private.</p>`;document.getElementById('begin-gameplay-btn').hidden=true}
@@ -405,7 +422,7 @@
 
             if (lanHost) {
                 const giveHint=document.getElementById('impostor-hint').checked;
-                lanHost.guests.forEach((guest,index)=>{const playerIndex=gameState.players.indexOf(guest.meta.name);if(playerIndex<0)return;lanHost.send(guest,'role',{name:guest.meta.name,impostor:gameState.impostorIndices.includes(playerIndex),word:gameState.secretWord,hint:giveHint?gameState.theme:''});gameState.viewedPlayers.add(playerIndex)});
+                lanHost.lan.guests.forEach((guest,index)=>{const playerIndex=gameState.players.indexOf(guest.meta.name);if(playerIndex<0)return;lanHost.lan.send(guest,'role',{name:guest.meta.name,impostor:gameState.impostorIndices.includes(playerIndex),word:gameState.secretWord,hint:giveHint?gameState.theme:''});gameState.viewedPlayers.add(playerIndex)});
             }
             renderRoleSelect();
             showScreen('role-select-screen');
@@ -477,7 +494,7 @@
                 <div class="text-[10px] font-bold opacity-60 mt-1">${direction} RECURSION</div>
             `;
 
-            if(lanHost){const banner=`<div class="text-[10px] font-black uppercase tracking-[0.3em] mb-1">Investigation Start</div><div class="text-lg font-black text-white">${gameState.players[starterIdx]}</div><div class="text-[10px] font-bold opacity-60 mt-1">${direction} RECURSION</div>`;lanHost.broadcast('play',{banner,players:gameState.players})}
+            if(lanHost){const banner=`<div class="text-[10px] font-black uppercase tracking-[0.3em] mb-1">Investigation Start</div><div class="text-lg font-black text-white">${gameState.players[starterIdx]}</div><div class="text-[10px] font-bold opacity-60 mt-1">${direction} RECURSION</div>`;lanHost.lan.broadcast('play',{banner,players:gameState.players})}
             document.getElementById('gameplay-player-list').innerHTML = gameState.players.map(p => `
                 <div class="bg-black border border-zinc-900 p-4 rounded text-zinc-600 uppercase tracking-widest">${p}</div>
             `).join('');
@@ -504,7 +521,7 @@
         }
 
         function showResults() {
-            if(lanHost)lanHost.broadcast('results',{names:gameState.isChaosMode?'SYSTEM CORRUPT':gameState.impostorIndices.map(i=>gameState.players[i]).join(' & '),word:gameState.secretWord,chaos:gameState.isChaosMode});
+            if(lanHost)lanHost.lan.broadcast('results',{names:gameState.isChaosMode?'SYSTEM CORRUPT':gameState.impostorIndices.map(i=>gameState.players[i]).join(' & '),word:gameState.secretWord,chaos:gameState.isChaosMode});
             document.getElementById('countdown-display').classList.add('hidden');
             const res = document.getElementById('results-display');
             res.classList.remove('hidden');

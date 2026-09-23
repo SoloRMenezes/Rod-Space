@@ -5070,17 +5070,22 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "impostor.html",
-        "bytes": 33091,
-        "hash": "ab2a02080888642e02e9ad354f2efd9311f0a99cad69193b8cb0dea72a238535"
+        "bytes": 35503,
+        "hash": "bba212e1244f7517475c78ef7dea1df20485afb0f50914251479be44a7bb4fef"
       },
       {
         "path": "party-lan.js",
         "bytes": 3375,
         "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 5763,
+        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
       }
     ],
-    "bytes": 443745,
-    "version": "e0271c14c7f4734f"
+    "bytes": 451920,
+    "version": "70de498513725955"
   },
   "sidequests": {
     "name": "Side Quests",
