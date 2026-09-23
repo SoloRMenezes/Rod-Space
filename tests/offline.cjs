@@ -18,6 +18,7 @@ async function request(path,mode='navigate'){let pending;handlers.fetch({request
  online=false;
  for(const id of ids){const g=context.self.OFFLINE_CATALOG[id];for(const f of g.files)assert.equal((await request(f.path,'cors')).status,200);}
  assert.match(await (await request('')).text(),/ROD/);
+ assert.match(await (await request('party.html')).text(),/PARTY/);
  assert.equal((await request('not-downloaded.html')).status,503);
  assert.equal((await message('offload',ids[0])).items.length,5);
  online=true;assert.equal((await message('download',ids[0])).items.length,6);

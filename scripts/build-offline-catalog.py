@@ -43,7 +43,7 @@ for block in source.split('},'):
  result[id]['bytes']=sum(f['bytes'] for f in result[id]['files'])
  result[id]['version']=hashlib.sha256(json.dumps(result[id]).encode()).hexdigest()[:16]
 (root/'offline-catalog.js').write_text('self.OFFLINE_CATALOG = '+json.dumps(result,indent=2)+';\n')
-shell=['index.html','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js']
+shell=['index.html','party.html','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js']
 version=hashlib.sha256(b''.join((root/f).read_bytes() for f in shell)).hexdigest()[:16]
 p=root/'sw.js';p.write_text(re.sub(r"const SHELL = '[^']+';", "const SHELL = 'rod-shell-"+version+"';",p.read_text()))
 print('Built downloads for',len(result),'projects')

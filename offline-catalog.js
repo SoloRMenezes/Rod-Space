@@ -4,28 +4,33 @@ self.OFFLINE_CATALOG = {
     "page": "shit-spiral.html",
     "files": [
       {
+        "path": "assets/password-gate.js",
+        "bytes": 5818,
+        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
+      },
+      {
         "path": "disaster-cards.js",
         "bytes": 21814,
         "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
       },
       {
         "path": "disaster-game.js",
-        "bytes": 11311,
-        "hash": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b"
+        "bytes": 12436,
+        "hash": "54fea3fd4392249336769b719dfae7b51de9d29165c75aa4ba6b21e05979bd7f"
       },
       {
         "path": "disaster-lan.js",
-        "bytes": 1630,
-        "hash": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a"
+        "bytes": 2230,
+        "hash": "5139a125fe2127261cc4d265200b3dd5087eb0eb9c8f8db9a5517bfb8147cc78"
       },
       {
         "path": "shit-spiral.html",
-        "bytes": 11994,
-        "hash": "2e721470b7fe13cbdd86750b72e7423596a10324b5a3dface57f9a666af3feb4"
+        "bytes": 13735,
+        "hash": "f404c4677061621ba4d22c43a7cf44fd0bf001445f89c92612257b6188b5ffdd"
       }
     ],
-    "bytes": 46749,
-    "version": "ecf265cda03b582b"
+    "bytes": 56033,
+    "version": "531efab2a338a1a0"
   },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
