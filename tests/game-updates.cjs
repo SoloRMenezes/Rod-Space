@@ -6,6 +6,7 @@ const lan=require('../disaster-lan.js');
 const pairing={type:'offer',sdp:'v=0\r\na=candidate:local network ✓'};
 assert.match(fs.readFileSync(root+'/disaster-lan.js','utf8'),/CompressionStream\('deflate-raw'\)/);
 const spiralHtml=fs.readFileSync(root+'/shit-spiral.html','utf8');assert.match(spiralHtml,/data-password="3112" data-title="Shit Spiral"/);
+assert.match(spiralHtml,/id="single-player">Single player<\/button><button id="multiplayer">Multiplayer<\/button><button id="lan-play">LAN<\/button>/);
 const partyHtml=fs.readFileSync(root+'/party.html','utf8');assert.match(partyHtml,/href="shit-spiral\.html"/);assert.match(fs.readFileSync(root+'/index.html','utf8'),/href="\.\/party\.html"/);
 assert.equal(cards.length,200);assert.equal(new Set(cards.map(c=>c.text)).size,200);assert.equal(new Set(cards.map(c=>c.score)).size,200);assert.equal(Math.min(...cards.map(c=>c.score)),.5);assert.equal(Math.max(...cards.map(c=>c.score)),100);
 const correctSlot=g=>g.players[g.active].lane.filter(id=>cards[id].score<cards[g.current].score).length;

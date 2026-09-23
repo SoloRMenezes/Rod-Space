@@ -15,8 +15,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "disaster-game.js",
-        "bytes": 12436,
-        "hash": "54fea3fd4392249336769b719dfae7b51de9d29165c75aa4ba6b21e05979bd7f"
+        "bytes": 12404,
+        "hash": "617ec8aa0515f3c274e987a2aa1cad90e6b8af76ad393f98a8b990510da4f02b"
       },
       {
         "path": "disaster-lan.js",
@@ -25,12 +25,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "shit-spiral.html",
-        "bytes": 13768,
-        "hash": "b433fa1731e9562aee606af1f879228eedf4f7e1ad18f759f2562bc66fa9477e"
+        "bytes": 13752,
+        "hash": "9877c0a019d29c4f2ace88f5dfaf9d6e0484bb16045dc290dda545fd2114a5e2"
       }
     ],
-    "bytes": 56066,
-    "version": "4a32f4e1181da492"
+    "bytes": 56018,
+    "version": "89b45b63566a8adb"
   },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
