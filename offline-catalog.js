@@ -5378,12 +5378,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50730,
-        "hash": "139a322cce6fec833287ba953adee02e53f9a07748fb04c8769f60d823081e18"
+        "bytes": 50212,
+        "hash": "6360670a1bb37249b3d0d12a37e08c82fd79e8f8eab14b62376f82a6c7d5f1d6"
       }
     ],
-    "bytes": 1323701,
-    "version": "022b35a1f4cf25c4"
+    "bytes": 1323183,
+    "version": "12d89395dc2f3baf"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",
@@ -5548,6 +5548,21 @@ self.OFFLINE_CATALOG = {
         "path": "assets/nextbot-chaser.png",
         "bytes": 258145,
         "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
+      },
+      {
+        "path": "assets/nextbots/crying-cat.svg",
+        "bytes": 513,
+        "hash": "32eef82f9748e1e61b52dc613203213f5aa327cc772530db21b4fceb54df7893"
+      },
+      {
+        "path": "assets/nextbots/moyai.svg",
+        "bytes": 337,
+        "hash": "1971c46d710f30a205f8759ecc0c2b66ae2a8a87d67f8de0d2d85435eb641062"
+      },
+      {
+        "path": "assets/nextbots/side-eye.svg",
+        "bytes": 471,
+        "hash": "248e0a5f92016ed698c23cea78b6b356eed63acdd530391f28c8999d8f2cca87"
       },
       {
         "path": "assets/password-gate.js",
@@ -10491,8 +10506,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 33577,
-        "hash": "ef69fdadd96e746861b90dbc8fed4895397990269200dbeaa2c45c092cc73b67"
+        "bytes": 33776,
+        "hash": "8c09aa36c369e941cd286f285aeb9f02faa8aedbed632ad035c6867d3788c622"
       },
       {
         "path": "multiplayer.html",
@@ -10516,13 +10531,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 54395,
-        "hash": "aaa10ef8217980a02d16df0a4075fd920c0e42c595967b477b211696e95442f3"
+        "bytes": 56944,
+        "hash": "27fa8727cf6d6e4081ce563ff3b1cb2cb31664723d0104780adf2da6c12e0f57"
       },
       {
         "path": "offline-catalog.js",
         "bytes": 411158,
-        "hash": "a7b88dc6c24a718678c29a65308d98a88c072ee821451183c7b62e16807488a3"
+        "hash": "6c0051d466590a454e440130a1c1e43aafdd05befa0a9955018471ea25c203ed"
       },
       {
         "path": "offline.js",
@@ -10536,8 +10551,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50730,
-        "hash": "139a322cce6fec833287ba953adee02e53f9a07748fb04c8769f60d823081e18"
+        "bytes": 50212,
+        "hash": "6360670a1bb37249b3d0d12a37e08c82fd79e8f8eab14b62376f82a6c7d5f1d6"
       },
       {
         "path": "party-lan.js",
@@ -10551,8 +10566,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "party.html",
-        "bytes": 4350,
-        "hash": "6966de8d523286686989780c7e23a6bcf6616535e715d2d102b767aac291c409"
+        "bytes": 7630,
+        "hash": "750bcc81c3b75b0970e09eddaf04391ef8f7235100cc9a3e14aa4e30cefe9ab1"
       },
       {
         "path": "piano.html",
@@ -10602,7 +10617,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "89e9875991075a02750df0d7b43ecc4564a2db93935dadf4daf1b8ec86e589ea"
+        "hash": "8fe6abac4f8dd2aa79b68f43b43ca29dd23f6f10e570840ec95b3975459c10fe"
       },
       {
         "path": "terraria.html",
@@ -10660,8 +10675,8 @@ self.OFFLINE_CATALOG = {
         "hash": "45ae89641855dd8ba7002cf9855b314fd42c4725fe36caf1bd5b11520bdf8596"
       }
     ],
-    "bytes": 304594333,
-    "version": "9d68184bc7fbe03e"
+    "bytes": 304601164,
+    "version": "bcd553eb0edfa787"
   },
   "backrooms": {
     "name": "The Backrooms",

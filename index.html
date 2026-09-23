@@ -167,6 +167,7 @@
           <span>GH/ROD-SPACE</span>
           <span class="text-slate-800">|</span>
           <span>LAST SYNC: 15:38 UTC</span>
+          <a href="https://www.instagram.com/solormenezes2/" target="_blank" rel="noopener" class="normal-case text-slate-300 hover:text-white">@solormenezes2</a>
         </div>
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2">
@@ -437,8 +438,8 @@
           description: "Rooftop brawls",
           url: BASE_URL + "hood_brawlers.html",
           icon: "🥊",
-          type: "party",
-          pill: "Party",
+          type: "solo",
+          pill: "Game",
           date: "2026-03-01"
         },
         {
@@ -691,7 +692,7 @@
       };
 
       function getFilteredAndSorted() {
-        let items = PROJECTS_DATA.filter(proj => {
+        let items = PROJECTS_DATA.filter(proj => proj.type !== "party").filter(proj => {
           if (window.offlineOnly && !window.offlineDownloads?.has(proj.id)) return false;
           const isFav = favorites.includes(proj.id);
 

@@ -424,33 +424,12 @@ function buildWorld() {
     const ghostMesh = new THREE.Mesh(bodyGeo, bodyMat);
     ghostMesh.position.set(spawn.x, spawn.y + 0.4, spawn.z);
 
-    // ----- Improved Ghost Skirt (3D scalloped, visible, proper shape) -----
-    const skirtPoints = [];
-    const skirtHeightTop = -0.1;   // where it starts under body
-    const skirtHeightBottom = 1.6; // hangs lower to form ghost silhouette
-    const radiusTop = 1.1;
-    const radiusBottom = 1.1;
-    const scallops = 12;
-
-    for (let j = 0; j <= scallops; j++) {
-        const a = (j / scallops) * Math.PI * 2;
-        const wave = -Math.sin(a * 6) * 0.22; // inverted bump amplitude
-        skirtPoints.push(new THREE.Vector2(radiusTop, skirtHeightTop));
-        skirtPoints.push(new THREE.Vector2(radiusBottom + wave, skirtHeightBottom));
-    }
-
-    const skirtGeo = new THREE.LatheGeometry(skirtPoints, 64);
-    const skirtMat = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        emissive: 0x000000,
-        emissiveIntensity: 0.0,
-        metalness: 0.25,
-        roughness: 0.65
-    });
-
-    const skirtMesh = new THREE.Mesh(skirtGeo, skirtMat);
-    skirtMesh.position.y = -1;
-    ghostMesh.add(skirtMesh);
+    // Classic coloured body and scalloped hem — no detached white cylinder.
+    const skirtMat = bodyMat.clone();
+    const skirtMesh = new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,1.15,24),skirtMat);
+    skirtMesh.position.y=-.85;ghostMesh.add(skirtMesh);
+    const scallopGeo=new THREE.SphereGeometry(.38,12,8);
+    for(let n=0;n<5;n++){const scallop=new THREE.Mesh(scallopGeo,skirtMat);const angle=(n/5)*Math.PI*2;scallop.position.set(Math.cos(angle)*.72,-1.42,Math.sin(angle)*.72);ghostMesh.add(scallop)}
 
     // Eyes
     const eyeGeo = new THREE.SphereGeometry(0.35, 12, 12);

@@ -28,13 +28,18 @@
         }
         #ui-overlay {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
             pointer-events: none;
             text-shadow: 1px 1px 2px #000;
             background: rgba(0, 0, 0, 0.4);
             padding: 12px;
-            border-left: 2px solid #d1b45d;
+            border: 1px solid rgba(209,180,93,.7);
+            min-width: 150px;
+            text-align: center;
+            font-weight: 900;
+            letter-spacing: .08em;
         }
          
         /* Settings Menu Styles */
@@ -129,6 +134,13 @@
         #room-panel{display:none;margin-top:16px}.room-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #353535;padding:10px 0}.room-row button{padding:7px 12px}
         .lobby-fields{display:grid;grid-template-columns:1fr 120px;gap:8px;margin-top:12px}.lobby-note{color:#aaa;font-size:.82rem;margin-top:10px}#lobby-status{min-height:1.3em;color:#f1d37e;margin-top:10px}
         @media(max-width:560px){.lobby-card{padding:24px}.lobby-actions{grid-template-columns:1fr}.lobby-fields{grid-template-columns:1fr}.controls-strip{gap:9px}}
+        #mobile-controls{display:none;position:fixed;inset:0;z-index:120;pointer-events:none;touch-action:none}
+        .touch-stick{position:absolute;left:22px;bottom:26px;width:132px;height:132px;border:2px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(0,0,0,.28);pointer-events:auto}
+        .touch-knob{position:absolute;left:40px;top:40px;width:48px;height:48px;border-radius:50%;background:rgba(241,211,126,.75)}
+        #touch-look{position:absolute;right:0;top:0;width:58%;height:100%;pointer-events:auto}
+        .touch-button{position:absolute;right:24px;width:74px;height:74px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.45);color:#fff;font-weight:900;pointer-events:auto}
+        #touch-jump{bottom:30px}#touch-sprint{bottom:116px}.touch-button.active{background:#d1b45d;color:#111}
+        @media(pointer:coarse){#mobile-controls.active{display:block}#minimap-container{width:105px;height:105px}.controls-strip{display:none}}
     </style>
 </head>
 <body class="menu-active">
@@ -170,9 +182,9 @@
             <button id="close-cheats" style="background:none;border:1px solid #d1b45d;color:#d1b45d;padding:6px;cursor:pointer;margin-top:5px;">CLOSE</button>
         </div>
         <div id="ui-overlay">
-            <div id="timer-display" style="font-size: 0.85rem; color: #fff; margin-top: 4px;">TIME: 0.00s</div>
-            <div id="highscore-display" style="font-size: 0.75rem; color: #d1b45d; margin-top: 2px;">BEST: --</div>
+            <div id="timer-display" style="font-size: 1.1rem; color: #fff;">GET READY · 30</div>
         </div>
+        <div id="mobile-controls"><div id="touch-look"></div><div class="touch-stick" id="touch-stick"><div class="touch-knob" id="touch-knob"></div></div><button class="touch-button" id="touch-sprint">RUN</button><button class="touch-button" id="touch-jump">JUMP</button></div>
         <div id="minimap-container">
             <canvas id="minimap"></canvas>
         </div>
@@ -203,19 +215,29 @@
 const MAP = (() => {
             const width = 140, height = 96;
             const map = Array.from({length:height},(_,y)=>Array.from({length:width},(_,x)=>x===0||y===0||x===width-1||y===height-1?1:0));
-            // Support columns form parking bays while broad lanes leave room to dodge.
+            // A 4 x 4 room plan gives each floor sixteen distinct spaces. Every wall has
+            // broad openings, so chases can flow between rooms instead of becoming corridors.
+            for(const x of [35,70,105])for(let y=2;y<height-2;y++)if(![12,36,60,84].some(door=>Math.abs(y-door)<=5))map[y][x]=1;
+            for(const y of [24,48,72])for(let x=2;x<width-2;x++)if(![18,52,88,122].some(door=>Math.abs(x-door)<=6))map[y][x]=1;
+            // Support columns define parking bays inside the rooms.
             for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14){map[y][x]=1;map[y][x+1]=1;map[y+1][x]=1;map[y+1][x+1]=1;}
-            // Short concrete dividers guide routes without turning the garage into a brick maze.
-            for(const y of [32,64])for(let x=8;x<width-8;x++)if(x%30>22)map[y][x]=1;
             // Parked cars are real obstacles, leaving the central drive lanes open.
             const cars=[];
             for(const cy of [18,78])for(let cx=16;cx<width-12;cx+=15)if(Math.abs(cx-70)>9)cars.push([cx,cy]);
-            for(const [cx,cy] of cars)for(let y=cy-2;y<=cy+2;y++)for(let x=cx-1;x<=cx+1;x++)map[y][x]=2;
             map.carSpots=cars;
             return map;
         })();
         const MAP_SIZE_Y = MAP.length;
         const MAP_SIZE_X = MAP[0].length;
+        const FLOOR_HEIGHT=8;
+        const RAMPS=[
+            {x1:7,x2:27,y1:7,y2:14,reverse:false},{x1:113,x2:133,y1:7,y2:14,reverse:true},
+            {x1:7,x2:27,y1:44,y2:51,reverse:false},{x1:113,x2:133,y1:44,y2:51,reverse:true},
+            {x1:7,x2:27,y1:81,y2:88,reverse:false},{x1:113,x2:133,y1:81,y2:88,reverse:true}
+        ];
+        for(const ramp of RAMPS)for(let y=ramp.y1;y<=ramp.y2;y++)for(let x=ramp.x1;x<=ramp.x2;x++)MAP[y][x]=0;
+        function rampAt(x,y){return RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2)}
+        function surfaceHeightAt(x,y,current=0){const ramp=rampAt(x,y);if(!ramp)return current>=FLOOR_HEIGHT/2?FLOOR_HEIGHT:0;let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;return t*FLOOR_HEIGHT}
 
         // --- Bot spawn point ---
         // We'll use a THREE.Vector3 for position
@@ -234,9 +256,10 @@ const botSpawns = [
             y: 1.5,
             dir: 0.8, // yaw
             z: 0,     // vertical offset for jump
+            floorY: 0,
             zVel: 0,
             isJumping: false,
-            speed: 0.12, // fast arcade movement in map units per frame
+            speed: 0.16, // deliberately quick arcade movement
             rotSpeed: 0.0025,
             sensitivity: 1.0,
             isSprinting: false,
@@ -247,45 +270,9 @@ const botSpawns = [
         const keys = {};
         let isLocked = false;
         let gameTimer = 0;
-        let timerInterval = null;
+        let roundEndsAt=Infinity;
         const timerDisplay = document.getElementById('timer-display');
-        const highscoreDisplay = document.getElementById('highscore-display');
-
-        function getHighscores() {
-            return JSON.parse(localStorage.getItem('backrooms_highscores') || '[]');
-        }
-        function saveHighscore(time) {
-            const scores = getHighscores();
-            scores.push(time);
-            scores.sort((a, b) => b - a); // highest time = survived longest = best
-            scores.splice(5); // keep top 5
-            localStorage.setItem('backrooms_highscores', JSON.stringify(scores));
-        }
-        function formatTime(s) {
-            const m = Math.floor(s / 60);
-            const sec = (s % 60).toFixed(2);
-            return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
-        }
-        function updateHighscoreDisplay() {
-            const scores = getHighscores();
-            if (scores.length === 0) {
-                highscoreDisplay.innerText = 'BEST: --';
-            } else {
-                highscoreDisplay.innerText = 'BEST: ' + formatTime(scores[0]);
-            }
-        }
-        function startTimer() {
-            gameTimer = 0;
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                gameTimer += 0.1;
-                timerDisplay.innerText = 'TIME: ' + formatTime(gameTimer);
-            }, 100);
-        }
-        function stopTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = null;
-        }
+        function formatClock(ms){const total=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(total/60)}:${String(total%60).padStart(2,'0')}`}
 
         // --- Three.js Setup ---
         let renderer, scene, camera, controls;
@@ -301,27 +288,27 @@ function ensureRemotePlayer(id,name='Player'){
     let remote=remotePlayers.get(id);if(remote)return remote;
     const material=new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(Math.random(),.72,.55)});
     const mesh=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,1.8,10),material);mesh.position.y=1;scene.add(mesh);
-    remote={id,name,x:0,y:0,dir:0,alive:true,mesh};remotePlayers.set(id,remote);return remote;
+    remote={id,name,x:0,y:0,floorY:0,dir:0,alive:true,mesh};remotePlayers.set(id,remote);return remote;
 }
 function applyPlayerPacket(id,data,name){
-    const remote=ensureRemotePlayer(id,name);Object.assign(remote,{x:data.x,y:data.y,dir:data.dir||0,alive:data.alive!==false});
-    remote.mesh.visible=remote.alive;remote.mesh.position.set(remote.x*2+1,1,remote.y*2+1);remote.mesh.rotation.y=remote.dir;
+    const remote=ensureRemotePlayer(id,name);Object.assign(remote,{x:data.x,y:data.y,floorY:data.floorY||0,dir:data.dir||0,alive:data.alive!==false});
+    remote.mesh.visible=remote.alive;remote.mesh.position.set(remote.x*2+1,1+remote.floorY,remote.y*2+1);remote.mesh.rotation.y=remote.dir;
 }
 function networkTick(now){
     if(netRole==='solo'||!roomSession||now-lastNetSend<80)return;lastNetSend=now;
-    const state={x:player.x,y:player.y,dir:player.dir,alive:!isGameOver};
+    const state={x:player.x,y:player.y,floorY:player.floorY,dir:player.dir,alive:!isGameOver};
     if(netRole==='host'){
-        roomSession.lan.broadcast('world',{players:[{id:'host',name:document.getElementById('player-name').value||'Host',...state},...Array.from(remotePlayers.values()).map(p=>({id:p.id,name:p.name,x:p.x,y:p.y,dir:p.dir,alive:p.alive}))],bots:bots.map(bot=>({x:bot.mesh.position.x,z:bot.mesh.position.z,vx:bot.vx,vz:bot.vz,targetId:bot.targetId})),releaseIn:Math.max(0,botReleaseAt-now)});
+        roomSession.lan.broadcast('world',{players:[{id:'host',name:document.getElementById('player-name').value||'Host',...state},...Array.from(remotePlayers.values()).map(p=>({id:p.id,name:p.name,x:p.x,y:p.y,floorY:p.floorY,dir:p.dir,alive:p.alive}))],bots:bots.map(bot=>({x:bot.mesh.position.x,z:bot.mesh.position.z,vx:bot.vx,vz:bot.vz,targetId:bot.targetId,floorY:bot.floorY})),releaseIn:Math.max(0,botReleaseAt-now),roundIn:Math.max(0,roundEndsAt-now)});
     }else roomSession.client.send('player',state);
 }
 function wireHostRoom(session){
     session.lan.on('message',({peer,data})=>{if(data.type!=='player')return;applyPlayerPacket(peer.meta.id,data.payload,peer.meta.name);});
 }
 function wireGuestRoom(session){
-    session.client.on('message',({data})=>{if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;
+    session.client.on('message',({data})=>{if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;roundEndsAt=performance.now()+world.roundIn;
         world.players.filter(p=>p.id!=='host').forEach(p=>{if(p.id!==session.client.meta.peerId)applyPlayerPacket(p.id,p,p.name)});
         const host=world.players.find(p=>p.id==='host');if(host)applyPlayerPacket('host',host,host.name);
-        world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.backing.position.x=state.x;bot.backing.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;});
+        world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.backing.position.x=state.x;bot.backing.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;bot.floorY=state.floorY||0;bot.mesh.position.y=3.15+bot.floorY;bot.backing.position.y=3.15+bot.floorY;if(bot.label)bot.label.position.y=.55+bot.floorY;});
     });
     session.client.on('message',({data})=>{if(data.type==='death'&&data.payload.id===session.client.meta.peerId)showGameOverOverlay();});
 }
@@ -395,19 +382,24 @@ function initAudio() {
             wallGroup = new THREE.Group();
             const wallTexture = new THREE.TextureLoader().load('./assets/vendor/nextbot-brick.jpg');
             wallTexture.wrapS=wallTexture.wrapT=THREE.RepeatWrapping;wallTexture.repeat.set(1,1);
-            const wallGeo = new THREE.BoxGeometry(2, 11, 2);
+            const wallGeo = new THREE.BoxGeometry(2, 19, 2);
             const wallMat = new THREE.MeshPhongMaterial({map:wallTexture,color:0x8f949a,shininess:3});
             const pillarMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture('#dedbd0'),color:0xf1eee3,shininess:1});
             const isEdge=(x,y)=>x===0||y===0||x===MAP_SIZE_X-1||y===MAP_SIZE_Y-1;
             let edgeCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1)(isEdge(x,y)?edgeCount++:pillarCount++);
             const walls=new THREE.InstancedMesh(wallGeo,wallMat,edgeCount),pillars=new THREE.InstancedMesh(wallGeo,pillarMat,pillarCount);
             const transform=new THREE.Matrix4();let wallIndex=0,pillarIndex=0;
-            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1){transform.makeTranslation((x+.5)*2,5.5,(y+.5)*2);(isEdge(x,y)?walls:pillars).setMatrixAt(isEdge(x,y)?wallIndex++:pillarIndex++,transform)}
+            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1){transform.makeTranslation((x+.5)*2,9.5,(y+.5)*2);(isEdge(x,y)?walls:pillars).setMatrixAt(isEdge(x,y)?wallIndex++:pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
-            // Raised slab ceiling is close enough to read, high enough to keep the chase open.
+            // The upper deck and high roof make this a true two-storey garage.
+            const upperDeck=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#383c41',true),color:0xb8bcc1,side:THREE.DoubleSide,shininess:5}));
+            upperDeck.rotation.x=-Math.PI/2;upperDeck.position.set(MAP_SIZE_X,FLOOR_HEIGHT,MAP_SIZE_Y);scene.add(upperDeck);
             const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
-            ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,11,MAP_SIZE_Y);scene.add(ceiling);
+            ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,19,MAP_SIZE_Y);scene.add(ceiling);
+
+            const rampMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#55575a',true),color:0xb7b8b4,shininess:3});
+            for(const ramp of RAMPS){const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1);const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set((ramp.x1+ramp.x2),FLOOR_HEIGHT/2,(ramp.y1+ramp.y2));mesh.rotation.z=angle;scene.add(mesh)}
 
             // Proper parking bays and centre-lane markings.
             const markings=[];
@@ -418,8 +410,9 @@ function initAudio() {
 
             // Fluorescent fixtures are emissive-looking props only; they add no costly dynamic lights.
             const lampPositions=[];for(let z=14;z<MAP_SIZE_Y*2-10;z+=24)for(let x=14;x<MAP_SIZE_X*2-10;x+=28)lampPositions.push([x,z]);
-            const lampGeo=new THREE.BoxGeometry(8,.10,.65),lampMat=new THREE.MeshBasicMaterial({color:0xeaf6dd}),lamps=new THREE.InstancedMesh(lampGeo,lampMat,lampPositions.length);
-            lampPositions.forEach(([x,z],i)=>{transform.makeTranslation(x,10.88,z);lamps.setMatrixAt(i,transform)});lamps.instanceMatrix.needsUpdate=true;scene.add(lamps);
+            const lampGeo=new THREE.BoxGeometry(8,.10,.65),lampMat=new THREE.MeshBasicMaterial({color:0xeaf6dd});
+            const allLampPositions=[...lampPositions.map(([x,z])=>[x,7.7,z]),...lampPositions.map(([x,z])=>[x,18.7,z])];
+            const garageLamps=new THREE.InstancedMesh(lampGeo,lampMat,allLampPositions.length);allLampPositions.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);garageLamps.setMatrixAt(i,transform)});garageLamps.instanceMatrix.needsUpdate=true;scene.add(garageLamps);
 
             // Low-poly parked cars create cover without expensive models or textures.
             const carColors=[0x9e2f32,0x315c83,0x44474b,0xb6b7b0,0x6d5132,0x284f43];
@@ -429,6 +422,7 @@ function initAudio() {
                 const cabin=new THREE.Mesh(new THREE.BoxGeometry(3,1,3.6),new THREE.MeshPhongMaterial({color,shininess:45}));cabin.position.set(0,1.45,-.2);car.add(cabin);
                 const glass=new THREE.Mesh(new THREE.BoxGeometry(3.04,.62,2.1),new THREE.MeshPhongMaterial({color:0x18232d,shininess:70}));glass.position.set(0,1.55,-.15);car.add(glass);
                 car.position.set(cx*2+1,0,cy*2+1);if(i%2)car.rotation.y=Math.PI;scene.add(car);
+                const upperCar=car.clone();upperCar.position.y=FLOOR_HEIGHT;scene.add(upperCar);
             });
 
             // Start away from the centre so every round opens differently.
@@ -440,25 +434,22 @@ function initAudio() {
 
             // --- BOT SPAWN ---
 const loader = new THREE.TextureLoader();
-const botTexture = loader.load('./assets/nextbot-chaser.png');
+const BOT_TYPES=[
+ {name:'NICO',src:'./assets/nextbot-chaser.png'},
+ {name:'SIDE EYE',src:'./assets/nextbots/side-eye.svg'},
+ {name:'MOYAI',src:'./assets/nextbots/moyai.svg'},
+ {name:'CRYING CAT',src:'./assets/nextbots/crying-cat.svg'}
+];
+function makeBotLabel(text){const c=document.createElement('canvas');c.width=512;c.height=96;const x=c.getContext('2d');x.font='900 42px sans-serif';x.textAlign='center';x.strokeStyle='#000';x.lineWidth=10;x.strokeText(text,256,58);x.fillStyle='#fff';x.fillText(text,256,58);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));sprite.scale.set(7,1.3,1);sprite.renderOrder=6;scene.add(sprite);return sprite}
 for (let b = 0; b < botSpawns.length; b++) {
+    const type=BOT_TYPES[b];
     const backing = new THREE.Sprite(new THREE.SpriteMaterial({color:0xf4f1e8,depthWrite:false}));
     backing.position.copy(botSpawns[b]);backing.position.y=3.15;backing.scale.set(8.4,6.4,1);backing.renderOrder=3;scene.add(backing);
-    const botMaterial = new THREE.SpriteMaterial({ map: botTexture,transparent:true,alphaTest:.02,color:0xffffff,depthWrite:false });
-    const bot = new THREE.Sprite(botMaterial);
-    bot.position.copy(botSpawns[b]);
-    bot.scale.set(8, 6, 1);
-    bot.position.y = 3.15;
-    bot.renderOrder=4;
-    scene.add(bot);
-    bots.push({
-        mesh: bot,
-        backing,
-        baseSpeed: 34,
-        speedMult: 1,
-        vx:0,vz:0,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0
-    });
-            }
+    const bot = new THREE.Sprite(new THREE.SpriteMaterial({map:loader.load(type.src),transparent:true,alphaTest:.02,color:0xffffff,depthWrite:false}));
+    bot.position.copy(botSpawns[b]);bot.scale.set(8,6,1);bot.position.y=3.15;bot.renderOrder=4;scene.add(bot);
+    const label=makeBotLabel(type.name);label.position.set(bot.position.x,.55,bot.position.z);
+    bots.push({mesh:bot,backing,label,baseSpeed:42,speedMult:1,vx:0,vz:0,floorY:0,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0});
+}
         }
 
         function resize() {
@@ -510,6 +501,19 @@ for (let b = 0; b < botSpawns.length; b++) {
             }
         }
 
+        let touchMoveX=0,touchMoveY=0;
+        function initTouchControls(){
+            const stick=document.getElementById('touch-stick'),knob=document.getElementById('touch-knob'),look=document.getElementById('touch-look');let stickId=null,lookId=null,lastX=0,lastY=0;
+            const reset=()=>{touchMoveX=touchMoveY=0;knob.style.transform='translate(0,0)'};
+            stick.addEventListener('pointerdown',e=>{stickId=e.pointerId;stick.setPointerCapture(e.pointerId)});
+            stick.addEventListener('pointermove',e=>{if(e.pointerId!==stickId)return;const r=stick.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.hypot(dx,dy)||1,k=Math.min(42,len)/len;touchMoveX=dx/42*k;touchMoveY=dy/42*k;knob.style.transform=`translate(${dx*k}px,${dy*k}px)`});
+            stick.addEventListener('pointerup',reset);stick.addEventListener('pointercancel',reset);
+            look.addEventListener('pointerdown',e=>{lookId=e.pointerId;lastX=e.clientX;lastY=e.clientY;look.setPointerCapture(e.pointerId)});
+            look.addEventListener('pointermove',e=>{if(e.pointerId!==lookId)return;player.dir-=(e.clientX-lastX)*.006*player.sensitivity;player.pitch=Math.max(-1.45,Math.min(1.45,player.pitch-(e.clientY-lastY)*.006*player.sensitivity));lastX=e.clientX;lastY=e.clientY});
+            document.getElementById('touch-jump').addEventListener('pointerdown',e=>{e.stopPropagation();if(!player.isJumping){player.isJumping=true;player.zVel=.20}});
+            document.getElementById('touch-sprint').addEventListener('pointerdown',e=>{e.stopPropagation();player.isSprinting=!player.isSprinting;e.currentTarget.classList.toggle('active',player.isSprinting)});
+        }
+
         function handleKeyDown(e) {
             const key = e.key.toLowerCase();
             keys[key] = true;
@@ -518,7 +522,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if (!isLocked) canvas.requestPointerLock();
                 else document.exitPointerLock();
             }
-            if (e.key === 'Shift') player.isSprinting = true;
+            if (e.key === 'Shift' && !e.repeat) { player.isSprinting = !player.isSprinting; document.getElementById('touch-sprint').classList.toggle('active',player.isSprinting); }
             if (e.code === 'Space' && !player.isJumping) {
                 player.isJumping = true;
                 player.zVel = 0.20;
@@ -537,7 +541,6 @@ for (let b = 0; b < botSpawns.length; b++) {
         function handleKeyUp(e) {
             const key = e.key.toLowerCase();
             keys[key] = false;
-            if (e.key === 'Shift') player.isSprinting = false;
         }
         function handleMouseMove(e) {
             if (isLocked) {
@@ -565,113 +568,27 @@ for (let b = 0; b < botSpawns.length; b++) {
             cheatsMenu.style.display = 'none';
         });
 
-        // --- Game Over Overlay ---
+        // --- Round end overlay ---
         let isGameOver = false;
-        function showGameOverOverlay() {
-            let overlay = document.getElementById('game-over-overlay');
-            if (!overlay) {
-                overlay = document.createElement('div');
-                overlay.id = 'game-over-overlay';
-                overlay.style.position = 'fixed';
-                overlay.style.top = '0';
-                overlay.style.left = '0';
-                overlay.style.width = '100vw';
-                overlay.style.height = '100vh';
-                overlay.style.background = 'rgba(0,0,0,0.93)';
-                overlay.style.display = 'flex';
-                overlay.style.flexDirection = 'column';
-                overlay.style.justifyContent = 'center';
-                overlay.style.alignItems = 'center';
-                overlay.style.zIndex = '9999';
-                overlay.innerHTML = `
-                  <div style="
-                    font-size:4.5rem;
-                    font-weight:bold;
-                    color:#e10606;
-                    text-shadow:
-                        0 0 18px #000,
-                        0 3px 0 #a00000,
-                        0 8px 12px #e10606,
-                        0 12px 24px #a00000;
-                    text-align:center;
-                    letter-spacing: 0.15em;
-                    font-family: 'Creepster', 'Impact', 'Segoe UI', 'Arial', sans-serif;
-                    -webkit-text-stroke: 1px #000;
-                    filter: drop-shadow(0 8px 3px #a00000) drop-shadow(0 15px 6px #5c0101);
-                    margin-bottom: 32px;
-                  ">
-                    GAME OVER
-                    <span style="
-                        display: block;
-                        font-size: 2rem;
-                        margin-top: -10px;
-                        color: #fff;
-                        text-shadow: 0 0 12px #e10606, 0 2px 0 #a00000;
-                        font-family: 'Segoe UI', 'Arial', sans-serif;
-                        font-weight: normal;
-                        letter-spacing: 0.05em;
-                        margin-bottom: 16px;
-                    ">
-                        <svg width="260" height="40" style="display:block;margin:0 auto;position:relative;top:-20px;">
-                          <g>
-                            <ellipse cx="50" cy="20" rx="12" ry="10" fill="#e10606" opacity="0.55"/>
-                            <ellipse cx="130" cy="25" rx="18" ry="12" fill="#a00000" opacity="0.35"/>
-                            <ellipse cx="200" cy="22" rx="10" ry="14" fill="#e10606" opacity="0.4"/>
-                          </g>
-                          <g>
-                            <rect x="47" y="30" width="6" height="18" fill="#e10606" opacity="0.9"/>
-                            <rect x="128" y="35" width="7" height="16" fill="#a00000" opacity="0.7"/>
-                            <rect x="198" y="36" width="5" height="12" fill="#e10606" opacity="0.8"/>
-                          </g>
-                        </svg>
-                    </span>
-                  </div>
-                  <div style="
-                    color:#fff;
-                    font-size:2rem;
-                    text-align:center;
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    margin-top: 8px;
-                    text-shadow: 0 0 8px #000, 0 0 2px #fff;
-                  ">
-                    SURVIVED: ${formatTime(parseFloat(gameTimer.toFixed(2)))}<br>
-                    <span style="font-size:1.3rem;color:#d1b45d;">BEST: ${getHighscores().length > 0 ? formatTime(getHighscores()[0]) : '--'}</span><br><br>
-                    Press ENTER to Restart
-                  </div>
-                `;
-                document.body.appendChild(overlay);
-            } else {
-                overlay.style.display = 'flex';
-            }
-            // Hide game canvas and overlays
-            stopTimer();
-            saveHighscore(parseFloat(gameTimer.toFixed(2)));
-            document.getElementById('game-container').style.display = 'none';
-            isGameOver = true;
-            // Listen for ENTER key to restart
-            function restartListener(e) {
-                if (e.key === "Enter") {
-                    window.removeEventListener('keydown', restartListener);
-                    location.reload();
-                }
-            }
-            window.addEventListener('keydown', restartListener);
+        function showGameOverOverlay(won=false) {
+            isGameOver=true; if(document.pointerLockElement)document.exitPointerLock();
+            let overlay=document.getElementById('game-over-overlay');
+            if(!overlay){overlay=document.createElement('div');overlay.id='game-over-overlay';Object.assign(overlay.style,{position:'fixed',inset:'0',background:'rgba(0,0,0,.9)',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',zIndex:'9999',gap:'22px'});document.body.append(overlay)}
+            overlay.innerHTML=`<div style="font:900 clamp(3rem,10vw,7rem) Impact,sans-serif;color:${won?'#f1d37e':'#ef3f3f'};letter-spacing:.06em">${won?'YOU SURVIVED':'GAME OVER'}</div><div style="display:flex;gap:12px"><button id="respawn-button" style="padding:14px 24px;font:800 1rem inherit;background:#f1d37e;border:0;cursor:pointer">RESPAWN</button><button id="home-button" style="padding:14px 24px;font:800 1rem inherit;background:#222;color:#fff;border:1px solid #777;cursor:pointer">HOME</button></div>`;
+            overlay.style.display='flex';
+            document.getElementById('respawn-button').onclick=()=>location.reload();
+            document.getElementById('home-button').onclick=()=>location.href='./index.html';
         }
-
-        function hideGameOverOverlay() {
-            let overlay = document.getElementById('game-over-overlay');
-            if (overlay) overlay.style.display = 'none';
-            document.getElementById('game-container').style.display = '';
-            isGameOver = false;
-        }
+        function hideGameOverOverlay(){const overlay=document.getElementById('game-over-overlay');if(overlay)overlay.style.display='none';isGameOver=false}
 
         function update() {
             // UI status
-            const isMoving = keys['w'] || keys['s'] || keys['a'] || keys['d'];
+            const isMoving = keys['w'] || keys['s'] || keys['a'] || keys['d'] || Math.abs(touchMoveX)+Math.abs(touchMoveY)>.08;
             const actuallySprinting = player.isSprinting && isMoving;
-            const currentSpeed = actuallySprinting ? player.speed * 2.15 : player.speed;
-            const releaseRemaining = Math.max(0, botReleaseAt - performance.now());
-            if(releaseRemaining<=0&&!timerInterval)startTimer();
+            const currentSpeed = actuallySprinting ? player.speed * 1.75 : player.speed;
+            const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
+            if(releaseRemaining>0)timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;
+            else { timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
 
             // --- Stop update if game over ---
             if (isGameOver) return;
@@ -684,6 +601,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             if (keys['s']) moveForward += 1;
             if (keys['d']) moveRight += 1;
             if (keys['a']) moveRight -= 1;
+            moveForward += touchMoveY; moveRight += touchMoveX;
             // Normalize for diagonal movement
             let moveLen = Math.hypot(moveForward, moveRight);
             if (moveLen > 0) {
@@ -698,9 +616,11 @@ for (let b = 0; b < botSpawns.length; b++) {
             let moveY = (Math.cos(player.dir) * moveForward - Math.sin(player.dir) * moveRight) * currentSpeed;
 
             // Grid collision is constant-time; checking every rendered wall was the main frame-rate bottleneck.
+            const carBlocked=(x,y)=>player.z<1.55&&MAP.carSpots.some(([cx,cy])=>Math.abs(x-(cx+.5))<1.055&&Math.abs(y-(cy+.5))<1.93);
             const canStand=(x,y)=>{
                 const radius=.18,points=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
-                return points.every(([px,py])=>{const cell=MAP[Math.floor(py)]?.[Math.floor(px)];return cell===0||(cell===2&&player.z>=1.55)});
+                const surface=surfaceHeightAt(x,y,player.floorY);
+                return Math.abs(surface-player.floorY)<.65&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0);
             };
             let nextX = player.x + moveX;
             let nextY = player.y + moveY;
@@ -711,6 +631,8 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if(canStand(nextX,player.y))player.x=nextX;
                 if(canStand(player.x,nextY))player.y=nextY;
             }
+
+            player.floorY=surfaceHeightAt(player.x,player.y,player.floorY);
 
             // Jump physics
             if (player.isJumping) {
@@ -730,7 +652,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             if (audioCtx && chaseGain) {
                 let minDist = Infinity;
                 for (let i = 0; i < bots.length; i++) {
-                    const d = Math.hypot(bots[i].mesh.position.x - playerWorldX, bots[i].mesh.position.z - playerWorldZ);
+                    const d = Math.abs(bots[i].floorY-player.floorY)<2.5?Math.hypot(bots[i].mesh.position.x - playerWorldX, bots[i].mesh.position.z - playerWorldZ):Infinity;
                     if (d < minDist) minDist = d;
                 }
                 // Convert world distance to map units (each map unit = 2 world units)
@@ -748,7 +670,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const botX = bot.mesh.position.x;
                 const botZ = bot.mesh.position.z;
                 const dist = Math.hypot(botX - playerWorldX, botZ - playerWorldZ);
-                if (dist < 1) {
+                if (dist < 1 && Math.abs(bot.floorY-player.floorY)<2.5) {
                     if(netRole==='guest'&&roomSession)roomSession.client.send('player',{x:player.x,y:player.y,dir:player.dir,alive:false});
                     // Show Game Over overlay instead of alert
                     showGameOverOverlay();
@@ -758,7 +680,7 @@ for (let b = 0; b < botSpawns.length; b++) {
 
             // Camera position and rotation (centered in scaled world)
             if (camera) {
-                camera.position.set(player.x * 2 + 1, 1.6 + player.z, player.y * 2 + 1);
+                camera.position.set(player.x * 2 + 1, 1.6 + player.floorY + player.z, player.y * 2 + 1);
                 // Set camera rotation: pitch (up/down, X), yaw (left/right, Y), roll (Z)
                 camera.rotation.set(player.pitch, player.dir, player.roll, 'YXZ');
             }
@@ -836,7 +758,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 // A bot locks onto the first player entering its detection radius. It keeps
                 // that target until they die or escape the larger lose-track radius.
                 const now=performance.now();
-                const localTarget={id:'local',x:player.x,y:player.y,alive:!isGameOver};
+                const localTarget={id:'local',x:player.x,y:player.y,floorY:player.floorY,alive:!isGameOver};
                 const targets=[localTarget,...Array.from(remotePlayers.values())];
                 let locked=targets.find(candidate=>candidate.id===bot.targetId&&candidate.alive);
                 if(locked&&Math.hypot(botMapX-locked.x,botMapY-locked.y)>38){bot.targetId=null;locked=null}
@@ -875,7 +797,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if(MAP[mapY]?.[mapX]===0)bot.mesh.position.x=tryX;else bot.vx*=-.28;
                 const tryZ=bot.mesh.position.z+bot.vz,nextMapX=Math.floor((bot.mesh.position.x-1)/2),nextMapY=Math.floor((tryZ-1)/2);
                 if(MAP[nextMapY]?.[nextMapX]===0)bot.mesh.position.z=tryZ;else bot.vz*=-.28;
-                bot.backing.position.x=bot.mesh.position.x;bot.backing.position.z=bot.mesh.position.z;
+                bot.floorY=surfaceHeightAt((bot.mesh.position.x-1)/2,(bot.mesh.position.z-1)/2,bot.floorY);bot.mesh.position.y=3.15+bot.floorY;bot.backing.position.set(bot.mesh.position.x,3.15+bot.floorY,bot.mesh.position.z);if(bot.label)bot.label.position.set(bot.mesh.position.x,.55+bot.floorY,bot.mesh.position.z);
             }
             // Gentle separation keeps overlapping chasers visually and tactically distinct.
             if(performance.now()>=botReleaseAt) for(let i=0;i<bots.length;i++)for(let j=i+1;j<bots.length;j++){
@@ -884,7 +806,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             }
             if(netRole==='host') for(const remote of remotePlayers.values()){
                 if(!remote.alive)continue;
-                const hit=bots.some(bot=>Math.hypot(bot.mesh.position.x-(remote.x*2+1),bot.mesh.position.z-(remote.y*2+1))<1);
+                const hit=bots.some(bot=>Math.abs(bot.floorY-remote.floorY)<2.5&&Math.hypot(bot.mesh.position.x-(remote.x*2+1),bot.mesh.position.z-(remote.y*2+1))<1);
                 if(hit){remote.alive=false;remote.mesh.visible=false;roomSession.lan.broadcast('death',{id:remote.id});}
             }
         }
@@ -978,7 +900,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             if (gameStarted) return;
             gameStarted = true;
             document.body.classList.remove('menu-active');
-            botReleaseAt=performance.now()+30000;
+            botReleaseAt=performance.now()+30000;roundEndsAt=botReleaseAt+180000;
             // Hide start screen overlay
             const startScreen = document.getElementById('start-screen');
             if (startScreen) startScreen.style.display = 'none';
@@ -989,8 +911,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             // Start game loop
             requestAnimationFrame(gameLoop);
             initAudio();
-            gameTimer=0;timerDisplay.innerText='TIME: 0.00s';
-            updateHighscoreDisplay();
+            gameTimer=0;timerDisplay.innerText='GET READY · 30';document.getElementById('mobile-controls').classList.add('active');
         }
 
         function lobbyStatus(message){document.getElementById('lobby-status').textContent=message||'';}
@@ -1008,6 +929,7 @@ for (let b = 0; b < botSpawns.length; b++) {
         function init() {
             initThree();
             initUI();
+            initTouchControls();
             resize();
             window.addEventListener('resize', resize);
             window.addEventListener('keydown', handleKeyDown);
