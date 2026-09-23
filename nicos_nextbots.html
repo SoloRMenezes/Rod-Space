@@ -119,15 +119,25 @@
             align-items: center;
             gap: 8px;
         }
+        .lobby-card{width:min(92vw,520px);background:#17191b;border:1px solid #d1b45d;padding:24px;color:#fff;box-shadow:0 18px 60px #000}
+        .lobby-card h1{color:#f1d37e;letter-spacing:.08em;margin-bottom:8px}.lobby-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+        .lobby-card button,.lobby-card input{font:inherit;border:1px solid #75683e;background:#101214;color:#fff;padding:11px}.lobby-card button{cursor:pointer;font-weight:700}.lobby-card button:hover{border-color:#f1d37e;color:#f1d37e}
+        #room-panel{display:none;margin-top:16px}.room-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #353535;padding:10px 0}.room-row button{padding:7px 12px}
+        .lobby-fields{display:grid;grid-template-columns:1fr 120px;gap:8px;margin-top:12px}.lobby-note{color:#aaa;font-size:.82rem;margin-top:10px}#lobby-status{min-height:1.3em;color:#f1d37e;margin-top:10px}
+        @media(max-width:560px){.lobby-actions{grid-template-columns:1fr}.lobby-fields{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
 
     <div id="game-container">
         <!-- Start Screen Overlay -->
-        <div id="start-screen" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(0,0,0,0.82);display:flex;align-items:center;justify-content:center;">
-            <div style="color:#fff;font-size:2.2rem;font-weight:bold;text-align:center;text-shadow:0 2px 16px #000,0 0 8px #d1b45d;">
-                Press ENTER to Start
+        <div id="start-screen" style="position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;">
+            <div class="lobby-card">
+                <h1>NICO'S NEXTBOTS</h1><p>Survive the parking garage.</p>
+                <div class="lobby-fields"><input id="player-name" maxlength="18" placeholder="Your name"><input id="room-pin" inputmode="numeric" maxlength="4" placeholder="PIN optional"></div>
+                <div class="lobby-actions"><button id="solo-start">SOLO</button><button id="host-start">HOST</button><button id="join-open">JOIN</button></div>
+                <div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div>
+                <div id="lobby-status"></div><div class="lobby-note">Host and players need internet for room discovery. Gameplay travels directly between devices when the network allows it.</div>
             </div>
         </div>
         <canvas id="screen"></canvas>
@@ -172,6 +182,8 @@
     </div>
 
     <script src="./assets/vendor/offline-8eacf4588bcf.js"></script>
+    <script src="./party-lan.js"></script>
+    <script type="module" src="./party-rooms.js"></script>
     <script>
         // --- DOM references ---
         const canvas = document.getElementById('screen'); // Used as WebGLRenderer target
@@ -288,6 +300,37 @@ let bots = [];
 let screenWidth, screenHeight;
 let audioCtx, humNode, chaseNode, chaseGain;
 let botReleaseAt=Infinity;
+let netRole='solo',roomSession=null,lastNetSend=0,roomsWatching=false;
+const remotePlayers=new Map();
+
+function ensureRemotePlayer(id,name='Player'){
+    let remote=remotePlayers.get(id);if(remote)return remote;
+    const material=new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(Math.random(),.72,.55)});
+    const mesh=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,1.8,10),material);mesh.position.y=1;scene.add(mesh);
+    remote={id,name,x:0,y:0,dir:0,alive:true,mesh};remotePlayers.set(id,remote);return remote;
+}
+function applyPlayerPacket(id,data,name){
+    const remote=ensureRemotePlayer(id,name);Object.assign(remote,{x:data.x,y:data.y,dir:data.dir||0,alive:data.alive!==false});
+    remote.mesh.visible=remote.alive;remote.mesh.position.set(remote.x*2+1,1,remote.y*2+1);remote.mesh.rotation.y=remote.dir;
+}
+function networkTick(now){
+    if(netRole==='solo'||!roomSession||now-lastNetSend<80)return;lastNetSend=now;
+    const state={x:player.x,y:player.y,dir:player.dir,alive:!isGameOver};
+    if(netRole==='host'){
+        roomSession.lan.broadcast('world',{players:[{id:'host',name:document.getElementById('player-name').value||'Host',...state},...Array.from(remotePlayers.values()).map(p=>({id:p.id,name:p.name,x:p.x,y:p.y,dir:p.dir,alive:p.alive}))],bots:bots.map(bot=>({x:bot.mesh.position.x,z:bot.mesh.position.z,vx:bot.vx,vz:bot.vz,targetId:bot.targetId})),releaseIn:Math.max(0,botReleaseAt-now)});
+    }else roomSession.client.send('player',state);
+}
+function wireHostRoom(session){
+    session.lan.on('message',({peer,data})=>{if(data.type!=='player')return;applyPlayerPacket(peer.meta.id,data.payload,peer.meta.name);});
+}
+function wireGuestRoom(session){
+    session.client.on('message',({data})=>{if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;
+        world.players.filter(p=>p.id!=='host').forEach(p=>{if(p.id!==session.client.meta.peerId)applyPlayerPacket(p.id,p,p.name)});
+        const host=world.players.find(p=>p.id==='host');if(host)applyPlayerPacket('host',host,host.name);
+        world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.warning.position.x=state.x;bot.warning.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;});
+    });
+    session.client.on('message',({data})=>{if(data.type==='death'&&data.payload.id===session.client.meta.peerId)showGameOverOverlay();});
+}
 
 function initAudio() {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -639,6 +682,7 @@ for (let b = 0; b < botSpawns.length; b++) {
 
             // --- Stop update if game over ---
             if (isGameOver) return;
+            networkTick(performance.now());
 
             // 2D movement (X,Z on map; Y is up in 3D)
             // WASD: W = forward, S = backward, A = strafe left, D = strafe right (relative to camera yaw)
@@ -712,6 +756,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const botZ = bot.mesh.position.z;
                 const dist = Math.hypot(botX - playerWorldX, botZ - playerWorldZ);
                 if (dist < 1) {
+                    if(netRole==='guest'&&roomSession)roomSession.client.send('player',{x:player.x,y:player.y,dir:player.dir,alive:false});
                     // Show Game Over overlay instead of alert
                     showGameOverOverlay();
                     return;
@@ -799,7 +844,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 // that target until they die or escape the larger lose-track radius.
                 const now=performance.now();
                 const localTarget={id:'local',x:player.x,y:player.y,alive:!isGameOver};
-                const targets=[localTarget];
+                const targets=[localTarget,...Array.from(remotePlayers.values())];
                 let locked=targets.find(candidate=>candidate.id===bot.targetId&&candidate.alive);
                 if(locked&&Math.hypot(botMapX-locked.x,botMapY-locked.y)>38){bot.targetId=null;locked=null}
                 if(!locked){
@@ -819,6 +864,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                     const path=astar(botMapX,botMapY,targetX,targetY,MAP);
                     bot._path=path&&path.length>1?path:null;bot._lastTargetX=targetX;bot._lastTargetY=targetY;bot._lastStartX=botMapX;bot._lastStartY=botMapY;bot._pathStep=1;
                 }
+                if(netRole==='guest')continue;
                 if(now<botReleaseAt){bot.vx=0;bot.vz=0;continue}
 
                 let steerX=targetX*2+1,steerZ=targetY*2+1;
@@ -842,6 +888,11 @@ for (let b = 0; b < botSpawns.length; b++) {
             if(performance.now()>=botReleaseAt) for(let i=0;i<bots.length;i++)for(let j=i+1;j<bots.length;j++){
                 const a=bots[i].mesh.position,b=bots[j].mesh.position,dx=a.x-b.x,dz=a.z-b.z,d=Math.hypot(dx,dz);
                 if(d>0&&d<3){const push=(3-d)*.04;a.x+=dx/d*push;a.z+=dz/d*push;b.x-=dx/d*push;b.z-=dz/d*push;}
+            }
+            if(netRole==='host') for(const remote of remotePlayers.values()){
+                if(!remote.alive)continue;
+                const hit=bots.some(bot=>Math.hypot(bot.mesh.position.x-(remote.x*2+1),bot.mesh.position.z-(remote.y*2+1))<1);
+                if(hit){remote.alive=false;remote.mesh.visible=false;roomSession.lan.broadcast('death',{id:remote.id});}
             }
         }
 
@@ -975,6 +1026,18 @@ for (let b = 0; b < botSpawns.length; b++) {
             updateHighscoreDisplay();
         }
 
+        function lobbyStatus(message){document.getElementById('lobby-status').textContent=message||'';}
+        function playerName(){return document.getElementById('player-name').value.trim()||'Player';}
+        function roomPin(){return document.getElementById('room-pin').value.replace(/\D/g,'').slice(0,4);}
+        function setupRooms(){
+            if(!globalThis.PartyRooms||roomsWatching)return;roomsWatching=true;
+            PartyRooms.watch('nicos-nextbots',rooms=>{
+                const list=document.getElementById('room-list');list.replaceChildren();
+                if(!rooms.length){const empty=document.createElement('div');empty.className='lobby-note';empty.textContent='No open games yet.';list.append(empty);return;}
+                rooms.forEach(room=>{const row=document.createElement('div');row.className='room-row';const label=document.createElement('span');label.textContent=`${room.name} · ${room.players||1} player${room.players===1?'':'s'}${room.locked?' · PIN':''}`;const join=document.createElement('button');join.textContent='JOIN';join.onclick=async()=>{try{join.disabled=true;lobbyStatus('Connecting…');roomSession=await PartyRooms.join(room,{name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='guest';wireGuestRoom(roomSession);startGame()}catch(error){lobbyStatus(error.message);join.disabled=false}};row.append(label,join);list.append(row);});
+            },()=>lobbyStatus('Room list unavailable. Check your connection.'));
+        }
+
         function init() {
             initThree();
             initUI();
@@ -984,15 +1047,13 @@ for (let b = 0; b < botSpawns.length; b++) {
             window.addEventListener('keyup', handleKeyUp);
             window.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('pointerlockchange', updateLockStatus);
-            // Wait for ENTER to start the game
-            const startScreen = document.getElementById('start-screen');
-            function startScreenListener(e) {
-                if (e.key === "Enter") {
-                    window.removeEventListener('keydown', startScreenListener);
-                    startGame();
-                }
-            }
-            window.addEventListener('keydown', startScreenListener);
+            const savedName=localStorage.getItem('nicos-player-name');if(savedName)document.getElementById('player-name').value=savedName;
+            document.getElementById('player-name').addEventListener('input',event=>localStorage.setItem('nicos-player-name',event.target.value));
+            document.getElementById('room-pin').addEventListener('input',event=>event.target.value=event.target.value.replace(/\D/g,'').slice(0,4));
+            document.getElementById('solo-start').onclick=()=>{netRole='solo';startGame()};
+            document.getElementById('join-open').onclick=()=>{document.getElementById('room-panel').style.display='block';lobbyStatus('Choose a host below.');if(globalThis.PartyRooms)setupRooms()};
+            document.getElementById('host-start').onclick=async event=>{try{event.currentTarget.disabled=true;lobbyStatus('Opening room…');roomSession=await PartyRooms.createHost({game:'nicos-nextbots',name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);startGame()}catch(error){lobbyStatus(error.message);event.currentTarget.disabled=false}};
+            if(globalThis.PartyRooms)setupRooms();else addEventListener('partyroomsready',setupRooms,{once:true});
         }
         init();
     </script>

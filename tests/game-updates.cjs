@@ -18,6 +18,9 @@ assert(nicoHtml.includes('performance.now()+30000'), 'Nico bots should give play
 assert(nicoHtml.includes('targetId:null'), 'Nico bots should keep an acquired target');
 assert(nicoHtml.includes('bot.vx*=.992'), 'Nico bots should use low-friction movement');
 assert(nicoHtml.includes('BOTS RELEASE IN'), 'Nico HUD should show the release countdown');
+assert(nicoHtml.includes("PartyRooms.createHost({game:'nicos-nextbots'"), 'Nico should create discoverable multiplayer rooms');
+assert(nicoHtml.includes("roomSession.client.send('player'"), 'Nico guests should send their player state');
+assert(nicoHtml.includes("roomSession.lan.broadcast('world'"), 'Nico host should synchronize players and bots');
 assert.match(nicoHtml,/speed: 0\.12/);
 assert.match(nicoHtml,/baseSpeed: 34/);
 assert.ok(fs.statSync(root+'/assets/nextbot-chaser.png').size<400_000,'optimized chaser texture');

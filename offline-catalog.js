@@ -5406,12 +5406,22 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 47694,
-        "hash": "b239ab2fe653a5a2992502d6b5d10877109b52c6e6cd8e875095278f43234ac7"
+        "bytes": 54855,
+        "hash": "8e44b9d42d7ec447baf75e946db567a19509f557b1f9bbd18fac777b3263e8e0"
+      },
+      {
+        "path": "party-lan.js",
+        "bytes": 3375,
+        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 5763,
+        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
       }
     ],
-    "bytes": 2023356,
-    "version": "9f4d0ec3ae075efc"
+    "bytes": 2039655,
+    "version": "b396eedac5451b3d"
   },
   "backrooms": {
     "name": "The Backrooms",
