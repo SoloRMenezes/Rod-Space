@@ -110,6 +110,10 @@
             opacity: 0.3;
             cursor: not-allowed;
         }
+
+        #lan-panel{position:fixed;inset:0;z-index:80;background:#050507;display:none;place-items:center;padding:18px}
+        #lan-panel.open{display:grid} .lan-card{width:min(560px,100%);max-height:94vh;overflow:auto;background:#0a0a0c;border:1px solid #7f1d1d;padding:22px;border-radius:10px}
+        .lan-card textarea,.lan-card input{width:100%;background:#000;border:1px solid #27272a;color:#ddd;padding:10px;border-radius:5px;margin:6px 0;box-sizing:border-box}.lan-row{display:flex;gap:8px}.lan-row>*{flex:1}.lan-card button{padding:11px;border-radius:5px;font-weight:800}.lan-status{font-size:11px;color:#a1a1aa;min-height:18px;margin:8px 0}
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -170,6 +174,7 @@
                     <label for="impostor-hint" class="text-[10px] font-bold text-zinc-500 uppercase cursor-pointer">Leak category to impostor?</label>
                 </div>
 
+                <button onclick="openLan()" class="w-full btn-primary font-black py-3 rounded tracking-[0.25em] text-xs uppercase">LAN · One device each</button>
                 <button onclick="startGame()" class="w-full btn-danger font-black py-4 rounded shadow-2xl tracking-[0.3em] text-xs uppercase">
                     Initialize Protocol
                 </button>
@@ -233,8 +238,42 @@
         </div>
     </div>
 
+
+    <section id="lan-panel" aria-label="LAN setup"><div class="lan-card space-y-3">
+      <h2 class="text-2xl font-black text-red-600">LAN GAME</h2><p class="text-xs text-zinc-500">Pair every phone directly with the host. No server or account.</p>
+      <input id="lan-name" maxlength="18" placeholder="YOUR NAME">
+      <div class="lan-row"><button class="btn-danger" onclick="lanHostInvite()">HOST · ADD DEVICE</button><button class="btn-primary" onclick="lanShowJoin()">JOIN</button></div>
+      <div id="lan-host-box" hidden><label class="text-xs">SEND THIS INVITE</label><textarea id="lan-offer" rows="3" readonly></textarea><button class="btn-primary" onclick="copyLan('lan-offer')">COPY INVITE</button><label class="text-xs">PASTE THEIR REPLY</label><textarea id="lan-answer" rows="3"></textarea><button class="btn-danger" onclick="lanAccept()">CONNECT DEVICE</button></div>
+      <div id="lan-join-box" hidden><label class="text-xs">PASTE HOST INVITE</label><textarea id="lan-join-offer" rows="3"></textarea><button class="btn-danger" onclick="lanMakeReply()">CREATE REPLY</button><textarea id="lan-reply" rows="3" readonly></textarea><button class="btn-primary" onclick="copyLan('lan-reply')">COPY REPLY</button></div>
+      <p id="lan-status" class="lan-status">Not connected</p><button class="btn-primary w-full" onclick="closeLan()">DONE</button>
+    </div></section>
+    <script src="party-lan.js"></script>
     <script>
         const STORAGE_KEY = 'impostor_game_players';
+
+        let lanHost=null,lanPending=null,lanClient=null,lanGuest=false;
+        const lanStatus=text=>document.getElementById('lan-status').textContent=text;
+        function openLan(){document.getElementById('lan-panel').classList.add('open')}
+        function closeLan(){document.getElementById('lan-panel').classList.remove('open')}
+        function lanShowJoin(){document.getElementById('lan-host-box').hidden=true;document.getElementById('lan-join-box').hidden=false}
+        async function copyLan(id){const el=document.getElementById(id);await navigator.clipboard.writeText(el.value);lanStatus('Copied')}
+        async function lanHostInvite(){
+          const name=document.getElementById('lan-name').value.trim();if(!name)return lanStatus('Enter the host name first');
+          if(!currentPlayers.includes(name)){currentPlayers.unshift(name);saveToStorage();renderPlayerChips()}
+          if(!lanHost){lanHost=PartyLan.host();lanHost.on('message',({peer,data})=>{if(data.type==='hello'){peer.meta.name=data.payload.name;if(!currentPlayers.includes(data.payload.name)){currentPlayers.push(data.payload.name);saveToStorage();renderPlayerChips();updateImpostorOptions()}lanStatus(data.payload.name+' connected')}})}
+          lanPending=await lanHost.invite();document.getElementById('lan-offer').value=lanPending.code;document.getElementById('lan-host-box').hidden=false;document.getElementById('lan-join-box').hidden=true;lanStatus('Send the invite, then paste this device’s reply')
+        }
+        async function lanAccept(){try{await lanPending.accept(document.getElementById('lan-answer').value);lanStatus('Connecting… create another invite to add another phone')}catch(e){lanStatus(e.message)}}
+        async function lanMakeReply(){
+          const name=document.getElementById('lan-name').value.trim();if(!name)return lanStatus('Enter your name first');
+          try{lanClient=await PartyLan.join(document.getElementById('lan-join-offer').value,{name});document.getElementById('lan-reply').value=lanClient.answer;lanGuest=true;lanClient.on('open',()=>{lanClient.send('hello',{name});lanStatus('Connected · wait for the host')});lanClient.on('message',({data})=>handleLanMessage(data));lanStatus('Send the reply to the host')}catch(e){lanStatus(e.message)}
+        }
+        function handleLanMessage(data){
+          if(data.type==='role'){closeLan();showScreen('role-select-screen');document.querySelector('#role-select-screen .terminal-box').innerHTML=`<h2 class="text-xl font-bold text-red-600">${data.payload.name}</h2><div class="mt-8">${data.payload.impostor?'<h3 class="text-4xl font-black text-red-600">IMPOSTOR</h3><p class="mt-4 text-zinc-500">'+(data.payload.hint||'Infiltrate the group.')+'</p>':'<h3 class="text-3xl font-black text-white">'+data.payload.word+'</h3><p class="mt-4 text-zinc-500">VALID PERSONNEL</p>'}</div><p class="mt-10 text-xs text-zinc-600">Keep this screen private.</p>`;document.getElementById('begin-gameplay-btn').hidden=true}
+          if(data.type==='play'){showScreen('gameplay-screen');document.getElementById('turn-order-banner').innerHTML=data.payload.banner;document.getElementById('gameplay-player-list').innerHTML=data.payload.players.map(p=>`<div class="bg-black border border-zinc-900 p-4 rounded text-zinc-600 uppercase tracking-widest">${p}</div>`).join('')}
+          if(data.type==='results'){showScreen('final-screen');document.getElementById('countdown-display').classList.add('hidden');document.getElementById('results-display').classList.remove('hidden');document.getElementById('impostor-names').textContent=data.payload.names;document.getElementById('final-word').textContent=data.payload.word;document.getElementById('chaos-tag').classList.toggle('hidden',!data.payload.chaos)}
+        }
+
         const wordPools = {
             food: ["McDonald’s", "Starbucks", "Domino’s", "KFC", "Subway", "Häagen-Dazs", "Nestlé", "Coca-Cola", "Pepsi", "Lindt", "Pizza", "Sushi", "Burger", "Ice Cream", "Taco", "Pasta", "Croissant", "Chocolate", "Avocado", "Pancake", "Ramen", "Steak", "Salad", "Sandwich", "Fries", "Donut", "Bagel", "Curry", "Soup", "Waffles"],
             places: ["Disneyland", "Universal Studios", "National Geographic", "Lonely Planet", "NASA", "National Parks", "Lego Land", "Travel Channel", "Airbnb", "Paris", "Tokyo", "London", "New York", "Egypt", "Grand Canyon", "Great Wall", "Moon", "Amazon Rain Forest", "Hollywood", "Rome", "Sydney", "Beijing", "Rio de Janeiro", "Venice", "Machu Picchu", "Niagara Falls", "Dubai", "Santorini", "Bali"],
@@ -364,6 +403,10 @@
                 lastClickedIndex: -1
             };
 
+            if (lanHost) {
+                const giveHint=document.getElementById('impostor-hint').checked;
+                lanHost.guests.forEach((guest,index)=>{const playerIndex=gameState.players.indexOf(guest.meta.name);if(playerIndex<0)return;lanHost.send(guest,'role',{name:guest.meta.name,impostor:gameState.impostorIndices.includes(playerIndex),word:gameState.secretWord,hint:giveHint?gameState.theme:''});gameState.viewedPlayers.add(playerIndex)});
+            }
             renderRoleSelect();
             showScreen('role-select-screen');
         }
@@ -434,6 +477,7 @@
                 <div class="text-[10px] font-bold opacity-60 mt-1">${direction} RECURSION</div>
             `;
 
+            if(lanHost){const banner=`<div class="text-[10px] font-black uppercase tracking-[0.3em] mb-1">Investigation Start</div><div class="text-lg font-black text-white">${gameState.players[starterIdx]}</div><div class="text-[10px] font-bold opacity-60 mt-1">${direction} RECURSION</div>`;lanHost.broadcast('play',{banner,players:gameState.players})}
             document.getElementById('gameplay-player-list').innerHTML = gameState.players.map(p => `
                 <div class="bg-black border border-zinc-900 p-4 rounded text-zinc-600 uppercase tracking-widest">${p}</div>
             `).join('');
@@ -460,6 +504,7 @@
         }
 
         function showResults() {
+            if(lanHost)lanHost.broadcast('results',{names:gameState.isChaosMode?'SYSTEM CORRUPT':gameState.impostorIndices.map(i=>gameState.players[i]).join(' & '),word:gameState.secretWord,chaos:gameState.isChaosMode});
             document.getElementById('countdown-display').classList.add('hidden');
             const res = document.getElementById('results-display');
             res.classList.remove('hidden');

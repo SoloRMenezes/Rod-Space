@@ -5070,12 +5070,17 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "impostor.html",
-        "bytes": 26034,
-        "hash": "af946e4c1b22073345c20af003238f1ca9a688ecec4605a3b5008d53c9830924"
+        "bytes": 33091,
+        "hash": "ab2a02080888642e02e9ad354f2efd9311f0a99cad69193b8cb0dea72a238535"
+      },
+      {
+        "path": "party-lan.js",
+        "bytes": 3375,
+        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
       }
     ],
-    "bytes": 433313,
-    "version": "42d198c80ea8c6d7"
+    "bytes": 443745,
+    "version": "e0271c14c7f4734f"
   },
   "sidequests": {
     "name": "Side Quests",

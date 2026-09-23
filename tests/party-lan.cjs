@@ -1,0 +1,3 @@
+const assert=require('node:assert/strict');
+const PartyLan=require('../party-lan.js');
+(async()=>{const payload={type:'role',payload:{name:'Rodrigo',word:'Garage',impostor:false}};const code=await PartyLan.encode(payload);assert.ok(code.length<180);assert.deepEqual(await PartyLan.decode(code),payload);const html=require('node:fs').readFileSync(require('node:path').resolve(__dirname,'../impostor.html'),'utf8');assert.match(html,/LAN · One device each/);assert.match(html,/lanHost\.broadcast\('play'/);assert.match(html,/lanHost\.broadcast\('results'/);console.log('PASS: compact LAN pairing codec and private Impostor role flow.');})().catch(e=>{console.error(e);process.exit(1)});
