@@ -13,7 +13,6 @@ assert.match(nicoHtml,/Proper parking bays and centre-lane markings/);
 assert.match(nicoHtml,/Fluorescent fixtures are emissive-looking props only/);
 assert.match(nicoHtml,/Low-poly parked cars create cover/);
 assert.match(nicoHtml,/makeConcreteTexture/);
-assert.match(nicoHtml,/new THREE\.RingGeometry/);
 assert(nicoHtml.includes('performance.now()+30000'), 'Nico bots should give players a 30 second head start');
 assert(nicoHtml.includes('targetId:null'), 'Nico bots should keep an acquired target');
 assert(nicoHtml.includes('bot.vx*=.992'), 'Nico bots should use low-friction movement');
@@ -21,6 +20,10 @@ assert(nicoHtml.includes('BOTS RELEASE IN'), 'Nico HUD should show the release c
 assert(nicoHtml.includes("PartyRooms.createHost({game:'nicos-nextbots'"), 'Nico should create discoverable multiplayer rooms');
 assert(nicoHtml.includes("roomSession.client.send('player'"), 'Nico guests should send their player state');
 assert(nicoHtml.includes("roomSession.lan.broadcast('world'"), 'Nico host should synchronize players and bots');
+assert(!nicoHtml.includes('RingGeometry'), 'Nico bots should not have ground warning rings');
+assert(nicoHtml.includes('ceiling.position.set(MAP_SIZE_X,11,MAP_SIZE_Y)'), 'Nico garage should use the higher ceiling');
+assert(nicoHtml.includes("cell===2&&player.z>=1.55"), 'Nico cars should block running but allow a high jump');
+assert(nicoHtml.includes("new THREE.SpriteMaterial({color:0xf4f1e8"), 'Nico portraits should have a visible backing');
 assert.match(nicoHtml,/speed: 0\.12/);
 assert.match(nicoHtml,/baseSpeed: 34/);
 assert.ok(fs.statSync(root+'/assets/nextbot-chaser.png').size<400_000,'optimized chaser texture');

@@ -334,7 +334,7 @@ function wireGuestRoom(session){
     session.client.on('message',({data})=>{if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;
         world.players.filter(p=>p.id!=='host').forEach(p=>{if(p.id!==session.client.meta.peerId)applyPlayerPacket(p.id,p,p.name)});
         const host=world.players.find(p=>p.id==='host');if(host)applyPlayerPacket('host',host,host.name);
-        world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.warning.position.x=state.x;bot.warning.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;});
+        world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.backing.position.x=state.x;bot.backing.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;});
     });
     session.client.on('message',({data})=>{if(data.type==='death'&&data.payload.id===session.client.meta.peerId)showGameOverOverlay();});
 }
@@ -404,21 +404,23 @@ function initAudio() {
             floorMesh.position.set(MAP_SIZE_X, 0, MAP_SIZE_Y);
             scene.add(floorMesh);
 
-            // Concrete structure stays cheap: one instanced draw for walls and columns.
+            // Keep perimeter walls darker while the structural garage pillars read as stained white concrete.
             wallGroup = new THREE.Group();
             const wallTexture = new THREE.TextureLoader().load('./assets/vendor/nextbot-brick.jpg');
             wallTexture.wrapS=wallTexture.wrapT=THREE.RepeatWrapping;wallTexture.repeat.set(1,1);
-            const wallGeo = new THREE.BoxGeometry(2, 7, 2);
+            const wallGeo = new THREE.BoxGeometry(2, 11, 2);
             const wallMat = new THREE.MeshPhongMaterial({map:wallTexture,color:0x8f949a,shininess:3});
-            const wallCount=MAP.reduce((sum,row)=>sum+row.filter(cell=>cell===1).length,0);
-            const walls=new THREE.InstancedMesh(wallGeo,wallMat,wallCount);
-            const transform=new THREE.Matrix4();let wallIndex=0;
-            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1){transform.makeTranslation((x+.5)*2,3.5,(y+.5)*2);walls.setMatrixAt(wallIndex++,transform)}
-            walls.instanceMatrix.needsUpdate=true;wallGroup.add(walls);scene.add(wallGroup);
+            const pillarMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture('#dedbd0'),color:0xf1eee3,shininess:1});
+            const isEdge=(x,y)=>x===0||y===0||x===MAP_SIZE_X-1||y===MAP_SIZE_Y-1;
+            let edgeCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1)(isEdge(x,y)?edgeCount++:pillarCount++);
+            const walls=new THREE.InstancedMesh(wallGeo,wallMat,edgeCount),pillars=new THREE.InstancedMesh(wallGeo,pillarMat,pillarCount);
+            const transform=new THREE.Matrix4();let wallIndex=0,pillarIndex=0;
+            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1){transform.makeTranslation((x+.5)*2,5.5,(y+.5)*2);(isEdge(x,y)?walls:pillars).setMatrixAt(isEdge(x,y)?wallIndex++:pillarIndex++,transform)}
+            walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
             // Raised slab ceiling is close enough to read, high enough to keep the chase open.
             const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
-            ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,7,MAP_SIZE_Y);scene.add(ceiling);
+            ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,11,MAP_SIZE_Y);scene.add(ceiling);
 
             // Proper parking bays and centre-lane markings.
             const markings=[];
@@ -430,7 +432,7 @@ function initAudio() {
             // Fluorescent fixtures are emissive-looking props only; they add no costly dynamic lights.
             const lampPositions=[];for(let z=14;z<MAP_SIZE_Y*2-10;z+=24)for(let x=14;x<MAP_SIZE_X*2-10;x+=28)lampPositions.push([x,z]);
             const lampGeo=new THREE.BoxGeometry(8,.10,.65),lampMat=new THREE.MeshBasicMaterial({color:0xeaf6dd}),lamps=new THREE.InstancedMesh(lampGeo,lampMat,lampPositions.length);
-            lampPositions.forEach(([x,z],i)=>{transform.makeTranslation(x,6.88,z);lamps.setMatrixAt(i,transform)});lamps.instanceMatrix.needsUpdate=true;scene.add(lamps);
+            lampPositions.forEach(([x,z],i)=>{transform.makeTranslation(x,10.88,z);lamps.setMatrixAt(i,transform)});lamps.instanceMatrix.needsUpdate=true;scene.add(lamps);
 
             // Low-poly parked cars create cover without expensive models or textures.
             const carColors=[0x9e2f32,0x315c83,0x44474b,0xb6b7b0,0x6d5132,0x284f43];
@@ -453,17 +455,18 @@ function initAudio() {
 const loader = new THREE.TextureLoader();
 const botTexture = loader.load('./assets/nextbot-chaser.png');
 for (let b = 0; b < botSpawns.length; b++) {
-    const botMaterial = new THREE.SpriteMaterial({ map: botTexture,alphaTest:.04,color:0xffffff });
+    const backing = new THREE.Sprite(new THREE.SpriteMaterial({color:0xf4f1e8,depthWrite:false}));
+    backing.position.copy(botSpawns[b]);backing.position.y=3.15;backing.scale.set(8.4,6.4,1);backing.renderOrder=3;scene.add(backing);
+    const botMaterial = new THREE.SpriteMaterial({ map: botTexture,transparent:true,alphaTest:.02,color:0xffffff,depthWrite:false });
     const bot = new THREE.Sprite(botMaterial);
     bot.position.copy(botSpawns[b]);
-    bot.scale.set(6, 4.6, 1);
-    bot.position.y = 2.35;
+    bot.scale.set(8, 6, 1);
+    bot.position.y = 3.15;
     bot.renderOrder=4;
     scene.add(bot);
-    const warning=new THREE.Mesh(new THREE.RingGeometry(2.15,2.65,24),new THREE.MeshBasicMaterial({color:0xef3f31,transparent:true,opacity:.62,side:THREE.DoubleSide}));warning.rotation.x=-Math.PI/2;warning.position.set(bot.position.x,.04,bot.position.z);scene.add(warning);
     bots.push({
         mesh: bot,
-        warning,
+        backing,
         baseSpeed: 34,
         speedMult: 1,
         vx:0,vz:0,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0
@@ -532,7 +535,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             }
             if (e.code === 'Space' && !player.isJumping) {
                 player.isJumping = true;
-                player.zVel = 0.15;
+                player.zVel = 0.20;
             }
             // Toggle settings menu with "P"
             if (key === 'p') {
@@ -714,7 +717,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             // Grid collision is constant-time; checking every rendered wall was the main frame-rate bottleneck.
             const canStand=(x,y)=>{
                 const radius=.18,points=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
-                return points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0);
+                return points.every(([px,py])=>{const cell=MAP[Math.floor(py)]?.[Math.floor(px)];return cell===0||(cell===2&&player.z>=1.55)});
             };
             let nextX = player.x + moveX;
             let nextY = player.y + moveY;
@@ -889,7 +892,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if(MAP[mapY]?.[mapX]===0)bot.mesh.position.x=tryX;else bot.vx*=-.28;
                 const tryZ=bot.mesh.position.z+bot.vz,nextMapX=Math.floor((bot.mesh.position.x-1)/2),nextMapY=Math.floor((tryZ-1)/2);
                 if(MAP[nextMapY]?.[nextMapX]===0)bot.mesh.position.z=tryZ;else bot.vz*=-.28;
-                bot.warning.position.x=bot.mesh.position.x;bot.warning.position.z=bot.mesh.position.z;
+                bot.backing.position.x=bot.mesh.position.x;bot.backing.position.z=bot.mesh.position.z;
             }
             // Gentle separation keeps overlapping chasers visually and tactically distinct.
             if(performance.now()>=botReleaseAt) for(let i=0;i<bots.length;i++)for(let j=i+1;j<bots.length;j++){
