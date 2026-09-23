@@ -143,7 +143,7 @@
                 <div class="lobby-actions"><button id="solo-start">PLAY SOLO</button><button id="host-start">HOST GAME</button><button id="join-open">JOIN GAME</button></div>
                 <div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div>
                 <div id="lobby-status"></div>
-                <div class="controls-strip"><span><b>WASD</b> MOVE</span><span><b>SPACE</b> JUMP</span><span><b>Z</b> RUN</span><span><b>P</b> SETTINGS</span></div>
+                <div class="controls-strip"><span><b>WASD</b> MOVE</span><span><b>SHIFT</b> SPRINT</span><span><b>SPACE</b> JUMP</span><span><b>CTRL</b> MOUSE LOCK</span></div>
                 <a class="home-link" href="./index.html">← ROD SPACE</a>
             </div>
         </div>
@@ -170,14 +170,8 @@
             <button id="close-cheats" style="background:none;border:1px solid #d1b45d;color:#d1b45d;padding:6px;cursor:pointer;margin-top:5px;">CLOSE</button>
         </div>
         <div id="ui-overlay">
-            <div style="font-size: 0.9rem; letter-spacing: 2px;">PARKING GARAGE</div>
-            <div id="lock-status" style="font-size: 0.7rem;">MOUSE: [UNLOCKED] - Press Shift</div>
-            <div id="movement-status" style="font-size: 0.7rem; color: #f1d37e;">STATUS: CALM</div>
             <div id="timer-display" style="font-size: 0.85rem; color: #fff; margin-top: 4px;">TIME: 0.00s</div>
             <div id="highscore-display" style="font-size: 0.75rem; color: #d1b45d; margin-top: 2px;">BEST: --</div>
-            <div class="stats">
-                WASD: Move | SPACE: Jump | Z: Toggle Run
-            </div>
         </div>
         <div id="minimap-container">
             <canvas id="minimap"></canvas>
@@ -192,8 +186,6 @@
         const canvas = document.getElementById('screen'); // Used as WebGLRenderer target
         const mCanvas = document.getElementById('minimap');
         const mCtx = mCanvas.getContext('2d');
-        const lockStatusDisplay = document.getElementById('lock-status');
-        const movementStatusDisplay = document.getElementById('movement-status');
         const settingsMenu = document.getElementById('settings-menu');
         const sensSlider = document.getElementById('sens-slider');
         const sensValDisplay = document.getElementById('sens-val');
@@ -521,13 +513,12 @@ for (let b = 0; b < botSpawns.length; b++) {
         function handleKeyDown(e) {
             const key = e.key.toLowerCase();
             keys[key] = true;
-            if (e.key === 'Shift') {
+            if (e.key === 'Control' && !e.repeat) {
+                e.preventDefault();
                 if (!isLocked) canvas.requestPointerLock();
                 else document.exitPointerLock();
             }
-            if (key === 'z') {
-                player.isSprinting = !player.isSprinting;
-            }
+            if (e.key === 'Shift') player.isSprinting = true;
             if (e.code === 'Space' && !player.isJumping) {
                 player.isJumping = true;
                 player.zVel = 0.20;
@@ -546,6 +537,7 @@ for (let b = 0; b < botSpawns.length; b++) {
         function handleKeyUp(e) {
             const key = e.key.toLowerCase();
             keys[key] = false;
+            if (e.key === 'Shift') player.isSprinting = false;
         }
         function handleMouseMove(e) {
             if (isLocked) {
@@ -558,7 +550,6 @@ for (let b = 0; b < botSpawns.length; b++) {
         }
         function updateLockStatus() {
             isLocked = document.pointerLockElement === canvas;
-            lockStatusDisplay.innerText = isLocked ? "MOUSE: [LOCKED]" : "MOUSE: [UNLOCKED] - Shift";
         }
 
         // --- Player and Bot Movement ---
@@ -680,10 +671,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             const actuallySprinting = player.isSprinting && isMoving;
             const currentSpeed = actuallySprinting ? player.speed * 2.15 : player.speed;
             const releaseRemaining = Math.max(0, botReleaseAt - performance.now());
-            movementStatusDisplay.innerText = releaseRemaining > 0
-                ? `BOTS RELEASE IN ${Math.ceil(releaseRemaining / 1000)}s`
-                : (actuallySprinting ? "STATUS: EXERTION" : (player.isSprinting ? "STATUS: READY TO RUN" : "STATUS: CALM"));
-            movementStatusDisplay.style.color = releaseRemaining > 0 ? "#f1d37e" : (actuallySprinting ? "#ff4444" : (player.isSprinting ? "#d1b45d" : "#f1d37e"));
+            if(releaseRemaining<=0&&!timerInterval)startTimer();
 
             // --- Stop update if game over ---
             if (isGameOver) return;
@@ -1001,7 +989,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             // Start game loop
             requestAnimationFrame(gameLoop);
             initAudio();
-            startTimer();
+            gameTimer=0;timerDisplay.innerText='TIME: 0.00s';
             updateHighscoreDisplay();
         }
 

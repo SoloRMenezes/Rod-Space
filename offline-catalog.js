@@ -10516,13 +10516,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 55290,
-        "hash": "9c815bad07c0272da06a881d4bd942db8bc44dfaeabc4b9841181727ec3aba45"
+        "bytes": 54395,
+        "hash": "aaa10ef8217980a02d16df0a4075fd920c0e42c595967b477b211696e95442f3"
       },
       {
         "path": "offline-catalog.js",
         "bytes": 411158,
-        "hash": "0398948cc8ffa445049cb010d20592fac3c8844fdfc24120b7fbef69ff3c397f"
+        "hash": "a7b88dc6c24a718678c29a65308d98a88c072ee821451183c7b62e16807488a3"
       },
       {
         "path": "offline.js",
@@ -10602,7 +10602,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "2e3e571d8893f637f5a1a33efe2c85a172106fff25fa9b88515d839da3ecc2e4"
+        "hash": "89e9875991075a02750df0d7b43ecc4564a2db93935dadf4daf1b8ec86e589ea"
       },
       {
         "path": "terraria.html",
@@ -10660,8 +10660,8 @@ self.OFFLINE_CATALOG = {
         "hash": "45ae89641855dd8ba7002cf9855b314fd42c4725fe36caf1bd5b11520bdf8596"
       }
     ],
-    "bytes": 304595228,
-    "version": "294dc655dd277221"
+    "bytes": 304594333,
+    "version": "9d68184bc7fbe03e"
   },
   "backrooms": {
     "name": "The Backrooms",

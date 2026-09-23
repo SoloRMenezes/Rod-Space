@@ -16,7 +16,6 @@ assert.match(nicoHtml,/makeConcreteTexture/);
 assert(nicoHtml.includes('performance.now()+30000'), 'Nico bots should give players a 30 second head start');
 assert(nicoHtml.includes('targetId:null'), 'Nico bots should keep an acquired target');
 assert(nicoHtml.includes('bot.vx*=.992'), 'Nico bots should use low-friction movement');
-assert(nicoHtml.includes('BOTS RELEASE IN'), 'Nico HUD should show the release countdown');
 assert(nicoHtml.includes("PartyRooms.createHost({game:'nicos-nextbots'"), 'Nico should create discoverable multiplayer rooms');
 assert(nicoHtml.includes("roomSession.client.send('player'"), 'Nico guests should send their player state');
 assert(nicoHtml.includes("roomSession.lan.broadcast('world'"), 'Nico host should synchronize players and bots');
@@ -26,6 +25,10 @@ assert(nicoHtml.includes("cell===2&&player.z>=1.55"), 'Nico cars should block ru
 assert(nicoHtml.includes("new THREE.SpriteMaterial({color:0xf4f1e8"), 'Nico portraits should have a visible backing');
 assert(nicoHtml.includes('new THREE.PerspectiveCamera(95,'), 'Nico should use a fixed 95 degree FOV');
 assert(!nicoHtml.includes('id="fov-slider"'), 'Nico should not expose a variable FOV control');
+assert(nicoHtml.includes("e.key === 'Shift') player.isSprinting = true"), 'Nico sprint should use held Shift');
+assert(nicoHtml.includes("e.key === 'Control' && !e.repeat"), 'Nico mouse lock should use Control');
+assert(nicoHtml.includes('releaseRemaining<=0&&!timerInterval'), 'Nico timer should start when the bots release');
+assert(!nicoHtml.includes('id="movement-status"'), 'Nico HUD should omit movement status text');
 assert.match(nicoHtml,/speed: 0\.12/);
 assert.match(nicoHtml,/baseSpeed: 34/);
 assert.ok(fs.statSync(root+'/assets/nextbot-chaser.png').size<400_000,'optimized chaser texture');
