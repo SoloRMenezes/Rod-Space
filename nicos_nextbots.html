@@ -237,9 +237,11 @@ const MAP = (() => {
             {x1:7,x2:27,y1:44,y2:51,reverse:false},{x1:113,x2:133,y1:44,y2:51,reverse:true},
             {x1:7,x2:27,y1:81,y2:88,reverse:false},{x1:113,x2:133,y1:81,y2:88,reverse:true}
         ];
-        for(const ramp of RAMPS)for(let y=ramp.y1;y<=ramp.y2;y++)for(let x=ramp.x1;x<=ramp.x2;x++)MAP[y][x]=0;
+        // Keep the complete approach and exit of every ramp free of room walls and pillars.
+        for(const ramp of RAMPS)for(let y=Math.max(1,ramp.y1-8);y<=Math.min(MAP_SIZE_Y-2,ramp.y2+8);y++)for(let x=Math.max(1,ramp.x1-10);x<=Math.min(MAP_SIZE_X-2,ramp.x2+10);x++)MAP[y][x]=0;
         function rampAt(x,y){return RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2)}
-        function surfaceHeightAt(x,y,current=0){const ramp=rampAt(x,y);if(!ramp)return current>=FLOOR_HEIGHT/2?FLOOR_HEIGHT:0;let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;return t*FLOOR_HEIGHT}
+        function bridgeAt(x,y,current=0){return current>=FLOOR_HEIGHT/2&&RAMPS.some(r=>Math.abs(x-(r.reverse?r.x2-(r.x2-r.x1)*.22:r.x1+(r.x2-r.x1)*.22))<=1.6&&y>=r.y1-.35&&y<=r.y2+.35)}
+        function surfaceHeightAt(x,y,current=0){if(bridgeAt(x,y,current))return FLOOR_HEIGHT;const ramp=rampAt(x,y);if(!ramp)return current>=FLOOR_HEIGHT/2?FLOOR_HEIGHT:0;let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;return t*FLOOR_HEIGHT}
 
         // --- Bot spawn point ---
         // We'll use a THREE.Vector3 for position
@@ -398,12 +400,13 @@ function initAudio() {
             const deckShape=new THREE.Shape();
             deckShape.moveTo(-MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,MAP_SIZE_Y);deckShape.lineTo(-MAP_SIZE_X,MAP_SIZE_Y);deckShape.closePath();
             for(const ramp of RAMPS){
-                const left=ramp.x1*2-MAP_SIZE_X-2,right=ramp.x2*2-MAP_SIZE_X+2;
-                const near=MAP_SIZE_Y-ramp.y2*2-2,far=MAP_SIZE_Y-ramp.y1*2+2;
+                const left=ramp.x1*2-MAP_SIZE_X-.45,right=ramp.x2*2-MAP_SIZE_X+.45;
+                const near=MAP_SIZE_Y-ramp.y2*2-.45,far=MAP_SIZE_Y-ramp.y1*2+.45;
                 const opening=new THREE.Path();opening.moveTo(left,near);opening.lineTo(right,near);opening.lineTo(right,far);opening.lineTo(left,far);opening.closePath();deckShape.holes.push(opening);
             }
-            const upperDeck=new THREE.Mesh(new THREE.ShapeGeometry(deckShape),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#383c41',true),color:0xb8bcc1,side:THREE.DoubleSide,shininess:5}));
-            upperDeck.rotation.x=-Math.PI/2;upperDeck.position.set(MAP_SIZE_X,FLOOR_HEIGHT,MAP_SIZE_Y);scene.add(upperDeck);
+            const deckMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#383c41',true),color:0xb8bcc1,side:THREE.DoubleSide,shininess:5});
+            const upperDeck=new THREE.Mesh(new THREE.ExtrudeGeometry(deckShape,{depth:.65,bevelEnabled:false}),deckMaterial);
+            upperDeck.rotation.x=Math.PI/2;upperDeck.position.set(MAP_SIZE_X,FLOOR_HEIGHT+.32,MAP_SIZE_Y);scene.add(upperDeck);
             const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
             ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,19,MAP_SIZE_Y);scene.add(ceiling);
 
@@ -413,6 +416,10 @@ function initAudio() {
             for(const ramp of RAMPS){
                 const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1),cx=ramp.x1+ramp.x2,cz=ramp.y1+ramp.y2;
                 const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
+                // A thick bridge at the low quarter lets the upper floor cross the shaft,
+                // while the rest remains open so players can drop onto the ramp.
+                const bridgeX=(ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.22:ramp.x1+(ramp.x2-ramp.x1)*.22)*2;
+                const bridge=new THREE.Mesh(new THREE.BoxGeometry(6,.65,width+.8),deckMaterial);bridge.position.set(bridgeX,FLOOR_HEIGHT,cz);scene.add(bridge);
                 // Yellow entrance bars clearly mark both ways onto the ramp.
                 for(const end of [ramp.x1*2,ramp.x2*2]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,end===ramp.x1*2?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12),cz);scene.add(bar)}
             }
@@ -636,7 +643,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             const canStand=(x,y)=>{
                 const radius=.18,points=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
                 const surface=surfaceHeightAt(x,y,player.floorY);
-                return Math.abs(surface-player.floorY)<.65&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0);
+                return surface<=player.floorY+.65&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0);
             };
             let nextX = player.x + moveX;
             let nextY = player.y + moveY;
@@ -648,7 +655,8 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if(canStand(player.x,nextY))player.y=nextY;
             }
 
-            player.floorY=surfaceHeightAt(player.x,player.y,player.floorY);
+            const groundHeight=surfaceHeightAt(player.x,player.y,player.floorY);
+            player.floorY=groundHeight<player.floorY-.65?Math.max(groundHeight,player.floorY-.32):groundHeight;
 
             // Jump physics
             if (player.isJumping) {
