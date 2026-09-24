@@ -1559,19 +1559,17 @@ function loop(now) {
     g.mesh.position.y = 1.7 + gFloat;
   });
 
-  // Rotate entire ghost toward its movement direction
+  // Keep the ghost's face aimed at Pac-Man. The eyes are modelled on local +Z,
+  // so yaw must be measured from +Z rather than from the X axis.
   ghosts.forEach(g => {
     const gx = g.mesh.position.x;
     const gz = g.mesh.position.z;
 
-    const tx = g.target.x;
-    const tz = g.target.z;
-
-    const dx = tx - gx;
-    const dz = tz - gz;
+    const dx = playerPos.x - gx;
+    const dz = playerPos.z - gz;
 
     if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
-      const angle = Math.atan2(dz, dx);
+      const angle = Math.atan2(dx, dz);
       g.mesh.rotation.y = angle;
     }
   });

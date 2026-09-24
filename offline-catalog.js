@@ -5673,12 +5673,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50324,
-        "hash": "e5b97f51aecdacc36d22de129d0239217d04e490c17cff52dea83f0cc24ba1a1"
+        "bytes": 50378,
+        "hash": "fca5330a0c7997a464eca4aa677aad041d97deeb8d5f36beb9ec9c106cce1396"
       }
     ],
-    "bytes": 1325442,
-    "version": "c501f4d5e041e440"
+    "bytes": 1325496,
+    "version": "bf6714b7efe90c7c"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",
@@ -10842,7 +10842,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 424335,
-        "hash": "8ad425ec8436e90324530494c08cc9f826f62272b0c42a48782c05ed8f39d2c0"
+        "hash": "d896a7695b681d8f316d4137263c394a37e7e6a3beae10969770ce025be3595c"
       },
       {
         "path": "offline.js",
@@ -10856,8 +10856,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50324,
-        "hash": "e5b97f51aecdacc36d22de129d0239217d04e490c17cff52dea83f0cc24ba1a1"
+        "bytes": 50378,
+        "hash": "fca5330a0c7997a464eca4aa677aad041d97deeb8d5f36beb9ec9c106cce1396"
       },
       {
         "path": "party-lan.js",
@@ -10927,7 +10927,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "d766fe7f6e00ced5b7f52a55f5c589f6ed3f0b1da0f627f21911c830342c5d3c"
+        "hash": "8ff5418d4de7a42ed07b4455790bdfad989c3a58243313610c1244f33f9a5620"
       },
       {
         "path": "terraria.html",
@@ -10985,8 +10985,8 @@ self.OFFLINE_CATALOG = {
         "hash": "965eeed99796d5ee8c82e040df5683d5375ee7e552695fd5348d99102b65540d"
       }
     ],
-    "bytes": 304633408,
-    "version": "4c443a3d476df915"
+    "bytes": 304633462,
+    "version": "73ec6b49e2cce0bd"
   },
   "backrooms": {
     "name": "The Backrooms",
