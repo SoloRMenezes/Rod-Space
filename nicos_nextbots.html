@@ -478,20 +478,18 @@ function initAudio() {
             // --- BOT SPAWN ---
 const loader = new THREE.TextureLoader();
 const BOT_TYPES=[
- {name:'NICO',src:'./assets/nextbot-chaser.png'},
- {name:'THE STARE',src:'./assets/nextbots/staring-cat.jpg'},
- {name:'MOAI',src:'./assets/nextbots/moai.jpg'},
- {name:'LOL CAT',src:'./assets/nextbots/crying-cat.jpg'}
+ {src:'./assets/nextbot-chaser.png'},
+ {src:'./assets/nextbots/staring-cat.jpg'},
+ {src:'./assets/nextbots/moai.jpg'},
+ {src:'./assets/nextbots/crying-cat.jpg'}
 ];
-function makeBotLabel(text){const c=document.createElement('canvas');c.width=512;c.height=96;const x=c.getContext('2d');x.font='900 42px sans-serif';x.textAlign='center';x.strokeStyle='#000';x.lineWidth=10;x.strokeText(text,256,58);x.fillStyle='#fff';x.fillText(text,256,58);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:true,depthWrite:false}));sprite.scale.set(7,1.3,1);sprite.renderOrder=6;scene.add(sprite);return sprite}
 for (let b = 0; b < botSpawns.length; b++) {
     const spawn=botSpawns[b],type=BOT_TYPES[b%BOT_TYPES.length];
     const backing = new THREE.Sprite(new THREE.SpriteMaterial({color:0xf4f1e8,depthWrite:false}));
     backing.position.copy(spawn.position);backing.scale.set(11.2,9.2,1);backing.renderOrder=3;scene.add(backing);
     const bot = new THREE.Sprite(new THREE.SpriteMaterial({map:loader.load(type.src),transparent:true,alphaTest:.02,color:0xffffff,depthWrite:false}));
     bot.position.copy(spawn.position);bot.scale.set(10.8,8.8,1);bot.renderOrder=4;scene.add(bot);
-    const label=makeBotLabel(type.name);label.position.set(bot.position.x,.65+spawn.floorY,bot.position.z);
-    bots.push({mesh:bot,backing,label,baseSpeed:48,speedMult:1,vx:0,vz:0,floorY:spawn.floorY,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0,rampRoute:null,rampStep:0,nextFloorChange:performance.now()+4000+Math.random()*6000});
+    bots.push({mesh:bot,backing,label:null,baseSpeed:48,speedMult:1,vx:0,vz:0,floorY:spawn.floorY,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0,rampRoute:null,rampStep:0,nextFloorChange:performance.now()+4000+Math.random()*6000});
 }
         }
 
