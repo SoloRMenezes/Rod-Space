@@ -243,13 +243,12 @@ const MAP = (() => {
 
         // --- Bot spawn point ---
         // We'll use a THREE.Vector3 for position
-        const botSpawnY = 1; // fixed bot spawn y
-const botSpawns = [
-    new THREE.Vector3(137, botSpawnY, 93),
-    new THREE.Vector3(145, botSpawnY, 93),
-    new THREE.Vector3(137, botSpawnY, 101),
-    new THREE.Vector3(145, botSpawnY, 101)
-];
+const botSpawns=[];
+// Twelve nextbots begin near the centre of each floor.
+for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
+    const angle=(i/12)*Math.PI*2,radius=7+(i%3)*2;
+    botSpawns.push({position:new THREE.Vector3(MAP_SIZE_X+Math.cos(angle)*radius,3.8+floorY,MAP_SIZE_Y+Math.sin(angle)*radius),floorY});
+}
 
         // --- Player state ---
         // All positions are now in map units (will be multiplied by 2 for world coords)
@@ -414,9 +413,6 @@ function initAudio() {
             for(const ramp of RAMPS){
                 const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1),cx=ramp.x1+ramp.x2,cz=ramp.y1+ramp.y2;
                 const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
-                // Solid curbs make the slope read as a proper parking-garage ramp and
-                // stop players slipping off its sides.
-                for(const side of [-1,1]){const curb=new THREE.Mesh(new THREE.BoxGeometry(length,1.25,.36),railMat);curb.position.set(cx,FLOOR_HEIGHT/2+.62,cz+side*(width/2-.18));curb.rotation.z=angle;scene.add(curb)}
                 // Yellow entrance bars clearly mark both ways onto the ramp.
                 for(const end of [ramp.x1*2,ramp.x2*2]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,end===ramp.x1*2?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12),cz);scene.add(bar)}
             }
@@ -456,19 +452,19 @@ function initAudio() {
 const loader = new THREE.TextureLoader();
 const BOT_TYPES=[
  {name:'NICO',src:'./assets/nextbot-chaser.png'},
- {name:'SIDE EYE',src:'./assets/nextbots/side-eye.svg'},
- {name:'MOYAI',src:'./assets/nextbots/moyai.svg'},
- {name:'CRYING CAT',src:'./assets/nextbots/crying-cat.svg'}
+ {name:'THE STARE',src:'./assets/nextbots/staring-cat.jpg'},
+ {name:'MOAI',src:'./assets/nextbots/moai.jpg'},
+ {name:'LOL CAT',src:'./assets/nextbots/crying-cat.jpg'}
 ];
 function makeBotLabel(text){const c=document.createElement('canvas');c.width=512;c.height=96;const x=c.getContext('2d');x.font='900 42px sans-serif';x.textAlign='center';x.strokeStyle='#000';x.lineWidth=10;x.strokeText(text,256,58);x.fillStyle='#fff';x.fillText(text,256,58);const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:true,depthWrite:false}));sprite.scale.set(7,1.3,1);sprite.renderOrder=6;scene.add(sprite);return sprite}
 for (let b = 0; b < botSpawns.length; b++) {
-    const type=BOT_TYPES[b];
+    const spawn=botSpawns[b],type=BOT_TYPES[b%BOT_TYPES.length];
     const backing = new THREE.Sprite(new THREE.SpriteMaterial({color:0xf4f1e8,depthWrite:false}));
-    backing.position.copy(botSpawns[b]);backing.position.y=3.15;backing.scale.set(8.4,6.4,1);backing.renderOrder=3;scene.add(backing);
+    backing.position.copy(spawn.position);backing.scale.set(11.2,9.2,1);backing.renderOrder=3;scene.add(backing);
     const bot = new THREE.Sprite(new THREE.SpriteMaterial({map:loader.load(type.src),transparent:true,alphaTest:.02,color:0xffffff,depthWrite:false}));
-    bot.position.copy(botSpawns[b]);bot.scale.set(8,6,1);bot.position.y=3.15;bot.renderOrder=4;scene.add(bot);
-    const label=makeBotLabel(type.name);label.position.set(bot.position.x,.55,bot.position.z);
-    bots.push({mesh:bot,backing,label,baseSpeed:42,speedMult:1,vx:0,vz:0,floorY:0,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0});
+    bot.position.copy(spawn.position);bot.scale.set(10.8,8.8,1);bot.renderOrder=4;scene.add(bot);
+    const label=makeBotLabel(type.name);label.position.set(bot.position.x,.65+spawn.floorY,bot.position.z);
+    bots.push({mesh:bot,backing,label,baseSpeed:48,speedMult:1,vx:0,vz:0,floorY:spawn.floorY,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0});
 }
         }
 
@@ -690,7 +686,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const botX = bot.mesh.position.x;
                 const botZ = bot.mesh.position.z;
                 const dist = Math.hypot(botX - playerWorldX, botZ - playerWorldZ);
-                if (dist < 1 && Math.abs(bot.floorY-player.floorY)<2.5) {
+                if (dist < 2.6 && Math.abs(bot.floorY-player.floorY)<2.5) {
                     if(netRole==='guest'&&roomSession)roomSession.client.send('player',{x:player.x,y:player.y,dir:player.dir,alive:false});
                     // Show Game Over overlay instead of alert
                     showGameOverOverlay();
@@ -826,7 +822,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             }
             if(netRole==='host') for(const remote of remotePlayers.values()){
                 if(!remote.alive)continue;
-                const hit=bots.some(bot=>Math.abs(bot.floorY-remote.floorY)<2.5&&Math.hypot(bot.mesh.position.x-(remote.x*2+1),bot.mesh.position.z-(remote.y*2+1))<1);
+                const hit=bots.some(bot=>Math.abs(bot.floorY-remote.floorY)<2.5&&Math.hypot(bot.mesh.position.x-(remote.x*2+1),bot.mesh.position.z-(remote.y*2+1))<2.6);
                 if(hit){remote.alive=false;remote.mesh.visible=false;roomSession.lan.broadcast('death',{id:remote.id});}
             }
         }

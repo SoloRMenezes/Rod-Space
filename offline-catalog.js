@@ -42,39 +42,6 @@ self.OFFLINE_CATALOG = {
     "bytes": 58277,
     "version": "8a9f8952bde9f24c"
   },
-  "dungeons-and-dragons": {
-    "name": "Dungeons And Dragons",
-    "page": "DND.html",
-    "files": [
-      {
-        "path": "DND.html",
-        "bytes": 17202,
-        "hash": "61e3e033d19b522474f1f29dcc1e66a9754cc158037b33c05e5da214865c5db7"
-      },
-      {
-        "path": "DNDC.html",
-        "bytes": 11430,
-        "hash": "5f772714055c5e67193c406dc8beba5cde753ef6cdddfb54ada039f243a4e3e0"
-      },
-      {
-        "path": "assets/rod-space-home.css",
-        "bytes": 899,
-        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
-      },
-      {
-        "path": "assets/rod-space-home.js",
-        "bytes": 1248,
-        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
-      },
-      {
-        "path": "assets/vendor/offline-4ad6e54ad218.js",
-        "bytes": 19927,
-        "hash": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36"
-      }
-    ],
-    "bytes": 50706,
-    "version": "7d42b08987ff8f39"
-  },
   "piano": {
     "name": "Virtual Piano",
     "page": "piano.html",
@@ -5700,12 +5667,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "orbit-boss.html",
-        "bytes": 8157,
-        "hash": "09aa9ee84e3e4637b36211d5e7c950ca358ab146cf11823c43e8cb44b499be5d"
+        "bytes": 9182,
+        "hash": "669b3a3a5f4e974be911da5e494fbb51375390690f44d9fe5628e89f592ff436"
       }
     ],
-    "bytes": 10304,
-    "version": "5adec76907c4c281"
+    "bytes": 11329,
+    "version": "b8739586b5aecf43"
   },
   "pac-man-3d": {
     "name": "Pac-Man 3D",
@@ -5915,9 +5882,19 @@ self.OFFLINE_CATALOG = {
         "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
       },
       {
+        "path": "assets/nextbots/crying-cat.jpg",
+        "bytes": 86575,
+        "hash": "6c3ebcef8b0683291b59463a4bb4dbff6eed957a461c46dab43764aacf0a6157"
+      },
+      {
         "path": "assets/nextbots/crying-cat.svg",
         "bytes": 513,
         "hash": "32eef82f9748e1e61b52dc613203213f5aa327cc772530db21b4fceb54df7893"
+      },
+      {
+        "path": "assets/nextbots/moai.jpg",
+        "bytes": 405978,
+        "hash": "b84a29e3d087513050f73788ffd30d818a140d83b74af3fcb04ce7a67984388d"
       },
       {
         "path": "assets/nextbots/moyai.svg",
@@ -5928,6 +5905,11 @@ self.OFFLINE_CATALOG = {
         "path": "assets/nextbots/side-eye.svg",
         "bytes": 471,
         "hash": "248e0a5f92016ed698c23cea78b6b356eed63acdd530391f28c8999d8f2cca87"
+      },
+      {
+        "path": "assets/nextbots/staring-cat.jpg",
+        "bytes": 78051,
+        "hash": "b84cd9bc36b1ddf35579305875d9a44010b688f7f17f555e2fb33f5abf83f412"
       },
       {
         "path": "assets/password-gate.js",
@@ -10881,8 +10863,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 33776,
-        "hash": "8c09aa36c369e941cd286f285aeb9f02faa8aedbed632ad035c6867d3788c622"
+        "bytes": 33500,
+        "hash": "2cec90e99ec2396bb123afbc1b2d41954ef57f7a040c461e69e3034011251a01"
       },
       {
         "path": "multiplayer.html",
@@ -10906,13 +10888,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 58859,
-        "hash": "0af8bbcb1242e40fedd1de3c38d28de0064010eea6ae2baba51b8b1ae4466187"
+        "bytes": 58607,
+        "hash": "ecb81e0404df5a42c3a9afce021bfd2b88fb65e2274e9c716942168b50ffc596"
       },
       {
         "path": "offline-catalog.js",
         "bytes": 427179,
-        "hash": "feb193c0f44c7b7600357463fcb5b4a929c06448bdced15913a00a9ffa01618d"
+        "hash": "ef873559fdbebca1e1bdd087583628de48147b9b6e56033166f6283425d0f398"
       },
       {
         "path": "offline.js",
@@ -10921,8 +10903,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "orbit-boss.html",
-        "bytes": 8157,
-        "hash": "09aa9ee84e3e4637b36211d5e7c950ca358ab146cf11823c43e8cb44b499be5d"
+        "bytes": 9182,
+        "hash": "669b3a3a5f4e974be911da5e494fbb51375390690f44d9fe5628e89f592ff436"
       },
       {
         "path": "pac-man-3d.html",
@@ -10946,8 +10928,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "party.html",
-        "bytes": 7630,
-        "hash": "750bcc81c3b75b0970e09eddaf04391ef8f7235100cc9a3e14aa4e30cefe9ab1"
+        "bytes": 9891,
+        "hash": "e0d49914507119e6bb2adf1f0048e3ebf8b28a8f53996fdebc104ce17ede12ae"
       },
       {
         "path": "piano.html",
@@ -11002,7 +10984,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "d23c198778f58893b1b66250b0ab2878f68be4b6110ec911249a80f15d077328"
+        "hash": "7ba54a20659e3765e872c00c0405843b92aa8861f30831052271342f330aca46"
       },
       {
         "path": "terraria.html",
@@ -11060,8 +11042,8 @@ self.OFFLINE_CATALOG = {
         "hash": "965eeed99796d5ee8c82e040df5683d5375ee7e552695fd5348d99102b65540d"
       }
     ],
-    "bytes": 304668606,
-    "version": "71d74be954a4191f"
+    "bytes": 305241968,
+    "version": "5296d0fa9507d2be"
   },
   "backrooms": {
     "name": "The Backrooms",

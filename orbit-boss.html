@@ -74,9 +74,10 @@ addEventListener("keyup", (e) => { if(e.code==='Space' || e.code==='Enter') keyL
 addEventListener("pointerdown", () => handleInteraction());
 
 function initLevel(){
-    boss.maxHp = 18 + Math.min(state.lvl*6,42); boss.hp = boss.maxHp;
+    boss.maxHp = Math.round(18 + state.lvl*8 + Math.pow(state.lvl,1.28)*2); boss.hp = boss.maxHp;
+    boss.r = Math.min(74,48 + state.lvl*1.5);
     bullets.length = 0;
-    boss.fireT=-1;
+    boss.fireT=-0.8;
     invincible=1.5;
 
 }
@@ -97,17 +98,21 @@ function update(dt){
         bullets.push({x:px, y:py, vx:Math.cos(lookAngle)*1000, vy:Math.sin(lookAngle)*1000, p:true});
     }
 
+    const enemySpeed=player.maxRadius*(0.62+Math.min(state.lvl,15)*0.045);
+    const spawnEnemy=(angle,speed=enemySpeed,options={})=>bullets.push({x:state.cx,y:state.cy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,p:false,age:0,turn:options.turn||0,size:options.size||4});
     boss.fireT += dt;
-    if(boss.fireT > Math.max(0.85, 2.0 - state.lvl*0.1)){
+    if(boss.fireT > Math.max(0.38,1.72-state.lvl*0.075)){
         boss.fireT = 0;
-        for(let i=0; i<6; i++){
-            const a = (i/6)*Math.PI*2 + state.time;
-            bullets.push({x:state.cx, y:state.cy, vx:Math.cos(a)*(player.maxRadius * (0.65 + Math.min(state.lvl,8)*0.035)), vy:Math.sin(a)*(player.maxRadius * (0.65 + Math.min(state.lvl,8)*0.035)), p:false});
-        }
+        const aimed=Math.atan2(py-state.cy,px-state.cx),phase=(state.lvl-1)%5;
+        if(phase===0){for(let i=0;i<6+Math.floor(state.lvl/5);i++)spawnEnemy((i/(6+Math.floor(state.lvl/5)))*Math.PI*2+state.time*.55)}
+        if(phase===1){for(const offset of [-.28,-.14,0,.14,.28])spawnEnemy(aimed+offset,enemySpeed*1.14,{size:5})}
+        if(phase===2){for(let i=0;i<10;i++)spawnEnemy(i/10*Math.PI*2+state.time*.9,enemySpeed,{turn:i%2?.5:-.5})}
+        if(phase===3){for(let i=0;i<12;i++)if(i%3!==Math.floor(state.time*2)%3)spawnEnemy(i/12*Math.PI*2,enemySpeed*1.08,{size:5});spawnEnemy(aimed,enemySpeed*1.35,{size:7})}
+        if(phase===4){for(let i=0;i<14;i++)spawnEnemy(i/14*Math.PI*2+state.time*1.3,enemySpeed*(i%2?1.2:.82),{turn:i%2?.7:-.7});for(const offset of [-.18,0,.18])spawnEnemy(aimed+offset,enemySpeed*1.4,{size:6})}
     }
 
     for(let i=bullets.length-1;i>=0;i--) {
-        const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;
+        const b=bullets[i];b.age=(b.age||0)+dt;if(!b.p&&b.turn){const a=b.turn*dt,c=Math.cos(a),s=Math.sin(a),vx=b.vx*c-b.vy*s;b.vy=b.vx*s+b.vy*c;b.vx=vx}b.x+=b.vx*dt;b.y+=b.vy*dt;
         if(b.p && (b.x-state.cx)**2+(b.y-state.cy)**2 < boss.r**2) {
             bullets.splice(i,1);boss.hp--;
             if(boss.hp<=0){state.lvl++;initLevel();break;}
@@ -118,7 +123,7 @@ function update(dt){
             if(shields===0){endGame();break;}
             continue;
         }
-        if(b.x<0||b.x>state.w||b.y<0||b.y>state.h)bullets.splice(i,1);
+        if(b.x<0||b.x>state.w||b.y<0||b.y>state.h||b.age>8)bullets.splice(i,1);
     }
 
     boss.hue = 190 - (1 - boss.hp/boss.maxHp) * 190;
@@ -164,7 +169,7 @@ function draw(){
     const lookAngle = Math.atan2(state.cy-py, state.cx-px);
     ctx.strokeStyle="#ffffff18";ctx.beginPath();ctx.arc(state.cx,state.cy,player.r,0,Math.PI*2);ctx.stroke();
     drawBoss(); if(invincible===0 || Math.floor(state.time*10)%2===0)drawPlayer(px, py, lookAngle);
-    ctx.beginPath(); bullets.forEach(b => { if(!b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 4, 0, 7); }});
+    ctx.beginPath(); bullets.forEach(b => { if(!b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, b.size||4, 0, 7); }});
     ctx.fillStyle = "#ff3333"; ctx.fill();
     ctx.beginPath(); bullets.forEach(b => { if(b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 3, 0, 7); }});
     ctx.fillStyle = "#00f2ff"; ctx.fill();
