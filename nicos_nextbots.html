@@ -41,6 +41,8 @@
             font-weight: 900;
             letter-spacing: .08em;
         }
+        #skip-countdown{display:block;margin:8px auto 0;padding:6px 11px;border:1px solid #d1b45d;background:#141414;color:#f1d37e;font:800 .72rem inherit;letter-spacing:.06em;cursor:pointer;pointer-events:auto}
+        #skip-countdown:disabled{opacity:.58;cursor:default}
          
         /* Settings Menu Styles */
         /* Settings Menu Styles */
@@ -185,6 +187,7 @@
         </div>
         <div id="ui-overlay">
             <div id="timer-display" style="font-size: 1.1rem; color: #fff;">GET READY · 30</div>
+            <button id="skip-countdown">SKIP</button>
         </div>
         <div id="mobile-controls"><div id="touch-look"></div><div class="touch-stick" id="touch-stick"><div class="touch-knob" id="touch-knob"></div></div><button class="touch-button" id="touch-sprint">RUN</button><button class="touch-button" id="touch-jump">JUMP</button></div>
         <div id="minimap-container">
@@ -217,12 +220,12 @@
 const MAP = (() => {
             const width = 140, height = 96;
             const map = Array.from({length:height},(_,y)=>Array.from({length:width},(_,x)=>x===0||y===0||x===width-1||y===height-1?1:0));
-            // A 4 x 4 room plan gives each floor sixteen distinct spaces. Every wall has
-            // broad openings, so chases can flow between rooms instead of becoming corridors.
-            for(const x of [35,70,105])for(let y=2;y<height-2;y++)if(![12,36,60,84].some(door=>Math.abs(y-door)<=5))map[y][x]=1;
-            for(const y of [24,48,72])for(let x=2;x<width-2;x++)if(![18,52,88,122].some(door=>Math.abs(x-door)<=6))map[y][x]=1;
-            // Support columns define parking bays inside the rooms.
-            for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14){map[y][x]=1;map[y][x+1]=1;map[y+1][x]=1;map[y+1][x+1]=1;}
+            // Three full-height walls in each direction form sixteen rooms per floor.
+            // Each divider only breaks for three or four broad garage doorways.
+            for(const x of [35,70,105])for(let y=1;y<height-1;y++)if(![12,42,82].some(door=>Math.abs(y-door)<=4))map[y][x]=1;
+            for(const y of [24,48,72])for(let x=1;x<width-1;x++)if(![18,53,88,122].some(door=>Math.abs(x-door)<=5))map[y][x]=1;
+            // Value 2 marks individual 1x1 support columns, kept separate from room walls.
+            for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0)map[y][x]=2;
             // Parked cars are real obstacles, leaving the central drive lanes open.
             const cars=[];
             for(const cy of [18,78])for(let cx=16;cx<width-12;cx+=15)if(Math.abs(cx-70)>9)cars.push([cx,cy]);
@@ -255,10 +258,11 @@ const MAP = (() => {
         // --- Bot spawn point ---
         // We'll use a THREE.Vector3 for position
 const botSpawns=[];
-// Twelve nextbots begin near the centre of each floor.
+// Twelve nextbots begin in valid central drive cells on each floor.
+const centralBotCells=[];for(let y=4;y<MAP_SIZE_Y-4;y++)for(let x=4;x<MAP_SIZE_X-4;x++){const d=Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2);if(MAP[y][x]===0&&d>9&&d<24)centralBotCells.push([x,y])}
 for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
-    const angle=(i/12)*Math.PI*2,radius=7+(i%3)*2;
-    botSpawns.push({position:new THREE.Vector3(MAP_SIZE_X+Math.cos(angle)*radius,3.8+floorY,MAP_SIZE_Y+Math.sin(angle)*radius),floorY});
+    const [x,y]=centralBotCells[(i*Math.floor(centralBotCells.length/12)+(floorY?17:0))%centralBotCells.length];
+    botSpawns.push({position:new THREE.Vector3(x*2+1,3.8+floorY,y*2+1),floorY});
 }
 
         // --- Player state ---
@@ -284,6 +288,7 @@ for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
         let gameTimer = 0;
         let roundEndsAt=Infinity;
         const timerDisplay = document.getElementById('timer-display');
+        const skipCountdown=document.getElementById('skip-countdown');
         function formatClock(ms){const total=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(total/60)}:${String(total%60).padStart(2,'0')}`}
 
         // --- Three.js Setup ---
@@ -294,7 +299,21 @@ let screenWidth, screenHeight;
 let audioCtx, humNode;
 let botReleaseAt=Infinity;
 let netRole='solo',roomSession=null,lastNetSend=0,roomsWatching=false;
+const skipVotes=new Set();let skipVoteSent=false,skipVoteCount=0,skipVoteRequired=1;
 const remotePlayers=new Map();
+
+function connectedPlayerCount(){return netRole==='host'&&roomSession?1+roomSession.lan.guests.filter(guest=>guest.channel?.readyState==='open').length:1}
+function updateSkipButton(){
+    const waiting=performance.now()<botReleaseAt;skipCountdown.style.display=waiting?'block':'none';
+    if(!waiting)return;
+    if(netRole==='solo'){skipCountdown.textContent='SKIP';skipCountdown.disabled=false;return}
+    const total=netRole==='host'?connectedPlayerCount():Math.max(1,Math.ceil(skipVoteRequired/.75));
+    const required=netRole==='host'?Math.ceil(total*.75):skipVoteRequired;
+    const votes=netRole==='host'?Array.from(skipVotes).filter(id=>id==='host'||roomSession?.lan.guests.some(guest=>guest.meta.id===id&&guest.channel?.readyState==='open')).length:skipVoteCount;
+    skipCountdown.textContent=`${skipVoteSent?'VOTED':'VOTE TO SKIP'} · ${votes}/${required}`;skipCountdown.disabled=skipVoteSent;
+}
+function releaseBotsEarly(){if(performance.now()>=botReleaseAt)return;botReleaseAt=performance.now();roundEndsAt=botReleaseAt+180000;updateSkipButton()}
+function checkSkipVote(){if(netRole!=='host')return;skipVoteRequired=Math.ceil(connectedPlayerCount()*.75);skipVoteCount=Array.from(skipVotes).filter(id=>id==='host'||roomSession.lan.guests.some(guest=>guest.meta.id===id&&guest.channel?.readyState==='open')).length;if(skipVoteCount>=skipVoteRequired)releaseBotsEarly();updateSkipButton()}
 
 function ensureRemotePlayer(id,name='Player'){
     let remote=remotePlayers.get(id);if(remote)return remote;
@@ -310,14 +329,16 @@ function networkTick(now){
     if(netRole==='solo'||!roomSession||now-lastNetSend<80)return;lastNetSend=now;
     const state={x:player.x,y:player.y,floorY:player.floorY,dir:player.dir,alive:!isGameOver};
     if(netRole==='host'){
-        roomSession.lan.broadcast('world',{players:[{id:'host',name:document.getElementById('player-name').value||'Host',...state},...Array.from(remotePlayers.values()).map(p=>({id:p.id,name:p.name,x:p.x,y:p.y,floorY:p.floorY,dir:p.dir,alive:p.alive}))],bots:bots.map(bot=>({x:bot.mesh.position.x,z:bot.mesh.position.z,vx:bot.vx,vz:bot.vz,targetId:bot.targetId,floorY:bot.floorY})),releaseIn:Math.max(0,botReleaseAt-now),roundIn:Math.max(0,roundEndsAt-now)});
+        checkSkipVote();roomSession.lan.broadcast('world',{players:[{id:'host',name:document.getElementById('player-name').value||'Host',...state},...Array.from(remotePlayers.values()).map(p=>({id:p.id,name:p.name,x:p.x,y:p.y,floorY:p.floorY,dir:p.dir,alive:p.alive}))],bots:bots.map(bot=>({x:bot.mesh.position.x,z:bot.mesh.position.z,vx:bot.vx,vz:bot.vz,targetId:bot.targetId,floorY:bot.floorY})),releaseIn:Math.max(0,botReleaseAt-now),roundIn:Math.max(0,roundEndsAt-now),skipVotes:skipVoteCount,skipRequired:skipVoteRequired});
     }else roomSession.client.send('player',state);
 }
 function wireHostRoom(session){
-    session.lan.on('message',({peer,data})=>{if(data.type!=='player')return;applyPlayerPacket(peer.meta.id,data.payload,peer.meta.name);});
+    session.lan.on('message',({peer,data})=>{if(data.type==='player')applyPlayerPacket(peer.meta.id,data.payload,peer.meta.name);else if(data.type==='skip-vote'&&performance.now()<botReleaseAt){skipVotes.add(peer.meta.id);checkSkipVote()}});
+    session.lan.on('close',peer=>{remotePlayers.get(peer.meta.id)?.mesh.removeFromParent();remotePlayers.delete(peer.meta.id);skipVotes.delete(peer.meta.id);checkSkipVote()});
 }
 function wireGuestRoom(session){
     session.client.on('message',({data})=>{if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;roundEndsAt=performance.now()+world.roundIn;
+        skipVoteCount=world.skipVotes||0;skipVoteRequired=world.skipRequired||1;updateSkipButton();
         world.players.filter(p=>p.id!=='host').forEach(p=>{if(p.id!==session.client.meta.peerId)applyPlayerPacket(p.id,p,p.name)});
         const host=world.players.find(p=>p.id==='host');if(host)applyPlayerPacket('host',host,host.name);
         world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.backing.position.x=state.x;bot.backing.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;bot.floorY=state.floorY||0;bot.mesh.position.y=3.15+bot.floorY;bot.backing.position.y=3.15+bot.floorY;if(bot.label)bot.label.position.y=.55+bot.floorY;});
@@ -381,18 +402,17 @@ function initAudio() {
             floorMesh.position.set(MAP_SIZE_X, 0, MAP_SIZE_Y);
             scene.add(floorMesh);
 
-            // Keep perimeter walls darker while the structural garage pillars read as stained white concrete.
+            // Room dividers are continuous masonry walls; support columns are separate 1x1 posts.
             wallGroup = new THREE.Group();
             const wallTexture = new THREE.TextureLoader().load('./assets/vendor/nextbot-brick.jpg');
             wallTexture.wrapS=wallTexture.wrapT=THREE.RepeatWrapping;wallTexture.repeat.set(1,1);
             const wallGeo = new THREE.BoxGeometry(2, 19, 2);
             const wallMat = new THREE.MeshPhongMaterial({map:wallTexture,color:0x8f949a,shininess:3});
             const pillarMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture('#dedbd0'),color:0xf1eee3,shininess:1});
-            const isEdge=(x,y)=>x===0||y===0||x===MAP_SIZE_X-1||y===MAP_SIZE_Y-1;
-            let edgeCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1)(isEdge(x,y)?edgeCount++:pillarCount++);
-            const walls=new THREE.InstancedMesh(wallGeo,wallMat,edgeCount),pillars=new THREE.InstancedMesh(wallGeo,pillarMat,pillarCount);
+            let wallCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++){if(MAP[y][x]===1)wallCount++;else if(MAP[y][x]===2)pillarCount++}
+            const walls=new THREE.InstancedMesh(wallGeo,wallMat,wallCount),pillars=new THREE.InstancedMesh(wallGeo,pillarMat,pillarCount);
             const transform=new THREE.Matrix4();let wallIndex=0,pillarIndex=0;
-            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1){transform.makeTranslation((x+.5)*2,9.5,(y+.5)*2);(isEdge(x,y)?walls:pillars).setMatrixAt(isEdge(x,y)?wallIndex++:pillarIndex++,transform)}
+            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]){transform.makeTranslation((x+.5)*2,9.5,(y+.5)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
             // The upper deck has real openings above every ramp instead of cutting
@@ -610,8 +630,8 @@ for (let b = 0; b < botSpawns.length; b++) {
             const actuallySprinting = player.isSprinting && isMoving;
             const currentSpeed = actuallySprinting ? player.speed * 1.75 : player.speed;
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
-            if(releaseRemaining>0)timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;
-            else { timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
+            if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;updateSkipButton()}
+            else { skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
 
             // --- Stop update if game over ---
             if (isGameOver) return;
@@ -673,7 +693,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             // Player's world position
   const playerWorldX = player.x * 2 + 1;
             const playerWorldZ = player.y * 2 + 1;
-            for (let i = 0; i < bots.length; i++) {
+            if(nowTime>=botReleaseAt)for (let i = 0; i < bots.length; i++) {
                 const bot = bots[i];
                 const botX = bot.mesh.position.x;
                 const botZ = bot.mesh.position.z;
@@ -828,7 +848,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const a=bots[i].mesh.position,b=bots[j].mesh.position,dx=a.x-b.x,dz=a.z-b.z,d=Math.hypot(dx,dz);
                 if(d>0&&d<3){const push=(3-d)*.04;a.x+=dx/d*push;a.z+=dz/d*push;b.x-=dx/d*push;b.z-=dz/d*push;}
             }
-            if(netRole==='host') for(const remote of remotePlayers.values()){
+            if(netRole==='host'&&performance.now()>=botReleaseAt) for(const remote of remotePlayers.values()){
                 if(!remote.alive)continue;
                 const hit=bots.some(bot=>Math.abs(bot.floorY-remote.floorY)<2.5&&Math.hypot(bot.mesh.position.x-(remote.x*2+1),bot.mesh.position.z-(remote.y*2+1))<2.6);
                 if(hit){remote.alive=false;remote.mesh.visible=false;roomSession.lan.broadcast('death',{id:remote.id});}
@@ -843,7 +863,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             const blockSize = 150 / Math.max(MAP_SIZE_X, MAP_SIZE_Y);
             for(let y=0; y<MAP_SIZE_Y; y++) {
                 for(let x=0; x<MAP_SIZE_X; x++) {
-                    if(MAP[y][x] === 1) {
+                    if(MAP[y][x] !== 0) {
                         mCtx.fillStyle = '#d1b45d';
                         mCtx.fillRect(x*blockSize, y*blockSize, blockSize-1, blockSize-1);
                     }
@@ -926,6 +946,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             gameStarted = true;
             document.body.classList.remove('menu-active');
             botReleaseAt=performance.now()+30000;roundEndsAt=botReleaseAt+180000;
+            skipVotes.clear();skipVoteSent=false;skipVoteCount=0;skipVoteRequired=netRole==='host'?Math.ceil(connectedPlayerCount()*.75):1;updateSkipButton();
             // Hide start screen overlay
             const startScreen = document.getElementById('start-screen');
             if (startScreen) startScreen.style.display = 'none';
@@ -964,6 +985,14 @@ for (let b = 0; b < botSpawns.length; b++) {
             const savedName=localStorage.getItem('nicos-player-name');if(savedName)document.getElementById('player-name').value=savedName;
             document.getElementById('player-name').addEventListener('input',event=>localStorage.setItem('nicos-player-name',event.target.value));
             document.getElementById('room-pin').addEventListener('input',event=>event.target.value=event.target.value.replace(/\D/g,'').slice(0,4));
+            skipCountdown.onclick=()=>{
+                if(performance.now()>=botReleaseAt)return;
+                if(netRole==='solo'){releaseBotsEarly();return}
+                skipVoteSent=true;
+                if(netRole==='host'){skipVotes.add('host');checkSkipVote()}
+                else if(roomSession)roomSession.client.send('skip-vote',{});
+                updateSkipButton();
+            };
             document.getElementById('solo-start').onclick=()=>{netRole='solo';startGame()};
             document.getElementById('join-open').onclick=()=>{document.getElementById('room-panel').style.display='block';lobbyStatus('Choose a host below.');if(globalThis.PartyRooms)setupRooms()};
             document.getElementById('host-start').onclick=async event=>{try{event.currentTarget.disabled=true;lobbyStatus('Opening room…');roomSession=await PartyRooms.createHost({game:'nicos-nextbots',name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);startGame()}catch(error){lobbyStatus(error.message);event.currentTarget.disabled=false}};
