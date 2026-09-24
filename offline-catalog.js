@@ -5882,6 +5882,51 @@ self.OFFLINE_CATALOG = {
         "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
       },
       {
+        "path": "assets/nextbots/aag.jpg",
+        "bytes": 98802,
+        "hash": "3c0df3a4c358b8aea2d9a973e16bd3320483ec0a62b94fde755831808dc3e206"
+      },
+      {
+        "path": "assets/nextbots/aint-got-time.jpg",
+        "bytes": 178949,
+        "hash": "669c6061e8fad18f6efe991de043da679c7a53c295e9e6b908abb513633f7806"
+      },
+      {
+        "path": "assets/nextbots/badchoice.jpg",
+        "bytes": 99224,
+        "hash": "17f7e7dbf39547d8d138aaf5a1e241945c9e91665c33575ff07fa8680c3e2b74"
+      },
+      {
+        "path": "assets/nextbots/blb.jpg",
+        "bytes": 70904,
+        "hash": "7a7655601ed73864ca0a58da14419bc3c337e746d5eea51e918573088c336f7e"
+      },
+      {
+        "path": "assets/nextbots/boat.jpg",
+        "bytes": 89038,
+        "hash": "4222ae37ded99e6b19fed6bd7cb0e4c2ca5c679bb5cfa98b6e2475a526ede21a"
+      },
+      {
+        "path": "assets/nextbots/both.jpg",
+        "bytes": 63190,
+        "hash": "4e562f21433381d260be4920d940ddb34873005bf30c40fb2e4145a4d87f8b6b"
+      },
+      {
+        "path": "assets/nextbots/captain.jpg",
+        "bytes": 57117,
+        "hash": "785a8423086f2acc9a6b4d756472a59bcd9c537f2061697d8dfaeb0f289c7e10"
+      },
+      {
+        "path": "assets/nextbots/cheems.jpg",
+        "bytes": 52356,
+        "hash": "70fa7510215c1855c61d83c93fd77646ebcfdc9d95dd78315cfdfaaa51dc68ec"
+      },
+      {
+        "path": "assets/nextbots/cmm.jpg",
+        "bytes": 234180,
+        "hash": "1610a0638e29760d8cd78db4322bfceab7d49d19009d581c464a7313b636f416"
+      },
+      {
         "path": "assets/nextbots/crying-cat.jpg",
         "bytes": 86575,
         "hash": "6c3ebcef8b0683291b59463a4bb4dbff6eed957a461c46dab43764aacf0a6157"
@@ -5890,6 +5935,31 @@ self.OFFLINE_CATALOG = {
         "path": "assets/nextbots/crying-cat.svg",
         "bytes": 513,
         "hash": "32eef82f9748e1e61b52dc613203213f5aa327cc772530db21b4fceb54df7893"
+      },
+      {
+        "path": "assets/nextbots/disastergirl.jpg",
+        "bytes": 129468,
+        "hash": "91f4742e2b3003fbc554b6707f6ba996eda1cf116d2a5fb29ca3748b896df753"
+      },
+      {
+        "path": "assets/nextbots/doge.jpg",
+        "bytes": 71188,
+        "hash": "55ae176285893ffde7c3b06e1ce799d1b2fe29000bb5fc1e31f26bcbfaef441e"
+      },
+      {
+        "path": "assets/nextbots/drake.jpg",
+        "bytes": 117100,
+        "hash": "7002f63565bd809d26eb828da342bcf6918bb07aecc57dd14cc212342f0d3413"
+      },
+      {
+        "path": "assets/nextbots/grumpycat.jpg",
+        "bytes": 124967,
+        "hash": "963373b93bb1bede556e8fb42641c045a11e82a483f3b7f759ddeab373108859"
+      },
+      {
+        "path": "assets/nextbots/harold.jpg",
+        "bytes": 117664,
+        "hash": "e2032fafdf126ba0ece5621732c1a773dab0f0226c3633fb5e32b889e028bef4"
       },
       {
         "path": "assets/nextbots/moai.jpg",
@@ -5902,14 +5972,44 @@ self.OFFLINE_CATALOG = {
         "hash": "1971c46d710f30a205f8759ecc0c2b66ae2a8a87d67f8de0d2d85435eb641062"
       },
       {
+        "path": "assets/nextbots/oag.jpg",
+        "bytes": 105499,
+        "hash": "f76d745a8e4829f829a991cad714d4bb1efb5a2ebd563de2e5d6b05f05efec5a"
+      },
+      {
+        "path": "assets/nextbots/oprah.jpg",
+        "bytes": 92414,
+        "hash": "190fe0a8350cf50ad6a4470e559fb6bd4617a95fc6f6b0f74bfc425bab06a9da"
+      },
+      {
+        "path": "assets/nextbots/persian.jpg",
+        "bytes": 80100,
+        "hash": "13701ce3a01ae84e085e67531f62149876b1eea2d72b61bbf14c5ef5dd6a365f"
+      },
+      {
+        "path": "assets/nextbots/rollsafe.jpg",
+        "bytes": 123276,
+        "hash": "2bbb299e327567fcd9c3425722787f8dac95891b0b595227c5e9a798548b24cb"
+      },
+      {
         "path": "assets/nextbots/side-eye.svg",
         "bytes": 471,
         "hash": "248e0a5f92016ed698c23cea78b6b356eed63acdd530391f28c8999d8f2cca87"
       },
       {
+        "path": "assets/nextbots/ss.jpg",
+        "bytes": 81446,
+        "hash": "539a61924b623c5115228be27986a913f412115374a98315b18bfcf13233e746"
+      },
+      {
         "path": "assets/nextbots/staring-cat.jpg",
         "bytes": 78051,
         "hash": "b84cd9bc36b1ddf35579305875d9a44010b688f7f17f555e2fb33f5abf83f412"
+      },
+      {
+        "path": "assets/nextbots/success.jpg",
+        "bytes": 36331,
+        "hash": "78d5516464f6ba845dddefce21559d0d2a068b822a53d69ccd193e4e53a4a79d"
       },
       {
         "path": "assets/password-gate.js",
@@ -10888,13 +10988,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 63444,
-        "hash": "db7bf3e42d5c3de22fa9c6224b02b81046ad4552aaacb76ad085915ee530fcea"
+        "bytes": 64224,
+        "hash": "4116f4bcb404d89fc6ec9944766fdd714cdf76cd772567cf12e511ae52be9dbe"
       },
       {
         "path": "offline-catalog.js",
         "bytes": 426709,
-        "hash": "201c4947ec5177656dbb21eb776b51b9ccc117a1f25155a3acb829cf5a162342"
+        "hash": "26e119d69fb094917eed15d10804208170df971a77d559c890ae3bb5d2d27aca"
       },
       {
         "path": "offline.js",
@@ -10984,7 +11084,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "357f9b559aa902e4952d7729efacc8d7b09052c8a47bbdbd68977f68e5c3320e"
+        "hash": "5b545ce4815df3056e49aa7dfe8d008e88e4211065c08c238e3af4a9f96ace82"
       },
       {
         "path": "terraria.html",
@@ -11042,8 +11142,8 @@ self.OFFLINE_CATALOG = {
         "hash": "965eeed99796d5ee8c82e040df5683d5375ee7e552695fd5348d99102b65540d"
       }
     ],
-    "bytes": 305246335,
-    "version": "083bb512ebc08b58"
+    "bytes": 307270328,
+    "version": "07085678f842a202"
   },
   "backrooms": {
     "name": "The Backrooms",
