@@ -10537,7 +10537,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 411667,
-        "hash": "5c96f7e5e1bc18a414f9290116bc1727aa709b8ec820d29eb02c27a00776e352"
+        "hash": "7de172e6da12069130efb569d88c1b0bbb442907b7f5004101ea7816774b1bc2"
       },
       {
         "path": "offline.js",
@@ -10601,8 +10601,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sling_champ.html",
-        "bytes": 54367,
-        "hash": "d91315aee428819623eb31b52fa5d184ba65750aeac7511dff79f8402e05d2c4"
+        "bytes": 59130,
+        "hash": "f3b1e02b19af75b4a9048caf1247ec3ddc10b5481f4579c7a3f0ee9aaeb5ea62"
       },
       {
         "path": "slot-machine.html",
@@ -10617,7 +10617,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "293b8ef2ed8a75afe0f13e6e6a27d1648d00f8e4f0a2917974f7f012a43c4309"
+        "hash": "6d06a599c5d612d468c7c2bf588abe2facd3c8889098b46ef7c1a4ba55d39b7a"
       },
       {
         "path": "terraria.html",
@@ -10675,8 +10675,8 @@ self.OFFLINE_CATALOG = {
         "hash": "45ae89641855dd8ba7002cf9855b314fd42c4725fe36caf1bd5b11520bdf8596"
       }
     ],
-    "bytes": 304603476,
-    "version": "da3d82d2672eaa64"
+    "bytes": 304608239,
+    "version": "d4a327381ce32d9a"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -10727,12 +10727,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sling_champ.html",
-        "bytes": 54367,
-        "hash": "d91315aee428819623eb31b52fa5d184ba65750aeac7511dff79f8402e05d2c4"
+        "bytes": 59130,
+        "hash": "f3b1e02b19af75b4a9048caf1247ec3ddc10b5481f4579c7a3f0ee9aaeb5ea62"
       }
     ],
-    "bytes": 135174,
-    "version": "db4cc6098442e405"
+    "bytes": 139937,
+    "version": "1b34450e04eae357"
   },
   "relic-rush": {
     "name": "Relic Rush",
