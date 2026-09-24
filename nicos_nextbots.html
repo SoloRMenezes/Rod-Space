@@ -282,7 +282,7 @@ for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
         let wallGroup, floorMesh;
 let bots = [];
 let screenWidth, screenHeight;
-let audioCtx, humNode, chaseNode, chaseGain;
+let audioCtx, humNode;
 let botReleaseAt=Infinity;
 let netRole='solo',roomSession=null,lastNetSend=0,roomsWatching=false;
 const remotePlayers=new Map();
@@ -329,15 +329,6 @@ function initAudio() {
     humGain.connect(audioCtx.destination);
     humNode.start();
 
-    // Heartbeat-style pulse oscillator
-    chaseNode = audioCtx.createOscillator();
-    chaseGain = audioCtx.createGain();
-    chaseNode.type = 'triangle';
-    chaseNode.frequency.value = 55;
-    chaseGain.gain.value = 0;
-    chaseNode.connect(chaseGain);
-    chaseGain.connect(audioCtx.destination);
-    chaseNode.start();
 }
 
         // --- Lighting ---
@@ -673,22 +664,6 @@ for (let b = 0; b < botSpawns.length; b++) {
             // Player's world position
   const playerWorldX = player.x * 2 + 1;
             const playerWorldZ = player.y * 2 + 1;
-            if (audioCtx && chaseGain) {
-                let minDist = Infinity;
-                for (let i = 0; i < bots.length; i++) {
-                    const d = Math.abs(bots[i].floorY-player.floorY)<2.5?Math.hypot(bots[i].mesh.position.x - playerWorldX, bots[i].mesh.position.z - playerWorldZ):Infinity;
-                    if (d < minDist) minDist = d;
-                }
-                // Convert world distance to map units (each map unit = 2 world units)
-                const mapDist = minDist / 2;
-                // Silent beyond 20 map units, max volume at 0
-                const proximity = Math.max(0, 1 - mapDist / 20);
-                const volume = proximity * 0.35;
-                // Pitch rises as bot gets closer (55hz far -> 120hz close)
-                const freq = 55 + proximity * 65;
-                chaseGain.gain.setTargetAtTime(volume, audioCtx.currentTime, 0.15);
-                chaseNode.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.15);
-            }
             for (let i = 0; i < bots.length; i++) {
                 const bot = bots[i];
                 const botX = bot.mesh.position.x;
