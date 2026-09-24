@@ -113,6 +113,37 @@
             0% { transform: translateY(0) scale(1.2); opacity: 1; }
             100% { transform: translateY(-120px) scale(0.5); opacity: 0; }
         }
+
+        /* The world is the main interaction. Upgrades stay compact beside it. */
+        #view-home { min-height: 0; }
+        .planet-core { min-width: 0; }
+        .shop-panel { min-width: 0; }
+        @media (min-width: 800px) {
+            #view-home { display:grid!important;grid-template-columns:minmax(0,2.25fr) minmax(290px,.75fr);gap:12px; }
+            .planet-core { width:100%;height:100%;padding:clamp(12px,2vw,28px); }
+            .planet-container { margin-bottom:clamp(10px,2vh,22px)!important; }
+            #planet-sphere { width:min(60vh,54vw);height:min(60vh,54vw);min-width:300px;min-height:300px; }
+            .shop-panel { width:100%; }
+            #upgrade-container { display:flex;flex-direction:column;justify-content:center;gap:7px; }
+            #upgrade-container>div { flex:0 0 auto;padding:9px 10px!important; }
+            #log { height:38px!important;flex:0 0 38px; }
+        }
+        @media (max-width:799px) {
+            body { padding:10px!important; }
+            header { margin-bottom:8px!important; }
+            #view-home { gap:8px!important;overflow-y:auto; }
+            .planet-core { min-height:58svh!important;padding:10px!important; }
+            #planet-sphere { width:min(48vw,38svh);height:min(48vw,38svh); }
+            .planet-container { margin-bottom:8px!important; }
+            .planet-core .grid { margin-top:8px!important; }
+            .shop-panel { min-height:34svh;overflow:visible!important; }
+            #upgrade-container>div { padding:7px 9px!important; }
+            #log { display:none; }
+        }
+        @media (min-width:600px) and (max-height:650px) {
+            #planet-sphere { width:min(68vh,50vw);height:min(68vh,50vw);min-width:230px;min-height:230px; }
+            .planet-core h2 { font-size:1rem; }.planet-core p{display:none}.planet-core .grid{margin-top:6px!important}
+        }
     </style>
 <link rel="stylesheet" href="assets/rod-space-home.css">
 <script defer src="assets/rod-space-home.js"></script>
@@ -139,7 +170,7 @@
         <!-- HOME VIEW -->
         <div id="view-home" class="h-full flex flex-col lg:flex-row gap-4 overflow-hidden">
             <!-- Planet Core -->
-            <div class="flex-shrink-0 flex flex-col items-center justify-center relative p-4 scroll-panel min-h-[280px]">
+            <div class="planet-core flex-shrink-0 flex flex-col items-center justify-center relative p-4 scroll-panel min-h-[280px]">
                 <div class="planet-container mb-6">
                     <div id="planet-atmosphere" class="planet-atmosphere"></div>
                     <div id="planet-sphere" onclick="handlePlanetClick(event)"></div>
@@ -163,7 +194,7 @@
             </div>
 
             <!-- Shop -->
-            <div class="flex-grow flex flex-col overflow-hidden">
+            <div class="shop-panel flex-grow flex flex-col overflow-hidden">
                 <div id="upgrade-container" class="space-y-1.5 overflow-y-auto pr-1 flex-grow">
                     <!-- Upgrades -->
                 </div>
