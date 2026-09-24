@@ -774,6 +774,10 @@ for (let b = 0; b < botSpawns.length; b++) {
                     locked=targets.filter(candidate=>candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<2.5&&Math.hypot(botMapX-candidate.x,botMapY-candidate.y)<=24).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0];
                     if(locked)bot.targetId=locked.id;
                 }
+                // Outside the chase radius, bots still stalk the nearest player on their
+                // floor. A wide random offset keeps this looking like roaming rather than
+                // giving every bot perfect knowledge of the player's exact position.
+                const roamTarget=!locked?targets.filter(candidate=>candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<2.5).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0]:null;
                 if(locked){bot.rampRoute=null;bot.rampStep=0}
                 if(!locked&&bot.rampRoute&&Math.hypot(botMapX-bot.wanderX,botMapY-bot.wanderY)<2){
                     bot.rampStep++;
@@ -782,7 +786,12 @@ for (let b = 0; b < botSpawns.length; b++) {
                 }
                 if(!locked&&!bot.rampRoute&&now>=bot.nextFloorChange)beginRampRoute(bot,now);
                 if(!locked&&!bot.rampRoute&&(now>bot.wanderUntil||Math.hypot(botMapX-bot.wanderX,botMapY-bot.wanderY)<3)){
-                    for(let tries=0;tries<40;tries++){const x=3+Math.floor(Math.random()*(MAP_SIZE_X-6)),y=3+Math.floor(Math.random()*(MAP_SIZE_Y-6));if(MAP[y][x]===0){bot.wanderX=x;bot.wanderY=y;break}}
+                    for(let tries=0;tries<40;tries++){
+                        const angle=Math.random()*Math.PI*2,radius=7+Math.random()*15;
+                        const x=Math.floor(roamTarget?roamTarget.x+Math.cos(angle)*radius:3+Math.random()*(MAP_SIZE_X-6));
+                        const y=Math.floor(roamTarget?roamTarget.y+Math.sin(angle)*radius:3+Math.random()*(MAP_SIZE_Y-6));
+                        if(x>1&&x<MAP_SIZE_X-1&&y>1&&y<MAP_SIZE_Y-1&&MAP[y][x]===0){bot.wanderX=x;bot.wanderY=y;break}
+                    }
                     bot.wanderUntil=now+3500+Math.random()*4500;
                 }
                 let targetX=Math.floor(locked?locked.x:bot.wanderX),targetY=Math.floor(locked?locked.y:bot.wanderY);
@@ -803,7 +812,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                     if(Math.hypot(steerX-bot.mesh.position.x,steerZ-bot.mesh.position.z)<.45)bot._pathStep++;
                 }
                 const dx=steerX-bot.mesh.position.x,dz=steerZ-bot.mesh.position.z,distance=Math.hypot(dx,dz)||1;
-                const maxSpeed=bot.baseSpeed*.01*bot.speedMult,accel=.018;
+                const maxSpeed=bot.baseSpeed*.01*bot.speedMult*(locked?1:.62),accel=locked?.018:.011;
                 bot.vx+=dx/distance*accel;bot.vz+=dz/distance*accel;
                 const velocity=Math.hypot(bot.vx,bot.vz);if(velocity>maxSpeed){bot.vx=bot.vx/velocity*maxSpeed;bot.vz=bot.vz/velocity*maxSpeed}
                 // Low friction gives the chasers weight: they skid wide, brake, then accelerate into a turn.
