@@ -116,8 +116,14 @@
 
         /* The world is the main interaction. Upgrades stay compact beside it. */
         #view-home { min-height: 0; }
+        #view-home.hidden { display:none!important; }
         .planet-core { min-width: 0; }
         .shop-panel { min-width: 0; }
+        #achievement-list { grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px; }
+        .achievement-card { min-height:112px;padding:16px;border:1px solid rgba(67,52,39,.34);transition:background .2s,border-color .2s,box-shadow .2s; }
+        .achievement-card.locked { background:rgba(75,75,75,.08);border-color:rgba(75,75,75,.25);color:#777;filter:grayscale(1); }
+        .achievement-card.unlocked { background:rgba(184,134,11,.09);border-color:rgba(184,134,11,.55);box-shadow:inset 0 0 24px rgba(184,134,11,.06); }
+        .achievement-state { font-size:9px;letter-spacing:.16em;text-transform:uppercase; }
         @media (min-width: 800px) {
             #view-home { display:grid!important;grid-template-columns:minmax(0,2.25fr) minmax(290px,.75fr);gap:12px; }
             .planet-core { width:100%;height:100%;padding:clamp(12px,2vw,28px); }
@@ -239,7 +245,7 @@
             essence: 0, totalEssence: 0, 
             autoRate: 0, clickPower: 1, critChance: 0,
             eraIndex: 0, upgradesOwned: {}, aether: 0,
-            rebirthCount: 0, lastTick: Date.now()
+            rebirthCount: 0, clickCount: 0, criticalHits: 0, lastTick: Date.now()
         };
 
         const eras = [
@@ -257,6 +263,31 @@
             { id: 'core', name: "Iron Heart", cost: 1000, baseYield: 12, type: 'auto' },
             { id: 'tectonics', name: "World Forge", cost: 7000, baseYield: 80, type: 'auto' }
         ];
+
+        const achievements = [
+            { name: "First Spark", description: "Draw essence from the void for the first time.", unlocked: () => state.clickCount >= 1 },
+            { name: "A Will of Your Own", description: "Purchase Divine Will.", unlocked: () => (state.upgradesOwned.focus || 0) >= 1 },
+            { name: "The World Stirs", description: "Generate essence automatically.", unlocked: () => state.autoRate > 0 },
+            { name: "Hadean Dawn", description: "Reach the Hadean Inferno.", unlocked: () => state.totalEssence >= 300 },
+            { name: "Ancient Ocean", description: "Reach the Archean Waters.", unlocked: () => state.totalEssence >= 5000 },
+            { name: "Living World", description: "Reach the Verdant Bloom.", unlocked: () => state.totalEssence >= 50000 },
+            { name: "Engineered Creation", description: "Reach the Techno-Organic era.", unlocked: () => state.totalEssence >= 1000000 },
+            { name: "Beyond the Shell", description: "Ascend for the first time.", unlocked: () => state.rebirthCount >= 1 }
+        ];
+
+        function renderAchievements() {
+            const list = document.getElementById('achievement-list');
+            list.innerHTML = achievements.map(achievement => {
+                const unlocked = achievement.unlocked();
+                return `
+                    <article class="achievement-card scroll-panel ${unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-state ${unlocked ? 'text-amber-700' : ''}">${unlocked ? 'Unlocked' : 'Locked'}</div>
+                        <h2 class="font-mythic text-sm mt-2">${achievement.name}</h2>
+                        <p class="text-xs mt-3 opacity-70">${unlocked ? achievement.description : 'Description revealed when unlocked.'}</p>
+                    </article>
+                `;
+            }).join('');
+        }
 
         function format(num) {
             if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
@@ -308,6 +339,7 @@
             });
 
             const reward = Math.floor(Math.sqrt(state.essence / 100000));
+            document.getElementById('aether-display').innerText = format(state.aether);
             document.getElementById('aether-reward-display').innerText = reward;
             document.getElementById('rebirth-btn').disabled = state.essence < 100000;
         }
@@ -322,6 +354,8 @@
             const isCrit = (Math.random() * 100) < state.critChance;
             if (isCrit) gain *= 5;
 
+            state.clickCount++;
+            if (isCrit) state.criticalHits++;
             state.essence += gain;
             state.totalEssence += gain;
             
@@ -353,11 +387,27 @@
             }
         }
 
+        function performRebirth() {
+            const reward = Math.floor(Math.sqrt(state.essence / 100000));
+            if (reward < 1) return;
+            state.aether += reward;
+            state.rebirthCount++;
+            state.essence = 0;
+            state.totalEssence = 0;
+            state.eraIndex = -1;
+            state.upgradesOwned = {};
+            calculateRates();
+            updateUI();
+            renderAchievements();
+            setView('home');
+        }
+
         function setView(v) {
             ['home', 'achievements', 'rebirth'].forEach(id => {
                 document.getElementById(`view-${id}`).classList.toggle('hidden', id !== v);
                 document.getElementById(`nav-${id}`).classList.toggle('active', id === v);
             });
+            if (v === 'achievements') renderAchievements();
         }
 
         function tick() {
@@ -394,6 +444,8 @@
             state = {...state, ...JSON.parse(saved)};
             calculateRates();
         }
+        updateUI();
+        renderAchievements();
         setInterval(() => localStorage.setItem('chronos_save', JSON.stringify(state)), 10000);
     </script>
 </body>
