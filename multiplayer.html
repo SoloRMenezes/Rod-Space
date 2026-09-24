@@ -76,6 +76,7 @@
     </script>
 <link rel="stylesheet" href="assets/rod-space-home.css">
 <script defer src="assets/rod-space-home.js"></script>
+<script src="party-lan.js"></script><script src="party-game-lobby.js"></script><script type="module" src="party-rooms.js"></script>
 </head>
 <body class="text-gray-100 antialiased selection:bg-blue-500 selection:text-white">
 
@@ -1270,6 +1271,16 @@
             }
         }
 
+        const parkourPeers=new Map();let parkourNetClock=0;
+        const parkourLan=globalThis.PartyGameLobby.create({game:'rooftop-parkour',title:'PARKOUR TOGETHER',maxPlayers:8});
+        function remoteRunner(id,name){
+            if(parkourPeers.has(id))return parkourPeers.get(id);
+            const mesh=playerBody.clone(true);mesh.traverse(item=>{if(item.isMesh){item.material=item.material.clone();if(item.material.color)item.material.color.offsetHSL((parkourPeers.size+1)*.12,0,.08)}});scene.add(mesh);const remote={mesh,name};parkourPeers.set(id,remote);return remote;
+        }
+        parkourLan.on('peer',({peer,name})=>remoteRunner(peer.id,name));
+        parkourLan.on('message',({peer,data})=>{if(data.type!=='runner')return;const id=data.payload.id||peer?.id||'host',remote=remoteRunner(id,data.payload.name||peer?.meta?.name||'Runner');remote.mesh.position.set(data.payload.x,data.payload.y,data.payload.z);remote.mesh.rotation.y=data.payload.yaw;if(parkourLan.role==='host')parkourLan.broadcast('runner',{...data.payload,id,name:peer.meta.name})});
+        function syncParkour(dt){if(!parkourLan.role)return;parkourNetClock+=dt;if(parkourNetClock<.06)return;parkourNetClock=0;const packet={name:parkourLan.name,x:playerBody.position.x,y:playerBody.position.y,z:playerBody.position.z,yaw:playerBody.rotation.y,level:activeLevel};if(parkourLan.role==='host')parkourLan.broadcast('runner',packet);else parkourLan.send('runner',packet)}
+
         function animate() {
             requestAnimationFrame(animate);
 
@@ -1288,6 +1299,7 @@
             for(const item of animatedScenery) {if(item.bob) item.mesh.position.y=item.baseY+Math.sin(clock.elapsedTime+item.phase)*1.4;else item.mesh.rotation.y+=dt*item.speed;}
             updateAnimations(isMoving, dt);
             updateCamera();
+            syncParkour(dt);
 
             renderer.render(scene, camera);
         }

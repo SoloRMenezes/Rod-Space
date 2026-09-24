@@ -142,6 +142,7 @@
 </style>
 <link rel="stylesheet" href="assets/rod-space-home.css">
 <script defer src="assets/rod-space-home.js"></script>
+<script src="party-lan.js"></script><script src="party-game-lobby.js"></script><script type="module" src="party-rooms.js"></script>
 </head>
 <body>
 <div id="touchControls" hidden>
@@ -1118,7 +1119,7 @@ function pickRandomFarCell(playerCell, minDist) {
 }
 
 function eat() {
-  for (const p of pellets) {
+  for (let pelletIndex=0;pelletIndex<pellets.length;pelletIndex++) {const p=pellets[pelletIndex];
     if (p.eaten) continue;
     const dx = playerPos.x - p.mesh.position.x;
     const dz = playerPos.z - p.mesh.position.z;
@@ -1135,6 +1136,7 @@ function eat() {
       }
 
       updateHUD();
+      if(pacLan.role==='host')pacLan.broadcast('pellet',{index:pelletIndex});else if(pacLan.role==='guest')pacLan.send('pellet',{index:pelletIndex});
     }
   }
 
@@ -1510,6 +1512,21 @@ function updateMiniSmooth() {
 }
 requestAnimationFrame(updateMiniSmooth);
 
+const remotePacmen=new Map();let pacNetClock=0;
+const pacLan=globalThis.PartyGameLobby.create({game:'pac-man-3d',title:'PAC-MAN LAN',maxPlayers:8});
+function remotePac(id,name){
+  if(remotePacmen.has(id))return remotePacmen.get(id);
+  const group=new THREE.Group(),body=new THREE.Mesh(new THREE.SphereGeometry(.72,18,12),new THREE.MeshStandardMaterial({color:0xffdd00,roughness:.55}));group.add(body);
+  for(const x of [-.24,.24]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.1,10,8),new THREE.MeshBasicMaterial({color:0xffffff}));eye.position.set(x,.22,.66);group.add(eye)}
+  scene.add(group);const remote={group,name};remotePacmen.set(id,remote);return remote;
+}
+pacLan.on('peer',({peer,name})=>remotePac(peer.id,name));
+pacLan.on('message',({peer,data})=>{
+  if(data.type==='pac'){const id=data.payload.id||peer?.id||'host',remote=remotePac(id,data.payload.name||peer?.meta?.name||'Pac-Man');remote.group.position.set(data.payload.x,1.1,data.payload.z);remote.group.rotation.y=data.payload.yaw;if(pacLan.role==='host')pacLan.broadcast('pac',{...data.payload,id,name:peer.meta.name})}
+  if(data.type==='pellet'){const pellet=pellets[data.payload.index];if(pellet&&!pellet.eaten){pellet.eaten=true;pellet.mesh.visible=false;state.score=Math.max(0,state.score-1);updateHUD()}if(pacLan.role==='host')pacLan.broadcast('pellet',data.payload)}
+});
+function syncPac(dt){if(!pacLan.role)return;pacNetClock+=dt;if(pacNetClock<.06)return;pacNetClock=0;const packet={name:pacLan.name,x:playerPos.x,z:playerPos.z,yaw};if(pacLan.role==='host')pacLan.broadcast('pac',packet);else pacLan.send('pac',packet)}
+
 /* ========= MAIN LOOP ========= */
 let prev = performance.now();
 
@@ -1536,6 +1553,7 @@ function loop(now) {
     ghosts.forEach(g => { ghostAI(g); moveGhost(g, dt); });
     eat();
     checkDeaths();
+    syncPac(dt);
 
     state.modeTime += dt;
     if (state.fright > 0) {

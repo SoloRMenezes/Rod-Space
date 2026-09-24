@@ -267,7 +267,7 @@
             #controls-guide { font-size:11px; }
         }
         @media(any-pointer:coarse), (max-width:600px), (max-height:500px) and (max-width:950px) {
-            body[data-screen=fight][data-mode=cpu] #touch-controls { display:block; }
+            body[data-screen=fight]:not([data-mode=local]) #touch-controls { display:block; }
             #controls-guide .desktop-help { display:none; }
         }
         @media(max-height:500px) and (any-pointer:coarse), (max-height:500px) and (max-width:950px) {
@@ -283,6 +283,21 @@
             .color-picker-grid { grid-template-columns:repeat(5,1fr);gap:6px; }
             .color-option { width:25px;height:25px; }
         }
+        /* The arena owns the viewport; menus and combat no longer sit in a framed box. */
+        body { width:100vw;min-height:100svh;height:100svh;padding:0;gap:0; }
+        #game-container { width:100vw;height:100svh;max-width:none;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none; }
+        #match-actions { position:fixed;right:14px;bottom:14px;z-index:20; }
+        #controls-guide { position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:19;padding:7px 12px;border-radius:7px;background:#05070fbb;pointer-events:none; }
+        body[data-screen=menu] #controls-guide,body[data-screen=select] #controls-guide { display:none; }
+        @media(max-width:700px),(max-height:520px){
+            #controls-guide{display:none}#match-actions{bottom:8px;right:8px}
+            body[data-screen=menu] #game-container,body[data-screen=select] #game-container{min-height:100svh}
+        }
+        body[data-screen=fight] #gameCanvas{position:absolute;left:50%;top:50%;width:max(100vw,177.778svh);height:max(100svh,56.25vw);transform:translate(-50%,-50%)}
+        #lan-panel{position:fixed;inset:0;z-index:40;display:none;place-items:center;background:#070b14ee;padding:18px}
+        #lan-panel.open{display:grid}.lan-card{width:min(520px,100%);max-height:92svh;overflow:auto;background:#111827;border:2px solid #fde047;padding:22px;border-radius:8px}
+        .lan-card h2{margin:0 0 8px;font-size:30px}.lan-card p{color:#94a3b8}.lan-card input{width:100%;margin:5px 0;padding:12px;background:#070b14;color:#fff;border:1px solid #475569;border-radius:4px;font:inherit}
+        .lan-row{display:flex;gap:8px}.lan-row>*{flex:1}.lan-status{min-height:20px;color:#fde047;margin:10px 0}.lan-room-list{display:grid;gap:8px;margin:10px 0}.lan-room{display:flex;justify-content:space-between;align-items:center;width:100%;padding:13px;background:#172033;color:#fff;border:1px solid #475569;border-radius:4px;font:inherit;text-align:left;cursor:pointer}
     </style>
 <link rel="stylesheet" href="assets/rod-space-home.css">
 <script defer src="assets/rod-space-home.js"></script>
@@ -295,6 +310,7 @@
             <p style="color: #64748b; margin-top: -10px; letter-spacing: 5px;">ROOFTOP RIVALS</p>
             <button class="btn" onclick="showCharacterSelect('cpu')">Play vs Computer</button>
             <button class="btn secondary" onclick="showCharacterSelect('local')">Two players · one keyboard</button>
+            <button class="btn secondary" onclick="openLan()">LAN · two devices</button>
         </div>
 
         <div id="char-select-screen" class="screen">
@@ -334,7 +350,7 @@
         
         <div id="game-over">
             <span id="winner-text" style="color: #fde047;">DRAW</span><br>
-            <button class="btn" onclick="startGame()">Rematch</button><br><button class="btn secondary" onclick="resetToMenu()">Main menu</button>
+            <button class="btn" onclick="requestRematch()">Rematch</button><br><button class="btn secondary" onclick="resetToMenu()">Main menu</button>
         </div>
 
         <div id="pause-screen" class="screen"><h2>Paused</h2><button class="btn" onclick="togglePause()">Resume</button><button class="btn secondary" onclick="resetToMenu()">Main menu</button></div>
@@ -344,6 +360,16 @@
     <div id="match-actions"><button onclick="togglePause()">Pause · Esc</button><button onclick="resetToMenu()">Menu</button></div>
     <div id="touch-controls"><div id="move-zone" aria-label="Movement joystick"><div id="move-stick"><div id="move-thumb"></div></div></div><div id="touch-actions"><button data-action="jump">Jump</button><button data-action="block">Block</button><button data-action="punch">Punch</button><button data-action="kick">Kick</button></div></div>
     <p id="controls-guide"><span class="desktop-help">P1: A/D move · W jump · S block · Q punch · E kick<br>P2: ←/→ move · ↑ jump · ↓ block · K punch · L kick<br></span>Land a hit, then give it a beat. Block facing your opponent to reduce damage.<span id="touch-tip"></span></p>
+    <section id="lan-panel"><div class="lan-card">
+        <h2>LAN BATTLE</h2><p>Open a room on one device. The second player joins from the list.</p>
+        <input id="lan-name" maxlength="18" autocomplete="nickname" placeholder="YOUR NAME">
+        <input id="lan-pin" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="OPTIONAL 4-DIGIT PIN">
+        <div id="lan-choice" class="lan-row"><button class="btn" onclick="hostLan()">HOST</button><button class="btn secondary" onclick="browseLan()">JOIN</button></div>
+        <div id="lan-rooms" class="lan-room-list"></div><div id="lan-status" class="lan-status">Choose Host or Join</div>
+        <button class="btn secondary" onclick="closeLan()">CANCEL</button>
+    </div></section>
+    <script src="party-lan.js"></script>
+    <script type="module" src="party-rooms.js"></script>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -357,6 +383,8 @@
         let gameOver = false;
         let timer = 99;
         let running=false,paused=false,mode='cpu',lastTime=0,accumulator=0,clockFrames=0;
+        let lanRole='',lanSession=null,lanRoomsStop=null,lanRooms=[],lanGuest=null,netTick=0,lanNames={host:'Player 1',guest:'Player 2'};
+        const remoteInput={left:false,right:false,block:false};
         let cpuThink=0,cpuDirection=0,screenShake=0,impactFreeze=0,roundBanner=0;
         const particles=[];
         const STEP=1000/60;
@@ -372,6 +400,27 @@
         let characterData={p1:'#3498db',p2:'#e74c3c'};
         try { const stored=JSON.parse(localStorage.getItem('hood_brawl_config'));for(const key of ['p1','p2'])if(COLORS.includes(stored?.[key]))characterData[key]=stored[key]; } catch {}
         function saveConfig() { try {localStorage.setItem('hood_brawl_config',JSON.stringify(characterData));}catch{} }
+        const lanStatus=text=>document.getElementById('lan-status').textContent=text;
+        const roomsReady=()=>globalThis.PartyRooms?Promise.resolve(PartyRooms):new Promise(resolve=>addEventListener('partyroomsready',()=>resolve(PartyRooms),{once:true}));
+        function openLan(){document.getElementById('lan-panel').classList.add('open');document.getElementById('lan-rooms').innerHTML='';lanStatus('Choose Host or Join')}
+        function closeLan(){document.getElementById('lan-panel').classList.remove('open');lanRoomsStop?.();lanRoomsStop=null}
+        function lanIdentity(){const name=document.getElementById('lan-name').value.trim();if(!name)throw Error('Enter your name first');const pin=document.getElementById('lan-pin').value.trim();if(pin&&!/^\d{4}$/.test(pin))throw Error('PIN must be exactly 4 numbers');return{name,pin}}
+        async function hostLan(){
+            try{const {name,pin}=lanIdentity();lanStatus('Opening room…');
+                lanSession=await (await roomsReady()).createHost({game:'hood-brawlers',name,pin,onStatus:lanStatus,onConnected:guest=>{if(lanGuest){lanSession.lan.send(guest,'full',{});return}lanGuest=guest;lanNames={host:name,guest:guest.meta.name};lanRole='host';mode='lan-host';document.body.dataset.mode=mode;lanStatus(guest.meta.name+' joined · starting fight');closeLan();startGame()}});
+                lanSession.lan.on('message',({peer,data})=>{if(peer!==lanGuest)return;if(data.type==='rematch'){startGame();return}if(data.type!=='input')return;Object.assign(remoteInput,data.payload);if(data.payload.action==='jump')player2.jump();if(data.payload.action==='punch'||data.payload.action==='kick')player2.attack(data.payload.action)});
+                lanStatus('Room live · waiting for Player 2');
+            }catch(error){lanStatus(error.message)}
+        }
+        async function browseLan(){
+            try{lanStatus('Looking for rooms…');lanRoomsStop?.();lanRoomsStop=await (await roomsReady()).watch('hood-brawlers',rooms=>{lanRooms=rooms;document.getElementById('lan-rooms').innerHTML=rooms.length?rooms.map((room,index)=>`<button class="lan-room" onclick="joinLan(${index})"><b>${escapeLan(room.name)}</b><span>${room.locked?'PIN':'JOIN'}</span></button>`).join(''):'<p>No battles are open yet.</p>'},error=>lanStatus(error.message))}catch(error){lanStatus(error.message)}
+        }
+        const escapeLan=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+        async function joinLan(index){
+            try{const {name,pin}=lanIdentity(),room=lanRooms[index];if(!room)return;lanStatus('Joining '+room.name+'…');const joined=await (await roomsReady()).join(room,{name,pin,onStatus:lanStatus});lanSession=joined;lanRole='guest';mode='lan-guest';document.body.dataset.mode=mode;
+                joined.client.on('message',({data})=>{if(data.type==='full')return lanStatus('That battle already has two players');if(data.type==='start'){characterData=data.payload.colors;lanNames={host:data.payload.host,guest:data.payload.guest};closeLan();startGame()}if(data.type==='state')applyLanState(data.payload)});
+            }catch(error){lanStatus(error.message)}
+        }
         function showCharacterSelect(nextMode='cpu') {
             mode=nextMode;document.body.dataset.mode=mode;document.body.dataset.screen='select';
             p1Ready=false;p2Ready=mode==='cpu';
@@ -445,12 +494,15 @@
             document.getElementById('timer').innerText=timer;
             for(const id of ['start-screen','char-select-screen','game-over','pause-screen'])document.getElementById(id).style.display='none';
             document.getElementById('game-ui').style.display='flex';document.getElementById('match-actions').style.display='flex';
-            document.getElementById('p2-label').innerText=mode==='cpu'?'Computer':'Player 2';canvas.style.display='block';
+            document.getElementById('p1-label').innerText=lanRole?lanNames.host:'Player 1';document.getElementById('p2-label').innerText=mode==='cpu'?'Computer':lanRole?lanNames.guest:'Player 2';canvas.style.display='block';
             player1.reset({x:240,y:346},characterData.p1);player2.reset({x:724,y:346},characterData.p2);updateHealth();
+            if(lanRole==='host'&&lanGuest)lanSession.lan.send(lanGuest,'start',{host:lanNames.host,guest:lanNames.guest,colors:characterData});
             animationId=requestAnimationFrame(gameLoop);
         }
+        function requestRematch(){if(lanRole==='guest'){lanSession.client.send('rematch',{});return}startGame()}
         function resetToMenu() {
             running=false;paused=false;cancelAnimationFrame(animationId);clearInput();p1Ready=p2Ready=false;
+            if(lanRole==='host')lanSession?.stop?.();else lanSession?.client?.close?.();lanRole='';lanSession=null;lanGuest=null;mode='cpu';document.body.dataset.mode=mode;
             for(const id of ['game-over','game-ui','char-select-screen','pause-screen','match-actions'])document.getElementById(id).style.display='none';
             canvas.style.display='none';document.getElementById('start-screen').style.display='flex';document.body.dataset.screen='menu';
         }
@@ -562,76 +614,59 @@
             }
 
             draw(targetCtx = ctx, isStatic = false) {
+                const breathe=Math.sin(this.frame)*1.5,speed=Math.min(1,Math.abs(this.velocity.x)/6);
+                const walk=Math.sin(this.frame*1.65)*10*speed;
+                let x=this.position.x,y=this.position.y,h=this.height,w=this.width;
+                if(this.isCrouching){h*=.68;y+=48}
+                if(this.isWinner)y+=Math.sin(this.frame*2)*12;
 
-                const breathe = Math.sin(this.frame) * 2;
-                const speed=Math.min(1,Math.abs(this.velocity.x)/6);
-                const legMove = Math.sin(this.frame*1.65) * 11*speed;
-                
-                let x = this.position.x;
-                let y = this.position.y;
-                let h = this.height;
-                let w = this.width;
-
-                if (this.isCrouching) { h *= 0.6; y += 60; }
-                if (this.isWinner) y += Math.sin(this.frame * 2) * 15;
-
-                if (!isStatic) {
-                    targetCtx.save();targetCtx.fillStyle='rgba(0,0,0,.48)';targetCtx.beginPath();targetCtx.ellipse(x+30,canvas.height-75,42,9,0,0,Math.PI*2);targetCtx.fill();targetCtx.restore();
-                }
-
+                if(!isStatic){targetCtx.save();targetCtx.fillStyle='rgba(0,0,0,.48)';targetCtx.beginPath();targetCtx.ellipse(x+w/2,canvas.height-75,39,8,0,0,Math.PI*2);targetCtx.fill();targetCtx.restore()}
                 targetCtx.save();
-                const attackElapsed=(this.attackType==='kick'?28:18)-this.attackFrames;
-                const lean=this.stun?-0.12:this.isAttacking?(this.attackType==='kick'?.13:.08):this.velocity.x/150;
+                const lean=this.stun?-.11:this.isAttacking?(this.attackType==='kick'?.1:.07):this.velocity.x/170;
                 targetCtx.translate(x+w/2,y+h);targetCtx.rotate(lean);targetCtx.translate(-(x+w/2),-(y+h));
-                if (this.facing === 'left') {
-                    targetCtx.translate(x + w, 0);
-                    targetCtx.scale(-1, 1);
-                    x = 0;
-                }
+                if(this.facing==='left'){targetCtx.translate(x+w,0);targetCtx.scale(-1,1);x=0}
 
-                targetCtx.fillStyle = '#171923';
-                const onGround = this.position.y >= (canvas.height - 80 - this.height - 1);
-                const isMoving = Math.abs(this.velocity.x) > 0;
-                let lLegOff = (isMoving && onGround) ? legMove : 0;
-                let rLegOff = (isMoving && onGround) ? -legMove : 0;
-                targetCtx.fillRect(x + 12 + lLegOff, y + h - 45, 16, 45);
-                targetCtx.fillRect(x + 32 + rLegOff, y + h - 45, 16, 45);
+                const hipY=y+h-52,shoulderY=y+58+breathe,skin=this.skinTone;
+                const limb=(points,width,color)=>{targetCtx.strokeStyle=color;targetCtx.lineWidth=width;targetCtx.lineCap='round';targetCtx.lineJoin='round';targetCtx.beginPath();targetCtx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)targetCtx.lineTo(points[i][0],points[i][1]);targetCtx.stroke()};
 
-                targetCtx.fillStyle = '#050608';
-                targetCtx.beginPath();targetCtx.roundRect(x+7+lLegOff,y+h-7,27,10,4);targetCtx.roundRect(x+27+rLegOff,y+h-7,27,10,4);targetCtx.fill();
+                // Back limbs give the body depth and make the stance readable.
+                const backKnee=[x+20-walk*.35,hipY+25],backFoot=[x+14-walk, y+h-3];
+                limb([[x+24,hipY],backKnee,backFoot],17,'#1b2230');
+                targetCtx.fillStyle='#07090d';targetCtx.beginPath();targetCtx.roundRect(backFoot[0]-10,backFoot[1]-6,28,10,5);targetCtx.fill();
+                const backHand=[x+10,shoulderY+54];
+                limb([[x+15,shoulderY],[x+5,shoulderY+28],backHand],14,this.color);
+                targetCtx.fillStyle=skin;targetCtx.beginPath();targetCtx.arc(backHand[0],backHand[1],8,0,Math.PI*2);targetCtx.fill();
 
-                targetCtx.fillStyle = this.color;
-                targetCtx.shadowBlur=this.isWinner?22:8;targetCtx.shadowColor=this.color;
-                targetCtx.beginPath();
-                targetCtx.roundRect(x + 3, y + 38 + breathe, 54, h - 82 - breathe, 12);
-                targetCtx.fill();
-                targetCtx.shadowBlur=0;targetCtx.fillStyle='rgba(0,0,0,.22)';targetCtx.fillRect(x+10,y+47+breathe,40,5);
+                // Hips, tapered torso, shoulders and neck.
+                targetCtx.fillStyle='#202735';targetCtx.beginPath();targetCtx.roundRect(x+14,hipY-6,34,20,8);targetCtx.fill();
+                targetCtx.fillStyle=this.color;targetCtx.shadowBlur=this.isWinner?22:7;targetCtx.shadowColor=this.color;
+                targetCtx.beginPath();targetCtx.moveTo(x+8,shoulderY);targetCtx.quadraticCurveTo(x+30,y+43,x+52,shoulderY);targetCtx.lineTo(x+46,hipY);targetCtx.quadraticCurveTo(x+30,hipY+8,x+14,hipY);targetCtx.closePath();targetCtx.fill();targetCtx.shadowBlur=0;
+                targetCtx.fillStyle='rgba(0,0,0,.2)';targetCtx.fillRect(x+15,shoulderY+12,31,5);
+                targetCtx.fillStyle=skin;targetCtx.beginPath();targetCtx.roundRect(x+24,y+42+breathe,14,18,5);targetCtx.fill();
 
-                targetCtx.fillStyle = this.color;
-                if (this.isAttacking && this.attackType === 'punch') {
-                    const reach=Math.min(1,attackElapsed/5);targetCtx.fillRect(x+38,y+54+breathe,22+36*reach,17);
-                    targetCtx.fillStyle = this.skinTone;
-                    targetCtx.beginPath();targetCtx.arc(x+62+36*reach,y+62+breathe,10,0,Math.PI*2);targetCtx.fill();
-                } else {
-                    const guard=this.isCrouching?-17:0;targetCtx.fillRect(x-3,y+58+breathe+guard,16,37);
-                    targetCtx.fillStyle = this.skinTone;
-                    targetCtx.beginPath();targetCtx.arc(x+5,y+98+breathe+guard,9,0,Math.PI*2);targetCtx.fill();
-                }
+                // Front leg; kicks bend at the hip rather than extending a rectangle.
+                let frontKnee=[x+40+walk*.35,hipY+26],frontFoot=[x+45+walk,y+h-3];
+                if(this.isAttacking&&this.attackType==='kick'){frontKnee=[x+62,hipY+4];frontFoot=[x+112,hipY+7]}
+                limb([[x+38,hipY],frontKnee,frontFoot],18,'#293448');
+                targetCtx.fillStyle='#07090d';targetCtx.beginPath();targetCtx.roundRect(frontFoot[0]-9,frontFoot[1]-6,this.attackType==='kick'&&this.isAttacking?31:28,10,5);targetCtx.fill();
 
-                if(this.isAttacking && this.attackType==='kick') {
-                    targetCtx.fillStyle='#1e293b';targetCtx.fillRect(x+30,y+h-42,85,20);
-                    targetCtx.fillStyle='#080b10';targetCtx.fillRect(x+112,y+h-44,18,24);
-                }
-                // Hood, face and eye line
-                targetCtx.fillStyle=this.color;targetCtx.beginPath();targetCtx.arc(x+30,y+21+breathe,28,0,Math.PI*2);targetCtx.fill();
-                targetCtx.fillStyle = this.skinTone;
-                targetCtx.beginPath();
-                targetCtx.arc(x + 32, y + 23 + breathe, 19, 0, Math.PI * 2);
-                targetCtx.fill();
-                targetCtx.fillStyle='#141414';targetCtx.fillRect(x+31,y+17+breathe,14,4);targetCtx.fillStyle='#fff';targetCtx.fillRect(x+40,y+18+breathe,4,2);
+                // Front arm with an elbow, guard pose, and a fully extended punch pose.
+                let elbow=[x+53,shoulderY+27],hand=[x+48,shoulderY+55];
+                if(this.isAttacking&&this.attackType==='punch'){const reach=Math.min(1,((18-this.attackFrames)/5));elbow=[x+59+18*reach,shoulderY+8];hand=[x+69+35*reach,shoulderY+8]}
+                else if(this.isCrouching){elbow=[x+48,shoulderY+12];hand=[x+37,shoulderY-5]}
+                limb([[x+46,shoulderY],elbow,hand],15,this.color);
+                targetCtx.fillStyle=skin;targetCtx.beginPath();targetCtx.arc(hand[0],hand[1],9,0,Math.PI*2);targetCtx.fill();
 
+                // Human face: ears, jaw, nose, two eyes, brow and hair under the hood.
+                targetCtx.fillStyle=this.color;targetCtx.beginPath();targetCtx.arc(x+30,y+24+breathe,28,0,Math.PI*2);targetCtx.fill();
+                targetCtx.fillStyle=skin;targetCtx.beginPath();targetCtx.ellipse(x+31,y+26+breathe,18,21,0,0,Math.PI*2);targetCtx.fill();
+                targetCtx.beginPath();targetCtx.arc(x+50,y+28+breathe,5,0,Math.PI*2);targetCtx.fill();
+                targetCtx.fillStyle='#18181b';targetCtx.beginPath();targetCtx.arc(x+31,y+9+breathe,17,Math.PI,Math.PI*2);targetCtx.fill();
+                targetCtx.strokeStyle='#3f2b24';targetCtx.lineWidth=2;targetCtx.beginPath();targetCtx.moveTo(x+27,y+31+breathe);targetCtx.lineTo(x+35,y+31+breathe);targetCtx.stroke();
+                targetCtx.fillStyle='#fff';targetCtx.beginPath();targetCtx.ellipse(x+35,y+23+breathe,4,3,0,0,Math.PI*2);targetCtx.ellipse(x+45,y+23+breathe,4,3,0,0,Math.PI*2);targetCtx.fill();
+                targetCtx.fillStyle='#111';targetCtx.beginPath();targetCtx.arc(x+37,y+23+breathe,1.8,0,Math.PI*2);targetCtx.arc(x+47,y+23+breathe,1.8,0,Math.PI*2);targetCtx.fill();
+                targetCtx.strokeStyle='#171717';targetCtx.lineWidth=2;targetCtx.beginPath();targetCtx.moveTo(x+31,y+17+breathe);targetCtx.lineTo(x+38,y+16+breathe);targetCtx.moveTo(x+43,y+16+breathe);targetCtx.lineTo(x+49,y+18+breathe);targetCtx.stroke();
                 targetCtx.restore();
-
             }
 
             grounded() { return this.position.y>=346 && this.velocity.y===0; }
@@ -701,14 +736,28 @@
             }
             player2.velocity.x=player2.stun||player2.isCrouching?0:cpuDirection*4.6;
         }
+        const fighterState=fighter=>({x:fighter.position.x,y:fighter.position.y,vx:fighter.velocity.x,vy:fighter.velocity.y,health:fighter.health,crouch:fighter.isCrouching,attacking:fighter.isAttacking,attackType:fighter.attackType,attackFrames:fighter.attackFrames,cooldown:fighter.cooldown,stun:fighter.stun,knockback:fighter.knockback,facing:fighter.facing,winner:fighter.isWinner,frame:fighter.frame});
+        function copyFighterState(fighter,state){
+            if(!state)return;fighter.position.x=state.x;fighter.position.y=state.y;fighter.velocity.x=state.vx;fighter.velocity.y=state.vy;fighter.health=state.health;fighter.isCrouching=state.crouch;fighter.isAttacking=state.attacking;fighter.attackType=state.attackType;fighter.attackFrames=state.attackFrames;fighter.cooldown=state.cooldown;fighter.stun=state.stun;fighter.knockback=state.knockback;fighter.facing=state.facing;fighter.isWinner=state.winner;fighter.frame=state.frame;
+        }
+        function broadcastLanState(){if(lanRole==='host'&&lanGuest)lanSession.lan.send(lanGuest,'state',{p1:fighterState(player1),p2:fighterState(player2),timer,roundBanner,gameOver,winner:document.getElementById('winner-text').innerText})}
+        function applyLanState(state){
+            copyFighterState(player1,state.p1);copyFighterState(player2,state.p2);timer=state.timer;roundBanner=state.roundBanner;document.getElementById('timer').innerText=timer;updateHealth();
+            if(state.gameOver&&!gameOver){gameOver=true;document.getElementById('winner-text').innerText=state.winner;document.getElementById('game-over').style.display='block'}
+        }
+        function sendGuestInput(action=''){if(lanRole!=='guest'||!lanSession?.client)return;lanSession.client.send('input',{left:movement.has('KeyA')||touch.x<-.2,right:movement.has('KeyD')||touch.x>.2,block:movement.has('KeyS')||touch.block,action})}
         function stepGame() {
             if(gameOver||paused)return;
+            if(lanRole==='guest'){if(++netTick%3===0)sendGuestInput();return;}
             if(roundBanner>0)roundBanner--;
             if(impactFreeze>0){impactFreeze--;return;}
             player1.isCrouching=(movement.has('KeyS')||touch.block)&&player1.grounded();
             player1.velocity.x=player1.stun||player1.isCrouching?0:((movement.has('KeyD')?1:0)-(movement.has('KeyA')?1:0)+touch.x)*6;
             player1.velocity.x=Math.max(-6,Math.min(6,player1.velocity.x));
-            if(mode==='cpu')cpuControl();else {
+            if(mode==='cpu')cpuControl();else if(mode==='lan-host'){
+                player2.isCrouching=remoteInput.block&&player2.grounded();
+                player2.velocity.x=player2.stun||player2.isCrouching?0:((remoteInput.right?1:0)-(remoteInput.left?1:0))*6;
+            } else {
                 player2.isCrouching=movement.has('ArrowDown')&&player2.grounded();
                 player2.velocity.x=player2.stun||player2.isCrouching?0:((movement.has('ArrowRight')?1:0)-(movement.has('ArrowLeft')?1:0))*6;
             }
@@ -720,6 +769,7 @@
             if(hit1)applyHit(player1,player2);if(hit2)applyHit(player2,player1);
             if(++clockFrames>=60){clockFrames=0;timer=Math.max(0,timer-1);document.getElementById('timer').innerText=timer;}
             if(player1.health===0||player2.health===0||timer===0)determineWinner();
+            if(lanRole==='host'&&++netTick%3===0)broadcastLanState();
         }
         function gameLoop(now) {
             if(!running)return;
@@ -734,6 +784,7 @@
             if(event.code==='Escape'){event.preventDefault();if(!event.repeat)togglePause();return;}
             if(!running||paused||gameOver||!controlCodes.has(event.code))return;
             event.preventDefault();movement.add(event.code);if(event.repeat)return;
+            if(lanRole==='guest'){if(event.code==='KeyW')sendGuestInput('jump');if(event.code==='KeyQ')sendGuestInput('punch');if(event.code==='KeyE')sendGuestInput('kick');return;}
             if(event.code==='KeyW')player1.jump();if(event.code==='KeyQ')player1.attack('punch');if(event.code==='KeyE')player1.attack('kick');
             if(mode==='local'){if(event.code==='ArrowUp')player2.jump();if(event.code==='KeyK')player2.attack('punch');if(event.code==='KeyL')player2.attack('kick');}
         });
@@ -742,12 +793,12 @@
         window.addEventListener('blur',suspend);document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();});
         const moveZone=document.getElementById('move-zone'),stick=document.getElementById('move-stick'),thumb=document.getElementById('move-thumb');
         function moveTouch(event){if(event.pointerId!==touch.pointer)return;const dx=event.clientX-touch.originX,dy=event.clientY-touch.originY,dist=Math.hypot(dx,dy),scale=Math.min(1,32/(dist||1));touch.x=Math.abs(dx)<6?0:Math.max(-1,Math.min(1,dx/32));thumb.style.transform=`translate(${dx*scale}px,${dy*scale}px)`;}
-        document.addEventListener('pointerdown',event=>{if(event.clientX>=innerWidth/2||event.target.closest('button')||mode!=='cpu'||(event.pointerType==='mouse'&&!moveZone.contains(event.target))||touch.pointer!==null||!running||paused||gameOver)return;event.preventDefault();touch.pointer=event.pointerId;touch.originX=event.clientX;touch.originY=event.clientY;event.target.setPointerCapture(event.pointerId);Object.assign(stick.style,{position:'fixed',left:(event.clientX-50)+'px',top:(event.clientY-50)+'px',opacity:'.85'});moveTouch(event);});
+        document.addEventListener('pointerdown',event=>{if(event.clientX>=innerWidth/2||event.target.closest('button')||mode==='local'||(event.pointerType==='mouse'&&!moveZone.contains(event.target))||touch.pointer!==null||!running||paused||gameOver)return;event.preventDefault();touch.pointer=event.pointerId;touch.originX=event.clientX;touch.originY=event.clientY;event.target.setPointerCapture(event.pointerId);Object.assign(stick.style,{position:'fixed',left:(event.clientX-50)+'px',top:(event.clientY-50)+'px',opacity:'.85'});moveTouch(event);});
         document.addEventListener('pointermove',moveTouch);
         for(const type of ['pointerup','pointercancel','lostpointercapture'])document.addEventListener(type,event=>{if(event.pointerId!==touch.pointer)return;touch.pointer=null;touch.x=0;thumb.style.transform='';for(const p of ['position','left','top','opacity'])stick.style[p]='';});
         document.querySelectorAll('#touch-actions button').forEach(button=>{
             const action=button.dataset.action;
-            button.addEventListener('pointerdown',event=>{if(!running||paused||gameOver)return;event.preventDefault();button.setPointerCapture(event.pointerId);button.classList.add('active');if(action==='jump')player1.jump();else if(action==='block')touch.block=true;else player1.attack(action);});
+            button.addEventListener('pointerdown',event=>{if(!running||paused||gameOver)return;event.preventDefault();button.setPointerCapture(event.pointerId);button.classList.add('active');if(action==='block')touch.block=true;else if(lanRole==='guest')sendGuestInput(action);else if(action==='jump')player1.jump();else player1.attack(action);});
             for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,()=>{button.classList.remove('active');if(action==='block')touch.block=false;});
         });
         document.getElementById('touch-tip').textContent=matchMedia('(any-pointer:coarse)').matches?' Move with the floating stick on the left. Use the buttons on the right.':'';

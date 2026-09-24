@@ -217,7 +217,7 @@
     </div>
 
     <canvas id="gameCanvas"></canvas>
-
+    <script src="party-lan.js"></script><script src="party-game-lobby.js"></script><script type="module" src="party-rooms.js"></script>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -273,6 +273,14 @@
         let isPlaying = false;
         let isInventoryOpen = false;
         let lastSaveTime = 0;
+        const remotePlayers=new Map();let terrariaNetTick=0;
+        const terrariaLan=PartyGameLobby.create({game:'terraria-js',title:'SHARED WORLD',maxPlayers:8});
+        terrariaLan.on('peer',({peer,name})=>{if(world.length)terrariaLan.host.lan.send(peer,'world',{world,spawn:{x:player.x,y:player.y},tileSize:TILE_SIZE});remotePlayers.set(peer.id,{name,x:player.x,y:player.y,color:'#f59e0b'})});
+        terrariaLan.on('message',({peer,data})=>{
+            if(data.type==='world'&&terrariaLan.role==='guest'){world=data.payload.world;TILE_SIZE=data.payload.tileSize||TILE_SIZE;player.x=data.payload.spawn.x+40;player.y=data.payload.spawn.y;currentSaveId=null;startGame()}
+            if(data.type==='tile'){const {x,y,tile}=data.payload;if(world[x])world[x][y]=tile;if(terrariaLan.role==='host')terrariaLan.broadcast('tile',data.payload)}
+            if(data.type==='player'){const id=data.payload.id||peer?.id||'host';remotePlayers.set(id,{name:peer?.meta?.name||data.payload.name,...data.payload});if(terrariaLan.role==='host')terrariaLan.broadcast('player',{...data.payload,id,name:peer.meta.name})}
+        });
 
         function init() {
             createMenuClouds();
@@ -569,11 +577,13 @@
             if (tx < 0 || tx >= WORLD_WIDTH || ty < 0 || ty >= WORLD_HEIGHT) return;
             const dist = Math.hypot(player.x + player.w/2 - mWX, player.y + player.h/2 - mWY);
             if (dist > TILE_SIZE * 5.5) return;
-            if (button === 0 && world[tx][ty] !== TILE.AIR) world[tx][ty] = TILE.AIR;
+            let changed=false;
+            if (button === 0 && world[tx][ty] !== TILE.AIR) {world[tx][ty] = TILE.AIR;changed=true;}
             else if (button === 2 && world[tx][ty] === TILE.AIR) {
                 const tile = player.inventory[player.selectedSlot];
-                if (tile !== TILE.AIR) world[tx][ty] = tile;
+                if (tile !== TILE.AIR) {world[tx][ty] = tile;changed=true;}
             }
+            if(changed){const change={x:tx,y:ty,tile:world[tx][ty]};if(terrariaLan.role==='host')terrariaLan.broadcast('tile',change);else if(terrariaLan.role==='guest')terrariaLan.send('tile',change)}
         }
 
         function update() {
@@ -628,6 +638,7 @@
 
             camera.x += (player.x - canvas.width / 2 - camera.x) * 0.1;
             camera.y += (player.y - canvas.height / 2 - camera.y) * 0.1;
+            if(terrariaLan.role&&++terrariaNetTick%6===0){const state={name:terrariaLan.name,x:player.x,y:player.y,vx:player.vx};if(terrariaLan.role==='host')terrariaLan.broadcast('player',state);else terrariaLan.send('player',state)}
             if (Math.random() > 0.8) {
                 if (mouse.leftDown) handleInteraction(0);
                 if (mouse.rightDown) handleInteraction(2);
@@ -687,6 +698,7 @@
             ctx.fillStyle = '#ffccbc'; ctx.fillRect(player.x, player.y, player.w, player.h);
             ctx.fillStyle = '#3f51b5'; ctx.fillRect(player.x, player.y + player.h * 0.4, player.w, player.h * 0.4);
             ctx.fillStyle = '#000'; ctx.fillRect(player.x + (player.vx >= 0 ? player.w * 0.7 : player.w * 0.2), player.y + 8, 4, 4);
+            remotePlayers.forEach(remote=>{ctx.fillStyle=remote.color||'#f59e0b';ctx.fillRect(remote.x,remote.y,player.w,player.h);ctx.fillStyle='#fff';ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.fillText(remote.name||'Player',remote.x+player.w/2,remote.y-7)});
 
             if (isPlaying && !isInventoryOpen) {
                 const mWX = mouse.x + camera.x; const mWY = mouse.y + camera.y;

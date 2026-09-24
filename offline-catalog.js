@@ -366,8 +366,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/app.js",
-        "bytes": 136327,
-        "hash": "6cb657338efaf2e7a334fb8e595e916eddc6488cf8c91b8b5d5b5a2e9e73fafa"
+        "bytes": 139686,
+        "hash": "1b30133480849637bd56820bfbf0f8ee276714a043e5f9a916cd7e576a576386"
       },
       {
         "path": "card-wars/assets/card-wars-home.png",
@@ -5091,8 +5091,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/index.html",
-        "bytes": 30690,
-        "hash": "90d7988815488bbb857df9cd5ef539a514243dbf1e310ce67310ba8efc61cef0"
+        "bytes": 30835,
+        "hash": "9d8bab5f19babc17bb33e8cc3c365dd23aa268ded7dd9bc4edad91acb92da99e"
       },
       {
         "path": "card-wars/styles.css",
@@ -5103,10 +5103,25 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/three-board.js",
         "bytes": 33568,
         "hash": "ae31b8c6439d333e4f97ff07405ad14e975edeb174dc9971410417674e1e7d64"
+      },
+      {
+        "path": "party-game-lobby.js",
+        "bytes": 5481,
+        "hash": "1f1f877e82dd580c7ffa9ecf9f44e6b7256500bddccfb2256e5292ec9626a087"
+      },
+      {
+        "path": "party-lan.js",
+        "bytes": 3375,
+        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 5763,
+        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
       }
     ],
-    "bytes": 165155913,
-    "version": "2442dfab1a4592b3"
+    "bytes": 165174036,
+    "version": "924ac253fc2cdc6f"
   },
   "truth-or-dare": {
     "name": "Truth or Dare",
@@ -5450,8 +5465,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "3d_drift_racer.html",
-        "bytes": 151722,
-        "hash": "4912e7e3472785090bdd8b9a1d08cb568d7ba8398204614010e0e11495860e10"
+        "bytes": 153920,
+        "hash": "f747914fd20d67de43e950c60af5e93994949751293d2bd16a9e5f7c5088176d"
       },
       {
         "path": "assets/rod-space-home.css",
@@ -5517,10 +5532,25 @@ self.OFFLINE_CATALOG = {
         "path": "assets/vendor/tokyo-fonts.css",
         "bytes": 938,
         "hash": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b"
+      },
+      {
+        "path": "party-game-lobby.js",
+        "bytes": 5481,
+        "hash": "1f1f877e82dd580c7ffa9ecf9f44e6b7256500bddccfb2256e5292ec9626a087"
+      },
+      {
+        "path": "party-lan.js",
+        "bytes": 3375,
+        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 5763,
+        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
       }
     ],
-    "bytes": 3229567,
-    "version": "ad7ea7b267452d19"
+    "bytes": 3246384,
+    "version": "9c27d1569de77f3d"
   },
   "web_weavers": {
     "name": "Web Weavers",
@@ -5566,12 +5596,22 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "hood_brawlers.html",
-        "bytes": 40485,
-        "hash": "c05cd8f311ec93428643b0e1c42af1573efb6822534b6208e2295788708bb714"
+        "bytes": 51265,
+        "hash": "8a164e4efd983624d5c4a6854c80a5979d71d0b442892f24d062e1b7f13ccdb2"
+      },
+      {
+        "path": "party-lan.js",
+        "bytes": 3375,
+        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 5763,
+        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
       }
     ],
-    "bytes": 42632,
-    "version": "10389e723f560915"
+    "bytes": 62550,
+    "version": "30caacd7f7a84a99"
   },
   "planet-architect": {
     "name": "Planet Architect",
@@ -5621,13 +5661,28 @@ self.OFFLINE_CATALOG = {
         "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
+        "path": "party-game-lobby.js",
+        "bytes": 5481,
+        "hash": "1f1f877e82dd580c7ffa9ecf9f44e6b7256500bddccfb2256e5292ec9626a087"
+      },
+      {
+        "path": "party-lan.js",
+        "bytes": 3375,
+        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 5763,
+        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
+      },
+      {
         "path": "terraria.html",
-        "bytes": 29060,
-        "hash": "ee8f42f2c03c87232056e7aece1ee5fedcbe898cb08c1899dbc467d279600006"
+        "bytes": 31090,
+        "hash": "dd1405be631ec3eb8b99ccaa208737b707d864510db8f10a8ce91e3a9efd0d29"
       }
     ],
-    "bytes": 438486,
-    "version": "a435bb8e0e9d2f4f"
+    "bytes": 455135,
+    "version": "f7c3d43d333ab6a6"
   },
   "orbit-boss": {
     "name": "Orbit Boss",
@@ -5673,12 +5728,27 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50378,
-        "hash": "fca5330a0c7997a464eca4aa677aad041d97deeb8d5f36beb9ec9c106cce1396"
+        "bytes": 52348,
+        "hash": "e4f23010c3d4b3164cef0a21a031d07f976a9355ec6789b5b6789d4ebbd2c9f6"
+      },
+      {
+        "path": "party-game-lobby.js",
+        "bytes": 5481,
+        "hash": "1f1f877e82dd580c7ffa9ecf9f44e6b7256500bddccfb2256e5292ec9626a087"
+      },
+      {
+        "path": "party-lan.js",
+        "bytes": 3375,
+        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 5763,
+        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
       }
     ],
-    "bytes": 1325496,
-    "version": "bf6714b7efe90c7c"
+    "bytes": 1342085,
+    "version": "3bc875724be34e90"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",
@@ -5686,8 +5756,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "3d_drift_racer.html",
-        "bytes": 151722,
-        "hash": "4912e7e3472785090bdd8b9a1d08cb568d7ba8398204614010e0e11495860e10"
+        "bytes": 153920,
+        "hash": "f747914fd20d67de43e950c60af5e93994949751293d2bd16a9e5f7c5088176d"
       },
       {
         "path": "Blackjack.html",
@@ -6021,8 +6091,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/app.js",
-        "bytes": 136327,
-        "hash": "6cb657338efaf2e7a334fb8e595e916eddc6488cf8c91b8b5d5b5a2e9e73fafa"
+        "bytes": 139686,
+        "hash": "1b30133480849637bd56820bfbf0f8ee276714a043e5f9a916cd7e576a576386"
       },
       {
         "path": "card-wars/assets/card-wars-home.png",
@@ -10746,8 +10816,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/index.html",
-        "bytes": 30690,
-        "hash": "90d7988815488bbb857df9cd5ef539a514243dbf1e310ce67310ba8efc61cef0"
+        "bytes": 30835,
+        "hash": "9d8bab5f19babc17bb33e8cc3c365dd23aa268ded7dd9bc4edad91acb92da99e"
       },
       {
         "path": "card-wars/styles.css",
@@ -10801,8 +10871,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "hood_brawlers.html",
-        "bytes": 40485,
-        "hash": "c05cd8f311ec93428643b0e1c42af1573efb6822534b6208e2295788708bb714"
+        "bytes": 51265,
+        "hash": "8a164e4efd983624d5c4a6854c80a5979d71d0b442892f24d062e1b7f13ccdb2"
       },
       {
         "path": "impostor.html",
@@ -10816,8 +10886,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "multiplayer.html",
-        "bytes": 72071,
-        "hash": "144541c860c3976072cdfd56a9fae70e444ce4faa47faa9c9f5b234dbb401466"
+        "bytes": 73687,
+        "hash": "9f40f7e32bf066775a971a90fd88047f5872c2443387b918751c20b4aa0d2991"
       },
       {
         "path": "nextup/app.js",
@@ -10842,7 +10912,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 424335,
-        "hash": "d896a7695b681d8f316d4137263c394a37e7e6a3beae10969770ce025be3595c"
+        "hash": "5d8777a3d926f2fd396aca57c19ce9171db3a29ff7e6951fc65f7c74ea780269"
       },
       {
         "path": "offline.js",
@@ -10856,8 +10926,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50378,
-        "hash": "fca5330a0c7997a464eca4aa677aad041d97deeb8d5f36beb9ec9c106cce1396"
+        "bytes": 52348,
+        "hash": "e4f23010c3d4b3164cef0a21a031d07f976a9355ec6789b5b6789d4ebbd2c9f6"
+      },
+      {
+        "path": "party-game-lobby.js",
+        "bytes": 5481,
+        "hash": "1f1f877e82dd580c7ffa9ecf9f44e6b7256500bddccfb2256e5292ec9626a087"
       },
       {
         "path": "party-lan.js",
@@ -10927,12 +11002,12 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "8ff5418d4de7a42ed07b4455790bdfad989c3a58243313610c1244f33f9a5620"
+        "hash": "6be1fa5e63aa77fca4477ffbea9059b1b00e36c2b96c99d0bfa58436e9501d14"
       },
       {
         "path": "terraria.html",
-        "bytes": 29060,
-        "hash": "ee8f42f2c03c87232056e7aece1ee5fedcbe898cb08c1899dbc467d279600006"
+        "bytes": 31090,
+        "hash": "dd1405be631ec3eb8b99ccaa208737b707d864510db8f10a8ce91e3a9efd0d29"
       },
       {
         "path": "terraria/assets/index-CIulLFM7.css",
@@ -10985,8 +11060,8 @@ self.OFFLINE_CATALOG = {
         "hash": "965eeed99796d5ee8c82e040df5683d5375ee7e552695fd5348d99102b65540d"
       }
     ],
-    "bytes": 304633462,
-    "version": "73ec6b49e2cce0bd"
+    "bytes": 304661041,
+    "version": "4edfdd67ce85c320"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -11217,11 +11292,26 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "multiplayer.html",
-        "bytes": 72071,
-        "hash": "144541c860c3976072cdfd56a9fae70e444ce4faa47faa9c9f5b234dbb401466"
+        "bytes": 73687,
+        "hash": "9f40f7e32bf066775a971a90fd88047f5872c2443387b918751c20b4aa0d2991"
+      },
+      {
+        "path": "party-game-lobby.js",
+        "bytes": 5481,
+        "hash": "1f1f877e82dd580c7ffa9ecf9f44e6b7256500bddccfb2256e5292ec9626a087"
+      },
+      {
+        "path": "party-lan.js",
+        "bytes": 3375,
+        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 5763,
+        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
       }
     ],
-    "bytes": 1757815,
-    "version": "f9312d53877fedc6"
+    "bytes": 1774050,
+    "version": "34c15e1c750508c8"
   }
 };

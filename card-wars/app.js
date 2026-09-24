@@ -2328,6 +2328,7 @@ document.addEventListener("click", (event) => {
     if (!battle || battle.animating || battle.enemyPhaseRunning || battle.turn !== "player") return;
     event.preventDefault();
     event.stopPropagation();
+    if (cardWarsLan?.role) { finishLanCardTurn(); return; }
     void enemyTurn();
     return;
   }
@@ -2404,6 +2405,38 @@ function moveHologramTestMap() {
   if (testMapKeys.has("d")) testMapOffsetX -= distance;
   updateHologramTestMap();
   testMapMovementFrame = requestAnimationFrame(moveHologramTestMap);
+}
+
+/* Two-player LAN battles. The active player always sees their own cards at the
+   bottom; handing over a turn swaps both sides before sending the state. Extra
+   guests receive read-only snapshots as spectators. */
+const cardWarsLan=globalThis.PartyGameLobby?.create({game:'card-wars',title:'CARD WARS LAN'});
+const cardLanPeers=[];let cardLanPlayer=false,cardLanSpectator=false;
+function cloneBattle(value){return JSON.parse(JSON.stringify(value))}
+function flipLanBattle(source){
+  const b=cloneBattle(source),pairs=[['playerHp','enemyHp'],['maxPlayerHp','maxEnemyHp'],['energy','enemyEnergy'],['maxEnergy','enemyMaxEnergy'],['actionsLeft','enemyActionsLeft'],['hand','enemyHand'],['playerDrawPile','enemyDrawPile'],['playerDiscard','enemyDiscard'],['playerBoard','enemyBoard'],['playerLandscapes','enemyLandscapes'],['playerLandscapeCards','enemyLandscapeCards'],['playerLandscapeArt','enemyLandscapeArt'],['playerTurnsCompleted','enemyTurnsCompleted']];
+  for(const [a,z] of pairs){const temp=b[a];b[a]=b[z];b[z]=temp}b.turn='player';b.animating=false;b.enemyPhaseRunning=false;b.enemyTurnToken=0;b.freshHand=true;b.log=[`Round ${b.round}: your LAN turn.`,...(b.log||[]).slice(0,7)];return b;
+}
+function displayLanBattle(snapshot,playable){
+  battle=cloneBattle(snapshot);battle.turn=playable?'player':'enemy';battle.animating=false;battle.enemyPhaseRunning=false;
+  document.querySelectorAll('.tab, .view').forEach(node=>node.classList.remove('active'));$('battleView')?.classList.add('active');document.body.classList.remove('home-active');document.body.classList.add('battle-active');renderBattle();
+}
+function broadcastCardSpectators(){if(!cardWarsLan?.host)return;for(let i=1;i<cardLanPeers.length;i++)cardWarsLan.host.lan.send(cardLanPeers[i],'spectate',{battle:cloneBattle(battle)})}
+function finishLanCardTurn(){
+  if(!battle||cardLanSpectator)return;const next=flipLanBattle(battle);next.round=(battle.round||1)+.5;battle.turn='enemy';battle.log.unshift('Waiting for the other player…');renderBattle();
+  if(cardWarsLan.role==='host'){cardWarsLan.host.lan.send(cardLanPeers[0],'battle',{battle:next});broadcastCardSpectators()}else cardWarsLan.send('turn',{battle:next});
+}
+if(cardWarsLan){
+  cardWarsLan.on('peer',({peer,name})=>{
+    cardLanPeers.push(peer);if(cardLanPeers.length===1){cardLanPlayer=true;if(!startBattle())return;battle.startingPlayer='player';battle.turn='player';battle.log.unshift(`${name} joined as Player 2.`);displayLanBattle(battle,true);cardWarsLan.host.lan.send(peer,'waiting',{battle:flipLanBattle(battle)});showToast(`${name} joined · you go first`)}
+    else cardWarsLan.host.lan.send(peer,'spectate',{battle:cloneBattle(battle)});
+  });
+  cardWarsLan.on('message',({peer,data})=>{
+    if(data.type==='waiting'){cardLanPlayer=true;displayLanBattle(data.payload.battle,false);showToast('Connected · Player 1 goes first')}
+    if(data.type==='battle'){cardLanPlayer=true;displayLanBattle(data.payload.battle,true);showToast('Your turn')}
+    if(data.type==='turn'&&cardWarsLan.role==='host'&&peer===cardLanPeers[0]){displayLanBattle(data.payload.battle,true);broadcastCardSpectators();showToast('Your turn')}
+    if(data.type==='spectate'){cardLanSpectator=true;displayLanBattle(data.payload.battle,false);showToast('Spectating this battle')}
+  });
 }
 
 function isEditableTarget(target) {
