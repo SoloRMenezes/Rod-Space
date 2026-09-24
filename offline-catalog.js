@@ -91,12 +91,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "piano.html",
-        "bytes": 7543,
-        "hash": "a967013e664f0cebd4e6c8c8c3715589202d6bc92d3f41fe9ef41c2c7187282a"
+        "bytes": 7017,
+        "hash": "91a15587f1ee6429937864e4b0ca05ab98ff75d6e986dbfcbb9081d186500e0e"
       }
     ],
-    "bytes": 9690,
-    "version": "891608f7aa5457cd"
+    "bytes": 9164,
+    "version": "a105397ed49b6b40"
   },
   "counter": {
     "name": "Counter",
@@ -10911,8 +10911,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 424335,
-        "hash": "5d8777a3d926f2fd396aca57c19ce9171db3a29ff7e6951fc65f7c74ea780269"
+        "bytes": 427179,
+        "hash": "1056b0920f65007b17405492e268b33050d5a8293f7c6d1725a30834705bb4a2"
       },
       {
         "path": "offline.js",
@@ -10951,8 +10951,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "piano.html",
-        "bytes": 7543,
-        "hash": "a967013e664f0cebd4e6c8c8c3715589202d6bc92d3f41fe9ef41c2c7187282a"
+        "bytes": 7017,
+        "hash": "91a15587f1ee6429937864e4b0ca05ab98ff75d6e986dbfcbb9081d186500e0e"
       },
       {
         "path": "planet_architect.html",
@@ -11002,7 +11002,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "6be1fa5e63aa77fca4477ffbea9059b1b00e36c2b96c99d0bfa58436e9501d14"
+        "hash": "43bfe2fe2d1ac996d082431e0dc2d7486ae9578fd682151cb774e8ea34cf257b"
       },
       {
         "path": "terraria.html",
@@ -11060,8 +11060,8 @@ self.OFFLINE_CATALOG = {
         "hash": "965eeed99796d5ee8c82e040df5683d5375ee7e552695fd5348d99102b65540d"
       }
     ],
-    "bytes": 304661041,
-    "version": "4edfdd67ce85c320"
+    "bytes": 304663359,
+    "version": "68f4407cd38f735e"
   },
   "backrooms": {
     "name": "The Backrooms",
