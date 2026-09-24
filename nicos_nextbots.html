@@ -444,12 +444,18 @@ function initAudio() {
                 for(const end of [ramp.x1*2,ramp.x2*2]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,end===ramp.x1*2?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12),cz);scene.add(bar)}
             }
 
-            // Proper parking bays and centre-lane markings.
-            const markings=[];
-            for(const z of [24,56,136,168])for(let x=8;x<MAP_SIZE_X*2-8;x+=12)markings.push([x,z,0.12,9]);
-            for(const z of [96])for(let x=10;x<MAP_SIZE_X*2-10;x+=8)markings.push([x,z,4,.14]);
+            // Aligned parking bays stay inside rooms and never cut through walls,
+            // columns, ramps, or parked cars. Mirror them on both garage floors.
+            const markings=[],roomBands=[[2,34],[36,69],[71,104],[106,137]],bayRows=[12,36,60,84];
+            const bayLineClear=(x,y)=>{
+                for(let checkY=Math.floor(y-2.5);checkY<=Math.ceil(y+2.5);checkY++)if(MAP[checkY]?.[Math.floor(x)]!==0||rampAt(x,checkY))return false;
+                return !MAP.carSpots.some(([carX,carY])=>Math.abs(x-(carX+.5))<1.4&&Math.abs(y-(carY+.5))<4);
+            };
+            for(const y of bayRows)for(const [left,right] of roomBands)for(let x=left+4;x<right-2;x+=6)if(bayLineClear(x,y)){
+                for(const floorY of [.035,FLOOR_HEIGHT+.355])markings.push([x*2+1,floorY,y*2+1,.16,10]);
+            }
             const markGeo=new THREE.BoxGeometry(1,.025,1),markMat=new THREE.MeshBasicMaterial({color:0xe5d26c}),marks=new THREE.InstancedMesh(markGeo,markMat,markings.length);
-            markings.forEach(([x,z,w,d],i)=>{transform.compose(new THREE.Vector3(x,.025,z),new THREE.Quaternion(),new THREE.Vector3(w,1,d));marks.setMatrixAt(i,transform)});marks.instanceMatrix.needsUpdate=true;scene.add(marks);
+            markings.forEach(([x,y,z,w,d],i)=>{transform.compose(new THREE.Vector3(x,y,z),new THREE.Quaternion(),new THREE.Vector3(w,1,d));marks.setMatrixAt(i,transform)});marks.instanceMatrix.needsUpdate=true;scene.add(marks);
 
             // Fluorescent fixtures are emissive-looking props only; they add no costly dynamic lights.
             const lampPositions=[];for(let z=14;z<MAP_SIZE_Y*2-10;z+=24)for(let x=14;x<MAP_SIZE_X*2-10;x+=28)lampPositions.push([x,z]);
