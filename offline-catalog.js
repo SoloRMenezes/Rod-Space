@@ -5370,13 +5370,28 @@ self.OFFLINE_CATALOG = {
         "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
       },
       {
+        "path": "party-lan.js",
+        "bytes": 3375,
+        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 5763,
+        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
+      },
+      {
+        "path": "reaction-score-lan.js",
+        "bytes": 3471,
+        "hash": "63ca685fce021d4246ca4f6c4ac442e80173378130b38302857123c116da2c8b"
+      },
+      {
         "path": "reaction.html",
-        "bytes": 17899,
-        "hash": "f095279c6c46ae14e6133c18f4b89866f50694c1dfaa9533ae5bacc21f23e264"
+        "bytes": 20614,
+        "hash": "be71cb1c76338f805f21ed4281f17ed5da2bd5f4670a0dc42f50a23ee49b0957"
       }
     ],
-    "bytes": 20046,
-    "version": "c55e5ec9eb79043c"
+    "bytes": 35370,
+    "version": "b46e763ba0c273ca"
   },
   "solos-rng": {
     "name": "Solo's RNG",
@@ -10826,8 +10841,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 411667,
-        "hash": "e9261126f6d977231752bdd715a43990b93d81a64396f0a5dbebcff9430bba14"
+        "bytes": 424335,
+        "hash": "8ad425ec8436e90324530494c08cc9f826f62272b0c42a48782c05ed8f39d2c0"
       },
       {
         "path": "offline.js",
@@ -10870,9 +10885,14 @@ self.OFFLINE_CATALOG = {
         "hash": "a1109de41f1d72ca49281ed7098ffb9af0413fe32a1f078b7de206a998f625ec"
       },
       {
+        "path": "reaction-score-lan.js",
+        "bytes": 3471,
+        "hash": "63ca685fce021d4246ca4f6c4ac442e80173378130b38302857123c116da2c8b"
+      },
+      {
         "path": "reaction.html",
-        "bytes": 17899,
-        "hash": "f095279c6c46ae14e6133c18f4b89866f50694c1dfaa9533ae5bacc21f23e264"
+        "bytes": 20614,
+        "hash": "be71cb1c76338f805f21ed4281f17ed5da2bd5f4670a0dc42f50a23ee49b0957"
       },
       {
         "path": "relic_rush.html",
@@ -10907,7 +10927,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "b5c98db6a6a225ed9455b4f1c6eaa3b8ce837fdcb9d50692a9b11c9601268ceb"
+        "hash": "d766fe7f6e00ced5b7f52a55f5c589f6ed3f0b1da0f627f21911c830342c5d3c"
       },
       {
         "path": "terraria.html",
@@ -10965,8 +10985,8 @@ self.OFFLINE_CATALOG = {
         "hash": "965eeed99796d5ee8c82e040df5683d5375ee7e552695fd5348d99102b65540d"
       }
     ],
-    "bytes": 304614554,
-    "version": "cf67cf45d0a457be"
+    "bytes": 304633408,
+    "version": "4c443a3d476df915"
   },
   "backrooms": {
     "name": "The Backrooms",

@@ -229,6 +229,17 @@
             z-index: 200;
             display: none;
         }
+        .lan-score-status {
+            margin: -18px auto 20px;
+            width: fit-content;
+            max-width: min(92vw, 440px);
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(0,0,0,.2);
+            font-size: .82rem;
+            color: rgba(255,255,255,.88);
+        }
+        .lan-score-status.connected { background: rgba(46,213,115,.25); }
     </style>
 <link rel="stylesheet" href="assets/rod-space-home.css">
 <script defer src="assets/rod-space-home.js"></script>
@@ -240,6 +251,7 @@
         <div class="game-stats">
             <div class="stat">Time: <span id="timer">0.0s</span></div>
         </div>
+        <div id="lanScoreStatus" class="lan-score-status">LAN scores · looking for nearby players…</div>
 
         <div class="lives" id="lives">
             <div class="life"></div>
@@ -287,6 +299,7 @@
     </div>
 
     <script>
+        const escapeScoreName = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
         class ReactionGame {
             constructor() {
                 this.score = 0;
@@ -319,6 +332,8 @@
                     toast: document.getElementById('toast'),
                 };
 
+                this.deviceId = localStorage.getItem('reactionDeviceId') || crypto.randomUUID();
+                localStorage.setItem('reactionDeviceId', this.deviceId);
                 this.leaderboard = this.loadLeaderboard();
                 this.init();
             }
@@ -452,16 +467,44 @@
             }
 
             loadLeaderboard() {
-                const saved = localStorage.getItem('reactionGameLeaderboard');
-                return saved ? JSON.parse(saved) : [];
+                try {
+                    const saved = JSON.parse(localStorage.getItem('reactionGameLeaderboard') || '[]');
+                    return Array.isArray(saved) ? saved.map(entry => this.normaliseScore(entry)).filter(Boolean).slice(0, 20) : [];
+                } catch { return []; }
+            }
+
+            normaliseScore(entry) {
+                const score = Number(entry?.score), time = Number(entry?.time);
+                if (!Number.isFinite(score) || score < 0 || !Number.isFinite(time) || time < 0) return null;
+                const name = String(entry.name || 'AAA').trim().slice(0, 12) || 'AAA';
+                const id = String(entry.id || `${name}:${score}:${time.toFixed(3)}`);
+                return { id, score: Math.floor(score), time, name, deviceId: String(entry.deviceId || 'legacy'), savedAt: Number(entry.savedAt) || 0 };
+            }
+
+            storeLeaderboard() {
+                this.leaderboard.sort((a, b) => b.score - a.score || a.time - b.time);
+                this.leaderboard = this.leaderboard.slice(0, 20);
+                localStorage.setItem('reactionGameLeaderboard', JSON.stringify(this.leaderboard));
+            }
+
+            mergeScores(incoming = []) {
+                const merged = new Map(this.leaderboard.map(entry => [entry.id, entry]));
+                incoming.map(entry => this.normaliseScore(entry)).filter(Boolean).forEach(entry => merged.set(entry.id, entry));
+                const before = JSON.stringify(this.leaderboard);
+                this.leaderboard = [...merged.values()];
+                this.storeLeaderboard();
+                if (before !== JSON.stringify(this.leaderboard)) {
+                    if (this.elements.gameOver.style.display === 'block') this.showGameOver();
+                    return true;
+                }
+                return false;
             }
 
             saveHighScore() {
                 const name = this.elements.nameInput.value.trim() || 'AAA';
-                this.leaderboard.push({ score: this.score, name, time: this.currentTime });
-                this.leaderboard.sort((a, b) => b.score - a.score || a.time - b.time);
-                this.leaderboard = this.leaderboard.slice(0, 10);
-                localStorage.setItem('reactionGameLeaderboard', JSON.stringify(this.leaderboard));
+                this.leaderboard.push({ id: crypto.randomUUID(), score: this.score, name, time: this.currentTime, deviceId: this.deviceId, savedAt: Date.now() });
+                this.storeLeaderboard();
+                dispatchEvent(new CustomEvent('reactionscorechange', { detail: this.leaderboard }));
                 this.showGameOver();
             }
 
@@ -470,9 +513,9 @@
             showGameOver() {
                 this.elements.newHighScore.style.display = 'none';
                 this.elements.finalScore.textContent = this.score;
-                let html = this.leaderboard.map((e, i) => `
+                let html = this.leaderboard.slice(0, 10).map((e, i) => `
                     <div class="leaderboard-entry">
-                        <span>${i + 1}. ${e.name}</span>
+                        <span>${i + 1}. ${escapeScoreName(e.name)}</span>
                         <span>${e.score} pts</span>
                     </div>`).join('');
                 this.elements.leaderboardList.innerHTML = html || 'No scores yet!';
@@ -498,7 +541,10 @@
             }
         }
 
-        new ReactionGame();
+        window.reactionGame = new ReactionGame();
     </script>
+    <script src="party-lan.js"></script>
+    <script type="module" src="party-rooms.js"></script>
+    <script type="module" src="reaction-score-lan.js"></script>
 </body>
 </html>
