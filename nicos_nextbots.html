@@ -241,7 +241,16 @@ const MAP = (() => {
         for(const ramp of RAMPS)for(let y=Math.max(1,ramp.y1-8);y<=Math.min(MAP_SIZE_Y-2,ramp.y2+8);y++)for(let x=Math.max(1,ramp.x1-10);x<=Math.min(MAP_SIZE_X-2,ramp.x2+10);x++)MAP[y][x]=0;
         function rampAt(x,y){return RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2)}
         function bridgeAt(x,y,current=0){return current>=FLOOR_HEIGHT/2&&RAMPS.some(r=>Math.abs(x-(r.reverse?r.x2-(r.x2-r.x1)*.22:r.x1+(r.x2-r.x1)*.22))<=1.6&&y>=r.y1-.35&&y<=r.y2+.35)}
-        function surfaceHeightAt(x,y,current=0){if(bridgeAt(x,y,current))return FLOOR_HEIGHT;const ramp=rampAt(x,y);if(!ramp)return current>=FLOOR_HEIGHT/2?FLOOR_HEIGHT:0;let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;return t*FLOOR_HEIGHT}
+        function rampSurfaceHeightAt(x,y,current=0){const ramp=rampAt(x,y);if(!ramp)return current>=FLOOR_HEIGHT/2?FLOOR_HEIGHT:0;let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;return t*FLOOR_HEIGHT}
+        function surfaceHeightAt(x,y,current=0){if(bridgeAt(x,y,current))return FLOOR_HEIGHT;return rampSurfaceHeightAt(x,y,current)}
+        function beginRampRoute(bot,now){
+            const ramp=RAMPS[Math.floor(Math.random()*RAMPS.length)],midY=(ramp.y1+ramp.y2)/2;
+            const low={x:ramp.reverse?ramp.x2-.6:ramp.x1+.6,y:midY};
+            const high={x:ramp.reverse?ramp.x1+.6:ramp.x2-.6,y:midY};
+            bot.rampRoute=bot.floorY>=FLOOR_HEIGHT/2?[high,low]:[low,high];
+            bot.rampStep=0;bot.wanderX=bot.rampRoute[0].x;bot.wanderY=bot.rampRoute[0].y;
+            bot.wanderUntil=now+20000;bot._path=null;
+        }
 
         // --- Bot spawn point ---
         // We'll use a THREE.Vector3 for position
@@ -462,7 +471,7 @@ for (let b = 0; b < botSpawns.length; b++) {
     const bot = new THREE.Sprite(new THREE.SpriteMaterial({map:loader.load(type.src),transparent:true,alphaTest:.02,color:0xffffff,depthWrite:false}));
     bot.position.copy(spawn.position);bot.scale.set(10.8,8.8,1);bot.renderOrder=4;scene.add(bot);
     const label=makeBotLabel(type.name);label.position.set(bot.position.x,.65+spawn.floorY,bot.position.z);
-    bots.push({mesh:bot,backing,label,baseSpeed:48,speedMult:1,vx:0,vz:0,floorY:spawn.floorY,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0});
+    bots.push({mesh:bot,backing,label,baseSpeed:48,speedMult:1,vx:0,vz:0,floorY:spawn.floorY,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0,rampRoute:null,rampStep:0,nextFloorChange:performance.now()+4000+Math.random()*6000});
 }
         }
 
@@ -765,7 +774,14 @@ for (let b = 0; b < botSpawns.length; b++) {
                     locked=targets.filter(candidate=>candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<2.5&&Math.hypot(botMapX-candidate.x,botMapY-candidate.y)<=24).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0];
                     if(locked)bot.targetId=locked.id;
                 }
-                if(!locked&&(now>bot.wanderUntil||Math.hypot(botMapX-bot.wanderX,botMapY-bot.wanderY)<3)){
+                if(locked){bot.rampRoute=null;bot.rampStep=0}
+                if(!locked&&bot.rampRoute&&Math.hypot(botMapX-bot.wanderX,botMapY-bot.wanderY)<2){
+                    bot.rampStep++;
+                    if(bot.rampStep<bot.rampRoute.length){bot.wanderX=bot.rampRoute[bot.rampStep].x;bot.wanderY=bot.rampRoute[bot.rampStep].y;bot._path=null}
+                    else{bot.rampRoute=null;bot.rampStep=0;bot.wanderUntil=0;bot.nextFloorChange=now+9000+Math.random()*8000}
+                }
+                if(!locked&&!bot.rampRoute&&now>=bot.nextFloorChange)beginRampRoute(bot,now);
+                if(!locked&&!bot.rampRoute&&(now>bot.wanderUntil||Math.hypot(botMapX-bot.wanderX,botMapY-bot.wanderY)<3)){
                     for(let tries=0;tries<40;tries++){const x=3+Math.floor(Math.random()*(MAP_SIZE_X-6)),y=3+Math.floor(Math.random()*(MAP_SIZE_Y-6));if(MAP[y][x]===0){bot.wanderX=x;bot.wanderY=y;break}}
                     bot.wanderUntil=now+3500+Math.random()*4500;
                 }
@@ -796,7 +812,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if(MAP[mapY]?.[mapX]===0)bot.mesh.position.x=tryX;else bot.vx*=-.28;
                 const tryZ=bot.mesh.position.z+bot.vz,nextMapX=Math.floor((bot.mesh.position.x-1)/2),nextMapY=Math.floor((tryZ-1)/2);
                 if(MAP[nextMapY]?.[nextMapX]===0)bot.mesh.position.z=tryZ;else bot.vz*=-.28;
-                bot.floorY=surfaceHeightAt((bot.mesh.position.x-1)/2,(bot.mesh.position.z-1)/2,bot.floorY);bot.mesh.position.y=3.15+bot.floorY;bot.backing.position.set(bot.mesh.position.x,3.15+bot.floorY,bot.mesh.position.z);if(bot.label)bot.label.position.set(bot.mesh.position.x,.55+bot.floorY,bot.mesh.position.z);
+                bot.floorY=rampSurfaceHeightAt((bot.mesh.position.x-1)/2,(bot.mesh.position.z-1)/2,bot.floorY);bot.mesh.position.y=3.15+bot.floorY;bot.backing.position.set(bot.mesh.position.x,3.15+bot.floorY,bot.mesh.position.z);if(bot.label)bot.label.position.set(bot.mesh.position.x,.55+bot.floorY,bot.mesh.position.z);
             }
             // Gentle separation keeps overlapping chasers visually and tactically distinct.
             if(performance.now()>=botReleaseAt) for(let i=0;i<bots.length;i++)for(let j=i+1;j<bots.length;j++){
