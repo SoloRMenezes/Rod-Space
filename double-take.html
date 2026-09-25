@@ -9,15 +9,20 @@
 [hidden]{display:none!important}.setup{display:flex;flex-wrap:wrap;gap:12px;max-width:720px;margin:0 auto 18px}.setup label{flex:1;min-width:145px;font-size:11px;color:#b7c7bd}.setup select{display:block;width:100%;margin-top:6px}.scoreboard{display:flex;gap:8px;max-width:620px;margin:0 auto 16px}.player{flex:1;border-bottom:3px solid transparent;padding:10px 6px;text-align:center;color:#b7c7bd;font-size:12px}.player.active{border-color:#edc478;background:#ffffff09;color:#edc478}.player strong{display:block;font-size:clamp(15px,3vw,23px);margin-top:5px}.turn{text-align:center;font-size:14px;color:#edc478;margin:12px 0}.mode-note{text-align:center;font-size:12px;margin:0 0 16px}
 
 .setup-screen{max-width:720px;margin:auto}.setup-screen h2{font:28px Georgia,serif;text-align:center;margin:6px 0 24px}.setup{margin-bottom:14px}.board-choice{display:block;font-size:11px;color:#b7c7bd;margin:22px 0 12px}.board-choice select{display:block;width:100%;margin-top:6px}.board-summary{text-align:center;color:#edc478;font-size:16px;margin:18px 0 4px}.board-note{min-height:40px;text-align:center;font-size:12px;max-width:520px;margin:0 auto 20px}.start{display:block;background:#edc478;border:0;border-radius:6px;color:#203b35;font-weight:bold;min-height:48px;padding:14px 32px;margin:0 auto 24px}.start:hover{background:#f7dca3}.rules{text-align:center;font-size:13px;color:#b7c7bd;line-height:1.7}.round-size{font-size:12px;color:#b7c7bd}.front{flex-direction:column;gap:2px;font-size:clamp(26px,4vw,42px)}.pair-code{font:bold 13px Arial,sans-serif;letter-spacing:1px;color:#263d35}.board-help{text-align:center;font-size:12px;margin:8px 0 14px}.toolbar{flex-wrap:wrap}.stats{flex:1;justify-content:center}.player{min-width:0}.back span{width:36px;height:36px;font-size:28px}@media(max-width:580px){.intro{padding-top:18px}.setup-screen h2{font-size:24px}.board-scroll{max-height:60svh}.pair-code{font-size:12px}}
+.mode-buttons{display:grid;gap:14px;max-width:520px;margin:30px auto}.mode-button{text-align:left;padding:24px;background:transparent;border:1px solid #ffffff35;border-radius:6px;color:#f3f0e6}.mode-button:first-child{border-color:#edc478}.mode-button:hover{background:#ffffff0c}.mode-button strong{display:block;font:30px Georgia,serif;margin-bottom:8px}.mode-button span{font-size:13px;color:#b7c7bd}.back-menu{background:none;border:0;color:#edc478;padding:10px 0;min-height:44px;margin-bottom:10px}@media(max-width:580px){.stats{flex:0 0 100%}}
 </style>
 </head>
 <body><main>
 <header><div class="wordmark">double<span>take.</span></div><div class="edition">A little mental gymnastics</div></header>
 <section class="intro"><div class="eyebrow">The memory club</div><h1>Seen it <em>before?</em></h1><p>Two flips. One pair. Trust your memory.</p></section>
-<section id="setup-screen" class="setup-screen" aria-labelledby="setup-title">
-<h2 id="setup-title">Set up your match</h2>
+<section id="main-menu" class="setup-screen" aria-labelledby="menu-title">
+<h2 id="menu-title">How are you playing?</h2>
+<div class="mode-buttons"><button id="choose-multi" class="mode-button"><strong>Multiplayer</strong><span>Share a device · most pairs wins</span></button><button id="choose-solo" class="mode-button"><strong>Solo</strong><span>Play alone or challenge the CPU</span></button></div>
+</section>
+<section id="setup-screen" hidden class="setup-screen" aria-labelledby="setup-title">
+<button id="back-menu" class="back-menu">← Main menu</button><h2 id="setup-title">Multiplayer</h2>
 <div class="setup">
-<label>Game mode<select id="mode"><option value="local" selected>Local multiplayer</option><option value="cpu">Play against CPU</option><option value="solo">Single player</option></select></label>
+<label id="cpu-toggle-setting" hidden>CPU<select id="cpu-toggle"><option value="off" selected>OFF</option><option value="on">ON</option></select></label>
 <label id="players-setting">Players on this device<select id="player-count"><option value="1">1 player</option><option value="2" selected>2 players</option><option value="3">3 players</option><option value="4">4 players</option></select></label>
 <label id="cpu-setting" hidden>CPU difficulty<select id="cpu-level"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></label>
 </div>
@@ -27,14 +32,14 @@
 </select></label>
 <p id="board-summary" class="board-summary" aria-live="polite"></p><p id="board-note" class="board-note"></p>
 <button id="start" class="start">Start match →</button>
-<p class="rules">Match a pair to score and play again. Miss and pass the turn.<br>Whoever finds the most pairs wins. Same device, up to 4 players.</p>
+<p class="rules" id="setup-rules"></p>
 </section>
 <section id="game-screen" hidden aria-label="Current round">
-<div class="toolbar"><span id="round-size" class="round-size"></span><div class="stats"><div class="stat"><small>Moves</small><span id="moves">0</span></div><div class="stat"><small>Pairs</small><span id="pairs">0 / 8</span></div><div class="stat"><small>Time</small><span id="time">0:00</span></div></div><button class="reset" id="restart">End round &amp; setup</button></div>
+<div class="toolbar"><span id="round-size" class="round-size"></span><div class="stats"><div class="stat" id="moves-stat"><small>Moves</small><span id="moves">0</span></div><div class="stat"><small>Pairs</small><span id="pairs">0 / 8</span></div><div class="stat" id="time-stat"><small>Time</small><span id="time">0:00</span></div></div><button class="reset" id="restart">End round &amp; setup</button></div>
 <div id="scoreboard" class="scoreboard" aria-label="Player scores"></div><p id="turn" class="turn"></p>
 <p id="board-help" class="board-help"></p><div id="board-scroll" class="board-scroll" tabindex="0" role="region" aria-label="Card board; scroll to explore large boards"><div id="board" class="board" aria-label="Memory cards"></div></div>
 <p class="status" id="status" role="status">Pick any card to begin.</p>
-<div class="footer"><details><summary>How to play</summary><p>Tap two cards to reveal their symbols. Match a pair and they stay face up. Miss, and both turn back over. In solo play, find every pair with the fewest moves. Against other players, a match earns one point and another turn; a miss passes the turn. Most pairs wins, and equal top scores are a draw. Multiplayer uses the same device. The CPU only remembers cards that have been revealed. The timer starts on your first flip. Use Tab and Enter or Space to play with a keyboard.</p></details><p class="best" id="best"></p></div>
+<div class="footer"><details><summary>How to play</summary><p>Tap two cards to reveal their symbols. Match a pair and they stay face up. Miss, and both turn back over. In solo play, find every pair with the fewest moves. Against other players, a match earns one point and another turn; a miss passes the turn. Most pairs wins, and equal top scores are a draw. Multiplayer uses the same device. The CPU only remembers cards that have been revealed. Only solo with CPU off tracks your time and moves. The timer starts on your first flip. Use Tab and Enter or Space to play with a keyboard.</p></details><p class="best" id="best"></p></div>
 </section>
 </main>
 <dialog id="win" aria-labelledby="win-title"><div class="eyebrow" style="color:#6a7852">Nicely remembered</div><h2 id="win-title">All paired up.</h2><p id="result"></p><button id="again">Rematch ↗</button><button class="secondary" id="win-setup">Change setup</button><button class="secondary" id="close">Admire the board</button></dialog>
@@ -43,13 +48,15 @@
 const symbols=[['🍋','Lemon'],['🍒','Cherries'],['🥑','Avocado'],['🍇','Grapes'],['🍓','Strawberry'],['🍊','Orange'],['🥝','Kiwi'],['🍉','Watermelon'],['🍍','Pineapple'],['🥥','Coconut'],['🍑','Peach'],['🫐','Blueberries']];
 const $=id=>document.getElementById(id);
 let first=null,locked=false,moves=0,matched=0,total=8,started=0,ticker=null,finished=false;
-let mode='local',level='medium',players=[],current=0,side=4,playing=false;
+let mode='local',level='medium',players=[],current=0,side=4,playing=false,menuMode='local';
 const pending=new Set(),memory=new Map();
 const format=seconds=>Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,'0');
+const isSolo=()=>mode==='solo';
+const selectedMode=()=>menuMode==='local'?'local':$('cpu-toggle').value==='on'?'cpu':'solo';
 const isCPU=()=>players[current]?.cpu===true;
 function later(fn,delay){const id=setTimeout(()=>{pending.delete(id);fn()},delay);pending.add(id)}
 function readBest(){try{const v=JSON.parse(localStorage.getItem('double-take-'+total));return v&&Number.isFinite(v.moves)&&Number.isFinite(v.seconds)?v:null}catch{return null}}
-function showBest(){const best=readBest();$('best').textContent=players.length>1?'Most pairs wins · a match keeps your turn':best?'Personal best · '+best.moves+' moves / '+format(best.seconds):'A fresh board. A new personal best?'}
+function showBest(){const best=readBest();$('best').textContent=!isSolo()?'Most pairs wins · a match keeps your turn':best?'Personal best · '+best.moves+' moves / '+format(best.seconds):'A fresh board. A new personal best?'}
 function shuffle(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]]}return array}
 function renderScores(){
   $('scoreboard').replaceChildren();
@@ -60,16 +67,20 @@ function stopRound(){
   clearInterval(ticker);pending.forEach(clearTimeout);pending.clear();playing=false;$('win').close();
 }
 function updateSetup(){
-  const choice=$('mode').value,dimension=Number($('board-size').value),count=dimension*dimension;
-  $('cpu-setting').hidden=choice!=='cpu';$('players-setting').hidden=choice!=='local';
+  const choice=selectedMode(),dimension=Number($('board-size').value),count=dimension*dimension;
+  $('cpu-toggle-setting').hidden=menuMode!=='solo';$('cpu-setting').hidden=choice!=='cpu';$('players-setting').hidden=choice!=='local';
+  $('setup-title').textContent=menuMode==='local'?'Multiplayer':'Solo';
+  $('setup-rules').textContent=choice==='solo'?'Find every pair in as few moves as possible. Your timer starts on the first flip.':'Match a pair to score and play again. Miss and pass the turn. Most pairs wins.';
   $('mode-note').textContent=choice==='cpu'?{easy:'Easy CPU remembers the last 4 revealed cards and sometimes forgets.',medium:'Medium CPU remembers the last 10 revealed cards.',hard:'Hard CPU remembers every revealed card. No peeking.'}[$('cpu-level').value]:choice==='local'?'Pass the device. Match a pair to keep your turn.':'Clear the board and beat your personal best.';
   $('board-summary').textContent=dimension+' × '+dimension+' · '+count.toLocaleString()+' cards · '+count/2+' pairs';
   $('board-note').textContent=(dimension>=16?'A marathon board. ':'')+(dimension>4?'Match both the fruit and its number. Scroll the board to reach every card.':'A quick match. Every fruit has exactly one partner.');
-  $('start').textContent=choice==='solo'||(choice==='local'&&$('player-count').value==='1')?'Start solo game →':'Start match →';
+  $('start').textContent=choice==='solo'?'Start solo game →':'Start match →';
 }
 function showSetup(){
-  stopRound();first=null;memory.clear();$('board').replaceChildren();$('game-screen').hidden=true;$('setup-screen').hidden=false;updateSetup();$('start').focus();
+  stopRound();first=null;memory.clear();$('board').replaceChildren();$('game-screen').hidden=true;$('main-menu').hidden=true;$('setup-screen').hidden=false;updateSetup();$('start').focus();
 }
+function openMode(choice){menuMode=choice;showSetup()}
+function showMenu(){stopRound();first=null;memory.clear();$('board').replaceChildren();$('game-screen').hidden=true;$('setup-screen').hidden=true;$('main-menu').hidden=false;$(menuMode==='local'?'choose-multi':'choose-solo').focus()}
 function makePairs(count){
   // Numbered fruit variants give even the largest board exactly two of each identity.
   const fruitOrder=shuffle([...symbols]);
@@ -80,9 +91,10 @@ function makePairs(count){
 }
 function newGame(){
   stopRound();memory.clear();first=null;locked=false;moves=0;matched=0;started=0;finished=false;current=0;
-  side=Number($('board-size').value);total=side*side/2;mode=$('mode').value;level=$('cpu-level').value;
+  side=Number($('board-size').value);total=side*side/2;mode=selectedMode();level=$('cpu-level').value;
   players=mode==='cpu'?[{name:'You',score:0},{name:'CPU · '+level,score:0,cpu:true}]:Array.from({length:mode==='local'?Number($('player-count').value):1},(_,i)=>({name:mode==='solo'?'You':'Player '+(i+1),score:0}));
-  $('setup-screen').hidden=true;$('game-screen').hidden=false;playing=true;
+  $('main-menu').hidden=true;$('setup-screen').hidden=true;$('game-screen').hidden=false;playing=true;
+  $('moves-stat').hidden=!isSolo();$('time-stat').hidden=!isSolo();
   $('moves').textContent='0';$('pairs').textContent='0 / '+total;$('time').textContent='0:00';$('status').textContent='Pick any card to begin.';showBest();renderScores();
   $('round-size').textContent=side+' × '+side+' · '+(total*2).toLocaleString()+' cards';
   $('board-help').textContent=side>4?'Match the fruit AND number. Scroll to explore the board.':'Find matching fruits. Most pairs wins.';
@@ -119,10 +131,10 @@ function cpuPick(){
 function scheduleCPU(){if(playing&&!finished&&isCPU())later(()=>{if(playing&&!finished&&isCPU())flip(cpuPick(),true)},850)}
 function flip(card,fromCPU=false){
   if(!playing||!card||locked||finished||isCPU()!==fromCPU||card===first||card.classList.contains('matched'))return;
-  if(!started){started=Date.now();ticker=setInterval(()=>{$('time').textContent=format(Math.floor((Date.now()-started)/1000))},250)}
+  if(isSolo()&&!started){started=Date.now();ticker=setInterval(()=>{$('time').textContent=format(Math.floor((Date.now()-started)/1000))},250)}
   reveal(card);
   if(!first){first=card;$('status').textContent=players[current].name+' revealed '+card.dataset.symbol.toLowerCase()+'.';scheduleCPU();return}
-  moves++;$('moves').textContent=moves;const previous=first;first=null;
+  if(isSolo()){moves++;$('moves').textContent=moves;}const previous=first;first=null;
   if(previous.dataset.symbol===card.dataset.symbol){
     matched++;players[current].score++;
     [previous,card].forEach(c=>{c.classList.add('matched');c.setAttribute('aria-label',c.dataset.symbol+', matched by '+players[current].name);c.setAttribute('aria-disabled','true');c.tabIndex=-1;memory.delete(c)});
@@ -135,8 +147,8 @@ function flip(card,fromCPU=false){
   }
 }
 function complete(){
-  finished=true;clearInterval(ticker);renderScores();const seconds=Math.floor((Date.now()-started)/1000);$('time').textContent=format(seconds);
-  if(players.length===1){
+  finished=true;clearInterval(ticker);renderScores();const seconds=isSolo()?Math.floor((Date.now()-started)/1000):0;$('time').textContent=format(seconds);
+  if(isSolo()){
     const old=readBest(),record=!old||moves<old.moves||(moves===old.moves&&seconds<old.seconds);
     if(record){try{localStorage.setItem('double-take-'+total,JSON.stringify({moves,seconds}))}catch{}}
     $('win-title').textContent='All paired up.';
@@ -150,6 +162,9 @@ function complete(){
 }
 ['start','again'].forEach(id=>$(id).addEventListener('click',newGame));
 ['restart','win-setup'].forEach(id=>$(id).addEventListener('click',showSetup));
-['board-size','mode','cpu-level','player-count'].forEach(id=>$(id).addEventListener('change',updateSetup));
+['board-size','cpu-toggle','cpu-level','player-count'].forEach(id=>$(id).addEventListener('change',updateSetup));
+$('choose-multi').addEventListener('click',()=>openMode('local'));
+$('choose-solo').addEventListener('click',()=>openMode('solo'));
+$('back-menu').addEventListener('click',showMenu);
 $('close').addEventListener('click',()=>$('win').close());updateSetup();
 </script></body></html>
