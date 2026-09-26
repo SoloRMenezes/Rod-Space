@@ -16,6 +16,9 @@ body{background:#19332d}main{max-width:1040px;padding:24px 28px}header{padding-b
 @media(max-width:700px){#main-menu{grid-template-columns:1fr;gap:0;padding:15px 0 25px;min-height:0;max-width:400px}.menu-art{height:185px}.display-card{width:100px;height:138px;margin:-69px 0 0 -50px;font-size:42px}.display-card small{font-size:7px;bottom:12px}.card-left{transform:translate(-58px,5px) rotate(-20deg);font-size:60px}.card-center{transform:translate(-5px,-10px) rotate(-7deg)}.card-right{transform:translate(53px,12px) rotate(15deg)}.menu-copy h1{font-size:58px;line-height:.9;margin:10px 0 12px;letter-spacing:-3px}.menu-copy h1 br{display:none}.menu-copy h1 span{margin-left:10px}.menu-copy{text-align:center}.mode-button{text-align:left}.menu-caption{margin-bottom:22px}.menu-foot{margin-bottom:0}.setup-heading{margin:22px 0}.setup-heading h2{font-size:29px}.board-label span{display:none}.mode-note{margin-bottom:20px}main{padding:18px 18px}.edition{font-size:8px;letter-spacing:1px}}
 @media(max-width:380px){.menu-copy h1{font-size:49px}.setup{gap:10px}.segments button{padding:8px 4px}.size-options strong{font-size:17px}}@media(prefers-reduced-motion:reduce){.mode-button{transition:none}}
 .home-button{width:46px;height:46px;display:grid;place-items:center;padding:0;flex-shrink:0}
+
+/* Compact play area; menu layout remains unchanged. */
+body.in-game main{padding:10px 14px;max-width:1100px}body.in-game header{padding-bottom:8px}body.in-game .wordmark{font-size:18px}body.in-game .edition{display:none}#game-screen{padding-top:6px}#game-screen .toolbar{max-width:none;margin:0 0 6px;gap:10px;flex-wrap:nowrap}#game-screen .round-size{font-size:10px}#game-screen .stats{flex:1;order:0;width:auto;gap:16px;padding:0;justify-content:flex-end}#game-screen .stat{font-size:14px;display:flex;align-items:center;gap:5px}#game-screen .stat small{font-size:9px;margin:0;letter-spacing:.5px}#game-screen .home-button{width:40px;height:40px;min-height:40px}#game-screen .home-button svg{width:19px;height:19px}#game-screen .scoreboard{max-width:none;margin:0 0 8px;gap:5px}#game-screen .player{padding:6px 4px;border-bottom-width:2px;font-size:11px}#game-screen .player strong{display:inline;font-size:13px;margin-left:7px}#game-screen .card{aspect-ratio:1}#game-screen .board{gap:5px;min-width:calc(var(--columns,4) * 44px + (var(--columns,4) - 1) * 5px)}#game-screen .board-scroll{max-height:calc(100svh - 145px);padding:3px 3px 7px}#game-screen .front{font-size:25px;border-width:1px}#game-screen .back span{width:25px;height:25px;font-size:21px}#game-screen .back:before{inset:4px}#game-screen .face,#game-screen .card{border-radius:5px}#game-screen .footer{margin-top:8px;padding-top:8px;max-width:none;font-size:10px}#game-screen .best{font-size:10px}#game-screen .card.matched .front:after{font-size:9px;top:2px;right:3px}@media(max-width:400px){#game-screen .player strong{display:block;margin:3px 0 0}#game-screen .board-scroll{max-height:calc(100svh - 158px)}}
 </style>
 </head>
 <body><main>
@@ -42,10 +45,10 @@ body{background:#19332d}main{max-width:1040px;padding:24px 28px}header{padding-b
 <p class="rules" id="setup-rules"></p>
 </section>
 <section id="game-screen" hidden aria-label="Current round">
-<div class="toolbar"><span id="round-size" class="round-size"></span><div class="stats"><div class="stat" id="moves-stat"><small>Moves</small><span id="moves">0</span></div><div class="stat"><small>Pairs</small><span id="pairs">0 / 8</span></div><div class="stat" id="time-stat"><small>Time</small><span id="time">0:00</span></div></div><button class="reset home-button" id="restart" aria-label="Main menu (ends round)" title="Main menu (ends round)"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/></svg></button></div>
-<div id="scoreboard" class="scoreboard" aria-label="Player scores"></div><p id="turn" class="turn"></p>
-<p id="board-help" class="board-help"></p><div id="board-scroll" class="board-scroll" tabindex="0" role="region" aria-label="Card board; scroll to explore large boards"><div id="board" class="board" aria-label="Memory cards"></div></div>
-<p class="status" id="status" role="status">Pick any card to begin.</p>
+<div class="toolbar"><span id="round-size" class="round-size"></span><div class="stats"><div class="stat" id="moves-stat"><small>Moves</small><span id="moves">0</span></div><span id="pairs" hidden></span><div class="stat" id="time-stat"><small>Time</small><span id="time">0:00</span></div></div><button class="reset home-button" id="restart" aria-label="Main menu (ends round)" title="Main menu (ends round)"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/></svg></button></div>
+<div id="scoreboard" class="scoreboard" aria-label="Player scores"></div><p id="turn" class="sr-only" aria-live="polite"></p>
+<p id="board-help" class="sr-only"></p><div id="board-scroll" class="board-scroll" tabindex="0" role="region" aria-label="Card board; scroll to explore large boards"><div id="board" class="board" aria-label="Memory cards"></div></div>
+<p class="sr-only" id="status" role="status">Pick any card to begin.</p>
 <div class="footer"><details><summary>How to play</summary><p>Tap two cards to reveal their symbols. Match a pair and they stay face up. Miss, and both turn back over. In solo play, find every pair with the fewest moves. Against other players, a match earns one point and another turn; a miss passes the turn. Most pairs wins, and equal top scores are a draw. Multiplayer uses the same device. The CPU only remembers cards that have been revealed. Only solo with CPU off tracks your time and moves. The timer starts on your first flip. Use Tab and Enter or Space to play with a keyboard.</p></details><p class="best" id="best"></p></div>
 </section>
 </main>
@@ -73,7 +76,7 @@ function renderScores(){
   $('turn').textContent=finished?'Round complete':players[current].name+(isCPU()?' is thinking…':' — your turn');
 }
 function stopRound(){
-  clearInterval(ticker);pending.forEach(clearTimeout);pending.clear();playing=false;$('win').close();
+  document.body.classList.remove('in-game');clearInterval(ticker);pending.forEach(clearTimeout);pending.clear();playing=false;$('win').close();
 }
 function updateSetup(){
   const choice=selectedMode(),dimension=Number($('board-size').value),count=dimension*dimension;
@@ -101,12 +104,13 @@ function newGame(){
   side=Number($('board-size').value);total=side*side/2;mode=selectedMode();level=$('cpu-level').value;
   players=mode==='cpu'?[{name:'You',score:0},{name:'CPU · '+level,score:0,cpu:true}]:Array.from({length:mode==='local'?Number($('player-count').value):1},(_,i)=>({name:mode==='solo'?'You':'Player '+(i+1),score:0}));
   $('main-menu').hidden=true;$('setup-screen').hidden=true;$('game-screen').hidden=false;playing=true;
+  document.body.classList.add('in-game');
   $('moves-stat').hidden=!isSolo();$('time-stat').hidden=!isSolo();
   $('moves').textContent='0';$('pairs').textContent='0 / '+total;$('time').textContent='0:00';$('status').textContent='Pick any card to begin.';showBest();renderScores();
   $('round-size').textContent=side+' × '+side+' · '+(total*2).toLocaleString()+' cards';
   $('board-help').textContent=side>4?'Find matching emojis. Scroll to explore the board.':'Find matching emojis. Most pairs wins.';
   const chosen=makePairs(total),deck=shuffle([...chosen,...chosen]);
-  $('board').style.setProperty('--columns',side);$('board-scroll').style.setProperty('--board-max',Math.min(920,side*115)+'px');$('board').replaceChildren();
+  $('board').style.setProperty('--columns',side);$('board-scroll').style.setProperty('--board-max',Math.min(920,side*62)+'px');$('board').replaceChildren();
   const fragment=document.createDocumentFragment();
   deck.forEach(({icon,name},index)=>{
     const card=document.createElement('button');card.className='card';card.type='button';card.dataset.symbol=name;card.dataset.position=index+1;
