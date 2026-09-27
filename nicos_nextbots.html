@@ -248,10 +248,13 @@ const MAP = (() => {
         // Keep the complete approach and exit of every ramp free of room walls and pillars.
         for(const ramp of RAMPS)for(let y=Math.max(1,ramp.y1-8);y<=Math.min(MAP_SIZE_Y-2,ramp.y2+8);y++)for(let x=Math.max(1,ramp.x1-10);x<=Math.min(MAP_SIZE_X-2,ramp.x2+10);x++)MAP[y][x]=0;
         function rampAt(x,y){return RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2)}
-        function canEnterUpperRamp(x,y){
-            const target=rampAt(x,y);if(!target||player.floorY<FLOOR_HEIGHT/2||rampAt(player.x,player.y))return true;
+        function canEnterRamp(x,y){
+            const target=rampAt(x,y);if(!target||rampAt(player.x,player.y))return true;
+            if(player.isJumping&&player.floorY>=FLOOR_HEIGHT/2)return true;
             const insideLane=player.y>=target.y1+.35&&player.y<=target.y2-.35;
-            return insideLane&&(target.reverse?player.x<=target.x1+.8:player.x>=target.x2-.8);
+            if(!insideLane)return false;
+            if(player.floorY>=FLOOR_HEIGHT/2)return target.reverse?player.x<=target.x1+.8:player.x>=target.x2-.8;
+            return target.reverse?player.x>=target.x2-.8:player.x<=target.x1+.8;
         }
         function bridgeAt(x,y,current=0){return current>=FLOOR_HEIGHT/2&&RAMPS.some(r=>Math.abs(x-(r.reverse?r.x2-(r.x2-r.x1)*.22:r.x1+(r.x2-r.x1)*.22))<=1.6&&y>=r.y1-.35&&y<=r.y2+.35)}
         function rampSurfaceHeightAt(x,y,current=0){const ramp=rampAt(x,y);if(!ramp)return current>=FLOOR_HEIGHT/2?FLOOR_HEIGHT:0;let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;return t*FLOOR_HEIGHT}
@@ -285,7 +288,8 @@ for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
             floorY: 0,
             zVel: 0,
             isJumping: false,
-            speed: 0.24, // 0.48 world units/frame: matches a chasing bot
+            speed: 0.20, // ground pace is deliberately slower than a chasing bot
+            jumpSpeed: 0.24, // bunny hopping matches a bot's maximum chase speed
             rotSpeed: 0.0025,
             sensitivity: 1.0,
             pitch: 0, // vertical look (up/down)
@@ -438,12 +442,9 @@ function wireGuestRoom(session){
                 const supportGeo=new THREE.ExtrudeGeometry(supportShape,{depth:width,bevelEnabled:false});supportGeo.translate(0,0,-width/2);
                 const support=new THREE.Mesh(supportGeo,wallMat);support.position.set(cx,0,cz);scene.add(support);
                 const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
-                // Guard the upper opening on three sides. The high end stays open,
-                // making the ramp entrance the only walkable route to the lower floor.
-                const openingLength=length*.45,openingMidX=ramp.reverse?ramp.x1*2+openingLength/2:ramp.x2*2-openingLength/2;
-                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(openingLength,1.6,.5),wallMat);guard.position.set(openingMidX,FLOOR_HEIGHT+1.12,cz+side*(width/2+.2));scene.add(guard)}
-                const closedX=ramp.reverse?ramp.x2*2-openingLength:ramp.x1*2+length-openingLength;
-                const endGuard=new THREE.Mesh(new THREE.BoxGeometry(.5,1.6,width+.9),wallMat);endGuard.position.set(closedX,FLOOR_HEIGHT+1.12,cz);scene.add(endGuard);
+                // Floor-to-ceiling side walls make the ramp a proper enclosed
+                // corridor. Both ends stay open; there is no wall across its path.
+                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,19,.6),wallMat);guard.position.set(cx,9.5,cz+side*(width/2+.25));scene.add(guard)}
                 // Yellow entrance bars clearly mark both ways onto the ramp.
                 for(const end of [ramp.x1*2,ramp.x2*2]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,end===ramp.x1*2?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12),cz);scene.add(bar)}
             }
@@ -679,7 +680,7 @@ for (let b = 0; b < botSpawns.length; b++) {
 
         function update() {
             // UI status
-            const currentSpeed = player.speed;
+            const currentSpeed = player.isJumping?player.jumpSpeed:player.speed;
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
             if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;updateSkipButton()}
             else { skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
@@ -714,7 +715,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             const canStand=(x,y)=>{
                 const radius=.18,points=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
                 const surface=surfaceHeightAt(x,y,player.floorY);
-                return surface<=player.floorY+.65&&canEnterUpperRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0);
+                return surface<=player.floorY+.65&&canEnterRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0);
             };
             let nextX = player.x + moveX;
             let nextY = player.y + moveY;
