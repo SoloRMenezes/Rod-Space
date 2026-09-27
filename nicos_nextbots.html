@@ -427,8 +427,10 @@ function wireGuestRoom(session){
             const deckShape=new THREE.Shape();
             deckShape.moveTo(-MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,MAP_SIZE_Y);deckShape.lineTo(-MAP_SIZE_X,MAP_SIZE_Y);deckShape.closePath();
             for(const ramp of RAMPS){
-                const riseStart=ramp.reverse?ramp.x1:ramp.x1+(ramp.x2-ramp.x1)*.55;
-                const riseEnd=ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.55:ramp.x2;
+                // Open the deck over almost the full incline. The previous 55%
+                // cutoff left a long slab hanging over the ramp like extra road.
+                const riseStart=ramp.reverse?ramp.x1:ramp.x1+(ramp.x2-ramp.x1)*.2;
+                const riseEnd=ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.2:ramp.x2;
                 const left=Math.min(riseStart,riseEnd)*2+1-MAP_SIZE_X-.45,right=Math.max(riseStart,riseEnd)*2+1-MAP_SIZE_X+.45;
                 const near=ramp.y1*2+1-MAP_SIZE_Y-.45,far=ramp.y2*2+1-MAP_SIZE_Y+.45;
                 const opening=new THREE.Path();opening.moveTo(left,near);opening.lineTo(right,near);opening.lineTo(right,far);opening.lineTo(left,far);opening.closePath();deckShape.holes.push(opening);
@@ -456,6 +458,11 @@ function wireGuestRoom(session){
                 const endBrick=brickMaterial(.3,9.5),topBrick=brickMaterial(Math.max(1,length/4),.3),faceBrick=brickMaterial(Math.max(1,length/4),9.5);
                 const corridorWallMaterials=[endBrick,endBrick,topBrick,topBrick,faceBrick,faceBrick];
                 for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,19,.6),corridorWallMaterials);guard.position.set(cx,9.5,cz+side*(width/2+.25));scene.add(guard)}
+                // Close the exposed end above the lower ramp entrance while
+                // keeping the drive-through opening underneath completely clear.
+                const span=ramp.x2-ramp.x1,headX=(ramp.reverse?ramp.x2-span*.2:ramp.x1+span*.2)*2+1;
+                const headHeight=19-(FLOOR_HEIGHT+.65),headWall=new THREE.Mesh(new THREE.BoxGeometry(.6,headHeight,width+.5),corridorWallMaterials);
+                headWall.position.set(headX,FLOOR_HEIGHT+.65+headHeight/2,cz);scene.add(headWall);
                 // Yellow entrance bars clearly mark both ways onto the ramp.
                 for(const end of [ramp.x1*2+1,ramp.x2*2+1]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,end===ramp.x1*2+1?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12),cz);scene.add(bar)}
             }
