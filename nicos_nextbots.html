@@ -141,7 +141,7 @@
         .touch-knob{position:absolute;left:40px;top:40px;width:48px;height:48px;border-radius:50%;background:rgba(241,211,126,.75)}
         #touch-look{position:absolute;right:0;top:0;width:58%;height:100%;pointer-events:auto}
         .touch-button{position:absolute;right:24px;width:74px;height:74px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.45);color:#fff;font-weight:900;pointer-events:auto}
-        #touch-jump{bottom:30px}#touch-sprint{bottom:116px}.touch-button.active{background:#d1b45d;color:#111}
+        #touch-jump{bottom:30px}
         @media(pointer:coarse){#mobile-controls.active{display:block}#minimap-container{width:105px;height:105px}.controls-strip{display:none}}
     </style>
 <link rel="stylesheet" href="assets/rod-space-home.css">
@@ -159,7 +159,7 @@
                 <div class="lobby-actions"><button id="solo-start">PLAY SOLO</button><button id="host-start">HOST GAME</button><button id="join-open">JOIN GAME</button></div>
                 <div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div>
                 <div id="lobby-status"></div>
-                <div class="controls-strip"><span><b>WASD</b> MOVE</span><span><b>SHIFT</b> SPRINT</span><span><b>SPACE</b> JUMP</span><span><b>CTRL</b> MOUSE LOCK</span></div>
+                <div class="controls-strip"><span><b>WASD</b> MOVE</span><span><b>SPACE</b> JUMP</span><span><b>CTRL</b> MOUSE LOCK</span></div>
                 <a class="home-link" href="./index.html">← ROD SPACE</a>
             </div>
         </div>
@@ -189,7 +189,7 @@
             <div id="timer-display" style="font-size: 1.1rem; color: #fff;">GET READY · 30</div>
             <button id="skip-countdown">SKIP</button>
         </div>
-        <div id="mobile-controls"><div id="touch-look"></div><div class="touch-stick" id="touch-stick"><div class="touch-knob" id="touch-knob"></div></div><button class="touch-button" id="touch-sprint">RUN</button><button class="touch-button" id="touch-jump">JUMP</button></div>
+        <div id="mobile-controls"><div id="touch-look"></div><div class="touch-stick" id="touch-stick"><div class="touch-knob" id="touch-knob"></div></div><button class="touch-button" id="touch-jump">JUMP</button></div>
         <div id="minimap-container">
             <canvas id="minimap"></canvas>
         </div>
@@ -224,8 +224,13 @@ const MAP = (() => {
             // Each divider only breaks for three or four broad garage doorways.
             for(const x of [35,70,105])for(let y=1;y<height-1;y++)if(![12,42,82].some(door=>Math.abs(y-door)<=4))map[y][x]=1;
             for(const y of [24,48,72])for(let x=1;x<width-1;x++)if(![18,53,88,122].some(door=>Math.abs(x-door)<=5))map[y][x]=1;
-            // Value 2 marks individual 1x1 support columns, kept separate from room walls.
-            for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0)map[y][x]=2;
+            // Value 2 marks individual support columns. Keep a proper walking gap
+            // around every room wall so columns never pinch players against it.
+            const clearOfWall=(x,y)=>{
+                for(let yy=y-3;yy<=y+3;yy++)for(let xx=x-3;xx<=x+3;xx++)if(map[yy]?.[xx]===1)return false;
+                return true;
+            };
+            for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0&&clearOfWall(x,y))map[y][x]=2;
             // Parked cars are real obstacles, leaving the central drive lanes open.
             const cars=[];
             for(const cy of [18,78])for(let cx=16;cx<width-12;cx+=15)if(Math.abs(cx-70)>9)cars.push([cx,cy]);
@@ -243,6 +248,11 @@ const MAP = (() => {
         // Keep the complete approach and exit of every ramp free of room walls and pillars.
         for(const ramp of RAMPS)for(let y=Math.max(1,ramp.y1-8);y<=Math.min(MAP_SIZE_Y-2,ramp.y2+8);y++)for(let x=Math.max(1,ramp.x1-10);x<=Math.min(MAP_SIZE_X-2,ramp.x2+10);x++)MAP[y][x]=0;
         function rampAt(x,y){return RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2)}
+        function canEnterUpperRamp(x,y){
+            const target=rampAt(x,y);if(!target||player.floorY<FLOOR_HEIGHT/2||rampAt(player.x,player.y))return true;
+            const insideLane=player.y>=target.y1+.35&&player.y<=target.y2-.35;
+            return insideLane&&(target.reverse?player.x<=target.x1+.8:player.x>=target.x2-.8);
+        }
         function bridgeAt(x,y,current=0){return current>=FLOOR_HEIGHT/2&&RAMPS.some(r=>Math.abs(x-(r.reverse?r.x2-(r.x2-r.x1)*.22:r.x1+(r.x2-r.x1)*.22))<=1.6&&y>=r.y1-.35&&y<=r.y2+.35)}
         function rampSurfaceHeightAt(x,y,current=0){const ramp=rampAt(x,y);if(!ramp)return current>=FLOOR_HEIGHT/2?FLOOR_HEIGHT:0;let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;return t*FLOOR_HEIGHT}
         function surfaceHeightAt(x,y,current=0){if(bridgeAt(x,y,current))return FLOOR_HEIGHT;return rampSurfaceHeightAt(x,y,current)}
@@ -275,10 +285,9 @@ for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
             floorY: 0,
             zVel: 0,
             isJumping: false,
-            speed: 0.16, // deliberately quick arcade movement
+            speed: 0.24, // 0.48 world units/frame: matches a chasing bot
             rotSpeed: 0.0025,
             sensitivity: 1.0,
-            isSprinting: false,
             pitch: 0, // vertical look (up/down)
             roll: 0
         };
@@ -296,8 +305,9 @@ for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
         let wallGroup, floorMesh;
 let bots = [];
 let screenWidth, screenHeight;
-let audioCtx, humNode;
 let botReleaseAt=Infinity;
+let invulnerableUntil=0;
+let respawnSpawns=[];
 let netRole='solo',roomSession=null,lastNetSend=0,roomsWatching=false;
 const skipVotes=new Set();let skipVoteSent=false,skipVoteCount=0,skipVoteRequired=1;
 const remotePlayers=new Map();
@@ -344,21 +354,6 @@ function wireGuestRoom(session){
         world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.backing.position.x=state.x;bot.backing.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;bot.floorY=state.floorY||0;bot.mesh.position.y=3.15+bot.floorY;bot.backing.position.y=3.15+bot.floorY;if(bot.label)bot.label.position.y=.55+bot.floorY;});
     });
     session.client.on('message',({data})=>{if(data.type==='death'&&data.payload.id===session.client.meta.peerId)showGameOverOverlay();});
-}
-
-function initAudio() {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    // Deep rumble base
-    humNode = audioCtx.createOscillator();
-    const humGain = audioCtx.createGain();
-    humNode.type = 'sawtooth';
-    humNode.frequency.value = 40;
-    humGain.gain.value = 0.012;
-    humNode.connect(humGain);
-    humGain.connect(audioCtx.destination);
-    humNode.start();
-
 }
 
         // --- Lighting ---
@@ -408,19 +403,20 @@ function initAudio() {
             wallTexture.wrapS=wallTexture.wrapT=THREE.RepeatWrapping;wallTexture.repeat.set(1,1);
             const wallGeo = new THREE.BoxGeometry(2, 19, 2);
             const wallMat = new THREE.MeshPhongMaterial({map:wallTexture,color:0x8f949a,shininess:3});
-            const pillarMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture('#dedbd0'),color:0xf1eee3,shininess:1});
             let wallCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++){if(MAP[y][x]===1)wallCount++;else if(MAP[y][x]===2)pillarCount++}
-            const walls=new THREE.InstancedMesh(wallGeo,wallMat,wallCount),pillars=new THREE.InstancedMesh(wallGeo,pillarMat,pillarCount);
+            const walls=new THREE.InstancedMesh(wallGeo,wallMat,wallCount),pillars=new THREE.InstancedMesh(wallGeo,wallMat,pillarCount);
             const transform=new THREE.Matrix4();let wallIndex=0,pillarIndex=0;
             for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]){transform.makeTranslation((x+.5)*2,9.5,(y+.5)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
-            // The upper deck has real openings above every ramp instead of cutting
-            // straight through the ramp entrance.
+            // Only the upper landing needs an opening. Cutting the complete ramp
+            // footprint made the upper floor look like it had large random holes.
             const deckShape=new THREE.Shape();
             deckShape.moveTo(-MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,MAP_SIZE_Y);deckShape.lineTo(-MAP_SIZE_X,MAP_SIZE_Y);deckShape.closePath();
             for(const ramp of RAMPS){
-                const left=ramp.x1*2-MAP_SIZE_X-.45,right=ramp.x2*2-MAP_SIZE_X+.45;
+                const riseStart=ramp.reverse?ramp.x1:ramp.x1+(ramp.x2-ramp.x1)*.55;
+                const riseEnd=ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.55:ramp.x2;
+                const left=Math.min(riseStart,riseEnd)*2-MAP_SIZE_X-.45,right=Math.max(riseStart,riseEnd)*2-MAP_SIZE_X+.45;
                 const near=MAP_SIZE_Y-ramp.y2*2-.45,far=MAP_SIZE_Y-ramp.y1*2+.45;
                 const opening=new THREE.Path();opening.moveTo(left,near);opening.lineTo(right,near);opening.lineTo(right,far);opening.lineTo(left,far);opening.closePath();deckShape.holes.push(opening);
             }
@@ -435,11 +431,19 @@ function initAudio() {
             const warningMat=new THREE.MeshBasicMaterial({color:0xe5c94f});
             for(const ramp of RAMPS){
                 const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1),cx=ramp.x1+ramp.x2,cz=ramp.y1+ramp.y2;
+                const supportShape=new THREE.Shape();
+                if(ramp.reverse){supportShape.moveTo(-length/2,0);supportShape.lineTo(-length/2,FLOOR_HEIGHT);supportShape.lineTo(length/2,0)}
+                else{supportShape.moveTo(-length/2,0);supportShape.lineTo(length/2,0);supportShape.lineTo(length/2,FLOOR_HEIGHT)}
+                supportShape.closePath();
+                const supportGeo=new THREE.ExtrudeGeometry(supportShape,{depth:width,bevelEnabled:false});supportGeo.translate(0,0,-width/2);
+                const support=new THREE.Mesh(supportGeo,wallMat);support.position.set(cx,0,cz);scene.add(support);
                 const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
-                // A thick bridge at the low quarter lets the upper floor cross the shaft,
-                // while the rest remains open so players can drop onto the ramp.
-                const bridgeX=(ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.22:ramp.x1+(ramp.x2-ramp.x1)*.22)*2;
-                const bridge=new THREE.Mesh(new THREE.BoxGeometry(6,.65,width+.8),deckMaterial);bridge.position.set(bridgeX,FLOOR_HEIGHT,cz);scene.add(bridge);
+                // Guard the upper opening on three sides. The high end stays open,
+                // making the ramp entrance the only walkable route to the lower floor.
+                const openingLength=length*.45,openingMidX=ramp.reverse?ramp.x1*2+openingLength/2:ramp.x2*2-openingLength/2;
+                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(openingLength,1.6,.5),wallMat);guard.position.set(openingMidX,FLOOR_HEIGHT+1.12,cz+side*(width/2+.2));scene.add(guard)}
+                const closedX=ramp.reverse?ramp.x2*2-openingLength:ramp.x1*2+length-openingLength;
+                const endGuard=new THREE.Mesh(new THREE.BoxGeometry(.5,1.6,width+.9),wallMat);endGuard.position.set(closedX,FLOOR_HEIGHT+1.12,cz);scene.add(endGuard);
                 // Yellow entrance bars clearly mark both ways onto the ramp.
                 for(const end of [ramp.x1*2,ramp.x2*2]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,end===ramp.x1*2?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12),cz);scene.add(bar)}
             }
@@ -475,8 +479,8 @@ function initAudio() {
             });
 
             // Start away from the centre so every round opens differently.
-            const openSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)openSpawns.push([x+.5,y+.5]);
-            const spawn=openSpawns[Math.floor(Math.random()*openSpawns.length)];
+            respawnSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&!rampAt(x,y)&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)respawnSpawns.push([x+.5,y+.5]);
+            const spawn=respawnSpawns[Math.floor(Math.random()*respawnSpawns.length)];
             player.position = new THREE.Vector3(spawn[0], 12, spawn[1]);
             player.x = spawn[0];
             player.y = spawn[1];
@@ -578,7 +582,6 @@ for (let b = 0; b < botSpawns.length; b++) {
             look.addEventListener('pointerdown',e=>{lookId=e.pointerId;lastX=e.clientX;lastY=e.clientY;look.setPointerCapture(e.pointerId)});
             look.addEventListener('pointermove',e=>{if(e.pointerId!==lookId)return;player.dir-=(e.clientX-lastX)*.006*player.sensitivity;player.pitch=Math.max(-1.45,Math.min(1.45,player.pitch-(e.clientY-lastY)*.006*player.sensitivity));lastX=e.clientX;lastY=e.clientY});
             document.getElementById('touch-jump').addEventListener('pointerdown',e=>{e.stopPropagation();if(!player.isJumping){player.isJumping=true;player.zVel=.20}});
-            document.getElementById('touch-sprint').addEventListener('pointerdown',e=>{e.stopPropagation();player.isSprinting=!player.isSprinting;e.currentTarget.classList.toggle('active',player.isSprinting)});
         }
 
         function handleKeyDown(e) {
@@ -589,7 +592,6 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if (!isLocked) canvas.requestPointerLock();
                 else document.exitPointerLock();
             }
-            if (e.key === 'Shift' && !e.repeat) { player.isSprinting = !player.isSprinting; document.getElementById('touch-sprint').classList.toggle('active',player.isSprinting); }
             if (e.code === 'Space' && !player.isJumping) {
                 player.isJumping = true;
                 player.zVel = 0.20;
@@ -637,22 +639,47 @@ for (let b = 0; b < botSpawns.length; b++) {
 
         // --- Round end overlay ---
         let isGameOver = false;
+        let livesRemaining=2;
+        function returnToGameMenu(){ location.reload(); }
+        function respawnPlayer(){
+            let best=respawnSpawns[0],bestDistance=-1;
+            for(let i=0;i<Math.min(120,respawnSpawns.length);i++){
+                const candidate=respawnSpawns[Math.floor(Math.random()*respawnSpawns.length)];
+                const distance=Math.min(...bots.map(bot=>Math.hypot(bot.mesh.position.x-(candidate[0]*2+1),bot.mesh.position.z-(candidate[1]*2+1))));
+                if(distance>bestDistance){best=candidate;bestDistance=distance}
+            }
+            if(best){player.x=best[0];player.y=best[1]}
+            player.floorY=0;player.z=0;player.zVel=0;player.isJumping=false;
+            invulnerableUntil=performance.now()+5000;
+            hideGameOverOverlay();
+            if(netRole==='guest'&&roomSession)roomSession.client.send('player',{x:player.x,y:player.y,floorY:0,dir:player.dir,alive:true});
+            requestAnimationFrame(gameLoop);
+            canvas.requestPointerLock?.();
+        }
         function showGameOverOverlay(won=false) {
+            if(isGameOver)return;
+            if(!won)livesRemaining=Math.max(0,livesRemaining-1);
             isGameOver=true; if(document.pointerLockElement)document.exitPointerLock();
             let overlay=document.getElementById('game-over-overlay');
             if(!overlay){overlay=document.createElement('div');overlay.id='game-over-overlay';Object.assign(overlay.style,{position:'fixed',inset:'0',background:'rgba(0,0,0,.9)',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',zIndex:'9999',gap:'22px'});document.body.append(overlay)}
-            overlay.innerHTML=`<div style="font:900 clamp(3rem,10vw,7rem) Impact,sans-serif;color:${won?'#f1d37e':'#ef3f3f'};letter-spacing:.06em">${won?'YOU SURVIVED':'GAME OVER'}</div><div style="display:flex;gap:12px"><button id="respawn-button" style="padding:14px 24px;font:800 1rem inherit;background:#f1d37e;border:0;cursor:pointer">RESPAWN</button><button id="home-button" style="padding:14px 24px;font:800 1rem inherit;background:#222;color:#fff;border:1px solid #777;cursor:pointer">HOME</button></div>`;
+            overlay.innerHTML=`<div style="font:900 clamp(3rem,10vw,7rem) Impact,sans-serif;color:${won?'#f1d37e':'#ef3f3f'};letter-spacing:.06em">${won?'YOU SURVIVED':'GAME OVER'}</div><div style="display:flex;gap:12px">${won?'':`<button id="respawn-button" disabled style="padding:14px 24px;font:800 1rem inherit;background:#777;color:#bbb;border:0;cursor:not-allowed">${livesRemaining?'RESPAWN · 3':'RESPAWN'}</button>`}<button id="home-button" style="padding:14px 24px;font:800 1rem inherit;background:#222;color:#fff;border:1px solid #777;cursor:pointer">HOME</button></div>`;
             overlay.style.display='flex';
-            document.getElementById('respawn-button').onclick=()=>location.reload();
-            document.getElementById('home-button').onclick=()=>location.href='./index.html';
+            document.getElementById('home-button').onclick=returnToGameMenu;
+            if(!won&&livesRemaining>0){
+                const respawn=document.getElementById('respawn-button'),readyAt=performance.now()+3000;
+                const countdown=setInterval(()=>{
+                    if(!document.body.contains(respawn)){clearInterval(countdown);return}
+                    const left=Math.max(0,Math.ceil((readyAt-performance.now())/1000));
+                    respawn.textContent=left?`RESPAWN · ${left}`:'RESPAWN';
+                    if(!left){clearInterval(countdown);respawn.disabled=false;respawn.style.background='#f1d37e';respawn.style.color='#111';respawn.style.cursor='pointer';respawn.onclick=respawnPlayer}
+                },100);
+            }
         }
         function hideGameOverOverlay(){const overlay=document.getElementById('game-over-overlay');if(overlay)overlay.style.display='none';isGameOver=false}
 
         function update() {
             // UI status
-            const isMoving = keys['w'] || keys['s'] || keys['a'] || keys['d'] || Math.abs(touchMoveX)+Math.abs(touchMoveY)>.08;
-            const actuallySprinting = player.isSprinting && isMoving;
-            const currentSpeed = actuallySprinting ? player.speed * 1.75 : player.speed;
+            const currentSpeed = player.speed;
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
             if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;updateSkipButton()}
             else { skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
@@ -687,7 +714,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             const canStand=(x,y)=>{
                 const radius=.18,points=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
                 const surface=surfaceHeightAt(x,y,player.floorY);
-                return surface<=player.floorY+.65&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0);
+                return surface<=player.floorY+.65&&canEnterUpperRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0);
             };
             let nextX = player.x + moveX;
             let nextY = player.y + moveY;
@@ -700,7 +727,9 @@ for (let b = 0; b < botSpawns.length; b++) {
             }
 
             const groundHeight=surfaceHeightAt(player.x,player.y,player.floorY);
-            player.floorY=groundHeight<player.floorY-.65?Math.max(groundHeight,player.floorY-.32):groundHeight;
+            // A jump keeps its take-off floor until landing. Previously crossing
+            // above a ramp opening changed floorY mid-air and pulled the player down.
+            if(!player.isJumping)player.floorY=groundHeight<player.floorY-.65?Math.max(groundHeight,player.floorY-.32):groundHeight;
 
             // Jump physics
             if (player.isJumping) {
@@ -717,7 +746,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             // Player's world position
   const playerWorldX = player.x * 2 + 1;
             const playerWorldZ = player.y * 2 + 1;
-            if(nowTime>=botReleaseAt)for (let i = 0; i < bots.length; i++) {
+            if(nowTime>=botReleaseAt&&nowTime>=invulnerableUntil)for (let i = 0; i < bots.length; i++) {
                 const bot = bots[i];
                 const botX = bot.mesh.position.x;
                 const botZ = bot.mesh.position.z;
@@ -883,28 +912,31 @@ for (let b = 0; b < botSpawns.length; b++) {
         let minimapFrame=0;
         function drawMinimap() {
             if((minimapFrame++&3)!==0)return;
-            mCtx.clearRect(0,0,150,150);
-            const blockSize = 150 / Math.max(MAP_SIZE_X, MAP_SIZE_Y);
-            for(let y=0; y<MAP_SIZE_Y; y++) {
-                for(let x=0; x<MAP_SIZE_X; x++) {
+            mCtx.fillStyle='#090b0d';mCtx.fillRect(0,0,150,150);
+            const padding=5,viewSize=38,blockSize=(150-padding*2)/viewSize;
+            const viewX=Math.max(0,Math.min(MAP_SIZE_X-viewSize,player.x-viewSize/2));
+            const viewY=Math.max(0,Math.min(MAP_SIZE_Y-viewSize,player.y-viewSize/2));
+            const mapX=x=>padding+(x-viewX)*blockSize,mapY=y=>padding+(y-viewY)*blockSize;
+            for(let y=Math.floor(viewY);y<Math.min(MAP_SIZE_Y,Math.ceil(viewY+viewSize));y++) {
+                for(let x=Math.floor(viewX);x<Math.min(MAP_SIZE_X,Math.ceil(viewX+viewSize));x++) {
                     if(MAP[y][x] !== 0) {
-                        mCtx.fillStyle = '#d1b45d';
-                        mCtx.fillRect(x*blockSize, y*blockSize, blockSize-1, blockSize-1);
+                        mCtx.fillStyle = MAP[y][x]===1?'#d1b45d':'#8f949a';
+                        mCtx.fillRect(mapX(x),mapY(y),blockSize+.35,blockSize+.35);
                     }
                 }
             }
             // Player
             mCtx.fillStyle = '#fff';
             mCtx.beginPath();
-            mCtx.arc(player.x * blockSize, player.y * blockSize, 3, 0, Math.PI*2);
+            mCtx.arc(mapX(player.x),mapY(player.y),3.5,0,Math.PI*2);
             mCtx.fill();
             // View direction (corrected: x = sin(dir), y = cos(dir)), flipped to point forward
             mCtx.strokeStyle = 'rgba(255,255,255,0.3)';
             mCtx.beginPath();
-            mCtx.moveTo(player.x * blockSize, player.y * blockSize);
+            mCtx.moveTo(mapX(player.x),mapY(player.y));
             mCtx.lineTo(
-                (player.x - Math.sin(player.dir) * 2) * blockSize,
-                (player.y - Math.cos(player.dir) * 2) * blockSize
+                mapX(player.x-Math.sin(player.dir)*2),
+                mapY(player.y-Math.cos(player.dir)*2)
             );
             mCtx.stroke();
             // Bots
@@ -915,8 +947,8 @@ for (let b = 0; b < botSpawns.length; b++) {
                     // Convert bot world position to map units for minimap
                     mCtx.beginPath();
                     mCtx.arc(
-                        ((bots[i].mesh.position.x - 1) / 2) * blockSize,
-                        ((bots[i].mesh.position.z - 1) / 2) * blockSize,
+                        mapX((bots[i].mesh.position.x-1)/2),
+                        mapY((bots[i].mesh.position.z-1)/2),
                         3, 0, Math.PI*2
                     );
                     mCtx.fill();
@@ -980,7 +1012,6 @@ for (let b = 0; b < botSpawns.length; b++) {
             document.getElementById('game-container').style.display = '';
             // Start game loop
             requestAnimationFrame(gameLoop);
-            initAudio();
             gameTimer=0;timerDisplay.innerText='GET READY · 30';document.getElementById('mobile-controls').classList.add('active');
         }
 
