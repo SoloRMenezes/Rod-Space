@@ -120,6 +120,13 @@ function layoutBoard(){
     }
   }
   $('board').style.setProperty('--columns',columns);$('board').style.setProperty('--rows',rows);
+  const cards=[...$('board').children],shortLength=Math.floor(count/rows),longRows=count%rows;let cardIndex=0;
+  for(let row=0;row<rows;row++){
+    const rowLength=shortLength+(row<longRows?1:0),startColumn=Math.floor((columns-rowLength)/2)+1;
+    for(let column=0;column<rowLength&&cardIndex<cards.length;column++,cardIndex++){
+      cards[cardIndex].style.gridRowStart=String(row+1);cards[cardIndex].style.gridColumnStart=String(startColumn+column);
+    }
+  }
 }
 function newGame(){
   stopRound();memory.clear();first=null;locked=false;moves=0;matched=0;started=0;finished=false;current=0;
@@ -141,7 +148,7 @@ function newGame(){
     card.innerHTML='<span class="inner" aria-hidden="true"><span class="face back"><span><svg viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M32 6v52M6 32h52M14 14l36 36M14 50l36-36"/></svg></span></span><span class="face front"><span>'+icon+'</span></span></span>';
     card.addEventListener('click',()=>flip(card));fragment.append(card);
   });
-  $('board').append(fragment);$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;$('board').firstElementChild.focus();
+  $('board').append(fragment);layoutBoard();$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;$('board').firstElementChild.focus();
 }
 function remember(card){
   if(mode!=='cpu')return;
