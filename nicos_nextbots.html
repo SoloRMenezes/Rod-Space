@@ -159,7 +159,7 @@
                 <div class="lobby-actions"><button id="solo-start">PLAY SOLO</button><button id="host-start">HOST GAME</button><button id="join-open">JOIN GAME</button></div>
                 <div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div>
                 <div id="lobby-status"></div>
-                <div class="controls-strip"><span><b>WASD</b> MOVE</span><span><b>SPACE</b> JUMP</span><span><b>CTRL</b> MOUSE LOCK</span></div>
+                <div class="controls-strip"><span><b>WASD</b> MOVE</span><span><b>ARROWS</b> LOOK</span><span><b>SPACE</b> JUMP</span><span><b>CTRL</b> MOUSE LOCK</span></div>
                 <a class="home-link" href="./index.html">← ROD SPACE</a>
             </div>
         </div>
@@ -593,6 +593,7 @@ for (let b = 0; b < botSpawns.length; b++) {
         function handleKeyDown(e) {
             const key = e.key.toLowerCase();
             keys[key] = true;
+            if(e.key.startsWith('Arrow'))e.preventDefault();
             if (e.key === 'Control' && !e.repeat) {
                 e.preventDefault();
                 if (!isLocked) canvas.requestPointerLock();
@@ -686,6 +687,11 @@ for (let b = 0; b < botSpawns.length; b++) {
         function update() {
             // UI status
             const currentSpeed = player.isJumping?player.jumpSpeed:player.speed;
+            const keyLookSpeed=.035*player.sensitivity;
+            if(keys['arrowleft'])player.dir+=keyLookSpeed;
+            if(keys['arrowright'])player.dir-=keyLookSpeed;
+            if(keys['arrowup'])player.pitch=Math.min(Math.PI/2-.01,player.pitch+keyLookSpeed);
+            if(keys['arrowdown'])player.pitch=Math.max(-Math.PI/2+.01,player.pitch-keyLookSpeed);
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
             if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;updateSkipButton()}
             else { skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
