@@ -26,10 +26,14 @@ body.in-game main{padding:10px 14px;max-width:1100px}body.in-game header{padding
 
 /* Simplified navigation and instructions. */
 .wordmark{background:none;border:0;color:inherit;padding:0;min-height:0;text-align:left}.wordmark:hover{opacity:.82}.help-button{width:40px;height:40px;min-height:40px;padding:0;border-radius:50%;font-size:20px;font-weight:700}.toolbar{justify-content:flex-end}.toolbar .stats:has(.stat:not([hidden])){justify-content:flex-end}#instructions{text-align:left;padding:28px;width:min(380px,calc(100% - 28px))}#instructions h2{font:700 28px Arial,sans-serif;margin:0 0 14px}#instructions p{font-size:14px;line-height:1.55;margin:0 0 10px}#instructions .solo-help{font-size:12px;color:#65786d}#instructions button{display:block;margin:20px 0 0 auto}.setup .segments{margin-bottom:12px}body.in-game #header-meta{display:block;color:#b7c7bd;font-size:10px;letter-spacing:.5px;text-transform:none}
+
+/* Full-width game header and viewport-fitting boards. */
+body.in-game main{max-width:none;padding:8px 16px}body.in-game header{display:grid;grid-template-columns:1fr minmax(260px,620px) 1fr;gap:18px;width:100%;align-items:center;padding-bottom:8px}body.in-game .header-score{display:flex;grid-column:2;grid-row:1;max-width:none;margin:0;gap:5px}body.in-game .header-actions{grid-column:3;grid-row:1;display:flex;align-items:center;justify-content:flex-end;gap:12px}body.in-game #header-meta{text-align:right}body:not(.in-game) .header-score,body:not(.in-game) .header-actions .help-button{display:none}#game-screen .toolbar{display:none}#game-screen{padding-top:5px}#game-screen .board-scroll{width:100%;max-width:none;max-height:none;overflow:visible;padding:0}#game-screen .board{--fit-gap:clamp(1px,.25vw,5px);--cell:min(calc((100vw - 34px - (var(--columns) - 1)*var(--fit-gap))/var(--columns)),calc((100svh - 72px - (var(--columns) - 1)*var(--fit-gap))/var(--columns)));grid-template-columns:repeat(var(--columns),var(--cell));gap:var(--fit-gap);width:calc(var(--columns)*var(--cell) + (var(--columns) - 1)*var(--fit-gap));min-width:0;margin:auto}#game-screen .front{font-size:clamp(6px,calc(var(--cell)*.56),25px)}#game-screen .back span{width:70%;height:70%;font-size:inherit}#game-screen .back span svg{width:72%;height:72%}#game-screen .back:before{inset:max(1px,calc(var(--cell)*.08))}
+@media(max-width:700px){.size-options button[data-value="12"],.size-options button[data-value="16"],.size-options button[data-value="24"],.size-options button[data-value="32"]{display:none}.size-options{grid-template-columns:repeat(2,1fr)}body.in-game main{padding:8px 10px}body.in-game header{grid-template-columns:1fr auto;gap:7px 12px}body.in-game .wordmark{grid-column:1;grid-row:1}body.in-game .header-actions{grid-column:2;grid-row:1}body.in-game .header-score{grid-column:1/-1;grid-row:2;width:100%;min-width:0}body.in-game #header-meta{font-size:9px}body.in-game .help-button{width:34px;height:34px;min-height:34px;font-size:17px}#game-screen .board{--cell:min(calc((100vw - 22px - (var(--columns) - 1)*var(--fit-gap))/var(--columns)),calc((100svh - 116px - (var(--columns) - 1)*var(--fit-gap))/var(--columns)))}}
 </style>
 </head>
 <body><main>
-<header><button class="wordmark" id="brand-home" aria-label="Return to main menu">double<span>take.</span></button><div class="edition" id="header-meta">The matching game</div></header>
+<header><button class="wordmark" id="brand-home" aria-label="Return to main menu">double<span>take.</span></button><div id="scoreboard" class="scoreboard header-score" aria-label="Player scores"></div><div class="header-actions"><div class="edition" id="header-meta">The matching game</div><button class="reset help-button" id="help" aria-label="How to play" title="How to play">?</button></div></header>
 <section class="intro"><div class="eyebrow">The memory club</div><h1>Seen it <em>before?</em></h1><p>Two flips. One pair. Trust your memory.</p></section>
 <section id="main-menu" class="setup-screen" aria-labelledby="menu-title">
 <div class="menu-art" aria-hidden="true"><div class="display-card card-left"><svg viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M32 6v52M6 32h52M14 14l36 36M14 50l36-36"/></svg></div><div class="display-card card-center">🍒<small>DOUBLE</small></div><div class="display-card card-right">🍒<small>TAKE</small></div></div>
@@ -49,8 +53,8 @@ body.in-game main{padding:10px 14px;max-width:1100px}body.in-game header{padding
 <button id="start" class="start">Start match →</button>
 </section>
 <section id="game-screen" hidden aria-label="Current round">
-<div class="toolbar"><div class="stats"><div class="stat" id="moves-stat"><small>Moves</small><span id="moves">0</span></div><span id="pairs" hidden></span><div class="stat" id="time-stat"><small>Time</small><span id="time">0:00</span></div></div><button class="reset help-button" id="help" aria-label="How to play" title="How to play">?</button></div>
-<div id="scoreboard" class="scoreboard" aria-label="Player scores"></div><p id="turn" class="sr-only" aria-live="polite"></p>
+<div class="toolbar"><div class="stats"><div class="stat" id="moves-stat"><small>Moves</small><span id="moves">0</span></div><span id="pairs" hidden></span><div class="stat" id="time-stat"><small>Time</small><span id="time">0:00</span></div></div></div>
+<p id="turn" class="sr-only" aria-live="polite"></p>
 <p id="board-help" class="sr-only"></p><div id="board-scroll" class="board-scroll" tabindex="0" role="region" aria-label="Card board; scroll to explore large boards"><div id="board" class="board" aria-label="Memory cards"></div></div>
 <p class="sr-only" id="status" role="status">Pick any card to begin.</p>
 <span class="sr-only" id="best"></span>
@@ -84,6 +88,7 @@ function stopRound(){
   document.body.classList.remove('in-game');clearInterval(ticker);pending.forEach(clearTimeout);pending.clear();playing=false;$('win').close();$('instructions').close();$('header-meta').textContent='The matching game';
 }
 function updateSetup(){
+  if(matchMedia('(max-width:700px)').matches&&Number($('board-size').value)>10)$('board-size').value='10';
   const choice=selectedMode(),dimension=Number($('board-size').value),count=dimension*dimension;
   $('cpu-toggle-setting').hidden=menuMode!=='solo';$('cpu-setting').hidden=choice!=='cpu';$('players-setting').hidden=choice!=='local';
   $('setup-title').textContent=menuMode==='local'?'Multiplayer':'Solo';
@@ -101,6 +106,7 @@ function makePairs(count){
 }
 function newGame(){
   stopRound();memory.clear();first=null;locked=false;moves=0;matched=0;started=0;finished=false;current=0;
+  if(matchMedia('(max-width:700px)').matches&&Number($('board-size').value)>10)$('board-size').value='10';
   side=Number($('board-size').value);total=side*side/2;mode=selectedMode();level=$('cpu-level').value;
   players=mode==='cpu'?[{name:'You',score:0},{name:'CPU · '+level,score:0,cpu:true}]:Array.from({length:mode==='local'?Number($('player-count').value):1},(_,i)=>({name:mode==='solo'?'You':'Player '+(i+1),score:0}));
   $('main-menu').hidden=true;$('setup-screen').hidden=true;$('game-screen').hidden=false;playing=true;
@@ -108,7 +114,7 @@ function newGame(){
   $('header-meta').textContent=side+' × '+side+' · '+(total*2).toLocaleString()+' cards';
   $('moves-stat').hidden=!isSolo();$('time-stat').hidden=!isSolo();
   $('moves').textContent='0';$('pairs').textContent='0 / '+total;$('time').textContent='0:00';$('status').textContent='Pick any card to begin.';showBest();renderScores();
-  $('board-help').textContent=side>4?'Find matching emojis. Scroll to explore the board.':'Find matching emojis. Most pairs wins.';
+  $('board-help').textContent='Find matching emojis. Most pairs wins.';
   const chosen=makePairs(total),deck=shuffle([...chosen,...chosen]);
   $('board').style.setProperty('--columns',side);$('board-scroll').style.setProperty('--board-max',Math.min(920,side*62)+'px');$('board').replaceChildren();
   const fragment=document.createDocumentFragment();
@@ -181,5 +187,5 @@ $('win-setup').addEventListener('click',showSetup);
 $('choose-multi').addEventListener('click',()=>openMode('local'));
 $('choose-solo').addEventListener('click',()=>openMode('solo'));
 $('back-menu').addEventListener('click',showMenu);
-$('close').addEventListener('click',()=>$('win').close());updateSetup();
+$('close').addEventListener('click',()=>$('win').close());matchMedia('(max-width:700px)').addEventListener('change',updateSetup);updateSetup();
 </script></body></html>
