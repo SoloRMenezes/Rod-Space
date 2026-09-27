@@ -19,39 +19,44 @@ body{background:#19332d}main{max-width:1040px;padding:24px 28px}header{padding-b
 
 /* Compact play area; menu layout remains unchanged. */
 body.in-game main{padding:10px 14px;max-width:1100px}body.in-game header{padding-bottom:8px}body.in-game .wordmark{font-size:18px}body.in-game .edition{display:none}#game-screen{padding-top:6px}#game-screen .toolbar{max-width:none;margin:0 0 6px;gap:10px;flex-wrap:nowrap}#game-screen .round-size{font-size:10px}#game-screen .stats{flex:1;order:0;width:auto;gap:16px;padding:0;justify-content:flex-end}#game-screen .stat{font-size:14px;display:flex;align-items:center;gap:5px}#game-screen .stat small{font-size:9px;margin:0;letter-spacing:.5px}#game-screen .home-button{width:40px;height:40px;min-height:40px}#game-screen .home-button svg{width:19px;height:19px}#game-screen .scoreboard{max-width:none;margin:0 0 8px;gap:5px}#game-screen .player{padding:6px 4px;border-bottom-width:2px;font-size:11px}#game-screen .player strong{display:inline;font-size:13px;margin-left:7px}#game-screen .card{aspect-ratio:1}#game-screen .board{gap:5px;min-width:calc(var(--columns,4) * 44px + (var(--columns,4) - 1) * 5px)}#game-screen .board-scroll{max-height:calc(100svh - 145px);padding:3px 3px 7px}#game-screen .front{font-size:25px;border-width:1px}#game-screen .back span{width:25px;height:25px;font-size:21px}#game-screen .back:before{inset:4px}#game-screen .face,#game-screen .card{border-radius:5px}#game-screen .footer{margin-top:8px;padding-top:8px;max-width:none;font-size:10px}#game-screen .best{font-size:10px}#game-screen .card.matched .front:after{font-size:9px;top:2px;right:3px}@media(max-width:400px){#game-screen .player strong{display:block;margin:3px 0 0}#game-screen .board-scroll{max-height:calc(100svh - 158px)}}
+
+/* Keep the menu inside narrow Safari viewports without clipping its content. */
+#main-menu{min-width:0}.menu-copy{min-width:0;width:100%}.mode-buttons{width:100%;min-width:0}.mode-button{width:100%;min-width:0}.mode-button .mode-label{min-width:0}.mode-arrow{display:flex;flex-shrink:0}.back span svg{width:70%;height:70%}
+@media(max-width:700px){#main-menu{width:100%;grid-template-columns:minmax(0,1fr)}.menu-copy h1{font-size:clamp(36px,11vw,58px);letter-spacing:-.055em;white-space:nowrap}.menu-copy h1 span{margin-left:.12em}.menu-copy .mode-buttons{max-width:100%}.card-left svg{width:54px;height:54px}}
+
+/* Simplified navigation and instructions. */
+.wordmark{background:none;border:0;color:inherit;padding:0;min-height:0;text-align:left}.wordmark:hover{opacity:.82}.help-button{width:40px;height:40px;min-height:40px;padding:0;border-radius:50%;font-size:20px;font-weight:700}.toolbar{justify-content:flex-end}.toolbar .stats:has(.stat:not([hidden])){justify-content:flex-end}#instructions{text-align:left;padding:28px;width:min(380px,calc(100% - 28px))}#instructions h2{font:700 28px Arial,sans-serif;margin:0 0 14px}#instructions p{font-size:14px;line-height:1.55;margin:0 0 10px}#instructions .solo-help{font-size:12px;color:#65786d}#instructions button{display:block;margin:20px 0 0 auto}.setup .segments{margin-bottom:12px}body.in-game #header-meta{display:block;color:#b7c7bd;font-size:10px;letter-spacing:.5px;text-transform:none}
 </style>
 </head>
 <body><main>
-<header><div class="wordmark">double<span>take.</span></div><div class="edition">The matching game</div></header>
+<header><button class="wordmark" id="brand-home" aria-label="Return to main menu">double<span>take.</span></button><div class="edition" id="header-meta">The matching game</div></header>
 <section class="intro"><div class="eyebrow">The memory club</div><h1>Seen it <em>before?</em></h1><p>Two flips. One pair. Trust your memory.</p></section>
 <section id="main-menu" class="setup-screen" aria-labelledby="menu-title">
-<div class="menu-art" aria-hidden="true"><div class="display-card card-left">✳</div><div class="display-card card-center">🍒<small>DOUBLE</small></div><div class="display-card card-right">🍒<small>TAKE</small></div></div>
+<div class="menu-art" aria-hidden="true"><div class="display-card card-left"><svg viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M32 6v52M6 32h52M14 14l36 36M14 50l36-36"/></svg></div><div class="display-card card-center">🍒<small>DOUBLE</small></div><div class="display-card card-right">🍒<small>TAKE</small></div></div>
 <div class="menu-copy"><p class="menu-kicker">A game of familiar faces</p><h1 id="menu-title">DOUBLE<br><span>TAKE.</span></h1><p class="menu-caption">Good memory. Better competition.</p>
-<div class="mode-buttons"><button id="choose-multi" class="mode-button"><span class="mode-number" aria-hidden="true">01</span><span class="mode-label"><strong>Multiplayer</strong><small>1–4 players · one device</small></span><span class="mode-arrow" aria-hidden="true">↗</span></button><button id="choose-solo" class="mode-button"><span class="mode-number" aria-hidden="true">02</span><span class="mode-label"><strong>Solo</strong><small>Just you, or you vs CPU</small></span><span class="mode-arrow" aria-hidden="true">↗</span></button></div><p class="menu-foot">Flip two. Find a pair. Keep the turn.</p></div>
+<div class="mode-buttons"><button id="choose-multi" class="mode-button"><span class="mode-number" aria-hidden="true">01</span><span class="mode-label"><strong>Multiplayer</strong><small>2–4 players · one device</small></span><span class="mode-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></button><button id="choose-solo" class="mode-button"><span class="mode-number" aria-hidden="true">02</span><span class="mode-label"><strong>Solo</strong><small>Just you, or you vs CPU</small></span><span class="mode-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></button></div><p class="menu-foot">Flip two. Find a pair. Keep the turn.</p></div>
 </section>
 <section id="setup-screen" hidden class="setup-screen" aria-labelledby="setup-title">
 <div class="setup-heading"><button id="back-menu" class="back-menu" aria-label="Back to main menu">←</button><div><p class="menu-kicker">Make it your match</p><h2 id="setup-title">Multiplayer</h2></div></div>
 <div class="setup">
 <div id="cpu-toggle-setting" hidden>CPU<select hidden id="cpu-toggle"><option value="off" selected>OFF</option><option value="on">ON</option></select><div class="segments" role="group" aria-label="CPU"><button type="button" data-control="cpu-toggle" data-value="off" aria-pressed="false">OFF</button><button type="button" data-control="cpu-toggle" data-value="on" aria-pressed="false">ON</button></div></div>
-<div id="players-setting">Players on this device<select hidden id="player-count"><option value="1">1 player</option><option value="2" selected>2 players</option><option value="3">3 players</option><option value="4">4 players</option></select><div class="segments" role="group" aria-label="Players"><button type="button" data-control="player-count" data-value="1" aria-pressed="false">1</button><button type="button" data-control="player-count" data-value="2" aria-pressed="false">2</button><button type="button" data-control="player-count" data-value="3" aria-pressed="false">3</button><button type="button" data-control="player-count" data-value="4" aria-pressed="false">4</button></div></div>
+<div id="players-setting">Players<select hidden id="player-count"><option value="2" selected>2 players</option><option value="3">3 players</option><option value="4">4 players</option></select><div class="segments" role="group" aria-label="Players"><button type="button" data-control="player-count" data-value="2" aria-pressed="false">2</button><button type="button" data-control="player-count" data-value="3" aria-pressed="false">3</button><button type="button" data-control="player-count" data-value="4" aria-pressed="false">4</button></div></div>
 <div id="cpu-setting" hidden>CPU difficulty<select hidden id="cpu-level"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select><div class="segments" role="group" aria-label="Difficulty"><button type="button" data-control="cpu-level" data-value="easy" aria-pressed="false">Easy</button><button type="button" data-control="cpu-level" data-value="medium" aria-pressed="false">Medium</button><button type="button" data-control="cpu-level" data-value="hard" aria-pressed="false">Hard</button></div></div>
 </div>
-<p class="mode-note" id="mode-note"></p>
 <div class="board-label">Choose your board <span>Small match or marathon?</span></div><select hidden id="board-size">
 <option value="4" selected>4 × 4 · 8 pairs</option><option value="6">6 × 6 · 18 pairs</option><option value="8">8 × 8 · 32 pairs</option><option value="10">10 × 10 · 50 pairs</option><option value="12">12 × 12 · 72 pairs</option><option value="16">16 × 16 · 128 pairs</option><option value="24">24 × 24 · 288 pairs</option><option value="32">32 × 32 · 512 pairs</option>
 </select><div class="size-options" role="group" aria-label="Board dimensions"><button type="button" data-control="board-size" data-value="4" aria-pressed="false"><strong>4<span>×</span>4</strong><small>8 pairs</small></button><button type="button" data-control="board-size" data-value="6" aria-pressed="false"><strong>6<span>×</span>6</strong><small>18 pairs</small></button><button type="button" data-control="board-size" data-value="8" aria-pressed="false"><strong>8<span>×</span>8</strong><small>32 pairs</small></button><button type="button" data-control="board-size" data-value="10" aria-pressed="false"><strong>10<span>×</span>10</strong><small>50 pairs</small></button><button type="button" data-control="board-size" data-value="12" aria-pressed="false"><strong>12<span>×</span>12</strong><small>72 pairs</small></button><button type="button" data-control="board-size" data-value="16" aria-pressed="false"><strong>16<span>×</span>16</strong><small>128 pairs</small></button><button type="button" data-control="board-size" data-value="24" aria-pressed="false"><strong>24<span>×</span>24</strong><small>288 pairs</small></button><button type="button" data-control="board-size" data-value="32" aria-pressed="false"><strong>32<span>×</span>32</strong><small>512 pairs</small></button></div>
-<div class="board-preview" aria-hidden="true"><div id="mini-board"></div></div><p id="board-summary" class="board-summary" aria-live="polite"></p><p id="board-note" class="board-note"></p>
 <button id="start" class="start">Start match →</button>
-<p class="rules" id="setup-rules"></p>
 </section>
 <section id="game-screen" hidden aria-label="Current round">
-<div class="toolbar"><span id="round-size" class="round-size"></span><div class="stats"><div class="stat" id="moves-stat"><small>Moves</small><span id="moves">0</span></div><span id="pairs" hidden></span><div class="stat" id="time-stat"><small>Time</small><span id="time">0:00</span></div></div><button class="reset home-button" id="restart" aria-label="Main menu (ends round)" title="Main menu (ends round)"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/></svg></button></div>
+<div class="toolbar"><div class="stats"><div class="stat" id="moves-stat"><small>Moves</small><span id="moves">0</span></div><span id="pairs" hidden></span><div class="stat" id="time-stat"><small>Time</small><span id="time">0:00</span></div></div><button class="reset help-button" id="help" aria-label="How to play" title="How to play">?</button></div>
 <div id="scoreboard" class="scoreboard" aria-label="Player scores"></div><p id="turn" class="sr-only" aria-live="polite"></p>
 <p id="board-help" class="sr-only"></p><div id="board-scroll" class="board-scroll" tabindex="0" role="region" aria-label="Card board; scroll to explore large boards"><div id="board" class="board" aria-label="Memory cards"></div></div>
 <p class="sr-only" id="status" role="status">Pick any card to begin.</p>
-<div class="footer"><details><summary>How to play</summary><p>Tap two cards to reveal their symbols. Match a pair and they stay face up. Miss, and both turn back over. In solo play, find every pair with the fewest moves. Against other players, a match earns one point and another turn; a miss passes the turn. Most pairs wins, and equal top scores are a draw. Multiplayer uses the same device. The CPU only remembers cards that have been revealed. Only solo with CPU off tracks your time and moves. The timer starts on your first flip. Use Tab and Enter or Space to play with a keyboard.</p></details><p class="best" id="best"></p></div>
+<span class="sr-only" id="best"></span>
 </section>
 </main>
+<dialog id="instructions" aria-labelledby="instructions-title"><h2 id="instructions-title">How to play</h2><p>Flip two cards. A match scores one pair and keeps your turn; a miss passes play. Most pairs wins.</p><p class="solo-help">Solo without CPU also tracks your moves and time.</p><button id="close-help">Got it</button></dialog>
 <dialog id="win" aria-labelledby="win-title"><div class="eyebrow" style="color:#6a7852">Nicely remembered</div><h2 id="win-title">All paired up.</h2><p id="result"></p><button id="again">Rematch ↗</button><button class="secondary" id="win-setup">Change setup</button><button class="secondary" id="close">Admire the board</button></dialog>
 <script>
 'use strict';
@@ -76,19 +81,14 @@ function renderScores(){
   $('turn').textContent=finished?'Round complete':players[current].name+(isCPU()?' is thinking…':' — your turn');
 }
 function stopRound(){
-  document.body.classList.remove('in-game');clearInterval(ticker);pending.forEach(clearTimeout);pending.clear();playing=false;$('win').close();
+  document.body.classList.remove('in-game');clearInterval(ticker);pending.forEach(clearTimeout);pending.clear();playing=false;$('win').close();$('instructions').close();$('header-meta').textContent='The matching game';
 }
 function updateSetup(){
   const choice=selectedMode(),dimension=Number($('board-size').value),count=dimension*dimension;
   $('cpu-toggle-setting').hidden=menuMode!=='solo';$('cpu-setting').hidden=choice!=='cpu';$('players-setting').hidden=choice!=='local';
   $('setup-title').textContent=menuMode==='local'?'Multiplayer':'Solo';
-  $('setup-rules').textContent=choice==='solo'?'Find every pair in as few moves as possible. Your timer starts on the first flip.':'Match a pair to score and play again. Miss and pass the turn. Most pairs wins.';
-  $('mode-note').textContent=choice==='cpu'?{easy:'Easy CPU remembers the last 4 revealed cards and sometimes forgets.',medium:'Medium CPU remembers the last 10 revealed cards.',hard:'Hard CPU remembers every revealed card. No peeking.'}[$('cpu-level').value]:choice==='local'?'Pass the device. Match a pair to keep your turn.':'Clear the board and beat your personal best.';
-  $('board-summary').textContent=dimension+' × '+dimension+' · '+count.toLocaleString()+' cards · '+count/2+' pairs';
-  $('board-note').textContent=(dimension>=16?'A marathon board. ':'')+(dimension>4?'Every emoji has one matching partner. Scroll to explore the board.':'A quick match. Find each emoji’s matching partner.');
   $('start').textContent=choice==='solo'?'Let’s play →':'Start match →';
   document.querySelectorAll('[data-control]').forEach(button=>button.setAttribute('aria-pressed',String($(button.dataset.control).value===button.dataset.value)));
-  $('mini-board').style.setProperty('--preview-cols',dimension);
 }
 function showSetup(){
   stopRound();first=null;memory.clear();$('board').replaceChildren();$('game-screen').hidden=true;$('main-menu').hidden=true;$('setup-screen').hidden=false;updateSetup();$('back-menu').focus();
@@ -105,9 +105,9 @@ function newGame(){
   players=mode==='cpu'?[{name:'You',score:0},{name:'CPU · '+level,score:0,cpu:true}]:Array.from({length:mode==='local'?Number($('player-count').value):1},(_,i)=>({name:mode==='solo'?'You':'Player '+(i+1),score:0}));
   $('main-menu').hidden=true;$('setup-screen').hidden=true;$('game-screen').hidden=false;playing=true;
   document.body.classList.add('in-game');
+  $('header-meta').textContent=side+' × '+side+' · '+(total*2).toLocaleString()+' cards';
   $('moves-stat').hidden=!isSolo();$('time-stat').hidden=!isSolo();
   $('moves').textContent='0';$('pairs').textContent='0 / '+total;$('time').textContent='0:00';$('status').textContent='Pick any card to begin.';showBest();renderScores();
-  $('round-size').textContent=side+' × '+side+' · '+(total*2).toLocaleString()+' cards';
   $('board-help').textContent=side>4?'Find matching emojis. Scroll to explore the board.':'Find matching emojis. Most pairs wins.';
   const chosen=makePairs(total),deck=shuffle([...chosen,...chosen]);
   $('board').style.setProperty('--columns',side);$('board-scroll').style.setProperty('--board-max',Math.min(920,side*62)+'px');$('board').replaceChildren();
@@ -115,7 +115,7 @@ function newGame(){
   deck.forEach(({icon,name},index)=>{
     const card=document.createElement('button');card.className='card';card.type='button';card.dataset.symbol=name;card.dataset.position=index+1;
     card.setAttribute('aria-label','Card '+(index+1)+', face down');
-    card.innerHTML='<span class="inner" aria-hidden="true"><span class="face back"><span>✳</span></span><span class="face front"><span>'+icon+'</span></span></span>';
+    card.innerHTML='<span class="inner" aria-hidden="true"><span class="face back"><span><svg viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M32 6v52M6 32h52M14 14l36 36M14 50l36-36"/></svg></span></span><span class="face front"><span>'+icon+'</span></span></span>';
     card.addEventListener('click',()=>flip(card));fragment.append(card);
   });
   $('board').append(fragment);$('board-scroll').scrollTop=0;$('board-scroll').scrollLeft=0;$('board').firstElementChild.focus();
@@ -173,7 +173,9 @@ function complete(){
 }
 document.querySelectorAll('[data-control]').forEach(button=>button.addEventListener('click',()=>{$(button.dataset.control).value=button.dataset.value;updateSetup()}));
 ['start','again'].forEach(id=>$(id).addEventListener('click',newGame));
-$('restart').addEventListener('click',showMenu);
+$('brand-home').addEventListener('click',showMenu);
+$('help').addEventListener('click',()=>$('instructions').showModal());
+$('close-help').addEventListener('click',()=>$('instructions').close());
 $('win-setup').addEventListener('click',showSetup);
 ['board-size','cpu-toggle','cpu-level','player-count'].forEach(id=>$(id).addEventListener('change',updateSetup));
 $('choose-multi').addEventListener('click',()=>openMode('local'));
