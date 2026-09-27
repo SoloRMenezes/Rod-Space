@@ -276,10 +276,11 @@ const MAP = (() => {
         // --- Bot spawn point ---
         // We'll use a THREE.Vector3 for position
 const botSpawns=[];
-// Twelve nextbots begin in valid central drive cells on each floor.
+// Every nextbot shares one X/Y spawn point; floor height is the only difference.
 const centralBotCells=[];for(let y=4;y<MAP_SIZE_Y-4;y++)for(let x=4;x<MAP_SIZE_X-4;x++){const d=Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2);if(MAP[y][x]===0&&d>9&&d<24)centralBotCells.push([x,y])}
+const sharedBotCell=centralBotCells.reduce((best,cell)=>Math.hypot(cell[0]-(MAP_SIZE_X/2+16),cell[1]-MAP_SIZE_Y/2)<Math.hypot(best[0]-(MAP_SIZE_X/2+16),best[1]-MAP_SIZE_Y/2)?cell:best);
 for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
-    const [x,y]=centralBotCells[(i*Math.floor(centralBotCells.length/12))%centralBotCells.length];
+    const [x,y]=sharedBotCell;
     botSpawns.push({position:new THREE.Vector3(x*2+1,3.8+floorY,y*2+1),floorY});
 }
 
