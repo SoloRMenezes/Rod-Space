@@ -245,8 +245,9 @@ const MAP = (() => {
             {x1:7,x2:27,y1:44,y2:51,reverse:false},{x1:113,x2:133,y1:44,y2:51,reverse:true},
             {x1:7,x2:27,y1:81,y2:88,reverse:false},{x1:113,x2:133,y1:81,y2:88,reverse:true}
         ];
-        // Keep the complete approach and exit of every ramp free of room walls and pillars.
-        for(const ramp of RAMPS)for(let y=Math.max(1,ramp.y1-8);y<=Math.min(MAP_SIZE_Y-2,ramp.y2+8);y++)for(let x=Math.max(1,ramp.x1-10);x<=Math.min(MAP_SIZE_X-2,ramp.x2+10);x++)MAP[y][x]=0;
+        // Clear only the ramp and its immediate approach. The old oversized
+        // rectangle erased nearby divider walls and created a road-sized gap.
+        for(const ramp of RAMPS)for(let y=Math.max(1,ramp.y1-2);y<=Math.min(MAP_SIZE_Y-2,ramp.y2+2);y++)for(let x=Math.max(1,ramp.x1-3);x<=Math.min(MAP_SIZE_X-2,ramp.x2+3);x++)MAP[y][x]=0;
         function rampAt(x,y){return RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2)}
         function canEnterRamp(x,y){
             const target=rampAt(x,y);if(!target||rampAt(player.x,player.y))return true;
@@ -419,7 +420,9 @@ function wireGuestRoom(session){
             let wallCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++){if(MAP[y][x]===1)wallCount++;else if(MAP[y][x]===2)pillarCount++}
             const walls=new THREE.InstancedMesh(wallGeo,wallMaterials,wallCount),pillars=new THREE.InstancedMesh(wallGeo,wallMaterials,pillarCount);
             const transform=new THREE.Matrix4();let wallIndex=0,pillarIndex=0;
-            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]){transform.makeTranslation((x+.5)*2,9.5,(y+.5)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
+            // Player/map coordinates convert to world coordinates with +1, so
+            // cell x occupies world 2x+1..2x+3 and is centred at 2x+2.
+            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]){transform.makeTranslation((x+1)*2,9.5,(y+1)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
             // Only the upper landing needs an opening. Cutting the complete ramp
