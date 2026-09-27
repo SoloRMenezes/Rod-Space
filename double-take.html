@@ -110,6 +110,17 @@ function makePairs(count){
   if(count>symbols.length)throw new RangeError('Not enough distinct emojis for this board');
   return shuffle([...symbols]).slice(0,count).map(([icon,name])=>({icon,name}));
 }
+function layoutBoard(){
+  const count=total*2,gap=Math.max(1,Math.min(5,innerWidth*.0025));let columns=side,rows=side;
+  if(innerWidth>700&&side>=12){
+    const availableWidth=innerWidth-34,availableHeight=innerHeight-106;let largest=0;
+    for(let candidate=side;candidate<=count;candidate++){
+      const candidateRows=Math.ceil(count/candidate),size=Math.min((availableWidth-(candidate-1)*gap)/candidate,(availableHeight-(candidateRows-1)*gap)/candidateRows);
+      if(size>largest){largest=size;columns=candidate;rows=candidateRows}
+    }
+  }
+  $('board').style.setProperty('--columns',columns);$('board').style.setProperty('--rows',rows);
+}
 function newGame(){
   stopRound();memory.clear();first=null;locked=false;moves=0;matched=0;started=0;finished=false;current=0;
   if(matchMedia('(max-width:700px)').matches&&Number($('board-size').value)>10)$('board-size').value='10';
@@ -122,8 +133,7 @@ function newGame(){
   $('moves').textContent='0';$('pairs').textContent='0 / '+total;$('time').textContent='0:00';$('status').textContent='Pick any card to begin.';showBest();renderScores();
   $('board-help').textContent='Find matching emojis. Most pairs wins.';
   const chosen=makePairs(total),deck=shuffle([...chosen,...chosen]);
-  const wideColumns=matchMedia('(min-width:701px)').matches?({12:16,16:20,24:30,32:40}[side]||side):side;
-  $('board').style.setProperty('--columns',wideColumns);$('board').style.setProperty('--rows',Math.ceil(total*2/wideColumns));$('board-scroll').style.setProperty('--board-max',Math.min(920,side*62)+'px');$('board').replaceChildren();
+  layoutBoard();$('board-scroll').style.setProperty('--board-max',Math.min(920,side*62)+'px');$('board').replaceChildren();
   const fragment=document.createDocumentFragment();
   deck.forEach(({icon,name},index)=>{
     const card=document.createElement('button');card.className='card';card.type='button';card.dataset.symbol=name;card.dataset.position=index+1;
@@ -194,5 +204,5 @@ $('win-setup').addEventListener('click',showSetup);
 $('choose-multi').addEventListener('click',()=>openMode('local'));
 $('choose-solo').addEventListener('click',()=>openMode('solo'));
 $('back-menu').addEventListener('click',showMenu);
-$('close').addEventListener('click',()=>$('win').close());matchMedia('(max-width:700px)').addEventListener('change',updateSetup);updateSetup();
+$('close').addEventListener('click',()=>$('win').close());matchMedia('(max-width:700px)').addEventListener('change',updateSetup);window.addEventListener('resize',()=>{if(playing)layoutBoard()});updateSetup();
 </script></body></html>
