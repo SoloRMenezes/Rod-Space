@@ -276,12 +276,13 @@ const MAP = (() => {
         // --- Bot spawn point ---
         // We'll use a THREE.Vector3 for position
 const botSpawns=[];
+const BOT_CENTER_Y=3.9;
 // Every nextbot shares one X/Y spawn point; floor height is the only difference.
 const centralBotCells=[];for(let y=4;y<MAP_SIZE_Y-4;y++)for(let x=4;x<MAP_SIZE_X-4;x++){const d=Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2);if(MAP[y][x]===0&&d>9&&d<24)centralBotCells.push([x,y])}
 const sharedBotCell=centralBotCells.reduce((best,cell)=>Math.hypot(cell[0]-(MAP_SIZE_X/2+16),cell[1]-MAP_SIZE_Y/2)<Math.hypot(best[0]-(MAP_SIZE_X/2+16),best[1]-MAP_SIZE_Y/2)?cell:best);
 for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
     const [x,y]=sharedBotCell;
-    botSpawns.push({position:new THREE.Vector3(x*2+1,3.8+floorY,y*2+1),floorY});
+    botSpawns.push({position:new THREE.Vector3(x*2+1,BOT_CENTER_Y+floorY,y*2+1),floorY});
 }
 
         // --- Player state ---
@@ -361,7 +362,7 @@ function wireGuestRoom(session){
         skipVoteCount=world.skipVotes||0;skipVoteRequired=world.skipRequired||1;updateSkipButton();
         world.players.filter(p=>p.id!=='host').forEach(p=>{if(p.id!==session.client.meta.peerId)applyPlayerPacket(p.id,p,p.name)});
         const host=world.players.find(p=>p.id==='host');if(host)applyPlayerPacket('host',host,host.name);
-        world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.backing.position.x=state.x;bot.backing.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;bot.floorY=state.floorY||0;bot.mesh.position.y=3.15+bot.floorY;bot.backing.position.y=3.15+bot.floorY;if(bot.label)bot.label.position.y=.55+bot.floorY;});
+        world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.backing.position.x=state.x;bot.backing.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;bot.floorY=state.floorY||0;bot.mesh.position.y=BOT_CENTER_Y+bot.floorY;bot.backing.position.y=BOT_CENTER_Y+bot.floorY;if(bot.label)bot.label.position.y=.55+bot.floorY;});
     });
     session.client.on('message',({data})=>{if(data.type==='death'&&data.payload.id===session.client.meta.peerId)showGameOverOverlay();});
 }
@@ -411,10 +412,12 @@ function wireGuestRoom(session){
             wallGroup = new THREE.Group();
             const wallTexture = new THREE.TextureLoader().load('./assets/vendor/nextbot-brick.jpg');
             wallTexture.wrapS=wallTexture.wrapT=THREE.RepeatWrapping;wallTexture.repeat.set(1,1);
+            const brickMaterial=(repeatX,repeatY)=>{const map=wallTexture.clone();map.needsUpdate=true;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.repeat.set(repeatX,repeatY);return new THREE.MeshPhongMaterial({map,color:0x8f949a,shininess:3})};
             const wallGeo = new THREE.BoxGeometry(2, 19, 2);
-            const wallMat = new THREE.MeshPhongMaterial({map:wallTexture,color:0x8f949a,shininess:3});
+            const wallSideBrick=brickMaterial(.5,9.5),wallTopBrick=brickMaterial(.5,.5);
+            const wallMaterials=[wallSideBrick,wallSideBrick,wallTopBrick,wallTopBrick,wallSideBrick,wallSideBrick];
             let wallCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++){if(MAP[y][x]===1)wallCount++;else if(MAP[y][x]===2)pillarCount++}
-            const walls=new THREE.InstancedMesh(wallGeo,wallMat,wallCount),pillars=new THREE.InstancedMesh(wallGeo,wallMat,pillarCount);
+            const walls=new THREE.InstancedMesh(wallGeo,wallMaterials,wallCount),pillars=new THREE.InstancedMesh(wallGeo,wallMaterials,pillarCount);
             const transform=new THREE.Matrix4();let wallIndex=0,pillarIndex=0;
             for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]){transform.makeTranslation((x+.5)*2,9.5,(y+.5)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
@@ -446,11 +449,13 @@ function wireGuestRoom(session){
                 else{supportShape.moveTo(-length/2,0);supportShape.lineTo(length/2,0);supportShape.lineTo(length/2,FLOOR_HEIGHT)}
                 supportShape.closePath();
                 const supportGeo=new THREE.ExtrudeGeometry(supportShape,{depth:width,bevelEnabled:false});supportGeo.translate(0,0,-width/2);
-                const support=new THREE.Mesh(supportGeo,wallMat);support.position.set(cx,0,cz);scene.add(support);
+                const support=new THREE.Mesh(supportGeo,rampMaterial);support.position.set(cx,0,cz);scene.add(support);
                 const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
                 // Floor-to-ceiling side walls make the ramp a proper enclosed
                 // corridor. Both ends stay open; there is no wall across its path.
-                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,19,.6),wallMat);guard.position.set(cx,9.5,cz+side*(width/2+.25));scene.add(guard)}
+                const endBrick=brickMaterial(.3,9.5),topBrick=brickMaterial(Math.max(1,length/4),.3),faceBrick=brickMaterial(Math.max(1,length/4),9.5);
+                const corridorWallMaterials=[endBrick,endBrick,topBrick,topBrick,faceBrick,faceBrick];
+                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,19,.6),corridorWallMaterials);guard.position.set(cx,9.5,cz+side*(width/2+.25));scene.add(guard)}
                 // Yellow entrance bars clearly mark both ways onto the ramp.
                 for(const end of [ramp.x1*2+1,ramp.x2*2+1]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,end===ramp.x1*2+1?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12),cz);scene.add(bar)}
             }
@@ -523,9 +528,9 @@ const BOT_TYPES=[
 for (let b = 0; b < botSpawns.length; b++) {
     const spawn=botSpawns[b],type=BOT_TYPES[b%BOT_TYPES.length];
     const backing = new THREE.Sprite(new THREE.SpriteMaterial({color:0xf4f1e8,depthWrite:false}));
-    backing.position.copy(spawn.position);backing.scale.set(11.2,9.2,1);backing.renderOrder=3;scene.add(backing);
+    backing.position.copy(spawn.position);backing.scale.set(10.2,7.2,1);backing.renderOrder=3;scene.add(backing);
     const bot = new THREE.Sprite(new THREE.SpriteMaterial({map:loader.load(type.src),transparent:true,alphaTest:.02,color:0xffffff,depthWrite:false}));
-    bot.position.copy(spawn.position);bot.scale.set(10.8,8.8,1);bot.renderOrder=4;scene.add(bot);
+    bot.position.copy(spawn.position);bot.scale.set(9.8,6.8,1);bot.renderOrder=4;scene.add(bot);
     bots.push({mesh:bot,backing,label:null,baseSpeed:48,speedMult:1,vx:0,vz:0,floorY:spawn.floorY,targetId:null,wanderX:MAP_SIZE_X/2,wanderY:MAP_SIZE_Y/2,wanderUntil:0,rampRoute:null,rampStep:0,nextFloorChange:performance.now()+4000+Math.random()*6000});
 }
         }
@@ -907,7 +912,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if(MAP[mapY]?.[mapX]===0)bot.mesh.position.x=tryX;else bot.vx*=-.28;
                 const tryZ=bot.mesh.position.z+bot.vz,nextMapX=Math.floor((bot.mesh.position.x-1)/2),nextMapY=Math.floor((tryZ-1)/2);
                 if(MAP[nextMapY]?.[nextMapX]===0)bot.mesh.position.z=tryZ;else bot.vz*=-.28;
-                bot.floorY=rampSurfaceHeightAt((bot.mesh.position.x-1)/2,(bot.mesh.position.z-1)/2,bot.floorY);bot.mesh.position.y=3.15+bot.floorY;bot.backing.position.set(bot.mesh.position.x,3.15+bot.floorY,bot.mesh.position.z);if(bot.label)bot.label.position.set(bot.mesh.position.x,.55+bot.floorY,bot.mesh.position.z);
+                bot.floorY=rampSurfaceHeightAt((bot.mesh.position.x-1)/2,(bot.mesh.position.z-1)/2,bot.floorY);bot.mesh.position.y=BOT_CENTER_Y+bot.floorY;bot.backing.position.set(bot.mesh.position.x,BOT_CENTER_Y+bot.floorY,bot.mesh.position.z);if(bot.label)bot.label.position.set(bot.mesh.position.x,.55+bot.floorY,bot.mesh.position.z);
             }
             // Gentle separation keeps overlapping chasers visually and tactically distinct.
             if(performance.now()>=botReleaseAt) for(let i=0;i<bots.length;i++)for(let j=i+1;j<bots.length;j++){
