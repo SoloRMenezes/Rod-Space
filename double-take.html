@@ -34,8 +34,8 @@ body.in-game main{max-width:none;padding:8px 16px}body.in-game header{display:gr
 /* Browser tab thumbnails can ignore 3D backface rendering, so conceal fronts explicitly. */
 .card .front{visibility:hidden}.card.flipped .front,.card.matched .front{visibility:visible}.card.flipped .back,.card.matched .back{visibility:hidden}
 
-/* Laptop boards use the wide viewport while every row stays above the fold. */
-@media(min-width:701px){#game-screen .board{--cell-h:calc((100svh - 106px - (var(--columns) - 1)*var(--fit-gap))/var(--columns));--cell-w:min(calc((100vw - 34px - (var(--columns) - 1)*var(--fit-gap))/var(--columns)),calc(var(--cell-h)*1.38));grid-template-columns:repeat(var(--columns),var(--cell-w));grid-auto-rows:var(--cell-h);width:calc(var(--columns)*var(--cell-w) + (var(--columns) - 1)*var(--fit-gap))}#game-screen .card{width:var(--cell-w);height:var(--cell-h);aspect-ratio:auto}#game-screen .front{font-size:clamp(10px,calc(var(--cell-h)*.48),72px)}}
+/* Large laptop boards use extra columns, keeping every card square and above the fold. */
+@media(min-width:701px){#game-screen .board{--cell:min(calc((100vw - 34px - (var(--columns) - 1)*var(--fit-gap))/var(--columns)),calc((100svh - 106px - (var(--rows) - 1)*var(--fit-gap))/var(--rows)));grid-template-columns:repeat(var(--columns),var(--cell));grid-auto-rows:var(--cell);width:calc(var(--columns)*var(--cell) + (var(--columns) - 1)*var(--fit-gap))}#game-screen .card{width:var(--cell);height:var(--cell);aspect-ratio:1}#game-screen .front{font-size:clamp(10px,calc(var(--cell)*.48),72px)}}
 </style>
 </head>
 <body><main>
@@ -122,7 +122,8 @@ function newGame(){
   $('moves').textContent='0';$('pairs').textContent='0 / '+total;$('time').textContent='0:00';$('status').textContent='Pick any card to begin.';showBest();renderScores();
   $('board-help').textContent='Find matching emojis. Most pairs wins.';
   const chosen=makePairs(total),deck=shuffle([...chosen,...chosen]);
-  $('board').style.setProperty('--columns',side);$('board-scroll').style.setProperty('--board-max',Math.min(920,side*62)+'px');$('board').replaceChildren();
+  const wideColumns=matchMedia('(min-width:701px)').matches?({12:16,16:20,24:30,32:40}[side]||side):side;
+  $('board').style.setProperty('--columns',wideColumns);$('board').style.setProperty('--rows',Math.ceil(total*2/wideColumns));$('board-scroll').style.setProperty('--board-max',Math.min(920,side*62)+'px');$('board').replaceChildren();
   const fragment=document.createDocumentFragment();
   deck.forEach(({icon,name},index)=>{
     const card=document.createElement('button');card.className='card';card.type='button';card.dataset.symbol=name;card.dataset.position=index+1;
