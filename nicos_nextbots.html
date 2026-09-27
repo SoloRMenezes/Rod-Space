@@ -432,8 +432,8 @@ function wireGuestRoom(session){
             for(const ramp of RAMPS){
                 // Open the deck over almost the full incline. The previous 55%
                 // cutoff left a long slab hanging over the ramp like extra road.
-                const riseStart=ramp.reverse?ramp.x1:ramp.x1+(ramp.x2-ramp.x1)*.2;
-                const riseEnd=ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.2:ramp.x2;
+                const riseStart=ramp.reverse?ramp.x1:ramp.x1+(ramp.x2-ramp.x1)*.1;
+                const riseEnd=ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.1:ramp.x2;
                 const left=Math.min(riseStart,riseEnd)*2+1-MAP_SIZE_X-.45,right=Math.max(riseStart,riseEnd)*2+1-MAP_SIZE_X+.45;
                 const near=ramp.y1*2+1-MAP_SIZE_Y-.45,far=ramp.y2*2+1-MAP_SIZE_Y+.45;
                 const opening=new THREE.Path();opening.moveTo(left,near);opening.lineTo(right,near);opening.lineTo(right,far);opening.lineTo(left,far);opening.closePath();deckShape.holes.push(opening);
@@ -463,7 +463,7 @@ function wireGuestRoom(session){
                 for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,19,.6),corridorWallMaterials);guard.position.set(cx,9.5,cz+side*(width/2+.25));scene.add(guard)}
                 // Close the exposed end above the lower ramp entrance while
                 // keeping the drive-through opening underneath completely clear.
-                const span=ramp.x2-ramp.x1,headX=(ramp.reverse?ramp.x2-span*.2:ramp.x1+span*.2)*2+1;
+                const span=ramp.x2-ramp.x1,headX=(ramp.reverse?ramp.x2-span*.1:ramp.x1+span*.1)*2+1;
                 const headHeight=19-(FLOOR_HEIGHT+.65),headWall=new THREE.Mesh(new THREE.BoxGeometry(.6,headHeight,width+.5),corridorWallMaterials);
                 headWall.position.set(headX,FLOOR_HEIGHT+.65+headHeight/2,cz);scene.add(headWall);
                 // Yellow entrance bars clearly mark both ways onto the ramp.
