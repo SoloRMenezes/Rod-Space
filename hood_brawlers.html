@@ -280,22 +280,32 @@
         .controller-copy { align-self:center;line-height:1.55;color:#dbe5f2; }
         .controller-copy p { margin:0 0 18px; }
         #host-qr { width:clamp(180px,31vh,260px);height:clamp(180px,31vh,260px);background:white;padding:8px;display:grid;place-items:center;flex:none; }
-        #host-qr canvas,#host-qr img { width:100%!important;height:100%!important;display:block; }
+        #host-qr canvas,#host-qr img { width:100%!important;height:100%!important;display:block;image-rendering:pixelated; }
         .controller-actions { flex-wrap:wrap;justify-content:center;margin-top:18px;padding-top:14px;border-top:1px solid #34445b; }
         .controller-actions .small-btn,.controller-actions .btn { width:190px;min-height:44px;margin:0; }
         #controller-count { color:#86efac;font-size:12px;margin-top:12px; }
         #phone-controller { position:fixed;inset:0;background:#070b13;z-index:100;display:none;touch-action:none;padding:18px; }
         #phone-controller.active { display:flex;flex-direction:column; }
-        #scan-button { position:absolute;left:16px;top:16px;width:44px;height:44px;border-radius:50%;background:#18263b;color:white;border:1px solid #63748e;font-size:22px; }
+        #phone-settings-button { position:absolute;right:16px;top:16px;width:44px;height:44px;border-radius:50%;background:#18263b;color:white;border:1px solid #63748e;font-size:22px;z-index:2; }
         #phone-status { text-align:center;color:#b7c5d8;font-weight:700; }
+        #phone-status canvas,#phone-status img { display:block;width:min(74vw,420px)!important;height:auto!important;margin:14px auto;background:white;padding:10px;box-sizing:border-box;image-rendering:pixelated; }
         #phone-pad { flex:1;display:flex;align-items:flex-end;justify-content:space-between;padding:70px 3vw 5vh; }
-        #phone-stick { width:150px;height:150px;border-radius:50%;border:2px solid #607797;background:#13233a;position:relative; }
+        #phone-stick { width:150px;height:150px;border-radius:50%;border:2px solid #607797;background:#13233a;position:absolute;left:max(24px,env(safe-area-inset-left));bottom:max(5vh,env(safe-area-inset-bottom));opacity:.35;pointer-events:none;transition:opacity .12s; }
         #phone-knob { position:absolute;width:58px;height:58px;left:44px;top:44px;border-radius:50%;background:#a9c8ee; }
-        .phone-buttons { display:flex;gap:18px;align-items:flex-end; }
-        .phone-action { width:92px;height:92px;border-radius:50%;border:3px solid #fde047;background:#352f12;color:#fde047;font:900 34px system-ui; }
-        #scanner { position:fixed;inset:0;background:#000;z-index:120;display:none; }
-        #scanner video { width:100%;height:100%;object-fit:cover; }
-        #scanner-close { position:absolute;right:16px;top:16px;z-index:2; }
+        .phone-buttons { position:absolute;right:var(--phone-button-right,3vw);bottom:var(--phone-button-bottom,5vh);display:flex;gap:var(--phone-button-gap,18px);align-items:flex-end; }
+        .phone-action { width:var(--phone-button-size,92px);height:var(--phone-button-size,92px);border-radius:50%;border:3px solid #fde047;background:#352f12;color:#fde047;font:900 calc(var(--phone-button-size,92px)*.37) system-ui; }
+        #phone-settings { position:fixed;inset:0;z-index:110;display:none;place-items:center;background:#050913e8;padding:18px; }
+        #phone-settings.open { display:grid; }
+        .phone-settings-card { width:min(430px,100%);background:#111a2b;border:1px solid #52627a;border-radius:10px;padding:22px;box-sizing:border-box; }
+        .phone-settings-card h2 { margin:0 0 18px; }
+        .phone-setting { display:grid;grid-template-columns:110px 1fr 48px;gap:10px;align-items:center;margin:15px 0; }
+        .phone-setting input { width:100%; }
+        .phone-setting output { text-align:right;color:#fde047; }
+        html,body { width:100%;height:100%;margin:0;overflow:hidden; }
+        body { min-height:100svh;padding:0;gap:0; }
+        #game-container { width:100vw;height:100svh;max-width:none;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none; }
+        #controls-guide { display:none!important; }
+        .opening-title { font-size:clamp(54px,8vw,112px); }
         @media(max-width:600px) {
             body { padding:8px;justify-content:flex-start;padding-top:max(16px,env(safe-area-inset-top)); }
             body[data-screen=menu] #game-container,body[data-screen=select] #game-container { min-height:480px;aspect-ratio:auto; }
@@ -334,8 +344,6 @@
             .color-option { width:25px;height:25px; }
         }
     </style>
-    <link rel="stylesheet" href="assets/rod-space-home.css">
-    <script defer src="assets/rod-space-home.js"></script>
 </head>
 <body data-screen="menu" data-mode="cpu">
 
@@ -394,17 +402,16 @@
 
         <div id="pause-screen" class="screen"><h2>Paused</h2><button class="btn" onclick="togglePause()">Resume</button><button class="btn secondary" onclick="openSettings()">Settings</button><button class="btn secondary" onclick="resetToMenu()">Main menu</button></div>
         <div id="settings" class="modal"><div class="panel"><h2>Controls</h2><div id="bind-error" class="status"></div><div class="settings-grid"><section><h3>Player 1</h3><div id="p1-binds"></div></section><section><h3>Player 2</h3><div id="p2-binds"></div></section></div><div class="panel-actions"><button class="small-btn" onclick="resetAllBinds()">Reset all</button><button class="btn" onclick="closeSettings()">Done</button></div></div></div>
-        <div id="controllers" class="modal"><div class="panel controller-panel"><h2>Controllers</h2><div class="controller-layout"><div class="controller-copy"><p>Open Hood Brawlers on a phone, tap the camera icon and scan this invite. The phone will show an answer QR; scan it back here to finish pairing.</p><div id="lan-status" class="status"></div></div><div id="host-qr"></div></div><textarea id="host-code" hidden></textarea><div class="panel-actions controller-actions"><button class="small-btn" onclick="createControllerInvite()">New invite</button><button class="small-btn" onclick="scanControllerAnswer()">Scan controller answer</button><button class="btn" onclick="closeControllers()">Done</button></div></div></div>
+        <div id="controllers" class="modal"><div class="panel controller-panel"><h2>Controllers</h2><div class="controller-layout"><div class="controller-copy"><p>Scan this QR with the phone’s normal Camera app. It opens the controller and connects automatically.</p><div id="lan-status" class="status"></div></div><div id="host-qr"></div></div><div class="panel-actions controller-actions"><button class="small-btn" onclick="createControllerInvite()">New invite</button><button class="btn" onclick="closeControllers()">Done</button></div></div></div>
         <canvas id="gameCanvas" aria-label="Rooftop fighting arena"></canvas>
     </div>
 
     <div id="match-actions"><button onclick="togglePause()">Pause · Esc</button><button onclick="resetToMenu()">Menu</button></div>
     <p id="controls-guide"></p>
-    <div id="phone-controller"><button id="scan-button" aria-label="Scan pairing QR">▣</button><div id="phone-status">Scan the game’s QR to connect</div><div id="phone-pad"><div id="phone-stick"><div id="phone-knob"></div></div><div class="phone-buttons"><button class="phone-action" data-phone-action="a">A</button><button class="phone-action" data-phone-action="b">B</button></div></div></div>
-    <div id="scanner"><button id="scanner-close" class="small-btn">Close</button><video playsinline></video></div>
+    <div id="phone-controller"><button id="phone-settings-button" aria-label="Controller settings">⚙</button><div id="phone-status">Open this controller from the game’s QR</div><div id="phone-pad"><div id="phone-stick"><div id="phone-knob"></div></div><div class="phone-buttons"><button class="phone-action" data-phone-action="a">A</button><button class="phone-action" data-phone-action="b">B</button></div></div><div id="phone-settings"><div class="phone-settings-card"><h2>Button layout</h2><label class="phone-setting"><span>Size</span><input id="phone-size" type="range" min="64" max="140" step="2"><output></output></label><label class="phone-setting"><span>From right</span><input id="phone-right" type="range" min="8" max="160" step="2"><output></output></label><label class="phone-setting"><span>From bottom</span><input id="phone-bottom" type="range" min="8" max="220" step="2"><output></output></label><label class="phone-setting"><span>Spacing</span><input id="phone-gap" type="range" min="4" max="70" step="2"><output></output></label><div class="panel-actions"><button id="phone-layout-reset" class="small-btn">Reset</button><button id="phone-settings-done" class="btn">Done</button></div></div></div></div>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <script src="./party-lan.js"></script>
+    <script type="module" src="./party-rooms.js"></script>
     <div hidden><div id="touch-controls"><div id="move-zone"><div id="move-stick"><div id="move-thumb"></div></div></div><div id="touch-actions"></div></div><span id="touch-tip"></span></div>
     <script>
         const canvas = document.getElementById('gameCanvas');
