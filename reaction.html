@@ -153,6 +153,33 @@
             font-size: 0.9rem;
         }
 
+        .score-delete {
+            width: 24px;
+            height: 24px;
+            margin-left: 8px;
+            border: 0;
+            border-radius: 50%;
+            background: transparent;
+            color: #9ca3af;
+            font: 700 18px/24px system-ui, sans-serif;
+            cursor: pointer;
+        }
+        .score-delete:hover, .score-delete:focus-visible { background: #ff4757; color: white; outline: none; }
+
+        .play-button {
+            min-width: 180px;
+            margin: 14px 0 4px;
+            padding: 12px 24px;
+            border: 0;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            font: 700 1.1rem Arial, sans-serif;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #4f60bd;
+        }
+        .play-button:hover, .play-button:focus-visible { transform:translateY(-1px);background:#586fe1;outline:3px solid #c7d2fe; }
+
         .leaderboard-entry.current-score {
             background: rgba(46, 213, 115, 0.2);
             border: 2px solid #2ed573;
@@ -273,7 +300,8 @@
             <div class="start-instructions">
                 <p><strong>SPACEBAR</strong> or <strong>CLICK</strong> when the white bar is in the green section!</p>
                 <p>Target gets smaller and faster as you score.</p>
-                <p><strong>Click anywhere or press ENTER to start</strong></p>
+                <button class="play-button" type="button">Play</button>
+                <p>Press <strong>SPACE</strong> or use the button.</p>
             </div>
         </div>
 
@@ -294,7 +322,7 @@
                 <h3>🏆 Top Scores 🏆</h3>
                 <div id="leaderboardList"></div>
             </div>
-            <p>Click anywhere or press <strong>ENTER</strong> to restart</p>
+            <button class="play-button" type="button">Play Again</button>
         </div>
     </div>
 
@@ -335,11 +363,13 @@
                     skipButton: document.getElementById('skipButton'),
                     leaderboardList: document.getElementById('leaderboardList'),
                     toast: document.getElementById('toast'),
+                    playButtons: document.querySelectorAll('.play-button'),
                 };
 
                 this.deviceId = localStorage.getItem('reactionDeviceId') || crypto.randomUUID();
                 localStorage.setItem('reactionDeviceId', this.deviceId);
-                this.leaderboard = this.loadLeaderboard();
+                this.deletedScoreIds = this.loadDeletedScoreIds();
+                this.leaderboard = this.loadLeaderboard().filter(entry => !this.deletedScoreIds.has(entry.id));
                 this.init();
             }
 
@@ -355,9 +385,7 @@
                         e.preventDefault();
                         if (e.repeat) return;
                         if (this.isGameRunning) this.handleAction();
-                    } else if (e.code === 'Enter') {
-                        e.preventDefault();
-                        this.handleGlobalClick();
+                        else this.beginGame();
                     }
                 });
 
@@ -366,18 +394,15 @@
                     // Ignore clicks on inputs or buttons so they still work
                     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
                     
-                    if (this.isGameRunning) {
-                        this.handleAction();
-                    } else {
-                        this.handleGlobalClick();
-                    }
+                    if (this.isGameRunning) this.handleAction();
                 });
 
                 this.elements.saveButton.addEventListener('click', () => this.saveHighScore());
                 this.elements.skipButton.addEventListener('click', () => this.skipHighScore());
+                this.elements.playButtons.forEach(button => button.addEventListener('click', () => this.beginGame()));
             }
 
-            handleGlobalClick() {
+            beginGame() {
                 if (!this.isGameRunning) {
                     if (this.elements.newHighScore.style.display === 'block') return;
                     this.hideAllScreens();
@@ -488,6 +513,19 @@
                 } catch { return []; }
             }
 
+            loadDeletedScoreIds() {
+                try {
+                    const saved = JSON.parse(localStorage.getItem('reactionDeletedScoreIds') || '[]');
+                    return new Set(Array.isArray(saved) ? saved.map(String) : []);
+                } catch { return new Set(); }
+            }
+
+            storeDeletedScoreIds() {
+                const ids = [...this.deletedScoreIds].slice(-200);
+                this.deletedScoreIds = new Set(ids);
+                localStorage.setItem('reactionDeletedScoreIds', JSON.stringify(ids));
+            }
+
             normaliseScore(entry) {
                 const score = Number(entry?.score), time = Number(entry?.time);
                 if (!Number.isFinite(score) || score < 0 || !Number.isFinite(time) || time < 0) return null;
@@ -503,8 +541,10 @@
             }
 
             mergeScores(incoming = []) {
-                const merged = new Map(this.leaderboard.map(entry => [entry.id, entry]));
-                incoming.map(entry => this.normaliseScore(entry)).filter(Boolean).forEach(entry => merged.set(entry.id, entry));
+                incoming.filter(entry => entry?.deletedScoreId).forEach(entry => this.deletedScoreIds.add(String(entry.deletedScoreId)));
+                this.storeDeletedScoreIds();
+                const merged = new Map(this.leaderboard.filter(entry => !this.deletedScoreIds.has(entry.id)).map(entry => [entry.id, entry]));
+                incoming.map(entry => this.normaliseScore(entry)).filter(entry => entry && !this.deletedScoreIds.has(entry.id)).forEach(entry => merged.set(entry.id, entry));
                 const before = JSON.stringify(this.leaderboard);
                 this.leaderboard = [...merged.values()];
                 this.storeLeaderboard();
@@ -525,15 +565,33 @@
 
             skipHighScore() { this.showGameOver(); }
 
+            deleteScore(id) {
+                const entry = this.leaderboard.find(score => score.id === id);
+                if (!entry || !confirm(`Remove ${entry.name}'s ${entry.score}-point score?`)) return;
+                this.deletedScoreIds.add(id);
+                this.storeDeletedScoreIds();
+                this.leaderboard = this.leaderboard.filter(score => score.id !== id);
+                this.storeLeaderboard();
+                dispatchEvent(new CustomEvent('reactionscorechange', { detail: this.leaderboard }));
+                this.showGameOver();
+            }
+
             showGameOver() {
                 this.elements.newHighScore.style.display = 'none';
                 this.elements.finalScore.textContent = this.score;
-                let html = this.leaderboard.slice(0, 10).map((e, i) => `
+                const visibleScores = this.leaderboard.slice(0, 10);
+                let html = visibleScores.map((e, i) => `
                     <div class="leaderboard-entry">
                         <span>${i + 1}. ${escapeScoreName(e.name)}</span>
-                        <span>${e.score} pts</span>
+                        <span>${e.score} pts <button class="score-delete" data-score-id="${encodeURIComponent(e.id)}" aria-label="Remove ${escapeScoreName(e.name)}'s ${e.score}-point score">×</button></span>
                     </div>`).join('');
                 this.elements.leaderboardList.innerHTML = html || 'No scores yet!';
+                this.elements.leaderboardList.querySelectorAll('.score-delete').forEach(button => {
+                    button.addEventListener('click', event => {
+                        event.stopPropagation();
+                        this.deleteScore(decodeURIComponent(button.dataset.scoreId));
+                    });
+                });
                 this.elements.gameOver.style.display = 'block';
             }
 
