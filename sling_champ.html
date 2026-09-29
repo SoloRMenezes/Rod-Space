@@ -583,14 +583,16 @@
                 // During aiming, predict the trajectory based on pull vector
                 const delta = Vector.sub(SLING_ANCHOR, bird.position);
                 const distance = Vector.magnitude(delta);
+                if (distance < 1) return;
                 const config = birdConfigs[activeBirdType];
                 const forceMult = 0.16 * config.speedMult;
                 const force = Vector.mult(delta, forceMult / Math.max(distance,.001));
                 const vx = force.x * distance * 1.5;
                 const vy = force.y * distance * 1.5;
                 birdCopy = {
-                    x: bird.position.x,
-                    y: bird.position.y,
+                    // Preview only the flight after the bird leaves the sling.
+                    x: SLING_ANCHOR.x,
+                    y: SLING_ANCHOR.y,
                     vx: vx,
                     vy: vy
                 };
@@ -644,23 +646,31 @@
                 const signal=aimAbort.signal,canvas=render.canvas;
                 let birdReturnedToCenter = false;
                 let pointerId=null;
+                let dragStartPointer=null;
+                let dragStartBird=null;
                 const pointerPosition=e=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*window.innerWidth/r.width,y:(e.clientY-r.top)*window.innerHeight/r.height}};
                 const moveBird=e=>{
                     if(pointerId!==e.pointerId||!isAiming||!birdInSling||!bird)return;
-                    const p=pointerPosition(e),delta=Vector.sub(p,SLING_ANCHOR),distance=Vector.magnitude(delta);
-                    const position=distance>MAX_PULL?Vector.add(SLING_ANCHOR,Vector.mult(delta,MAX_PULL/Math.max(distance,.001))):p;
+                    const p=pointerPosition(e);
+                    const offset=Vector.sub(p,dragStartPointer);
+                    const target=Vector.add(dragStartBird,offset);
+                    const delta=Vector.sub(target,SLING_ANCHOR),distance=Vector.magnitude(delta);
+                    const position=distance>MAX_PULL?Vector.add(SLING_ANCHOR,Vector.mult(delta,MAX_PULL/Math.max(distance,.001))):target;
                     Matter.Body.setPosition(bird,position);Matter.Body.setVelocity(bird,{x:0,y:0});
                     e.preventDefault();
                 };
                 canvas.addEventListener('pointerdown',e=>{
                     const r=canvas.getBoundingClientRect();
                     if(e.clientX-r.left>r.width/2||!birdInSling||!bird||isPaused||roundFinished)return;
-                    pointerId=e.pointerId;canvas.setPointerCapture?.(pointerId);isAiming=true;trajectoryAlpha=1;showTrajectory=true;birdReturnedToCenter=false;moveBird(e);
+                    pointerId=e.pointerId;
+                    dragStartPointer=pointerPosition(e);
+                    dragStartBird={x:bird.position.x,y:bird.position.y};
+                    canvas.setPointerCapture?.(pointerId);isAiming=true;trajectoryAlpha=1;showTrajectory=true;birdReturnedToCenter=false;moveBird(e);
                 },{signal});
                 canvas.addEventListener('pointermove',moveBird,{signal});
                 const finishAim=e=>{
                     if(pointerId!==e.pointerId||!isAiming)return;
-                    canvas.releasePointerCapture?.(pointerId);pointerId=null;
+                    canvas.releasePointerCapture?.(pointerId);pointerId=null;dragStartPointer=null;dragStartBird=null;
                     if (bird && birdInSling) {
                         const distToCenter = Vector.magnitude(Vector.sub(bird.position, SLING_ANCHOR));
                         if (distToCenter < MAX_PULL / 2) {
