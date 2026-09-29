@@ -300,7 +300,8 @@
 
     <script>
         const escapeScoreName = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-        const FRAME_DURATION = 1000 / 60;
+        // Preserve the original 120 Hz pace while making it identical on every display.
+        const FRAME_DURATION = 1000 / 120;
         const MIN_GREEN_SIZE = 24;
         const MAX_ROTATION_SPEED = 8;
         class ReactionGame {
