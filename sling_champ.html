@@ -482,6 +482,7 @@
             Events.on(engine, 'collisionStart', (e) => {
                 e.pairs.forEach(pair => {
                     const { bodyA, bodyB } = pair;
+                    if((bodyA.label==='bird'&&bodyB.structurePart)||(bodyB.label==='bird'&&bodyA.structurePart))activateStructure();
                     if(bodyA.label === 'pig' || bodyB.label === 'pig') {
                         const pig = bodyA.label === 'pig' ? bodyA : bodyB;
                         const other = bodyA === pig ? bodyB : bodyA;
@@ -648,7 +649,7 @@
                 let pointerId=null;
                 let dragStartPointer=null;
                 let dragStartBird=null;
-                const pointerPosition=e=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*window.innerWidth/r.width,y:(e.clientY-r.top)*window.innerHeight/r.height}};
+                const pointerPosition=e=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}};
                 const moveBird=e=>{
                     if(pointerId!==e.pointerId||!isAiming||!birdInSling||!bird)return;
                     const p=pointerPosition(e);
@@ -665,6 +666,8 @@
                     pointerId=e.pointerId;
                     dragStartPointer=pointerPosition(e);
                     dragStartBird={x:bird.position.x,y:bird.position.y};
+                    if(slingshot)slingshot.stiffness=0;
+                    Matter.Body.setStatic(bird,true);
                     canvas.setPointerCapture?.(pointerId);isAiming=true;trajectoryAlpha=1;showTrajectory=true;birdReturnedToCenter=false;moveBird(e);
                 },{signal});
                 canvas.addEventListener('pointermove',moveBird,{signal});
@@ -672,7 +675,8 @@
                     if(pointerId!==e.pointerId||!isAiming)return;
                     canvas.releasePointerCapture?.(pointerId);pointerId=null;dragStartPointer=null;dragStartBird=null;
                     if (bird && birdInSling) {
-                        const distToCenter = Vector.magnitude(Vector.sub(bird.position, SLING_ANCHOR));
+                        const releasePosition={x:bird.position.x,y:bird.position.y};
+                        const distToCenter = Vector.magnitude(Vector.sub(releasePosition, SLING_ANCHOR));
                         if (distToCenter < MAX_PULL / 2) {
                             birdReturnedToCenter = true;
                         }
@@ -680,22 +684,26 @@
                         if (!birdReturnedToCenter) {
                             isAiming=false;isLaunched=true;shotStartedAt=performance.now();turnPending=false;sound(250,.08,'triangle');
                             // Manual fling calculation using normalized direction and force multiplier
-                            const delta = Vector.sub(SLING_ANCHOR, bird.position);
+                            const delta = Vector.sub(SLING_ANCHOR, releasePosition);
                             const distance = Vector.magnitude(delta);
                             const forceMult = 0.16 * birdConfigs[activeBirdType].speedMult;
                             const force = Vector.mult(delta, forceMult / Math.max(distance,.001));
-                            Matter.Body.setVelocity(bird, Vector.mult(force, distance * 1.5));
-
                             if (slingshot) {
                                 Composite.remove(engine.world, slingshot);
                                 slingshot = null;
                                 birdInSling = false;
                             }
+                            Matter.Body.setStatic(bird,false);
+                            Matter.Body.setPosition(bird,releasePosition);
+                            Matter.Body.setVelocity(bird, Vector.mult(force, distance * 1.5));
                             if(activeBirdType==='bomb')bombTimer=setTimeout(detonateBomb,2000);
                             showTrajectory=true;trajectoryAlpha=1;
                         } else {
                             // Reset bird's position if returned to center
+                            Matter.Body.setStatic(bird,false);
                             Matter.Body.setPosition(bird, { x: SLING_ANCHOR.x, y: SLING_ANCHOR.y });
+                            Matter.Body.setVelocity(bird,{x:0,y:0});
+                            if(slingshot)slingshot.stiffness=.15;
                             birdInSling = true;
                             isAiming=false;showTrajectory=false;
                         }
@@ -1017,6 +1025,7 @@
         }
 
         function explode(pos) {
+            activateStructure();
             // Explosion particles
             for(let i=0; i<38; i++) particles.push({ x: pos.x, y: pos.y, vx: (Math.random()-0.5)*22, vy: (Math.random()-0.5)*22, life: 1, color: '#ff4757', size: Math.random()*15+5 });
             // Affect nearby objects: pigs, blocks, thinplanks, metal, tnt (chain)
@@ -1053,6 +1062,9 @@
             if(!body||body.isRemoved)return;body.isRemoved=true;
             for(let i=0; i<12; i++) particles.push({ x: body.position.x, y: body.position.y, vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12, life: 1, color: color, size: Math.random()*6+2 });
             World.remove(engine.world, body);
+            if(body.label==='pig'&&!isSimulationMode)queueMicrotask(()=>{
+                if(!Composite.allBodies(engine.world).some(b=>b.label==='pig'))showResults(true);
+            });
         }
 
         function updateParticles(ctx) {
@@ -1120,8 +1132,10 @@
             createBird(); attachBird();
         }
 
-        function makePig(x, y) { return Bodies.circle(x, y, 20, {label:'pig',render:{visible:false},friction: 0.1, restitution: 0.4 }); }
-        function makeBlock(x, y, w, h) { const b = Bodies.rectangle(x, y, w, h, {label:'block',render:{visible:false},friction: 0.5 }); b.w = w; b.h = h; return b; }
+        function stableStructurePart(body){body.structurePart=true;Matter.Body.setStatic(body,true);return body}
+        function activateStructure(){Composite.allBodies(engine.world).forEach(body=>{if(body.structurePart&&body.isStatic)Matter.Body.setStatic(body,false)})}
+        function makePig(x, y) { return stableStructurePart(Bodies.circle(x, y, 20, {label:'pig',render:{visible:false},friction: 0.1, restitution: 0.4 })); }
+        function makeBlock(x, y, w, h) { const b = stableStructurePart(Bodies.rectangle(x, y, w, h, {label:'block',render:{visible:false},friction: 0.5 })); b.w = w; b.h = h; return b; }
         function makeThinPlank(x, y, w, h, angle) {
             const b = Bodies.rectangle(x, y, w, h, {
                 label:'thinplank',render:{visible:false},
@@ -1131,7 +1145,7 @@
                 density: 0.001
             });
             b.w = w; b.h = h;
-            return b;
+            return stableStructurePart(b);
         }
         function makeMetalPart(x, y, w, h, angle) {
             const b = Bodies.rectangle(x, y, w, h, {
@@ -1142,7 +1156,7 @@
                 density: 0.005
             });
             b.w = w; b.h = h;
-            return b;
+            return stableStructurePart(b);
         }
         function makeTNT(x, y) {
             const b = Bodies.rectangle(x, y, 34, 34, {
@@ -1155,7 +1169,7 @@
             b.w = 34; b.h = 34;
             b.isTNT = true;
             b.hasExploded = false;
-            return b;
+            return stableStructurePart(b);
         }
 
         // TNT collision/explosion logic

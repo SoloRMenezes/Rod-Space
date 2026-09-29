@@ -293,7 +293,11 @@
         #phone-stick { width:150px;height:150px;border-radius:50%;border:2px solid #607797;background:#13233a;position:absolute;left:max(24px,env(safe-area-inset-left));bottom:max(5vh,env(safe-area-inset-bottom));opacity:.35;pointer-events:none;transition:opacity .12s; }
         #phone-knob { position:absolute;width:58px;height:58px;left:44px;top:44px;border-radius:50%;background:#a9c8ee; }
         .phone-buttons { position:absolute;right:var(--phone-button-right,3vw);bottom:var(--phone-button-bottom,5vh);display:flex;gap:var(--phone-button-gap,18px);align-items:flex-end; }
-        .phone-action { width:var(--phone-button-size,92px);height:var(--phone-button-size,92px);border-radius:50%;border:3px solid #fde047;background:#352f12;color:#fde047;font:900 calc(var(--phone-button-size,92px)*.37) system-ui; }
+        .phone-action { position:relative;width:var(--phone-button-size,92px);height:var(--phone-button-size,92px);border-radius:50%;border:3px solid #fde047;background:radial-gradient(circle at 36% 30%,#655913,#352f12 66%);color:#fde047;font:900 calc(var(--phone-button-size,92px)*.37) system-ui;box-shadow:0 8px 0 #171406,0 12px 24px #0008,inset 0 0 0 2px #fff1;transition:transform 70ms ease,box-shadow 70ms ease,filter 70ms ease; }
+        .phone-action::after { content:'';position:absolute;inset:-7px;border:3px solid #fff7a8;border-radius:50%;opacity:0;transform:scale(.78);pointer-events:none; }
+        .phone-action.pressed { transform:translateY(7px) scale(.91);filter:brightness(1.55);box-shadow:0 1px 0 #171406,0 0 30px #fde047aa,inset 0 0 18px #fff6; }
+        .phone-action.pressed::after { animation:phone-input-ring 220ms ease-out; }
+        @keyframes phone-input-ring { from{opacity:.95;transform:scale(.78)} to{opacity:0;transform:scale(1.35)} }
         #phone-settings { position:fixed;inset:0;z-index:110;display:none;place-items:center;background:#050913e8;padding:18px; }
         #phone-settings.open { display:grid; }
         .phone-settings-card { width:min(430px,100%);background:#111a2b;border:1px solid #52627a;border-radius:10px;padding:22px;box-sizing:border-box; }
