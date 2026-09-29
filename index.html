@@ -585,6 +585,16 @@
         pinned = [];
       }
 
+      // Drop duplicate or removed project IDs so invisible stale pins do not
+      // consume one of the three visible pin slots.
+      if (!Array.isArray(favorites)) favorites = [];
+      if (!Array.isArray(pinned)) pinned = [];
+      const knownProjectIds = new Set(PROJECTS_DATA.map(project => project.id));
+      favorites = [...new Set(favorites)].filter(id => knownProjectIds.has(id));
+      pinned = [...new Set(pinned)].filter(id => knownProjectIds.has(id)).slice(0, 3);
+      localStorage.setItem("rod_space_favs", JSON.stringify(favorites));
+      localStorage.setItem("rod_space_pins", JSON.stringify(pinned));
+
       function saveStates() {
         localStorage.setItem("rod_space_favs", JSON.stringify(favorites));
         localStorage.setItem("rod_space_pins", JSON.stringify(pinned));
