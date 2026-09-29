@@ -24,13 +24,11 @@
   #hp-container{width:min(280px,80vw);height:4px;background:rgba(255,255,255,0.05);margin:12px auto;border-radius:2px;overflow:hidden;border: 1px solid rgba(0,242,255,0.2)}
   #hp-bar{height:100%;background:#00f2ff;width:100%;transition: width 0.3s;box-shadow: 0 0 8px #00f2ff}
 </style>
-<link rel="stylesheet" href="assets/rod-space-home.css">
-<script defer src="assets/rod-space-home.js"></script>
 </head>
 <body>
 <canvas id="game"></canvas>
 <div id="hud">
-  <div style="letter-spacing:4px">BOSS <span id="lvl" class="stat">1</span> · SHIELDS <span id="scr" class="stat">3</span></div>
+  <div style="letter-spacing:4px">BOSS <span id="lvl" class="stat">1</span> · <span id="pattern">RADIAL</span> · SHIELDS <span id="scr" class="stat">3</span></div>
   <div id="hp-container"><div id="hp-bar"></div></div>
 </div>
 <div id="centerMsg">
@@ -42,7 +40,7 @@ const canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
 const state={w:0,h:0,lvl:1,running:false,started:false,time:0,cx:0,cy:0};
 const player={ang:0, r:200, maxRadius:200, currentSpeed:0.8, dir:1, lastShot:0};
 const boss={hp:50, maxHp:50, r:50, fireT:0, hue:190};
-const bullets=[], stars=[];
+const bullets=[], stars=[], lasers=[], hearts=[];
 let keyLocked = false, shields=3, invincible=0;
 
 const resize=()=>{
@@ -65,7 +63,7 @@ addEventListener("resize",resize); resize();
 
 function handleInteraction() {
     if(!state.started) { state.started = true; state.running = true; document.getElementById("centerMsg").classList.add("hidden"); return; }
-    if(!state.running) { state.lvl=1;state.time=0;player.lastShot=0;player.ang=0;player.dir=1;shields=3;initLevel();state.running=true;document.getElementById("centerMsg").classList.add("hidden");return; }
+    if(!state.running) { state.lvl=1;state.time=0;state.won=false;player.lastShot=0;player.ang=0;player.dir=1;shields=3;initLevel();state.running=true;document.getElementById("centerMsg").classList.add("hidden");return; }
     player.dir *= -1; 
 }
 
@@ -74,10 +72,19 @@ addEventListener("keyup", (e) => { if(e.code==='Space' || e.code==='Enter') keyL
 addEventListener("pointerdown", () => handleInteraction());
 
 function initLevel(){
-    boss.maxHp = Math.round(18 + state.lvl*8 + Math.pow(state.lvl,1.28)*2); boss.hp = boss.maxHp;
-    boss.r = Math.min(74,48 + state.lvl*1.5);
+    boss.maxHp = 18 + state.lvl*6; boss.hp = boss.maxHp;
     bullets.length = 0;
-    boss.fireT=-0.8;
+    lasers.length = 0;
+    hearts.length = 0;
+    boss.fireT=-1;
+    boss.aimT=0;
+    boss.laserT=state.lvl>=4?1.4:99;
+    boss.specialT=2.2;
+    boss.spiralShots=0;
+    boss.spiralIndex=0;
+    boss.spiralShotT=0;
+    boss.heavyT=2.8;
+    boss.heartT=state.lvl%3===0?1.5:-1;
     invincible=1.5;
 
 }
@@ -85,7 +92,9 @@ function initLevel(){
 function update(dt){
     if(!state.running) return;
     state.time += dt; invincible=Math.max(0,invincible-dt);
-    player.currentSpeed = 1.0 + Math.min(state.lvl-1,8)*0.06;
+    // Rotation begins deliberately slow and rises through all twenty bosses.
+    // The player's automatic firing interval remains fixed at 0.22 seconds.
+    player.currentSpeed = .55 + (state.lvl-1)*.055;
     player.ang += (player.currentSpeed * player.dir) * dt;
     player.r = player.maxRadius * 0.85;
 
@@ -98,43 +107,164 @@ function update(dt){
         bullets.push({x:px, y:py, vx:Math.cos(lookAngle)*1000, vy:Math.sin(lookAngle)*1000, p:true});
     }
 
-    const enemySpeed=player.maxRadius*(0.62+Math.min(state.lvl,15)*0.045);
-    const spawnEnemy=(angle,speed=enemySpeed,options={})=>bullets.push({x:state.cx,y:state.cy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,p:false,age:0,turn:options.turn||0,size:options.size||4});
     boss.fireT += dt;
-    if(boss.fireT > Math.max(0.38,1.72-state.lvl*0.075)){
+    if(boss.fireT > Math.max(0.58, 2.0 - state.lvl*0.1)){
         boss.fireT = 0;
-        const aimed=Math.atan2(py-state.cy,px-state.cx),phase=(state.lvl-1)%5;
-        if(phase===0){for(let i=0;i<6+Math.floor(state.lvl/5);i++)spawnEnemy((i/(6+Math.floor(state.lvl/5)))*Math.PI*2+state.time*.55)}
-        if(phase===1){for(const offset of [-.28,-.14,0,.14,.28])spawnEnemy(aimed+offset,enemySpeed*1.14,{size:5})}
-        if(phase===2){for(let i=0;i<10;i++)spawnEnemy(i/10*Math.PI*2+state.time*.9,enemySpeed,{turn:i%2?.5:-.5})}
-        if(phase===3){for(let i=0;i<12;i++)if(i%3!==Math.floor(state.time*2)%3)spawnEnemy(i/12*Math.PI*2,enemySpeed*1.08,{size:5});spawnEnemy(aimed,enemySpeed*1.35,{size:7})}
-        if(phase===4){for(let i=0;i<14;i++)spawnEnemy(i/14*Math.PI*2+state.time*1.3,enemySpeed*(i%2?1.2:.82),{turn:i%2?.7:-.7});for(const offset of [-.18,0,.18])spawnEnemy(aimed+offset,enemySpeed*1.4,{size:6})}
+        const count=Math.min(12,6+Math.floor((state.lvl-1)/2));
+        for(let i=0; i<count; i++){
+            const a = (i/count)*Math.PI*2 + state.time*(.55+state.lvl*.015);
+            const speed=player.maxRadius*(.65+state.lvl*.035);
+            bullets.push({x:state.cx, y:state.cy, vx:Math.cos(a)*speed, vy:Math.sin(a)*speed, p:false});
+            // Boss 5 introduces an offset echo ring, creating moving lanes
+            // instead of merely repeating the opening radial burst.
+            if(state.lvl>=5 && i%2===0){
+                const echo=a+Math.PI/count;
+                bullets.push({x:state.cx,y:state.cy,vx:Math.cos(echo)*speed*.62,vy:Math.sin(echo)*speed*.62,p:false,kind:"echo"});
+            }
+        }
+    }
+
+    // From boss 3 onward, aimed shots punish reversing at the same point every time.
+    boss.aimT += dt;
+    if(state.lvl>=3 && boss.aimT>Math.max(1.15,3-state.lvl*.12)){
+        boss.aimT=0;
+        const a=Math.atan2(py-state.cy,px-state.cx);
+        const spread=Math.min(.34,(state.lvl-3)*.035);
+        const offsets=state.lvl>=9?[-spread,0,spread]:state.lvl>=5?[-spread,spread]:[0];
+        offsets.forEach(offset=>{
+            const speed=player.maxRadius*(.95+state.lvl*.025);
+            bullets.push({x:state.cx,y:state.cy,vx:Math.cos(a+offset)*speed,vy:Math.sin(a+offset)*speed,p:false});
+        });
+    }
+
+    // Boss 6 adds a sustained spiral barrage. It returns more often and lasts
+    // longer on later bosses, so post-5 levels do not loop back to boss 1.
+    if(state.lvl>=6){
+        boss.specialT-=dt;
+        if(boss.specialT<=0 && boss.spiralShots===0){
+            boss.spiralShots=Math.min(34,12+state.lvl*2);
+            boss.spiralIndex=0;
+            boss.specialT=Math.max(3.8,7-state.lvl*.18);
+        }
+        if(boss.spiralShots>0){
+            boss.spiralShotT-=dt;
+            if(boss.spiralShotT<=0){
+                boss.spiralShotT=.105;
+                const a=state.time*1.6+boss.spiralIndex*.43;
+                const speed=player.maxRadius*(.72+state.lvl*.025);
+                bullets.push({x:state.cx,y:state.cy,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,p:false,kind:"spiral"});
+                boss.spiralIndex++;
+                boss.spiralShots--;
+            }
+        }
+    }
+
+    // Boss 15+ launches heavy rounds that split halfway to the orbit.
+    if(state.lvl>=15){
+        boss.heavyT-=dt;
+        if(boss.heavyT<=0){
+            boss.heavyT=Math.max(2.1,4.3-(state.lvl-15)*.22);
+            const a=Math.atan2(py-state.cy,px-state.cx);
+            const speed=player.maxRadius*.48;
+            bullets.push({x:state.cx,y:state.cy,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,p:false,kind:"heavy",r:12,splitAt:player.r*.5});
+        }
+    }
+
+    // Every third boss shoots one recoverable heart onto the player's orbit.
+    if(boss.heartT>0){
+        boss.heartT-=dt;
+        if(boss.heartT<=0){
+            boss.heartT=-1;
+            hearts.push({angle:player.ang+player.dir*player.currentSpeed*1.15,radius:0,phase:"travel",timer:.65,hold:2.1});
+        }
+    }
+    for(let i=hearts.length-1;i>=0;i--){
+        const h=hearts[i];
+        if(h.phase==="travel"){
+            h.timer-=dt;h.radius=player.r*(1-Math.max(0,h.timer)/.65);
+            if(h.timer<=0){h.phase="hold";h.radius=player.r;h.timer=h.hold;}
+        }else if(h.phase==="hold"){
+            h.timer-=dt;
+            if(h.timer<=0){h.phase="leave";h.timer=.8;}
+        }else{
+            h.timer-=dt;h.radius+=player.maxRadius*dt*1.2;
+            if(h.timer<=0){hearts.splice(i,1);continue;}
+        }
+        const hx=state.cx+Math.cos(h.angle)*h.radius,hy=state.cy+Math.sin(h.angle)*h.radius;
+        if((hx-px)**2+(hy-py)**2<22**2){shields++;hearts.splice(i,1);}
+    }
+
+    // Lasers track faintly, lock in place, then fire. Higher bosses can prepare two.
+    boss.laserT -= dt;
+    if(state.lvl>=4 && boss.laserT<=0 && lasers.length===0){
+        const count=state.lvl>=10?3:state.lvl>=7?2:1;
+        const tracking=3+Math.random()*2;
+        for(let i=0;i<count;i++) lasers.push({angle:player.ang+i*Math.PI*2/count,phase:"track",timer:tracking,tracking});
+        boss.laserT=Math.max(4.5,9-state.lvl*.22);
+    }
+    for(let i=lasers.length-1;i>=0;i--){
+        const l=lasers[i];
+        if(l.phase==="track"){
+            const target=Math.atan2(py-state.cy,px-state.cx);
+            let delta=Math.atan2(Math.sin(target-l.angle),Math.cos(target-l.angle));
+            l.angle+=delta*Math.min(1,dt*3.2);
+            l.timer-=dt;
+            if(l.timer<=0){l.phase="lock";l.timer=.65;}
+        } else if(l.phase==="lock"){
+            l.timer-=dt;
+            if(l.timer<=0){l.phase="fire";l.timer=.42;}
+        } else {
+            l.timer-=dt;
+            const distance=Math.abs(Math.sin(player.ang-l.angle))*player.r;
+            const facing=Math.cos(player.ang-l.angle)>0;
+            if(facing && distance<13 && invincible===0){shields--;invincible=1.5;if(shields===0){endGame();break;}}
+            if(l.timer<=0)lasers.splice(i,1);
+        }
     }
 
     for(let i=bullets.length-1;i>=0;i--) {
-        const b=bullets[i];b.age=(b.age||0)+dt;if(!b.p&&b.turn){const a=b.turn*dt,c=Math.cos(a),s=Math.sin(a),vx=b.vx*c-b.vy*s;b.vy=b.vx*s+b.vy*c;b.vx=vx}b.x+=b.vx*dt;b.y+=b.vy*dt;
+        const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;
+        if(b.kind==="heavy" && Math.hypot(b.x-state.cx,b.y-state.cy)>=b.splitAt){
+            const base=Math.atan2(b.vy,b.vx),pieces=2+Math.floor(Math.random()*3);
+            for(let piece=0;piece<pieces;piece++){
+                const spread=(piece-(pieces-1)/2)*.22,speed=player.maxRadius*(.92+state.lvl*.018);
+                bullets.push({x:b.x,y:b.y,vx:Math.cos(base+spread)*speed,vy:Math.sin(base+spread)*speed,p:false,kind:"shard",r:5});
+            }
+            bullets.splice(i,1);continue;
+        }
         if(b.p && (b.x-state.cx)**2+(b.y-state.cy)**2 < boss.r**2) {
             bullets.splice(i,1);boss.hp--;
-            if(boss.hp<=0){state.lvl++;initLevel();break;}
+            if(boss.hp<=0){
+                if(state.lvl>=20)completeGame();
+                else{state.lvl++;initLevel();}
+                break;
+            }
             continue;
         }
-        if(!b.p && invincible===0 && (b.x-px)**2+(b.y-py)**2<14**2) {
+        if(!b.p && invincible===0 && (b.x-px)**2+(b.y-py)**2<(10+(b.r||4))**2) {
             bullets.splice(i,1);shields--;invincible=1.5;
             if(shields===0){endGame();break;}
             continue;
         }
-        if(b.x<0||b.x>state.w||b.y<0||b.y>state.h||b.age>8)bullets.splice(i,1);
+        if(b.x<0||b.x>state.w||b.y<0||b.y>state.h)bullets.splice(i,1);
     }
 
     boss.hue = 190 - (1 - boss.hp/boss.maxHp) * 190;
     document.getElementById("hp-bar").style.width = (boss.hp/boss.maxHp)*100 + "%";
     document.getElementById("lvl").innerText = state.lvl;
     document.getElementById("scr").innerText = shields;
+    document.getElementById("pattern").innerText = state.lvl>=20?"FINAL":state.lvl>=15?"SPLITTER":state.lvl>=10?"OVERDRIVE":state.lvl>=7?"CROSSFIRE":state.lvl>=6?"SPIRAL":state.lvl>=4?"LASER":state.lvl>=3?"HUNTER":"RADIAL";
 }
 
 function endGame(){
     state.running = false;
     document.getElementById("msg").innerHTML = `RUN OVER<br>Reached boss ${state.lvl}<br><small style="opacity:0.6">Tap or press Space to retry</small>`;
+    document.getElementById("centerMsg").classList.remove("hidden");
+}
+
+function completeGame(){
+    state.running=false;state.won=true;
+    document.getElementById("msg").innerHTML=`ORBIT CLEARED<br>All 20 bosses defeated<br><small style="opacity:0.6">Tap or press Space to fly again</small>`;
     document.getElementById("centerMsg").classList.remove("hidden");
 }
 
@@ -162,15 +292,34 @@ function drawPlayer(px, py, ang){
     ctx.restore();
 }
 
+function drawLasers(){
+    lasers.forEach(l=>{
+        const length=Math.hypot(state.w,state.h), active=l.phase==="fire";
+        ctx.save();ctx.translate(state.cx,state.cy);ctx.rotate(l.angle);
+        ctx.strokeStyle=active?"#ff304f":l.phase==="lock"?"rgba(255,48,79,.55)":"rgba(255,80,100,.16)";
+        ctx.lineWidth=active?18:2+(1-l.timer/(l.tracking||1))*3;
+        ctx.shadowColor="#ff304f";ctx.shadowBlur=active?24:0;
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length,0);ctx.stroke();ctx.restore();
+    });
+}
+
+function drawHeart(x,y,scale=1){
+    ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle="#35bfff";ctx.shadowColor="#35bfff";ctx.shadowBlur=16;
+    ctx.beginPath();ctx.moveTo(0,10);ctx.bezierCurveTo(-18,-2,-12,-16,0,-8);ctx.bezierCurveTo(12,-16,18,-2,0,10);ctx.fill();ctx.restore();
+}
+
 function draw(){
     ctx.fillStyle="#02050a"; ctx.fillRect(0,0,state.w,state.h);
     drawStars();
     const px = state.cx + Math.cos(player.ang)*player.r, py = state.cy + Math.sin(player.ang)*player.r;
     const lookAngle = Math.atan2(state.cy-py, state.cx-px);
     ctx.strokeStyle="#ffffff18";ctx.beginPath();ctx.arc(state.cx,state.cy,player.r,0,Math.PI*2);ctx.stroke();
-    drawBoss(); if(invincible===0 || Math.floor(state.time*10)%2===0)drawPlayer(px, py, lookAngle);
-    ctx.beginPath(); bullets.forEach(b => { if(!b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, b.size||4, 0, 7); }});
+    drawBoss(); drawLasers(); if(invincible===0 || Math.floor(state.time*10)%2===0)drawPlayer(px, py, lookAngle);
+    hearts.forEach(h=>drawHeart(state.cx+Math.cos(h.angle)*h.radius,state.cy+Math.sin(h.angle)*h.radius,h.phase==="hold"?1+.12*Math.sin(state.time*8):.85));
+    ctx.beginPath(); bullets.forEach(b => { if(!b.p&&!b.kind){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 4, 0, 7); }});
     ctx.fillStyle = "#ff3333"; ctx.fill();
+    ctx.beginPath(); bullets.forEach(b => { if(!b.p&&b.kind){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, b.r||(b.kind==="spiral"?5:4), 0, 7); }});
+    ctx.fillStyle = "#ff9f1c"; ctx.fill();
     ctx.beginPath(); bullets.forEach(b => { if(b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 3, 0, 7); }});
     ctx.fillStyle = "#00f2ff"; ctx.fill();
 

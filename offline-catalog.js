@@ -1,4 +1,17 @@
 self.OFFLINE_CATALOG = {
+  "double-take": {
+    "name": "Double Take",
+    "page": "double-take.html",
+    "files": [
+      {
+        "path": "double-take.html",
+        "bytes": 57554,
+        "hash": "2f1bb48d22aa260afcfe0a46a5050d037b91f6128f812539a63b50a512cabe1e"
+      }
+    ],
+    "bytes": 57554,
+    "version": "ea1e731e7c34ded6"
+  },
   "shit-spiral": {
     "name": "Shit Spiral",
     "page": "shit-spiral.html",
@@ -5342,38 +5355,13 @@ self.OFFLINE_CATALOG = {
     "page": "reaction.html",
     "files": [
       {
-        "path": "assets/rod-space-home.css",
-        "bytes": 899,
-        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
-      },
-      {
-        "path": "assets/rod-space-home.js",
-        "bytes": 1248,
-        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
-      },
-      {
-        "path": "party-lan.js",
-        "bytes": 3375,
-        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
-      },
-      {
-        "path": "party-rooms.js",
-        "bytes": 5763,
-        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
-      },
-      {
-        "path": "reaction-score-lan.js",
-        "bytes": 3471,
-        "hash": "63ca685fce021d4246ca4f6c4ac442e80173378130b38302857123c116da2c8b"
-      },
-      {
         "path": "reaction.html",
-        "bytes": 20614,
-        "hash": "be71cb1c76338f805f21ed4281f17ed5da2bd5f4670a0dc42f50a23ee49b0957"
+        "bytes": 28001,
+        "hash": "bd00b8e75ce55219cfeaac55f9aa2a6e5865c15cc1c767b69a975ee293a3d129"
       }
     ],
-    "bytes": 35370,
-    "version": "b46e763ba0c273ca"
+    "bytes": 28001,
+    "version": "b167a5d87e71a741"
   },
   "solos-rng": {
     "name": "Solo's RNG",
@@ -5552,19 +5540,14 @@ self.OFFLINE_CATALOG = {
     "page": "hood_brawlers.html",
     "files": [
       {
-        "path": "assets/rod-space-home.css",
-        "bytes": 899,
-        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
-      },
-      {
-        "path": "assets/rod-space-home.js",
-        "bytes": 1248,
-        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
+        "path": "hood-brawlers.js",
+        "bytes": 30391,
+        "hash": "c14571248ef83f1aff06fcd2794ba9d044861ec56675b281581670e085800c63"
       },
       {
         "path": "hood_brawlers.html",
-        "bytes": 51265,
-        "hash": "8a164e4efd983624d5c4a6854c80a5979d71d0b442892f24d062e1b7f13ccdb2"
+        "bytes": 51062,
+        "hash": "a8ba4ae2168d4dbefd089d0cab3031131ae834899541dff65a1468fcbf766f14"
       },
       {
         "path": "party-lan.js",
@@ -5577,8 +5560,8 @@ self.OFFLINE_CATALOG = {
         "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
       }
     ],
-    "bytes": 62550,
-    "version": "30caacd7f7a84a99"
+    "bytes": 90591,
+    "version": "4b7bfe67b3836f6e"
   },
   "planet-architect": {
     "name": "Planet Architect",
@@ -5608,71 +5591,18 @@ self.OFFLINE_CATALOG = {
     "bytes": 430248,
     "version": "8ed838eb2c30632e"
   },
-  "terraria": {
-    "name": "Terraria",
-    "page": "terraria.html",
-    "files": [
-      {
-        "path": "assets/rod-space-home.css",
-        "bytes": 899,
-        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
-      },
-      {
-        "path": "assets/rod-space-home.js",
-        "bytes": 1248,
-        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
-      },
-      {
-        "path": "assets/vendor/tailwind.js",
-        "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
-      },
-      {
-        "path": "party-game-lobby.js",
-        "bytes": 5481,
-        "hash": "1f1f877e82dd580c7ffa9ecf9f44e6b7256500bddccfb2256e5292ec9626a087"
-      },
-      {
-        "path": "party-lan.js",
-        "bytes": 3375,
-        "hash": "7332ba577629b267ef3c611e4750848f8dc3a9afd32c52bee35e6484690dda6e"
-      },
-      {
-        "path": "party-rooms.js",
-        "bytes": 5763,
-        "hash": "7629cba85ff9838bbe16b0c1ab6d99846cecaa7d7c72e297b0335728a0fff53a"
-      },
-      {
-        "path": "terraria.html",
-        "bytes": 31090,
-        "hash": "dd1405be631ec3eb8b99ccaa208737b707d864510db8f10a8ce91e3a9efd0d29"
-      }
-    ],
-    "bytes": 455135,
-    "version": "f7c3d43d333ab6a6"
-  },
   "orbit-boss": {
     "name": "Orbit Boss",
     "page": "orbit-boss.html",
     "files": [
       {
-        "path": "assets/rod-space-home.css",
-        "bytes": 899,
-        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
-      },
-      {
-        "path": "assets/rod-space-home.js",
-        "bytes": 1248,
-        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
-      },
-      {
         "path": "orbit-boss.html",
-        "bytes": 9182,
-        "hash": "669b3a3a5f4e974be911da5e494fbb51375390690f44d9fe5628e89f592ff436"
+        "bytes": 15560,
+        "hash": "aac840d1226edc18b390c2fbf56634ecebef12e36cf57d6eb23459e35ce53c83"
       }
     ],
-    "bytes": 11329,
-    "version": "b8739586b5aecf43"
+    "bytes": 15560,
+    "version": "6230a7d7286f9421"
   },
   "pac-man-3d": {
     "name": "Pac-Man 3D",
@@ -10947,14 +10877,24 @@ self.OFFLINE_CATALOG = {
         "hash": "54b139d8f726f149b963c843130d0ad35899a49520c053b3d1533d3a8afe4fc0"
       },
       {
+        "path": "double-take.html",
+        "bytes": 57554,
+        "hash": "2f1bb48d22aa260afcfe0a46a5050d037b91f6128f812539a63b50a512cabe1e"
+      },
+      {
         "path": "fidget-roulette.html",
         "bytes": 13115,
         "hash": "19e9d8292c591062ee7b0ff2b7c54fec2b964706c86ccb90f4b5c5506d257844"
       },
       {
+        "path": "hood-brawlers.js",
+        "bytes": 30391,
+        "hash": "c14571248ef83f1aff06fcd2794ba9d044861ec56675b281581670e085800c63"
+      },
+      {
         "path": "hood_brawlers.html",
-        "bytes": 51265,
-        "hash": "8a164e4efd983624d5c4a6854c80a5979d71d0b442892f24d062e1b7f13ccdb2"
+        "bytes": 51062,
+        "hash": "a8ba4ae2168d4dbefd089d0cab3031131ae834899541dff65a1468fcbf766f14"
       },
       {
         "path": "impostor.html",
@@ -10963,8 +10903,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 33500,
-        "hash": "2cec90e99ec2396bb123afbc1b2d41954ef57f7a040c461e69e3034011251a01"
+        "bytes": 34127,
+        "hash": "c9831a3b331740ed104b53142fc802b47888249edd418797f00a638d49376feb"
       },
       {
         "path": "multiplayer.html",
@@ -10988,13 +10928,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 64224,
-        "hash": "4116f4bcb404d89fc6ec9944766fdd714cdf76cd772567cf12e511ae52be9dbe"
+        "bytes": 69355,
+        "hash": "4e0e96eaff63eafb0320532157d63c5144e0b13c04d7b2aeef50f006d78c6c9c"
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 426709,
-        "hash": "26e119d69fb094917eed15d10804208170df971a77d559c890ae3bb5d2d27aca"
+        "bytes": 430117,
+        "hash": "099fc60463b0c4bb2ca96bdb77f22edfe2c2d73b27c20bf9d65b213a8437254f"
       },
       {
         "path": "offline.js",
@@ -11003,8 +10943,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "orbit-boss.html",
-        "bytes": 9182,
-        "hash": "669b3a3a5f4e974be911da5e494fbb51375390690f44d9fe5628e89f592ff436"
+        "bytes": 15560,
+        "hash": "aac840d1226edc18b390c2fbf56634ecebef12e36cf57d6eb23459e35ce53c83"
       },
       {
         "path": "pac-man-3d.html",
@@ -11028,8 +10968,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "party.html",
-        "bytes": 9891,
-        "hash": "e0d49914507119e6bb2adf1f0048e3ebf8b28a8f53996fdebc104ce17ede12ae"
+        "bytes": 10060,
+        "hash": "f6e8fd5adf2c37e5ec26b3cf73aad4a00bd384c749ca0ad1a2140c0cbe8754c1"
       },
       {
         "path": "piano.html",
@@ -11048,8 +10988,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "reaction.html",
-        "bytes": 20614,
-        "hash": "be71cb1c76338f805f21ed4281f17ed5da2bd5f4670a0dc42f50a23ee49b0957"
+        "bytes": 28001,
+        "hash": "bd00b8e75ce55219cfeaac55f9aa2a6e5865c15cc1c767b69a975ee293a3d129"
       },
       {
         "path": "relic_rush.html",
@@ -11068,8 +11008,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sling_champ.html",
-        "bytes": 59242,
-        "hash": "09f729c140f2dcde155f892c915f5159afd3b3d2a98d6c1213bf60ffb2bc2511"
+        "bytes": 61062,
+        "hash": "4b534ebe1966f22be738594ef480cd8e8069a64fb79b9d88b8f125e3de4788ce"
       },
       {
         "path": "slot-machine.html",
@@ -11084,7 +11024,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5756,
-        "hash": "5b545ce4815df3056e49aa7dfe8d008e88e4211065c08c238e3af4a9f96ace82"
+        "hash": "7f47d0f8f080d4b14da533d7e8fe8253a6a3eabba1b59878d10b09e897bad69c"
       },
       {
         "path": "terraria.html",
@@ -11142,8 +11082,8 @@ self.OFFLINE_CATALOG = {
         "hash": "965eeed99796d5ee8c82e040df5683d5375ee7e552695fd5348d99102b65540d"
       }
     ],
-    "bytes": 307270328,
-    "version": "07085678f842a202"
+    "bytes": 307382990,
+    "version": "9bd6925f6928f691"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -11214,12 +11154,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sling_champ.html",
-        "bytes": 59242,
-        "hash": "09f729c140f2dcde155f892c915f5159afd3b3d2a98d6c1213bf60ffb2bc2511"
+        "bytes": 61062,
+        "hash": "4b534ebe1966f22be738594ef480cd8e8069a64fb79b9d88b8f125e3de4788ce"
       }
     ],
-    "bytes": 142196,
-    "version": "0154f0ebe585dc4b"
+    "bytes": 144016,
+    "version": "9e2f1dcfa286884e"
   },
   "relic-rush": {
     "name": "Relic Rush",

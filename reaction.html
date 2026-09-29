@@ -31,6 +31,10 @@
             margin-bottom: 20px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
+        .mode-bolt { border:0;background:transparent;padding:0 .12em;color:inherit;font:inherit;cursor:pointer;filter:drop-shadow(0 2px 2px #0004);transition:transform .12s,filter .12s; }
+        .mode-bolt:hover,.mode-bolt:focus-visible { transform:scale(1.18) rotate(-7deg);filter:drop-shadow(0 0 9px #ffd43b);outline:none; }
+        body.switchback-mode { background:linear-gradient(135deg,#3b2667 0%,#bc4e9c 100%); }
+        body.switchback-mode .start-screen h2,body.switchback-mode .leaderboard h3 { color:#a13db3; }
 
         .game-stats {
             display: flex;
@@ -153,32 +157,23 @@
             font-size: 0.9rem;
         }
 
-        .score-delete {
-            width: 24px;
-            height: 24px;
-            margin-left: 8px;
-            border: 0;
-            border-radius: 50%;
-            background: transparent;
-            color: #9ca3af;
-            font: 700 18px/24px system-ui, sans-serif;
-            cursor: pointer;
-        }
-        .score-delete:hover, .score-delete:focus-visible { background: #ff4757; color: white; outline: none; }
-
-        .play-button {
-            min-width: 180px;
-            margin: 14px 0 4px;
-            padding: 12px 24px;
-            border: 0;
-            border-radius: 8px;
-            background: #667eea;
-            color: white;
-            font: 700 1.1rem Arial, sans-serif;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #4f60bd;
-        }
-        .play-button:hover, .play-button:focus-visible { transform:translateY(-1px);background:#586fe1;outline:3px solid #c7d2fe; }
+        .score-delete { width:24px;height:24px;margin-left:8px;border:0;border-radius:50%;background:transparent;color:#9ca3af;font:700 18px/24px system-ui,sans-serif;cursor:pointer; }
+        .score-delete:hover,.score-delete:focus-visible { background:#ff4757;color:white;outline:none; }
+        .reset-scores-button { position:absolute;top:14px;left:14px;padding:7px 10px;border:1px solid #ff475788;border-radius:7px;background:#ff475719;color:#c93443;font:700 .72rem Arial,sans-serif;opacity:.68;cursor:pointer; }
+        .reset-scores-button:hover,.reset-scores-button:focus-visible { opacity:1;background:#ff47572e;outline:2px solid #ffb8bf; }
+        .reset-dialog { display:none;position:fixed;inset:0;z-index:200;place-items:center;padding:20px;background:#24243dcc;backdrop-filter:blur(5px); }
+        .reset-dialog.open { display:grid; }
+        .reset-card { width:min(360px,90vw);box-sizing:border-box;padding:24px;border-radius:14px;background:#fff;color:#333;text-align:center;box-shadow:0 18px 55px #0008; }
+        .reset-card h2 { margin:0 0 12px;color:#d92f40; }
+        .reset-card p { line-height:1.45; }
+        .reset-input { width:100%;box-sizing:border-box;margin:8px 0 5px;padding:11px;border:2px solid #ff8590;border-radius:7px;text-align:center;font:bold 1rem monospace;text-transform:uppercase; }
+        .reset-error { min-height:18px;margin:2px 0 8px;color:#d92f40;font-size:.82rem; }
+        .reset-actions { display:flex;gap:10px;justify-content:center;margin-top:14px; }
+        .reset-actions button { min-width:105px;padding:10px 14px;border:0;border-radius:7px;font-weight:700;cursor:pointer; }
+        .reset-cancel { background:#e7e9f4;color:#454b61; }
+        .reset-danger { background:#ff4757;color:#fff; }
+        .play-button { min-width:180px;margin:14px 0 4px;padding:12px 24px;border:0;border-radius:8px;background:#667eea;color:white;font:700 1.1rem Arial,sans-serif;cursor:pointer;box-shadow:0 4px 0 #4f60bd; }
+        .play-button:hover,.play-button:focus-visible { transform:translateY(-1px);background:#586fe1;outline:3px solid #c7d2fe; }
 
         .leaderboard-entry.current-score {
             background: rgba(46, 213, 115, 0.2);
@@ -256,29 +251,15 @@
             z-index: 200;
             display: none;
         }
-        .lan-score-status {
-            margin: -18px auto 20px;
-            width: fit-content;
-            max-width: min(92vw, 440px);
-            padding: 7px 12px;
-            border-radius: 999px;
-            background: rgba(0,0,0,.2);
-            font-size: .82rem;
-            color: rgba(255,255,255,.88);
-        }
-        .lan-score-status.connected { background: rgba(46,213,115,.25); }
     </style>
-<link rel="stylesheet" href="assets/rod-space-home.css">
-<script defer src="assets/rod-space-home.js"></script>
 </head>
 <body>
     <div class="game-container">
-        <h1 class="game-title">⚡ Reaction Game ⚡</h1>
+        <h1 class="game-title"><button class="mode-bolt" type="button" aria-label="Open secret mode">⚡</button> <span id="gameTitleText">Reaction Game</span> <button class="mode-bolt" type="button" aria-label="Open secret mode">⚡</button></h1>
         
         <div class="game-stats">
             <div class="stat">Time: <span id="timer">0.0s</span></div>
         </div>
-        <div id="lanScoreStatus" class="lan-score-status" hidden aria-hidden="true">LAN score sync</div>
 
         <div class="lives" id="lives">
             <div class="life"></div>
@@ -296,10 +277,10 @@
         </div>
 
         <div class="start-screen" id="startScreen" style="display:block;">
-            <h2>⚡ Ready? ⚡</h2>
+            <h2 id="readyTitle">⚡ Ready? ⚡</h2>
             <div class="start-instructions">
                 <p><strong>SPACEBAR</strong> or <strong>CLICK</strong> when the white bar is in the green section!</p>
-                <p>Target gets smaller and faster as you score.</p>
+                <p id="modeInstructions">Target gets smaller and faster as you score.</p>
                 <button class="play-button" type="button">Play</button>
                 <p>Press <strong>SPACE</strong> or use the button.</p>
             </div>
@@ -316,13 +297,32 @@
         </div>
 
         <div class="game-over" id="gameOver">
+            <button id="resetScoresButton" class="reset-scores-button" type="button">Reset scores</button>
             <h2>Game Over!</h2>
             <p>Final Score: <span id="finalScore">0</span></p>
             <div class="leaderboard" id="leaderboard">
-                <h3>🏆 Top Scores 🏆</h3>
+                <h3 id="leaderboardTitle">🏆 Top Scores 🏆</h3>
                 <div id="leaderboardList"></div>
             </div>
             <button class="play-button" type="button">Play Again</button>
+        </div>
+    </div>
+
+    <div id="resetScoresDialog" class="reset-dialog" role="dialog" aria-modal="true" aria-labelledby="resetScoresTitle">
+        <div class="reset-card">
+            <div id="resetScoresStepOne">
+                <h2 id="resetScoresTitle">Delete every score?</h2>
+                <p>This permanently removes all 20 saved leaderboard entries from this device.</p>
+                <p>Type <strong>DELETE</strong> in all caps to continue.</p>
+                <input id="resetScoresInput" class="reset-input" type="text" autocomplete="off" spellcheck="false" maxlength="6" aria-label="Type DELETE">
+                <div id="resetScoresError" class="reset-error"></div>
+                <div class="reset-actions"><button id="resetScoresCancel" class="reset-cancel" type="button">Cancel</button><button id="resetScoresContinue" class="reset-danger" type="button">Continue</button></div>
+            </div>
+            <div id="resetScoresStepTwo" hidden>
+                <h2>Final warning</h2>
+                <p>There is no undo. Confirm deleting every saved score?</p>
+                <div class="reset-actions"><button id="resetScoresBack" class="reset-cancel" type="button">Back</button><button id="resetScoresConfirm" class="reset-danger" type="button">CONFIRM</button></div>
+            </div>
         </div>
     </div>
 
@@ -332,6 +332,7 @@
         const FRAME_DURATION = 1000 / 120;
         const MIN_GREEN_SIZE = 24;
         const MAX_ROTATION_SPEED = 8;
+
         class ReactionGame {
             constructor() {
                 this.score = 0;
@@ -345,6 +346,8 @@
                 this.isGameRunning = false;
                 this.animationId = null;
                 this.lastFrameTime = 0;
+                this.switchback = false;
+                this.storageKey = 'reactionGameLeaderboard';
                 
                 this.elements = {
                     gameCircle: document.getElementById('gameCircle'),
@@ -364,12 +367,18 @@
                     leaderboardList: document.getElementById('leaderboardList'),
                     toast: document.getElementById('toast'),
                     playButtons: document.querySelectorAll('.play-button'),
+                    resetDialog: document.getElementById('resetScoresDialog'),
+                    resetStepOne: document.getElementById('resetScoresStepOne'),
+                    resetStepTwo: document.getElementById('resetScoresStepTwo'),
+                    resetInput: document.getElementById('resetScoresInput'),
+                    resetError: document.getElementById('resetScoresError'),
+                    gameTitleText: document.getElementById('gameTitleText'),
+                    readyTitle: document.getElementById('readyTitle'),
+                    modeInstructions: document.getElementById('modeInstructions'),
+                    leaderboardTitle: document.getElementById('leaderboardTitle'),
                 };
 
-                this.deviceId = localStorage.getItem('reactionDeviceId') || crypto.randomUUID();
-                localStorage.setItem('reactionDeviceId', this.deviceId);
-                this.deletedScoreIds = this.loadDeletedScoreIds();
-                this.leaderboard = this.loadLeaderboard().filter(entry => !this.deletedScoreIds.has(entry.id));
+                this.leaderboard = this.loadLeaderboard();
                 this.init();
             }
 
@@ -384,6 +393,7 @@
                     if (e.code === 'Space') {
                         e.preventDefault();
                         if (e.repeat) return;
+                        if (this.elements.resetDialog.classList.contains('open')) return;
                         if (this.isGameRunning) this.handleAction();
                         else this.beginGame();
                     }
@@ -400,6 +410,56 @@
                 this.elements.saveButton.addEventListener('click', () => this.saveHighScore());
                 this.elements.skipButton.addEventListener('click', () => this.skipHighScore());
                 this.elements.playButtons.forEach(button => button.addEventListener('click', () => this.beginGame()));
+                document.getElementById('resetScoresButton').addEventListener('click',()=>this.openScoreReset());
+                document.getElementById('resetScoresCancel').addEventListener('click',()=>this.closeScoreReset());
+                document.getElementById('resetScoresContinue').addEventListener('click',()=>this.continueScoreReset());
+                document.getElementById('resetScoresBack').addEventListener('click',()=>this.showScoreResetEntry());
+                document.getElementById('resetScoresConfirm').addEventListener('click',()=>this.confirmScoreReset());
+                document.querySelectorAll('.mode-bolt').forEach(bolt=>bolt.addEventListener('click',()=>this.activateSwitchback()));
+            }
+
+            activateSwitchback() {
+                if(this.isGameRunning||this.elements.startScreen.style.display==='none')return;
+                this.switchback=true;
+                this.storageKey='reactionGameSwitchbackLeaderboard';
+                this.leaderboard=this.loadLeaderboard();
+                document.body.classList.add('switchback-mode');
+                this.elements.gameTitleText.textContent='Switchback';
+                this.elements.readyTitle.textContent='↔ Switchback Ready? ↔';
+                this.elements.modeInstructions.textContent='Successful hits usually reverse direction—but not always.';
+                this.elements.leaderboardTitle.textContent='↔ Switchback Scores ↔';
+            }
+
+            openScoreReset() {
+                this.elements.resetInput.value='';
+                this.elements.resetError.textContent='';
+                this.showScoreResetEntry();
+                this.elements.resetDialog.classList.add('open');
+                this.elements.resetInput.focus();
+            }
+
+            closeScoreReset() { this.elements.resetDialog.classList.remove('open'); }
+
+            showScoreResetEntry() {
+                this.elements.resetStepOne.hidden=false;
+                this.elements.resetStepTwo.hidden=true;
+            }
+
+            continueScoreReset() {
+                if(this.elements.resetInput.value!=='DELETE'){
+                    this.elements.resetError.textContent='Enter DELETE exactly as shown.';
+                    this.elements.resetInput.focus();
+                    return;
+                }
+                this.elements.resetStepOne.hidden=true;
+                this.elements.resetStepTwo.hidden=false;
+            }
+
+            confirmScoreReset() {
+                this.leaderboard=[];
+                localStorage.removeItem(this.storageKey);
+                this.closeScoreReset();
+                this.showGameOver();
             }
 
             beginGame() {
@@ -470,6 +530,10 @@
                 this.score++;
                 this.greenSectionSize = Math.max(MIN_GREEN_SIZE, currentSectionSize * 0.9);
                 this.rotationSpeed = Math.sign(this.rotationSpeed) * Math.min(MAX_ROTATION_SPEED, Math.abs(this.rotationSpeed) + 0.3);
+                if(this.switchback){
+                    if(Math.random()<.78){this.rotationSpeed*=-1;this.showToast('Switch!')}
+                    else this.showToast('No switch!');
+                }
                 
                 // Show "Perfect!" if near center
                 if (dist < Math.min(10, currentSectionSize * 0.2)) this.showToast("Perfect!");
@@ -507,91 +571,41 @@
             }
 
             loadLeaderboard() {
-                try {
-                    const saved = JSON.parse(localStorage.getItem('reactionGameLeaderboard') || '[]');
-                    return Array.isArray(saved) ? saved.map(entry => this.normaliseScore(entry)).filter(Boolean).slice(0, 20) : [];
-                } catch { return []; }
-            }
-
-            loadDeletedScoreIds() {
-                try {
-                    const saved = JSON.parse(localStorage.getItem('reactionDeletedScoreIds') || '[]');
-                    return new Set(Array.isArray(saved) ? saved.map(String) : []);
-                } catch { return new Set(); }
-            }
-
-            storeDeletedScoreIds() {
-                const ids = [...this.deletedScoreIds].slice(-200);
-                this.deletedScoreIds = new Set(ids);
-                localStorage.setItem('reactionDeletedScoreIds', JSON.stringify(ids));
-            }
-
-            normaliseScore(entry) {
-                const score = Number(entry?.score), time = Number(entry?.time);
-                if (!Number.isFinite(score) || score < 0 || !Number.isFinite(time) || time < 0) return null;
-                const name = String(entry.name || 'AAA').trim().slice(0, 12) || 'AAA';
-                const id = String(entry.id || `${name}:${score}:${time.toFixed(3)}`);
-                return { id, score: Math.floor(score), time, name, deviceId: String(entry.deviceId || 'legacy'), savedAt: Number(entry.savedAt) || 0 };
-            }
-
-            storeLeaderboard() {
-                this.leaderboard.sort((a, b) => b.score - a.score || a.time - b.time);
-                this.leaderboard = this.leaderboard.slice(0, 20);
-                localStorage.setItem('reactionGameLeaderboard', JSON.stringify(this.leaderboard));
-            }
-
-            mergeScores(incoming = []) {
-                incoming.filter(entry => entry?.deletedScoreId).forEach(entry => this.deletedScoreIds.add(String(entry.deletedScoreId)));
-                this.storeDeletedScoreIds();
-                const merged = new Map(this.leaderboard.filter(entry => !this.deletedScoreIds.has(entry.id)).map(entry => [entry.id, entry]));
-                incoming.map(entry => this.normaliseScore(entry)).filter(entry => entry && !this.deletedScoreIds.has(entry.id)).forEach(entry => merged.set(entry.id, entry));
-                const before = JSON.stringify(this.leaderboard);
-                this.leaderboard = [...merged.values()];
-                this.storeLeaderboard();
-                if (before !== JSON.stringify(this.leaderboard)) {
-                    if (this.elements.gameOver.style.display === 'block') this.showGameOver();
-                    return true;
-                }
-                return false;
+                const saved = localStorage.getItem(this.storageKey);
+                const entries = saved ? JSON.parse(saved) : [];
+                return entries.map((entry,index) => ({...entry,id:entry.id || `${entry.name}-${entry.score}-${entry.time}-${index}`}))
+                    .sort((a,b)=>b.score-a.score||a.time-b.time).slice(0,20);
             }
 
             saveHighScore() {
                 const name = this.elements.nameInput.value.trim() || 'AAA';
-                this.leaderboard.push({ id: crypto.randomUUID(), score: this.score, name, time: this.currentTime, deviceId: this.deviceId, savedAt: Date.now() });
-                this.storeLeaderboard();
-                dispatchEvent(new CustomEvent('reactionscorechange', { detail: this.leaderboard }));
+                this.leaderboard.push({ id:crypto.randomUUID(),score: this.score, name, time: this.currentTime });
+                this.leaderboard.sort((a, b) => b.score - a.score || a.time - b.time);
+                this.leaderboard = this.leaderboard.slice(0, 20);
+                localStorage.setItem(this.storageKey, JSON.stringify(this.leaderboard));
                 this.showGameOver();
             }
 
             skipHighScore() { this.showGameOver(); }
 
             deleteScore(id) {
-                const entry = this.leaderboard.find(score => score.id === id);
-                if (!entry || !confirm(`Remove ${entry.name}'s ${entry.score}-point score?`)) return;
-                this.deletedScoreIds.add(id);
-                this.storeDeletedScoreIds();
-                this.leaderboard = this.leaderboard.filter(score => score.id !== id);
-                this.storeLeaderboard();
-                dispatchEvent(new CustomEvent('reactionscorechange', { detail: this.leaderboard }));
+                const entry=this.leaderboard.find(score=>score.id===id);
+                if(!entry)return;
+                this.leaderboard=this.leaderboard.filter(score=>score.id!==id);
+                localStorage.setItem(this.storageKey,JSON.stringify(this.leaderboard));
                 this.showGameOver();
             }
 
             showGameOver() {
                 this.elements.newHighScore.style.display = 'none';
                 this.elements.finalScore.textContent = this.score;
-                const visibleScores = this.leaderboard.slice(0, 10);
-                let html = visibleScores.map((e, i) => `
+                let html = this.leaderboard.slice(0,10).map((e, i) => `
                     <div class="leaderboard-entry">
                         <span>${i + 1}. ${escapeScoreName(e.name)}</span>
-                        <span>${e.score} pts <button class="score-delete" data-score-id="${encodeURIComponent(e.id)}" aria-label="Remove ${escapeScoreName(e.name)}'s ${e.score}-point score">×</button></span>
+                        <span>${e.score} pts <button type="button" class="score-delete" data-score-id="${encodeURIComponent(e.id)}" aria-label="Remove score">×</button></span>
                     </div>`).join('');
                 this.elements.leaderboardList.innerHTML = html || 'No scores yet!';
-                this.elements.leaderboardList.querySelectorAll('.score-delete').forEach(button => {
-                    button.addEventListener('click', event => {
-                        event.stopPropagation();
-                        this.deleteScore(decodeURIComponent(button.dataset.scoreId));
-                    });
-                });
+                this.elements.leaderboardList.querySelectorAll('.score-delete').forEach(button=>button.addEventListener('click',event=>{event.stopPropagation();this.deleteScore(decodeURIComponent(button.dataset.scoreId))}));
                 this.elements.gameOver.style.display = 'block';
             }
 
@@ -604,7 +618,7 @@
             endGame() {
                 this.isGameRunning = false;
                 if (this.animationId) cancelAnimationFrame(this.animationId);
-                const isHigh = this.leaderboard.length < 10 || this.score > this.leaderboard[9].score;
+                const isHigh = this.leaderboard.length < 20 || this.score > this.leaderboard[19].score;
                 if (isHigh) {
                     this.elements.newHighScoreValue.textContent = this.score;
                     this.elements.newHighScore.style.display = 'block';
@@ -614,10 +628,7 @@
             }
         }
 
-        window.reactionGame = new ReactionGame();
+        new ReactionGame();
     </script>
-    <script src="party-lan.js"></script>
-    <script type="module" src="party-rooms.js"></script>
-    <script type="module" src="reaction-score-lan.js"></script>
 </body>
 </html>
