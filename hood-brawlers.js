@@ -101,8 +101,37 @@ function openControllers(){document.getElementById('controllers').style.display=
 function closeControllers(){document.getElementById('controllers').style.display='none';controllerWatchStop?.();controllerWatchStop=null}
 const playerFor=index=>index?player2:player1;
 function waitForPartyRooms(){if(globalThis.PartyRooms)return Promise.resolve(globalThis.PartyRooms);return new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Controller service did not load')),10000);addEventListener('partyroomsready',()=>{clearTimeout(timer);resolve(globalThis.PartyRooms)},{once:true})})}
-function applyRemoteInput(slot,payload){const before={...remote[slot]};Object.assign(remote[slot],payload,{connected:true});for(const action of ['up','a','b'])if(remote[slot][action]&&!before[action])pressAction(slot,action)}
-function wireControllerClient(slot,roomId,client){connectedControllerIds.add(roomId);Object.assign(remote[slot],{connected:true,left:false,right:false,down:false,up:false,a:false,b:false});setControllerCount();client.on('message',({data})=>{if(data.type==='input')applyRemoteInput(slot,data.payload)});client.on('close',()=>{connectedControllerIds.delete(roomId);Object.assign(remote[slot],{connected:false,left:false,right:false,down:false,up:false,a:false,b:false});setControllerCount()})}
+const controllerUi=[{element:null},{element:null}];
+function visibleControllerTargets(slot){
+ const visible=element=>!element.disabled&&element.getClientRects().length&&getComputedStyle(element).visibility!=='hidden';
+ const modal=[...document.querySelectorAll('.modal')].find(element=>getComputedStyle(element).display!=='none');
+ if(modal)return[...modal.querySelectorAll('button:not(.bind):not(.reset-key)')].filter(visible);
+ if(document.getElementById('device-setup').classList.contains('open'))return[...document.querySelectorAll('#device-setup button')].filter(visible);
+ if(document.body.dataset.screen==='select')return[...document.querySelectorAll(`#p${slot+1}-pickers .color-option,#p${slot+1}-ready-btn`)].filter(visible);
+ if(paused)return[...document.querySelectorAll('#pause-screen button')].filter(visible);
+ if(gameOver)return[...document.querySelectorAll('#game-over button')].filter(visible);
+ if(document.body.dataset.screen==='menu')return[...document.querySelectorAll('#start-screen button')].filter(visible);
+ return[];
+}
+function paintControllerCursor(slot){
+ const state=controllerUi[slot],targets=visibleControllerTargets(slot),cursor=document.getElementById(`controller-cursor-${slot+1}`);
+ document.querySelectorAll(`.controller-ui-focus-p${slot+1}`).forEach(element=>element.classList.remove(`controller-ui-focus-p${slot+1}`));
+ if(!remote[slot].connected||!targets.length||document.body.dataset.screen==='fight'&&!paused&&!gameOver){cursor.style.display='none';state.element=null;return}
+ if(!targets.includes(state.element))state.element=targets[0];
+ state.element.classList.add(`controller-ui-focus-p${slot+1}`);const rect=state.element.getBoundingClientRect();cursor.style.display='block';cursor.style.left=`${Math.max(48,rect.left-8)}px`;cursor.style.top=`${rect.top+rect.height/2}px`;
+}
+function moveControllerCursor(slot,direction){
+ const state=controllerUi[slot],targets=visibleControllerTargets(slot);if(!targets.length)return;
+ if(!targets.includes(state.element)){state.element=targets[0];paintControllerCursor(slot);return}
+ const from=state.element.getBoundingClientRect(),fx=from.left+from.width/2,fy=from.top+from.height/2,vectors={left:[-1,0],right:[1,0],up:[0,-1],down:[0,1]},[vx,vy]=vectors[direction];let best=null,bestScore=Infinity;
+ for(const candidate of targets){if(candidate===state.element)continue;const rect=candidate.getBoundingClientRect(),dx=rect.left+rect.width/2-fx,dy=rect.top+rect.height/2-fy,forward=dx*vx+dy*vy;if(forward<=4)continue;const cross=Math.abs(dx*vy-dy*vx),score=forward+cross*1.7;if(score<bestScore){best=candidate;bestScore=score}}
+ if(best)state.element=best;paintControllerCursor(slot);
+}
+function controllerBack(){if(document.getElementById('settings').style.display==='flex')closeSettings();else if(document.getElementById('controllers').style.display==='flex')closeControllers();else if(document.getElementById('device-setup').classList.contains('open'))document.getElementById('device-setup').classList.remove('open');else if(paused)togglePause();else if(gameOver||document.body.dataset.screen==='select')resetToMenu()}
+function handleControllerUi(slot,action){if(action==='a'){const target=controllerUi[slot].element||visibleControllerTargets(slot)[0];target?.click()}else if(action==='b')controllerBack();else moveControllerCursor(slot,action);requestAnimationFrame(()=>{paintControllerCursor(0);paintControllerCursor(1)})}
+function applyRemoteInput(slot,payload){const before={...remote[slot]};Object.assign(remote[slot],payload,{connected:true});const inFight=document.body.dataset.screen==='fight'&&!paused&&!gameOver;if(inFight){for(const action of ['up','a','b'])if(remote[slot][action]&&!before[action])pressAction(slot,action)}else for(const action of ['left','right','up','down','a','b'])if(remote[slot][action]&&!before[action])handleControllerUi(slot,action)}
+function wireControllerClient(slot,roomId,client){connectedControllerIds.add(roomId);Object.assign(remote[slot],{connected:true,left:false,right:false,down:false,up:false,a:false,b:false});setControllerCount();paintControllerCursor(slot);client.on('message',({data})=>{if(data.type==='input')applyRemoteInput(slot,data.payload)});client.on('close',()=>{connectedControllerIds.delete(roomId);Object.assign(remote[slot],{connected:false,left:false,right:false,down:false,up:false,a:false,b:false});paintControllerCursor(slot);setControllerCount()})}
+addEventListener('resize',()=>{paintControllerCursor(0);paintControllerCursor(1)});
 function renderControllerBrowser(rooms){
  const root=document.getElementById('controller-browser'),status=document.getElementById('lan-status');root.replaceChildren();availableControllers=new Map(rooms.map(room=>[room.id,room]));
  if(!rooms.length){status.textContent='No controllers found. Open Hood Brawlers on a phone using this Wi-Fi.';return}
@@ -112,7 +141,7 @@ function renderControllerBrowser(rooms){
 async function startControllerDiscovery(){const status=document.getElementById('lan-status');status.textContent='Looking for controllers…';controllerWatchStop?.();controllerWatchStop=null;try{const rooms=await waitForPartyRooms();controllerWatchStop=await rooms.watch('hood-controller-device',renderControllerBrowser,error=>status.textContent=error.message)}catch(error){status.textContent=`Could not search: ${error.message}`}}
 async function connectNamedController(roomId,pin,row,button){
  const room=availableControllers.get(roomId),status=document.getElementById('lan-status');if(!room)return;const slot=remote.findIndex(state=>!state.connected);if(slot<0){status.textContent='Two controllers are already connected.';return}if(room.locked&&!/^\d{4}$/.test(pin)){status.textContent='Enter the controller’s 4-digit PIN.';return}
- try{button.disabled=true;button.textContent='Connecting…';const rooms=await waitForPartyRooms();const connection=await rooms.join(room,{name:deviceProfile?.name||'Hood Brawlers',pin,onStatus:text=>status.textContent=text});wireControllerClient(slot,room.id,connection.client);row.classList.add('connected');button.textContent=`Player ${slot+1}`;status.textContent=`${room.name} connected as Player ${slot+1}`}
+ try{button.disabled=true;button.textContent='Connecting…';const rooms=await waitForPartyRooms();const connection=await rooms.join(room,{name:`${deviceProfile?.name||'Hood Brawlers'} · P${slot+1}`,pin,onStatus:text=>status.textContent=text});wireControllerClient(slot,room.id,connection.client);row.classList.add('connected');button.textContent=`Player ${slot+1}`;status.textContent=`${room.name} connected as Player ${slot+1}`}
  catch(error){button.disabled=false;button.textContent='Connect';status.textContent=error.message}
 }
 
@@ -154,7 +183,7 @@ const isPhone=/iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent);
 function readDeviceProfile(){try{const profile=JSON.parse(localStorage.getItem('hood_device_profile'));if(profile&&typeof profile.name==='string'&&profile.name.trim())return{name:profile.name.trim().slice(0,20),pin:isPhone&&/^\d{4}$/.test(profile.pin||'')?profile.pin:''}}catch{}return null}
 function openDeviceSetup(){const setup=document.getElementById('device-setup'),name=document.getElementById('device-name'),pin=document.getElementById('device-pin');setup.classList.toggle('phone',isPhone);setup.classList.add('open');document.getElementById('device-setup-title').textContent=deviceProfile?'Edit device details':'Choose a device name';document.getElementById('device-setup-copy').textContent=isPhone?'Change how this controller appears. The optional PIN must contain four numbers.':'Change the name shown to controllers when this screen connects.';document.getElementById('device-setup-error').textContent='';name.value=deviceProfile?.name||'';pin.value=isPhone?deviceProfile?.pin||'':'';setTimeout(()=>name.focus(),50)}
 async function startPhoneController(){
- const status=document.getElementById('phone-status');try{status.textContent='Making controller visible…';if(controllerRoom)await controllerRoom.stop();const rooms=await waitForPartyRooms();controllerRoom=await rooms.createHost({game:'hood-controller-device',name:deviceProfile.name,pin:deviceProfile.pin,onStatus:text=>status.textContent=text,onConnectionRequest:requestPhonePairing,onConnected:()=>status.textContent='Connected'});status.textContent=`${deviceProfile.name} · waiting for game${deviceProfile.pin?' · PIN':''}`}
+ const status=document.getElementById('phone-status');try{status.textContent='Making controller visible…';if(controllerRoom)await controllerRoom.stop();const rooms=await waitForPartyRooms();controllerRoom=await rooms.createHost({game:'hood-controller-device',name:deviceProfile.name,pin:deviceProfile.pin,onStatus:text=>status.textContent=text,onConnectionRequest:requestPhonePairing,onConnected:guest=>{status.textContent='Connected';const slot=Number((guest.meta?.name||'').match(/· P([12])$/)?.[1]);const indicator=document.getElementById('phone-player-indicator');indicator.className=slot?`p${slot}`:'';indicator.setAttribute('aria-label',slot?`Player ${slot} colour`:'Player colour')}});status.textContent=`${deviceProfile.name} · waiting for game${deviceProfile.pin?' · PIN':''}`}
  catch(error){status.textContent=`Controller unavailable: ${error.message}`}
 }
 let phonePairResolve=null,phonePairTimer=0;
