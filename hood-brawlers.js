@@ -126,6 +126,7 @@ function closePhoneSettings(){document.getElementById('phone-settings').classLis
 for(const key of Object.keys(PHONE_LAYOUT_DEFAULTS))document.getElementById(`phone-${key}`).addEventListener('input',event=>{phoneLayout[key]=Number(event.target.value);applyPhoneLayout()});
 document.getElementById('phone-settings-button').onclick=openPhoneSettings;
 document.getElementById('phone-settings-done').onclick=closePhoneSettings;
+document.getElementById('phone-device-details').onclick=()=>{closePhoneSettings();openDeviceSetup()};
 document.getElementById('phone-layout-reset').onclick=()=>{phoneLayout={...PHONE_LAYOUT_DEFAULTS};applyPhoneLayout(true)};
 const phoneFullscreenButton=document.getElementById('phone-fullscreen-button');
 const phoneController=document.getElementById('phone-controller');
@@ -150,7 +151,7 @@ applyPhoneLayout();
 
 const isPhone=/iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent);
 function readDeviceProfile(){try{const profile=JSON.parse(localStorage.getItem('hood_device_profile'));if(profile&&typeof profile.name==='string'&&profile.name.trim())return{name:profile.name.trim().slice(0,20),pin:isPhone&&/^\d{4}$/.test(profile.pin||'')?profile.pin:''}}catch{}return null}
-function openDeviceSetup(){const setup=document.getElementById('device-setup');setup.classList.toggle('phone',isPhone);setup.classList.add('open');document.getElementById('device-setup-copy').textContent=isPhone?'This phone will appear by name in the controller list. A PIN is optional.':'This name identifies this PC or tablet when it connects to a controller.';setTimeout(()=>document.getElementById('device-name').focus(),50)}
+function openDeviceSetup(){const setup=document.getElementById('device-setup'),name=document.getElementById('device-name'),pin=document.getElementById('device-pin');setup.classList.toggle('phone',isPhone);setup.classList.add('open');document.getElementById('device-setup-title').textContent=deviceProfile?'Edit device details':'Choose a device name';document.getElementById('device-setup-copy').textContent=isPhone?'Change how this controller appears. The optional PIN must contain four numbers.':'Change the name shown to controllers when this screen connects.';document.getElementById('device-setup-error').textContent='';name.value=deviceProfile?.name||'';pin.value=isPhone?deviceProfile?.pin||'':'';setTimeout(()=>name.focus(),50)}
 async function startPhoneController(){
  const status=document.getElementById('phone-status');try{status.textContent='Making controller visible…';if(controllerRoom)await controllerRoom.stop();const rooms=await waitForPartyRooms();controllerRoom=await rooms.createHost({game:'hood-controller-device',name:deviceProfile.name,pin:deviceProfile.pin,onStatus:text=>status.textContent=text,onConnectionRequest:requestPhonePairing,onConnected:()=>status.textContent='Connected'});status.textContent=`${deviceProfile.name} · waiting for game${deviceProfile.pin?' · PIN':''}`}
  catch(error){status.textContent=`Controller unavailable: ${error.message}`}
