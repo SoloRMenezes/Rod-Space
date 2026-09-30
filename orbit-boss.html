@@ -105,7 +105,7 @@ function update(dt){
     state.time += dt; invincible=Math.max(0,invincible-dt);
     // Rotation begins deliberately slow and rises through all twenty bosses.
     // The player's automatic firing interval remains fixed at 0.22 seconds.
-    player.currentSpeed = .55 + (state.lvl-1)*.055;
+    player.currentSpeed = (.78 + (state.lvl-1)*.065) * (state.mobile?1.08:1);
     player.ang += (player.currentSpeed * player.dir) * dt;
     player.r = player.maxRadius * (state.mobile?.93:.85);
 
