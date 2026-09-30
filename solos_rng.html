@@ -165,6 +165,34 @@
             position: relative;
         }
         .inv-slot:active { transform: scale(0.9); }
+        .inv-slot.owned { cursor: pointer; }
+        .inv-slot.owned:hover { transform: translateY(-2px); }
+
+        .collection-detail {
+            position: fixed;
+            inset: 0;
+            z-index: 2500;
+            display: none;
+            place-items: center;
+            padding: 24px;
+            background: rgba(0,0,0,.76);
+            backdrop-filter: blur(8px);
+        }
+        .collection-detail.open { display: grid; }
+        .collection-detail-card {
+            width: min(340px, 100%);
+            padding: 28px;
+            border: 1px solid #343947;
+            border-radius: 10px;
+            background: #12151b;
+            box-shadow: 0 24px 80px #000b;
+            text-align: center;
+        }
+        .collection-detail-emoji { font-size: 5rem; line-height: 1; margin-bottom: 16px; }
+        .collection-detail-card h2 { margin: 0 0 8px; }
+        .collection-detail-rarity { margin-bottom: 22px; font-size: .82rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+        .collection-detail-count { margin-bottom: 22px; padding: 14px; border: 1px solid #2d3340; border-radius: 7px; background: #0d0f14; }
+        .collection-detail-count strong { display: block; margin-top: 3px; font-size: 1.5rem; color: white; }
 
         .nav-bar {
             position: fixed;
@@ -302,14 +330,14 @@
         <div class="display-area" id="main-display">
             <div id="item-emoji" class="item-emoji-display">📦</div>
             <div class="item-name" id="item-name">The Archive</div>
-            <div class="item-rarity" id="item-rarity" style="color:var(--text-dim); font-size:0.8rem;">12 coins per pull</div>
+            <div class="item-rarity" id="item-rarity" style="color:var(--text-dim); font-size:0.8rem;">10 coins per pull</div>
             <div class="pity-container"><div id="pity-progress"></div></div>
             <div style="font-size: 0.6rem; color: #71717a; margin-top: 8px;">Legendary pity: <span id="pity-val">0</span>/75</div>
         </div>
 
         <div style="display: flex; gap: 12px;">
-            <button class="btn-primary" id="roll-1-btn" onclick="spin(1)">Pull once · 12</button>
-            <button class="btn-primary" id="roll-10-btn" style="background: #27272a;" onclick="spin(5)">Pull five · 60</button>
+            <button class="btn-primary" id="roll-1-btn" onclick="spin(1)">Pull once · 10</button>
+            <button class="btn-primary" id="roll-10-btn" style="background: #27272a;" onclick="spin(5)">Pull five · 50</button>
         </div>
 
         <div style="margin-top: 2.5rem;">
@@ -338,7 +366,7 @@
 
         <div class="shop-card"><h3>🧲 Luck magnet <span id="luck-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Slightly improves every rare drop.</p><button class="btn-primary" onclick="buyUpgrade('luck')">Upgrade · <span id="luck-price">150</span></button></div>
         <div class="shop-card"><h3>🎒 Bigger bag <span id="bag-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Adds four inventory spaces.</p><button class="btn-primary" onclick="buyUpgrade('bag')">Upgrade · <span id="bag-price">120</span></button></div>
-        <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives three pulls every five minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +36</button></div>
+        <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives ten pulls every five minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +100</button></div>
     </div>
 
     <div id="screen-stats" class="screen">
@@ -376,6 +404,16 @@
     </div>
 </div>
 
+<div class="collection-detail" id="collection-detail" role="dialog" aria-modal="true" aria-labelledby="collection-detail-name">
+    <div class="collection-detail-card">
+        <div class="collection-detail-emoji" id="collection-detail-emoji"></div>
+        <h2 id="collection-detail-name"></h2>
+        <div class="collection-detail-rarity" id="collection-detail-rarity"></div>
+        <div class="collection-detail-count">TIMES ROLLED<strong id="collection-detail-count">0</strong></div>
+        <button class="btn-primary" id="collection-detail-close">Close</button>
+    </div>
+</div>
+
 <!-- NAV BAR -->
 <div class="nav-bar">
     <button class="nav-item active" id="nav-game" onclick="showScreen('game')">🎮<span>GAME</span></button>
@@ -385,7 +423,7 @@
 </div>
 
 <script>
-    const SPIN_COST = 12, PITY_LIMIT=75;
+    const SPIN_COST = 10, PITY_LIMIT=75;
     const UPGRADE_BASE_PRICES = { luck: 150, bag: 120 };
     const SELL_VALUES = { Common:5, Uncommon:9, Rare:22, Epic:55, Legendary:150, Mythic:700 };
     const generatePool = () => {
@@ -414,7 +452,7 @@
     ];
 
     let state = {
-        coins: Number.isFinite(parseInt(localStorage.getItem('rng_coins')))?parseInt(localStorage.getItem('rng_coins')):120,
+        coins: Number.isFinite(parseInt(localStorage.getItem('rng_coins')))?parseInt(localStorage.getItem('rng_coins')):300,
         pity: parseInt(localStorage.getItem('rng_pity')) || 0,
         maxInv: Math.max(16,parseInt(localStorage.getItem('rng_bag'))||16),
         luck: Math.max(0,parseInt(localStorage.getItem('rng_luck'))||0),
@@ -422,8 +460,16 @@
         totalLegendary: parseInt(localStorage.getItem('rng_legendaries')) || 0,
         inventory: JSON.parse(localStorage.getItem('rng_inventory')) || [],
         collection: JSON.parse(localStorage.getItem('rng_collection')) || [],
+        itemCounts: JSON.parse(localStorage.getItem('rng_item_counts')) || {},
         lastScrap:parseInt(localStorage.getItem('rng_last_scrap'))||0
     };
+
+    // Older saves did not record lifetime item counts. Preserve the strongest
+    // count we can prove from their current inventory and unlocked collection.
+    if(!localStorage.getItem('rng_item_counts')){
+        state.inventory.forEach(item => state.itemCounts[item.name] = (state.itemCounts[item.name] || 0) + 1);
+        state.collection.forEach(item => state.itemCounts[item.name] = Math.max(1, state.itemCounts[item.name] || 0));
+    }
 
     function save() {
         localStorage.setItem('rng_coins', state.coins);
@@ -432,6 +478,7 @@
         localStorage.setItem('rng_legendaries', state.totalLegendary);
         localStorage.setItem('rng_inventory', JSON.stringify(state.inventory));
         localStorage.setItem('rng_collection', JSON.stringify(state.collection));
+        localStorage.setItem('rng_item_counts',JSON.stringify(state.itemCounts));
         localStorage.setItem('rng_bag',state.maxInv);localStorage.setItem('rng_luck',state.luck);
         localStorage.setItem('rng_last_scrap',state.lastScrap);
         updateUI();
@@ -499,6 +546,7 @@
             }
             
             state.inventory.push({ ...item });
+            state.itemCounts[item.name]=(state.itemCounts[item.name]||0)+1;
             if (!state.collection.some(c => c.name === item.name)) state.collection.push({...item});
             last = item;
         }
@@ -539,7 +587,7 @@
 
     function hardReset() {
         if (confirm("Are you sure? This will wipe ALL progress (Coins, Rolls, Collection).")) {
-            ['rng_coins','rng_pity','rng_rolls','rng_legendaries','rng_inventory','rng_collection','rng_bag','rng_luck','rng_last_scrap'].forEach(key=>localStorage.removeItem(key));
+            ['rng_coins','rng_pity','rng_rolls','rng_legendaries','rng_inventory','rng_collection','rng_item_counts','rng_bag','rng_luck','rng_last_scrap'].forEach(key=>localStorage.removeItem(key));
             location.reload();
         }
     }
@@ -552,12 +600,27 @@
         
         state.coins -= item.price;
         state.inventory.push(item);
+        state.itemCounts[item.name]=(state.itemCounts[item.name]||0)+1;
         if (!state.collection.some(c => c.name === item.name)) state.collection.push(item);
         notify("Bought " + item.name + "!");
         save();
     }
     function buyUpgrade(type){const price=type==='luck'?UPGRADE_BASE_PRICES.luck*(state.luck+1):UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20;if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':'Bag expanded');save();}
-    function scrapRun(){const wait=300000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=36;notify('Recovered 36 coins');save();}
+    function scrapRun(){const wait=300000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=100;notify('Recovered 100 coins');save();}
+
+    function openCollectionDetail(item) {
+        document.getElementById('collection-detail-emoji').textContent=item.emoji;
+        document.getElementById('collection-detail-name').textContent=item.name;
+        const rarity=document.getElementById('collection-detail-rarity');
+        rarity.textContent=item.rarity;
+        rarity.className=`collection-detail-rarity rarity-${item.rarity}`;
+        document.getElementById('collection-detail-count').textContent=state.itemCounts[item.name]||1;
+        document.getElementById('collection-detail').classList.add('open');
+    }
+    function closeCollectionDetail(){document.getElementById('collection-detail').classList.remove('open')}
+    document.getElementById('collection-detail-close').addEventListener('click',closeCollectionDetail);
+    document.getElementById('collection-detail').addEventListener('click',event=>{if(event.target.id==='collection-detail')closeCollectionDetail()});
+    addEventListener('keydown',event=>{if(event.key==='Escape')closeCollectionDetail()});
 
     function renderCollection() {
         const grid = document.getElementById('collection-list');
@@ -571,8 +634,14 @@
             // Apply proper rarity styling to the collection slots
             d.style.opacity = owned ? "1" : "0.2";
             if (owned) {
+                d.classList.add('owned');
                 d.style.borderColor = `var(--${item.rarity.toLowerCase()})`;
                 d.innerHTML = `${item.emoji}`;
+                d.tabIndex=0;
+                d.setAttribute('role','button');
+                d.setAttribute('aria-label',`View ${item.name}`);
+                d.addEventListener('click',()=>openCollectionDetail(item));
+                d.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openCollectionDetail(item)}});
             } else {
                 d.innerHTML = `?`;
             }
