@@ -37,24 +37,29 @@
 
 <script>
 const canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
-const state={w:0,h:0,lvl:1,running:false,started:false,time:0,cx:0,cy:0};
+const state={w:0,h:0,lvl:1,running:false,started:false,time:0,cx:0,cy:0,mobile:false,scale:1};
 const player={ang:0, r:200, maxRadius:200, currentSpeed:0.8, dir:1, lastShot:0};
 const boss={hp:50, maxHp:50, r:50, fireT:0, hue:190};
 const bullets=[], stars=[], lasers=[], hearts=[];
 let keyLocked = false, shields=3, invincible=0;
+const hud={hp:document.getElementById("hp-bar"),lvl:document.getElementById("lvl"),shields:document.getElementById("scr"),pattern:document.getElementById("pattern")};
+const hudCache={hp:-1,lvl:-1,shields:-1,pattern:""};
 
 const resize=()=>{
     canvas.width=state.w=innerWidth; canvas.height=state.h=innerHeight;
     state.cx=innerWidth/2; state.cy=innerHeight/2;
     const minDim = Math.min(state.w, state.h);
-    player.maxRadius = (minDim / 2) - 40; 
-    player.r=player.maxRadius*.85;
+    state.mobile=!!globalThis.matchMedia?.('(pointer:coarse)').matches||minDim<600;
+    state.scale=state.mobile?.72:1;
+    player.maxRadius = (minDim / 2) - (state.mobile?14:40);
+    player.r=player.maxRadius*(state.mobile?.93:.85);
+    boss.r=state.mobile?34:50;
     generateStars();
 };
 
 function generateStars(){
     stars.length = 0;
-    for(let i=0; i<150; i++){
+    for(let i=0,n=state.mobile?65:150; i<n; i++){
         stars.push({x: Math.random()*state.w, y: Math.random()*state.h, s: Math.random()*2, o: Math.random(), v: Math.random() * 0.5 });
     }
 }
@@ -63,7 +68,7 @@ addEventListener("resize",resize); resize();
 
 function handleInteraction() {
     if(!state.started) { state.started = true; state.running = true; document.getElementById("centerMsg").classList.add("hidden"); return; }
-    if(!state.running) { state.lvl=1;state.time=0;state.won=false;player.lastShot=0;player.ang=0;player.dir=1;shields=3;initLevel();state.running=true;document.getElementById("centerMsg").classList.add("hidden");return; }
+    if(!state.running) { state.lvl=1;state.time=0;state.won=false;player.lastShot=0;player.ang=0;player.dir=1;shields=3;initLevel(false);state.running=true;document.getElementById("centerMsg").classList.add("hidden");return; }
     player.dir *= -1; 
 }
 
@@ -71,11 +76,16 @@ addEventListener("keydown", (e) => { if((e.code==='Space' || e.code==='Enter') &
 addEventListener("keyup", (e) => { if(e.code==='Space' || e.code==='Enter') keyLocked = false; });
 addEventListener("pointerdown", () => handleInteraction());
 
-function initLevel(){
+function initLevel(preserveEnemyShots=false){
     boss.maxHp = 18 + state.lvl*6; boss.hp = boss.maxHp;
-    bullets.length = 0;
+    if(preserveEnemyShots){
+        // Enemy hazards remain live between bosses; remove only player shots so
+        // the next boss cannot take damage from bullets fired at the last one.
+        for(let i=bullets.length-1;i>=0;i--)if(bullets[i].p)bullets.splice(i,1);
+    }else bullets.length = 0;
     lasers.length = 0;
     hearts.length = 0;
+    boss.attackDelay=1.5;
     boss.fireT=-1;
     boss.aimT=0;
     boss.laserT=state.lvl>=4?1.4:99;
@@ -96,7 +106,7 @@ function update(dt){
     // The player's automatic firing interval remains fixed at 0.22 seconds.
     player.currentSpeed = .55 + (state.lvl-1)*.055;
     player.ang += (player.currentSpeed * player.dir) * dt;
-    player.r = player.maxRadius * 0.85;
+    player.r = player.maxRadius * (state.mobile?.93:.85);
 
     const px = state.cx + Math.cos(player.ang)*player.r;
     const py = state.cy + Math.sin(player.ang)*player.r;
@@ -107,8 +117,11 @@ function update(dt){
         bullets.push({x:px, y:py, vx:Math.cos(lookAngle)*1000, vy:Math.sin(lookAngle)*1000, p:true});
     }
 
+    boss.attackDelay=Math.max(0,boss.attackDelay-dt);
+    const bossCanAttack=boss.attackDelay===0;
+
     boss.fireT += dt;
-    if(boss.fireT > Math.max(0.58, 2.0 - state.lvl*0.1)){
+    if(bossCanAttack && boss.fireT > Math.max(0.58, 2.0 - state.lvl*0.1)){
         boss.fireT = 0;
         const count=Math.min(12,6+Math.floor((state.lvl-1)/2));
         for(let i=0; i<count; i++){
@@ -126,7 +139,7 @@ function update(dt){
 
     // From boss 3 onward, aimed shots punish reversing at the same point every time.
     boss.aimT += dt;
-    if(state.lvl>=3 && boss.aimT>Math.max(1.15,3-state.lvl*.12)){
+    if(bossCanAttack && state.lvl>=3 && boss.aimT>Math.max(1.15,3-state.lvl*.12)){
         boss.aimT=0;
         const a=Math.atan2(py-state.cy,px-state.cx);
         const spread=Math.min(.34,(state.lvl-3)*.035);
@@ -141,12 +154,12 @@ function update(dt){
     // longer on later bosses, so post-5 levels do not loop back to boss 1.
     if(state.lvl>=6){
         boss.specialT-=dt;
-        if(boss.specialT<=0 && boss.spiralShots===0){
+        if(bossCanAttack && boss.specialT<=0 && boss.spiralShots===0){
             boss.spiralShots=Math.min(34,12+state.lvl*2);
             boss.spiralIndex=0;
             boss.specialT=Math.max(3.8,7-state.lvl*.18);
         }
-        if(boss.spiralShots>0){
+        if(bossCanAttack && boss.spiralShots>0){
             boss.spiralShotT-=dt;
             if(boss.spiralShotT<=0){
                 boss.spiralShotT=.105;
@@ -162,11 +175,11 @@ function update(dt){
     // Boss 15+ launches heavy rounds that split halfway to the orbit.
     if(state.lvl>=15){
         boss.heavyT-=dt;
-        if(boss.heavyT<=0){
+        if(bossCanAttack && boss.heavyT<=0){
             boss.heavyT=Math.max(2.1,4.3-(state.lvl-15)*.22);
             const a=Math.atan2(py-state.cy,px-state.cx);
             const speed=player.maxRadius*.48;
-            bullets.push({x:state.cx,y:state.cy,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,p:false,kind:"heavy",r:12,splitAt:player.r*.5});
+            bullets.push({x:state.cx,y:state.cy,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,p:false,kind:"heavy",r:state.mobile?8.5:12,splitAt:player.r*.5});
         }
     }
 
@@ -191,33 +204,48 @@ function update(dt){
             if(h.timer<=0){hearts.splice(i,1);continue;}
         }
         const hx=state.cx+Math.cos(h.angle)*h.radius,hy=state.cy+Math.sin(h.angle)*h.radius;
-        if((hx-px)**2+(hy-py)**2<22**2){shields++;hearts.splice(i,1);}
+        const heartReach=state.mobile?16:22;
+        if((hx-px)**2+(hy-py)**2<heartReach**2){shields++;hearts.splice(i,1);}
     }
 
-    // Lasers track faintly, lock in place, then fire. Higher bosses can prepare two.
+    // A single laser sits directly on the player, then locks briefly before firing.
+    // Multi-laser attacks are stationary arena dividers: the warning lines never chase.
     boss.laserT -= dt;
-    if(state.lvl>=4 && boss.laserT<=0 && lasers.length===0){
+    if(bossCanAttack && state.lvl>=4 && boss.laserT<=0 && lasers.length===0){
         const count=state.lvl>=10?3:state.lvl>=7?2:1;
-        const tracking=3+Math.random()*2;
-        for(let i=0;i<count;i++) lasers.push({angle:player.ang+i*Math.PI*2/count,phase:"track",timer:tracking,tracking});
+        const tracking=count===1?3+Math.random()*2:1.45+Math.random()*.55;
+        const lockTime=count===1?1:.42,fireTime=count===1?.42:.62;
+        const baseAngle=count===1?player.ang:Math.random()*Math.PI*2;
+        const offsets=count===3?[0,1.5+Math.random()*.5,3.65+Math.random()*.6]:count===2?[0,2.35+Math.random()*1.15]:[0];
+        for(let i=0;i<count;i++) lasers.push({
+            angle:baseAngle+offsets[i],
+            phase:count===1?"track":"divide",
+            timer:tracking,
+            tracking,
+            lockTime,
+            fireTime
+        });
         boss.laserT=Math.max(4.5,9-state.lvl*.22);
     }
     for(let i=lasers.length-1;i>=0;i--){
         const l=lasers[i];
         if(l.phase==="track"){
-            const target=Math.atan2(py-state.cy,px-state.cx);
-            let delta=Math.atan2(Math.sin(target-l.angle),Math.cos(target-l.angle));
-            l.angle+=delta*Math.min(1,dt*3.2);
+            // No trailing: the faint warning ray remains exactly over the ship.
+            l.angle=player.ang;
             l.timer-=dt;
-            if(l.timer<=0){l.phase="lock";l.timer=.65;}
+            if(l.timer<=0){l.phase="lock";l.timer=l.lockTime;}
+        } else if(l.phase==="divide"){
+            // Uneven dividers stay fixed from the first warning frame onward.
+            l.timer-=dt;
+            if(l.timer<=0){l.phase="lock";l.timer=l.lockTime;}
         } else if(l.phase==="lock"){
             l.timer-=dt;
-            if(l.timer<=0){l.phase="fire";l.timer=.42;}
+            if(l.timer<=0){l.phase="fire";l.timer=l.fireTime;}
         } else {
             l.timer-=dt;
             const distance=Math.abs(Math.sin(player.ang-l.angle))*player.r;
             const facing=Math.cos(player.ang-l.angle)>0;
-            if(facing && distance<13 && invincible===0){shields--;invincible=1.5;if(shields===0){endGame();break;}}
+            if(facing && distance<13*state.scale && invincible===0){shields--;invincible=1.5;if(shields===0){endGame();break;}}
             if(l.timer<=0)lasers.splice(i,1);
         }
     }
@@ -228,7 +256,7 @@ function update(dt){
             const base=Math.atan2(b.vy,b.vx),pieces=2+Math.floor(Math.random()*3);
             for(let piece=0;piece<pieces;piece++){
                 const spread=(piece-(pieces-1)/2)*.22,speed=player.maxRadius*(.92+state.lvl*.018);
-                bullets.push({x:b.x,y:b.y,vx:Math.cos(base+spread)*speed,vy:Math.sin(base+spread)*speed,p:false,kind:"shard",r:5});
+                bullets.push({x:b.x,y:b.y,vx:Math.cos(base+spread)*speed,vy:Math.sin(base+spread)*speed,p:false,kind:"shard",r:state.mobile?3.5:5});
             }
             bullets.splice(i,1);continue;
         }
@@ -236,24 +264,25 @@ function update(dt){
             bullets.splice(i,1);boss.hp--;
             if(boss.hp<=0){
                 if(state.lvl>=20)completeGame();
-                else{state.lvl++;initLevel();}
+                else{state.lvl++;initLevel(true);}
                 break;
             }
             continue;
         }
-        if(!b.p && invincible===0 && (b.x-px)**2+(b.y-py)**2<(10+(b.r||4))**2) {
+        if(!b.p && invincible===0 && (b.x-px)**2+(b.y-py)**2<((state.mobile?7:10)+(b.r||(state.mobile?3:4)))**2) {
             bullets.splice(i,1);shields--;invincible=1.5;
             if(shields===0){endGame();break;}
             continue;
         }
-        if(b.x<0||b.x>state.w||b.y<0||b.y>state.h)bullets.splice(i,1);
+        if((!b.p&&Math.hypot(b.x-state.cx,b.y-state.cy)>player.r+55)||(b.x<0||b.x>state.w||b.y<0||b.y>state.h))bullets.splice(i,1);
     }
 
     boss.hue = 190 - (1 - boss.hp/boss.maxHp) * 190;
-    document.getElementById("hp-bar").style.width = (boss.hp/boss.maxHp)*100 + "%";
-    document.getElementById("lvl").innerText = state.lvl;
-    document.getElementById("scr").innerText = shields;
-    document.getElementById("pattern").innerText = state.lvl>=20?"FINAL":state.lvl>=15?"SPLITTER":state.lvl>=10?"OVERDRIVE":state.lvl>=7?"CROSSFIRE":state.lvl>=6?"SPIRAL":state.lvl>=4?"LASER":state.lvl>=3?"HUNTER":"RADIAL";
+    const hp=Math.round((boss.hp/boss.maxHp)*1000)/10,pattern=state.lvl>=20?"FINAL":state.lvl>=15?"SPLITTER":state.lvl>=10?"OVERDRIVE":state.lvl>=7?"CROSSFIRE":state.lvl>=6?"SPIRAL":state.lvl>=4?"LASER":state.lvl>=3?"HUNTER":"RADIAL";
+    if(hudCache.hp!==hp){hudCache.hp=hp;hud.hp.style.width=hp+"%"}
+    if(hudCache.lvl!==state.lvl){hudCache.lvl=state.lvl;hud.lvl.innerText=state.lvl}
+    if(hudCache.shields!==shields){hudCache.shields=shields;hud.shields.innerText=shields}
+    if(hudCache.pattern!==pattern){hudCache.pattern=pattern;hud.pattern.innerText=pattern}
 }
 
 function endGame(){
@@ -270,23 +299,24 @@ function completeGame(){
 
 function drawStars(){
     ctx.fillStyle = "#fff";
-    stars.forEach(s => { ctx.globalAlpha = s.o * Math.abs(Math.sin(state.time + s.x)); ctx.fillRect(s.x, s.y, s.s, s.s); });
+    stars.forEach(s => { ctx.globalAlpha = state.mobile?s.o*.72:s.o*Math.abs(Math.sin(state.time+s.x)); ctx.fillRect(s.x,s.y,s.s,s.s); });
     ctx.globalAlpha = 1;
 }
 
 function drawBoss(){
     const t = state.time, h = boss.hue;
     ctx.save(); ctx.translate(state.cx, state.cy); ctx.strokeStyle = `hsla(${h}, 100%, 50%, 0.3)`; ctx.rotate(t * 0.3);
-    for(let i=0; i<6; i++){ ctx.rotate(Math.PI/3); ctx.strokeRect(boss.r + 10, -15, 10, 30); }
+    const satelliteW=10*state.scale,satelliteH=30*state.scale;
+    for(let i=0; i<6; i++){ ctx.rotate(Math.PI/3); ctx.strokeRect(boss.r+10*state.scale,-satelliteH/2,satelliteW,satelliteH); }
     ctx.rotate(-t * 0.8); ctx.strokeStyle = `hsl(${h}, 100%, 50%)`; ctx.lineWidth = 3;
     ctx.beginPath(); for(let i=0; i<6; i++){ const a = (i/6)*Math.PI*2; ctx.lineTo(Math.cos(a)*boss.r, Math.sin(a)*boss.r); }
     ctx.closePath(); ctx.stroke();
-    ctx.fillStyle = `hsla(${h}, 100%, 70%, ${0.2 + Math.sin(t*10)*0.1})`; ctx.beginPath(); ctx.arc(0,0, 20 + Math.sin(t*5)*5, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = `hsla(${h}, 100%, 70%, ${0.2 + Math.sin(t*10)*0.1})`; ctx.beginPath(); ctx.arc(0,0,(20+Math.sin(t*5)*5)*state.scale,0,Math.PI*2);ctx.fill();
     ctx.restore();
 }
 
 function drawPlayer(px, py, ang){
-    ctx.save(); ctx.translate(px, py); ctx.rotate(ang);
+    ctx.save(); ctx.translate(px, py); ctx.rotate(ang);ctx.scale(state.scale,state.scale);
     ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.moveTo(20, 0); ctx.lineTo(-12, -10); ctx.lineTo(-8, 0); ctx.lineTo(-12, 10); ctx.closePath(); ctx.fill();
     ctx.fillStyle = "#00f2ff"; ctx.beginPath(); ctx.arc(-10, 0, 4 + Math.sin(state.time*20)*2, 0, Math.PI*2); ctx.fill();
     ctx.restore();
@@ -297,14 +327,14 @@ function drawLasers(){
         const length=Math.hypot(state.w,state.h), active=l.phase==="fire";
         ctx.save();ctx.translate(state.cx,state.cy);ctx.rotate(l.angle);
         ctx.strokeStyle=active?"#ff304f":l.phase==="lock"?"rgba(255,48,79,.55)":"rgba(255,80,100,.16)";
-        ctx.lineWidth=active?18:2+(1-l.timer/(l.tracking||1))*3;
-        ctx.shadowColor="#ff304f";ctx.shadowBlur=active?24:0;
+        ctx.lineWidth=(active?18:l.phase==="lock"?5:3)*state.scale;
+        ctx.shadowColor="#ff304f";ctx.shadowBlur=active&&!state.mobile?24:0;
         ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length,0);ctx.stroke();ctx.restore();
     });
 }
 
 function drawHeart(x,y,scale=1){
-    ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle="#35bfff";ctx.shadowColor="#35bfff";ctx.shadowBlur=16;
+    ctx.save();ctx.translate(x,y);ctx.scale(scale*state.scale,scale*state.scale);ctx.fillStyle="#35bfff";ctx.shadowColor="#35bfff";ctx.shadowBlur=state.mobile?0:16;
     ctx.beginPath();ctx.moveTo(0,10);ctx.bezierCurveTo(-18,-2,-12,-16,0,-8);ctx.bezierCurveTo(12,-16,18,-2,0,10);ctx.fill();ctx.restore();
 }
 
@@ -316,11 +346,11 @@ function draw(){
     ctx.strokeStyle="#ffffff18";ctx.beginPath();ctx.arc(state.cx,state.cy,player.r,0,Math.PI*2);ctx.stroke();
     drawBoss(); drawLasers(); if(invincible===0 || Math.floor(state.time*10)%2===0)drawPlayer(px, py, lookAngle);
     hearts.forEach(h=>drawHeart(state.cx+Math.cos(h.angle)*h.radius,state.cy+Math.sin(h.angle)*h.radius,h.phase==="hold"?1+.12*Math.sin(state.time*8):.85));
-    ctx.beginPath(); bullets.forEach(b => { if(!b.p&&!b.kind){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 4, 0, 7); }});
+    ctx.beginPath(); bullets.forEach(b => { if(!b.p&&!b.kind){ const r=state.mobile?3:4;ctx.moveTo(b.x+r,b.y);ctx.arc(b.x,b.y,r,0,7); }});
     ctx.fillStyle = "#ff3333"; ctx.fill();
-    ctx.beginPath(); bullets.forEach(b => { if(!b.p&&b.kind){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, b.r||(b.kind==="spiral"?5:4), 0, 7); }});
+    ctx.beginPath(); bullets.forEach(b => { if(!b.p&&b.kind){ const r=b.r||(b.kind==="spiral"?(state.mobile?3.5:5):(state.mobile?3:4));ctx.moveTo(b.x+r,b.y);ctx.arc(b.x,b.y,r,0,7); }});
     ctx.fillStyle = "#ff9f1c"; ctx.fill();
-    ctx.beginPath(); bullets.forEach(b => { if(b.p){ ctx.moveTo(b.x, b.y); ctx.arc(b.x, b.y, 3, 0, 7); }});
+    ctx.beginPath(); bullets.forEach(b => { if(b.p){ const r=state.mobile?2:3;ctx.moveTo(b.x+r,b.y);ctx.arc(b.x,b.y,r,0,7); }});
     ctx.fillStyle = "#00f2ff"; ctx.fill();
 
 }

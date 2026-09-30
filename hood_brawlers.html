@@ -276,11 +276,16 @@
         .panel-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:18px; }
         .status { color:#9fb0c7;font-size:13px;min-height:20px; }
         .controller-panel { width:min(760px,100%);max-height:calc(100% - 24px);overflow:hidden;display:flex;flex-direction:column; }
-        .controller-layout { display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:28px;min-height:0;flex:1; }
+        .controller-layout { min-height:0;flex:1;overflow:auto; }
         .controller-copy { align-self:center;line-height:1.55;color:#dbe5f2; }
         .controller-copy p { margin:0 0 18px; }
-        #host-qr { width:clamp(180px,31vh,260px);height:clamp(180px,31vh,260px);background:white;padding:8px;display:grid;place-items:center;flex:none; }
-        #host-qr canvas,#host-qr img { width:100%!important;height:100%!important;display:block;image-rendering:pixelated; }
+        #controller-browser { display:grid;gap:10px;margin-top:14px; }
+        .controller-device { display:grid;grid-template-columns:minmax(0,1fr) 100px 110px;gap:10px;align-items:center;padding:12px;border:1px solid #40516a;border-radius:7px;background:#172238; }
+        .controller-device strong { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .controller-device input { width:100%;box-sizing:border-box;border:1px solid #52627a;background:#0d1524;color:white;border-radius:5px;padding:10px;font:inherit;text-align:center;letter-spacing:3px; }
+        .controller-device .small-btn { margin:0; }
+        .controller-device.connected { border-color:#22c55e;background:#102c25; }
+        .controller-device-status { color:#9fb0c7;font-size:12px; }
         .controller-actions { flex-wrap:wrap;justify-content:center;margin-top:18px;padding-top:14px;border-top:1px solid #34445b; }
         .controller-actions .small-btn,.controller-actions .btn { width:190px;min-height:44px;margin:0; }
         #controller-count { color:#86efac;font-size:12px;margin-top:12px; }
@@ -314,6 +319,16 @@
         .phone-setting { display:grid;grid-template-columns:110px 1fr 48px;gap:10px;align-items:center;margin:15px 0; }
         .phone-setting input { width:100%; }
         .phone-setting output { text-align:right;color:#b1242b;font-weight:900; }
+        #device-setup { position:fixed;inset:0;z-index:140;display:none;align-items:center;justify-content:center;padding:18px;background:#070b16f2; }
+        #device-setup.open { display:flex; }
+        .device-setup-card { width:min(430px,100%);background:#111a2b;border:1px solid #52627a;border-radius:10px;padding:24px;box-shadow:0 20px 70px #000; }
+        .device-setup-card h2 { margin:0 0 8px; }
+        .device-setup-card p { color:#9fb0c7;margin:0 0 20px; }
+        .device-field { display:grid;gap:7px;margin:14px 0; }
+        .device-field input { border:1px solid #52627a;background:#0b1220;color:white;border-radius:6px;padding:12px;font:inherit; }
+        #device-pin-field { display:none; }
+        #device-setup.phone #device-pin-field { display:grid; }
+        #device-setup-error { min-height:20px;color:#fb7185;font-size:13px; }
         html,body { width:100%;height:100%;margin:0;overflow:hidden; }
         body { min-height:100svh;padding:0;gap:0; }
         #game-container { width:100vw;height:100svh;max-width:none;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none; }
@@ -335,7 +350,7 @@
             .controller-panel { padding:15px; }
             .controller-layout { gap:14px; }
             .controller-copy { font-size:12px; }
-            #host-qr { width:clamp(145px,28vh,210px);height:clamp(145px,28vh,210px); }
+            .controller-device { grid-template-columns:minmax(0,1fr) 82px 90px;gap:6px;padding:9px; }
             .controller-actions { gap:6px;margin-top:10px;padding-top:10px; }
             .controller-actions .small-btn,.controller-actions .btn { width:auto;flex:1;min-width:120px;padding:9px 7px;font-size:12px; }
         }
@@ -415,14 +430,14 @@
 
         <div id="pause-screen" class="screen"><h2>Paused</h2><button class="btn" onclick="togglePause()">Resume</button><button class="btn secondary" onclick="openSettings()">Settings</button><button class="btn secondary" onclick="resetToMenu()">Main menu</button></div>
         <div id="settings" class="modal"><div class="panel"><h2>Controls</h2><div id="bind-error" class="status"></div><div class="settings-grid"><section><h3>Player 1</h3><div id="p1-binds"></div></section><section><h3>Player 2</h3><div id="p2-binds"></div></section></div><div class="panel-actions"><button class="small-btn" onclick="resetAllBinds()">Reset all</button><button class="btn" onclick="closeSettings()">Done</button></div></div></div>
-        <div id="controllers" class="modal"><div class="panel controller-panel"><h2>Controllers</h2><div class="controller-layout"><div class="controller-copy"><p>Scan this QR with the phone’s normal Camera app. It opens the controller and connects automatically.</p><div id="lan-status" class="status"></div></div><div id="host-qr"></div></div><div class="panel-actions controller-actions"><button class="small-btn" onclick="createControllerInvite()">New invite</button><button class="btn" onclick="closeControllers()">Done</button></div></div></div>
+        <div id="controllers" class="modal"><div class="panel controller-panel"><h2>Connect controllers</h2><div class="controller-copy"><p>Open Hood Brawlers on a phone using the same Wi-Fi. Select its name below.</p><div id="lan-status" class="status"></div></div><div class="controller-layout"><div id="controller-browser"></div></div><div class="panel-actions controller-actions"><button class="small-btn" onclick="startControllerDiscovery()">Refresh</button><button class="btn" onclick="closeControllers()">Done</button></div></div></div>
         <canvas id="gameCanvas" aria-label="Rooftop fighting arena"></canvas>
     </div>
 
     <div id="match-actions"><button onclick="togglePause()">Pause · Esc</button><button onclick="resetToMenu()">Menu</button></div>
     <p id="controls-guide"></p>
-    <div id="phone-controller"><button id="phone-fullscreen-button" aria-label="Enter fullscreen" title="Fullscreen">⛶</button><button id="phone-settings-button" aria-label="Controller settings">⚙</button><div id="phone-status">Open this controller from the game’s QR</div><div id="phone-fullscreen-notice" role="status" aria-live="polite"></div><div id="phone-pad"><div id="phone-stick"><div id="phone-shaft"></div><div id="phone-knob"></div></div><div class="phone-buttons"><button class="phone-action" data-phone-action="a">A</button><button class="phone-action" data-phone-action="b">B</button></div></div><div id="phone-settings"><div class="phone-settings-card"><h2>Button layout</h2><label class="phone-setting"><span>Size</span><input id="phone-size" type="range" min="64" max="140" step="2"><output></output></label><label class="phone-setting"><span>From right</span><input id="phone-right" type="range" min="8" max="160" step="2"><output></output></label><label class="phone-setting"><span>From bottom</span><input id="phone-bottom" type="range" min="8" max="220" step="2"><output></output></label><label class="phone-setting"><span>Spacing</span><input id="phone-gap" type="range" min="4" max="70" step="2"><output></output></label><div class="panel-actions"><button id="phone-layout-reset" class="small-btn">Reset</button><button id="phone-settings-done" class="btn">Done</button></div></div></div></div>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <div id="phone-controller"><button id="phone-fullscreen-button" aria-label="Enter fullscreen" title="Fullscreen">⛶</button><button id="phone-settings-button" aria-label="Controller settings">⚙</button><div id="phone-status">Making controller visible…</div><div id="phone-fullscreen-notice" role="status" aria-live="polite"></div><div id="phone-pad"><div id="phone-stick"><div id="phone-shaft"></div><div id="phone-knob"></div></div><div class="phone-buttons"><button class="phone-action" data-phone-action="a">A</button><button class="phone-action" data-phone-action="b">B</button></div></div><div id="phone-settings"><div class="phone-settings-card"><h2>Button layout</h2><label class="phone-setting"><span>Size</span><input id="phone-size" type="range" min="64" max="140" step="2"><output></output></label><label class="phone-setting"><span>From right</span><input id="phone-right" type="range" min="8" max="160" step="2"><output></output></label><label class="phone-setting"><span>From bottom</span><input id="phone-bottom" type="range" min="8" max="220" step="2"><output></output></label><label class="phone-setting"><span>Spacing</span><input id="phone-gap" type="range" min="4" max="70" step="2"><output></output></label><div class="panel-actions"><button id="phone-layout-reset" class="small-btn">Reset</button><button id="phone-settings-done" class="btn">Done</button></div></div></div></div>
+    <div id="device-setup"><form class="device-setup-card" id="device-setup-form"><h2>Choose a device name</h2><p id="device-setup-copy">This name identifies this device when connecting controllers.</p><label class="device-field"><span>Name</span><input id="device-name" maxlength="20" autocomplete="nickname" placeholder="e.g. Rodrigo’s phone" required></label><label class="device-field" id="device-pin-field"><span>Optional controller PIN</span><input id="device-pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="4 digits or leave blank"></label><div id="device-setup-error"></div><div class="panel-actions"><button class="btn" type="submit">Continue</button></div></form></div>
     <script src="./party-lan.js"></script>
     <script type="module" src="./party-rooms.js"></script>
     <div hidden><div id="touch-controls"><div id="move-zone"><div id="move-stick"><div id="move-thumb"></div></div></div><div id="touch-actions"></div></div><span id="touch-tip"></span></div>
