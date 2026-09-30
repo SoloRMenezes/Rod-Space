@@ -48,10 +48,21 @@ async function createHost({game,name,pin='',onConnected=()=>{},onStatus=()=>{},o
   const pinHash=await hash(`${roomRef.id}:${pin}`);
   const lan=PartyLan.host();
   const pending=new Map();
+  const relayPeers=new Map(),relayWrites=new Map();
+  let relaySequence=0;
+  const directBroadcast=lan.broadcast.bind(lan);
+  lan.broadcast=(type,payload)=>{
+    directBroadcast(type,payload);
+    relayPeers.forEach((peerRef,peerId)=>{
+      const previous=relayWrites.get(peerId)||Promise.resolve();
+      const next=previous.then(()=>updateDoc(peerRef,{relayMessage:{type,payload,sequence:++relaySequence}})).catch(()=>{});
+      relayWrites.set(peerId,next);
+    });
+  };
   let stopped=false;
   const publish=()=>setDoc(roomRef,{game,name,ownerUid:user.uid,locked:!!pin,pinHash,players:1,createdAt:serverTimestamp(),updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE});
   await publish();
-  const heartbeat=setInterval(()=>updateDoc(roomRef,{updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE,players:1+lan.guests.filter(guest=>guest.channel?.readyState==='open').length}).catch(()=>{}),25_000);
+  const heartbeat=setInterval(()=>updateDoc(roomRef,{updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE,players:1+lan.guests.filter(guest=>guest.channel?.readyState==='open').length+relayPeers.size}).catch(()=>{}),25_000);
   const stopPeers=onSnapshot(collection(roomRef,'peers'),snapshot=>snapshot.docs.forEach(async item=>{
     const data=item.data();
     if(data.status==='requesting'&&!pending.has(item.id)){
@@ -70,11 +81,17 @@ async function createHost({game,name,pin='',onConnected=()=>{},onStatus=()=>{},o
       const invite=pending.get(item.id);pending.set(item.id,true);
       try{onStatus(`${data.name} is connecting`);const guest=await invite.accept(data.answer);guest.meta.name=data.name;await updateDoc(item.ref,{status:'connecting'})}catch(error){await updateDoc(item.ref,{status:'error',message:error.message})}
     }
+    if(data.status==='relay'&&!relayPeers.has(item.id)){
+      relayPeers.set(item.id,item.ref);
+      onStatus(`${data.name} connected`);
+      await updateDoc(item.ref,{status:'connected',transport:'relay'});
+      onConnected({meta:{id:item.id,name:data.name},channel:{readyState:'open'},relay:true});
+    }
   }));
   lan.on('open',async guest=>{
     const peerId=guest.meta.id;
     if(peerId)updateDoc(doc(roomRef,'peers',peerId),{status:'connected'}).catch(()=>{});
-    updateDoc(roomRef,{players:1+lan.guests.filter(item=>item.channel?.readyState==='open').length,updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE}).catch(()=>{});
+    updateDoc(roomRef,{players:1+lan.guests.filter(item=>item.channel?.readyState==='open').length+relayPeers.size,updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE}).catch(()=>{});
     onConnected(guest);
   });
   const stop=async()=>{if(stopped)return;stopped=true;clearInterval(heartbeat);stopPeers();lan.close();await deleteDoc(roomRef).catch(()=>{})};
@@ -90,7 +107,13 @@ async function join(room,{name,pin='',onStatus=()=>{}}){
   const peerRef=doc(collection(roomRef,'peers'));
   await setDoc(peerRef,{guestUid:user.uid,name,pinHash:supplied,status:'requesting',createdAt:serverTimestamp()});
   return new Promise((resolve,reject)=>{
-    let client=null,finished=false;
+    let client=null,finished=false,fallbackTimer=0,lastRelaySequence=0;
+    const relayListeners=new Map();
+    const relayClient={
+      on(type,handler){if(!relayListeners.has(type))relayListeners.set(type,new Set());relayListeners.get(type).add(handler);return()=>relayListeners.get(type)?.delete(handler)},
+      close(){relayListeners.get('close')?.forEach(handler=>handler())}
+    };
+    const emitRelay=(type,value)=>relayListeners.get(type)?.forEach(handler=>handler(value));
     const stop=onSnapshot(peerRef,async snapshot=>{
       const data=snapshot.data();if(!data)return;
       if(data.status==='rejected'){stop();deleteDoc(peerRef).catch(()=>{});reject(Error(data.message||'Connection declined'));return}
@@ -100,10 +123,13 @@ async function join(room,{name,pin='',onStatus=()=>{}}){
           onStatus('Connecting…');
           client=await PartyLan.join(data.offer,{name,roomId:room.id,peerId:peerRef.id});
           await updateDoc(peerRef,{answer:client.answer,status:'answered'});
-          client.on('open',()=>{if(finished)return;finished=true;onStatus(`Connected to ${room.name}`);resolve({client,room,peerRef,stop})});
+          client.on('open',()=>{if(finished)return;finished=true;clearTimeout(fallbackTimer);onStatus(`Connected to ${room.name}`);resolve({client,room,peerRef,stop})});
           client.on('close',()=>onStatus('Host disconnected'));
+          fallbackTimer=setTimeout(()=>{if(!finished){client?.close();client=null;onStatus('Switching connection route…');updateDoc(peerRef,{status:'relay'}).catch(error=>reject(error))}},8_000);
         }catch(error){stop();reject(error)}
       }
+      if(data.status==='connected'&&data.transport==='relay'&&!finished){finished=true;clearTimeout(fallbackTimer);onStatus(`Connected to ${room.name}`);resolve({client:relayClient,room,peerRef,stop})}
+      if(data.relayMessage?.sequence>lastRelaySequence){lastRelaySequence=data.relayMessage.sequence;emitRelay('message',{data:{type:data.relayMessage.type,payload:data.relayMessage.payload}})}
     },error=>reject(error));
     setTimeout(()=>{if(!finished){stop();client?.close();reject(Error('The controller did not finish connecting'))}},35_000);
   });
