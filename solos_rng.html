@@ -279,8 +279,6 @@
         .rarity-table td { padding: 8px 0; border-bottom: 1px solid #27272a; }
         .rarity-table td:last-child { text-align: right; color: var(--text-main); font-weight: bold; }
     </style>
-<link rel="stylesheet" href="assets/rod-space-home.css">
-<script defer src="assets/rod-space-home.js"></script>
 </head>
 <body class="home-mode">
 
@@ -304,14 +302,14 @@
         <div class="display-area" id="main-display">
             <div id="item-emoji" class="item-emoji-display">📦</div>
             <div class="item-name" id="item-name">The Archive</div>
-            <div class="item-rarity" id="item-rarity" style="color:var(--text-dim); font-size:0.8rem;">15 coins per pull</div>
+            <div class="item-rarity" id="item-rarity" style="color:var(--text-dim); font-size:0.8rem;">12 coins per pull</div>
             <div class="pity-container"><div id="pity-progress"></div></div>
             <div style="font-size: 0.6rem; color: #71717a; margin-top: 8px;">Legendary pity: <span id="pity-val">0</span>/75</div>
         </div>
 
         <div style="display: flex; gap: 12px;">
-            <button class="btn-primary" id="roll-1-btn" onclick="spin(1)">Pull once · 15</button>
-            <button class="btn-primary" id="roll-10-btn" style="background: #27272a;" onclick="spin(5)">Pull five · 75</button>
+            <button class="btn-primary" id="roll-1-btn" onclick="spin(1)">Pull once · 12</button>
+            <button class="btn-primary" id="roll-10-btn" style="background: #27272a;" onclick="spin(5)">Pull five · 60</button>
         </div>
 
         <div style="margin-top: 2.5rem;">
@@ -340,7 +338,7 @@
 
         <div class="shop-card"><h3>🧲 Luck magnet <span id="luck-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Slightly improves every rare drop.</p><button class="btn-primary" onclick="buyUpgrade('luck')">Upgrade · <span id="luck-price">150</span></button></div>
         <div class="shop-card"><h3>🎒 Bigger bag <span id="bag-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Adds four inventory spaces.</p><button class="btn-primary" onclick="buyUpgrade('bag')">Upgrade · <span id="bag-price">120</span></button></div>
-        <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives one recovery every ten minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +30</button></div>
+        <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives three pulls every five minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +36</button></div>
     </div>
 
     <div id="screen-stats" class="screen">
@@ -387,7 +385,9 @@
 </div>
 
 <script>
-    const SPIN_COST = 15, PITY_LIMIT=75;
+    const SPIN_COST = 12, PITY_LIMIT=75;
+    const UPGRADE_BASE_PRICES = { luck: 150, bag: 120 };
+    const SELL_VALUES = { Common:5, Uncommon:9, Rare:22, Epic:55, Legendary:150, Mythic:700 };
     const generatePool = () => {
         const pool = [];
         const config = [
@@ -520,7 +520,7 @@
         document.getElementById('stat-rolls').innerText = state.totalRolls;
         document.getElementById('stat-legendary').innerText = state.totalLegendary;
         document.getElementById('collection-count').innerText=`${state.collection.filter(c=>lootPool.some(i=>i.name===c.name)).length} / ${lootPool.length}`;
-        document.getElementById('luck-level').innerText=`Lv ${state.luck}`;document.getElementById('bag-level').innerText=`${state.maxInv} slots`;document.getElementById('luck-price').innerText=150*(state.luck+1);document.getElementById('bag-price').innerText=120+Math.max(0,state.maxInv-16)*20;
+        document.getElementById('luck-level').innerText=`Lv ${state.luck}`;document.getElementById('bag-level').innerText=`${state.maxInv} slots`;document.getElementById('luck-price').innerText=UPGRADE_BASE_PRICES.luck*(state.luck+1);document.getElementById('bag-price').innerText=UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20;
 
         const list = document.getElementById('inventory-list');
         list.innerHTML = '';
@@ -556,8 +556,8 @@
         notify("Bought " + item.name + "!");
         save();
     }
-    function buyUpgrade(type){const price=type==='luck'?250*(state.luck+1):180+Math.max(0,state.maxInv-16)*25;if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':'Bag expanded');save();}
-    function scrapRun(){const wait=600000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=30;notify('Recovered 30 coins');save();}
+    function buyUpgrade(type){const price=type==='luck'?UPGRADE_BASE_PRICES.luck*(state.luck+1):UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20;if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':'Bag expanded');save();}
+    function scrapRun(){const wait=300000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=36;notify('Recovered 36 coins');save();}
 
     function renderCollection() {
         const grid = document.getElementById('collection-list');
@@ -590,7 +590,7 @@
     }
 
     function sellAll() { 
-        const val = state.inventory.reduce((s, x) => s + x.sell, 0);
+        const val = state.inventory.reduce((s, x) => s + (SELL_VALUES[x.rarity] ?? x.sell ?? 0), 0);
         state.coins += val; state.inventory = []; notify("Received " + val + " 🪙"); save(); 
     }
 
