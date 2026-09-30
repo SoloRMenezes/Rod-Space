@@ -199,6 +199,27 @@
             transform: scale(1.2);
         }
 
+        .fighter-roster {
+            display:grid;
+            grid-template-columns:repeat(2,minmax(100px,1fr));
+            gap:7px;
+            width:min(260px,92%);
+            margin:8px 0 12px;
+        }
+        .fighter-option {
+            padding:8px 9px;
+            border:2px solid #3b4b63;
+            border-radius:5px;
+            background:#182235;
+            color:#fff;
+            cursor:pointer;
+            text-align:left;
+        }
+        .fighter-option strong,.fighter-option span { display:block; }
+        .fighter-option strong { font-size:13px;letter-spacing:1px;text-transform:uppercase; }
+        .fighter-option span { color:#91a2b9;font-size:10px;margin-top:2px; }
+        .fighter-option.selected { border-color:#fde047;background:#293248;box-shadow:0 0 0 2px rgba(253,224,71,.18); }
+
         .opening-title {
             font-size: 100px;
             margin-bottom: 20px;
@@ -418,12 +439,14 @@
             <div class="select-half" id="p1-select">
                 <h2 style="color: #00d2ff; margin-bottom: 30px;">P1 SELECT</h2>
                 <div id="p1-preview" class="preview-box"></div>
+                <div class="fighter-roster" id="p1-fighters"></div>
                 <div class="color-picker-grid" id="p1-pickers"></div>
                 <button class="btn" id="p1-ready-btn" onclick="setReady(1)">Ready Up</button>
             </div>
             <div class="select-half" id="p2-select">
                 <h2 style="color: #f85032; margin-bottom: 30px;">P2 SELECT</h2>
                 <div id="p2-preview" class="preview-box"></div>
+                <div class="fighter-roster" id="p2-fighters"></div>
                 <div class="color-picker-grid" id="p2-pickers"></div>
                 <button class="btn" id="p2-ready-btn" onclick="setReady(2)">Ready Up</button>
             </div>
@@ -494,9 +517,15 @@
             '#f1c40f', '#9b59b6', '#1abc9c', 
             '#ecf0f1', '#e67e22', '#34495e'
         ];
+        const FIGHTER_TYPES = {
+            rook: { name:'Rook', tag:'Balanced', speed:1, damage:1, kick:1, body:.98 },
+            brick: { name:'Brick', tag:'Heavy hitter', speed:.82, damage:1.22, kick:1, body:1.14 },
+            ghost: { name:'Ghost', tag:'Fast & light', speed:1.2, damage:.84, kick:1, body:.86 },
+            ace: { name:'Ace', tag:'Kick specialist', speed:1.04, damage:.94, kick:1.28, body:.95 }
+        };
         
-        let characterData={p1:'#3498db',p2:'#e74c3c'};
-        try { const stored=JSON.parse(localStorage.getItem('hood_brawl_config'));for(const key of ['p1','p2'])if(COLORS.includes(stored?.[key]))characterData[key]=stored[key]; } catch {}
+        let characterData={p1:'#3498db',p2:'#e74c3c',p1Fighter:'rook',p2Fighter:'brick'};
+        try { const stored=JSON.parse(localStorage.getItem('hood_brawl_config'));for(const key of ['p1','p2'])if(COLORS.includes(stored?.[key]))characterData[key]=stored[key];for(const key of ['p1Fighter','p2Fighter'])if(FIGHTER_TYPES[stored?.[key]])characterData[key]=stored[key]; } catch {}
         function saveConfig() { try {localStorage.setItem('hood_brawl_config',JSON.stringify(characterData));}catch{} }
         function showCharacterSelect(nextMode='cpu') {
             mode=nextMode;document.body.dataset.mode=mode;document.body.dataset.screen='select';
@@ -510,6 +539,17 @@
 
         function renderPickers() {
             [1, 2].forEach(pNum => {
+                const roster = document.getElementById(`p${pNum}-fighters`);
+                roster.innerHTML = '';
+                Object.entries(FIGHTER_TYPES).forEach(([id,fighter]) => {
+                    const opt=document.createElement('button');
+                    opt.className='fighter-option';
+                    opt.setAttribute('aria-label',`Player ${pNum} fighter ${fighter.name}`);
+                    opt.innerHTML=`<strong>${fighter.name}</strong><span>${fighter.tag}</span>`;
+                    if(characterData[`p${pNum}Fighter`]===id)opt.classList.add('selected');
+                    opt.onclick=()=>{characterData[`p${pNum}Fighter`]=id;saveConfig();renderPickers();updatePreviews()};
+                    roster.appendChild(opt);
+                });
                 const container = document.getElementById(`p${pNum}-pickers`);
                 container.innerHTML = '';
                 COLORS.forEach(color => {
@@ -541,6 +581,7 @@
 
                 const dummy = new Fighter({ position: { x: 20, y: 25 }, velocity: { x: 0, y: 0 } });
                 dummy.color = characterData[`p${pNum}`];
+                dummy.fighterType = characterData[`p${pNum}Fighter`];
                 dummy.draw(mCtx, true);
             });
         }
@@ -571,8 +612,10 @@
             document.getElementById('timer').innerText=timer;
             for(const id of ['start-screen','char-select-screen','game-over','pause-screen'])document.getElementById(id).style.display='none';
             document.getElementById('game-ui').style.display='flex';document.getElementById('match-actions').style.display='flex';
-            document.getElementById('p2-label').innerText=mode==='cpu'?'Computer':'Player 2';canvas.style.display='block';
-            player1.reset({x:240,y:346},characterData.p1);player2.reset({x:724,y:346},characterData.p2);updateHealth();
+            const p1Type=FIGHTER_TYPES[characterData.p1Fighter],p2Type=FIGHTER_TYPES[characterData.p2Fighter];
+            document.getElementById('p1-label').innerText=`P1 · ${p1Type.name}`;
+            document.getElementById('p2-label').innerText=`${mode==='cpu'?'CPU':'P2'} · ${p2Type.name}`;canvas.style.display='block';
+            player1.reset({x:240,y:346},characterData.p1,characterData.p1Fighter);player2.reset({x:724,y:346},characterData.p2,characterData.p2Fighter);updateHealth();
             animationId=requestAnimationFrame(gameLoop);
         }
         function resetToMenu() {
@@ -880,6 +923,6 @@
 
         updatePreviews();
     </script>
-    <script src="./hood-brawlers.js?v=11"></script>
+    <script src="./hood-brawlers.js?v=12"></script>
 </body>
 </html>
