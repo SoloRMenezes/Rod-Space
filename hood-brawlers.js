@@ -152,9 +152,20 @@ const isPhone=/iPhone|iPod|Android.*Mobile/i.test(navigator.userAgent);
 function readDeviceProfile(){try{const profile=JSON.parse(localStorage.getItem('hood_device_profile'));if(profile&&typeof profile.name==='string'&&profile.name.trim())return{name:profile.name.trim().slice(0,20),pin:isPhone&&/^\d{4}$/.test(profile.pin||'')?profile.pin:''}}catch{}return null}
 function openDeviceSetup(){const setup=document.getElementById('device-setup');setup.classList.toggle('phone',isPhone);setup.classList.add('open');document.getElementById('device-setup-copy').textContent=isPhone?'This phone will appear by name in the controller list. A PIN is optional.':'This name identifies this PC or tablet when it connects to a controller.';setTimeout(()=>document.getElementById('device-name').focus(),50)}
 async function startPhoneController(){
- const status=document.getElementById('phone-status');try{status.textContent='Making controller visible…';if(controllerRoom)await controllerRoom.stop();const rooms=await waitForPartyRooms();controllerRoom=await rooms.createHost({game:'hood-controller-device',name:deviceProfile.name,pin:deviceProfile.pin,onStatus:text=>status.textContent=text,onConnected:()=>status.textContent='Connected'});status.textContent=`${deviceProfile.name} · waiting for game${deviceProfile.pin?' · PIN':''}`}
+ const status=document.getElementById('phone-status');try{status.textContent='Making controller visible…';if(controllerRoom)await controllerRoom.stop();const rooms=await waitForPartyRooms();controllerRoom=await rooms.createHost({game:'hood-controller-device',name:deviceProfile.name,pin:deviceProfile.pin,onStatus:text=>status.textContent=text,onConnectionRequest:requestPhonePairing,onConnected:()=>status.textContent='Connected'});status.textContent=`${deviceProfile.name} · waiting for game${deviceProfile.pin?' · PIN':''}`}
  catch(error){status.textContent=`Controller unavailable: ${error.message}`}
 }
+let phonePairResolve=null,phonePairTimer=0;
+function finishPhonePairing(accepted){if(!phonePairResolve)return;clearTimeout(phonePairTimer);document.getElementById('phone-pair-request').classList.remove('open');const resolve=phonePairResolve;phonePairResolve=null;resolve(accepted)}
+function requestPhonePairing(request){
+ if(phonePairResolve)finishPhonePairing(false);
+ document.getElementById('phone-pair-name').textContent=request.name||'The game';
+ document.getElementById('phone-pair-request').classList.add('open');
+ navigator.vibrate?.([120,70,120]);
+ return new Promise(resolve=>{phonePairResolve=resolve;phonePairTimer=setTimeout(()=>finishPhonePairing(false),18000)});
+}
+document.getElementById('phone-pair-accept').addEventListener('click',()=>finishPhonePairing(true));
+document.getElementById('phone-pair-decline').addEventListener('click',()=>finishPhonePairing(false));
 function activateDevice(){if(isPhone){phoneController.classList.add('active');document.body.style.overflow='hidden';startPhoneController()}}
 document.getElementById('device-setup-form').addEventListener('submit',event=>{event.preventDefault();const name=document.getElementById('device-name').value.trim().slice(0,20),rawPin=document.getElementById('device-pin').value.trim(),error=document.getElementById('device-setup-error');if(!name){error.textContent='Enter a device name.';return}if(isPhone&&rawPin&&!/^\d{4}$/.test(rawPin)){error.textContent='The PIN must be exactly 4 numbers or empty.';return}deviceProfile={name,pin:isPhone?rawPin:''};localStorage.setItem('hood_device_profile',JSON.stringify(deviceProfile));document.getElementById('device-setup').classList.remove('open');activateDevice()});
 deviceProfile=readDeviceProfile();if(deviceProfile)activateDevice();else openDeviceSetup();

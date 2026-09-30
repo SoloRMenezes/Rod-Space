@@ -300,6 +300,13 @@
         #phone-status { position:relative;z-index:1;text-align:center;color:#b1242b;font:900 15px/1.2 'Courier New',monospace;letter-spacing:1px;text-transform:uppercase; }
         #phone-fullscreen-notice { position:absolute;z-index:3;top:66px;left:50%;max-width:min(520px,80vw);padding:8px 12px;border:2px solid #8e8c87;border-radius:4px;background:#eeede8ee;color:#292826;font:700 12px/1.3 'Courier New',monospace;text-align:center;opacity:0;transform:translate(-50%,-5px);transition:opacity .18s,transform .18s;pointer-events:none; }
         #phone-fullscreen-notice.show { opacity:1;transform:translate(-50%,0); }
+        #phone-pair-request { position:fixed;inset:0;z-index:120;display:none;place-items:center;padding:18px;background:#171717df; }
+        #phone-pair-request.open { display:grid; }
+        .phone-pair-card { width:min(390px,100%);box-sizing:border-box;padding:24px;background:#d7d5cf;color:#222;border:5px solid #8e8c87;border-radius:6px;box-shadow:inset 0 0 0 3px #efede7,0 18px 50px #000b;text-align:center; }
+        .phone-pair-card h2 { margin:0 0 10px;font:900 22px 'Courier New',monospace;text-transform:uppercase; }
+        .phone-pair-card p { margin:0 0 20px;color:#555; }
+        .phone-pair-actions { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+        .phone-pair-actions button { min-height:48px;margin:0; }
         #phone-status canvas,#phone-status img { display:block;width:min(74vw,420px)!important;height:auto!important;margin:14px auto;background:white;padding:10px;box-sizing:border-box;image-rendering:pixelated; }
         #phone-pad { position:relative;z-index:1;flex:1;display:flex;align-items:flex-end;justify-content:space-between;padding:70px 3vw 5vh; }
         #phone-stick { width:150px;height:150px;position:absolute;left:max(24px,env(safe-area-inset-left));bottom:max(5vh,env(safe-area-inset-bottom));opacity:.5;pointer-events:none;transition:opacity .12s; }
@@ -436,10 +443,10 @@
 
     <div id="match-actions"><button onclick="togglePause()">Pause · Esc</button><button onclick="resetToMenu()">Menu</button></div>
     <p id="controls-guide"></p>
-    <div id="phone-controller"><button id="phone-fullscreen-button" aria-label="Enter fullscreen" title="Fullscreen">⛶</button><button id="phone-settings-button" aria-label="Controller settings">⚙</button><div id="phone-status">Making controller visible…</div><div id="phone-fullscreen-notice" role="status" aria-live="polite"></div><div id="phone-pad"><div id="phone-stick"><div id="phone-shaft"></div><div id="phone-knob"></div></div><div class="phone-buttons"><button class="phone-action" data-phone-action="a">A</button><button class="phone-action" data-phone-action="b">B</button></div></div><div id="phone-settings"><div class="phone-settings-card"><h2>Button layout</h2><label class="phone-setting"><span>Size</span><input id="phone-size" type="range" min="64" max="140" step="2"><output></output></label><label class="phone-setting"><span>From right</span><input id="phone-right" type="range" min="8" max="160" step="2"><output></output></label><label class="phone-setting"><span>From bottom</span><input id="phone-bottom" type="range" min="8" max="220" step="2"><output></output></label><label class="phone-setting"><span>Spacing</span><input id="phone-gap" type="range" min="4" max="70" step="2"><output></output></label><div class="panel-actions"><button id="phone-layout-reset" class="small-btn">Reset</button><button id="phone-settings-done" class="btn">Done</button></div></div></div></div>
+    <div id="phone-controller"><button id="phone-fullscreen-button" aria-label="Enter fullscreen" title="Fullscreen">⛶</button><button id="phone-settings-button" aria-label="Controller settings">⚙</button><div id="phone-status">Making controller visible…</div><div id="phone-fullscreen-notice" role="status" aria-live="polite"></div><div id="phone-pad"><div id="phone-stick"><div id="phone-shaft"></div><div id="phone-knob"></div></div><div class="phone-buttons"><button class="phone-action" data-phone-action="a">A</button><button class="phone-action" data-phone-action="b">B</button></div></div><div id="phone-settings"><div class="phone-settings-card"><h2>Button layout</h2><label class="phone-setting"><span>Size</span><input id="phone-size" type="range" min="64" max="140" step="2"><output></output></label><label class="phone-setting"><span>From right</span><input id="phone-right" type="range" min="8" max="160" step="2"><output></output></label><label class="phone-setting"><span>From bottom</span><input id="phone-bottom" type="range" min="8" max="220" step="2"><output></output></label><label class="phone-setting"><span>Spacing</span><input id="phone-gap" type="range" min="4" max="70" step="2"><output></output></label><div class="panel-actions"><button id="phone-layout-reset" class="small-btn">Reset</button><button id="phone-settings-done" class="btn">Done</button></div></div></div><div id="phone-pair-request" role="dialog" aria-modal="true" aria-labelledby="phone-pair-title"><div class="phone-pair-card"><h2 id="phone-pair-title">Connect?</h2><p><strong id="phone-pair-name"></strong> wants to use this phone as a controller.</p><div class="phone-pair-actions"><button id="phone-pair-decline" class="small-btn">Decline</button><button id="phone-pair-accept" class="btn">Accept</button></div></div></div></div>
     <div id="device-setup"><form class="device-setup-card" id="device-setup-form"><h2>Choose a device name</h2><p id="device-setup-copy">This name identifies this device when connecting controllers.</p><label class="device-field"><span>Name</span><input id="device-name" maxlength="20" autocomplete="nickname" placeholder="e.g. Rodrigo’s phone" required></label><label class="device-field" id="device-pin-field"><span>Optional controller PIN</span><input id="device-pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="4 digits or leave blank"></label><div id="device-setup-error"></div><div class="panel-actions"><button class="btn" type="submit">Continue</button></div></form></div>
-    <script src="./party-lan.js"></script>
-    <script type="module" src="./party-rooms.js"></script>
+    <script src="./party-lan.js?v=4"></script>
+    <script type="module" src="./party-rooms.js?v=4"></script>
     <div hidden><div id="touch-controls"><div id="move-zone"><div id="move-stick"><div id="move-thumb"></div></div></div><div id="touch-actions"></div></div><span id="touch-tip"></span></div>
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -851,6 +858,6 @@
 
         updatePreviews();
     </script>
-    <script src="./hood-brawlers.js"></script>
+    <script src="./hood-brawlers.js?v=4"></script>
 </body>
 </html>

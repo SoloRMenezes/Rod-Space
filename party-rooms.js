@@ -39,7 +39,7 @@ async function watch(game,onRooms,onError=()=>{}){
   },onError);
 }
 
-async function createHost({game,name,pin='',onConnected=()=>{},onStatus=()=>{}}){
+async function createHost({game,name,pin='',onConnected=()=>{},onStatus=()=>{},onConnectionRequest=async()=>true}){
   const user=await signedIn;
   // A reload can leave the previous advertisement alive until its timeout.
   // Remove this device's older rooms so it appears only once to the game host.
@@ -56,8 +56,11 @@ async function createHost({game,name,pin='',onConnected=()=>{},onStatus=()=>{}})
     const data=item.data();
     if(data.status==='requesting'&&!pending.has(item.id)){
       pending.set(item.id,true);
-      if(pinHash&&data.pinHash!==pinHash){await updateDoc(item.ref,{status:'rejected'});return}
+      if(pinHash&&data.pinHash!==pinHash){await updateDoc(item.ref,{status:'rejected',message:'Wrong PIN'});return}
       try{
+        onStatus(`${data.name} wants to connect`);
+        const accepted=await onConnectionRequest({id:item.id,name:data.name});
+        if(!accepted){await updateDoc(item.ref,{status:'rejected',message:'Declined by controller'});onStatus('Connection declined');return}
         const invite=await lan.invite({id:item.id,name:data.name});
         pending.set(item.id,invite);
         await updateDoc(item.ref,{offer:invite.code,status:'offered'});
@@ -90,7 +93,7 @@ async function join(room,{name,pin='',onStatus=()=>{}}){
     let client=null,finished=false;
     const stop=onSnapshot(peerRef,async snapshot=>{
       const data=snapshot.data();if(!data)return;
-      if(data.status==='rejected'){stop();deleteDoc(peerRef).catch(()=>{});reject(Error('Wrong PIN'));return}
+      if(data.status==='rejected'){stop();deleteDoc(peerRef).catch(()=>{});reject(Error(data.message||'Connection declined'));return}
       if(data.status==='error'){stop();reject(Error(data.message||'Could not connect'));return}
       if(data.status==='offered'&&!client){
         try{
@@ -102,7 +105,7 @@ async function join(room,{name,pin='',onStatus=()=>{}}){
         }catch(error){stop();reject(error)}
       }
     },error=>reject(error));
-    setTimeout(()=>{if(!finished){stop();client?.close();reject(Error('The host did not answer'))}},20_000);
+    setTimeout(()=>{if(!finished){stop();client?.close();reject(Error('The controller did not finish connecting'))}},35_000);
   });
 }
 
