@@ -282,8 +282,10 @@
                 gameActive = true;
             });
             document.addEventListener('pointerlockchange', () => {
-                document.getElementById('instructions').style.display = document.pointerLockElement === document.body ? 'none' : 'flex';
-                gameActive = document.pointerLockElement === document.body;
+                const locked=document.pointerLockElement === document.body;
+                document.getElementById('instructions').style.display = locked ? 'none' : 'flex';
+                gameActive = locked;
+                if(!locked)Object.keys(keys).forEach(key=>keys[key]=false);
             });
             document.addEventListener('mousemove', (e) => {
                 if (document.pointerLockElement === document.body) {
@@ -293,6 +295,7 @@
             });
             document.addEventListener('keydown', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; });
             document.addEventListener('keyup', (e) => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
+            window.addEventListener('blur',()=>Object.keys(keys).forEach(key=>keys[key]=false));
         }
 
         function handleInteractions(delta) {
@@ -325,7 +328,7 @@
         function animate() {
             requestAnimationFrame(animate);
             if (gameActive) {
-                const delta = clock.getDelta();
+                const delta = Math.min(clock.getDelta(),0.1);
                 const moveSpeed = 4.8;
                 
                 const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);

@@ -286,6 +286,8 @@
             // Controls Setup
             document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
             document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+            document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement)Object.keys(keys).forEach(key=>keys[key]=false)});
+            window.addEventListener('blur',()=>Object.keys(keys).forEach(key=>keys[key]=false));
             document.addEventListener('mousemove', (e) => {
                 if (document.pointerLockElement) {
                     yaw -= e.movementX * 0.0018;
@@ -310,7 +312,7 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            const delta = clock.getDelta();
+            const delta = Math.min(clock.getDelta(),0.1);
             const time = clock.elapsedTime;
 
             if (wheatMaterial.userData.shader) {
@@ -328,7 +330,7 @@
             if (keys.a) moveDir.sub(right);
             if (keys.d) moveDir.add(right);
 
-            if (moveDir.length() > 0) {
+            if (document.pointerLockElement && !ended && moveDir.length() > 0) {
                 const step=moveDir.normalize().multiplyScalar(moveSpeed*delta);
                 const tryX=camera.position.clone();tryX.x+=step.x;
                 if(!hitsWorldObject(tryX))camera.position.x=tryX.x;

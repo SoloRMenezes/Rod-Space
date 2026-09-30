@@ -250,8 +250,11 @@
 
             document.addEventListener('pointerlockchange', () => {
                 const locked = document.pointerLockElement === document.body;
-                document.getElementById('instructions').style.opacity = locked ? '0' : '1';
+                const instructions=document.getElementById('instructions');
+                instructions.style.opacity = locked ? '0' : '1';
+                instructions.style.pointerEvents=locked?'none':'auto';
                 gameActive = locked;
+                if(!locked)Object.keys(keys).forEach(key=>keys[key]=false);
             });
 
             document.addEventListener('mousemove', (e) => {
@@ -263,6 +266,7 @@
 
             window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
             window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+            window.addEventListener('blur',()=>Object.keys(keys).forEach(key=>keys[key]=false));
         }
 
         function animate() {
