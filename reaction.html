@@ -326,6 +326,15 @@
         </div>
     </div>
 
+    <div id="deleteScoreDialog" class="reset-dialog" role="dialog" aria-modal="true" aria-labelledby="deleteScoreTitle">
+        <div class="reset-card">
+            <h2 id="deleteScoreTitle">Delete this score?</h2>
+            <p id="deleteScoreSummary"></p>
+            <p>This cannot be undone.</p>
+            <div class="reset-actions"><button id="deleteScoreCancel" class="reset-cancel" type="button">Cancel</button><button id="deleteScoreConfirm" class="reset-danger" type="button">CONFIRM</button></div>
+        </div>
+    </div>
+
     <script>
         const escapeScoreName = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
         // Preserve the original 120 Hz pace while making it identical on every display.
@@ -348,6 +357,7 @@
                 this.lastFrameTime = 0;
                 this.switchback = false;
                 this.storageKey = 'reactionGameLeaderboard';
+                this.pendingScoreDelete = null;
                 
                 this.elements = {
                     gameCircle: document.getElementById('gameCircle'),
@@ -372,6 +382,8 @@
                     resetStepTwo: document.getElementById('resetScoresStepTwo'),
                     resetInput: document.getElementById('resetScoresInput'),
                     resetError: document.getElementById('resetScoresError'),
+                    deleteScoreDialog: document.getElementById('deleteScoreDialog'),
+                    deleteScoreSummary: document.getElementById('deleteScoreSummary'),
                     gameTitleText: document.getElementById('gameTitleText'),
                     readyTitle: document.getElementById('readyTitle'),
                     modeInstructions: document.getElementById('modeInstructions'),
@@ -393,7 +405,7 @@
                     if (e.code === 'Space') {
                         e.preventDefault();
                         if (e.repeat) return;
-                        if (this.elements.resetDialog.classList.contains('open')) return;
+                        if (this.elements.resetDialog.classList.contains('open')||this.elements.deleteScoreDialog.classList.contains('open')) return;
                         if (this.isGameRunning) this.handleAction();
                         else this.beginGame();
                     }
@@ -413,8 +425,17 @@
                 document.getElementById('resetScoresButton').addEventListener('click',()=>this.openScoreReset());
                 document.getElementById('resetScoresCancel').addEventListener('click',()=>this.closeScoreReset());
                 document.getElementById('resetScoresContinue').addEventListener('click',()=>this.continueScoreReset());
+                this.elements.resetInput.addEventListener('input',()=>this.updateScoreResetEntry());
+                this.elements.resetInput.addEventListener('keydown',event=>{
+                    if(event.key==='Enter'){
+                        event.preventDefault();
+                        this.continueScoreReset();
+                    }
+                });
                 document.getElementById('resetScoresBack').addEventListener('click',()=>this.showScoreResetEntry());
                 document.getElementById('resetScoresConfirm').addEventListener('click',()=>this.confirmScoreReset());
+                document.getElementById('deleteScoreCancel').addEventListener('click',()=>this.closeScoreDelete());
+                document.getElementById('deleteScoreConfirm').addEventListener('click',()=>this.confirmScoreDelete());
                 document.querySelectorAll('.mode-bolt').forEach(bolt=>bolt.addEventListener('click',()=>this.activateSwitchback()));
             }
 
@@ -432,8 +453,8 @@
 
             openScoreReset() {
                 this.elements.resetInput.value='';
-                this.elements.resetError.textContent='';
                 this.showScoreResetEntry();
+                this.updateScoreResetEntry();
                 this.elements.resetDialog.classList.add('open');
                 this.elements.resetInput.focus();
             }
@@ -445,8 +466,15 @@
                 this.elements.resetStepTwo.hidden=true;
             }
 
+            updateScoreResetEntry() {
+                const isValid=this.elements.resetInput.value.trim()==='DELETE';
+                this.elements.resetError.textContent='';
+                document.getElementById('resetScoresContinue').disabled=!isValid;
+                return isValid;
+            }
+
             continueScoreReset() {
-                if(this.elements.resetInput.value!=='DELETE'){
+                if(!this.updateScoreResetEntry()){
                     this.elements.resetError.textContent='Enter DELETE exactly as shown.';
                     this.elements.resetInput.focus();
                     return;
@@ -591,8 +619,22 @@
             deleteScore(id) {
                 const entry=this.leaderboard.find(score=>score.id===id);
                 if(!entry)return;
-                this.leaderboard=this.leaderboard.filter(score=>score.id!==id);
+                this.pendingScoreDelete=id;
+                this.elements.deleteScoreSummary.textContent=`${entry.name} — ${entry.score} pts`;
+                this.elements.deleteScoreDialog.classList.add('open');
+                document.getElementById('deleteScoreConfirm').focus();
+            }
+
+            closeScoreDelete() {
+                this.pendingScoreDelete=null;
+                this.elements.deleteScoreDialog.classList.remove('open');
+            }
+
+            confirmScoreDelete() {
+                if(!this.pendingScoreDelete)return;
+                this.leaderboard=this.leaderboard.filter(score=>score.id!==this.pendingScoreDelete);
                 localStorage.setItem(this.storageKey,JSON.stringify(this.leaderboard));
+                this.closeScoreDelete();
                 this.showGameOver();
             }
 

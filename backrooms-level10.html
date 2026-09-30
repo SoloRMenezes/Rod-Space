@@ -22,9 +22,15 @@
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 4px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 50%; z-index: 10;
         }
+        #objective{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:10;color:#fff;text-align:center;text-shadow:0 2px 6px #000;font-weight:bold;letter-spacing:.14em}
+        #prompt{position:fixed;left:0;right:0;bottom:18%;z-index:10;color:#fff;text-align:center;text-shadow:0 2px 6px #000;opacity:0;transition:opacity .2s}
+        #ending{position:fixed;inset:0;z-index:30;display:none;place-items:center;background:#000;color:#fff;text-align:center;font-size:clamp(1.2rem,3vw,2rem);letter-spacing:.12em;cursor:pointer}
     </style>
 </head>
 <body>
+    <div id="objective">LEVEL 10 · FIND THE BLACK BARN DOOR</div>
+    <div id="prompt">PRESS E TO LEAVE THE FIELD</div>
+    <div id="ending">YOU FOUND THE WAY OUT<br><small>Click to enter the field again</small></div>
     <div id="crosshair"></div>
     <div id="overlay"></div>
     <div id="vhs-effect"></div>
@@ -43,8 +49,9 @@
         
         let moveSpeed = 5.2;
         let yaw = 0, pitch = 0;
-        const keys = { w: false, a: false, s: false, d: false };
+        const keys = { w: false, a: false, s: false, d: false, e: false };
         let stepCounter = 0;
+        let exitBarn = null, ended = false;
 
         function createWheatTexture() {
             const canvas = document.createElement('canvas');
@@ -227,7 +234,7 @@
             }
 
             // Red Barns
-            function createBarn(x, z) {
+            function createBarn(x, z, isExit=false) {
                 const barn = new THREE.Group();
                 const base = new THREE.Mesh(
                     new THREE.BoxGeometry(10, 8, 14),
@@ -243,12 +250,17 @@
                 roof.scale.z = 1.3;
                 roof.position.y = 10.5;
                 barn.add(roof);
+                const door=new THREE.Mesh(new THREE.BoxGeometry(2.8,4.2,.25),new THREE.MeshLambertMaterial({color:isExit?0x030303:0x542515,emissive:isExit?0x111111:0x000000}));
+                door.position.set(0,2,7.08);
+                barn.add(door);
                 
                 barn.position.set(x, 0, z);
                 scene.add(barn);
                 worldObjects.push(barn);
+                barn.userData.radius=7;
+                if(isExit)exitBarn=barn;
             }
-            createBarn(60, -80);
+            createBarn(60, -80, true);
             createBarn(-120, 100);
 
             // Cloud Sprites
@@ -282,6 +294,7 @@
                 }
             });
             document.body.addEventListener('click', () => {
+                if(ended){window.location.reload();return;}
                 if (!document.pointerLockElement) document.body.requestPointerLock();
             });
 
@@ -316,7 +329,11 @@
             if (keys.d) moveDir.add(right);
 
             if (moveDir.length() > 0) {
-                camera.position.add(moveDir.normalize().multiplyScalar(moveSpeed * delta));
+                const step=moveDir.normalize().multiplyScalar(moveSpeed*delta);
+                const tryX=camera.position.clone();tryX.x+=step.x;
+                if(!hitsWorldObject(tryX))camera.position.x=tryX.x;
+                const tryZ=camera.position.clone();tryZ.z+=step.z;
+                if(!hitsWorldObject(tryZ))camera.position.z=tryZ.z;
                 stepCounter += delta * 8;
                 camera.position.y = 1.8 + Math.sin(stepCounter) * 0.06; 
             }
@@ -339,8 +356,24 @@
 
             worldObjects.forEach(obj => wrap(obj, limit + 50));
 
+            if(exitBarn&&!ended){
+                const near=camera.position.distanceTo(exitBarn.position)<10;
+                document.getElementById('prompt').style.opacity=near?'1':'0';
+                if(near&&keys.e){
+                    ended=true;keys.e=false;document.exitPointerLock();
+                    document.getElementById('ending').style.display='grid';
+                }
+            }
+
             camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
             renderer.render(scene, camera);
+        }
+
+        function hitsWorldObject(pos){
+            return worldObjects.some(obj=>{
+                const radius=obj.userData.radius||1.2;
+                return Math.hypot(pos.x-obj.position.x,pos.z-obj.position.z)<radius+.45;
+            });
         }
 
             window.onload = init;

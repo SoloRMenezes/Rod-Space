@@ -368,13 +368,13 @@
                             document.getElementById('fade-out').style.opacity = '1';
                             // Redirect to Level 3 after the fade animation
                             setTimeout(() => {
-                                window.location.href = "https://solormenezes.github.io/Rod-Space/backrooms-level3.html";
+                                window.location.href = "./backrooms-level7.html";
                             }, 2000);
                         }
                     }
                 });
 
-                sanity -= 0.012; 
+                sanity -= delta * 0.72;
                 document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
                 if (sanity <= 0) location.reload();
 

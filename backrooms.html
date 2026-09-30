@@ -19,6 +19,7 @@
         #instructions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); color: #ffff00; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; z-index: 100; }
         .bar-container { width: 200px; height: 10px; background: #333; margin-top: 5px; border: 1px solid #ffff00; }
         #sanity-bar { width: 100%; height: 100%; background: #ffff00; transition: width 0.3s; }
+        #stamina-bar { width: 100%; height: 100%; background: #f4f4d0; transition: width 0.12s; }
         #footer { position: absolute; bottom: 20px; right: 20px; color: #444; font-size: 12px; }
         #message { position: absolute; bottom: 15%; width: 100%; text-align: center; color: #ffff00; font-weight: bold; opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 2px #000; z-index: 10; }
         #interaction-prompt { position: absolute; top: 60%; width: 100%; text-align: center; color: #fff; font-size: 14px; display: none; text-shadow: 1px 1px 2px #000; font-weight: bold; }
@@ -28,8 +29,6 @@
 
         #fade-out { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 1000; transition: opacity 2s ease-in; }
     </style>
-<link rel="stylesheet" href="assets/rod-space-home.css">
-<script defer src="assets/rod-space-home.js"></script>
 </head>
 <body>
 
@@ -39,6 +38,7 @@
         <div class="bar-container">
             <div id="sanity-bar"></div>
         </div>
+        <div style="margin-top:8px">STAMINA</div><div class="bar-container"><div id="stamina-bar"></div></div>
         <div id="timer" style="margin-top: 10px;">TIME ELAPSED: 00:00</div>
         <div id="entity-status" style="color: red; display: none; font-weight: bold; margin-top: 5px;">DETECTION: CRITICAL</div>
     </div>
@@ -54,7 +54,7 @@
     <div id="instructions">
         <h1>THE BACKROOMS</h1>
         <p>Your sanity is slipping. Stay quiet. Stay hydrated.</p>
-        <p><strong>W, A, S, D</strong> to move | <strong>MOUSE</strong> to look</p>
+        <p><strong>W, A, S, D</strong> to move | <strong>SHIFT</strong> to sprint | <strong>MOUSE</strong> to look</p>
         <p><strong>E</strong> to interact with items</p>
         <p style="color: #ff4444; margin-top: 20px;">Survive for 5 minutes to find the exit.</p>
         <button id="start-btn">ENTER THE VOID</button>
@@ -64,10 +64,11 @@
 
     <script>
         let camera, scene, renderer, clock, audioCtx;
-        let keys = { w: false, a: false, s: false, d: false, e: false };
+        let keys = { w: false, a: false, s: false, d: false, e: false, shift: false };
         let velocity = new THREE.Vector3();
         let pitch = 0, yaw = 0;
         let sanity = 100;
+        let stamina = 100;
         let startTime = Date.now();
         let gameActive = false;
         
@@ -90,7 +91,7 @@
         const chunks = new Map(); 
         
         let wallMat, floorMat, ceilMat, drawingMat;
-        let stepCounter = 0;
+        let stepCounter = 0, stateTime = 0;
 
         function init() {
             scene = new THREE.Scene();
@@ -102,7 +103,7 @@
             
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
             document.body.appendChild(renderer.domElement);
 
             clock = new THREE.Clock();
@@ -116,6 +117,7 @@
 
             floorMat = new THREE.MeshLambertMaterial({ map: createFloorTexture() });
             ceilMat = new THREE.MeshLambertMaterial({ map: createCeilingTexture() });
+            wallMat = new THREE.MeshLambertMaterial({ map: createCrackedWallTexture() });
             drawingMat = createDrawingMaterial();
 
             updateProceduralWorld();
@@ -239,9 +241,16 @@
             const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
             eyeR.position.set(0.1, 1.8, 0.1);
             group.add(eyeL, eyeR);
+            group.userData.limbs=group.children.slice(1,5);
             const angle = Math.random() * Math.PI * 2;
             const dist = 18;
             group.position.set(camera.position.x + Math.cos(angle) * dist, 1.75, camera.position.z + Math.sin(angle) * dist);
+            // Never materialise inside a wall; rotate the spawn around the player
+            // until a valid point in the existing procedural layout is found.
+            for(let tries=0;tries<12 && checkCollision(group.position);tries++){
+                const retry=angle+(tries+1)*Math.PI/6;
+                group.position.set(camera.position.x+Math.cos(retry)*dist,1.75,camera.position.z+Math.sin(retry)*dist);
+            }
             scene.add(group);
             entity = group;
             entityChasing = true;
@@ -253,7 +262,6 @@
 
         function spawnDecor(group, x, z) {
             const roll = Math.random();
-            const wallMatInstance = new THREE.MeshLambertMaterial({ map: createCrackedWallTexture() });
             if (roll > 0.95) {
                 const plane = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), drawingMat);
                 plane.position.set(x, 2, z);
@@ -261,7 +269,7 @@
                 group.add(plane);
             } else if (roll > 0.90) {
                 const chair = new THREE.Group();
-                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.7), wallMatInstance);
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.7), wallMat);
                 seat.position.y = 0.4;
                 chair.add(seat);
                 chair.position.set(x, 0, z);
@@ -320,8 +328,7 @@
                     const val = seed - Math.floor(seed);
                     
                     if (val > 0.82) {
-                        const wallMatInstance = new THREE.MeshLambertMaterial({ map: createCrackedWallTexture() });
-                        const wall = new THREE.Mesh(boxGeo, wallMatInstance);
+                        const wall = new THREE.Mesh(boxGeo, wallMat);
                         wall.position.set(localPosX, 2, localPosZ);
                         chunkGroup.add(wall);
                     } else if (val < 0.01 && canSpawnExit) {
@@ -478,6 +485,13 @@
             return false;
         }
 
+        function moveWithCollision(object, displacement) {
+            const nextX=object.position.clone();nextX.x+=displacement.x;
+            if(!checkCollision(nextX))object.position.x=nextX.x;
+            const nextZ=object.position.clone();nextZ.z+=displacement.z;
+            if(!checkCollision(nextZ))object.position.z=nextZ.z;
+        }
+
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -506,16 +520,16 @@
         }
 
         function handleEntity(delta) {
-            if (sanity < 30 && !entityChasing && Math.random() < 0.0015) {
+            if (sanity < 30 && !entityChasing && Math.random() < delta*0.09) {
                 spawnEntity();
             }
             if (entity && entityChasing) {
                 entityTimer -= delta;
                 const dir = camera.position.clone().sub(entity.position).normalize();
                 const speed = 5.2;
-                entity.position.add(dir.multiplyScalar(speed * delta));
+                moveWithCollision(entity,dir.multiplyScalar(speed * delta));
                 entity.lookAt(camera.position.x, 1.75, camera.position.z);
-                entity.position.x += (Math.random() - 0.5) * 0.05;
+                entity.userData.limbs.forEach((limb,index)=>{limb.rotation.x=Math.sin(stateTime*10+index*Math.PI)*.7;});
                 const dist = entity.position.distanceTo(camera.position);
                 if (Date.now() - lastScreech > 2500) {
                     playScreech();
@@ -542,7 +556,7 @@
             requestAnimationFrame(animate);
             if (gameActive) {
                 const delta = clock.getDelta();
-                const moveSpeed = 5.0;
+                stateTime+=delta;
                 const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
                 const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
                 forward.y = 0; right.y = 0;
@@ -553,14 +567,14 @@
                 if (keys.a) moveDir.sub(right);
                 if (keys.d) moveDir.add(right);
                 if (moveDir.length() > 0) {
-                    moveDir.normalize().multiplyScalar(moveSpeed * delta);
-                    const nextPos = camera.position.clone().add(moveDir);
-                    if (!checkCollision(nextPos)) {
-                        camera.position.copy(nextPos);
-                    }
+                    const sprinting=keys.shift&&stamina>0;
+                    stamina=Math.max(0,stamina-(sprinting?34:0)*delta);
+                    moveDir.normalize().multiplyScalar((sprinting?7.6:5.0)*delta);
+                    moveWithCollision(camera,moveDir);
                     stepCounter += delta * 11;
                     camera.position.y = 1.7 + Math.sin(stepCounter) * 0.06;
                 } else {
+                    stamina=Math.min(100,stamina+24*delta);
                     camera.position.y = 1.7 + Math.sin(Date.now() * 0.001) * 0.015;
                 }
                 camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
@@ -568,7 +582,8 @@
                 handleGlitches(delta);
                 updateProceduralWorld();
                 handleInteractions();
-                sanity -= 0.008;
+                if(!keys.shift)stamina=Math.min(100,stamina+18*delta);
+                sanity -= delta*.48;
 if (sanity <= 0) {
     gameActive = false;
     showMessage("YOUR MIND HAS SHATTERED...");
@@ -577,6 +592,7 @@ if (sanity <= 0) {
     return;
 }
 document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
+document.getElementById('stamina-bar').style.width = stamina + '%';
 
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 document.getElementById('timer').innerText = `TIME: ${Math.floor(elapsed/60).toString().padStart(2, '0')}:${(elapsed%60).toString().padStart(2, '0')}`;

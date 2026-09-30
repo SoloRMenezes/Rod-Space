@@ -50,9 +50,22 @@
         }
 
         @keyframes dealIn {
-            from { transform: translateY(-600px) rotate(45deg); opacity: 0; }
-            to { transform: translateY(0) rotate(0); opacity: 1; }
+            0% { transform: translate(380px,-260px) rotate(18deg) scale(.7); opacity: 0; }
+            70% { transform: translate(-8px,6px) rotate(-2deg) scale(1.04); opacity: 1; }
+            100% { transform: translate(0) rotate(0) scale(1); opacity: 1; }
         }
+        @keyframes cardReveal{0%{transform:rotateY(90deg) scale(.92)}100%{transform:rotateY(0) scale(1)}}
+        @keyframes tablePulse{50%{filter:brightness(1.2);box-shadow:0 20px 50px #0008,inset 0 0 130px var(--pulse,#ffffff33)}}
+        @keyframes chipFly{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}20%{opacity:1}100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(var(--spin)) scale(1);opacity:0}}
+        @keyframes scorePop{50%{transform:scale(1.22);background:#ffffff33}}
+        .card.reveal{animation:cardReveal .45s ease-out both}
+        .table-border.fx-win{--pulse:#34d39966;animation:tablePulse .7s ease}
+        .table-border.fx-lose{--pulse:#fb718566;animation:tablePulse .7s ease}
+        .table-border.fx-push{--pulse:#fbbf2466;animation:tablePulse .7s ease}
+        .score-pop{animation:scorePop .3s ease}
+        #fx-layer{position:absolute;inset:0;z-index:45;overflow:hidden;pointer-events:none}
+        .fx-chip{position:absolute;left:50%;top:50%;width:18px;height:18px;border-radius:50%;border:3px dashed #fff;background:var(--chip,#fbbf24);box-shadow:0 0 0 3px var(--chip,#fbbf24),0 4px 10px #0008;animation:chipFly .85s ease-out forwards}
+        @media (prefers-reduced-motion:reduce){.card,.card.reveal,.fx-chip,.table-border,.score-pop{animation:none!important}}
 
         .card.hidden {
             background: #1e3a8a;
@@ -90,12 +103,11 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
     </style>
-<link rel="stylesheet" href="assets/rod-space-home.css">
-<script defer src="assets/rod-space-home.js"></script>
 </head>
 <body class="p-4">
 
-    <div class="table-border w-full max-w-5xl h-[90vh] relative overflow-hidden flex flex-col justify-between items-center py-10 px-6 felt-bg">
+    <div id="game-table" class="table-border w-full max-w-5xl h-[90vh] relative overflow-hidden flex flex-col justify-between items-center py-10 px-6 felt-bg">
+        <div id="fx-layer" aria-hidden="true"></div>
         
         <!-- MAIN MENU OVERLAY -->
         <div id="main-menu" class="absolute inset-0 z-50 flex flex-col items-center justify-center glass-panel">
@@ -188,6 +200,8 @@
         const dealerScoreEl = document.getElementById('dealer-score-display');
         const messageEl = document.getElementById('message-display');
         const resultContainer = document.getElementById('result-container');
+        const gameTable = document.getElementById('game-table');
+        const fxLayer = document.getElementById('fx-layer');
         
         // Buttons
         const startBtn = document.getElementById('start-game-btn');
@@ -257,6 +271,23 @@
             return cardDiv;
         }
 
+        function burstFx(type='win',count=18){
+            gameTable.classList.remove('fx-win','fx-lose','fx-push');
+            void gameTable.offsetWidth;
+            gameTable.classList.add(`fx-${type}`);
+            const colors=type==='win'?['#fbbf24','#34d399','#fff']:type==='lose'?['#fb7185','#fff']:['#fbbf24','#60a5fa','#fff'];
+            for(let i=0;i<count;i++){
+                const chip=document.createElement('i');chip.className='fx-chip';
+                chip.style.setProperty('--chip',colors[i%colors.length]);
+                chip.style.setProperty('--dx',`${(Math.random()-.5)*650}px`);
+                chip.style.setProperty('--dy',`${(Math.random()-.5)*420}px`);
+                chip.style.setProperty('--spin',`${(Math.random()-.5)*900}deg`);
+                fxLayer.appendChild(chip);chip.addEventListener('animationend',()=>chip.remove(),{once:true});
+            }
+        }
+
+        function popScore(element){element.classList.remove('score-pop');void element.offsetWidth;element.classList.add('score-pop');}
+
         function updateUI() {
             playerArea.innerHTML = '';
             dealerArea.innerHTML = '';
@@ -268,10 +299,12 @@
             });
 
             playerScoreEl.innerText = `Total: ${calculateScore(playerHand)}`;
+            popScore(playerScoreEl);
             
             if (gameOver) {
                 dealerScoreEl.innerText = `Total: ${calculateScore(dealerHand)}`;
                 dealerScoreEl.classList.remove('opacity-0');
+                dealerArea.children[1]?.classList.add('reveal');
             } else {
                 dealerScoreEl.classList.add('opacity-0');
             }
@@ -305,6 +338,7 @@
             else msg = "Push";
 
             messageEl.innerText = msg;
+            burstFx(msg==='You Win!'||msg==='House Busts!'?'win':msg==='Push'?'push':'lose',msg.includes('Win')||msg.includes('Busts')?26:14);
             resultContainer.classList.remove('hidden');
             controls.classList.add('opacity-0', 'pointer-events-none');
         }
@@ -314,6 +348,8 @@
             playerHand = [deck.pop(), deck.pop()];
             dealerHand = [deck.pop(), deck.pop()];
             gameOver = false;
+            fxLayer.replaceChildren();
+            gameTable.classList.remove('fx-win','fx-lose','fx-push');
             
             mainMenu.classList.add('hidden');
             gameUI.classList.remove('hidden');
@@ -346,6 +382,7 @@
             if (gameOver) return;
             playerHand.push(deck.pop());
             updateUI();
+            burstFx('push',5);
             if (calculateScore(playerHand) > 21) {
                 gameOver = true;
                 setTimeout(determineWinner, 400);
