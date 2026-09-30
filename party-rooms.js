@@ -24,11 +24,10 @@ async function hash(value){
   return Array.from(new Uint8Array(bytes),byte=>byte.toString(16).padStart(2,'0')).join('');
 }
 
-async function cleanExpired(game){
+async function cleanOwnedRooms(game){
   const user=await signedIn;
   const snapshot=await getDocs(collection(db,'rooms'));
-  const now=Date.now();
-  await Promise.all(snapshot.docs.filter(item=>{const room=item.data();return room.game===game&&room.ownerUid===user.uid&&room.expiresAt<now}).map(item=>deleteDoc(item.ref).catch(()=>{})));
+  await Promise.all(snapshot.docs.filter(item=>{const room=item.data();return room.game===game&&room.ownerUid===user.uid}).map(item=>deleteDoc(item.ref).catch(()=>{})));
 }
 
 async function watch(game,onRooms,onError=()=>{}){
@@ -42,7 +41,9 @@ async function watch(game,onRooms,onError=()=>{}){
 
 async function createHost({game,name,pin='',onConnected=()=>{},onStatus=()=>{}}){
   const user=await signedIn;
-  await cleanExpired(game);
+  // A reload can leave the previous advertisement alive until its timeout.
+  // Remove this device's older rooms so it appears only once to the game host.
+  await cleanOwnedRooms(game);
   const roomRef=doc(collection(db,'rooms'));
   const pinHash=await hash(`${roomRef.id}:${pin}`);
   const lan=PartyLan.host();

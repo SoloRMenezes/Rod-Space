@@ -6,7 +6,16 @@ const PartyLan=(()=>{
  async function encode(value){const raw=new TextEncoder().encode(JSON.stringify(value));if(!globalThis.CompressionStream)return b64(raw);const stream=new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate-raw'));return'P1.'+b64(new Uint8Array(await new Response(stream).arrayBuffer()))}
  async function decode(value){const code=value.trim();if(!code.startsWith('P1.'))return JSON.parse(new TextDecoder().decode(bytes(code)));if(!globalThis.DecompressionStream)throw Error('Compressed pairing codes are unsupported in this browser');const stream=new Blob([bytes(code.slice(3))]).stream().pipeThrough(new DecompressionStream('deflate-raw'));return JSON.parse(await new Response(stream).text())}
  async function gathered(peer){if(peer.iceGatheringState==='complete')return;await new Promise(resolve=>{const done=()=>{if(peer.iceGatheringState==='complete'){peer.removeEventListener('icegatheringstatechange',done);resolve()}};peer.addEventListener('icegatheringstatechange',done);setTimeout(resolve,5000)})}
- const peer=()=>new RTCPeerConnection({iceServers:[]});
+ // Host-only ICE is unreliable across mobile/desktop browsers because local
+ // addresses are commonly hidden behind mDNS. STUN discovers a usable route;
+ // controller data still travels directly between the two devices.
+ const peer=()=>new RTCPeerConnection({
+  iceServers:[
+   {urls:'stun:stun.cloudflare.com:3478'},
+   {urls:'stun:stun.l.google.com:19302'}
+  ],
+  iceCandidatePoolSize:2
+ });
  function wire(channel,events,info){channel.addEventListener('open',()=>events.emit('open',info));channel.addEventListener('close',()=>events.emit('close',info));channel.addEventListener('message',event=>{try{events.emit('message',{peer:info,data:JSON.parse(event.data)})}catch{}})}
  function send(channel,type,payload){if(channel?.readyState==='open')channel.send(JSON.stringify({type,payload}))}
  function host(){const events=listeners(),guests=[];return{guests,on:events.on,async invite(meta={}){const rtc=peer(),channel=rtc.createDataChannel('rod-party',{ordered:true}),guest={id:crypto.randomUUID(),meta,rtc,channel};guests.push(guest);wire(channel,events,guest);await rtc.setLocalDescription(await rtc.createOffer());await gathered(rtc);return{guest,code:await encode(rtc.localDescription),async accept(answer){await rtc.setRemoteDescription(await decode(answer));return guest}}},send(guest,type,payload){send(guest.channel,type,payload)},broadcast(type,payload){guests.forEach(g=>send(g.channel,type,payload))},close(){guests.forEach(g=>g.rtc.close())}}}
