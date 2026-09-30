@@ -201,23 +201,25 @@
 
         .fighter-roster {
             display:grid;
-            grid-template-columns:repeat(2,minmax(100px,1fr));
-            gap:7px;
-            width:min(260px,92%);
+            grid-template-columns:repeat(4,minmax(54px,1fr));
+            gap:6px;
+            width:min(330px,96%);
             margin:8px 0 12px;
         }
         .fighter-option {
-            padding:8px 9px;
+            padding:4px 3px 5px;
             border:2px solid #3b4b63;
             border-radius:5px;
             background:#182235;
             color:#fff;
             cursor:pointer;
-            text-align:left;
+            text-align:center;
+            min-width:0;
         }
         .fighter-option strong,.fighter-option span { display:block; }
-        .fighter-option strong { font-size:13px;letter-spacing:1px;text-transform:uppercase; }
-        .fighter-option span { color:#91a2b9;font-size:10px;margin-top:2px; }
+        .fighter-option canvas { display:block;width:42px;height:58px;margin:0 auto 2px; }
+        .fighter-option strong { font-size:10px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+        .fighter-option span { display:none; }
         .fighter-option.selected { border-color:#fde047;background:#293248;box-shadow:0 0 0 2px rgba(253,224,71,.18); }
 
         .opening-title {
@@ -518,10 +520,14 @@
             '#ecf0f1', '#e67e22', '#34495e'
         ];
         const FIGHTER_TYPES = {
-            rook: { name:'Rook', tag:'Balanced', speed:1, damage:1, kick:1, body:.98 },
-            brick: { name:'Brick', tag:'Heavy hitter', speed:.82, damage:1.22, kick:1, body:1.14 },
-            ghost: { name:'Ghost', tag:'Fast & light', speed:1.2, damage:.84, kick:1, body:.86 },
-            ace: { name:'Ace', tag:'Kick specialist', speed:1.04, damage:.94, kick:1.28, body:.95 }
+            rook: { name:'Rook', tag:'Balanced', speed:1, damage:1, kick:1, body:.98, defaultColor:'#3498db' },
+            brick: { name:'Brick', tag:'Heavy hitter', speed:.82, damage:1.22, kick:1, body:1.14, defaultColor:'#e74c3c' },
+            ghost: { name:'Ghost', tag:'Fast & light', speed:1.2, damage:.84, kick:1, body:.86, defaultColor:'#64748b' },
+            ace: { name:'Ace', tag:'Kick specialist', speed:1.04, damage:.94, kick:1.28, body:.95, defaultColor:'#f59e0b' },
+            volt: { name:'Volt', tag:'Rushdown', speed:1.13, damage:.91, kick:1.08, body:.9, defaultColor:'#eab308' },
+            shade: { name:'Shade', tag:'Quick striker', speed:1.09, damage:.96, kick:1.04, body:.92, defaultColor:'#7c3aed' },
+            tank: { name:'Tank', tag:'Maximum power', speed:.74, damage:1.34, kick:.94, body:1.22, defaultColor:'#15803d' },
+            nova: { name:'Nova', tag:'Agile all-rounder', speed:1.08, damage:.98, kick:1.1, body:.9, defaultColor:'#db2777' }
         };
         
         let characterData={p1:'#3498db',p2:'#e74c3c',p1Fighter:'rook',p2Fighter:'brick'};
@@ -544,8 +550,14 @@
                 Object.entries(FIGHTER_TYPES).forEach(([id,fighter]) => {
                     const opt=document.createElement('button');
                     opt.className='fighter-option';
-                    opt.setAttribute('aria-label',`Player ${pNum} fighter ${fighter.name}`);
-                    opt.innerHTML=`<strong>${fighter.name}</strong><span>${fighter.tag}</span>`;
+                    opt.setAttribute('aria-label',`Player ${pNum} fighter ${fighter.name}: ${fighter.tag}`);
+                    opt.title=`${fighter.name} — ${fighter.tag}`;
+                    const portrait=document.createElement('canvas');portrait.width=100;portrait.height=190;
+                    const name=document.createElement('strong');name.textContent=fighter.name;
+                    const tag=document.createElement('span');tag.textContent=fighter.tag;
+                    opt.appendChild(portrait);opt.appendChild(name);opt.appendChild(tag);
+                    const portraitFighter=new Fighter({position:{x:20,y:25},velocity:{x:0,y:0}});
+                    portraitFighter.color=fighter.defaultColor;portraitFighter.fighterType=id;portraitFighter.draw(portrait.getContext('2d'),true);
                     if(characterData[`p${pNum}Fighter`]===id)opt.classList.add('selected');
                     opt.onclick=()=>{characterData[`p${pNum}Fighter`]=id;saveConfig();renderPickers();updatePreviews()};
                     roster.appendChild(opt);
@@ -923,6 +935,6 @@
 
         updatePreviews();
     </script>
-    <script src="./hood-brawlers.js?v=12"></script>
+    <script src="./hood-brawlers.js?v=13"></script>
 </body>
 </html>
