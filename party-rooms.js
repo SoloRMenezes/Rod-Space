@@ -48,15 +48,27 @@ async function createHost({game,name,pin='',onConnected=()=>{},onStatus=()=>{},o
   const pinHash=await hash(`${roomRef.id}:${pin}`);
   const lan=PartyLan.host();
   const pending=new Map();
-  const relayPeers=new Map(),relayWrites=new Map();
+  const relayPeers=new Map(),relayPending=new Map(),relaySending=new Set();
   let relaySequence=0;
+  const flushRelay=async(peerId,peerRef)=>{
+    if(relaySending.has(peerId))return;
+    relaySending.add(peerId);
+    while(relayPending.has(peerId)){
+      const message=relayPending.get(peerId);
+      relayPending.delete(peerId);
+      try{await updateDoc(peerRef,{relayMessage:message})}catch{}
+    }
+    relaySending.delete(peerId);
+    if(relayPending.has(peerId))flushRelay(peerId,peerRef);
+  };
   const directBroadcast=lan.broadcast.bind(lan);
   lan.broadcast=(type,payload)=>{
     directBroadcast(type,payload);
     relayPeers.forEach((peerRef,peerId)=>{
-      const previous=relayWrites.get(peerId)||Promise.resolve();
-      const next=previous.then(()=>updateDoc(peerRef,{relayMessage:{type,payload,sequence:++relaySequence}})).catch(()=>{});
-      relayWrites.set(peerId,next);
+      // Movement only needs the newest state. Coalescing prevents a trail of
+      // stale joystick positions from adding seconds of controller latency.
+      relayPending.set(peerId,{type,payload,sequence:++relaySequence});
+      flushRelay(peerId,peerRef);
     });
   };
   let stopped=false;
