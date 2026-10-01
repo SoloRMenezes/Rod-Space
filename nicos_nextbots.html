@@ -401,8 +401,11 @@ function wireGuestRoom(session){
             camera.rotation.order = 'YXZ';
 
             // Renderer
+            const mobileRenderer=window.matchMedia('(pointer:coarse)').matches||Math.min(innerWidth,innerHeight)<700;
             renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, powerPreference:'high-performance' });
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+            // High-DPI phone screens were rendering several times more pixels than
+            // the display needs during play. Keep desktop sharp and mobile stable.
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobileRenderer?1:1.5));
             renderer.setClearColor(0x15171a);
             renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -758,7 +761,10 @@ for (let b = 0; b < botSpawns.length; b++) {
             const canStand=(x,y)=>{
                 const radius=.18,points=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
                 const surface=surfaceHeightAt(x,y,player.floorY);
-                return surface<=player.floorY+.65&&canEnterRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0&&!rampWallAt(px,py));
+                const targetRamp=rampAt(x,y);
+                const slopeStep=targetRamp?1.05:.65;
+                const insideRampLane=!targetRamp||(y>=targetRamp.y1+.28&&y<=targetRamp.y2-.28);
+                return Math.abs(surface-player.floorY)<=slopeStep&&insideRampLane&&canEnterRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0&&!rampWallAt(px,py));
             };
             let nextX = player.x + moveX;
             let nextY = player.y + moveY;
@@ -769,6 +775,11 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if(canStand(nextX,player.y))player.x=nextX;
                 if(canStand(player.x,nextY))player.y=nextY;
             }
+
+            // Once on a ramp, keep the player's collision capsule inside its open
+            // lane. This also recovers older saves/frames that landed in a guard wall.
+            const activeRamp=rampAt(player.x,player.y);
+            if(activeRamp)player.y=THREE.MathUtils.clamp(player.y,activeRamp.y1+.32,activeRamp.y2-.32);
 
             const groundHeight=surfaceHeightAt(player.x,player.y,player.floorY);
             // A jump keeps its take-off floor until landing. Previously crossing

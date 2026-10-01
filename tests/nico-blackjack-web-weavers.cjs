@@ -12,6 +12,9 @@ assert.match(nico,/const SPAWN_FLOOR_INDEX=2;/);
 assert.match(nico,/for\(const floorY of FLOOR_LEVELS\.slice\(1\)\)/);
 assert.match(nico,/for\(const ramp of RAMPS\)for\(let tier=0;tier<FLOOR_COUNT-1;tier\+\+\)/);
 assert.match(nico,/player\.floorY = SPAWN_FLOOR_Y;/);
+assert.match(nico,/mobileRenderer\?1:1\.5/);
+assert.match(nico,/const slopeStep=targetRamp\?1\.05:\.65/);
+assert.match(nico,/if\(activeRamp\)player\.y=THREE\.MathUtils\.clamp/);
 
 const blackjack=read('Blackjack.html');
 const scoreCode=['getCardValue','calculateScore'].map(name=>blackjack.match(new RegExp(`function ${name}\\([^]*?\\n        \\}`))[0]).join('\n');
@@ -20,8 +23,12 @@ assert.equal(vm.runInContext(`calculateScore([{value:'A'},{value:'A'},{value:'9'
 assert.equal(vm.runInContext(`calculateScore([{value:'K'},{value:'7'},{value:'8'}])`,scoreContext),25);
 assert.match(blackjack,/if \(pScore === 21\) setTimeout\(startDealerTurn, 500\)/);
 assert.match(blackjack,/localStorage\.setItem\('blackjack-record'/);
+assert.match(blackjack,/isHidden \? 'card-back'/);
+assert.doesNotMatch(blackjack,/\.card\.hidden/);
 
 const weavers=read('web_weavers.html');
+assert.ok(fs.statSync(path.join(root,'assets/models/web-weavers-r15.glb')).size>100000);
+assert.ok(fs.statSync(path.join(root,'assets/vendor/GLTFLoader-r128.js')).size>90000);
 assert.match(weavers,/const RESPAWN_TIME = 18;/);
 assert.match(weavers,/const previous=p\.pos\.clone\(\);/);
 assert.match(weavers,/raycaster\.intersectObjects\(collidables\(\),false\)/);
@@ -42,6 +49,28 @@ assert.match(weavers,/P\.webshotPoseT=0\.34;/);
 assert.match(weavers,/P\.pullPoseT=0\.5;/);
 assert.match(weavers,/new THREE\.SphereGeometry\(0\.38,16,12\)/);
 assert.match(weavers,/new THREE\.CylinderGeometry\(0\.42,0\.34,1\.08,8\)/);
+assert.match(weavers,/new THREE\.GLTFLoader\(\)\.load/);
+assert.match(weavers,/applyR15Bone\('LeftLowerArm'/);
+assert.match(weavers,/const sideSign=hand==='left'\?1:-1/);
+assert.match(weavers,/const facadeStart=groundStart/);
+
+const sling=read('sling_champ.html');
+assert.match(sling,/\.5\*\(other\.mass\|\|1\)\*speed\*speed/);
+assert.match(sling,/pig\.hitPoints=30/);
+assert.match(sling,/item-rocket/);assert.match(sling,/item-split/);
+assert.match(sling,/col< nCols\/2|col<nCols\/2/);
+
+const hood=read('hood_brawlers.html'),hoodJs=read('hood-brawlers.js');
+assert.doesNotMatch(hood,/id="p1-pickers"/);
+assert.match(hood,/id="cpu-difficulty"/);
+assert.match(hood,/id="phone-placement-toolbar"/);
+assert.match(hoodJs,/easy:\{think:15/);
+assert.match(hoodJs,/selectPlacement\('dpad'\)/);
+
+const drift=read('3d_drift_racer.html');
+assert.match(drift,/gridRoadHalfWidth = 8\.2/);
+assert.match(drift,/practiceBottleSpots\.length < 16/);
+assert.match(drift,/col\.map==='training'\?30000:nitroBottleRespawnMs/);
 
 for(const [name,html] of [['nicos_nextbots.html',nico],['Blackjack.html',blackjack],['web_weavers.html',weavers]]){
   const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match=>match[1]).filter(script=>script.trim());

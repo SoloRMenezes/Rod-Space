@@ -244,6 +244,7 @@
 </div>
 
 <script src="./assets/vendor/offline-25023b521d77.js"></script>
+<script src="./assets/vendor/GLTFLoader-r128.js"></script>
 <script>
 /* =========================================================================================
    WEB WEAVERS — Spider-Man-inspired open world traversal + combat prototype
@@ -1090,6 +1091,48 @@ Object.entries(playerParts).forEach(([name, part])=>{
 });
 let animClock = 0;
 
+// The supplied R15 file is exported once to GLB and loaded as the visible
+// avatar. The procedural avatar remains as a safe fallback and as lightweight
+// attachment points for web wings while the asset is loading.
+const r15AvatarRoot=new THREE.Group();
+r15AvatarRoot.position.y=-0.34;
+r15AvatarRoot.scale.setScalar(0.56);
+playerRig.add(r15AvatarRoot);
+const r15Bones={};
+const r15Rest={};
+let r15Ready=false;
+
+function r15Bone(name){ return r15Bones[name]||null; }
+
+function applyR15Bone(name,rot,amount){
+  const bone=r15Bone(name), rest=r15Rest[name];
+  if(!bone||!rest) return;
+  const offset=new THREE.Quaternion().setFromEuler(new THREE.Euler(rot.x||0,rot.y||0,rot.z||0,'XYZ'));
+  const target=rest.clone().multiply(offset);
+  bone.quaternion.slerp(target,amount);
+}
+
+new THREE.GLTFLoader().load(
+  './assets/models/web-weavers-r15.glb',
+  gltf=>{
+    r15AvatarRoot.add(gltf.scene);
+    gltf.scene.traverse(node=>{
+      if(node.isBone && !r15Bones[node.name]){
+        r15Bones[node.name]=node;
+        r15Rest[node.name]=node.quaternion.clone();
+      }
+      if(node.isMesh){
+        node.castShadow=true;
+        node.receiveShadow=true;
+      }
+    });
+    torso.visible=head.visible=armL.visible=armR.visible=legL.visible=legR.visible=false;
+    r15Ready=true;
+  },
+  undefined,
+  error=>console.warn('R15 model unavailable; using fallback avatar.',error)
+);
+
 const P = {
   pos: player.position,
   vel: new THREE.Vector3(),
@@ -1381,7 +1424,9 @@ function lowerGroundPullAnchor(choice,hand){
   const b=buildingForUpperEdgePoint(choice.point);
   if(!b) return choice.point.clone();
   const point=choice.point.clone();
-  const sideSign=hand==='left'?-1:1;
+  // Camera space is mirrored by the third-person rig: positive camera-right is
+  // the player's visual left. Keep the requested hand aligned with the screen.
+  const sideSign=hand==='left'?1:-1;
   const right=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
   const sideShift=right.multiplyScalar(sideSign*2.4);
   const onX=Math.abs(point.x-b.minX)<0.08 || Math.abs(point.x-b.maxX)<0.08;
@@ -1415,10 +1460,11 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
   const momentumForward=new THREE.Vector3(P.vel.x,0,P.vel.z);
   if(momentumForward.lengthSq()>16) momentumForward.normalize().lerp(cameraForward,0.65).normalize();
   else momentumForward.copy(cameraForward);
-  const sideSign=hand==='left'?-1:1;
+  const sideSign=hand==='left'?1:-1;
   const right=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),momentumForward).normalize();
   const playerEye=P.pos.clone().add(new THREE.Vector3(0,1.35,0));
   const playerGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+  const groundStart=P.state==='ground' || P.pos.y-playerGround<1.5;
   const searchPoint=playerEye.clone().addScaledVector(momentumForward,44).addScaledVector(right,sideSign*12);
   const highFalling=P.vel.y<-10;
   const fallSearchDistance=THREE.MathUtils.clamp(54+Math.abs(P.vel.y)*0.45,58,76);
@@ -1430,6 +1476,11 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
 
   for(const b of buildingMeshes){
     const candidates=[];
+    if(groundStart){
+      const facadeSource=playerEye.clone();
+      facadeSource.y=THREE.MathUtils.clamp(playerEye.y+20,8,Math.max(8,b.h-4));
+      addUniqueAnchorCandidates(candidates,[nearestPointOnBuilding(b,facadeSource)]);
+    }
     addUniqueAnchorCandidates(candidates,upperBuildingEdgePoints(b,searchPoint));
     addUniqueAnchorCandidates(candidates,upperBuildingEdgePoints(b,playerEye));
     // Intersections between the player's forward corridor and the complete
@@ -1454,7 +1505,8 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       const horizontal=new THREE.Vector3(to.x,0,to.z);
       const horizontalDist=horizontal.length();
       const belowCatch=point.y<playerEye.y-2 && fallingCatch;
-      if(horizontalDist<(belowCatch?7:14)) continue;
+      const facadeStart=groundStart && point.y<b.h-1.2;
+      if(horizontalDist<(belowCatch?7:(facadeStart?8:14))) continue;
       horizontal.normalize();
       const forwardDot=horizontal.dot(momentumForward);
       const sideDot=horizontal.dot(right)*sideSign;
@@ -1475,8 +1527,8 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       // Keep the bottom of an assisted arc comfortably above the surface instead
       // of allowing a nearly ground-level rope that turns swinging into fast walking.
       const maxClearRope=point.y-playerGround-12;
-      if(!belowCatch && maxClearRope<SWING_MIN_RANGE) continue;
-      const idealLength=belowCatch?dist*0.92:Math.min(dist*0.88,maxClearRope);
+      if(!belowCatch && !facadeStart && maxClearRope<SWING_MIN_RANGE) continue;
+      const idealLength=belowCatch?dist*0.92:facadeStart?dist*0.9:Math.min(dist*0.88,maxClearRope);
       const ropeLength=Math.max(SWING_MIN_RANGE,idealLength);
       const interiorBonus=Math.min(18,Math.max(0,upperEdgeInteriorClearance(point,b))*1.4);
       // Once an anchor is safe and visible, distance dominates: Q/E should
@@ -2572,6 +2624,28 @@ function animatePlayer(dt, moveVec){
   blendPart(armR, basePose.armR, armRRot, {x:0,y:bob,z:0}, amt);
   blendPart(legL, basePose.legL, legLRot, {x:0,y:bob*0.2,z:0}, amt);
   blendPart(legR, basePose.legR, legRRot, {x:0,y:bob*0.2,z:0}, amt);
+
+  if(r15Ready){
+    // Drive the authored R15 joints from the same state poses. Elbows and knees
+    // receive secondary bends so the imported model does not move as four rigid rods.
+    applyR15Bone('UpperTorso',torsoRot,amt);
+    applyR15Bone('Head',headRot,amt);
+    applyR15Bone('LeftUpperArm',armLRot,amt);
+    applyR15Bone('RightUpperArm',armRRot,amt);
+    applyR15Bone('LeftUpperLeg',legLRot,amt);
+    applyR15Bone('RightUpperLeg',legRRot,amt);
+    const actionCurl=P.state==='swing'?0.34:P.state==='zip'?0.58:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:0.12;
+    const kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
+    const kneeR=THREE.MathUtils.clamp(Math.max(0,legRRot.x)*0.7+(P.state==='ground'?Math.max(0,step)*0.32:0),0,1.05);
+    applyR15Bone('LeftLowerArm',{x:-actionCurl,y:0,z:0},amt);
+    applyR15Bone('RightLowerArm',{x:-actionCurl,y:0,z:0},amt);
+    applyR15Bone('LeftHand',{x:0,y:0,z:P.state==='swing'?-0.18:0},amt);
+    applyR15Bone('RightHand',{x:0,y:0,z:P.state==='swing'?0.18:0},amt);
+    applyR15Bone('LeftLowerLeg',{x:kneeL,y:0,z:0},amt);
+    applyR15Bone('RightLowerLeg',{x:kneeR,y:0,z:0},amt);
+    applyR15Bone('LeftFoot',{x:-kneeL*0.35,y:0,z:0},amt);
+    applyR15Bone('RightFoot',{x:-kneeR*0.35,y:0,z:0},amt);
+  }
 }
 
 // ---------------------------------------------------------------------------------------

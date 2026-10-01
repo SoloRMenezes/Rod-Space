@@ -67,7 +67,7 @@
         .fx-chip{position:absolute;left:50%;top:50%;width:18px;height:18px;border-radius:50%;border:3px dashed #fff;background:var(--chip,#fbbf24);box-shadow:0 0 0 3px var(--chip,#fbbf24),0 4px 10px #0008;animation:chipFly .85s ease-out forwards}
         @media (prefers-reduced-motion:reduce){.card,.card.reveal,.fx-chip,.table-border,.score-pop{animation:none!important}}
 
-        .card.hidden {
+        .card.card-back {
             background: #1e3a8a;
             background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20L40 40M40 0L0 40' stroke='%233b82f6' stroke-width='1' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
             border: 3px solid #ffffff;
@@ -263,7 +263,9 @@
 
         function createCardUI(card, isHidden = false, index = 0) {
             const cardDiv = document.createElement('div');
-            cardDiv.className = `card ${isHidden ? 'hidden' : (card.suit === '♥' || card.suit === '♦' ? 'card-red' : 'card-black')}`;
+            // Do not use Tailwind's `hidden` class here: it removes the dealer's
+            // hole card from layout instead of drawing a face-down card.
+            cardDiv.className = `card ${isHidden ? 'card-back' : (card.suit === '♥' || card.suit === '♦' ? 'card-red' : 'card-black')}`;
             cardDiv.style.animationDelay = `${index * 0.1}s`;
             
             if (!isHidden) {

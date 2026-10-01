@@ -136,9 +136,6 @@
     #minimap { position: absolute; top: 24px; right: 24px; width: 144px; height: 144px; border-radius: 50%; border: 1px solid #64748b; background: #0a101b; }
     body.is-mobile-device #minimap { display: none; }
   </style>
-<link rel="stylesheet" href="assets/rod-space-home.css">
-<script defer src="assets/rod-space-home.js"></script>
-  <script src="party-lan.js"></script><script src="party-game-lobby.js"></script><script type="module" src="party-rooms.js"></script>
 </head>
 <body class="bg-black text-white overflow-hidden h-screen w-screen select-none font-sans">
 
@@ -854,18 +851,6 @@
     renderer.shadowMap.enabled = false;
 
     const scene = new THREE.Scene();
-    const driftPeers=new Map();let driftNetClock=0;
-    const driftLan=globalThis.PartyGameLobby.create({game:'tokyo-drift',title:'TOKYO DRIFT LAN',maxPlayers:12});
-    function remoteDriftCar(id,name,color=0x22d3ee){
-      if(driftPeers.has(id))return driftPeers.get(id);
-      const group=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color,metalness:.45,roughness:.32}),dark=new THREE.MeshStandardMaterial({color:0x080b10,roughness:.75});
-      const body=new THREE.Mesh(new THREE.BoxGeometry(2.1,.55,4.2),paint);body.position.y=.65;group.add(body);const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.65,.62,1.9),dark);cabin.position.set(0,1.13,-.2);group.add(cabin);
-      for(const x of [-1.02,1.02])for(const z of [-1.35,1.35]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.28,12),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(x,.43,z);group.add(wheel)}
-      group.traverse(item=>{if(item.isMesh){item.castShadow=true;item.receiveShadow=true}});scene.add(group);const remote={group,name};driftPeers.set(id,remote);return remote;
-    }
-    driftLan.on('peer',({peer,name})=>remoteDriftCar(peer.id,name));
-    driftLan.on('message',({peer,data})=>{if(data.type!=='car')return;const id=data.payload.id||peer?.id||'host',remote=remoteDriftCar(id,data.payload.name||peer?.meta?.name||'Driver',data.payload.color);remote.group.position.set(data.payload.x,data.payload.y,data.payload.z);remote.group.quaternion.set(data.payload.qx,data.payload.qy,data.payload.qz,data.payload.qw);if(driftLan.role==='host')driftLan.broadcast('car',{...data.payload,id,name:peer.meta.name})});
-    function syncDrift(dt){if(!driftLan.role||!state.isGameRunning)return;driftNetClock+=dt;if(driftNetClock<.05)return;driftNetClock=0;const q=carGroup.quaternion,packet={name:driftLan.name,x:carGroup.position.x,y:carGroup.position.y,z:carGroup.position.z,qx:q.x,qy:q.y,qz:q.z,qw:q.w,color:parseInt(state.customCarColor.replace('#',''),16)};if(driftLan.role==='host')driftLan.broadcast('car',packet);else driftLan.send('car',packet)}
     // Clear Tokyo night sky with enough lift to keep the track readable.
     const bgColor = 0x080e1c;
     scene.background = new THREE.Color(bgColor);
@@ -970,7 +955,7 @@
 
     // --- Circular Tokyo neighbourhood: dense centre, houses at the rim. ---
     const worldRadius = 468, boundaryRadius = 464, outerRoadRadius = 447;
-    const gridRoadHalfWidth = 5.8, sidewalkWidth = 3.2, trackWidth = gridRoadHalfWidth * 2;
+    const gridRoadHalfWidth = 8.2, sidewalkWidth = 3.2, trackWidth = gridRoadHalfWidth * 2;
     const cityLimit = outerRoadRadius;
     const streetCenters = Array.from({ length: 15 }, (_, i) => (i - 7) * 60);
     const roadSurfaceY = 0.365, vehicleScale = 1.65;
@@ -1613,10 +1598,10 @@
     }
     bottleSpots.forEach(spot => { spot.map = 'tokyo'; });
     const practiceBottleSpots = [];
-    for (let attempt = 0; attempt < 1000 && practiceBottleSpots.length < 7; attempt++) {
+    for (let attempt = 0; attempt < 1600 && practiceBottleSpots.length < 16; attempt++) {
       const rotation = Math.random() * Math.PI * 2, radius = Math.sqrt(Math.random()) * 405;
       const x = Math.cos(rotation) * radius, z = Math.sin(rotation) * radius;
-      if (radius < 35 || practiceBottleSpots.some(p => Math.hypot(p.x-x, p.z-z) < 90)) continue;
+      if (radius < 28 || practiceBottleSpots.some(p => Math.hypot(p.x-x, p.z-z) < 55)) continue;
       practiceBottleSpots.push({ x, z, rotation, map: 'training' });
     }
     let bottleId = 0;
@@ -2640,7 +2625,6 @@
       requestAnimationFrame(loop);
 
       const dt = Math.min(0.05, (now - lastTime) / 1000);
-      syncDrift(dt);
       lastTime = now;
       if (isMobileDevice && state.isGameRunning && !state.isPaused) {
         const size = getViewportSize();
@@ -2800,7 +2784,8 @@
           if (col.map !== state.selectedMap) return;
           if (col.collected) {
             col.respawnRemaining = Math.max(0, col.respawnRemaining - dt);
-            col.ring.material.opacity = 0.05 + 0.15 * (1 - col.respawnRemaining / (nitroBottleRespawnMs / 1000));
+            const respawnSeconds=(col.map==='training'?30000:nitroBottleRespawnMs)/1000;
+            col.ring.material.opacity = 0.05 + 0.15 * (1 - col.respawnRemaining / respawnSeconds);
             if (col.respawnRemaining > 0) return;
             col.collected = false;
             col.mesh.visible = true;
@@ -2812,7 +2797,7 @@
           const dz = carGroup.position.z - col.mesh.position.z;
           if (dx * dx + dz * dz < nitroPickupRadius * nitroPickupRadius && state.turboAmount < 98) {
             col.collected = true;
-            col.respawnRemaining = nitroBottleRespawnMs / 1000;
+            col.respawnRemaining = (col.map==='training'?30000:nitroBottleRespawnMs) / 1000;
             col.mesh.visible = false;
             audio.playCollect();
             state.turboAmount = 100;
