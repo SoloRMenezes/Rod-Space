@@ -1220,25 +1220,25 @@ const GLIDE_GRAVITY_SCALE = 0.34;
 const GLIDE_MAX_SINK = 11;
 const SWING_MAX_SPEED = 58;
 const SWING_RELEASE_MAX_SPEED = 42;
-const SWING_RELEASE_CARRY = .82;
+const SWING_RELEASE_CARRY = .96;
 const SWING_MAX_RISE_SPEED = 24;
-const SWING_DESCENT_PUMP = 10;
-const SWING_ASCENT_PUMP = 3.2;
-const SWING_ENTRY_DOWN_ACCEL = 8;
-const SWING_ENTRY_FORWARD_ACCEL = 6;
+const SWING_DESCENT_PUMP = 4.5;
+const SWING_ASCENT_PUMP = 1.2;
+const SWING_ENTRY_DOWN_ACCEL = 4;
+const SWING_ENTRY_FORWARD_ACCEL = 2.5;
 const SWING_ENTRY_MAX_TIME = 0.55;
 const SWING_SAFE_REEL_SPEED = 7;
 const SWING_LOW_ASCENT_REEL_SPEED = 11;
 const SWING_BOTTOM_REEL_SPEED = 4;
 const SWING_LOW_CLEARANCE = 7;
-const SWING_LOW_LIFT_ACCEL = 30;
-const SWING_SKIM_UP_SPEED = 4.5;
+const SWING_LOW_LIFT_ACCEL = 12;
+const SWING_SKIM_UP_SPEED = 2.5;
 const SWING_PIVOT_FORWARD_MIN = 16;
 const SWING_PIVOT_FORWARD_MAX = 25;
-const SWING_GROUND_PULL_TIME = 0.46;
-const SWING_GROUND_PULL_UP_ACCEL = 58;
-const SWING_GROUND_PULL_FORWARD_ACCEL = 16;
-const SWING_GROUND_PULL_REEL_SPEED = 15;
+const SWING_GROUND_PULL_TIME = 0.36;
+const SWING_GROUND_PULL_UP_ACCEL = 28;
+const SWING_GROUND_PULL_FORWARD_ACCEL = 9;
+const SWING_GROUND_PULL_REEL_SPEED = 10;
 const MAX_TRAVERSAL_SPEED = 60;
 const MAX_FALL_SPEED = -58;
 const MAX_RISE_SPEED = 34;
@@ -1907,7 +1907,6 @@ function trySwing(hand,abilId){
   const chosen=findAssistedSwingAnchor(hand,null);
   if(!chosen)return false;
   const otherHand=hand==='left'?'right':'left';
-  const otherChoice=findAssistedSwingAnchor(otherHand,chosen.point);
   const web=P.swingWebs[hand];
   if(chosen){
     if(P.gliding){
@@ -1921,35 +1920,20 @@ function trySwing(hand,abilId){
     P.swingWebs[otherHand].anchor=null;
     P.swingWebs[otherHand].physicsPivot=null;
     P.swingWebs[otherHand].auto=false;
-    const pivotForward=cameraForwardFlat();
-    const entryFlatSpeed=Math.hypot(P.vel.x,P.vel.z);
-    const pivotForwardDistance=THREE.MathUtils.clamp(
-      SWING_PIVOT_FORWARD_MIN+entryFlatSpeed*0.16,
-      SWING_PIVOT_FORWARD_MIN,
-      SWING_PIVOT_FORWARD_MAX
-    );
     web.anchor=chosen.point.clone();
     web.fallCatch=P.vel.y<-10 && web.anchor.y<P.pos.y-2;
-    // The visible strand lands on the building, but the fixed pendulum pivot
-    // sits over the travel corridor. Both points share a height so the VFX still
-    // communicates the arc without pulling the player into the facade.
-    web.physicsPivot=P.pos.clone();
-    web.physicsPivot.y=web.anchor.y;
-    web.physicsPivot.addScaledVector(pivotForward,pivotForwardDistance);
+    // Swing around the point the strand visibly touches. The previous hidden
+    // corridor pivot made the body move around a different centre than the web.
+    web.physicsPivot=web.anchor.clone();
     web.length=P.pos.distanceTo(web.physicsPivot);
     web.targetLength=Math.min(web.length,chosen.length);
     web.auto=false;
     P.swingGroundPullT=groundPull?SWING_GROUND_PULL_TIME:0;
-    P.swingGroundPullAnchor=groundPull?(otherChoice?.point||chosen.point).clone():null;
-    if(groundPull){
-      const leftChoice=hand==='left'?chosen:otherChoice;
-      const rightChoice=hand==='right'?chosen:otherChoice;
-      P.swingGroundPullAnchors.left=lowerGroundPullAnchor(leftChoice||chosen,'left');
-      P.swingGroundPullAnchors.right=lowerGroundPullAnchor(rightChoice||chosen,'right');
-    } else {
-      P.swingGroundPullAnchors.left=null;
-      P.swingGroundPullAnchors.right=null;
-    }
+    // One input creates one strand, including from the ground. A second fake
+    // startup strand made the launch feel like an assisted slingshot.
+    P.swingGroundPullAnchor=null;
+    P.swingGroundPullAnchors.left=null;
+    P.swingGroundPullAnchors.right=null;
     P.activeSwingHand=hand;
     P.state='swing';
     P.swingAssisted=true;
@@ -1969,7 +1953,6 @@ function trySwing(hand,abilId){
       attachPosition:P.pos.clone(),
       visualAnchor:web.anchor.clone(),
       physicsPivot:web.physicsPivot.clone(),
-      pivotForwardDistance,
       samples:[]
     };
     pulse(abilId);
@@ -2406,12 +2389,22 @@ function animatePlayer(dt, moveVec){
   const wingPose=P.state==='air' && P.gliding;
   // The physics root stays upright; only the visual rig rolls and pitches.
   let rigPitch=wingPose?Math.PI/2+P.glidePitch*0.55:0;
+  if(P.state==='swing'){
+    const swingSpeed=Math.max(1,P.vel.length());
+    const fastSwing=THREE.MathUtils.clamp((swingSpeed-10)/28,0,1);
+    const riseRatio=THREE.MathUtils.clamp(P.vel.y/swingSpeed,-1,1);
+    rigPitch=-fastSwing*0.3-riseRatio*0.16;
+  }
   if(P.wallFlipT>0) rigPitch=-(1-P.wallFlipT/0.65)*Math.PI*2;
   playerRig.rotation.x=P.wallFlipT>0 ? rigPitch : THREE.MathUtils.lerp(playerRig.rotation.x,rigPitch,amt);
   // On a wall, rotate the whole visual rig so its head points along travel.
   // Horizontal and swing-carried runs therefore read as a sideways sprint,
   // while vertical runs treat the wall exactly like the floor.
-  const targetRigRoll=P.state==='climb'?P.climbVisualAngle:(wingPose?-P.glideBank*0.72:0);
+  let targetRigRoll=P.state==='climb'?P.climbVisualAngle:(wingPose?-P.glideBank*0.72:0);
+  if(P.state==='swing'){
+    const visualRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
+    targetRigRoll=THREE.MathUtils.clamp(-P.vel.dot(visualRight)*0.024,-0.46,0.46);
+  }
   const rollDelta=Math.atan2(Math.sin(targetRigRoll-playerRig.rotation.z),Math.cos(targetRigRoll-playerRig.rotation.z));
   playerRig.rotation.z+=rollDelta*(1-Math.exp(-14*dt));
 
@@ -2975,8 +2968,8 @@ function updatePlayer(dt){
       const swingSteer=mv.clone().addScaledVector(horizontalRadial,-mv.dot(horizontalRadial)*.7);
       if(swingSteer.lengthSq()>0.001){
         swingSteer.normalize();
-        P.vel.x+=swingSteer.x*10*dt;
-        P.vel.z+=swingSteer.z*10*dt;
+        P.vel.x+=swingSteer.x*5*dt;
+        P.vel.z+=swingSteer.z*5*dt;
       }
     }
     const beforeSwingMove = P.pos.clone();
@@ -3027,10 +3020,8 @@ function updatePlayer(dt){
       if(P.swingPhase==='ascent'){
         P.swingPeakRise=Math.max(P.swingPeakRise,currentVy);
         if(currentVy>2.5) P.swingClimbedAfterDescent=true;
-        const releaseGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
-        const releaseThreshold=Math.max(2.2,P.swingPeakRise*0.34);
-        const losingRise=P.swingClimbedAfterDescent && P.swingPeakRise>4.5 && currentVy<=releaseThreshold && previousVy>currentVy;
-        if(P.swingAge>0.75 && losingRise && currentVy>-0.5 && P.pos.y-releaseGround>12) autoReleaseSwing();
+        // Holding the web keeps it attached. Releasing Q/E is the only normal
+        // release, so the player can let go at any point in the arc.
       }
       P.swingLastVy=P.vel.y;
       if(P.swingTelemetry){
