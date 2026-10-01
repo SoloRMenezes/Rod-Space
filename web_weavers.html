@@ -109,7 +109,7 @@
   @media (max-width:600px){
     #lockHint{display:none;}
     #abilityBar{gap:4px;bottom:18px;}
-    .ability{width:54px;height:54px;}
+    .ability{width:46px;height:50px;font-size:9px;}
     #patrolWrap{top:68px;left:12px}
     #minimapWrap{transform:scale(.72);transform-origin:top right}
     #healthWrap{width:230px}
@@ -177,7 +177,8 @@
   <div id="patrolWrap" class="comicPanel"><span id="patrolStatus">WAVE 1 · 0 STOPPED · 0 ACTIVE</span></div>
 
   <div id="abilityBar">
-    <div class="ability" id="abSwing"><div class="icon">🕸️</div>SWING<div class="key">Q</div><div class="cd"></div></div>
+    <div class="ability" id="abSwingLeft"><div class="icon">🕸️</div>LEFT WEB<div class="key">Q</div><div class="cd"></div></div>
+    <div class="ability" id="abSwingRight"><div class="icon">🕸️</div>RIGHT WEB<div class="key">E</div><div class="cd"></div></div>
     <div class="ability" id="abZip"><div class="icon">➤</div>ZIP<div class="key">Z</div><div class="cd"></div></div>
     <div class="ability" id="abWebshot"><div class="icon">💥</div>SHOT<div class="key">X</div><div class="cd"></div></div>
     <div class="ability" id="abPull"><div class="icon">↙</div>PULL<div class="key">C</div><div class="cd"></div></div>
@@ -226,7 +227,8 @@
     <div class="row"><span>Toggle shift-lock</span><span class="keybtn" data-action="shiftLock">SHIFT</span></div>
     <div class="row"><span>Toggle run/walk</span><span class="keybtn" data-action="toggleRun">CTRL</span></div>
     <div class="row"><span>Jump / toggle web-wings</span><span class="keybtn" data-action="jump">SPACE</span></div>
-    <div class="row"><span>Smart web swing</span><span class="keybtn" data-action="swing">Q</span></div>
+    <div class="row"><span>Left-side web swing</span><span class="keybtn" data-action="swingLeft">Q</span></div>
+    <div class="row"><span>Right-side web swing</span><span class="keybtn" data-action="swingRight">E</span></div>
     <div class="row"><span>Zip (hold; release to let go)</span><span class="keybtn" data-action="zip">Z</span></div>
     <div class="row"><span>Web-shot</span><span class="keybtn" data-action="webshot">X</span></div>
     <div class="row"><span>Pull</span><span class="keybtn" data-action="pull">C</span></div>
@@ -263,7 +265,7 @@
 // ---------------------------------------------------------------------------------------
 const bindings = {
   forward:'KeyW', back:'KeyS', left:'KeyA', right:'KeyD',
-  jump:'Space', swing:'KeyQ', zip:'KeyZ', webshot:'KeyX', pull:'KeyC',
+  jump:'Space', swingLeft:'KeyQ', swingRight:'KeyE', zip:'KeyZ', webshot:'KeyX', pull:'KeyC',
   block:'KeyF', recover:'KeyR', toggleRun:'ControlLeft', shiftLock:'ShiftLeft', menu:'Escape',
   zoomIn:'KeyI', zoomOut:'KeyO', debug:'Backquote'
 };
@@ -306,10 +308,11 @@ window.addEventListener('keydown', e=>{
 });
 window.addEventListener('keyup', e=>{
   keys[e.code]=false;
-  if(e.code===bindings.swing && gameActive && !paused &&
+  const releasedHand=e.code===bindings.swingLeft?'left':e.code===bindings.swingRight?'right':null;
+  if(releasedHand && gameActive && !paused &&
       (P.state==='swing' || (P.state==='climb' && P.wallRunFromSwing))){
-    releaseSwing(null);
-    lastSwing=false;
+    releaseSwing(releasedHand);
+    if(releasedHand==='left')lastSwingLeft=false;else lastSwingRight=false;
   }
   if(e.code === bindings.zoomIn || e.code === bindings.zoomOut) saveSettings();
 });
@@ -380,10 +383,8 @@ function loadSettings(){
       Object.keys(defaultBindings).forEach(k=>{
         if(typeof saved.bindings[k] === 'string') bindings[k] = saved.bindings[k];
       });
-      // Migrate older two-button swing saves to the single smart-swing action.
-      if(typeof saved.bindings.swing !== 'string' && typeof saved.bindings.swingLeft === 'string'){
-        bindings.swing = saved.bindings.swingLeft;
-      }
+      // Migrate the previous single smart-swing binding to the left web.
+      if(typeof saved.bindings.swingLeft !== 'string' && typeof saved.bindings.swing === 'string')bindings.swingLeft=saved.bindings.swing;
     }
     if(typeof saved.running === 'boolean') running = saved.running;
     if(typeof saved.debugOn === 'boolean') debugOn = saved.debugOn;
@@ -395,7 +396,7 @@ function saveSettings(){
   writeSavedSettings({bindings, running, debugOn, mouseSensitivity, cameraDistance});
 }
 function syncBindingLabels(){
-  ['shiftLock','toggleRun','jump','swing','zip','webshot','pull','block','recover','zoomIn','zoomOut','debug']
+  ['shiftLock','toggleRun','jump','swingLeft','swingRight','zip','webshot','pull','block','recover','zoomIn','zoomOut','debug']
     .forEach(a=>{
       const el = document.querySelector(`.keybtn[data-action="${a}"]`);
       if(el) el.textContent = prettyKey(bindings[a]);
@@ -1134,6 +1135,8 @@ const AIR_CONTROL = 18;
 const AIR_DRAG = 0.997;
 const AIR_MAX_SPEED = 50;
 const SWING_MAX_SPEED = 58;
+const SWING_RELEASE_MAX_SPEED = 42;
+const SWING_RELEASE_CARRY = .82;
 const SWING_MAX_RISE_SPEED = 24;
 const SWING_DESCENT_PUMP = 10;
 const SWING_ASCENT_PUMP = 3.2;
@@ -1444,10 +1447,12 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       const idealLength=belowCatch?dist*0.92:Math.min(dist*0.88,maxClearRope);
       const ropeLength=Math.max(SWING_MIN_RANGE,idealLength);
       const interiorBonus=Math.min(18,Math.max(0,upperEdgeInteriorClearance(point,b))*1.4);
+      // Once an anchor is safe and visible, distance dominates: Q/E should
+      // attach to the closest usable building on that side, not a taller but
+      // much farther building selected by a cinematic scoring bonus.
       const score=belowCatch
         ? 310-Math.abs(horizontalDist-fallSearchDistance)*3.2+forwardDot*190+Math.max(0,sideDot)*28+interiorBonus
-        : 220-Math.abs(horizontalDist-38)*2.1+forwardDot*100+Math.max(0,sideDot)*45+
-          Math.min(55,point.y-playerEye.y)*2.2+interiorBonus;
+        : 1200-dist*12+forwardDot*28+Math.max(0,sideDot)*14+interiorBonus;
       if(score>bestScore){ bestScore=score; best={point:point.clone(),length:ropeLength,score}; }
     }
   }
@@ -1801,35 +1806,16 @@ let combatTarget=null;
 let comboChainTarget=null;
 let comboChainMode=null;
 
-// Q chooses one reachable anchor and automatically fires the wrist on that side.
+// Q and E explicitly choose the nearest valid building on their own side.
 // Enemies stay valid targets for combat abilities, but traversal webs need city geometry.
-function trySwing(abilId){
+function trySwing(hand,abilId){
   if(P.state==='downed' || P.state==='defeated') return;
   if(P.activeSwingHand || P.cooldowns.swing>0) return false;
-  const leftChoice=findAssistedSwingAnchor('left',null);
-  const rightChoice=findAssistedSwingAnchor('right',null);
-  let hand=null;
-  let chosen=null;
-  if(leftChoice && rightChoice){
-    const nearMapBorder=Math.abs(P.pos.x)>HALF_CITY*0.82 || Math.abs(P.pos.z)>HALF_CITY*0.82;
-    if(nearMapBorder){
-      const leftDistance=P.pos.distanceTo(leftChoice.point);
-      const rightDistance=P.pos.distanceTo(rightChoice.point);
-      hand=leftDistance<=rightDistance?'left':'right';
-    } else {
-      hand=P.nextSwingHand;
-    }
-    chosen=hand==='left'?leftChoice:rightChoice;
-  } else if(leftChoice){
-    chosen=leftChoice;
-    hand='left';
-  } else if(rightChoice){
-    chosen=rightChoice;
-    hand='right';
-  }
-  if(!chosen || !hand) return false;
-  const web=P.swingWebs[hand];
+  const chosen=findAssistedSwingAnchor(hand,null);
+  if(!chosen)return false;
   const otherHand=hand==='left'?'right':'left';
+  const otherChoice=findAssistedSwingAnchor(otherHand,chosen.point);
+  const web=P.swingWebs[hand];
   if(chosen){
     if(P.gliding){
       P.gliding=false;
@@ -1860,10 +1846,11 @@ function trySwing(abilId){
     web.length=P.pos.distanceTo(web.physicsPivot);
     web.targetLength=Math.min(web.length,chosen.length);
     web.auto=false;
-    const secondaryChoice=hand==='left'?rightChoice:leftChoice;
     P.swingGroundPullT=groundPull?SWING_GROUND_PULL_TIME:0;
-    P.swingGroundPullAnchor=groundPull?(secondaryChoice?.point||chosen.point).clone():null;
+    P.swingGroundPullAnchor=groundPull?(otherChoice?.point||chosen.point).clone():null;
     if(groundPull){
+      const leftChoice=hand==='left'?chosen:otherChoice;
+      const rightChoice=hand==='right'?chosen:otherChoice;
       P.swingGroundPullAnchors.left=lowerGroundPullAnchor(leftChoice||chosen,'left');
       P.swingGroundPullAnchors.right=lowerGroundPullAnchor(rightChoice||chosen,'right');
     } else {
@@ -1871,7 +1858,6 @@ function trySwing(abilId){
       P.swingGroundPullAnchors.right=null;
     }
     P.activeSwingHand=hand;
-    P.nextSwingHand=hand==='left'?'right':'left';
     P.state='swing';
     P.swingAssisted=true;
     P.swingPhaseT=0;
@@ -1969,7 +1955,9 @@ function releaseSwing(hand=null,boost=true){
     // Manual release is immediate and momentum-preserving. A tiny upward carry
     // keeps the animation readable without redirecting the player toward camera.
     if(P.vel.y>-2) P.vel.y=Math.min(SWING_MAX_RISE_SPEED,P.vel.y+1.25);
-    limitHorizontalSpeed(SWING_MAX_SPEED);
+    P.vel.x*=SWING_RELEASE_CARRY;
+    P.vel.z*=SWING_RELEASE_CARRY;
+    limitHorizontalSpeed(SWING_RELEASE_MAX_SPEED);
   }
   P.state='air';
   P.swingAssisted=false;
@@ -1993,7 +1981,9 @@ function autoReleaseSwing(){
   releaseSwing(null,false);
   // Keep the exact horizontal travel direction and speed. The automatic assist
   // spends part of the stored arc energy vertically instead of firing forward.
-  limitHorizontalSpeed(SWING_MAX_SPEED);
+  P.vel.x*=SWING_RELEASE_CARRY;
+  P.vel.z*=SWING_RELEASE_CARRY;
+  limitHorizontalSpeed(SWING_RELEASE_MAX_SPEED);
   P.vel.y=Math.max(P.vel.y,launchY);
   P.swingRequireRelease=true;
   P.swingWebs.left.retry=0.3;
@@ -2511,14 +2501,15 @@ function animatePlayer(dt, moveVec){
 // ---------------------------------------------------------------------------------------
 // MAIN UPDATE LOOP
 // ---------------------------------------------------------------------------------------
-let lastSwing=false, lastZip=false, lastJump=false, lastPull=false, lastMelee=false, lastWebshot=false;
+let lastSwingLeft=false,lastSwingRight=false,lastZip=false,lastJump=false,lastPull=false,lastMelee=false,lastWebshot=false;
 const WALK_SPEED = 6.5;
 
 function clearHeldInputs(){
   Object.keys(keys).forEach(code=>{ keys[code] = false; });
   mouseDown[0] = false;
   mouseDown[2] = false;
-  lastSwing = false;
+  lastSwingLeft = false;
+  lastSwingRight = false;
   lastZip = false;
   lastJump = false;
   lastPull = false;
@@ -2564,7 +2555,8 @@ function updatePlayer(dt){
   if(P.activeSwingHand && !P.swingWebs[P.activeSwingHand].anchor) P.activeSwingHand=null;
 
   // input edge detection
-  const swingDown = keys[bindings.swing];
+  const swingLeftDown = keys[bindings.swingLeft];
+  const swingRightDown = keys[bindings.swingRight];
   const zipDown = keys[bindings.zip];
   const webshotDown = keys[bindings.webshot];
   const jumpDown = keys[bindings.jump];
@@ -2572,14 +2564,16 @@ function updatePlayer(dt){
   const meleeDown = mouseDown[0];
   P.blocking = !!keys[bindings.block] && P.state!=='downed' && P.state!=='defeated';
 
-  if(!swingDown) P.swingRequireRelease=false;
-  if(swingDown && !P.swingRequireRelease && !P.activeSwingHand &&
-      P.swingWebs.left.retry<=0 && P.swingWebs.right.retry<=0){
-    trySwing('abSwing');
+  if(swingLeftDown&&!lastSwingLeft&&!P.activeSwingHand&&P.swingWebs.left.retry<=0){
+    trySwing('left','abSwingLeft');
     P.swingWebs.left.retry=0.18;
+  }
+  if(swingRightDown&&!lastSwingRight&&!P.activeSwingHand&&P.swingWebs.right.retry<=0){
+    trySwing('right','abSwingRight');
     P.swingWebs.right.retry=0.18;
   }
-  if(!swingDown && lastSwing) releaseSwing(null);
+  if(!swingLeftDown&&lastSwingLeft)releaseSwing('left');
+  if(!swingRightDown&&lastSwingRight)releaseSwing('right');
   // Zip follows the held web: releasing Z lets go immediately and preserves
   // the current travel momentum, while Space remains an alternate bailout.
   if(zipDown && !lastZip && P.cooldowns.zip<=0 && P.state!=='zip'){ tryZip(); P.cooldowns.zip=0.15; }
@@ -2646,7 +2640,7 @@ function updatePlayer(dt){
   }
   if(!keys[bindings.recover]) P.recoverPressed=false;
 
-  lastSwing=swingDown; lastZip=zipDown; lastWebshot=webshotDown;
+  lastSwingLeft=swingLeftDown;lastSwingRight=swingRightDown;lastZip=zipDown;lastWebshot=webshotDown;
   lastJump=jumpDown; lastPull=pullDown; lastMelee=meleeDown;
 
   // movement input vector (camera relative)
@@ -3300,7 +3294,7 @@ function updateDebugPanel(){
 }
 
 function updateAbilityCooldownUI(){
-  const map = {abSwing:'swing', abZip:'zip', abWebshot:'webshot', abPull:'pull', abMelee:'melee'};
+  const map = {abSwingLeft:'swing',abSwingRight:'swing',abZip:'zip',abWebshot:'webshot',abPull:'pull',abMelee:'melee'};
   const maxes = {swing:0.25, zip:0.15, webshot:0.5, pull:1.6, melee:0.45};
   for(const id in map){
     const cd = P.cooldowns[map[id]];

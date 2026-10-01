@@ -31,6 +31,11 @@ assert.match(weavers,/if\(!zipDown && lastZip && P\.state==='zip'\) cancelZip\(\
 assert.match(weavers,/const horizontalRadial=radial\.clone\(\);horizontalRadial\.y=0;/);
 assert.match(weavers,/travelDir\.lerp\(mv,\.16\)\.normalize\(\)/);
 assert.match(weavers,/P\.vel\.copy\(exitDir\)\.multiplyScalar\(18\)/);
+assert.match(weavers,/swingLeft:'KeyQ', swingRight:'KeyE'/);
+assert.match(weavers,/trySwing\('left','abSwingLeft'\)/);
+assert.match(weavers,/trySwing\('right','abSwingRight'\)/);
+assert.match(weavers,/const SWING_RELEASE_CARRY = \.82;/);
+assert.match(weavers,/limitHorizontalSpeed\(SWING_RELEASE_MAX_SPEED\)/);
 
 for(const [name,html] of [['nicos_nextbots.html',nico],['Blackjack.html',blackjack],['web_weavers.html',weavers]]){
   const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match=>match[1]).filter(script=>script.trim());
