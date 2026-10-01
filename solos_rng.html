@@ -15,6 +15,7 @@
             --epic: #a855f7;
             --legendary: #eab308;
             --mythic: #ef4444;
+            --rainbow: #b8f7ff;
             --limited: #f472b6;
             --coin: #ffd700;
             --text-main: #f8fafc;
@@ -278,6 +279,17 @@
         .rarity-Epic { color: var(--epic); }
         .rarity-Legendary { color: var(--legendary); text-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
         .rarity-Mythic { color: var(--mythic); text-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        .rarity-Rainbow {
+            color: var(--rainbow);
+            background: linear-gradient(90deg,#ff8fab,#ffd166,#8cff98,#7df9ff,#a78bfa,#ff8fab);
+            background-size: 240% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: brightness(1.18) drop-shadow(0 0 8px #7df9ff88);
+            animation: rainbowShift 2.4s linear infinite;
+        }
+        @keyframes rainbowShift { to { background-position: 240% 0; } }
         .rarity-Limited { color: var(--limited); text-shadow: 0 0 10px var(--limited); }
 
         #msg-box {
@@ -366,6 +378,7 @@
 
         <div class="shop-card"><h3>🧲 Luck magnet <span id="luck-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Slightly improves every rare drop.</p><button class="btn-primary" onclick="buyUpgrade('luck')">Upgrade · <span id="luck-price">150</span></button></div>
         <div class="shop-card"><h3>🎒 Bigger bag <span id="bag-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Adds four inventory spaces.</p><button class="btn-primary" onclick="buyUpgrade('bag')">Upgrade · <span id="bag-price">120</span></button></div>
+        <div class="shop-card"><h3>⚡ Roll accelerator <span id="speed-level" style="color:var(--text-dim)"></span></h3><p id="speed-description" style="color:var(--text-dim);font-size:.8rem">Removes 0.1 seconds from every roll. Level 10 is instant.</p><button class="btn-primary" id="speed-upgrade-btn" onclick="buyUpgrade('speed')">Upgrade · <span id="speed-price">100</span></button></div>
         <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives ten pulls every five minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +100</button></div>
     </div>
 
@@ -391,6 +404,7 @@
                 <tr><td class="rarity-Epic">Epic</td><td>3%</td></tr>
                 <tr><td class="rarity-Legendary">Legendary</td><td>0.8%</td></tr>
                 <tr><td class="rarity-Mythic">Mythic</td><td>0.2%</td></tr>
+                <tr><td class="rarity-Rainbow">Rainbow</td><td>0.01% · 1 in 10,000</td></tr>
             </table>
         </div>
 
@@ -424,8 +438,9 @@
 
 <script>
     const SPIN_COST = 10, PITY_LIMIT=75;
-    const UPGRADE_BASE_PRICES = { luck: 150, bag: 120 };
-    const SELL_VALUES = { Common:5, Uncommon:9, Rare:22, Epic:55, Legendary:150, Mythic:700 };
+    const UPGRADE_BASE_PRICES = { luck: 150, bag: 120, speed: 100 };
+    const MAX_SPEED_LEVEL=10, BASE_ROLL_MS=1000, RAINBOW_CHANCE=1/10000;
+    const SELL_VALUES = { Common:5, Uncommon:9, Rare:22, Epic:55, Legendary:150, Mythic:700, Rainbow:5000 };
     const generatePool = () => {
         const pool = [];
         const config = [
@@ -434,7 +449,8 @@
             { r:"Rare",s:18,e:[["🔋","Power Cell"],["⚖️","Golden Scales"],["🔮","Crystal Ball"],["💍","Ruby Ring"],["📜","Ancient Scroll"],["🗿","Stone Idol"],["🪶","Phoenix Feather"],["🗝️","Royal Key"],["🧿","Watcher Eye"],["⚔️","Twin Blades"]]},
             { r:"Epic",s:45,e:[["🗺️","Lost World Map"],["💎","Blue Diamond"],["🔥","Eternal Flame"],["❄️","Frozen Heart"],["🪄","Archmage Wand"],["🦴","Dragon Bone"],["🏆","Champion's Trophy"],["🛸","Alien Core"]]},
             { r:"Legendary",s:130,e:[["🛰️","Lost Satellite"],["👑","Sun King's Crown"],["🐉","Dragon Egg"],["🧬","Genesis Sample"],["⚡","Storm Core"],["🗡️","Excalibur"]]},
-            { r:"Mythic",s:650,e:[["🕳️","Portable Void"],["🎞️","Final Timeline"],["🪐","Pocket Universe"],["🌌","Galaxy Shard"]]}
+            { r:"Mythic",s:650,e:[["🕳️","Portable Void"],["🎞️","Final Timeline"],["🪐","Pocket Universe"],["🌌","Galaxy Shard"]]},
+            { r:"Rainbow",s:5000,e:[["🌈","Prismatic Crown"],["🦄","Spectrum Spirit"],["🔆","Aurora Core"],["💠","Infinite Prism"]]}
         ];
         config.forEach(c => {
             c.e.forEach(([emoji,name]) => {
@@ -456,6 +472,7 @@
         pity: parseInt(localStorage.getItem('rng_pity')) || 0,
         maxInv: Math.max(16,parseInt(localStorage.getItem('rng_bag'))||16),
         luck: Math.max(0,parseInt(localStorage.getItem('rng_luck'))||0),
+        speed: Math.min(MAX_SPEED_LEVEL,Math.max(0,parseInt(localStorage.getItem('rng_speed'))||0)),
         totalRolls: parseInt(localStorage.getItem('rng_rolls')) || 0,
         totalLegendary: parseInt(localStorage.getItem('rng_legendaries')) || 0,
         inventory: JSON.parse(localStorage.getItem('rng_inventory')) || [],
@@ -479,7 +496,7 @@
         localStorage.setItem('rng_inventory', JSON.stringify(state.inventory));
         localStorage.setItem('rng_collection', JSON.stringify(state.collection));
         localStorage.setItem('rng_item_counts',JSON.stringify(state.itemCounts));
-        localStorage.setItem('rng_bag',state.maxInv);localStorage.setItem('rng_luck',state.luck);
+        localStorage.setItem('rng_bag',state.maxInv);localStorage.setItem('rng_luck',state.luck);localStorage.setItem('rng_speed',state.speed);
         localStorage.setItem('rng_last_scrap',state.lastScrap);
         updateUI();
     }
@@ -501,16 +518,23 @@
         const roll1 = document.getElementById('roll-1-btn');
         const roll10 = document.getElementById('roll-10-btn');
         
-        display.classList.add('is-rolling');
+        const rollDuration=Math.max(0,BASE_ROLL_MS-state.speed*100);
+        display.classList.toggle('is-rolling',rollDuration>0);
         roll1.disabled = true;
         roll10.disabled = true;
+
+        if(rollDuration===0){
+            finishSpin(count);
+            roll1.disabled=false;roll10.disabled=false;
+            return;
+        }
 
         let rollTimer = 0;
         const rollInterval = setInterval(() => {
             const randomItem = lootPool[Math.floor(Math.random() * lootPool.length)];
             document.getElementById('item-emoji').innerText = randomItem.emoji;
             rollTimer += 100;
-            if (rollTimer >= 800) {
+            if (rollTimer >= rollDuration) {
                 clearInterval(rollInterval);
                 finishSpin(count);
                 display.classList.remove('is-rolling');
@@ -529,18 +553,21 @@
         for (let i = 0; i < count; i++) {
             state.pity++;
             let item;
-            if (state.pity >= PITY_LIMIT) {
+            if (Math.random() < RAINBOW_CHANCE) {
+                const rainbow=lootPool.filter(l=>l.rarity==="Rainbow");
+                item=rainbow[Math.floor(Math.random()*rainbow.length)];
+            } else if (state.pity >= PITY_LIMIT) {
                 const high = lootPool.filter(l => l.rarity === "Legendary" || l.rarity === "Mythic");
                 item = high[Math.floor(Math.random() * high.length)];
                 state.pity = 0;
             } else {
-                const weights={Common:66-state.luck*1.5,Uncommon:22,Rare:8+state.luck*.7,Epic:3+state.luck*.45,Legendary:.8+state.luck*.25,Mythic:.2+state.luck*.1};
+                const weights={Common:65.99-state.luck*1.5,Uncommon:22,Rare:8+state.luck*.7,Epic:3+state.luck*.45,Legendary:.8+state.luck*.25,Mythic:.2+state.luck*.1};
                 let rnd=Math.random()*Object.values(weights).reduce((a,b)=>a+b,0),rarity='Common';
                 for(const [name,weight] of Object.entries(weights)){if(rnd<weight){rarity=name;break}rnd-=weight}
                 const choices=lootPool.filter(x=>x.rarity===rarity);item=choices[Math.floor(Math.random()*choices.length)];
             }
             
-            if (item.rarity === "Legendary" || item.rarity === "Mythic") {
+            if (item.rarity === "Legendary" || item.rarity === "Mythic" || item.rarity === "Rainbow") {
                 state.pity = 0;
                 state.totalLegendary++;
             }
@@ -569,6 +596,10 @@
         document.getElementById('stat-legendary').innerText = state.totalLegendary;
         document.getElementById('collection-count').innerText=`${state.collection.filter(c=>lootPool.some(i=>i.name===c.name)).length} / ${lootPool.length}`;
         document.getElementById('luck-level').innerText=`Lv ${state.luck}`;document.getElementById('bag-level').innerText=`${state.maxInv} slots`;document.getElementById('luck-price').innerText=UPGRADE_BASE_PRICES.luck*(state.luck+1);document.getElementById('bag-price').innerText=UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20;
+        const speedButton=document.getElementById('speed-upgrade-btn'),speedSeconds=Math.max(0,(BASE_ROLL_MS-state.speed*100)/1000);
+        document.getElementById('speed-level').innerText=`Lv ${state.speed}/${MAX_SPEED_LEVEL} · ${speedSeconds?speedSeconds.toFixed(1)+'s':'instant'}`;
+        document.getElementById('speed-price').innerText=state.speed>=MAX_SPEED_LEVEL?'MAX':UPGRADE_BASE_PRICES.speed*(state.speed+1);
+        speedButton.disabled=state.speed>=MAX_SPEED_LEVEL;
 
         const list = document.getElementById('inventory-list');
         list.innerHTML = '';
@@ -587,7 +618,7 @@
 
     function hardReset() {
         if (confirm("Are you sure? This will wipe ALL progress (Coins, Rolls, Collection).")) {
-            ['rng_coins','rng_pity','rng_rolls','rng_legendaries','rng_inventory','rng_collection','rng_item_counts','rng_bag','rng_luck','rng_last_scrap'].forEach(key=>localStorage.removeItem(key));
+            ['rng_coins','rng_pity','rng_rolls','rng_legendaries','rng_inventory','rng_collection','rng_item_counts','rng_bag','rng_luck','rng_speed','rng_last_scrap'].forEach(key=>localStorage.removeItem(key));
             location.reload();
         }
     }
@@ -605,7 +636,8 @@
         notify("Bought " + item.name + "!");
         save();
     }
-    function buyUpgrade(type){const price=type==='luck'?UPGRADE_BASE_PRICES.luck*(state.luck+1):UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20;if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':'Bag expanded');save();}
+    function upgradePrice(type){if(type==='luck')return UPGRADE_BASE_PRICES.luck*(state.luck+1);if(type==='speed')return UPGRADE_BASE_PRICES.speed*(state.speed+1);return UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20}
+    function buyUpgrade(type){if(type==='speed'&&state.speed>=MAX_SPEED_LEVEL)return notify('Roll speed is already instant');const price=upgradePrice(type);if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else if(type==='speed')state.speed++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':type==='speed'?(state.speed===MAX_SPEED_LEVEL?'Rolling is now instant':'Rolling sped up by 0.1s'):'Bag expanded');save();}
     function scrapRun(){const wait=300000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=100;notify('Recovered 100 coins');save();}
 
     function openCollectionDetail(item) {
