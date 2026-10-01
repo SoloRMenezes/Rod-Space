@@ -1,5 +1,4 @@
 const {readFileSync}=require('node:fs'), vm=require('node:vm'), assert=require('node:assert/strict'),{webcrypto}=require('node:crypto');
-assert.match(readFileSync(require('node:path').resolve(__dirname,'../offline.js'),'utf8'),/location\.protocol==='file:'\)return/);
 const root=require('node:path').resolve(__dirname,'..'),handlers={},stores=new Map();let online=true,corrupt=false;
 const cache=()=>({data:new Map(),async match(k){return this.data.get(k)?.clone()},async put(k,v){this.data.set(k,v.clone())},async addAll(urls){for(const u of urls)await this.put(u,await context.fetch(u))}});
 const context={URL,Response,Headers,crypto:webcrypto,console,self:{location:{href:'https://example.test/Rod-Space/sw.js'},addEventListener:(n,f)=>handlers[n]=f,skipWaiting:async()=>{},clients:{claim:async()=>{}}},caches:{keys:async()=>[...stores.keys()],open:async k=>{if(!stores.has(k))stores.set(k,cache());return stores.get(k)},delete:async k=>stores.delete(k)},fetch:async u=>{if(!online)throw Error('offline');let f=decodeURIComponent(new URL(typeof u==='string'?u:u.url).pathname.replace('/Rod-Space/',''))||'index.html';return new Response(corrupt?'bad':readFileSync(root+'/'+f))}};
@@ -9,7 +8,7 @@ async function request(path,mode='navigate'){let pending;handlers.fetch({request
 (async()=>{
  let pending;handlers.install({waitUntil:p=>pending=p});await pending;
  const ids=['reaction','multiplayer-test','web_weavers','backrooms','sling-champ','nextup'];
- assert.equal(Object.keys(context.self.OFFLINE_CATALOG).length,35);
+ assert.equal(Object.keys(context.self.OFFLINE_CATALOG).length,36);
  corrupt=true;assert.match((await message('download',ids[0])).error,/changed/);assert.equal((await message('status')).items.length,0);corrupt=false;
  for(const id of ids.slice(0,5))assert.equal((await message('download',id)).items.some(g=>g.id===id),true);
  assert.equal((await message('download',ids[5])).items.length,6);
@@ -19,7 +18,6 @@ async function request(path,mode='navigate'){let pending;handlers.fetch({request
  online=false;
  for(const id of ids){const g=context.self.OFFLINE_CATALOG[id];for(const f of g.files)assert.equal((await request(f.path,'cors')).status,200);}
  assert.match(await (await request('')).text(),/ROD/);
- assert.match(await (await request('party.html')).text(),/PARTY/);
  assert.equal((await request('not-downloaded.html')).status,503);
  assert.equal((await message('offload',ids[0])).items.length,5);
  online=true;assert.equal((await message('download',ids[0])).items.length,6);

@@ -16,6 +16,10 @@
             --legendary: #eab308;
             --mythic: #ef4444;
             --rainbow: #b8f7ff;
+            --celestial: #67e8f9;
+            --transcendent: #f0abfc;
+            --void: #8b5cf6;
+            --divine: #fff7c2;
             --limited: #f472b6;
             --coin: #ffd700;
             --text-main: #f8fafc;
@@ -93,6 +97,10 @@
             border-radius: 8px;
             margin-bottom: 1.5rem;
             border: 1px solid #27272a;
+            position: sticky;
+            top: 12px;
+            z-index: 120;
+            box-shadow: 0 10px 30px rgba(0,0,0,.38);
         }
 
         .currency-display { color: var(--coin); font-weight: 800; display: flex; align-items: center; gap: 6px; }
@@ -125,6 +133,12 @@
             0% { transform: translateY(0); }
             50% { transform: translateY(-5px); }
             100% { transform: translateY(0); }
+        }
+
+        .inv-slot {
+            --slot-rarity: var(--common);
+            background: color-mix(in srgb, var(--card) 76%, var(--slot-rarity) 24%);
+            border-color: color-mix(in srgb, #343740 58%, var(--slot-rarity) 42%);
         }
 
         .item-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.25rem; }
@@ -289,15 +303,20 @@
             filter: brightness(1.18) drop-shadow(0 0 8px #7df9ff88);
             animation: rainbowShift 2.4s linear infinite;
         }
+        .rarity-Celestial { color:var(--celestial); text-shadow:0 0 14px #22d3ee88; }
+        .rarity-Transcendent { color:var(--transcendent); text-shadow:0 0 15px #e879f988; }
+        .rarity-Void { color:var(--void); text-shadow:0 0 18px #7c3aedaa; }
+        .rarity-Divine { color:var(--divine); text-shadow:0 0 18px #fde68aaa; }
         @keyframes rainbowShift { to { background-position: 240% 0; } }
         .rarity-Limited { color: var(--limited); text-shadow: 0 0 10px var(--limited); }
 
         #msg-box {
-            position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
+            position: fixed; bottom: 108px; left: 50%; transform: translateX(-50%) translateY(8px);
             background: var(--accent); color: white; padding: 12px 24px;
-            border-radius: 30px; opacity: 0; transition: 0.4s var(--spring);
-            z-index: 4000; pointer-events: none; font-weight: bold;
+            border-radius: 30px; opacity: 0; transition: opacity .2s ease,transform .2s var(--spring);
+            z-index: 4000; pointer-events: none; font-weight: bold; white-space:nowrap;
         }
+        #msg-box.visible { opacity:1; transform:translateX(-50%) translateY(0); }
 
         .shop-card {
             background: var(--card);
@@ -351,10 +370,16 @@
             <button class="btn-primary roll-button" id="roll-1-btn" onclick="spin(1)">Pull once · 10</button>
             <button class="btn-primary roll-button" id="roll-5-btn" style="background: #27272a;" onclick="spin(5)">Pull five · 50</button>
         </div>
-        <div id="bulk-roll-buttons" style="display:none;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-            <button class="btn-primary roll-button" id="roll-50-btn" style="display:none;background:#4338ca" onclick="spin(50)">Pull 50 · 475</button>
-            <button class="btn-primary roll-button" id="roll-100-btn" style="display:none;background:#7c3aed" onclick="spin(100)">Pull 100 · 900</button>
+        <div id="bulk-roll-buttons" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px">
+            <button class="btn-primary roll-button" id="roll-50-btn" style="display:none;background:#4338ca" onclick="spin(50)">Pull 50 · 525</button>
+            <button class="btn-primary roll-button" id="roll-100-btn" style="display:none;background:#6d28d9" onclick="spin(100)">Pull 100 · 1,200</button>
+            <button class="btn-primary roll-button" id="roll-500-btn" style="display:none;background:#7e22ce" onclick="spin(500)">Pull 500 · 7,500</button>
+            <button class="btn-primary roll-button" id="roll-1000-btn" style="display:none;background:#9333ea" onclick="spin(1000)">Pull 1,000 · 18,000</button>
+            <button class="btn-primary roll-button" id="roll-10000-btn" style="display:none;background:#be185d" onclick="spin(10000)">Pull 10,000 · 250,000</button>
+            <button class="btn-primary roll-button" id="roll-100000-btn" style="display:none;background:#c2410c" onclick="spin(100000)">Pull 100,000 · 3,000,000</button>
+            <button class="btn-primary roll-button" id="roll-1000000-btn" style="display:none;background:#b91c1c;grid-column:1/-1" onclick="spin(1000000)">Pull 1,000,000 · 40,000,000</button>
         </div>
+        <div id="bulk-overflow-note" style="display:none;color:var(--text-dim);font-size:.68rem;margin-top:9px">Items that do not fit in your bag are automatically sold.</div>
 
         <div style="margin-top: 2.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -383,7 +408,7 @@
         <div class="shop-card"><h3>🧲 Luck magnet <span id="luck-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Slightly improves every rare drop.</p><button class="btn-primary" onclick="buyUpgrade('luck')">Upgrade · <span id="luck-price">150</span></button></div>
         <div class="shop-card"><h3>🎒 Bigger bag <span id="bag-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Adds four inventory spaces.</p><button class="btn-primary" onclick="buyUpgrade('bag')">Upgrade · <span id="bag-price">120</span></button></div>
         <div class="shop-card"><h3>⚡ Roll accelerator <span id="speed-level" style="color:var(--text-dim)"></span></h3><p id="speed-description" style="color:var(--text-dim);font-size:.8rem">Removes 0.1 seconds from every roll. Level 10 is instant.</p><button class="btn-primary" id="speed-upgrade-btn" onclick="buyUpgrade('speed')">Upgrade · <span id="speed-price">100</span></button></div>
-        <div class="shop-card"><h3>📦 Bulk pull permits</h3><p style="color:var(--text-dim);font-size:.8rem">Permanently unlock discounted bulk-roll buttons on the main game screen.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn-primary" id="unlock-50-btn" onclick="buyBulkUnlock(50)">Unlock Roll 50 · 1,500</button><button class="btn-primary" id="unlock-100-btn" onclick="buyBulkUnlock(100)">Unlock Roll 100 · 3,000</button></div></div>
+        <div class="shop-card"><h3>📦 Bulk pull permits</h3><p style="color:var(--text-dim);font-size:.8rem">Permanently unlock faster bulk pulls. Convenience costs extra, and overflow is automatically sold.</p><div id="bulk-permit-buttons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn-primary" id="unlock-50-btn" onclick="buyBulkUnlock(50)">Unlock Roll 50 · 1,500</button><button class="btn-primary" id="unlock-100-btn" onclick="buyBulkUnlock(100)">Unlock Roll 100 · 3,000</button><button class="btn-primary" id="unlock-500-btn" onclick="buyBulkUnlock(500)">Unlock Roll 500 · 10,000</button><button class="btn-primary" id="unlock-1000-btn" onclick="buyBulkUnlock(1000)">Unlock Roll 1,000 · 25,000</button><button class="btn-primary" id="unlock-10000-btn" onclick="buyBulkUnlock(10000)">Unlock Roll 10,000 · 100,000</button><button class="btn-primary" id="unlock-100000-btn" onclick="buyBulkUnlock(100000)">Unlock Roll 100,000 · 500,000</button><button class="btn-primary" id="unlock-1000000-btn" style="grid-column:1/-1" onclick="buyBulkUnlock(1000000)">Unlock Roll 1,000,000 · 2,000,000</button></div></div>
         <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives ten pulls every five minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +100</button></div>
     </div>
 
@@ -410,6 +435,10 @@
                 <tr><td class="rarity-Legendary">Legendary</td><td>0.8%</td></tr>
                 <tr><td class="rarity-Mythic">Mythic</td><td>0.2%</td></tr>
                 <tr><td class="rarity-Rainbow">Rainbow</td><td>0.01% · 1 in 10,000</td></tr>
+                <tr><td class="rarity-Celestial">Celestial</td><td>0.005% · 1 in 20,000</td></tr>
+                <tr><td class="rarity-Transcendent">Transcendent</td><td>0.001% · 1 in 100,000</td></tr>
+                <tr><td class="rarity-Void">Void</td><td>0.0002% · 1 in 500,000</td></tr>
+                <tr><td class="rarity-Divine">Divine</td><td>0.0001% · 1 in 1,000,000</td></tr>
             </table>
         </div>
 
@@ -442,10 +471,17 @@
 </div>
 
 <script>
-    const SPIN_COST = 10, SPIN_PRICES={1:10,5:50,50:475,100:900}, PITY_LIMIT=75;
+    const SPIN_COST = 10, SPIN_PRICES={1:10,5:50,50:525,100:1200,500:7500,1000:18000,10000:250000,100000:3000000,1000000:40000000}, PITY_LIMIT=75;
+    const BULK_COUNTS=[50,100,500,1000,10000,100000,1000000];
+    const BULK_UNLOCK_PRICES={50:1500,100:3000,500:10000,1000:25000,10000:100000,100000:500000,1000000:2000000};
     const UPGRADE_BASE_PRICES = { luck: 150, bag: 120, speed: 100 };
-    const MAX_SPEED_LEVEL=10, BASE_ROLL_MS=1000, RAINBOW_CHANCE=1/10000;
-    const SELL_VALUES = { Common:5, Uncommon:9, Rare:22, Epic:55, Legendary:150, Mythic:700, Rainbow:5000 };
+    const MAX_SPEED_LEVEL=10, BASE_ROLL_MS=1000;
+    const ULTRA_RARITIES=[
+        {rarity:'Divine',chance:1/1000000},{rarity:'Void',chance:1/500000},
+        {rarity:'Transcendent',chance:1/100000},{rarity:'Celestial',chance:1/20000},
+        {rarity:'Rainbow',chance:1/10000}
+    ];
+    const SELL_VALUES = { Common:5, Uncommon:9, Rare:22, Epic:55, Legendary:150, Mythic:700, Rainbow:5000, Celestial:12000, Transcendent:35000, Void:100000, Divine:500000 };
     const generatePool = () => {
         const pool = [];
         const config = [
@@ -455,7 +491,11 @@
             { r:"Epic",s:45,e:[["🗺️","Lost World Map"],["💎","Blue Diamond"],["🔥","Eternal Flame"],["❄️","Frozen Heart"],["🪄","Archmage Wand"],["🦴","Dragon Bone"],["🏆","Champion's Trophy"],["🛸","Alien Core"]]},
             { r:"Legendary",s:130,e:[["🛰️","Lost Satellite"],["👑","Sun King's Crown"],["🐉","Dragon Egg"],["🧬","Genesis Sample"],["⚡","Storm Core"],["🗡️","Excalibur"]]},
             { r:"Mythic",s:650,e:[["🕳️","Portable Void"],["🎞️","Final Timeline"],["🪐","Pocket Universe"],["🌌","Galaxy Shard"]]},
-            { r:"Rainbow",s:5000,e:[["🌈","Prismatic Crown"],["🦄","Spectrum Spirit"],["🔆","Aurora Core"],["💠","Infinite Prism"]]}
+            { r:"Rainbow",s:5000,e:[["🌈","Prismatic Crown"],["🦄","Spectrum Spirit"],["🔆","Aurora Core"],["💠","Infinite Prism"]]},
+            { r:"Celestial",s:12000,e:[["🌠","Celestial Wish"],["🌟","First Star"],["🪽","Astral Wings"],["🪐","Heavenly Orbit"]]},
+            { r:"Transcendent",s:35000,e:[["🕉️","Transcendent Soul"],["🔮","All-Seeing Orb"],["🌀","Higher Dimension"],["🪷","Perfect Lotus"]]},
+            { r:"Void",s:100000,e:[["⚫","Void Heart"],["🌑","Lightless Eclipse"],["🕳️","Endless Abyss"],["👁️","Watcher Outside"]]},
+            { r:"Divine",s:500000,e:[["😇","Divine Presence"],["✨","Hand of Creation"],["🏛️","Throne Above All"],["📜","First Commandment"]]}
         ];
         const additions = {
             Common: [
@@ -499,9 +539,47 @@
                 ["🎆","Endless Firework"],["🍀","Seven-Colour Clover"],["🧿","Spectrum Eye"],["💎","Rainbow Diamond"],
                 ["☄️","Opal Comet"],["🪶","Radiant Feather"],["🏳️‍🌈","Banner of Infinity"],["🧬","Chromatic Genome"],
                 ["🔮","Kaleidoscope Orb"],["✨","Pure Radiance"]
+            ],
+            Celestial: [
+                ["☄️","Starlight Comet"],["🌙","Lunar Halo"],["☀️","Solar Blessing"],["🛰️","Astral Beacon"],
+                ["💫","Nebula Crown"],["🦢","Star Swan"],["🏹","Constellation Bow"],["⚖️","Cosmic Balance"],
+                ["🧿","Eye of the Heavens"],["🎼","Song of the Spheres"],["🏺","Urn of Starlight"],["🔔","Midnight Chime"],
+                ["🗺️","Map of the Cosmos"],["🗝️","Zodiac Key"],["💎","Sirius Diamond"],["🦁","Leo's Mane"],
+                ["🐏","Aries Horn"],["🌌","Milky Way Thread"],["👑","Astral Monarch"],["🛡️","Orion's Guard"]
+            ],
+            Transcendent: [
+                ["♾️","Endless Ascension"],["🧠","Infinite Awareness"],["🪞","Reflection Beyond"],["⏳","Time Unbound"],
+                ["🦋","Metamorphosis Eternal"],["🎭","Face Above Form"],["📖","Book Without Words"],["🗝️","Key Beyond Reality"],
+                ["🔺","Perfect Geometry"],["🌐","Universal Mind"],["🕯️","Flame Without Fuel"],["🎶","Unheard Symphony"],
+                ["🪶","Weightless Truth"],["💠","Concept Crystal"],["🚪","Door to Elsewhere"],["🧬","Ascended Genome"],
+                ["⚜️","Seal of Eternity"],["🌸","Timeless Blossom"],["👁️","Omniscient Gaze"],["🫧","Reality Membrane"]
+            ],
+            Void: [
+                ["⚰️","Coffin of Stars"],["🖤","Heart of Nothing"],["🕸️","Abyssal Web"],["🌘","Devoured Moon"],
+                ["🔳","Missing Space"],["🪦","Grave of Time"],["⛓️","Chains of Oblivion"],["🦴","Bone of a Dead God"],
+                ["🥀","Last Flower"],["📕","Unwritten Ending"],["🎵","Silent Note"],["🚫","Erased Law"],
+                ["🗿","Nameless Idol"],["👤","Absent King"],["🧿","Abyss Staring Back"],["🫥","Forgotten Face"],
+                ["⚫","Collapsed Eternity"],["🌌","Dead Universe"],["🕳️","Hunger Between Worlds"],["♟️","Oblivion's Pawn"]
+            ],
+            Divine: [
+                ["👼","Choir of Creation"],["🕊️","Eternal Peace"],["☀️","Light Before Light"],["👑","Crown of Heaven"],
+                ["⚡","Word of Power"],["🌍","Worldmaker's Palm"],["📖","Book of Life"],["🗡️","Judgement"],
+                ["🪽","Archangel's Wings"],["🎺","Final Trumpet"],["🏆","Holy Grail"],["🔥","Sacred Flame"],
+                ["🌳","Tree of Creation"],["💧","First Water"],["⭐","Star of Origin"],["🛡️","Absolute Grace"],
+                ["🔑","Key to Paradise"],["💛","Mercy Incarnate"],["⛪","Temple Beyond Time"],["🌅","First Dawn"]
             ]
         };
         config.forEach(category=>category.e.push(...additions[category.r]));
+        const expansion={
+            Common:[["📏","Wooden Ruler"],["✂️","Blunt Scissors"],["🖇️","Binder Clip"],["📌","Red Pin"],["🧹","Hand Brush"],["🥫","Tin Can"],["🪚","Old Saw"],["🪜","Step Ladder"],["🧺","Wicker Basket"],["🔨","Small Hammer"],["🧴","Water Bottle"],["🧸","Worn Teddy"],["🎲","Wooden Die"],["🪁","Paper Kite"],["🧶","Ball of Yarn"],["🥔","Lumpy Potato"]],
+            Uncommon:[["📼","Mystery Tape"],["☎️","Rotary Phone"],["🎙️","Radio Microphone"],["🪙","Silver Token"],["🧪","Tonic Bottle"],["🧲","Horseshoe Magnet"],["🪖","Steel Helmet"],["🎒","Trail Pack"],["🧨","Dud Firecracker"],["🔭","Pocket Telescope"],["🪗","Tiny Accordion"],["🎨","Artist Palette"],["🛎️","Hotel Bell"],["🧳","Leather Case"],["⌨️","Retro Keyboard"],["🕰️","Mantel Clock"]],
+            Rare:[["🦷","Giant's Tooth"],["🪸","Singing Coral"],["🐚","Whisper Shell"],["💧","Moonlit Tear"],["🧯","Arcane Extinguisher"],["🪓","Runed Axe"],["🧪","Elixir of Echoes"],["📿","Monk's Beads"],["🦌","Crystal Antler"],["🪙","Cursed Doubloon"],["🔐","Unbreakable Lock"],["📘","Tidekeeper Manual"],["🎺","Royal Bugle"],["🧱","Meteorite Brick"],["🥁","War Drum"],["🌹","Glass Rose"]],
+            Epic:[["🐍","Basilisk Eye"],["🦑","Kraken Ink"],["🐲","Wyvern Claw"],["🌪️","Bottled Tornado"],["🏔️","Mountain Soul"],["🌳","Worldtree Seed"],["👻","Bound Spectre"],["🦇","Vampire Crest"],["☠️","Lich Phylactery"],["🧙‍♂️","Archmage Sigil"],["🪐","Saturn Ring"],["🕸️","Fateweaver Silk"],["🎹","Ghost Piano Key"],["⚓","Leviathan Anchor"],["🦈","Megalodon Tooth"],["🗡️","Shadow Katana"]],
+            Legendary:[["🌍","Atlas Globe"],["🗼","Tower of Dawn"],["🪄","Merlin's Staff"],["🦅","Thunderbird Plume"],["🐺","Fenrir Fang"],["🦊","Nine-Tail Charm"],["🦬","Earthshaker Horn"],["🚀","Starship Engine"],["🛡️","Shield of Ages"],["⚔️","Blade of Destiny"],["🕯️","Undying Beacon"],["⛲","Fountain of Youth"],["🎨","Creation Palette"],["💍","Ring of Dominion"],["📚","Library of Alexandria"],["🧞‍♂️","Sultan Djinn"]],
+            Mythic:[["🌎","World in Amber"],["🌋","Core of the Earth"],["🕸️","Web of Fate"],["🔱","Trident of Reality"],["🧿","Eye of Providence"],["🧠","Dreaming Cosmos"],["🎲","Die of Destiny"],["🃏","Fate's Wildcard"],["⚖️","Scales of Existence"],["🪬","Seal of Causality"],["🚪","Last Door"],["🗺️","Map of All Worlds"],["🧭","Compass of Truth"],["🪶","Quill of History"],["📜","Original Prophecy"],["💥","Big Bang Fragment"]],
+            Rainbow:[["🌺","Prismatic Lotus"],["🐍","Spectrum Serpent"],["🪽","Iridescent Wings"],["🎨","Living Colour"],["🍭","Cosmic Candy"],["🪅","Eternal Fiesta"],["🎠","Aurora Carousel"],["🧚","Chromatic Fairy"],["🐠","Nebula Fish"],["🦜","Prism Parrot"],["🦚","Radiant Peacock"],["🎭","Kaleidoscope Mask"],["💿","Holographic Record"],["🧊","Opal Ice"],["🌻","Sunbow Flower"],["👾","Glitch Spirit"]]
+        };
+        config.forEach(category=>category.e.push(...(expansion[category.r]||[])));
         config.forEach(c => {
             c.e.forEach(([emoji,name]) => {
                 pool.push({ name, rarity: c.r, sell: c.s, emoji });
@@ -511,6 +589,7 @@
     };
 
     const lootPool = generatePool();
+    const RARITY_POOLS=Object.groupBy?Object.groupBy(lootPool,item=>item.rarity):lootPool.reduce((groups,item)=>((groups[item.rarity]??=[]).push(item),groups),{});
     const limitedPool = [
         { name: "Pastel de Nata", emoji: "🧁", price: 500, rarity: "Limited" },
         { name: "Chronos Key", emoji: "⏳", price: 500, rarity: "Limited" },
@@ -523,8 +602,7 @@
         maxInv: Math.max(16,parseInt(localStorage.getItem('rng_bag'))||16),
         luck: Math.max(0,parseInt(localStorage.getItem('rng_luck'))||0),
         speed: Math.min(MAX_SPEED_LEVEL,Math.max(0,parseInt(localStorage.getItem('rng_speed'))||0)),
-        bulk50: localStorage.getItem('rng_bulk_50')==='1',
-        bulk100: localStorage.getItem('rng_bulk_100')==='1',
+        bulkUnlocks:Object.fromEntries(BULK_COUNTS.map(count=>[count,localStorage.getItem(`rng_bulk_${count}`)==='1'])),
         totalRolls: parseInt(localStorage.getItem('rng_rolls')) || 0,
         totalLegendary: parseInt(localStorage.getItem('rng_legendaries')) || 0,
         inventory: JSON.parse(localStorage.getItem('rng_inventory')) || [],
@@ -549,7 +627,7 @@
         localStorage.setItem('rng_collection', JSON.stringify(state.collection));
         localStorage.setItem('rng_item_counts',JSON.stringify(state.itemCounts));
         localStorage.setItem('rng_bag',state.maxInv);localStorage.setItem('rng_luck',state.luck);localStorage.setItem('rng_speed',state.speed);
-        localStorage.setItem('rng_bulk_50',state.bulk50?'1':'0');localStorage.setItem('rng_bulk_100',state.bulk100?'1':'0');
+        BULK_COUNTS.forEach(count=>localStorage.setItem(`rng_bulk_${count}`,state.bulkUnlocks[count]?'1':'0'));
         localStorage.setItem('rng_last_scrap',state.lastScrap);
         updateUI();
     }
@@ -565,8 +643,9 @@
 
     function spin(count) {
         const price=SPIN_PRICES[count]??SPIN_COST*count;
+        if(count>5&&!state.bulkUnlocks[count])return notify('Buy this bulk permit in the shop first');
         if (state.coins < price) return notify("Low Balance!");
-        if (state.inventory.length + count > state.maxInv) return notify(`Need ${state.inventory.length+count-state.maxInv} more bag slots`);
+        if (count<=5&&state.inventory.length + count > state.maxInv) return notify(`Need ${state.inventory.length+count-state.maxInv} more bag slots`);
         
         const display = document.getElementById('main-display');
         const rollButtons=[...document.querySelectorAll('.roll-button')];
@@ -599,35 +678,42 @@
         const display=document.getElementById('main-display');
         state.coins -= price;
         state.totalRolls += count;
-        
+        const knownItems=new Set(state.collection.map(item=>item.name));
+        let overflowValue=0,overflowCount=0;
         let last;
         for (let i = 0; i < count; i++) {
             state.pity++;
             let item;
-            if (Math.random() < RAINBOW_CHANCE) {
-                const rainbow=lootPool.filter(l=>l.rarity==="Rainbow");
-                item=rainbow[Math.floor(Math.random()*rainbow.length)];
+            const ultraRoll=Math.random();
+            let ultraFloor=0;
+            for(const tier of ULTRA_RARITIES){ultraFloor+=tier.chance;if(ultraRoll<ultraFloor){const choices=RARITY_POOLS[tier.rarity];item=choices[Math.floor(Math.random()*choices.length)];break}}
+            if (item) {
+                // Ultra rarities are rolled independently so their advertised
+                // one-in-X chances stay exact as more normal tiers are added.
             } else if (state.pity >= PITY_LIMIT) {
-                const high = lootPool.filter(l => l.rarity === "Legendary" || l.rarity === "Mythic");
+                const high = RARITY_POOLS.Legendary.concat(RARITY_POOLS.Mythic);
                 item = high[Math.floor(Math.random() * high.length)];
                 state.pity = 0;
             } else {
                 const weights={Common:65.99-state.luck*1.5,Uncommon:22,Rare:8+state.luck*.7,Epic:3+state.luck*.45,Legendary:.8+state.luck*.25,Mythic:.2+state.luck*.1};
                 let rnd=Math.random()*Object.values(weights).reduce((a,b)=>a+b,0),rarity='Common';
                 for(const [name,weight] of Object.entries(weights)){if(rnd<weight){rarity=name;break}rnd-=weight}
-                const choices=lootPool.filter(x=>x.rarity===rarity);item=choices[Math.floor(Math.random()*choices.length)];
+                const choices=RARITY_POOLS[rarity];item=choices[Math.floor(Math.random()*choices.length)];
             }
             
-            if (item.rarity === "Legendary" || item.rarity === "Mythic" || item.rarity === "Rainbow") {
+            if (["Legendary","Mythic","Rainbow","Celestial","Transcendent","Void","Divine"].includes(item.rarity)) {
                 state.pity = 0;
                 state.totalLegendary++;
             }
             
-            state.inventory.push({ ...item });
+            if(state.inventory.length<state.maxInv)state.inventory.push({ ...item });
+            else{overflowCount++;overflowValue+=SELL_VALUES[item.rarity]??item.sell??0}
             state.itemCounts[item.name]=(state.itemCounts[item.name]||0)+1;
-            if (!state.collection.some(c => c.name === item.name)) state.collection.push({...item});
+            if (!knownItems.has(item.name)){knownItems.add(item.name);state.collection.push({...item})}
             last = item;
         }
+
+        state.coins+=overflowValue;
 
         document.getElementById('item-emoji').innerText = last.emoji;
         document.getElementById('item-name').innerText = last.name;
@@ -636,34 +722,39 @@
         const rarityColor=getComputedStyle(document.documentElement).getPropertyValue(`--${last.rarity.toLowerCase()}`).trim();
         display.style.borderColor=rarityColor;display.style.boxShadow=`0 18px 60px ${rarityColor}24, inset 0 0 45px ${rarityColor}12`;
         save();
+        if(overflowCount)notify(`${overflowCount.toLocaleString('en-GB')} overflow items auto-sold for ${overflowValue.toLocaleString('en-GB')} 🪙`);
     }
 
     function updateUI() {
-        document.getElementById('coin-balance').innerText = Math.floor(state.coins);
+        document.getElementById('coin-balance').innerText = Math.floor(state.coins).toLocaleString('en-GB');
         document.getElementById('header-inv-cap').innerText = `Bag: ${state.inventory.length}/${state.maxInv}`;
         document.getElementById('pity-val').innerText = state.pity;
         document.getElementById('pity-progress').style.width = (state.pity/PITY_LIMIT*100) + "%";
-        document.getElementById('stat-rolls').innerText = state.totalRolls;
-        document.getElementById('stat-legendary').innerText = state.totalLegendary;
+        document.getElementById('stat-rolls').innerText = state.totalRolls.toLocaleString('en-GB');
+        document.getElementById('stat-legendary').innerText = state.totalLegendary.toLocaleString('en-GB');
         document.getElementById('collection-count').innerText=`${state.collection.filter(c=>lootPool.some(i=>i.name===c.name)).length} / ${lootPool.length}`;
         document.getElementById('luck-level').innerText=`Lv ${state.luck}`;document.getElementById('bag-level').innerText=`${state.maxInv} slots`;document.getElementById('luck-price').innerText=UPGRADE_BASE_PRICES.luck*(state.luck+1);document.getElementById('bag-price').innerText=UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20;
         const speedButton=document.getElementById('speed-upgrade-btn'),speedSeconds=Math.max(0,(BASE_ROLL_MS-state.speed*100)/1000);
         document.getElementById('speed-level').innerText=`Lv ${state.speed}/${MAX_SPEED_LEVEL} · ${speedSeconds?speedSeconds.toFixed(1)+'s':'instant'}`;
         document.getElementById('speed-price').innerText=state.speed>=MAX_SPEED_LEVEL?'MAX':UPGRADE_BASE_PRICES.speed*(state.speed+1);
         speedButton.disabled=state.speed>=MAX_SPEED_LEVEL;
-        const roll50=document.getElementById('roll-50-btn'),roll100=document.getElementById('roll-100-btn');
-        roll50.style.display=state.bulk50?'block':'none';roll100.style.display=state.bulk100?'block':'none';
-        document.getElementById('bulk-roll-buttons').style.display=state.bulk50||state.bulk100?'grid':'none';
-        const unlock50=document.getElementById('unlock-50-btn'),unlock100=document.getElementById('unlock-100-btn');
-        unlock50.disabled=state.bulk50;unlock50.textContent=state.bulk50?'Roll 50 unlocked':'Unlock Roll 50 · 1,500';
-        unlock100.disabled=state.bulk100;unlock100.textContent=state.bulk100?'Roll 100 unlocked':'Unlock Roll 100 · 3,000';
+        const hasBulk=BULK_COUNTS.some(count=>state.bulkUnlocks[count]);
+        BULK_COUNTS.forEach(count=>{
+            const unlocked=state.bulkUnlocks[count],formatted=count.toLocaleString('en-GB');
+            document.getElementById(`roll-${count}-btn`).style.display=unlocked?'block':'none';
+            const unlock=document.getElementById(`unlock-${count}-btn`);unlock.disabled=unlocked;
+            unlock.textContent=unlocked?`Roll ${formatted} unlocked`:`Unlock Roll ${formatted} · ${BULK_UNLOCK_PRICES[count].toLocaleString('en-GB')}`;
+        });
+        document.getElementById('bulk-roll-buttons').style.display=hasBulk?'grid':'none';
+        document.getElementById('bulk-overflow-note').style.display=hasBulk?'block':'none';
 
         const list = document.getElementById('inventory-list');
         list.innerHTML = '';
         state.inventory.forEach(item => {
             const d = document.createElement('div');
             d.className = 'inv-slot';
-            d.innerHTML = `${item.emoji}<span class="rarity-${item.rarity}" style="position:absolute; bottom:5px; right:5px; font-size:0.5rem; font-weight:bold;">${item.rarity[0]}</span>`;
+            d.style.setProperty('--slot-rarity', `var(--${item.rarity.toLowerCase()})`);
+            d.innerHTML = item.emoji;
             list.appendChild(d);
         });
 
@@ -675,7 +766,7 @@
 
     function hardReset() {
         if (confirm("Are you sure? This will wipe ALL progress (Coins, Rolls, Collection).")) {
-            ['rng_coins','rng_pity','rng_rolls','rng_legendaries','rng_inventory','rng_collection','rng_item_counts','rng_bag','rng_luck','rng_speed','rng_bulk_50','rng_bulk_100','rng_last_scrap'].forEach(key=>localStorage.removeItem(key));
+            ['rng_coins','rng_pity','rng_rolls','rng_legendaries','rng_inventory','rng_collection','rng_item_counts','rng_bag','rng_luck','rng_speed','rng_last_scrap',...BULK_COUNTS.map(count=>`rng_bulk_${count}`)].forEach(key=>localStorage.removeItem(key));
             location.reload();
         }
     }
@@ -695,7 +786,7 @@
     }
     function upgradePrice(type){if(type==='luck')return UPGRADE_BASE_PRICES.luck*(state.luck+1);if(type==='speed')return UPGRADE_BASE_PRICES.speed*(state.speed+1);return UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20}
     function buyUpgrade(type){if(type==='speed'&&state.speed>=MAX_SPEED_LEVEL)return notify('Roll speed is already instant');const price=upgradePrice(type);if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else if(type==='speed')state.speed++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':type==='speed'?(state.speed===MAX_SPEED_LEVEL?'Rolling is now instant':'Rolling sped up by 0.1s'):'Bag expanded');save();}
-    function buyBulkUnlock(count){const key=count===50?'bulk50':'bulk100',price=count===50?1500:3000;if(state[key])return notify(`Roll ${count} is already unlocked`);if(state.coins<price)return notify('Not enough coins');state.coins-=price;state[key]=true;notify(`Roll ${count} unlocked on the game screen`);save()}
+    function buyBulkUnlock(count){const price=BULK_UNLOCK_PRICES[count];if(!price)return;if(state.bulkUnlocks[count])return notify(`Roll ${count.toLocaleString('en-GB')} is already unlocked`);if(state.coins<price)return notify('Not enough coins');state.coins-=price;state.bulkUnlocks[count]=true;notify(`Roll ${count.toLocaleString('en-GB')} unlocked on the game screen`);save()}
     function scrapRun(){const wait=300000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=100;notify('Recovered 100 coins');save();}
 
     function openCollectionDetail(item) {
@@ -720,6 +811,7 @@
             const owned = state.collection.some(c => c.name === item.name);
             const d = document.createElement('div');
             d.className = 'inv-slot';
+            d.style.setProperty('--slot-rarity', `var(--${item.rarity.toLowerCase()})`);
             
             // Apply proper rarity styling to the collection slots
             d.style.opacity = owned ? "1" : "0.2";
@@ -736,21 +828,20 @@
                 d.innerHTML = `?`;
             }
             
-            // Add the rarity letter so it's clear what's missing
-            d.innerHTML += `<span class="rarity-${item.rarity}" style="position:absolute; bottom:5px; right:5px; font-size:0.5rem; font-weight:bold;">${item.rarity[0]}</span>`;
             grid.appendChild(d);
         });
     }
 
+    let notifyTimer;
     function notify(t) {
         const b = document.getElementById('msg-box');
-        b.innerText = t; b.style.opacity = "1";
-        setTimeout(() => b.style.opacity = "0", 2000);
+        clearTimeout(notifyTimer);b.innerText = t;b.classList.add('visible');
+        notifyTimer=setTimeout(() => b.classList.remove('visible'), 2000);
     }
 
     function sellAll() { 
         const val = state.inventory.reduce((s, x) => s + (SELL_VALUES[x.rarity] ?? x.sell ?? 0), 0);
-        state.coins += val; state.inventory = []; notify("Received " + val + " 🪙"); save(); 
+        state.coins += val; state.inventory = []; notify(`Received ${val.toLocaleString('en-GB')} 🪙`); save();
     }
 
     updateUI();

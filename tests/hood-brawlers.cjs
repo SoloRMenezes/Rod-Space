@@ -1,5 +1,22 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../hood_brawlers.html'),'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
+const gameplaySource=fs.readFileSync(require('node:path').join(__dirname,'../hood-brawlers.js'),'utf8');
+assert.match(gameplaySource,/straightDown=dy>18&&Math\.abs\(dx\)<Math\.max\(14,dy\*\.38\)/);
+assert.match(source,/const FIGHTER_TYPES =/);
+assert.match(source,/p1Fighter:'rook',p2Fighter:'brick'/);
+assert.match(source,/volt: \{ name:'Volt'/);
+assert.match(source,/nova: \{ name:'Nova'/);
+assert.match(gameplaySource,/function fighterProfile\(fighter\)/);
+assert.match(gameplaySource,/nobody is wearing a hood/);
+assert.doesNotMatch(gameplaySource,/\/\/ Hood, neck/);
+assert.match(gameplaySource,/speed=4\.6\*fighterProfile\(fighter\)\.speed/);
+assert.match(gameplaySource,/fighters \.fighter-option/);
+assert.match(gameplaySource,/phoneMovementMode=localStorage\.getItem\('hood_phone_movement'\)==='joystick'\?'joystick':'dpad'/);
+assert.match(gameplaySource,/stickPointer!==null\|\|movePointers\.size/);
+assert.match(gameplaySource,/function handleControllerUi\(slot,action\)/);
+assert.match(gameplaySource,/controller-ui-focus-p/);
+assert.doesNotMatch(gameplaySource,/this\.rollFrames=FRAME_TIMING\.recovery/);
+assert.doesNotMatch(gameplaySource,/Down \+ direction rolls/);
 function host(){let now=0,id=0;const nodes=new Map(),queue=new Map(),events={},docEvents={};const drawing=new Proxy({}, {get:(o,k)=>k==='createLinearGradient'?()=>({addColorStop(){}}):()=>{},set:()=>true});
  function element(){return {style:{},dataset:{},children:[],classList:{add(){},remove(){}},getContext:()=>drawing,setAttribute(){},appendChild(n){this.children.push(n)},addEventListener(n,f){this[n]=f},contains(){return true},setPointerCapture(){},closest(){return null}};}
  const get=id=>{if(!nodes.has(id))nodes.set(id,element());return nodes.get(id)};const buttons=['jump','block','punch','kick'].map(action=>{const e=element();e.dataset.action=action;return e;});

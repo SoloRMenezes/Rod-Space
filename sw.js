@@ -1,10 +1,10 @@
 importScripts('./offline-catalog.js');
-const SHELL = 'rod-shell-86fb06452720a2e4';
+const SHELL = 'rod-shell-3b29cd9ceb539889';
 const PREFIX = 'rod-game-';
 const BASE = new URL('./', self.location.href);
 const absolute = p => new URL(p, BASE).href;
 const META = absolute('__offline_metadata__');
-const shellFiles = ['./','index.html','party.html','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js'];
+const shellFiles = ['./','index.html','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js'];
 self.addEventListener('install', e => e.waitUntil((async () => {
   const cache = await caches.open(SHELL);
   await cache.addAll(shellFiles.map(absolute));

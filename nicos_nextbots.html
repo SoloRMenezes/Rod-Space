@@ -232,10 +232,6 @@ const MAP = (() => {
                 return true;
             };
             for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0&&clearOfWall(x,y))map[y][x]=2;
-            // Parked cars are real obstacles, leaving the central drive lanes open.
-            const cars=[];
-            for(const cy of [18,78])for(let cx=16;cx<width-12;cx+=15)if(Math.abs(cx-70)>9)cars.push([cx,cy]);
-            map.carSpots=cars;
             return map;
         })();
         const MAP_SIZE_Y = MAP.length;
@@ -243,6 +239,13 @@ const MAP = (() => {
         const FLOOR_HEIGHT=8;
         const FLOOR_COUNT=5;
         const FLOOR_LEVELS=Array.from({length:FLOOR_COUNT},(_,index)=>index*FLOOR_HEIGHT);
+        const FLOOR_BARRIERS=[
+            [[18,10,18,22],[50,31,64,31],[91,58,91,69],[112,82,128,82]],
+            [[12,37,27,37],[48,12,48,22],[78,80,96,80],[119,55,119,67]],
+            [[17,61,31,61],[54,78,54,88],[82,34,99,34],[122,15,122,25]],
+            [[13,14,29,14],[44,57,60,57],[84,76,84,88],[113,35,130,35]],
+            [[20,81,35,81],[52,13,66,13],[88,55,103,55],[120,72,120,86]]
+        ];
         const SPAWN_FLOOR_INDEX=2;
         const SPAWN_FLOOR_Y=FLOOR_LEVELS[SPAWN_FLOOR_INDEX];
         const BUILDING_HEIGHT=FLOOR_COUNT*FLOOR_HEIGHT+3;
@@ -254,6 +257,12 @@ const MAP = (() => {
             {x1:7,x2:27,y1:44,y2:51,reverse:false},{x1:113,x2:133,y1:44,y2:51,reverse:true},
             {x1:7,x2:27,y1:81,y2:88,reverse:false},{x1:113,x2:133,y1:81,y2:88,reverse:true}
         ];
+        const FLOOR_CAR_SPOTS=FLOOR_LEVELS.map((_,floor)=>{
+            const rows=[[17,40,79],[15,38,62,81],[18,42,77],[14,36,60,83],[17,40,64,80]][floor],spots=[];
+            const hitsBarrier=(x,y)=>FLOOR_BARRIERS[floor].some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-x1)<3&&y>=Math.min(y1,y2)-3&&y<=Math.max(y1,y2)+3:Math.abs(y-y1)<3&&x>=Math.min(x1,x2)-3&&x<=Math.max(x1,x2)+3);
+            rows.forEach((cy,row)=>{for(let cx=10+(row%2)*8;cx<MAP_SIZE_X-9;cx+=13+((floor+row)%3))if(MAP[cy][cx]===0&&Math.abs(cx-70)>10&&!rampAt(cx,cy)&&!hitsBarrier(cx,cy))spots.push([cx,cy,(floor+row+cx)%4]);});
+            return spots;
+        });
         // Clear only the ramp and its immediate approach. The old oversized
         // rectangle erased nearby divider walls and created a road-sized gap.
         for(const ramp of RAMPS)for(let y=Math.max(1,ramp.y1-2);y<=Math.min(MAP_SIZE_Y-2,ramp.y2+2);y++)for(let x=Math.max(1,ramp.x1-3);x<=Math.min(MAP_SIZE_X-2,ramp.x2+3);x++)MAP[y][x]=0;
@@ -272,14 +281,24 @@ const MAP = (() => {
                 Math.abs(y-(ramp.y1-.125))<=.16||Math.abs(y-(ramp.y2+.125))<=.16
             ));
         }
-        function bridgeAt(x,y,current=0){return floorIndexAtHeight(current)>0&&RAMPS.some(r=>Math.abs(x-(r.reverse?r.x2-(r.x2-r.x1)*.22:r.x1+(r.x2-r.x1)*.22))<=1.6&&y>=r.y1-.35&&y<=r.y2+.35)}
         function rampSurfaceHeightAt(x,y,current=0){
             const ramp=rampAt(x,y);if(!ramp)return floorBaseAtHeight(current);
             let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;
             const tier=Math.max(0,Math.min(FLOOR_COUNT-2,Math.round((current-t*FLOOR_HEIGHT)/FLOOR_HEIGHT)));
             return tier*FLOOR_HEIGHT+t*FLOOR_HEIGHT;
         }
-        function surfaceHeightAt(x,y,current=0){if(bridgeAt(x,y,current))return floorBaseAtHeight(current);return rampSurfaceHeightAt(x,y,current)}
+        function surfaceHeightAt(x,y,current=0){return rampSurfaceHeightAt(x,y,current)}
+        function floorBarrierAt(x,y,floorY){
+            const segments=FLOOR_BARRIERS[floorIndexAtHeight(floorY)]||[];
+            return segments.some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-x1)<.55&&y>=Math.min(y1,y2)-.5&&y<=Math.max(y1,y2)+.5:Math.abs(y-y1)<.55&&x>=Math.min(x1,x2)-.5&&x<=Math.max(x1,x2)+.5);
+        }
+        const carsForFloor=floorY=>FLOOR_CAR_SPOTS[floorIndexAtHeight(floorY)]||[];
+        const FLOOR_NAV_MAPS=FLOOR_LEVELS.map((floorY,floor)=>{
+            const map=MAP.map(row=>row.slice());
+            for(let y=1;y<MAP_SIZE_Y-1;y++)for(let x=1;x<MAP_SIZE_X-1;x++)if(floorBarrierAt(x,y,floorY))map[y][x]=1;
+            FLOOR_CAR_SPOTS[floor].forEach(([cx,cy])=>{for(let y=Math.floor(cy-2);y<=Math.ceil(cy+2);y++)for(let x=Math.floor(cx-1);x<=Math.ceil(cx+1);x++)if(map[y])map[y][x]=1;});
+            return map;
+        });
         function beginRampRoute(bot,now){
             const ramp=RAMPS[Math.floor(Math.random()*RAMPS.length)],midY=(ramp.y1+ramp.y2)/2;
             const low={x:ramp.reverse?ramp.x2-.6:ramp.x1+.6,y:midY};
@@ -446,6 +465,14 @@ function wireGuestRoom(session){
             for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]){transform.makeTranslation((x+1)*2,BUILDING_HEIGHT/2,(y+1)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
+            // Short, floor-specific partitions turn each storey into a different
+            // small maze while keeping sightlines and multiple escape routes.
+            FLOOR_BARRIERS.forEach((segments,floor)=>segments.forEach(([x1,y1,x2,y2])=>{
+                const horizontal=y1===y2,length=(horizontal?Math.abs(x2-x1):Math.abs(y2-y1))*2+2;
+                const mazeWall=new THREE.Mesh(new THREE.BoxGeometry(horizontal?length:1.1,5.5,horizontal?1.1:length),wallMaterials);
+                mazeWall.position.set((x1+x2)+2,FLOOR_LEVELS[floor]+2.75,(y1+y2)+2);scene.add(mazeWall);
+            }));
+
             // Only the upper landing needs an opening. Cutting the complete ramp
             // footprint made the upper floor look like it had large random holes.
             const deckShape=new THREE.Shape();
@@ -492,7 +519,7 @@ function wireGuestRoom(session){
             const markings=[],roomBands=[[2,34],[36,69],[71,104],[106,137]],bayRows=[12,36,60,84];
             const bayLineClear=(x,y)=>{
                 for(let checkY=Math.floor(y-2.5);checkY<=Math.ceil(y+2.5);checkY++)if(MAP[checkY]?.[Math.floor(x)]!==0||rampAt(x,checkY))return false;
-                return !MAP.carSpots.some(([carX,carY])=>Math.abs(x-(carX+.5))<1.4&&Math.abs(y-(carY+.5))<4);
+                return FLOOR_CAR_SPOTS.every(spots=>!spots.some(([carX,carY])=>Math.abs(x-(carX+.5))<1.4&&Math.abs(y-(carY+.5))<4));
             };
             for(const y of bayRows)for(const [left,right] of roomBands)for(let x=left+4;x<right-2;x+=6)if(bayLineClear(x,y)){
                 for(const floorY of FLOOR_LEVELS)markings.push([x*2+1,floorY+(floorY?.355:.035),y*2+1,.16,10]);
@@ -506,16 +533,23 @@ function wireGuestRoom(session){
             const allLampPositions=FLOOR_LEVELS.flatMap(floorY=>lampPositions.map(([x,z])=>[x,floorY+7.7,z]));
             const garageLamps=new THREE.InstancedMesh(lampGeo,lampMat,allLampPositions.length);allLampPositions.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);garageLamps.setMatrixAt(i,transform)});garageLamps.instanceMatrix.needsUpdate=true;scene.add(garageLamps);
 
-            // Low-poly parked cars create cover without expensive models or textures.
+            // Varied low-poly hatchbacks, saloons, SUVs and vans fill the bays.
             const carColors=[0x9e2f32,0x315c83,0x44474b,0xb6b7b0,0x6d5132,0x284f43];
-            MAP.carSpots.forEach(([cx,cy],i)=>{
-                const car=new THREE.Group(),color=carColors[i%carColors.length],bodyMat=new THREE.MeshPhongMaterial({color,shininess:35});
-                const body=new THREE.Mesh(new THREE.BoxGeometry(3.5,.85,7),bodyMat);body.position.y=.65;car.add(body);
-                const cabin=new THREE.Mesh(new THREE.BoxGeometry(3,1,3.6),new THREE.MeshPhongMaterial({color,shininess:45}));cabin.position.set(0,1.45,-.2);car.add(cabin);
-                const glass=new THREE.Mesh(new THREE.BoxGeometry(3.04,.62,2.1),new THREE.MeshPhongMaterial({color:0x18232d,shininess:70}));glass.position.set(0,1.55,-.15);car.add(glass);
-                car.position.set(cx*2+1,0,cy*2+1);if(i%2)car.rotation.y=Math.PI;
-                for(const floorY of FLOOR_LEVELS){const floorCar=car.clone();floorCar.position.y=floorY;scene.add(floorCar)}
-            });
+            const makeCar=(type,color)=>{
+                const car=new THREE.Group(),bodyMat=new THREE.MeshPhongMaterial({color,shininess:38}),glassMat=new THREE.MeshPhongMaterial({color:0x14212a,shininess:85});
+                const dims=[[3.5,.72,6.2],[3.55,.78,7.1],[3.8,1.05,6.8],[3.9,1.25,7.5]][type];
+                const body=new THREE.Mesh(new THREE.BoxGeometry(...dims),bodyMat);body.position.y=dims[1]/2+.28;car.add(body);
+                const cabinDims=type===3?[3.35,1.45,4.4]:type===2?[3.25,1.2,3.8]:[3.05,.95,type===0?3.2:3.8];
+                const cabin=new THREE.Mesh(new THREE.BoxGeometry(...cabinDims),bodyMat);cabin.position.set(0,dims[1]+cabinDims[1]/2+.18,type===0?.15:-.25);car.add(cabin);
+                const windshield=new THREE.Mesh(new THREE.BoxGeometry(cabinDims[0]+.03,cabinDims[1]*.62,.12),glassMat);windshield.position.set(0,cabin.position.y+.04,cabin.position.z-cabinDims[2]/2-.065);car.add(windshield);
+                const rearGlass=windshield.clone();rearGlass.position.z=cabin.position.z+cabinDims[2]/2+.065;car.add(rearGlass);
+                const wheelMat=new THREE.MeshPhongMaterial({color:0x090a0c}),wheelGeo=new THREE.CylinderGeometry(.48,.48,.34,10);wheelGeo.rotateZ(Math.PI/2);
+                for(const wx of [-dims[0]/2-.08,dims[0]/2+.08])for(const wz of [-dims[2]*.31,dims[2]*.31]){const wheel=new THREE.Mesh(wheelGeo,wheelMat);wheel.position.set(wx,.45,wz);car.add(wheel)}
+                return car;
+            };
+            FLOOR_CAR_SPOTS.forEach((spots,floor)=>spots.forEach(([cx,cy,type],i)=>{
+                const car=makeCar(type,carColors[(i+floor*2)%carColors.length]);car.position.set(cx*2+1,FLOOR_LEVELS[floor],cy*2+1);if((i+floor)%2)car.rotation.y=Math.PI;scene.add(car);
+            }));
 
             // Start away from the centre so every round opens differently.
             respawnSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&!rampAt(x,y)&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)respawnSpawns.push([x+.5,y+.5]);
@@ -757,14 +791,14 @@ for (let b = 0; b < botSpawns.length; b++) {
             let moveY = (Math.cos(player.dir) * moveForward - Math.sin(player.dir) * moveRight) * currentSpeed;
 
             // Grid collision is constant-time; checking every rendered wall was the main frame-rate bottleneck.
-            const carBlocked=(x,y)=>player.z<1.55&&MAP.carSpots.some(([cx,cy])=>Math.abs(x-(cx+.5))<1.055&&Math.abs(y-(cy+.5))<1.93);
+            const carBlocked=(x,y)=>player.z<1.55&&carsForFloor(player.floorY).some(([cx,cy])=>Math.abs(x-(cx+.5))<1.12&&Math.abs(y-(cy+.5))<2.05);
             const canStand=(x,y)=>{
                 const radius=.18,points=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
                 const surface=surfaceHeightAt(x,y,player.floorY);
                 const targetRamp=rampAt(x,y);
                 const slopeStep=targetRamp?1.05:.65;
                 const insideRampLane=!targetRamp||(y>=targetRamp.y1+.28&&y<=targetRamp.y2-.28);
-                return Math.abs(surface-player.floorY)<=slopeStep&&insideRampLane&&canEnterRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0&&!rampWallAt(px,py));
+                return Math.abs(surface-player.floorY)<=slopeStep&&insideRampLane&&canEnterRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0&&!rampWallAt(px,py)&&!floorBarrierAt(px,py,player.floorY));
             };
             let nextX = player.x + moveX;
             let nextY = player.y + moveY;
@@ -918,17 +952,17 @@ for (let b = 0; b < botSpawns.length; b++) {
                         const angle=Math.random()*Math.PI*2,radius=7+Math.random()*15;
                         const x=Math.floor(roamTarget?roamTarget.x+Math.cos(angle)*radius:3+Math.random()*(MAP_SIZE_X-6));
                         const y=Math.floor(roamTarget?roamTarget.y+Math.sin(angle)*radius:3+Math.random()*(MAP_SIZE_Y-6));
-                        if(x>1&&x<MAP_SIZE_X-1&&y>1&&y<MAP_SIZE_Y-1&&MAP[y][x]===0){bot.wanderX=x;bot.wanderY=y;break}
+                        if(x>1&&x<MAP_SIZE_X-1&&y>1&&y<MAP_SIZE_Y-1&&MAP[y][x]===0&&!floorBarrierAt(x,y,bot.floorY)){bot.wanderX=x;bot.wanderY=y;break}
                     }
                     bot.wanderUntil=now+3500+Math.random()*4500;
                 }
                 let targetX=Math.floor(locked?locked.x:bot.wanderX),targetY=Math.floor(locked?locked.y:bot.wanderY);
                 targetX=Math.max(1,Math.min(MAP_SIZE_X-2,targetX));targetY=Math.max(1,Math.min(MAP_SIZE_Y-2,targetY));
-                if(MAP[targetY][targetX]!==0){targetX=botMapX;targetY=botMapY;}
+                if(MAP[targetY][targetX]!==0||floorBarrierAt(targetX,targetY,bot.floorY)){targetX=botMapX;targetY=botMapY;}
 
                 let needsPath = (!bot._path || !bot._path.length || bot._lastTargetX!==targetX || bot._lastTargetY!==targetY || bot._lastStartX!==botMapX || bot._lastStartY!==botMapY);
                 if(needsPath){
-                    const path=astar(botMapX,botMapY,targetX,targetY,MAP);
+                    const path=astar(botMapX,botMapY,targetX,targetY,FLOOR_NAV_MAPS[floorIndexAtHeight(bot.floorY)]);
                     bot._path=path&&path.length>1?path:null;bot._lastTargetX=targetX;bot._lastTargetY=targetY;bot._lastStartX=botMapX;bot._lastStartY=botMapY;bot._pathStep=1;
                 }
                 if(netRole==='guest')continue;
@@ -946,9 +980,9 @@ for (let b = 0; b < botSpawns.length; b++) {
                 // Low friction gives the chasers weight: they skid wide, brake, then accelerate into a turn.
                 bot.vx*=.992;bot.vz*=.992;
                 const tryX=bot.mesh.position.x+bot.vx,mapX=Math.floor((tryX-1)/2),mapY=Math.floor((bot.mesh.position.z-1)/2);
-                if(MAP[mapY]?.[mapX]===0)bot.mesh.position.x=tryX;else bot.vx*=-.28;
+                if(MAP[mapY]?.[mapX]===0&&!floorBarrierAt((tryX-1)/2,(bot.mesh.position.z-1)/2,bot.floorY))bot.mesh.position.x=tryX;else bot.vx*=-.28;
                 const tryZ=bot.mesh.position.z+bot.vz,nextMapX=Math.floor((bot.mesh.position.x-1)/2),nextMapY=Math.floor((tryZ-1)/2);
-                if(MAP[nextMapY]?.[nextMapX]===0)bot.mesh.position.z=tryZ;else bot.vz*=-.28;
+                if(MAP[nextMapY]?.[nextMapX]===0&&!floorBarrierAt((bot.mesh.position.x-1)/2,(tryZ-1)/2,bot.floorY))bot.mesh.position.z=tryZ;else bot.vz*=-.28;
                 bot.floorY=rampSurfaceHeightAt((bot.mesh.position.x-1)/2,(bot.mesh.position.z-1)/2,bot.floorY);bot.mesh.position.y=BOT_CENTER_Y+bot.floorY;bot.backing.position.set(bot.mesh.position.x,BOT_CENTER_Y+bot.floorY,bot.mesh.position.z);if(bot.label)bot.label.position.set(bot.mesh.position.x,.55+bot.floorY,bot.mesh.position.z);
             }
             // Gentle separation keeps overlapping chasers visually and tactically distinct.
