@@ -348,8 +348,8 @@
         </div>
 
         <div style="display: flex; gap: 12px;">
-            <button class="btn-primary" id="roll-1-btn" onclick="spin(1)">Pull once · 10</button>
-            <button class="btn-primary" id="roll-10-btn" style="background: #27272a;" onclick="spin(5)">Pull five · 50</button>
+            <button class="btn-primary roll-button" id="roll-1-btn" onclick="spin(1)">Pull once · 10</button>
+            <button class="btn-primary roll-button" id="roll-5-btn" style="background: #27272a;" onclick="spin(5)">Pull five · 50</button>
         </div>
 
         <div style="margin-top: 2.5rem;">
@@ -379,6 +379,7 @@
         <div class="shop-card"><h3>🧲 Luck magnet <span id="luck-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Slightly improves every rare drop.</p><button class="btn-primary" onclick="buyUpgrade('luck')">Upgrade · <span id="luck-price">150</span></button></div>
         <div class="shop-card"><h3>🎒 Bigger bag <span id="bag-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Adds four inventory spaces.</p><button class="btn-primary" onclick="buyUpgrade('bag')">Upgrade · <span id="bag-price">120</span></button></div>
         <div class="shop-card"><h3>⚡ Roll accelerator <span id="speed-level" style="color:var(--text-dim)"></span></h3><p id="speed-description" style="color:var(--text-dim);font-size:.8rem">Removes 0.1 seconds from every roll. Level 10 is instant.</p><button class="btn-primary" id="speed-upgrade-btn" onclick="buyUpgrade('speed')">Upgrade · <span id="speed-price">100</span></button></div>
+        <div class="shop-card"><h3>📦 Bulk pulls</h3><p style="color:var(--text-dim);font-size:.8rem">Discounted pulls. Your bag needs enough empty slots for every result.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn-primary roll-button" onclick="buyBulkRoll(50)">Pull 50 · 475</button><button class="btn-primary roll-button" onclick="buyBulkRoll(100)">Pull 100 · 900</button></div></div>
         <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives ten pulls every five minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +100</button></div>
     </div>
 
@@ -437,7 +438,7 @@
 </div>
 
 <script>
-    const SPIN_COST = 10, PITY_LIMIT=75;
+    const SPIN_COST = 10, SPIN_PRICES={1:10,5:50,50:475,100:900}, PITY_LIMIT=75;
     const UPGRADE_BASE_PRICES = { luck: 150, bag: 120, speed: 100 };
     const MAX_SPEED_LEVEL=10, BASE_ROLL_MS=1000, RAINBOW_CHANCE=1/10000;
     const SELL_VALUES = { Common:5, Uncommon:9, Rare:22, Epic:55, Legendary:150, Mythic:700, Rainbow:5000 };
@@ -556,21 +557,20 @@
     }
 
     function spin(count) {
-        if (state.coins < SPIN_COST * count) return notify("Low Balance!");
-        if (state.inventory.length + count > state.maxInv) return notify("Inventory Full!");
+        const price=SPIN_PRICES[count]??SPIN_COST*count;
+        if (state.coins < price) return notify("Low Balance!");
+        if (state.inventory.length + count > state.maxInv) return notify(`Need ${state.inventory.length+count-state.maxInv} more bag slots`);
         
         const display = document.getElementById('main-display');
-        const roll1 = document.getElementById('roll-1-btn');
-        const roll10 = document.getElementById('roll-10-btn');
+        const rollButtons=[...document.querySelectorAll('.roll-button')];
         
         const rollDuration=Math.max(0,BASE_ROLL_MS-state.speed*100);
         display.classList.toggle('is-rolling',rollDuration>0);
-        roll1.disabled = true;
-        roll10.disabled = true;
+        rollButtons.forEach(button=>button.disabled=true);
 
         if(rollDuration===0){
-            finishSpin(count);
-            roll1.disabled=false;roll10.disabled=false;
+            finishSpin(count,price);
+            rollButtons.forEach(button=>button.disabled=false);
             return;
         }
 
@@ -581,17 +581,16 @@
             rollTimer += 100;
             if (rollTimer >= rollDuration) {
                 clearInterval(rollInterval);
-                finishSpin(count);
+                finishSpin(count,price);
                 display.classList.remove('is-rolling');
-                roll1.disabled = false;
-                roll10.disabled = false;
+                rollButtons.forEach(button=>button.disabled=false);
             }
         }, 100);
     }
 
-    function finishSpin(count) {
+    function finishSpin(count,price=SPIN_PRICES[count]??SPIN_COST*count) {
         const display=document.getElementById('main-display');
-        state.coins -= SPIN_COST * count;
+        state.coins -= price;
         state.totalRolls += count;
         
         let last;
@@ -683,6 +682,7 @@
     }
     function upgradePrice(type){if(type==='luck')return UPGRADE_BASE_PRICES.luck*(state.luck+1);if(type==='speed')return UPGRADE_BASE_PRICES.speed*(state.speed+1);return UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20}
     function buyUpgrade(type){if(type==='speed'&&state.speed>=MAX_SPEED_LEVEL)return notify('Roll speed is already instant');const price=upgradePrice(type);if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else if(type==='speed')state.speed++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':type==='speed'?(state.speed===MAX_SPEED_LEVEL?'Rolling is now instant':'Rolling sped up by 0.1s'):'Bag expanded');save();}
+    function buyBulkRoll(count){showScreen('game');spin(count)}
     function scrapRun(){const wait=300000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=100;notify('Recovered 100 coins');save();}
 
     function openCollectionDetail(item) {

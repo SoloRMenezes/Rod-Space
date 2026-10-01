@@ -11,6 +11,11 @@ assert.match(html,/MAX_SPEED_LEVEL=10/);
 assert.match(html,/localStorage\.setItem\('rng_speed',state\.speed\)/);
 assert.match(html,/type==='speed'&&state\.speed>=MAX_SPEED_LEVEL/);
 assert.match(html,/if\(rollDuration===0\)/);
+assert.match(html,/SPIN_PRICES=\{1:10,5:50,50:475,100:900\}/);
+assert.match(html,/buyBulkRoll\(50\)[^>]*>Pull 50 · 475/);
+assert.match(html,/buyBulkRoll\(100\)[^>]*>Pull 100 · 900/);
+assert.match(html,/state\.coins -= price/);
+assert.match(html,/Need \$\{state\.inventory\.length\+count-state\.maxInv\} more bag slots/);
 
 const additionsSource=html.match(/const additions = (\{[\s\S]*?\});\n        config\.forEach/)[1];
 const additions=vm.runInNewContext(`(${additionsSource})`);
