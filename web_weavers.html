@@ -2440,6 +2440,8 @@ function animatePlayer(dt, moveVec){
       armRRot.x = step * stride * 0.7;
       legLRot.x = step * stride;
       legRRot.x = -step * stride;
+      torsoRot.x = running ? -0.16 : -0.06;
+      headRot.x = running ? 0.07 : 0.025;
       torsoRot.z = THREE.MathUtils.clamp(step * 0.04, -0.05, 0.05);
     } else {
       // Idle breathes as one balanced pose. Never alternate the limbs here;
@@ -2447,9 +2449,10 @@ function animatePlayer(dt, moveVec){
       const breath=Math.sin(animClock*1.8);
       torsoPos.y=breath*0.012;
       headPos.y=breath*0.006;
-      armLRot.x=armRRot.x=-0.035-breath*0.012;
-      armLRot.z=-0.025;
-      armRRot.z=0.025;
+      armLRot.x=-0.055-breath*0.012;
+      armRRot.x=-0.018-breath*0.009;
+      armLRot.z=-0.035;
+      armRRot.z=0.018;
     }
   } else if(P.state==='air'){
     if(P.swingReleaseT>0 && !P.gliding){
@@ -2497,20 +2500,24 @@ function animatePlayer(dt, moveVec){
     const groundPullPose=P.swingGroundPullT>0;
     const entryPose=P.swingPhase==='entry';
     const pullBack=Math.sin((1-P.swingGroundPullT/SWING_GROUND_PULL_TIME)*Math.PI)*0.65;
-    armLRot.x = groundPullPose ? -2.7+pullBack : (leftAttached ? (entryPose?-2.62:-2.48) : -0.55);
-    armRRot.x = groundPullPose ? -2.7+pullBack : (rightAttached ? (entryPose?-2.62:-2.48) : -0.55);
-    armLRot.z = groundPullPose ? -0.18 : (leftAttached ? -0.16 : -0.48);
-    armRRot.z = groundPullPose ? 0.18 : (rightAttached ? 0.16 : 0.48);
+    armLRot.x = groundPullPose ? -2.7+pullBack : (leftAttached ? (entryPose?-2.7:-2.56) : -0.38);
+    armRRot.x = groundPullPose ? -2.7+pullBack : (rightAttached ? (entryPose?-2.7:-2.56) : -0.38);
+    armLRot.z = groundPullPose ? -0.18 : (leftAttached ? -0.12 : -0.62);
+    armRRot.z = groundPullPose ? 0.18 : (rightAttached ? 0.12 : 0.62);
     const swingKick=Math.sin(P.swingAge*8);
-    legLRot.x = entryPose ? 0.62 : 0.5+swingKick*0.3;
-    legRRot.x = entryPose ? 0.42 : -0.2-swingKick*0.3;
+    legLRot.x = entryPose ? 0.82 : 0.72+swingKick*0.42;
+    legRRot.x = entryPose ? 0.34 : -0.18-swingKick*0.48;
     const facingRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
     const lateralSpeed=P.vel.dot(facingRight);
-    const swingSideLean=THREE.MathUtils.clamp(-lateralSpeed*0.022,-0.38,0.38);
+    const swingSideLean=THREE.MathUtils.clamp(-lateralSpeed*0.03,-0.52,0.52);
     legLRot.z = (entryPose ? 0.18 : 0.08)+swingSideLean*0.9;
     legRRot.z = (entryPose ? -0.18 : -0.08)+swingSideLean*0.9;
     torsoRot.x = entryPose ? -0.18 : THREE.MathUtils.clamp(-P.vel.y*0.012,-0.28,0.2);
     torsoRot.z = swingSideLean;
+    if(leftAttached!==rightAttached){
+      torsoRot.y=leftAttached?-0.16:0.16;
+      headRot.y=-torsoRot.y*0.45;
+    }
   } else if(P.state==='zip'){
     const zipFlutter=Math.sin(animClock*13)*0.12;
     armLRot.x = -2.45;
@@ -2658,6 +2665,13 @@ function animatePlayer(dt, moveVec){
     applyR15Bone('RightUpperLeg',legRRot,amt);
     let leftElbow=P.state==='swing'?0.34:P.state==='zip'?0.58:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:0.12;
     let rightElbow=leftElbow;
+    if(P.state==='swing'){
+      const swingReachElbow=0.08;
+      const swingFreeElbow=0.72;
+      leftElbow=P.swingWebs.left.anchor?swingReachElbow:swingFreeElbow;
+      rightElbow=P.swingWebs.right.anchor?swingReachElbow:swingFreeElbow;
+      if(P.swingGroundPullT>0) leftElbow=rightElbow=0.16;
+    }
     if(P.meleeT>0){
       const attackProgress=1-P.meleeT/0.34;
       const strike=Math.sin(attackProgress*Math.PI);
