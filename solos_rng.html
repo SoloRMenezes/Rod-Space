@@ -452,6 +452,51 @@
             { r:"Mythic",s:650,e:[["🕳️","Portable Void"],["🎞️","Final Timeline"],["🪐","Pocket Universe"],["🌌","Galaxy Shard"]]},
             { r:"Rainbow",s:5000,e:[["🌈","Prismatic Crown"],["🦄","Spectrum Spirit"],["🔆","Aurora Core"],["💠","Infinite Prism"]]}
         ];
+        const additions = {
+            Common: [
+                ["✏️","Carpenter Pencil"],["🧦","Striped Sock"],["🥤","Empty Soda Cup"],["🪥","Blue Toothbrush"],
+                ["🎟️","Bus Ticket"],["🪛","Flathead Screwdriver"],["🧃","Apple Juice Box"],["🧻","Paper Roll"],
+                ["🧼","Soap Bar"],["🪴","Tiny Cactus"],["🔌","Loose Plug"],["🧽","Kitchen Sponge"],
+                ["🪣","Plastic Bucket"],["🧤","Work Glove"]
+            ],
+            Uncommon: [
+                ["🎧","Studio Headphones"],["📷","Film Camera"],["🧯","Fire Extinguisher"],["🪕","Travel Banjo"],
+                ["🔦","Heavy Flashlight"],["🥾","Explorer Boot"],["🧩","Crystal Puzzle"],["🧿","Glass Amulet"],
+                ["🪶","Silver Quill"],["🎴","Marked Card"],["🗜️","Steel Clamp"],["🧵","Silk Thread"],
+                ["⏱️","Precision Timer"],["📡","Signal Receiver"]
+            ],
+            Rare: [
+                ["🪙","Platinum Coin"],["🦾","Clockwork Arm"],["🧊","Nevermelt Ice"],["🪬","Moon Talisman"],
+                ["🧫","Living Culture"],["🪞","Truth Mirror"],["🎭","Phantom Mask"],["🗡️","Frost Dagger"],
+                ["🧲","Gravity Magnet"],["🎼","Lost Symphony"],["🏺","Royal Urn"],["🧭","Void Compass"],
+                ["🦚","Celestial Feather"],["🔔","Spirit Bell"]
+            ],
+            Epic: [
+                ["🧙","Wizard Contract"],["🌋","Volcano Heart"],["🌊","Tidal Orb"],["🦅","Sky Lord Crest"],
+                ["🗿","Titan Fragment"],["⚗️","Immortality Draft"],["🎇","Captured Supernova"],["🪬","Oracle Seal"],
+                ["🧞","Bottled Djinn"],["🏹","Comet Bow"],["🛡️","Aegis Plate"],["⌛","Frozen Hourglass"],
+                ["🦴","Leviathan Fang"],["📕","Forbidden Grimoire"]
+            ],
+            Legendary: [
+                ["☀️","Miniature Sun"],["🌙","Moon Throne"],["🦁","Solar Lion Sigil"],["🐲","World Serpent Scale"],
+                ["🏰","Kingdom in a Bottle"],["🔱","Poseidon's Trident"],["🪽","Seraph Wing"],["🗝️","Gate of Eternity"],
+                ["💫","Wishing Comet"],["⚜️","Emperor's Crest"],["🧠","Ancient Mind"],["🗡️","Blade of First Light"],
+                ["🥚","Cosmic Egg"],["📯","Last War Horn"]
+            ],
+            Mythic: [
+                ["♾️","Infinity Knot"],["👁️","Eye Beyond Time"],["🌑","Black Moon"],["🌀","Reality Spiral"],
+                ["🫀","Heart of Creation"],["📖","Book of Every Ending"],["🕰️","Clock of Ages"],["⚫","Singularity Seed"],
+                ["🪞","Mirror of Worlds"],["🪽","Fallen God Feather"],["🎭","Face of Nothing"],["🧬","Perfect Genome"],
+                ["🔺","Origin Shard"],["🕯️","Last Light"]
+            ],
+            Rainbow: [
+                ["🪩","Chromatic Star"],["🫧","Iridescent Bubble"],["🦋","Aurora Butterfly"],["🐉","Prism Dragon"],
+                ["🎆","Endless Firework"],["🍀","Seven-Colour Clover"],["🧿","Spectrum Eye"],["💎","Rainbow Diamond"],
+                ["☄️","Opal Comet"],["🪶","Radiant Feather"],["🏳️‍🌈","Banner of Infinity"],["🧬","Chromatic Genome"],
+                ["🔮","Kaleidoscope Orb"],["✨","Pure Radiance"]
+            ]
+        };
+        config.forEach(category=>category.e.push(...additions[category.r]));
         config.forEach(c => {
             c.e.forEach(([emoji,name]) => {
                 pool.push({ name, rarity: c.r, sell: c.s, emoji });

@@ -12,6 +12,13 @@ assert.match(html,/localStorage\.setItem\('rng_speed',state\.speed\)/);
 assert.match(html,/type==='speed'&&state\.speed>=MAX_SPEED_LEVEL/);
 assert.match(html,/if\(rollDuration===0\)/);
 
+const additionsSource=html.match(/const additions = (\{[\s\S]*?\});\n        config\.forEach/)[1];
+const additions=vm.runInNewContext(`(${additionsSource})`);
+assert.deepEqual(Object.keys(additions),['Common','Uncommon','Rare','Epic','Legendary','Mythic','Rainbow']);
+Object.entries(additions).forEach(([rarity,items])=>assert.ok(items.length>=14,`${rarity} should receive at least 14 new items`));
+const names=Object.values(additions).flat().map(([,name])=>name);
+assert.equal(new Set(names).size,names.length,'new item names must be unique');
+
 const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
   .map(match=>match[1]).filter(script=>script.trim());
 scripts.forEach((script,index)=>new vm.Script(script,{filename:`solos_rng.html#${index+1}`}));
