@@ -36,6 +36,12 @@ assert.match(weavers,/trySwing\('left','abSwingLeft'\)/);
 assert.match(weavers,/trySwing\('right','abSwingRight'\)/);
 assert.match(weavers,/const SWING_RELEASE_CARRY = \.82;/);
 assert.match(weavers,/limitHorizontalSpeed\(SWING_RELEASE_MAX_SPEED\)/);
+assert.match(weavers,/const GLIDE_MAX_SPEED = 40;/);
+assert.match(weavers,/const flareLift=flareInput\*THREE\.MathUtils\.clamp\(glideSpeed\*0\.32,0,8\)/);
+assert.match(weavers,/P\.webshotPoseT=0\.34;/);
+assert.match(weavers,/P\.pullPoseT=0\.5;/);
+assert.match(weavers,/new THREE\.SphereGeometry\(0\.38,16,12\)/);
+assert.match(weavers,/new THREE\.CylinderGeometry\(0\.42,0\.34,1\.08,8\)/);
 
 for(const [name,html] of [['nicos_nextbots.html',nico],['Blackjack.html',blackjack],['web_weavers.html',weavers]]){
   const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match=>match[1]).filter(script=>script.trim());
