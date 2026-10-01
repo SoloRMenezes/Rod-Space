@@ -187,6 +187,7 @@
         </div>
         <div id="ui-overlay">
             <div id="timer-display" style="font-size: 1.1rem; color: #fff;">GET READY · 30</div>
+            <div id="floor-display" style="font-size:.78rem;color:#d1b45d;letter-spacing:.14em;">FLOOR 3 / 5</div>
             <button id="skip-countdown">SKIP</button>
         </div>
         <div id="mobile-controls"><div id="touch-look"></div><div class="touch-stick" id="touch-stick"><div class="touch-knob" id="touch-knob"></div></div><button class="touch-button" id="touch-jump">JUMP</button></div>
@@ -240,6 +241,14 @@ const MAP = (() => {
         const MAP_SIZE_Y = MAP.length;
         const MAP_SIZE_X = MAP[0].length;
         const FLOOR_HEIGHT=8;
+        const FLOOR_COUNT=5;
+        const FLOOR_LEVELS=Array.from({length:FLOOR_COUNT},(_,index)=>index*FLOOR_HEIGHT);
+        const SPAWN_FLOOR_INDEX=2;
+        const SPAWN_FLOOR_Y=FLOOR_LEVELS[SPAWN_FLOOR_INDEX];
+        const BUILDING_HEIGHT=FLOOR_COUNT*FLOOR_HEIGHT+3;
+        const clampFloorIndex=index=>Math.max(0,Math.min(FLOOR_COUNT-1,index));
+        const floorIndexAtHeight=height=>clampFloorIndex(Math.round(height/FLOOR_HEIGHT));
+        const floorBaseAtHeight=height=>FLOOR_LEVELS[floorIndexAtHeight(height)];
         const RAMPS=[
             {x1:7,x2:27,y1:7,y2:14,reverse:false},{x1:113,x2:133,y1:7,y2:14,reverse:true},
             {x1:7,x2:27,y1:44,y2:51,reverse:false},{x1:113,x2:133,y1:44,y2:51,reverse:true},
@@ -251,25 +260,33 @@ const MAP = (() => {
         function rampAt(x,y){return RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2)}
         function canEnterRamp(x,y){
             const target=rampAt(x,y);if(!target||rampAt(player.x,player.y))return true;
-            if(player.isJumping&&player.floorY>=FLOOR_HEIGHT/2)return true;
             const insideLane=player.y>=target.y1+.35&&player.y<=target.y2-.35;
             if(!insideLane)return false;
-            if(player.floorY>=FLOOR_HEIGHT/2)return target.reverse?player.x<=target.x1+.8:player.x>=target.x2-.8;
-            return target.reverse?player.x>=target.x2-.8:player.x<=target.x1+.8;
+            const floorIndex=floorIndexAtHeight(player.floorY);
+            const enteringLow=target.reverse?player.x>=target.x2-.8:player.x<=target.x1+.8;
+            const enteringHigh=target.reverse?player.x<=target.x1+.8:player.x>=target.x2-.8;
+            return (enteringLow&&floorIndex<FLOOR_COUNT-1)||(enteringHigh&&floorIndex>0);
         }
         function rampWallAt(x,y){
             return RAMPS.some(ramp=>x>=ramp.x1&&x<=ramp.x2&&(
                 Math.abs(y-(ramp.y1-.125))<=.16||Math.abs(y-(ramp.y2+.125))<=.16
             ));
         }
-        function bridgeAt(x,y,current=0){return current>=FLOOR_HEIGHT/2&&RAMPS.some(r=>Math.abs(x-(r.reverse?r.x2-(r.x2-r.x1)*.22:r.x1+(r.x2-r.x1)*.22))<=1.6&&y>=r.y1-.35&&y<=r.y2+.35)}
-        function rampSurfaceHeightAt(x,y,current=0){const ramp=rampAt(x,y);if(!ramp)return current>=FLOOR_HEIGHT/2?FLOOR_HEIGHT:0;let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;return t*FLOOR_HEIGHT}
-        function surfaceHeightAt(x,y,current=0){if(bridgeAt(x,y,current))return FLOOR_HEIGHT;return rampSurfaceHeightAt(x,y,current)}
+        function bridgeAt(x,y,current=0){return floorIndexAtHeight(current)>0&&RAMPS.some(r=>Math.abs(x-(r.reverse?r.x2-(r.x2-r.x1)*.22:r.x1+(r.x2-r.x1)*.22))<=1.6&&y>=r.y1-.35&&y<=r.y2+.35)}
+        function rampSurfaceHeightAt(x,y,current=0){
+            const ramp=rampAt(x,y);if(!ramp)return floorBaseAtHeight(current);
+            let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;
+            const tier=Math.max(0,Math.min(FLOOR_COUNT-2,Math.round((current-t*FLOOR_HEIGHT)/FLOOR_HEIGHT)));
+            return tier*FLOOR_HEIGHT+t*FLOOR_HEIGHT;
+        }
+        function surfaceHeightAt(x,y,current=0){if(bridgeAt(x,y,current))return floorBaseAtHeight(current);return rampSurfaceHeightAt(x,y,current)}
         function beginRampRoute(bot,now){
             const ramp=RAMPS[Math.floor(Math.random()*RAMPS.length)],midY=(ramp.y1+ramp.y2)/2;
             const low={x:ramp.reverse?ramp.x2-.6:ramp.x1+.6,y:midY};
             const high={x:ramp.reverse?ramp.x1+.6:ramp.x2-.6,y:midY};
-            bot.rampRoute=bot.floorY>=FLOOR_HEIGHT/2?[high,low]:[low,high];
+            const floorIndex=floorIndexAtHeight(bot.floorY);
+            const goUp=floorIndex===0||floorIndex<FLOOR_COUNT-1&&Math.random()<.5;
+            bot.rampRoute=goUp?[low,high]:[high,low];
             bot.rampStep=0;bot.wanderX=bot.rampRoute[0].x;bot.wanderY=bot.rampRoute[0].y;
             bot.wanderUntil=now+20000;bot._path=null;
         }
@@ -278,10 +295,10 @@ const MAP = (() => {
         // We'll use a THREE.Vector3 for position
 const botSpawns=[];
 const BOT_CENTER_Y=3.9;
-// Every nextbot shares one X/Y spawn point; floor height is the only difference.
+// Keep roughly the original total bot count while spreading them across five floors.
 const centralBotCells=[];for(let y=4;y<MAP_SIZE_Y-4;y++)for(let x=4;x<MAP_SIZE_X-4;x++){const d=Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2);if(MAP[y][x]===0&&d>9&&d<24)centralBotCells.push([x,y])}
 const sharedBotCell=centralBotCells.reduce((best,cell)=>Math.hypot(cell[0]-(MAP_SIZE_X/2+16),cell[1]-MAP_SIZE_Y/2)<Math.hypot(best[0]-(MAP_SIZE_X/2+16),best[1]-MAP_SIZE_Y/2)?cell:best);
-for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
+for(const floorY of FLOOR_LEVELS)for(let i=0;i<5;i++){
     const [x,y]=sharedBotCell;
     botSpawns.push({position:new THREE.Vector3(x*2+1,BOT_CENTER_Y+floorY,y*2+1),floorY});
 }
@@ -293,7 +310,7 @@ for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
             y: 1.5,
             dir: 0.8, // yaw
             z: 0,     // vertical offset for jump
-            floorY: 0,
+            floorY: SPAWN_FLOOR_Y,
             zVel: 0,
             isJumping: false,
             speed: 0.20, // ground pace is deliberately slower than a chasing bot
@@ -309,6 +326,7 @@ for(const floorY of [0,FLOOR_HEIGHT])for(let i=0;i<12;i++){
         let gameTimer = 0;
         let roundEndsAt=Infinity;
         const timerDisplay = document.getElementById('timer-display');
+        const floorDisplay = document.getElementById('floor-display');
         const skipCountdown=document.getElementById('skip-countdown');
         function formatClock(ms){const total=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(total/60)}:${String(total%60).padStart(2,'0')}`}
 
@@ -414,15 +432,15 @@ function wireGuestRoom(session){
             const wallTexture = new THREE.TextureLoader().load('./assets/vendor/nextbot-brick.jpg');
             wallTexture.wrapS=wallTexture.wrapT=THREE.RepeatWrapping;wallTexture.repeat.set(1,1);
             const brickMaterial=(repeatX,repeatY)=>{const map=wallTexture.clone();map.needsUpdate=true;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.repeat.set(repeatX,repeatY);return new THREE.MeshPhongMaterial({map,color:0x8f949a,shininess:3})};
-            const wallGeo = new THREE.BoxGeometry(2, 19, 2);
-            const wallSideBrick=brickMaterial(.5,9.5),wallTopBrick=brickMaterial(.5,.5);
+            const wallGeo = new THREE.BoxGeometry(2, BUILDING_HEIGHT, 2);
+            const wallSideBrick=brickMaterial(.5,BUILDING_HEIGHT/2),wallTopBrick=brickMaterial(.5,.5);
             const wallMaterials=[wallSideBrick,wallSideBrick,wallTopBrick,wallTopBrick,wallSideBrick,wallSideBrick];
             let wallCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++){if(MAP[y][x]===1)wallCount++;else if(MAP[y][x]===2)pillarCount++}
             const walls=new THREE.InstancedMesh(wallGeo,wallMaterials,wallCount),pillars=new THREE.InstancedMesh(wallGeo,wallMaterials,pillarCount);
             const transform=new THREE.Matrix4();let wallIndex=0,pillarIndex=0;
             // Player/map coordinates convert to world coordinates with +1, so
             // cell x occupies world 2x+1..2x+3 and is centred at 2x+2.
-            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]){transform.makeTranslation((x+1)*2,9.5,(y+1)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
+            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]){transform.makeTranslation((x+1)*2,BUILDING_HEIGHT/2,(y+1)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
             // Only the upper landing needs an opening. Cutting the complete ramp
@@ -439,35 +457,31 @@ function wireGuestRoom(session){
                 const opening=new THREE.Path();opening.moveTo(left,near);opening.lineTo(right,near);opening.lineTo(right,far);opening.lineTo(left,far);opening.closePath();deckShape.holes.push(opening);
             }
             const deckMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#383c41',true),color:0xb8bcc1,side:THREE.DoubleSide,shininess:5});
-            const upperDeck=new THREE.Mesh(new THREE.ExtrudeGeometry(deckShape,{depth:.65,bevelEnabled:false}),deckMaterial);
-            upperDeck.rotation.x=Math.PI/2;upperDeck.position.set(MAP_SIZE_X,FLOOR_HEIGHT+.32,MAP_SIZE_Y);scene.add(upperDeck);
+            const deckGeometry=new THREE.ExtrudeGeometry(deckShape,{depth:.65,bevelEnabled:false});
+            for(const floorY of FLOOR_LEVELS.slice(1)){const deck=new THREE.Mesh(deckGeometry,deckMaterial);deck.rotation.x=Math.PI/2;deck.position.set(MAP_SIZE_X,floorY+.32,MAP_SIZE_Y);scene.add(deck)}
             const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
-            ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,19,MAP_SIZE_Y);scene.add(ceiling);
+            ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,BUILDING_HEIGHT,MAP_SIZE_Y);scene.add(ceiling);
 
             const rampMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#55575a',true),color:0xb7b8b4,shininess:3});
             const railMat=new THREE.MeshPhongMaterial({color:0xd6d2c4,shininess:4});
             const warningMat=new THREE.MeshBasicMaterial({color:0xe5c94f});
-            for(const ramp of RAMPS){
+            for(const ramp of RAMPS)for(let tier=0;tier<FLOOR_COUNT-1;tier++){
+                const baseY=tier*FLOOR_HEIGHT;
                 const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1),cx=ramp.x1+ramp.x2+1,cz=ramp.y1+ramp.y2+1;
                 const supportShape=new THREE.Shape();
                 if(ramp.reverse){supportShape.moveTo(-length/2,0);supportShape.lineTo(-length/2,FLOOR_HEIGHT);supportShape.lineTo(length/2,0)}
                 else{supportShape.moveTo(-length/2,0);supportShape.lineTo(length/2,0);supportShape.lineTo(length/2,FLOOR_HEIGHT)}
                 supportShape.closePath();
                 const supportGeo=new THREE.ExtrudeGeometry(supportShape,{depth:width,bevelEnabled:false});supportGeo.translate(0,0,-width/2);
-                const support=new THREE.Mesh(supportGeo,rampMaterial);support.position.set(cx,0,cz);scene.add(support);
-                const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
+                const support=new THREE.Mesh(supportGeo,rampMaterial);support.position.set(cx,baseY,cz);scene.add(support);
+                const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,baseY+FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
                 // Floor-to-ceiling side walls make the ramp a proper enclosed
                 // corridor. Both ends stay open; there is no wall across its path.
-                const endBrick=brickMaterial(.3,9.5),topBrick=brickMaterial(Math.max(1,length/4),.3),faceBrick=brickMaterial(Math.max(1,length/4),9.5);
+                const endBrick=brickMaterial(.3,FLOOR_HEIGHT/2),topBrick=brickMaterial(Math.max(1,length/4),.3),faceBrick=brickMaterial(Math.max(1,length/4),FLOOR_HEIGHT/2);
                 const corridorWallMaterials=[endBrick,endBrick,topBrick,topBrick,faceBrick,faceBrick];
-                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,19,.6),corridorWallMaterials);guard.position.set(cx,9.5,cz+side*(width/2+.25));scene.add(guard)}
-                // Close the exposed end above the lower ramp entrance while
-                // keeping the drive-through opening underneath completely clear.
-                const span=ramp.x2-ramp.x1,headX=(ramp.reverse?ramp.x2-span*.1:ramp.x1+span*.1)*2+1;
-                const headHeight=19-(FLOOR_HEIGHT+.65),headWall=new THREE.Mesh(new THREE.BoxGeometry(.6,headHeight,width+.5),corridorWallMaterials);
-                headWall.position.set(headX,FLOOR_HEIGHT+.65+headHeight/2,cz);scene.add(headWall);
+                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,FLOOR_HEIGHT,.6),corridorWallMaterials);guard.position.set(cx,baseY+FLOOR_HEIGHT/2,cz+side*(width/2+.25));scene.add(guard)}
                 // Yellow entrance bars clearly mark both ways onto the ramp.
-                for(const end of [ramp.x1*2+1,ramp.x2*2+1]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,end===ramp.x1*2+1?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12),cz);scene.add(bar)}
+                for(const end of [ramp.x1*2+1,ramp.x2*2+1]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,baseY+(end===ramp.x1*2+1?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12)),cz);scene.add(bar)}
             }
 
             // Aligned parking bays stay inside rooms and never cut through walls,
@@ -478,7 +492,7 @@ function wireGuestRoom(session){
                 return !MAP.carSpots.some(([carX,carY])=>Math.abs(x-(carX+.5))<1.4&&Math.abs(y-(carY+.5))<4);
             };
             for(const y of bayRows)for(const [left,right] of roomBands)for(let x=left+4;x<right-2;x+=6)if(bayLineClear(x,y)){
-                for(const floorY of [.035,FLOOR_HEIGHT+.355])markings.push([x*2+1,floorY,y*2+1,.16,10]);
+                for(const floorY of FLOOR_LEVELS)markings.push([x*2+1,floorY+(floorY?.355:.035),y*2+1,.16,10]);
             }
             const markGeo=new THREE.BoxGeometry(1,.025,1),markMat=new THREE.MeshBasicMaterial({color:0xe5d26c}),marks=new THREE.InstancedMesh(markGeo,markMat,markings.length);
             markings.forEach(([x,y,z,w,d],i)=>{transform.compose(new THREE.Vector3(x,y,z),new THREE.Quaternion(),new THREE.Vector3(w,1,d));marks.setMatrixAt(i,transform)});marks.instanceMatrix.needsUpdate=true;scene.add(marks);
@@ -486,7 +500,7 @@ function wireGuestRoom(session){
             // Fluorescent fixtures are emissive-looking props only; they add no costly dynamic lights.
             const lampPositions=[];for(let z=14;z<MAP_SIZE_Y*2-10;z+=24)for(let x=14;x<MAP_SIZE_X*2-10;x+=28)lampPositions.push([x,z]);
             const lampGeo=new THREE.BoxGeometry(8,.10,.65),lampMat=new THREE.MeshBasicMaterial({color:0xeaf6dd});
-            const allLampPositions=[...lampPositions.map(([x,z])=>[x,7.7,z]),...lampPositions.map(([x,z])=>[x,18.7,z])];
+            const allLampPositions=FLOOR_LEVELS.flatMap(floorY=>lampPositions.map(([x,z])=>[x,floorY+7.7,z]));
             const garageLamps=new THREE.InstancedMesh(lampGeo,lampMat,allLampPositions.length);allLampPositions.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);garageLamps.setMatrixAt(i,transform)});garageLamps.instanceMatrix.needsUpdate=true;scene.add(garageLamps);
 
             // Low-poly parked cars create cover without expensive models or textures.
@@ -496,8 +510,8 @@ function wireGuestRoom(session){
                 const body=new THREE.Mesh(new THREE.BoxGeometry(3.5,.85,7),bodyMat);body.position.y=.65;car.add(body);
                 const cabin=new THREE.Mesh(new THREE.BoxGeometry(3,1,3.6),new THREE.MeshPhongMaterial({color,shininess:45}));cabin.position.set(0,1.45,-.2);car.add(cabin);
                 const glass=new THREE.Mesh(new THREE.BoxGeometry(3.04,.62,2.1),new THREE.MeshPhongMaterial({color:0x18232d,shininess:70}));glass.position.set(0,1.55,-.15);car.add(glass);
-                car.position.set(cx*2+1,0,cy*2+1);if(i%2)car.rotation.y=Math.PI;scene.add(car);
-                const upperCar=car.clone();upperCar.position.y=FLOOR_HEIGHT;scene.add(upperCar);
+                car.position.set(cx*2+1,0,cy*2+1);if(i%2)car.rotation.y=Math.PI;
+                for(const floorY of FLOOR_LEVELS){const floorCar=car.clone();floorCar.position.y=floorY;scene.add(floorCar)}
             });
 
             // Start away from the centre so every round opens differently.
@@ -506,6 +520,7 @@ function wireGuestRoom(session){
             player.position = new THREE.Vector3(spawn[0], 12, spawn[1]);
             player.x = spawn[0];
             player.y = spawn[1];
+            player.floorY = SPAWN_FLOOR_Y;
 
             // --- BOT SPAWN ---
 const loader = new THREE.TextureLoader();
@@ -672,10 +687,10 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if(distance>bestDistance){best=candidate;bestDistance=distance}
             }
             if(best){player.x=best[0];player.y=best[1]}
-            player.floorY=0;player.z=0;player.zVel=0;player.isJumping=false;
+            player.floorY=SPAWN_FLOOR_Y;player.z=0;player.zVel=0;player.isJumping=false;
             invulnerableUntil=performance.now()+5000;
             hideGameOverOverlay();
-            if(netRole==='guest'&&roomSession)roomSession.client.send('player',{x:player.x,y:player.y,floorY:0,dir:player.dir,alive:true});
+            if(netRole==='guest'&&roomSession)roomSession.client.send('player',{x:player.x,y:player.y,floorY:SPAWN_FLOOR_Y,dir:player.dir,alive:true});
             requestAnimationFrame(gameLoop);
             canvas.requestPointerLock?.();
         }
@@ -709,6 +724,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             if(keys['arrowup'])player.pitch=Math.min(Math.PI/2-.01,player.pitch+keyLookSpeed);
             if(keys['arrowdown'])player.pitch=Math.max(-Math.PI/2+.01,player.pitch-keyLookSpeed);
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
+            floorDisplay.textContent=`FLOOR ${floorIndexAtHeight(player.floorY)+1} / ${FLOOR_COUNT}`;
             if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;updateSkipButton()}
             else { skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
 

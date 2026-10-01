@@ -110,9 +110,13 @@
     #lockHint{display:none;}
     #abilityBar{gap:4px;bottom:18px;}
     .ability{width:54px;height:54px;}
+    #patrolWrap{top:68px;left:12px}
+    #minimapWrap{transform:scale(.72);transform-origin:top right}
+    #healthWrap{width:230px}
   }
 
-  #topButtons{position:absolute;top:16px;left:50%;transform:translateX(-50%);display:none;gap:8px;pointer-events:all;}
+  #topButtons{position:absolute;top:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;pointer-events:all;}
+  #patrolWrap{position:absolute;top:16px;left:312px;padding:7px 11px;font-size:11px;letter-spacing:.05em;}
   .btn{background:#fff17a;border:3px solid #111;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:800;
     cursor:pointer;box-shadow:3px 3px 0 #111;letter-spacing:.5px;}
   .btn:active{box-shadow:1px 1px 0 #111;transform:translate(2px,2px);}
@@ -137,8 +141,6 @@
   .enemyHp{position:absolute;width:44px;height:6px;border:2px solid #111;background:#3a0d0d;border-radius:3px;transform:translate(-50%,-100%);}
   .enemyHp .fill{height:100%;background:#ff5555;border-radius:1px;}
 </style>
-<link rel="stylesheet" href="assets/rod-space-home.css">
-<script defer src="assets/rod-space-home.js"></script>
 </head>
 <body>
 
@@ -172,6 +174,7 @@
     <div class="btn" id="btnControls">CONTROLS</div>
     <div class="btn" id="btnDebug">DEBUG: OFF</div>
   </div>
+  <div id="patrolWrap" class="comicPanel"><span id="patrolStatus">WAVE 1 · 0 STOPPED · 0 ACTIVE</span></div>
 
   <div id="abilityBar">
     <div class="ability" id="abSwing"><div class="icon">🕸️</div>SWING<div class="key">Q</div><div class="cd"></div></div>
@@ -1474,6 +1477,8 @@ applyDebugVisibility();
 
 const enemies = [];
 const groups = []; // {points:[..], members:[enemy idx], defeatedAt:null, homeIdx}
+let patrolWave=1;
+let defeatedCount=0;
 
 const enemyGeo = new THREE.BoxGeometry(0.9,1.0,0.5);
 const ENEMY_RADIUS = 0.62;
@@ -1551,7 +1556,8 @@ function spawnGroup(spawnIdx){
 // initial groups at a handful of spawn points
 [0,2,4,6,8].forEach(i=>spawnGroup(i));
 
-const RESPAWN_TIME = 300; // 5 minutes
+// A five-minute empty map killed the patrol loop. Cleared groups now regroup quickly.
+const RESPAWN_TIME = 18;
 
 function removeEnemy(e){
   scene.remove(e.mesh);
@@ -2183,10 +2189,15 @@ function damageEnemy(e, amount, fromMelee=false){
   setTimeout(()=>{ if(e.alive) e.mat.color.setHex(e.outfitColor); },80);
   if(e.hp<=0 && e.alive){
     e.alive=false;
+    defeatedCount++;
     e.mesh.visible=false;
     e.hpEl.style.display='none';
     if(combatTarget===e) combatTarget=null;
     if(fromMelee) beginComboChain(e);
+    if(enemies.every(enemy=>!enemy.alive)){
+      patrolWave++;
+      flashMsg(`WAVE ${patrolWave} INCOMING`);
+    }
   }
 }
 
@@ -3053,12 +3064,18 @@ function updateProjectiles(dt){
   for(let i=projectiles.length-1;i>=0;i--){
     const p = projectiles[i];
     p.life -= dt;
-    p.pos.addScaledVector(p.dir, WEBSHOT_SPEED*dt);
+    const previous=p.pos.clone();
+    const travel=WEBSHOT_SPEED*dt;
+    p.pos.addScaledVector(p.dir,travel);
     if(p.mesh) p.mesh.position.copy(p.pos);
     let hit=false;
     for(const e of enemies){
       if(!e.alive) continue;
-      if(p.pos.distanceTo(e.mesh.position) < 1.6){
+      const target=e.mesh.position.clone().add(new THREE.Vector3(0,.4,0));
+      const segment=p.pos.clone().sub(previous),lengthSq=segment.lengthSq();
+      const along=lengthSq?THREE.MathUtils.clamp(target.clone().sub(previous).dot(segment)/lengthSq,0,1):0;
+      const nearest=previous.clone().addScaledVector(segment,along);
+      if(nearest.distanceTo(target) < 1.25){
         combatTarget=e;
         damageEnemy(e, 10);
         e.stunT = 2.2;
@@ -3066,6 +3083,11 @@ function updateProjectiles(dt){
         hit=true;
         break;
       }
+    }
+    if(!hit){
+      raycaster.set(previous,p.dir);raycaster.far=travel;
+      hit=raycaster.intersectObjects(collidables(),false).length>0;
+      raycaster.far=Infinity;
     }
     if(hit || p.life<=0) removeProjectile(i);
   }
@@ -3232,7 +3254,7 @@ function updateEnemyHpBars(){
     if(!e.alive){ e.hpEl.style.display='none'; return; }
     v.copy(e.mesh.position); v.y+=1.9;
     v.project(camera);
-    if(v.z>1){ e.hpEl.style.display='none'; return; }
+    if(v.z<-1||v.z>1||Math.abs(v.x)>1.12||Math.abs(v.y)>1.12){ e.hpEl.style.display='none'; return; }
     const x=(v.x*0.5+0.5)*innerWidth, y=(-v.y*0.5+0.5)*innerHeight;
     e.hpEl.style.display='block';
     e.hpEl.style.left=x+'px'; e.hpEl.style.top=y+'px';
@@ -3270,10 +3292,16 @@ function updateAbilityCooldownUI(){
   document.querySelector('#abBlock .cd').style.height = P.blocking ? '100%':'0%';
 }
 
+function updatePatrolStatus(){
+  const active=enemies.reduce((count,enemy)=>count+(enemy.alive?1:0),0);
+  document.getElementById('patrolStatus').textContent=`WAVE ${patrolWave} · ${defeatedCount} STOPPED · ${active} ACTIVE`;
+}
+
 // ---------------------------------------------------------------------------------------
 // GAME LOOP
 // ---------------------------------------------------------------------------------------
 let last = performance.now();
+let hudFrame=0;
 function tick(){
   requestAnimationFrame(tick);
   const now = performance.now();
@@ -3315,9 +3343,12 @@ function tick(){
 
   document.getElementById('healthBarInner').style.width = P.hp+'%';
   updateCrosshair();
-  drawMinimap();
-  updateEnemyHpBars();
-  updateDebugPanel();
+  if((hudFrame++&3)===0){
+    drawMinimap();
+    updateEnemyHpBars();
+    updateDebugPanel();
+    updatePatrolStatus();
+  }
   updateAbilityCooldownUI();
 
   renderer.render(scene, camera);

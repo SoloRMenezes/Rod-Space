@@ -102,12 +102,16 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255,255,255,0.1);
         }
+        #round-status{min-height:1.5rem;color:#d1fae5;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+        .record-pill{background:#052e2bdd;border:1px solid #ffffff26;color:#d1fae5;padding:.35rem .8rem;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:.08em}
+        @media(max-width:640px){body{padding:0!important}.table-border{height:100dvh!important;border-width:6px;border-radius:0;padding:1.25rem .5rem!important}.card{width:64px;height:94px;padding:7px}.card .text-4xl{font-size:1.65rem}.card .text-xl{font-size:.9rem}#controls{gap:.75rem}#controls button{padding:.85rem 1.5rem}.glass-panel.px-12{padding-left:1.5rem;padding-right:1.5rem}}
     </style>
 </head>
 <body class="p-4">
 
-    <div id="game-table" class="table-border w-full max-w-5xl h-[90vh] relative overflow-hidden flex flex-col justify-between items-center py-10 px-6 felt-bg">
+        <div id="game-table" class="table-border w-full max-w-5xl h-[90vh] relative overflow-hidden flex flex-col justify-between items-center py-10 px-6 felt-bg">
         <div id="fx-layer" aria-hidden="true"></div>
+        <div id="record-display" class="record-pill absolute top-4 right-5 z-10">W 0 · L 0 · STREAK 0</div>
         
         <!-- MAIN MENU OVERLAY -->
         <div id="main-menu" class="absolute inset-0 z-50 flex flex-col items-center justify-center glass-panel">
@@ -178,6 +182,7 @@
                 <button id="hit-btn" class="btn-action bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-xl shadow-lg disabled:opacity-30">Hit</button>
                 <button id="stand-btn" class="btn-action bg-rose-600 hover:bg-rose-500 text-white px-10 py-4 rounded-xl shadow-lg disabled:opacity-30">Stand</button>
             </div>
+            <div id="round-status" class="z-10 text-sm">Your move</div>
         </div>
     </div>
 
@@ -189,6 +194,8 @@
         let playerHand = [];
         let dealerHand = [];
         let gameOver = false;
+        let dealerBusy = false;
+        let record = (()=>{try{return {...{wins:0,losses:0,pushes:0,streak:0},...JSON.parse(localStorage.getItem('blackjack-record')||'{}')}}catch{return {wins:0,losses:0,pushes:0,streak:0}}})();
 
         // Elements
         const mainMenu = document.getElementById('main-menu');
@@ -212,6 +219,10 @@
         const standBtn = document.getElementById('stand-btn');
         const resetBtn = document.getElementById('reset-btn');
         const controls = document.getElementById('controls');
+        const roundStatus = document.getElementById('round-status');
+        const recordDisplay = document.getElementById('record-display');
+
+        function updateRecord(){recordDisplay.textContent=`W ${record.wins} · L ${record.losses} · STREAK ${record.streak}`;try{localStorage.setItem('blackjack-record',JSON.stringify(record))}catch{}}
 
         function createDeck() {
             deck = [];
@@ -311,7 +322,11 @@
         }
 
         async function startDealerTurn() {
+            if(dealerBusy)return;
+            dealerBusy = true;
             gameOver = true;
+            hitBtn.disabled = standBtn.disabled = true;
+            roundStatus.textContent = 'House is playing…';
             updateUI();
             
             let dealerScore = calculateScore(dealerHand);
@@ -322,8 +337,8 @@
                 dealerScore = calculateScore(dealerHand);
                 updateUI();
             }
-
-            setTimeout(determineWinner, 500);
+            dealerBusy = false;
+            setTimeout(determineWinner, 350);
         }
 
         function determineWinner() {
@@ -337,6 +352,12 @@
             else if (dScore > pScore) msg = "House Wins!";
             else msg = "Push";
 
+            const won=msg==='You Win!'||msg==='House Busts!';
+            const pushed=msg==='Push';
+            if(won){record.wins++;record.streak++}else if(pushed){record.pushes++}else{record.losses++;record.streak=0}
+            updateRecord();
+            roundStatus.textContent=msg;
+
             messageEl.innerText = msg;
             burstFx(msg==='You Win!'||msg==='House Busts!'?'win':msg==='Push'?'push':'lose',msg.includes('Win')||msg.includes('Busts')?26:14);
             resultContainer.classList.remove('hidden');
@@ -348,6 +369,8 @@
             playerHand = [deck.pop(), deck.pop()];
             dealerHand = [deck.pop(), deck.pop()];
             gameOver = false;
+            dealerBusy = false;
+            hitBtn.disabled = standBtn.disabled = false;
             fxLayer.replaceChildren();
             gameTable.classList.remove('fx-win','fx-lose','fx-push');
             
@@ -355,18 +378,12 @@
             gameUI.classList.remove('hidden');
             resultContainer.classList.add('hidden');
             controls.classList.remove('opacity-0', 'pointer-events-none');
+            roundStatus.textContent = 'Your move';
             
             const pScore = calculateScore(playerHand);
             updateUI();
 
-            if (pScore === 21) {
-                gameOver = true;
-                setTimeout(() => {
-                    messageEl.innerText = "21!";
-                    resultContainer.classList.remove('hidden');
-                    controls.classList.add('opacity-0', 'pointer-events-none');
-                }, 600);
-            }
+            if (pScore === 21) setTimeout(startDealerTurn, 500);
         }
 
         // Event Listeners
@@ -379,7 +396,7 @@
         });
 
         hitBtn.addEventListener('click', () => {
-            if (gameOver) return;
+            if (gameOver||dealerBusy) return;
             playerHand.push(deck.pop());
             updateUI();
             burstFx('push',5);
@@ -390,11 +407,17 @@
         });
 
         standBtn.addEventListener('click', () => {
-            if (gameOver) return;
+            if (gameOver||dealerBusy) return;
             startDealerTurn();
         });
 
         resetBtn.addEventListener('click', dealInitialCards);
+        window.addEventListener('keydown',event=>{
+            if(event.repeat||mainMenu.classList.contains('hidden')===false||!resultContainer.classList.contains('hidden'))return;
+            if(event.code==='KeyH')hitBtn.click();
+            if(event.code==='KeyS'||event.code==='Space'){event.preventDefault();standBtn.click()}
+        });
+        updateRecord();
     </script>
 </body>
 </html>
