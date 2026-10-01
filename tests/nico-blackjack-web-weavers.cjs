@@ -27,6 +27,10 @@ assert.match(weavers,/const previous=p\.pos\.clone\(\);/);
 assert.match(weavers,/raycaster\.intersectObjects\(collidables\(\),false\)/);
 assert.match(weavers,/updatePatrolStatus\(\)/);
 assert.match(weavers,/#topButtons\{[^}]*display:flex/);
+assert.doesNotMatch(weavers,/if\(!zipDown && lastZip && P\.state==='zip'\) cancelZip\(\)/);
+assert.match(weavers,/const horizontalRadial=radial\.clone\(\);horizontalRadial\.y=0;/);
+assert.match(weavers,/travelDir\.lerp\(mv,\.16\)\.normalize\(\)/);
+assert.match(weavers,/P\.vel\.copy\(exitDir\)\.multiplyScalar\(18\)/);
 
 for(const [name,html] of [['nicos_nextbots.html',nico],['Blackjack.html',blackjack],['web_weavers.html',weavers]]){
   const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match=>match[1]).filter(script=>script.trim());

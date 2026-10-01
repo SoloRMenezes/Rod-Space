@@ -227,7 +227,7 @@
     <div class="row"><span>Toggle run/walk</span><span class="keybtn" data-action="toggleRun">CTRL</span></div>
     <div class="row"><span>Jump / toggle web-wings</span><span class="keybtn" data-action="jump">SPACE</span></div>
     <div class="row"><span>Smart web swing</span><span class="keybtn" data-action="swing">Q</span></div>
-    <div class="row"><span>Zip</span><span class="keybtn" data-action="zip">Z</span></div>
+    <div class="row"><span>Zip (tap; jump cancels)</span><span class="keybtn" data-action="zip">Z</span></div>
     <div class="row"><span>Web-shot</span><span class="keybtn" data-action="webshot">X</span></div>
     <div class="row"><span>Pull</span><span class="keybtn" data-action="pull">C</span></div>
     <div class="row"><span>Melee</span><span>Left Mouse</span></div>
@@ -2580,13 +2580,19 @@ function updatePlayer(dt){
     P.swingWebs.right.retry=0.18;
   }
   if(!swingDown && lastSwing) releaseSwing(null);
+  // Zip is a tap-and-commit traversal move. Releasing Z no longer aborts it;
+  // Space is the deliberate bailout when the player wants their momentum back.
   if(zipDown && !lastZip && P.cooldowns.zip<=0 && P.state!=='zip'){ tryZip(); P.cooldowns.zip=0.15; }
-  if(!zipDown && lastZip && P.state==='zip') cancelZip();
   if(webshotDown && !lastWebshot && P.cooldowns.webshot<=0){ tryWebshot(); P.cooldowns.webshot=0.5; }
   if(pullDown && !lastPull && P.cooldowns.pull<=0){ tryPull(); P.cooldowns.pull=1.6; }
   if(meleeDown && !lastMelee && P.cooldowns.melee<=0 && P.state!=='swing'){ tryMelee(); P.cooldowns.melee=0.45; }
   if(jumpDown && !lastJump){
-    if(P.state==='ground'||P.state==='climb'){
+    if(P.state==='zip'){
+      const zipMomentum=P.vel.clone();
+      cancelZip();
+      P.vel.copy(zipMomentum);
+      P.vel.y=Math.max(P.vel.y,4.5);
+    } else if(P.state==='ground'||P.state==='climb'){
       const jumpingFromWall=P.state==='climb';
       const wallNormal=jumpingFromWall&&P.climbNormal?P.climbNormal.clone():null;
       if(jumpingFromWall && P.wallRunFromSwing){
@@ -2766,11 +2772,17 @@ function updatePlayer(dt){
       }
     }
 
-    // Steering is tangential too, so left/right momentum is retained rather than
-    // being cancelled by an invisible pull toward the middle of the street.
+    // Camera-relative steering stays horizontal. The old full 3D tangent could
+    // turn ordinary WASD input into unexplained lift or downward force.
     if(mv.lengthSq()>0){
-      const swingSteer=mv.clone().addScaledVector(radial,-mv.dot(radial));
-      if(swingSteer.lengthSq()>0.001) P.vel.addScaledVector(swingSteer.normalize(),12*dt);
+      const horizontalRadial=radial.clone();horizontalRadial.y=0;
+      if(horizontalRadial.lengthSq()>0.001)horizontalRadial.normalize();
+      const swingSteer=mv.clone().addScaledVector(horizontalRadial,-mv.dot(horizontalRadial)*.7);
+      if(swingSteer.lengthSq()>0.001){
+        swingSteer.normalize();
+        P.vel.x+=swingSteer.x*10*dt;
+        P.vel.z+=swingSteer.z*10*dt;
+      }
     }
     const beforeSwingMove = P.pos.clone();
     const swingImpactVelocity=P.vel.clone();
@@ -2849,7 +2861,7 @@ function updatePlayer(dt){
       const completesCombo=comboChainMode==='zip' && comboChainTarget===arrivedEnemy;
       const exitDir = zipDir && zipDir.lengthSq()>0.001 ? zipDir : new THREE.Vector3(Math.sin(P.facing),0,Math.cos(P.facing));
       P.state='air';
-      P.vel.copy(exitDir).multiplyScalar(8);
+      P.vel.copy(exitDir).multiplyScalar(18);
       zipTarget = null;
       zipDir = null;
       if(arrivedEnemy) arrivedEnemy.stunT=Math.max(arrivedEnemy.stunT,0.6);
@@ -2858,11 +2870,16 @@ function updatePlayer(dt){
     }
     else {
       toT.normalize();
-      zipDir = toT.clone();
+      // WASD bends the zip without replacing its destination. Forward gives a
+      // small speed push, back brakes, and sideways input curves the approach.
+      const travelDir=toT.clone();
+      if(mv.lengthSq()>0.001)travelDir.lerp(mv,.16).normalize();
+      const zipSpeed=ZIP_SPEED*(keys[bindings.forward] ? 1.06 : keys[bindings.back] ? .82 : 1);
+      zipDir = travelDir.clone();
       const beforeZipMove = P.pos.clone();
-      const zipImpactVelocity=toT.clone().multiplyScalar(ZIP_SPEED);
-      P.pos.addScaledVector(toT, ZIP_SPEED*dt);
-      P.vel.copy(toT).multiplyScalar(ZIP_SPEED*0.6);
+      const zipImpactVelocity=travelDir.clone().multiplyScalar(zipSpeed);
+      P.pos.addScaledVector(travelDir,zipSpeed*dt);
+      P.vel.copy(travelDir).multiplyScalar(zipSpeed*.72);
       const zipWall=resolveWallCollision(P.pos, beforeZipMove);
       if(zipWall) beginTraversalWallRun(zipWall.normal,zipWall.building,zipImpactVelocity);
     }
