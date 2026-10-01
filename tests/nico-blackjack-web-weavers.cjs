@@ -27,7 +27,7 @@ assert.match(weavers,/const previous=p\.pos\.clone\(\);/);
 assert.match(weavers,/raycaster\.intersectObjects\(collidables\(\),false\)/);
 assert.match(weavers,/updatePatrolStatus\(\)/);
 assert.match(weavers,/#topButtons\{[^}]*display:flex/);
-assert.doesNotMatch(weavers,/if\(!zipDown && lastZip && P\.state==='zip'\) cancelZip\(\)/);
+assert.match(weavers,/if\(!zipDown && lastZip && P\.state==='zip'\) cancelZip\(\)/);
 assert.match(weavers,/const horizontalRadial=radial\.clone\(\);horizontalRadial\.y=0;/);
 assert.match(weavers,/travelDir\.lerp\(mv,\.16\)\.normalize\(\)/);
 assert.match(weavers,/P\.vel\.copy\(exitDir\)\.multiplyScalar\(18\)/);

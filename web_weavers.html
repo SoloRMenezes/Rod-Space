@@ -227,7 +227,7 @@
     <div class="row"><span>Toggle run/walk</span><span class="keybtn" data-action="toggleRun">CTRL</span></div>
     <div class="row"><span>Jump / toggle web-wings</span><span class="keybtn" data-action="jump">SPACE</span></div>
     <div class="row"><span>Smart web swing</span><span class="keybtn" data-action="swing">Q</span></div>
-    <div class="row"><span>Zip (tap; jump cancels)</span><span class="keybtn" data-action="zip">Z</span></div>
+    <div class="row"><span>Zip (hold; release to let go)</span><span class="keybtn" data-action="zip">Z</span></div>
     <div class="row"><span>Web-shot</span><span class="keybtn" data-action="webshot">X</span></div>
     <div class="row"><span>Pull</span><span class="keybtn" data-action="pull">C</span></div>
     <div class="row"><span>Melee</span><span>Left Mouse</span></div>
@@ -2580,9 +2580,10 @@ function updatePlayer(dt){
     P.swingWebs.right.retry=0.18;
   }
   if(!swingDown && lastSwing) releaseSwing(null);
-  // Zip is a tap-and-commit traversal move. Releasing Z no longer aborts it;
-  // Space is the deliberate bailout when the player wants their momentum back.
+  // Zip follows the held web: releasing Z lets go immediately and preserves
+  // the current travel momentum, while Space remains an alternate bailout.
   if(zipDown && !lastZip && P.cooldowns.zip<=0 && P.state!=='zip'){ tryZip(); P.cooldowns.zip=0.15; }
+  if(!zipDown && lastZip && P.state==='zip') cancelZip();
   if(webshotDown && !lastWebshot && P.cooldowns.webshot<=0){ tryWebshot(); P.cooldowns.webshot=0.5; }
   if(pullDown && !lastPull && P.cooldowns.pull<=0){ tryPull(); P.cooldowns.pull=1.6; }
   if(meleeDown && !lastMelee && P.cooldowns.melee<=0 && P.state!=='swing'){ tryMelee(); P.cooldowns.melee=0.45; }
