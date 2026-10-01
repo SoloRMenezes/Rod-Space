@@ -12,8 +12,13 @@ assert.match(html,/localStorage\.setItem\('rng_speed',state\.speed\)/);
 assert.match(html,/type==='speed'&&state\.speed>=MAX_SPEED_LEVEL/);
 assert.match(html,/if\(rollDuration===0\)/);
 assert.match(html,/SPIN_PRICES=\{1:10,5:50,50:475,100:900\}/);
-assert.match(html,/buyBulkRoll\(50\)[^>]*>Pull 50 · 475/);
-assert.match(html,/buyBulkRoll\(100\)[^>]*>Pull 100 · 900/);
+assert.match(html,/id="roll-50-btn"[^>]*onclick="spin\(50\)"[^>]*>Pull 50 · 475/);
+assert.match(html,/id="roll-100-btn"[^>]*onclick="spin\(100\)"[^>]*>Pull 100 · 900/);
+assert.match(html,/buyBulkUnlock\(50\)[^>]*>Unlock Roll 50 · 1,500/);
+assert.match(html,/buyBulkUnlock\(100\)[^>]*>Unlock Roll 100 · 3,000/);
+assert.match(html,/price=count===50\?1500:3000/);
+assert.match(html,/localStorage\.setItem\('rng_bulk_50'/);
+assert.match(html,/localStorage\.setItem\('rng_bulk_100'/);
 assert.match(html,/state\.coins -= price/);
 assert.match(html,/Need \$\{state\.inventory\.length\+count-state\.maxInv\} more bag slots/);
 
