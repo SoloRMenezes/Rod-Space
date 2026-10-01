@@ -1112,6 +1112,15 @@ function applyR15Bone(name,rot,amount){
   bone.quaternion.slerp(target,amount);
 }
 
+function visibleWebHandWorld(gameHand,fallback){
+  // This Blender export's left/right labels are mirrored relative to the
+  // gameplay camera. Use the visible opposite wrist so Q and E strands leave
+  // the arm on the same side as their building anchor.
+  const exportedName=gameHand==='left'?'RightHand':'LeftHand';
+  const bone=r15Ready&&r15Bone(exportedName);
+  return bone?bone.getWorldPosition(new THREE.Vector3()):fallback.getWorldPosition(new THREE.Vector3());
+}
+
 new THREE.GLTFLoader().load(
   './assets/models/web-weavers-r15.glb',
   gltf=>{
@@ -2425,11 +2434,22 @@ function animatePlayer(dt, moveVec){
       legLRot.z=-0.18*land; legRRot.z=0.18*land;
     } else if(moving || speedFlat > 1){
       const stride = running ? 0.85 : 0.48;
-      armLRot.x = step * stride * 0.7;
-      armRRot.x = -step * stride * 0.7;
-      legLRot.x = -step * stride;
-      legRRot.x = step * stride;
+      // The imported rig faces the opposite local Z direction to the old
+      // placeholder. Lead with the arm opposite the advancing leg.
+      armLRot.x = -step * stride * 0.7;
+      armRRot.x = step * stride * 0.7;
+      legLRot.x = step * stride;
+      legRRot.x = -step * stride;
       torsoRot.z = THREE.MathUtils.clamp(step * 0.04, -0.05, 0.05);
+    } else {
+      // Idle breathes as one balanced pose. Never alternate the limbs here;
+      // that reads as walking even when the physics body is stationary.
+      const breath=Math.sin(animClock*1.8);
+      torsoPos.y=breath*0.012;
+      headPos.y=breath*0.006;
+      armLRot.x=armRRot.x=-0.035-breath*0.012;
+      armLRot.z=-0.025;
+      armRRot.z=0.025;
     }
   } else if(P.state==='air'){
     if(P.swingReleaseT>0 && !P.gliding){
@@ -2573,16 +2593,16 @@ function animatePlayer(dt, moveVec){
     const followThrough=Math.sin(Math.min(1,attackProgress*1.35)*Math.PI);
     const rightPunch=P.meleeSide>0;
     if(rightPunch){
-      armRRot.x=-1.72-strike*0.45;
-      armRRot.z=-0.08;
-      armLRot.x=-0.72;
-      armLRot.z=-0.42;
+      armRRot.x=-0.78-strike*0.5;
+      armRRot.z=0.16;
+      armLRot.x=-0.62;
+      armLRot.z=-0.48;
       torsoRot.y=-followThrough*0.28;
     } else {
-      armLRot.x=-1.72-strike*0.45;
-      armLRot.z=0.08;
-      armRRot.x=-0.72;
-      armRRot.z=0.42;
+      armLRot.x=-0.78-strike*0.5;
+      armLRot.z=-0.16;
+      armRRot.x=-0.62;
+      armRRot.z=0.48;
       torsoRot.y=followThrough*0.28;
     }
     torsoRot.x=-0.12*strike;
@@ -2614,8 +2634,10 @@ function animatePlayer(dt, moveVec){
   }
 
   if(P.blocking){
-    armLRot.x = -1.25; armRRot.x = -1.25;
-    armLRot.z = -0.22; armRRot.z = 0.22;
+    // Compact boxing guard: shoulders narrow, elbows bent and hands at face
+    // height instead of both arms opening into a hug.
+    armLRot.x = -0.68; armRRot.x = -0.68;
+    armLRot.z = 0.48; armRRot.z = -0.48;
   }
 
   blendPart(torso, basePose.torso, torsoRot, torsoPos, amt);
@@ -2634,11 +2656,20 @@ function animatePlayer(dt, moveVec){
     applyR15Bone('RightUpperArm',armRRot,amt);
     applyR15Bone('LeftUpperLeg',legLRot,amt);
     applyR15Bone('RightUpperLeg',legRRot,amt);
-    const actionCurl=P.state==='swing'?0.34:P.state==='zip'?0.58:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:0.12;
+    let leftElbow=P.state==='swing'?0.34:P.state==='zip'?0.58:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:0.12;
+    let rightElbow=leftElbow;
+    if(P.meleeT>0){
+      const attackProgress=1-P.meleeT/0.34;
+      const strike=Math.sin(attackProgress*Math.PI);
+      const strikingElbow=THREE.MathUtils.lerp(1.18,0.38,strike);
+      if(P.meleeSide>0){ rightElbow=strikingElbow; leftElbow=1.08; }
+      else { leftElbow=strikingElbow; rightElbow=1.08; }
+    }
+    if(P.blocking) leftElbow=rightElbow=1.28;
     const kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
     const kneeR=THREE.MathUtils.clamp(Math.max(0,legRRot.x)*0.7+(P.state==='ground'?Math.max(0,step)*0.32:0),0,1.05);
-    applyR15Bone('LeftLowerArm',{x:-actionCurl,y:0,z:0},amt);
-    applyR15Bone('RightLowerArm',{x:-actionCurl,y:0,z:0},amt);
+    applyR15Bone('LeftLowerArm',{x:-leftElbow,y:0,z:P.blocking?0.12:0},amt);
+    applyR15Bone('RightLowerArm',{x:-rightElbow,y:0,z:P.blocking?-0.12:0},amt);
     applyR15Bone('LeftHand',{x:0,y:0,z:P.state==='swing'?-0.18:0},amt);
     applyR15Bone('RightHand',{x:0,y:0,z:P.state==='swing'?0.18:0},amt);
     applyR15Bone('LeftLowerLeg',{x:kneeL,y:0,z:0},amt);
@@ -3506,8 +3537,8 @@ function tick(){
 
   // rope visuals
   player.updateMatrixWorld(true);
-  const leftOrigin=handL.getWorldPosition(new THREE.Vector3());
-  const rightOrigin=handR.getWorldPosition(new THREE.Vector3());
+  const leftOrigin=visibleWebHandWorld('left',handL);
+  const rightOrigin=visibleWebHandWorld('right',handR);
   const swingWebVisible=P.state==='swing' || (P.state==='climb' && P.wallRunFromSwing);
   if(swingWebVisible && P.swingGroundPullT>0 && P.swingGroundPullAnchors.left){
     setSwingRope(ropeLine,leftOrigin,P.swingGroundPullAnchors.left);
