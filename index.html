@@ -58,7 +58,13 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 sm:gap-4">
+          <a
+            href="./party.html"
+            class="group flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1.5 font-mono text-xs font-medium text-emerald-300 transition-colors hover:border-emerald-400/40 hover:text-white"
+          >
+            <span>Party Space</span>
+          </a>
           <a
             href="https://github.com/SoloRMenezes/Rod-Space/tree/main"
             target="_blank"
@@ -694,7 +700,7 @@
       };
 
       function getFilteredAndSorted() {
-        let items = PROJECTS_DATA.filter(proj => {
+        let items = PROJECTS_DATA.filter(proj => proj.type !== "party").filter(proj => {
           if (window.offlineOnly && !window.offlineDownloads?.has(proj.id)) return false;
           const isFav = favorites.includes(proj.id);
 
