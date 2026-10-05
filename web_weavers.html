@@ -177,11 +177,11 @@
   <div id="patrolWrap" class="comicPanel"><span id="patrolStatus">WAVE 1 · 0 STOPPED · 0 ACTIVE</span></div>
 
   <div id="abilityBar">
-    <div class="ability" id="abSwingLeft"><div class="icon">🕸️</div>LEFT WEB<div class="key">Q</div><div class="cd"></div></div>
-    <div class="ability" id="abSwingRight"><div class="icon">🕸️</div>RIGHT WEB<div class="key">E</div><div class="cd"></div></div>
-    <div class="ability" id="abZip"><div class="icon">➤</div>ZIP<div class="key">Z</div><div class="cd"></div></div>
+    <div class="ability" id="abSwingLeft"><div class="icon">🕸️</div>SWING<div class="key">HOLD ⇧</div><div class="cd"></div></div>
+    <div class="ability" id="abSwingRight"><div class="icon">➤</div>ZIP<div class="key">TAP ⇧</div><div class="cd"></div></div>
+    <div class="ability" id="abZip"><div class="icon">⬆</div>JUMP<div class="key">SPACE</div><div class="cd"></div></div>
     <div class="ability" id="abWebshot"><div class="icon">💥</div>SHOT<div class="key">X</div><div class="cd"></div></div>
-    <div class="ability" id="abPull"><div class="icon">↙</div>PULL<div class="key">C</div><div class="cd"></div></div>
+    <div class="ability" id="abPull"><div class="icon">↘</div>DIVE<div class="key">C</div><div class="cd"></div></div>
     <div class="ability" id="abMelee"><div class="icon">✊</div>PUNCH<div class="key">LMB</div><div class="cd"></div></div>
     <div class="ability" id="abBlock"><div class="icon">🛡️</div>BLOCK<div class="key">F</div><div class="cd"></div></div>
   </div>
@@ -189,7 +189,7 @@
   <div id="crosshairWrap"><div id="crosshair" class="none"></div></div>
 
   <div id="msgCenter" style="transition:opacity .25s;opacity:0;"></div>
-  <div id="lockHint">HOLD RMB (or toggle Shift-Lock) to look around — I/O zoom, WASD to move</div>
+  <div id="lockHint">HOLD RMB (or V Shift-Lock) to look around — I/O zoom, WASD to move</div>
 
   <div id="pauseOverlay" style="display:none;position:absolute;inset:0;background:rgba(18,34,72,.78);
     align-items:center;justify-content:center;pointer-events:all;">
@@ -224,17 +224,14 @@
     <div class="row"><span>Zoom in / first person</span><span class="keybtn" data-action="zoomIn">I</span></div>
     <div class="row"><span>Zoom out</span><span class="keybtn" data-action="zoomOut">O</span></div>
     <div class="row"><span>Hold to drag camera</span><span>Right Mouse</span></div>
-    <div class="row"><span>Toggle shift-lock</span><span class="keybtn" data-action="shiftLock">SHIFT</span></div>
-    <div class="row"><span>Toggle run/walk</span><span class="keybtn" data-action="toggleRun">CTRL</span></div>
-    <div class="row"><span>Jump / toggle web-wings</span><span class="keybtn" data-action="jump">SPACE</span></div>
-    <div class="row"><span>Left-side web swing</span><span class="keybtn" data-action="swingLeft">Q</span></div>
-    <div class="row"><span>Right-side web swing</span><span class="keybtn" data-action="swingRight">E</span></div>
-    <div class="row"><span>Zip (hold; release to let go)</span><span class="keybtn" data-action="zip">Z</span></div>
+    <div class="row"><span>Toggle shift-lock</span><span class="keybtn" data-action="shiftLock">V</span></div>
+    <div class="row"><span>Toggle sprint</span><span class="keybtn" data-action="toggleRun">CTRL</span></div>
+    <div class="row"><span>Jump (hold to charge)</span><span class="keybtn" data-action="jump">SPACE</span></div>
+    <div class="row"><span>Tap to zip / hold to swing</span><span class="keybtn" data-action="traversal">SHIFT</span></div>
     <div class="row"><span>Web-shot</span><span class="keybtn" data-action="webshot">X</span></div>
-    <div class="row"><span>Pull</span><span class="keybtn" data-action="pull">C</span></div>
+    <div class="row"><span>Dive in mid-air</span><span class="keybtn" data-action="dive">C</span></div>
     <div class="row"><span>Melee</span><span>Left Mouse</span></div>
     <div class="row"><span>Block</span><span class="keybtn" data-action="block">F</span></div>
-    <div class="row"><span>Recover after hard fall</span><span class="keybtn" data-action="recover">R</span></div>
     <div class="row"><span>Toggle debug</span><span class="keybtn" data-action="debug">`</span></div>
     <div class="row"><span>Main menu / pause</span><span>ESC</span></div>
     <div class="btn" id="btnCloseBind" style="margin-top:6px;text-align:center;">CLOSE</div>
@@ -266,8 +263,8 @@
 // ---------------------------------------------------------------------------------------
 const bindings = {
   forward:'KeyW', back:'KeyS', left:'KeyA', right:'KeyD',
-  jump:'Space', swingLeft:'KeyQ', swingRight:'KeyE', zip:'KeyZ', webshot:'KeyX', pull:'KeyC',
-  block:'KeyF', recover:'KeyR', toggleRun:'ControlLeft', shiftLock:'ShiftLeft', menu:'Escape',
+  jump:'Space', traversal:'ShiftLeft', webshot:'KeyX', dive:'KeyC',
+  block:'KeyF', toggleRun:'ControlLeft', shiftLock:'KeyV', menu:'Escape',
   zoomIn:'KeyI', zoomOut:'KeyO', debug:'Backquote'
 };
 const defaultBindings = {...bindings};
@@ -309,12 +306,6 @@ window.addEventListener('keydown', e=>{
 });
 window.addEventListener('keyup', e=>{
   keys[e.code]=false;
-  const releasedHand=e.code===bindings.swingLeft?'left':e.code===bindings.swingRight?'right':null;
-  if(releasedHand && gameActive && !paused &&
-      (P.state==='swing' || (P.state==='climb' && P.wallRunFromSwing))){
-    releaseSwing(releasedHand);
-    if(releasedHand==='left')lastSwingLeft=false;else lastSwingRight=false;
-  }
   if(e.code === bindings.zoomIn || e.code === bindings.zoomOut) saveSettings();
 });
 
@@ -384,8 +375,10 @@ function loadSettings(){
       Object.keys(defaultBindings).forEach(k=>{
         if(typeof saved.bindings[k] === 'string') bindings[k] = saved.bindings[k];
       });
-      // Migrate the previous single smart-swing binding to the left web.
-      if(typeof saved.bindings.swingLeft !== 'string' && typeof saved.bindings.swing === 'string')bindings.swingLeft=saved.bindings.swing;
+      // The traversal redesign intentionally replaces the old Q/E/Z layout.
+      if(typeof saved.bindings.traversal !== 'string') bindings.traversal='ShiftLeft';
+      if(typeof saved.bindings.dive !== 'string') bindings.dive='KeyC';
+      if(saved.bindings.shiftLock==='ShiftLeft') bindings.shiftLock='KeyV';
     }
     if(typeof saved.running === 'boolean') running = saved.running;
     if(typeof saved.debugOn === 'boolean') debugOn = saved.debugOn;
@@ -397,7 +390,7 @@ function saveSettings(){
   writeSavedSettings({bindings, running, debugOn, mouseSensitivity, cameraDistance});
 }
 function syncBindingLabels(){
-  ['shiftLock','toggleRun','jump','swingLeft','swingRight','zip','webshot','pull','block','recover','zoomIn','zoomOut','debug']
+  ['shiftLock','toggleRun','jump','traversal','webshot','dive','block','zoomIn','zoomOut','debug']
     .forEach(a=>{
       const el = document.querySelector(`.keybtn[data-action="${a}"]`);
       if(el) el.textContent = prettyKey(bindings[a]);
@@ -541,6 +534,17 @@ function resetDefeatedPlayer(){
   P.pendingFallDamage=0;
   P.recoveryT=0;
   P.recoverLock=false;
+  P.traversalHoldT=0;
+  P.traversalSwingStarted=false;
+  P.traversalRetryT=0;
+  P.jumpChargeT=0;
+  P.jumpCharging=false;
+  P.diving=false;
+  P.swingHistoryT=0;
+  P.quickRecoveryT=0;
+  P.recoveryRollT=0;
+  P.recoveryLaunchPending=false;
+  P.recoveryVelocity.set(0,0,0);
   P.peakY=P.pos.y;
   P.swingWebs.left.anchor=null;
   P.swingWebs.right.anchor=null;
@@ -1209,6 +1213,10 @@ const P = {
   invuln:0,
   facing: 0,
   gliding:false, wingCooldown:0, peakY:0, downedT:0, pendingFallDamage:0, recoveryT:0, recoverLock:false,
+  traversalHoldT:0, traversalSwingStarted:false, traversalRetryT:0,
+  jumpChargeT:0, jumpCharging:false, diving:false,
+  swingHistoryT:0, quickRecoveryT:0, recoveryRollT:0, recoveryLaunchPending:false,
+  recoveryVelocity:new THREE.Vector3(),
   defeatedT:0, recoverPressed:false, blocking:false,
   cooldowns:{swing:0, zip:0, pull:0, melee:0, webshot:0},
 };
@@ -1258,20 +1266,20 @@ const SWING_GROUND_PULL_TIME = 0.36;
 const SWING_GROUND_PULL_UP_ACCEL = 22;
 const SWING_GROUND_PULL_FORWARD_ACCEL = 14;
 const SWING_GROUND_PULL_REEL_SPEED = 2.5;
-const SWING_LANE_SPRING = 2.4;
-const SWING_LANE_DAMPING = 1.8;
+const SWING_LANE_SPRING = 4.2;
+const SWING_LANE_DAMPING = 3.2;
+const TRAVERSAL_HOLD_TIME = 0.2;
+const MAX_JUMP_CHARGE = 0.85;
+const CHARGED_JUMP_BONUS = 10;
+const DIVE_FORWARD_ACCEL = 13;
+const DIVE_DOWN_ACCEL = 22;
+const QUICK_RECOVERY_WINDOW = 0.85;
+const QUICK_RECOVERY_ROLL_TIME = 0.28;
 const MAX_TRAVERSAL_SPEED = 60;
 const MAX_FALL_SPEED = -58;
 const MAX_RISE_SPEED = 34;
 const KEY_ZOOM_SPEED = 8.5;
-const FALL_SAFE_DISTANCE = 20;
-
-function fallDamageForDrop(dropHeight){
-  const dangerousHeight=Math.max(0,dropHeight-FALL_SAFE_DISTANCE);
-  if(dangerousHeight<=0) return 0;
-  const severeHeight=Math.max(0,dangerousHeight-20);
-  return Math.min(90,dangerousHeight*1.15+severeHeight*0.85);
-}
+const WING_MIN_CLEARANCE = 5;
 
 // ---------------------------------------------------------------------------------------
 // RAYCASTING HELPERS (ground height, wall proximity, crosshair target)
@@ -1923,12 +1931,12 @@ let combatTarget=null;
 let comboChainTarget=null;
 let comboChainMode=null;
 
-// Q and E explicitly choose the nearest valid building on their own side.
-// Enemies stay valid targets for combat abilities, but traversal webs need city geometry.
-function trySwing(hand,abilId){
+// A held traversal input chooses the stronger valid side automatically. Traversal
+// webs still require city geometry; enemies remain combat targets only.
+function trySwing(hand,abilId,chosenOverride=null){
   if(P.state==='downed' || P.state==='defeated') return;
   if(P.activeSwingHand || P.cooldowns.swing>0) return false;
-  const chosen=findAssistedSwingAnchor(hand,null);
+  const chosen=chosenOverride || findAssistedSwingAnchor(hand,null);
   if(!chosen)return false;
   const otherHand=hand==='left'?'right':'left';
   const web=P.swingWebs[hand];
@@ -1985,6 +1993,15 @@ function trySwing(hand,abilId){
     return true;
   }
   return false;
+}
+
+function trySmartSwing(){
+  const left=findAssistedSwingAnchor('left',null);
+  const right=findAssistedSwingAnchor('right',null);
+  if(!left && !right) return false;
+  let hand='left', chosen=left;
+  if(!left || (right && (right.score||0)>(left.score||0))){ hand='right'; chosen=right; }
+  return trySwing(hand,'abSwingLeft',chosen);
 }
 
 function cameraForwardFlat(){
@@ -2110,9 +2127,9 @@ function clampPlayerVelocity(){
 }
 
 function tryZip(){
-  if(P.state==='downed' || P.state==='defeated') return;
+  if(P.state==='downed' || P.state==='defeated') return false;
   const hit = zipCrosshairHit(ZIP_RANGE);
-  if(!hit) return;
+  if(!hit) return false;
   comboChainTarget=null;
   comboChainMode=null;
   zipEnemyTarget=enemyForObject(hit.object);
@@ -2124,7 +2141,8 @@ function tryZip(){
   if(zipDir.lengthSq()>0.001) zipDir.normalize();
   else camera.getWorldDirection(zipDir);
   P.state='zip';
-  pulse('abZip');
+  pulse('abSwingRight');
+  return true;
 }
 
 function cancelZip(){
@@ -2418,6 +2436,11 @@ function animatePlayer(dt, moveVec){
   const wingPose=P.state==='air' && P.gliding;
   // The physics root stays upright; only the visual rig rolls and pitches.
   let rigPitch=wingPose?Math.PI/2+P.glidePitch*0.55:0;
+  if(P.diving) rigPitch=Math.PI/2.35;
+  if(P.recoveryRollT>0){
+    const rollProgress=1-P.recoveryRollT/QUICK_RECOVERY_ROLL_TIME;
+    rigPitch=-rollProgress*Math.PI*2;
+  }
   if(P.state==='swing'){
     const swingSpeed=Math.max(1,P.vel.length());
     const fastSwing=THREE.MathUtils.clamp((swingSpeed-10)/28,0,1);
@@ -2425,7 +2448,7 @@ function animatePlayer(dt, moveVec){
     rigPitch=-fastSwing*0.3-riseRatio*0.16;
   }
   if(P.wallFlipT>0) rigPitch=-(1-P.wallFlipT/0.65)*Math.PI*2;
-  playerRig.rotation.x=P.wallFlipT>0 ? rigPitch : THREE.MathUtils.lerp(playerRig.rotation.x,rigPitch,amt);
+  playerRig.rotation.x=(P.wallFlipT>0||P.recoveryRollT>0) ? rigPitch : THREE.MathUtils.lerp(playerRig.rotation.x,rigPitch,amt);
   // On a wall, rotate the whole visual rig so its head points along travel.
   // Horizontal and swing-carried runs therefore read as a sideways sprint,
   // while vertical runs treat the wall exactly like the floor.
@@ -2447,7 +2470,13 @@ function animatePlayer(dt, moveVec){
   let headPos = {x:0, y:bob * 0.55, z:0};
 
   if(P.state==='ground'){
-    if(P.landPoseT>0){
+    if(P.recoveryRollT>0){
+      torsoRot.x=0.55;
+      torsoPos.y=-0.28;
+      armLRot.x=armRRot.x=-0.85;
+      armLRot.z=-0.45; armRRot.z=0.45;
+      legLRot.x=legRRot.x=1.05;
+    } else if(P.landPoseT>0){
       const land=P.landPoseT/0.22;
       torsoPos.y=-0.2*land;
       torsoRot.x=0.16*land;
@@ -2475,7 +2504,14 @@ function animatePlayer(dt, moveVec){
       armRRot.z=0.018;
     }
   } else if(P.state==='air'){
-    if(P.swingReleaseT>0 && !P.gliding){
+    if(P.diving){
+      armLRot.x=armRRot.x=0.65;
+      armLRot.z=-0.32; armRRot.z=0.32;
+      legLRot.x=-0.25; legRRot.x=0.18;
+      legLRot.z=-0.16; legRRot.z=0.16;
+      torsoRot.x=-0.18;
+      headRot.x=0.2;
+    } else if(P.swingReleaseT>0 && !P.gliding){
       const release=Math.sin((P.swingReleaseT/0.35)*Math.PI);
       armLRot.x=-0.75-release*0.45;
       armRRot.x=-0.75-release*0.45;
@@ -2726,21 +2762,66 @@ function animatePlayer(dt, moveVec){
 // ---------------------------------------------------------------------------------------
 // MAIN UPDATE LOOP
 // ---------------------------------------------------------------------------------------
-let lastSwingLeft=false,lastSwingRight=false,lastZip=false,lastJump=false,lastPull=false,lastMelee=false,lastWebshot=false;
+let lastTraversal=false,lastJump=false,lastDive=false,lastMelee=false,lastWebshot=false;
 const WALK_SPEED = 6.5;
+
+function launchChargedJump(){
+  const charge=THREE.MathUtils.clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
+  const jumpingFromWall=P.state==='climb';
+  const wallNormal=jumpingFromWall&&P.climbNormal?P.climbNormal.clone():null;
+  P.vel.y=Math.max(P.vel.y,JUMP_SPEED+charge*CHARGED_JUMP_BONUS)*(jumpingFromWall?0.9:1);
+  if(wallNormal){
+    P.vel.addScaledVector(wallNormal,8+charge*3);
+    P.pos.addScaledVector(wallNormal,0.45);
+    P.wallFlipT=0.65;
+    P.wallDetachT=0.3;
+  }
+  P.climbNormal=null;
+  P.climbBuilding=null;
+  P.wallRunFromSwing=false;
+  P.state='air';
+  P.gliding=false;
+  P.jumpPoseT=0.36;
+  P.peakY=P.pos.y;
+  if(charge>0.45) flashMsg('CHARGED JUMP');
+  P.jumpChargeT=0;
+  P.jumpCharging=false;
+}
+
+function jumpOutOfSwing(){
+  const direction=P.vel.clone();
+  if(direction.lengthSq()<1) direction.copy(cameraForwardFlat());
+  direction.normalize();
+  const carriedSpeed=Math.max(12,P.vel.length());
+  releaseSwing(null,false);
+  P.vel.addScaledVector(direction,Math.min(9,3+carriedSpeed*0.12));
+  P.swingReleaseT=0.42;
+  P.jumpPoseT=0.34;
+  P.swingHistoryT=1;
+}
+
+function beginQuickRecovery(){
+  P.recoveryRollT=QUICK_RECOVERY_ROLL_TIME;
+  P.recoveryLaunchPending=true;
+  P.quickRecoveryT=0;
+  P.landPoseT=0;
+  flashMsg('QUICK RECOVERY');
+}
 
 function clearHeldInputs(){
   Object.keys(keys).forEach(code=>{ keys[code] = false; });
   mouseDown[0] = false;
   mouseDown[2] = false;
-  lastSwingLeft = false;
-  lastSwingRight = false;
-  lastZip = false;
+  lastTraversal = false;
   lastJump = false;
-  lastPull = false;
+  lastDive = false;
   lastMelee = false;
   lastWebshot = false;
   P.blocking = false;
+  P.traversalHoldT=0;
+  P.traversalSwingStarted=false;
+  P.jumpCharging=false;
+  P.diving=false;
   if(P.state === 'swing' || (P.state==='climb' && P.wallRunFromSwing)) releaseSwing(null,false);
   if(P.state === 'zip') cancelZip();
 }
@@ -2771,6 +2852,24 @@ function updatePlayer(dt){
   P.pullPoseT=Math.max(0,P.pullPoseT-dt);
   P.landPoseT=Math.max(0,P.landPoseT-dt);
   P.invuln = Math.max(0, P.invuln-dt);
+  P.swingHistoryT=Math.max(0,P.swingHistoryT-dt);
+  P.quickRecoveryT=Math.max(0,P.quickRecoveryT-dt);
+  P.traversalRetryT=Math.max(0,P.traversalRetryT-dt);
+  const rollWasActive=P.recoveryRollT>0;
+  P.recoveryRollT=Math.max(0,P.recoveryRollT-dt);
+  if(rollWasActive && P.recoveryRollT===0 && P.recoveryLaunchPending){
+    const recoveryFlat=new THREE.Vector3(P.recoveryVelocity.x,0,P.recoveryVelocity.z);
+    if(recoveryFlat.lengthSq()<4) recoveryFlat.copy(cameraForwardFlat()).multiplyScalar(13);
+    else if(recoveryFlat.length()<13) recoveryFlat.setLength(13);
+    P.vel.x=recoveryFlat.x;
+    P.vel.z=recoveryFlat.z;
+    P.vel.y=18;
+    P.pos.y+=0.08;
+    P.state='air';
+    P.jumpPoseT=0.42;
+    P.peakY=P.pos.y;
+    P.recoveryLaunchPending=false;
+  }
 
   // Swing is strictly single-hand, including after interrupted input frames.
   if(P.swingWebs.left.anchor && P.swingWebs.right.anchor){
@@ -2784,61 +2883,54 @@ function updatePlayer(dt){
   if(P.activeSwingHand && !P.swingWebs[P.activeSwingHand].anchor) P.activeSwingHand=null;
 
   // input edge detection
-  const swingLeftDown = keys[bindings.swingLeft];
-  const swingRightDown = keys[bindings.swingRight];
-  const zipDown = keys[bindings.zip];
+  const traversalDown = !!keys[bindings.traversal];
   const webshotDown = keys[bindings.webshot];
   const jumpDown = keys[bindings.jump];
-  const pullDown = keys[bindings.pull];
+  const diveDown = !!keys[bindings.dive];
   const meleeDown = mouseDown[0];
   P.blocking = !!keys[bindings.block] && P.state!=='downed' && P.state!=='defeated';
 
-  if(swingLeftDown&&!lastSwingLeft&&!P.activeSwingHand&&P.swingWebs.left.retry<=0){
-    trySwing('left','abSwingLeft');
-    P.swingWebs.left.retry=0.18;
+  if(traversalDown&&!lastTraversal){
+    P.traversalHoldT=0;
+    P.traversalSwingStarted=false;
   }
-  if(swingRightDown&&!lastSwingRight&&!P.activeSwingHand&&P.swingWebs.right.retry<=0){
-    trySwing('right','abSwingRight');
-    P.swingWebs.right.retry=0.18;
+  if(traversalDown){
+    P.traversalHoldT+=dt;
+    if(P.traversalHoldT>=TRAVERSAL_HOLD_TIME && !P.traversalSwingStarted && P.traversalRetryT<=0){
+      P.traversalSwingStarted=trySmartSwing();
+      P.traversalRetryT=0.12;
+    }
   }
-  if(!swingLeftDown&&lastSwingLeft)releaseSwing('left');
-  if(!swingRightDown&&lastSwingRight)releaseSwing('right');
-  // Zip follows the held web: releasing Z lets go immediately and preserves
-  // the current travel momentum, while Space remains an alternate bailout.
-  if(zipDown && !lastZip && P.cooldowns.zip<=0 && P.state!=='zip'){ tryZip(); P.cooldowns.zip=0.15; }
-  if(!zipDown && lastZip && P.state==='zip') cancelZip();
+  if(!traversalDown&&lastTraversal){
+    if(P.traversalSwingStarted || P.state==='swing' || (P.state==='climb'&&P.wallRunFromSwing)){
+      P.swingHistoryT=1;
+      releaseSwing(null);
+    } else if(P.traversalHoldT<TRAVERSAL_HOLD_TIME && P.cooldowns.zip<=0 && P.state!=='zip'){
+      if(tryZip()) P.cooldowns.zip=0.15;
+    }
+    P.traversalHoldT=0;
+    P.traversalSwingStarted=false;
+  }
   if(webshotDown && !lastWebshot && P.cooldowns.webshot<=0){ tryWebshot(); P.cooldowns.webshot=0.5; }
-  if(pullDown && !lastPull && P.cooldowns.pull<=0){ tryPull(); P.cooldowns.pull=1.6; }
   if(meleeDown && !lastMelee && P.cooldowns.melee<=0 && P.state!=='swing'){ tryMelee(); P.cooldowns.melee=0.45; }
   if(jumpDown && !lastJump){
-    if(P.state==='zip'){
+    if(P.state==='swing'){
+      jumpOutOfSwing();
+    } else if(P.quickRecoveryT>0 && P.state==='ground'){
+      beginQuickRecovery();
+    } else if(P.state==='zip'){
       const zipMomentum=P.vel.clone();
       cancelZip();
       P.vel.copy(zipMomentum);
       P.vel.y=Math.max(P.vel.y,4.5);
     } else if(P.state==='ground'||P.state==='climb'){
-      const jumpingFromWall=P.state==='climb';
-      const wallNormal=jumpingFromWall&&P.climbNormal?P.climbNormal.clone():null;
-      if(jumpingFromWall && P.wallRunFromSwing){
-        if(wallNormal) P.pos.addScaledVector(wallNormal,0.45);
-        resumeSwingFromWall(true);
-      } else {
-        P.vel.y = JUMP_SPEED * (P.state==='climb'?0.9:1);
-        if(wallNormal){
-          P.vel.addScaledVector(wallNormal,8);
-          P.wallFlipT=0.65;
-          P.wallDetachT=0.3;
-        }
-        P.climbNormal=null;
-        P.climbBuilding=null;
-        P.state='air'; P.gliding=false;
-        P.jumpPoseT=0.36;
-      }
+      P.jumpCharging=true;
+      P.jumpChargeT=0;
     } else if(P.state==='air'){
       // Wings may be closed at any time, but only opened when the player is high
       // enough above the next surface for an unprotected landing to cause damage.
       const wingGround=heightAt(P.pos.x,P.pos.z,P.pos.y+0.15);
-      const canOpenWings=P.pos.y-wingGround>FALL_SAFE_DISTANCE;
+      const canOpenWings=P.pos.y-wingGround>WING_MIN_CLEARANCE;
       if(P.gliding){
         P.gliding=false;
         P.wingCooldown=5;
@@ -2848,30 +2940,20 @@ function updatePlayer(dt){
       }
     }
   }
-  if(P.pendingFallDamage>0 && P.recoveryT>0 && keys[bindings.recover] && !P.recoverPressed){
-    P.recoverPressed=true;
-    const groundH = heightAt(P.pos.x, P.pos.z, P.pos.y+2);
-    P.pos.y = Math.max(P.pos.y, groundH + 1.2);
-    P.state = 'air';
-    P.downedT = 0;
-    P.pendingFallDamage = 0;
-    P.recoveryT = 0;
-    P.recoverLock = true;
-    P.gliding = false;
-    P.peakY = P.pos.y;
-    P.vel.y = Math.max(P.vel.y, 18);
-    const flatSpeed = Math.hypot(P.vel.x, P.vel.z);
-    if(flatSpeed < 8){
-      const fwd = new THREE.Vector3(Math.sin(P.facing), 0, Math.cos(P.facing));
-      P.vel.x = fwd.x * 8;
-      P.vel.z = fwd.z * 8;
-    }
-    flashMsg('RECOVER');
+  if(P.jumpCharging && jumpDown) P.jumpChargeT=Math.min(MAX_JUMP_CHARGE,P.jumpChargeT+dt);
+  if(P.jumpCharging && !jumpDown && lastJump) launchChargedJump();
+  P.diving=diveDown && P.state==='air';
+  if(P.diving){
+    P.gliding=false;
+    const diveForward=Math.hypot(P.vel.x,P.vel.z)>1
+      ? new THREE.Vector3(P.vel.x,0,P.vel.z).normalize()
+      : cameraForwardFlat();
+    P.vel.addScaledVector(diveForward,DIVE_FORWARD_ACCEL*dt);
+    P.vel.y-=DIVE_DOWN_ACCEL*dt;
   }
-  if(!keys[bindings.recover]) P.recoverPressed=false;
 
-  lastSwingLeft=swingLeftDown;lastSwingRight=swingRightDown;lastZip=zipDown;lastWebshot=webshotDown;
-  lastJump=jumpDown; lastPull=pullDown; lastMelee=meleeDown;
+  lastTraversal=traversalDown;lastWebshot=webshotDown;
+  lastJump=jumpDown;lastDive=diveDown;lastMelee=meleeDown;
 
   // movement input vector (camera relative)
   const mv = new THREE.Vector3(
@@ -2901,6 +2983,7 @@ function updatePlayer(dt){
     P.downedT=0;
   }
   else if(P.state==='swing'){
+    P.swingHistoryT=1;
     P.swingAge+=dt;
     P.swingPhaseT+=dt;
     P.swingPeakFlat=Math.max(P.swingPeakFlat,Math.hypot(P.vel.x,P.vel.z));
@@ -3033,6 +3116,7 @@ function updatePlayer(dt){
         P.pos.y=landingGround+1;
         P.vel.y=Math.max(P.vel.y,SWING_SKIM_UP_SPEED);
       } else {
+        const recoveryImpact=P.vel.clone();
         P.pos.y=landingGround;
         P.vel.y=0;
         P.state='ground';
@@ -3048,6 +3132,11 @@ function updatePlayer(dt){
         P.swingGroundPullAnchors.right=null;
         P.activeSwingHand=null;
         P.swingAssisted=false;
+        P.quickRecoveryT=QUICK_RECOVERY_WINDOW;
+        P.recoveryVelocity.copy(recoveryImpact);
+        if(Math.hypot(P.recoveryVelocity.x,P.recoveryVelocity.z)<8){
+          P.recoveryVelocity.copy(cameraForwardFlat()).multiplyScalar(12);
+        }
       }
     }
     if(P.state==='swing'){
@@ -3196,8 +3285,15 @@ function updatePlayer(dt){
   }
   else { // ground / air
     if(P.state === 'ground'){
-      P.vel.x = mv.x*moveSpeed;
-      P.vel.z = mv.z*moveSpeed;
+      if(P.recoveryRollT>0){
+        const recoveryFlat=new THREE.Vector3(P.recoveryVelocity.x,0,P.recoveryVelocity.z);
+        if(recoveryFlat.lengthSq()<4) recoveryFlat.copy(cameraForwardFlat()).multiplyScalar(12);
+        P.vel.x=recoveryFlat.x;
+        P.vel.z=recoveryFlat.z;
+      } else {
+        P.vel.x = mv.x*moveSpeed;
+        P.vel.z = mv.z*moveSpeed;
+      }
     } else {
       if(mv.lengthSq()>0) P.vel.addScaledVector(mv, AIR_CONTROL*dt);
       P.vel.x *= Math.pow(AIR_DRAG, dt*60);
@@ -3245,26 +3341,24 @@ function updatePlayer(dt){
 
     const groundH = heightAt(P.pos.x,P.pos.z, P.pos.y+1.5);
     if(P.pos.y<=groundH){
-      const fallDrop = P.peakY - groundH;
-      const protectedByWings=P.gliding;
+      const landingVelocity=P.vel.clone();
       const landingSpeed=Math.abs(P.vel.y);
       P.pos.y=groundH; P.vel.y=0;
-      const dmg=protectedByWings ? 0 : fallDamageForDrop(fallDrop);
-      if(dmg>0){
-        P.state='ground';
-        P.gliding=false;
-        if(P.recoverLock){
-          P.recoverLock=false;
-          damagePlayer(dmg,0.25,true);
-        } else {
-          P.pendingFallDamage=dmg;
-          P.recoveryT=2;
+      P.state='ground'; P.gliding=false;
+      if(landingSpeed>4) P.landPoseT=0.22;
+      // Falling is never punished with health loss. A recent swing instead
+      // opens a short Space recovery window that preserves travel momentum.
+      if(P.swingHistoryT>0 && landingSpeed>5){
+        P.quickRecoveryT=QUICK_RECOVERY_WINDOW;
+        P.recoveryVelocity.copy(landingVelocity);
+        if(Math.hypot(P.recoveryVelocity.x,P.recoveryVelocity.z)<8){
+          P.recoveryVelocity.copy(cameraForwardFlat()).multiplyScalar(12);
         }
-      } else {
-        P.state='ground'; P.gliding=false;
-        if(landingSpeed>4) P.landPoseT=0.22;
-        if(P.pendingFallDamage<=0) P.recoverLock=false;
+        flashMsg('SPACE: RECOVER');
       }
+      P.pendingFallDamage=0;
+      P.recoveryT=0;
+      P.recoverLock=false;
       P.peakY = P.pos.y;
     }
     else {
@@ -3312,15 +3406,6 @@ function updatePlayer(dt){
   // Water is scenery only. The rounded shoreline silently blocks outward motion.
   constrainToIsland(P.pos,P.vel);
   if(P.state!=='downed') P.downedT = 0;
-
-  if(P.pendingFallDamage>0 && P.recoveryT>0){
-    P.recoveryT=Math.max(0,P.recoveryT-dt);
-    if(P.recoveryT<=0){
-      const pendingDamage=P.pendingFallDamage;
-      P.pendingFallDamage=0;
-      damagePlayer(pendingDamage,0.25,true);
-    }
-  }
 
   animatePlayer(dt, mv);
   updateWebWings();
@@ -3551,13 +3636,15 @@ function updateDebugPanel(){
 }
 
 function updateAbilityCooldownUI(){
-  const map = {abSwingLeft:'swing',abSwingRight:'swing',abZip:'zip',abWebshot:'webshot',abPull:'pull',abMelee:'melee'};
-  const maxes = {swing:0.25, zip:0.15, webshot:0.5, pull:1.6, melee:0.45};
+  const map = {abSwingLeft:'swing',abSwingRight:'zip',abWebshot:'webshot',abMelee:'melee'};
+  const maxes = {swing:0.25, zip:0.15, webshot:0.5, melee:0.45};
   for(const id in map){
     const cd = P.cooldowns[map[id]];
     const pct = Math.max(0,Math.min(1, cd/maxes[map[id]]))*100;
     document.querySelector('#'+id+' .cd').style.height = pct+'%';
   }
+  document.querySelector('#abZip .cd').style.height = P.jumpCharging ? Math.min(100,P.jumpChargeT/MAX_JUMP_CHARGE*100)+'%' : '0%';
+  document.querySelector('#abPull .cd').style.height = P.diving ? '100%' : '0%';
   document.querySelector('#abBlock .cd').style.height = P.blocking ? '100%':'0%';
 }
 
