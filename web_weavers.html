@@ -1112,11 +1112,21 @@ function applyR15Bone(name,rot,amount){
   bone.quaternion.slerp(target,amount);
 }
 
+// Blender's R15 export is mirrored on the X axis: the bones named "Left"
+// render on the player's right side. Keep gameplay poses in camera/player
+// space and translate them only at the model boundary. This also guarantees
+// that the arm reaching for a Q/E web is the arm the strand visibly leaves.
+const r15VisualBone={
+  leftUpperArm:'RightUpperArm', rightUpperArm:'LeftUpperArm',
+  leftLowerArm:'RightLowerArm', rightLowerArm:'LeftLowerArm',
+  leftHand:'RightHand', rightHand:'LeftHand',
+  leftUpperLeg:'RightUpperLeg', rightUpperLeg:'LeftUpperLeg',
+  leftLowerLeg:'RightLowerLeg', rightLowerLeg:'LeftLowerLeg',
+  leftFoot:'RightFoot', rightFoot:'LeftFoot'
+};
+
 function visibleWebHandWorld(gameHand,fallback){
-  // This Blender export's left/right labels are mirrored relative to the
-  // gameplay camera. Use the visible opposite wrist so Q and E strands leave
-  // the arm on the same side as their building anchor.
-  const exportedName=gameHand==='left'?'RightHand':'LeftHand';
+  const exportedName=gameHand==='left'?r15VisualBone.leftHand:r15VisualBone.rightHand;
   const bone=r15Ready&&r15Bone(exportedName);
   return bone?bone.getWorldPosition(new THREE.Vector3()):fallback.getWorldPosition(new THREE.Vector3());
 }
@@ -2382,7 +2392,10 @@ function blendPart(part, base, rot, posOffset, amt){
 function animatePlayer(dt, moveVec){
   animClock += dt * (running ? 1.35 : 1);
   const speedFlat = Math.hypot(P.vel.x, P.vel.z);
-  const moving = moveVec.lengthSq() > 0.04 && (P.state==='ground' || P.state==='air');
+  // Drive locomotion from real horizontal speed as well as input. This avoids
+  // a walk cycle continuing while stationary, or freezing during carried
+  // momentum after the player releases a key.
+  const moving = speedFlat > 0.8 && (P.state==='ground' || P.state==='air');
   const step = Math.sin(animClock * (running ? 11 : 7.5));
   const bob = moving ? Math.abs(step) * (running ? 0.08 : 0.045) : 0;
   const amt = 1 - Math.pow(0.001, dt);
@@ -2426,14 +2439,12 @@ function animatePlayer(dt, moveVec){
       legLRot.x=legRRot.x=0.58*land;
       legLRot.z=-0.18*land; legRRot.z=0.18*land;
     } else if(moving || speedFlat > 1){
-      const stride = running ? 0.85 : 0.48;
-      // The imported rig faces the opposite local Z direction to the old
-      // placeholder. Lead with the arm opposite the advancing leg.
-      armLRot.x = -step * stride * 0.7;
-      armRRot.x = step * stride * 0.7;
-      legLRot.x = step * stride;
-      legRRot.x = -step * stride;
-      torsoRot.x = running ? -0.16 : -0.06;
+      const stride = running ? 0.94 : 0.5;
+      armLRot.x = step * stride * 0.72;
+      armRRot.x = -step * stride * 0.72;
+      legLRot.x = -step * stride;
+      legRRot.x = step * stride;
+      torsoRot.x = running ? -0.22 : -0.07;
       headRot.x = running ? 0.07 : 0.025;
       torsoRot.z = THREE.MathUtils.clamp(step * 0.04, -0.05, 0.05);
     } else {
@@ -2473,19 +2484,19 @@ function animatePlayer(dt, moveVec){
     } else if(P.vel.y>1.5 || P.jumpPoseT>0){
       // Rising jump: lead knee comes up and the opposite arm reaches.
       const rise=THREE.MathUtils.clamp(P.vel.y/13.5,0,1);
-      armLRot.x=-1.1-rise*0.45; armRRot.x=-0.35;
-      armLRot.z=-0.32; armRRot.z=0.35;
-      legLRot.x=0.88; legRRot.x=-0.42;
-      legLRot.z=-0.16; legRRot.z=0.12;
-      torsoRot.x=-0.14;
+      armLRot.x=-0.72-rise*0.35; armRRot.x=0.2;
+      armLRot.z=-0.42; armRRot.z=0.28;
+      legLRot.x=1.08; legRRot.x=-0.5;
+      legLRot.z=-0.2; legRRot.z=0.14;
+      torsoRot.x=-0.2;
     } else {
       // Falling is deliberately wider than the jump so the state reads instantly.
       const fall=THREE.MathUtils.clamp(-P.vel.y/18,0,1);
-      armLRot.x=-0.25; armRRot.x=-0.25;
-      armLRot.z=-0.7-fall*0.45; armRRot.z=0.7+fall*0.45;
-      legLRot.x=0.18; legRRot.x=-0.18;
-      legLRot.z=-0.24-fall*0.18; legRRot.z=0.24+fall*0.18;
-      torsoRot.x=0.08+fall*0.12;
+      armLRot.x=-0.42; armRRot.x=0.08;
+      armLRot.z=-0.78-fall*0.34; armRRot.z=0.68+fall*0.3;
+      legLRot.x=0.62; legRRot.x=-0.08;
+      legLRot.z=-0.28-fall*0.12; legRRot.z=0.22+fall*0.12;
+      torsoRot.x=0.12+fall*0.1;
     }
   } else if(P.state==='swing'){
     const leftAttached=!!P.swingWebs.left.anchor;
@@ -2493,13 +2504,13 @@ function animatePlayer(dt, moveVec){
     const groundPullPose=P.swingGroundPullT>0;
     const entryPose=P.swingPhase==='entry';
     const pullBack=Math.sin((1-P.swingGroundPullT/SWING_GROUND_PULL_TIME)*Math.PI)*0.65;
-    armLRot.x = groundPullPose ? -2.7+pullBack : (leftAttached ? (entryPose?-2.7:-2.56) : -0.38);
-    armRRot.x = groundPullPose ? -2.7+pullBack : (rightAttached ? (entryPose?-2.7:-2.56) : -0.38);
-    armLRot.z = groundPullPose ? -0.18 : (leftAttached ? -0.12 : -0.62);
-    armRRot.z = groundPullPose ? 0.18 : (rightAttached ? 0.12 : 0.62);
+    armLRot.x = groundPullPose ? -2.55+pullBack : (leftAttached ? (entryPose?-2.62:-2.42) : -0.2);
+    armRRot.x = groundPullPose ? -2.55+pullBack : (rightAttached ? (entryPose?-2.62:-2.42) : -0.2);
+    armLRot.z = groundPullPose ? -0.2 : (leftAttached ? -0.1 : -0.88);
+    armRRot.z = groundPullPose ? 0.2 : (rightAttached ? 0.1 : 0.88);
     const swingKick=Math.sin(P.swingAge*8);
-    legLRot.x = entryPose ? 0.82 : 0.72+swingKick*0.42;
-    legRRot.x = entryPose ? 0.34 : -0.18-swingKick*0.48;
+    legLRot.x = entryPose ? 0.98 : 0.78+swingKick*0.28;
+    legRRot.x = entryPose ? 0.18 : -0.06-swingKick*0.3;
     const facingRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
     const lateralSpeed=P.vel.dot(facingRight);
     const swingSideLean=THREE.MathUtils.clamp(-lateralSpeed*0.03,-0.52,0.52);
@@ -2513,12 +2524,12 @@ function animatePlayer(dt, moveVec){
     }
   } else if(P.state==='zip'){
     const zipFlutter=Math.sin(animClock*13)*0.12;
-    armLRot.x = -2.45;
-    armRRot.x = -1.05;
-    armLRot.z=-0.12; armRRot.z=0.48;
-    legLRot.x = 0.5+zipFlutter;
-    legRRot.x = 0.18-zipFlutter;
-    torsoRot.x = -0.42;
+    armLRot.x = -2.52;
+    armRRot.x = -0.46;
+    armLRot.z=-0.08; armRRot.z=0.82;
+    legLRot.x = 0.76+zipFlutter;
+    legRRot.x = -0.12-zipFlutter;
+    torsoRot.x = -0.5;
     headRot.x=0.2;
   } else if(P.state==='climb'){
     const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
@@ -2593,16 +2604,16 @@ function animatePlayer(dt, moveVec){
     const followThrough=Math.sin(Math.min(1,attackProgress*1.35)*Math.PI);
     const rightPunch=P.meleeSide>0;
     if(rightPunch){
-      armRRot.x=-0.78-strike*0.5;
-      armRRot.z=0.16;
-      armLRot.x=-0.62;
-      armLRot.z=-0.48;
+      armRRot.x=-0.72-strike*0.72;
+      armRRot.z=-0.08;
+      armLRot.x=-0.72;
+      armLRot.z=-0.42;
       torsoRot.y=-followThrough*0.28;
     } else {
-      armLRot.x=-0.78-strike*0.5;
-      armLRot.z=-0.16;
-      armRRot.x=-0.62;
-      armRRot.z=0.48;
+      armLRot.x=-0.72-strike*0.72;
+      armLRot.z=0.08;
+      armRRot.x=-0.72;
+      armRRot.z=0.42;
       torsoRot.y=followThrough*0.28;
     }
     torsoRot.x=-0.12*strike;
@@ -2636,8 +2647,9 @@ function animatePlayer(dt, moveVec){
   if(P.blocking){
     // Compact boxing guard: shoulders narrow, elbows bent and hands at face
     // height instead of both arms opening into a hug.
-    armLRot.x = -0.68; armRRot.x = -0.68;
-    armLRot.z = 0.48; armRRot.z = -0.48;
+    armLRot.x = -1.02; armRRot.x = -1.02;
+    armLRot.z = 0.24; armRRot.z = -0.24;
+    torsoRot.x=-0.08;
   }
 
   blendPart(torso, basePose.torso, torsoRot, torsoPos, amt);
@@ -2652,10 +2664,10 @@ function animatePlayer(dt, moveVec){
     // receive secondary bends so the imported model does not move as four rigid rods.
     applyR15Bone('UpperTorso',torsoRot,amt);
     applyR15Bone('Head',headRot,amt);
-    applyR15Bone('LeftUpperArm',armLRot,amt);
-    applyR15Bone('RightUpperArm',armRRot,amt);
-    applyR15Bone('LeftUpperLeg',legLRot,amt);
-    applyR15Bone('RightUpperLeg',legRRot,amt);
+    applyR15Bone(r15VisualBone.leftUpperArm,armLRot,amt);
+    applyR15Bone(r15VisualBone.rightUpperArm,armRRot,amt);
+    applyR15Bone(r15VisualBone.leftUpperLeg,legLRot,amt);
+    applyR15Bone(r15VisualBone.rightUpperLeg,legRRot,amt);
     let leftElbow=P.state==='swing'?0.34:P.state==='zip'?0.58:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:0.12;
     let rightElbow=leftElbow;
     if(P.state==='swing'){
@@ -2675,14 +2687,14 @@ function animatePlayer(dt, moveVec){
     if(P.blocking) leftElbow=rightElbow=1.28;
     const kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
     const kneeR=THREE.MathUtils.clamp(Math.max(0,legRRot.x)*0.7+(P.state==='ground'?Math.max(0,step)*0.32:0),0,1.05);
-    applyR15Bone('LeftLowerArm',{x:-leftElbow,y:0,z:P.blocking?0.12:0},amt);
-    applyR15Bone('RightLowerArm',{x:-rightElbow,y:0,z:P.blocking?-0.12:0},amt);
-    applyR15Bone('LeftHand',{x:0,y:0,z:P.state==='swing'?-0.18:0},amt);
-    applyR15Bone('RightHand',{x:0,y:0,z:P.state==='swing'?0.18:0},amt);
-    applyR15Bone('LeftLowerLeg',{x:kneeL,y:0,z:0},amt);
-    applyR15Bone('RightLowerLeg',{x:kneeR,y:0,z:0},amt);
-    applyR15Bone('LeftFoot',{x:-kneeL*0.35,y:0,z:0},amt);
-    applyR15Bone('RightFoot',{x:-kneeR*0.35,y:0,z:0},amt);
+    applyR15Bone(r15VisualBone.leftLowerArm,{x:-leftElbow,y:0,z:P.blocking?0.12:0},amt);
+    applyR15Bone(r15VisualBone.rightLowerArm,{x:-rightElbow,y:0,z:P.blocking?-0.12:0},amt);
+    applyR15Bone(r15VisualBone.leftHand,{x:0,y:0,z:P.state==='swing'?-0.18:0},amt);
+    applyR15Bone(r15VisualBone.rightHand,{x:0,y:0,z:P.state==='swing'?0.18:0},amt);
+    applyR15Bone(r15VisualBone.leftLowerLeg,{x:kneeL,y:0,z:0},amt);
+    applyR15Bone(r15VisualBone.rightLowerLeg,{x:kneeR,y:0,z:0},amt);
+    applyR15Bone(r15VisualBone.leftFoot,{x:-kneeL*0.35,y:0,z:0},amt);
+    applyR15Bone(r15VisualBone.rightFoot,{x:-kneeR*0.35,y:0,z:0},amt);
   }
 }
 

@@ -54,9 +54,10 @@ assert.match(weavers,/P\.pullPoseT=0\.5;/);
 assert.match(weavers,/new THREE\.SphereGeometry\(0\.38,16,12\)/);
 assert.match(weavers,/new THREE\.CylinderGeometry\(0\.42,0\.34,1\.08,8\)/);
 assert.match(weavers,/new THREE\.GLTFLoader\(\)\.load/);
-assert.match(weavers,/applyR15Bone\('LeftLowerArm'/);
+assert.match(weavers,/const r15VisualBone=/);
+assert.match(weavers,/applyR15Bone\(r15VisualBone\.leftLowerArm/);
 assert.match(weavers,/const breath=Math\.sin\(animClock\*1\.8\)/);
-assert.match(weavers,/torsoRot\.x = running \? -0\.16 : -0\.06/);
+assert.match(weavers,/torsoRot\.x = running \? -0\.22 : -0\.07/);
 assert.match(weavers,/const swingReachElbow=0\.08/);
 assert.match(weavers,/const swingFreeElbow=0\.72/);
 assert.match(weavers,/rigPitch=-fastSwing\*0\.3-riseRatio\*0\.16/);
@@ -64,7 +65,7 @@ assert.match(weavers,/targetRigRoll=THREE\.MathUtils\.clamp\(-P\.vel\.dot\(visua
 assert.match(weavers,/if\(P\.blocking\) leftElbow=rightElbow=1\.28/);
 assert.match(weavers,/const strikingElbow=THREE\.MathUtils\.lerp\(1\.18,0\.38,strike\)/);
 assert.match(weavers,/visibleWebHandWorld\('left',handL\)/);
-assert.match(weavers,/gameHand==='left'\?'RightHand':'LeftHand'/);
+assert.match(weavers,/gameHand==='left'\?r15VisualBone\.leftHand:r15VisualBone\.rightHand/);
 assert.match(weavers,/const sideSign=hand==='left'\?1:-1/);
 assert.match(weavers,/const facadeStart=groundStart/);
 
