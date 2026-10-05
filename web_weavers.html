@@ -2437,7 +2437,7 @@ function animatePlayer(dt, moveVec){
   // The physics root stays upright; only the visual rig rolls and pitches.
   let rigPitch=wingPose?Math.PI/2+P.glidePitch*0.55:0;
   if(P.diving) rigPitch=Math.PI/2.35;
-  if(P.state==='zip') rigPitch=-Math.PI/2.45;
+  if(P.state==='zip') rigPitch=-0.38;
   if(P.recoveryRollT>0){
     const rollProgress=1-P.recoveryRollT/QUICK_RECOVERY_ROLL_TIME;
     rigPitch=-rollProgress*Math.PI*2;
@@ -2448,7 +2448,7 @@ function animatePlayer(dt, moveVec){
     const riseRatio=THREE.MathUtils.clamp(P.vel.y/swingSpeed,-1,1);
     // The reference keeps the torso visibly in the travel arc: almost horizontal
     // at speed, nose-up on ascent and nose-down on descent.
-    rigPitch=-0.22-fastSwing*0.5-riseRatio*0.34;
+    rigPitch=-0.08-fastSwing*0.24-riseRatio*0.14;
   }
   if(P.wallFlipT>0) rigPitch=-(1-P.wallFlipT/0.65)*Math.PI*2;
   playerRig.rotation.x=(P.wallFlipT>0||P.recoveryRollT>0) ? rigPitch : THREE.MathUtils.lerp(playerRig.rotation.x,rigPitch,amt);
@@ -2458,7 +2458,7 @@ function animatePlayer(dt, moveVec){
   let targetRigRoll=P.state==='climb'?P.climbVisualAngle:(wingPose?-P.glideBank*0.72:0);
   if(P.state==='swing'){
     const visualRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
-    targetRigRoll=THREE.MathUtils.clamp(-P.vel.dot(visualRight)*0.024,-0.46,0.46);
+    targetRigRoll=THREE.MathUtils.clamp(-P.vel.dot(visualRight)*0.014,-0.25,0.25);
   }
   const rollDelta=Math.atan2(Math.sin(targetRigRoll-playerRig.rotation.z),Math.cos(targetRigRoll-playerRig.rotation.z));
   playerRig.rotation.z+=rollDelta*(1-Math.exp(-14*dt));
@@ -2497,28 +2497,26 @@ function animatePlayer(dt, moveVec){
       legLRot.x=legRRot.x=0.58*land;
       legLRot.z=-0.18*land; legRRot.z=0.18*land;
     } else if(moving || speedFlat > 1){
-      const stride = running ? 1.02 : 0.52;
-      armLRot.x = step * stride * 0.88-0.08;
-      armRRot.x = -step * stride * 0.88-0.08;
-      armLRot.z=-0.12; armRRot.z=0.12;
+      const stride = running ? 0.9 : 0.5;
+      armLRot.x = step * stride * 0.72;
+      armRRot.x = -step * stride * 0.72;
+      armLRot.z=-0.035; armRRot.z=0.035;
       legLRot.x = -step * stride;
       legRRot.x = step * stride;
-      torsoRot.x = running ? -0.32 : -0.08;
-      headRot.x = running ? 0.12 : 0.03;
-      torsoRot.y=step*(running?0.08:0.035);
-      torsoRot.z = THREE.MathUtils.clamp(step * 0.055, -0.07, 0.07);
+      torsoRot.x = running ? -0.22 : -0.07;
+      headRot.x = running ? 0.07 : 0.025;
+      torsoRot.y=step*(running?0.045:0.02);
+      torsoRot.z = THREE.MathUtils.clamp(step * 0.035, -0.045, 0.045);
     } else {
       // Idle breathes as one balanced pose. Never alternate the limbs here;
       // that reads as walking even when the physics body is stationary.
       const breath=Math.sin(animClock*1.8);
       torsoPos.y=breath*0.012;
       headPos.y=breath*0.006;
-      torsoRot.x=-0.025;
-      armLRot.x=-0.1-breath*0.012;
-      armRRot.x=-0.1-breath*0.009;
-      armLRot.z=-0.16;
-      armRRot.z=0.16;
-      legLRot.z=-0.035; legRRot.z=0.035;
+      armLRot.x=-0.025-breath*0.008;
+      armRRot.x=-0.025-breath*0.008;
+      armLRot.z=0;
+      armRRot.z=0;
     }
   } else if(P.state==='air'){
     if(P.diving){
@@ -2554,12 +2552,11 @@ function animatePlayer(dt, moveVec){
       // Compact superhero rise from the reference: both arms balance the body
       // while one knee leads, rather than a stiff one-arm salute.
       const rise=THREE.MathUtils.clamp(P.vel.y/13.5,0,1);
-      armLRot.x=-0.38-rise*0.22; armRRot.x=-0.18-rise*0.18;
-      armLRot.z=-0.92; armRRot.z=0.92;
-      legLRot.x=1.18; legRRot.x=0.38;
-      legLRot.z=-0.26; legRRot.z=0.2;
-      torsoRot.x=-0.3;
-      torsoRot.z=-0.07;
+      armLRot.x=-0.24-rise*0.18; armRRot.x=-0.1-rise*0.12;
+      armLRot.z=-0.62; armRRot.z=0.62;
+      legLRot.x=0.9; legRRot.x=0.2;
+      legLRot.z=-0.18; legRRot.z=0.14;
+      torsoRot.x=-0.18;
     } else {
       // Falling opens into the wide, low-shouldered skydiving silhouette used
       // in the reference, with asymmetrical legs so it never reads as a T-pose.
@@ -2576,13 +2573,13 @@ function animatePlayer(dt, moveVec){
     const groundPullPose=P.swingGroundPullT>0;
     const entryPose=P.swingPhase==='entry';
     const pullBack=Math.sin((1-P.swingGroundPullT/SWING_GROUND_PULL_TIME)*Math.PI)*0.65;
-    armLRot.x = groundPullPose ? -2.55+pullBack : (leftAttached ? (entryPose?-2.62:-2.42) : -0.2);
-    armRRot.x = groundPullPose ? -2.55+pullBack : (rightAttached ? (entryPose?-2.62:-2.42) : -0.2);
-    armLRot.z = groundPullPose ? -0.2 : (leftAttached ? -0.1 : -0.88);
-    armRRot.z = groundPullPose ? 0.2 : (rightAttached ? 0.1 : 0.88);
+    armLRot.x = groundPullPose ? -1.55+pullBack*.35 : (leftAttached ? -1.25 : 0.12);
+    armRRot.x = groundPullPose ? -1.55+pullBack*.35 : (rightAttached ? -1.25 : 0.12);
+    armLRot.z = groundPullPose ? -2.45 : (leftAttached ? -2.8 : -0.48);
+    armRRot.z = groundPullPose ? 2.45 : (rightAttached ? 2.8 : 0.48);
     const swingKick=Math.sin(P.swingAge*5.5);
-    legLRot.x = entryPose ? 1.12 : 0.92+swingKick*0.22;
-    legRRot.x = entryPose ? 0.42 : 0.28-swingKick*0.24;
+    legLRot.x = entryPose ? 0.72 : 0.62+swingKick*0.16;
+    legRRot.x = entryPose ? 0.18 : 0.08-swingKick*0.18;
     const facingRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
     const lateralSpeed=P.vel.dot(facingRight);
     const swingSideLean=THREE.MathUtils.clamp(-lateralSpeed*0.03,-0.52,0.52);
@@ -2596,14 +2593,14 @@ function animatePlayer(dt, moveVec){
     }
   } else if(P.state==='zip'){
     const zipFlutter=Math.sin(animClock*13)*0.12;
-    armLRot.x = -1.68;
-    armRRot.x = -1.6;
-    armLRot.z=-0.26; armRRot.z=0.26;
+    armLRot.x = -1.15;
+    armRRot.x = -1.08;
+    armLRot.z=-0.34; armRRot.z=0.34;
     legLRot.x = 0.48+zipFlutter;
     legRRot.x = 0.18-zipFlutter;
     legLRot.z=-0.16; legRRot.z=0.16;
-    torsoRot.x = -0.62;
-    headRot.x=0.3;
+    torsoRot.x = -0.28;
+    headRot.x=0.12;
   } else if(P.state==='climb'){
     const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
     const wallRunning=running || P.wallRunAutoT>0;
@@ -2743,12 +2740,12 @@ function animatePlayer(dt, moveVec){
     applyR15VisualBone(r15VisualBone.leftUpperLeg,legLRot,amt);
     applyR15VisualBone(r15VisualBone.rightUpperLeg,legRRot,amt);
     const groundMoving=P.state==='ground' && speedFlat>0.8;
-    let leftElbow=P.state==='swing'?0.34:P.state==='zip'?0.22:P.diving?0.18:
-      P.jumpCharging?0.92:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:groundMoving?0.68:0.52;
+    let leftElbow=P.state==='swing'?0.58:P.state==='zip'?0.52:P.diving?0.18:
+      P.jumpCharging?0.92:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:groundMoving?0.54:0.12;
     let rightElbow=leftElbow;
     if(P.state==='swing'){
       const swingReachElbow=0.08;
-      const swingFreeElbow=0.72;
+      const swingFreeElbow=0.78;
       leftElbow=P.swingWebs.left.anchor?swingReachElbow:swingFreeElbow;
       rightElbow=P.swingWebs.right.anchor?swingReachElbow:swingFreeElbow;
       if(P.swingGroundPullT>0) leftElbow=rightElbow=0.16;
