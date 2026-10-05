@@ -83,6 +83,16 @@ assert.match(weavers,/const BLOCKS = 9/);
 assert.match(weavers,/const BLOCK = 58/);
 assert.match(weavers,/function rooftopAnchorPoints/);
 assert.match(weavers,/const diagonalAvenue=/);
+assert.match(weavers,/function isValidZipHit/);
+assert.match(weavers,/#crosshair\.zip/);
+assert.doesNotMatch(weavers,/concat\(\[ground\],enemies\.filter/);
+assert.match(weavers,/P\.parryT=0\.24/);
+assert.match(weavers,/addCash\(5,'ENEMY STOPPED'\)/);
+assert.match(weavers,/addCash\(20,'GANG CLEARED'\)/);
+assert.match(weavers,/webWeaversCash/);
+assert.match(weavers,/id="renderDistanceSlider"/);
+assert.match(weavers,/renderDistance, mouseSensitivity|mouseSensitivity, cameraDistance, renderDistance/);
+assert.match(weavers,/function attachEnemyAvatar/);
 
 const sling=read('sling_champ.html');
 assert.match(sling,/\.5\*\(other\.mass\|\|1\)\*speed\*speed/);

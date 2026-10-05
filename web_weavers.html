@@ -95,7 +95,15 @@
   #crosshair:before{width:22px;height:3px;}
   #crosshair:after{width:3px;height:22px;}
   #crosshair.enemy{color:#ff2b2b;}
+  #crosshair.zip{color:#35e67a;filter:drop-shadow(0 0 5px rgba(53,230,122,.8)) drop-shadow(1px 1px 0 #111);}
   #crosshair.none{color:rgba(255,255,255,.72);}
+
+  .pillToggle{position:relative;width:46px;height:24px;display:inline-block;vertical-align:middle;}
+  .pillToggle input{position:absolute;opacity:0;pointer-events:none;}
+  .pillTrack{position:absolute;inset:0;border:2px solid #111;border-radius:999px;background:#707783;cursor:pointer;transition:.15s;}
+  .pillTrack:after{content:"";position:absolute;width:16px;height:16px;left:2px;top:2px;border-radius:50%;background:#fff;transition:.15s;}
+  .pillToggle input:checked+.pillTrack{background:#35e67a;}
+  .pillToggle input:checked+.pillTrack:after{transform:translateX(22px);}
 
   #minimapWrap{position:absolute;top:16px;right:16px;width:190px;height:190px;}
   #minimapLabel{background:#e8232a;color:#fff;padding:3px 10px;display:inline-block;
@@ -153,7 +161,6 @@
     <div id="startActions">
       <button class="btn" id="btnPlay">PLAY</button>
       <button class="btn" id="btnStartSettings">SETTINGS</button>
-      <button class="btn" id="startDebug">DEBUG: OFF</button>
       <button class="btn" id="btnSkins" disabled>SKINS - SOON</button>
     </div>
   </div>
@@ -164,6 +171,7 @@
     <div id="healthLabel">SPIDEY HP</div>
     <div id="healthBarOuter"><div id="healthBarInner"></div></div>
   </div>
+  <div id="cashDisplay" class="comicPanel" style="position:absolute;top:86px;left:16px;padding:7px 12px;color:#146b37;background:#eaffdd;">$<span id="cashValue">0</span></div>
 
   <div id="minimapWrap">
     <div id="minimapLabel">QUEENS</div>
@@ -172,7 +180,6 @@
 
   <div id="topButtons">
     <div class="btn" id="btnControls">CONTROLS</div>
-    <div class="btn" id="btnDebug">DEBUG: OFF</div>
   </div>
   <div id="patrolWrap" class="comicPanel"><span id="patrolStatus">WAVE 1 · 0 STOPPED · 0 ACTIVE</span></div>
 
@@ -183,7 +190,7 @@
     <div class="ability" id="abWebshot"><div class="icon">💥</div>SHOT<div class="key">X</div><div class="cd"></div></div>
     <div class="ability" id="abPull"><div class="icon">↘</div>DIVE<div class="key">C</div><div class="cd"></div></div>
     <div class="ability" id="abMelee"><div class="icon">✊</div>PUNCH<div class="key">LMB</div><div class="cd"></div></div>
-    <div class="ability" id="abBlock"><div class="icon">🛡️</div>BLOCK<div class="key">F</div><div class="cd"></div></div>
+    <div class="ability" id="abBlock"><div class="icon">🛡️</div>PARRY<div class="key">F</div><div class="cd"></div></div>
   </div>
 
   <div id="crosshairWrap"><div id="crosshair" class="none"></div></div>
@@ -221,6 +228,7 @@
     <div class="row"><span>Move / climb (auto vs. walls)</span><span>WASD</span></div>
     <div class="row"><span>Look</span><span>Mouse</span></div>
     <div class="row"><span>Mouse sensitivity</span><span><input id="sensitivitySlider" type="range" min="50" max="180" value="100"><span id="sensitivityValue">100%</span></span></div>
+    <div class="row"><span>Render distance</span><span><input id="renderDistanceSlider" type="range" min="220" max="900" step="20" value="520"><span id="renderDistanceValue">520</span></span></div>
     <div class="row"><span>Zoom in / first person</span><span class="keybtn" data-action="zoomIn">I</span></div>
     <div class="row"><span>Zoom out</span><span class="keybtn" data-action="zoomOut">O</span></div>
     <div class="row"><span>Hold to drag camera</span><span>Right Mouse</span></div>
@@ -231,8 +239,8 @@
     <div class="row"><span>Web-shot</span><span class="keybtn" data-action="webshot">X</span></div>
     <div class="row"><span>Dive in mid-air</span><span class="keybtn" data-action="dive">C</span></div>
     <div class="row"><span>Melee</span><span>Left Mouse</span></div>
-    <div class="row"><span>Block</span><span class="keybtn" data-action="block">F</span></div>
-    <div class="row"><span>Toggle debug</span><span class="keybtn" data-action="debug">`</span></div>
+    <div class="row"><span>Parry</span><span class="keybtn" data-action="block">F</span></div>
+    <div class="row"><span>Debug overlay</span><span><label class="pillToggle" aria-label="Debug overlay"><input id="debugToggle" type="checkbox"><span class="pillTrack"></span></label> <span class="keybtn" data-action="debug">`</span></span></div>
     <div class="row"><span>Main menu / pause</span><span>ESC</span></div>
     <div class="btn" id="btnCloseBind" style="margin-top:6px;text-align:center;">CLOSE</div>
   </div>
@@ -278,12 +286,27 @@ let gameActive = false;
 let debugOn = false;
 let mouseSensitivity = 1;
 let cameraDistance = 7.5;
+let renderDistance = 520;
 let cameraCollisionDistance = null;
 let firstPersonAutoLock = false;
+let cash=Math.max(0,parseInt(localStorage.getItem('webWeaversCash'))||0);
+
+function updateCashUI(){
+  const el=document.getElementById('cashValue');
+  if(el) el.textContent=cash.toLocaleString('en-GB');
+}
+function addCash(amount,label){
+  cash+=amount;
+  localStorage.setItem('webWeaversCash',String(cash));
+  updateCashUI();
+  if(label) flashMsg(`${label}  +$${amount}`);
+}
 
 loadSettings();
 syncBindingLabels();
 syncSensitivityUI();
+syncRenderDistanceUI();
+updateCashUI();
 
 window.addEventListener('keydown', e=>{
   if(listeningFor){
@@ -384,10 +407,11 @@ function loadSettings(){
     if(typeof saved.debugOn === 'boolean') debugOn = saved.debugOn;
     if(Number.isFinite(saved.mouseSensitivity)) mouseSensitivity = THREE.MathUtils.clamp(saved.mouseSensitivity, 0.5, 1.8);
     if(Number.isFinite(saved.cameraDistance)) cameraDistance = THREE.MathUtils.clamp(saved.cameraDistance, 0.15, 18);
+    if(Number.isFinite(saved.renderDistance)) renderDistance = THREE.MathUtils.clamp(saved.renderDistance,220,900);
   }
 }
 function saveSettings(){
-  writeSavedSettings({bindings, running, debugOn, mouseSensitivity, cameraDistance});
+  writeSavedSettings({bindings, running, debugOn, mouseSensitivity, cameraDistance, renderDistance});
 }
 function syncBindingLabels(){
   ['shiftLock','toggleRun','jump','traversal','webshot','dive','block','zoomIn','zoomOut','debug']
@@ -421,6 +445,19 @@ function syncSensitivityUI(){
 document.getElementById('sensitivitySlider').addEventListener('input', e=>{
   mouseSensitivity = THREE.MathUtils.clamp(Number(e.target.value)/100, 0.5, 1.8);
   syncSensitivityUI();
+  saveSettings();
+});
+function syncRenderDistanceUI(){
+  const slider=document.getElementById('renderDistanceSlider');
+  const label=document.getElementById('renderDistanceValue');
+  if(!slider||!label)return;
+  slider.value=Math.round(renderDistance);
+  label.textContent=Math.round(renderDistance);
+}
+document.getElementById('renderDistanceSlider').addEventListener('input',e=>{
+  renderDistance=THREE.MathUtils.clamp(Number(e.target.value),220,900);
+  syncRenderDistanceUI();
+  applyRenderDistance();
   saveSettings();
 });
 
@@ -458,18 +495,17 @@ function toggleDebug(){
 }
 function applyDebugVisibility(){
   document.getElementById('debugPanel').style.display = debugOn?'block':'none';
-  document.getElementById('btnDebug').textContent = 'DEBUG: '+(debugOn?'ON':'OFF');
-  const startDebug=document.getElementById('startDebug');
-  if(startDebug){
-    startDebug.textContent='DEBUG: '+(debugOn?'ON':'OFF');
-    startDebug.classList.toggle('on',debugOn);
-  }
+  const debugToggle=document.getElementById('debugToggle');
+  if(debugToggle) debugToggle.checked=debugOn;
   if(typeof spawnMarkers !== 'undefined') spawnMarkers.forEach(m=>m.visible=debugOn);
   if(typeof anchorMarkers !== 'undefined') anchorMarkers.forEach(m=>m.visible=debugOn);
 }
-document.getElementById('btnDebug').onclick = toggleDebug;
 document.getElementById('btnResume').onclick = togglePause;
-document.getElementById('startDebug').onclick = toggleDebug;
+document.getElementById('debugToggle').addEventListener('change',e=>{
+  debugOn=!!e.target.checked;
+  applyDebugVisibility();
+  saveSettings();
+});
 document.getElementById('btnStartSettings').onclick = ()=>{
   document.body.classList.add('settings-open');
   document.getElementById('bindPanel').style.display='block';
@@ -529,6 +565,7 @@ function resetDefeatedPlayer(){
   P.wallRunFromSwing=false;
   P.wallRunMomentum=0;
   P.meleeT=0;
+  P.parryT=0;
   P.wallFlipT=0;
   P.wallDetachT=0;
   P.pendingFallDamage=0;
@@ -645,9 +682,16 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x8fd3ff);
-scene.fog = new THREE.Fog(0x8fd3ff, 140, 420);
+scene.fog = new THREE.Fog(0x8fd3ff, renderDistance*0.58, renderDistance);
 
-const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, renderDistance);
+function applyRenderDistance(){
+  if(typeof camera==='undefined'||typeof scene==='undefined') return;
+  camera.far=renderDistance;
+  camera.updateProjectionMatrix();
+  scene.fog.near=renderDistance*0.58;
+  scene.fog.far=renderDistance;
+}
 function resizeRenderer(){
   const w = Math.max(1, window.innerWidth);
   const h = Math.max(1, window.innerHeight);
@@ -657,6 +701,7 @@ function resizeRenderer(){
   renderer.setSize(w, h);
 }
 window.addEventListener('resize', resizeRenderer);
+applyRenderDistance();
 
 const hemi = new THREE.HemisphereLight(0xffffff, 0x3a3a55, 0.9);
 scene.add(hemi);
@@ -735,13 +780,14 @@ scene.add(cityGroup);
 // A rounded island and shoreline replace the old square map border.
 const oceanUniforms={time:{value:0}};
 const ocean = new THREE.Mesh(
-  new THREE.PlaneGeometry(1800,1800,150,150),
+  new THREE.PlaneGeometry(1800,1800,100,100),
   new THREE.ShaderMaterial({
     uniforms:oceanUniforms,
     vertexShader:`
       uniform float time;
       varying vec2 vUv;
       varying float vWave;
+      varying vec3 vWorld;
       void main(){
         vUv=uv;
         vec3 p=position;
@@ -749,6 +795,7 @@ const ocean = new THREE.Mesh(
         float chop=sin((p.x+p.y)*0.067-time*1.05)*0.42;
         p.z=(broad*0.34)+(chop*0.22);
         vWave=p.z;
+        vWorld=(modelMatrix*vec4(p,1.0)).xyz;
         gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.0);
       }
     `,
@@ -756,13 +803,16 @@ const ocean = new THREE.Mesh(
       uniform float time;
       varying vec2 vUv;
       varying float vWave;
+      varying vec3 vWorld;
       void main(){
-        float ripple=sin(vUv.x*520.0+time*1.9)+sin(vUv.y*430.0-time*1.5);
-        float crossing=sin((vUv.x-vUv.y)*310.0+time*1.2);
-        float crest=smoothstep(1.25,1.95,ripple+crossing*0.55+vWave*1.8);
-        float depth=0.5+0.5*sin((vUv.x+vUv.y)*9.0);
-        vec3 deep=mix(vec3(0.018,0.18,0.31),vec3(0.035,0.34,0.48),depth);
-        vec3 water=mix(deep,vec3(0.42,0.82,0.9),crest*0.7);
+        float ripple=sin(vWorld.x*0.42+time*1.9)+sin(vWorld.z*0.36-time*1.5);
+        float crossing=sin((vWorld.x-vWorld.z)*0.22+time*1.2);
+        float crest=smoothstep(1.35,2.05,ripple+crossing*0.55+vWave*1.8);
+        float depth=0.5+0.5*sin((vUv.x+vUv.y)*8.0);
+        vec3 deep=mix(vec3(0.012,0.13,0.25),vec3(0.025,0.30,0.43),depth);
+        float sunGlint=pow(max(0.0,sin(vWorld.x*0.055+time*0.25)*cos(vWorld.z*0.047-time*0.18)),10.0);
+        vec3 water=mix(deep,vec3(0.42,0.86,0.94),crest*0.72);
+        water+=vec3(1.0,0.86,0.55)*sunGlint*0.28;
         gl_FragColor=vec4(water,1.0);
       }
     `
@@ -1129,6 +1179,7 @@ playerRig.add(r15AvatarRoot);
 const r15Bones={};
 const r15Rest={};
 let r15Ready=false;
+let r15EnemyTemplate=null;
 
 function r15Bone(name){ return r15Bones[name]||null; }
 
@@ -1182,6 +1233,8 @@ new THREE.GLTFLoader().load(
     });
     torso.visible=head.visible=armL.visible=armR.visible=legL.visible=legR.visible=false;
     r15Ready=true;
+    r15EnemyTemplate=gltf.scene;
+    setTimeout(()=>enemies.forEach(attachEnemyAvatar),0);
   },
   undefined,
   error=>console.warn('R15 model unavailable; using fallback avatar.',error)
@@ -1241,16 +1294,16 @@ const P = {
   jumpChargeT:0, jumpCharging:false, diving:false,
   swingHistoryT:0, quickRecoveryT:0, recoveryRollT:0, recoveryLaunchPending:false,
   recoveryVelocity:new THREE.Vector3(),
-  defeatedT:0, recoverPressed:false, blocking:false,
-  cooldowns:{swing:0, zip:0, pull:0, melee:0, webshot:0},
+  defeatedT:0, recoverPressed:false, blocking:false, parryT:0,
+  cooldowns:{swing:0, zip:0, pull:0, melee:0, webshot:0, parry:0},
 };
 
 const GRAVITY = -30;
 const RUN_SPEED = 13;
 const JUMP_SPEED = 13.5;
-const SWING_MAX_RANGE = 100;
+const SWING_MAX_RANGE = 300;
 const SWING_MIN_RANGE = 12;
-const ZIP_RANGE = 110;
+const ZIP_RANGE = 240;
 const ZIP_SPEED = 55;
 const PULL_RANGE = 26;
 const WEBSHOT_RANGE = 46;
@@ -1309,7 +1362,8 @@ const WING_MIN_CLEARANCE = 5;
 // RAYCASTING HELPERS (ground height, wall proximity, crosshair target)
 // ---------------------------------------------------------------------------------------
 const raycaster = new THREE.Raycaster();
-const collidables = () => buildingMeshes.map(b=>b.mesh);
+const buildingCollidables=buildingMeshes.map(b=>b.mesh);
+const collidables = () => buildingCollidables;
 
 function objectBelongsTo(object,root){
   for(let node=object;node;node=node.parent){
@@ -1407,10 +1461,23 @@ function crosshairHit(maxDist, includeEnemies=true){
 
 function zipCrosshairHit(maxDist){
   raycaster.setFromCamera(aimScreenPoint(),camera);
-  const targets=collidables().concat([ground],enemies.filter(e=>e.alive).map(e=>e.mesh));
+  const targets=collidables().concat([ground]);
   const hits=raycaster.intersectObjects(targets,true).filter(hit=>hit.object.type!=='LineSegments');
-  if(hits.length && hits[0].distance<=maxDist) return hits[0];
+  if(hits.length && hits[0].distance<=maxDist && isValidZipHit(hits[0])) return hits[0];
   return null;
+}
+
+function isValidZipHit(hit){
+  if(!hit) return false;
+  if(hit.object===ground) return true;
+  const b=buildingMeshes.find(entry=>objectBelongsTo(hit.object,entry.mesh));
+  if(!b) return false;
+  const p=hit.point;
+  const edgeTolerance=2.4;
+  const roofEdge=p.y>=b.h-edgeTolerance;
+  const onXFace=Math.abs(p.x-b.minX)<0.12||Math.abs(p.x-b.maxX)<0.12;
+  const onZFace=Math.abs(p.z-b.minZ)<0.12||Math.abs(p.z-b.maxZ)<0.12;
+  return roofEdge||(onXFace&&onZFace);
 }
 
 function nearestPointOnBuilding(b, source){
@@ -1652,6 +1719,38 @@ let defeatedCount=0;
 const enemyGeo = new THREE.BoxGeometry(0.9,1.0,0.5);
 const ENEMY_RADIUS = 0.62;
 const ENEMY_HEIGHT = 2.15;
+function attachEnemyAvatar(e){
+  if(!r15EnemyTemplate||e.avatar) return;
+  [...e.mesh.children].forEach(child=>child.visible=false);
+  e.mat.transparent=true;
+  e.mat.opacity=0;
+  e.mat.depthWrite=false;
+  const avatar=r15EnemyTemplate.clone(true);
+  avatar.scale.setScalar(0.56);
+  avatar.position.y=-0.8;
+  const materials=[];
+  avatar.traverse(node=>{
+    if(!node.isMesh) return;
+    node.material=node.material.clone();
+    if(node.material.color) node.material.color.multiplyScalar(0.72);
+    materials.push(node.material);
+  });
+  e.avatar=avatar;
+  e.avatarMaterials=materials;
+  e.mesh.add(avatar);
+}
+
+function setEnemyFlash(e,on){
+  if(e.avatarMaterials?.length){
+    e.avatarMaterials.forEach(material=>{
+      if(!material.color)return;
+      if(on){
+        if(!material.userData.baseColor) material.userData.baseColor=material.color.clone();
+        material.color.setHex(0xffffff);
+      } else if(material.userData.baseColor) material.color.copy(material.userData.baseColor);
+    });
+  } else e.mat.color.setHex(on?0xffffff:e.outfitColor);
+}
 function makeEnemy(pos, groupId){
   const outfitColors=[0x7a3b3b,0x36506f,0x55426e,0x52613b];
   const mat = new THREE.MeshLambertMaterial({color:outfitColors[groupId%outfitColors.length]});
@@ -1708,6 +1807,7 @@ function makeEnemy(pos, groupId){
   document.getElementById('enemyHpLayer').appendChild(hpEl);
   e.hpEl = hpEl;
   enemies.push(e);
+  attachEnemyAvatar(e);
   return e;
 }
 
@@ -1740,6 +1840,7 @@ function updateGroups(dt){
     const anyAlive = g.members.some(e=>e.alive);
     if(!anyAlive && g.defeatedAt===null){
       g.defeatedAt = performance.now();
+      addCash(20,'GANG CLEARED');
     }
     if(!anyAlive && g.defeatedAt!==null){
       const elapsed = (performance.now()-g.defeatedAt)/1000;
@@ -1823,6 +1924,12 @@ function animateEnemy(e,dt){
   if(e.state==='attacking') armR=-1.35;
   if(e.stunT>0){ armL=0.75; armR=-0.75; legL=0.22; legR=-0.22; }
   const blend=1-Math.exp(-12*dt);
+  if(e.avatar){
+    e.avatar.position.y=-0.8+(walking?Math.abs(Math.sin(phase))*0.055:0);
+    const targetPitch=e.state==='attacking'?-0.22:e.stunT>0?0.28:0;
+    e.avatar.rotation.x=THREE.MathUtils.lerp(e.avatar.rotation.x,targetPitch,blend);
+    e.avatar.rotation.z=THREE.MathUtils.lerp(e.avatar.rotation.z,walking?Math.sin(phase)*0.035:0,blend);
+  }
   e.parts.armL.rotation.x=THREE.MathUtils.lerp(e.parts.armL.rotation.x,armL,blend);
   e.parts.armR.rotation.x=THREE.MathUtils.lerp(e.parts.armR.rotation.x,armR,blend);
   e.parts.legL.rotation.x=THREE.MathUtils.lerp(e.parts.legL.rotation.x,legL,blend);
@@ -1891,8 +1998,13 @@ function updateEnemies(dt){
       else if(e.attackCd<=0){
         e.attackCd = 1.1;
         if(P.invuln<=0 && P.state!=='downed' && enemyHasClearHit(e)){
-          const dmg = P.blocking ? 2 : 8;
-          damagePlayer(dmg);
+          if(P.parryT>0){
+            P.parryT=0;
+            P.blocking=false;
+            e.stunT=1.25;
+            e.vel.addScaledVector(toPlayer.lengthSq()>0.001?toPlayer.clone().normalize().multiplyScalar(-1):new THREE.Vector3(0,0,-1),7);
+            flashMsg('PARRY');
+          } else damagePlayer(6);
         }
       }
     }
@@ -2336,15 +2448,15 @@ function tryMelee(){
 
 function damageEnemy(e, amount, fromMelee=false){
   e.hp -= amount;
-  e.mat.color.setHex(0xffffff);
-  setTimeout(()=>{ if(e.alive) e.mat.color.setHex(e.outfitColor); },80);
+  setEnemyFlash(e,true);
+  setTimeout(()=>{ if(e.alive) setEnemyFlash(e,false); },80);
   if(e.hp<=0 && e.alive){
     e.alive=false;
     defeatedCount++;
+    addCash(5,'ENEMY STOPPED');
     e.mesh.visible=false;
     e.hpEl.style.display='none';
     if(combatTarget===e) combatTarget=null;
-    if(fromMelee) beginComboChain(e);
     if(enemies.every(enemy=>!enemy.alive)){
       patrolWave++;
       flashMsg(`WAVE ${patrolWave} INCOMING`);
@@ -2829,7 +2941,7 @@ function animatePlayer(dt, moveVec){
 // ---------------------------------------------------------------------------------------
 // MAIN UPDATE LOOP
 // ---------------------------------------------------------------------------------------
-let lastTraversal=false,lastJump=false,lastDive=false,lastMelee=false,lastWebshot=false;
+let lastTraversal=false,lastJump=false,lastDive=false,lastMelee=false,lastWebshot=false,lastBlock=false;
 const WALK_SPEED = 6.5;
 
 function launchChargedJump(){
@@ -2884,7 +2996,9 @@ function clearHeldInputs(){
   lastDive = false;
   lastMelee = false;
   lastWebshot = false;
+  lastBlock = false;
   P.blocking = false;
+  P.parryT=0;
   P.traversalHoldT=0;
   P.traversalSwingStarted=false;
   P.jumpCharging=false;
@@ -2919,6 +3033,7 @@ function updatePlayer(dt){
   P.pullPoseT=Math.max(0,P.pullPoseT-dt);
   P.landPoseT=Math.max(0,P.landPoseT-dt);
   P.invuln = Math.max(0, P.invuln-dt);
+  P.parryT=Math.max(0,P.parryT-dt);
   P.swingHistoryT=Math.max(0,P.swingHistoryT-dt);
   P.quickRecoveryT=Math.max(0,P.quickRecoveryT-dt);
   P.traversalRetryT=Math.max(0,P.traversalRetryT-dt);
@@ -2955,7 +3070,13 @@ function updatePlayer(dt){
   const jumpDown = keys[bindings.jump];
   const diveDown = !!keys[bindings.dive];
   const meleeDown = mouseDown[0];
-  P.blocking = !!keys[bindings.block] && P.state!=='downed' && P.state!=='defeated';
+  const blockDown=!!keys[bindings.block];
+  if(blockDown&&!lastBlock&&P.cooldowns.parry<=0&&P.state!=='downed'&&P.state!=='defeated'){
+    P.parryT=0.24;
+    P.cooldowns.parry=0.72;
+    pulse('abBlock');
+  }
+  P.blocking=P.parryT>0;
 
   if(traversalDown&&!lastTraversal){
     P.traversalHoldT=0;
@@ -3020,7 +3141,7 @@ function updatePlayer(dt){
   }
 
   lastTraversal=traversalDown;lastWebshot=webshotDown;
-  lastJump=jumpDown;lastDive=diveDown;lastMelee=meleeDown;
+  lastJump=jumpDown;lastDive=diveDown;lastMelee=meleeDown;lastBlock=blockDown;
 
   // movement input vector (camera relative)
   const mv = new THREE.Vector3(
@@ -3659,14 +3780,22 @@ function drawMinimap(){
 
 function updateCrosshair(){
   const wrap=document.getElementById('crosshairWrap');
-  const aimingLocked=gameActive && !paused && (shiftLocked || cameraDistance<=0.6 || firstPersonAutoLock);
+  const aimingLocked=gameActive && !paused && (shiftLocked || cameraDistance<=0.6 || firstPersonAutoLock || mouseDown[2]);
   wrap.style.display=aimingLocked?'block':'none';
   if(!aimingLocked) return;
   const hit = zipCrosshairHit(Math.max(SWING_MAX_RANGE,WEBSHOT_RANGE,ZIP_RANGE));
   const el = document.getElementById('crosshair');
   if(!hit){ el.className='none'; return; }
-  const isEnemy=!!enemyForObject(hit.object);
-  el.className = isEnemy? 'enemy':'';
+  el.className='zip';
+}
+
+function updateRenderVisibility(){
+  const limitSq=Math.pow(renderDistance+80,2);
+  buildingMeshes.forEach(b=>{
+    const dx=(b.minX+b.maxX)*0.5-P.pos.x;
+    const dz=(b.minZ+b.maxZ)*0.5-P.pos.z;
+    b.mesh.visible=dx*dx+dz*dz<=limitSq;
+  });
 }
 
 function updateEnemyHpBars(){
@@ -3712,7 +3841,9 @@ function updateAbilityCooldownUI(){
   }
   document.querySelector('#abZip .cd').style.height = P.jumpCharging ? Math.min(100,P.jumpChargeT/MAX_JUMP_CHARGE*100)+'%' : '0%';
   document.querySelector('#abPull .cd').style.height = P.diving ? '100%' : '0%';
-  document.querySelector('#abBlock .cd').style.height = P.blocking ? '100%':'0%';
+  document.querySelector('#abBlock .cd').style.height = P.blocking
+    ? '100%'
+    : Math.max(0,Math.min(1,P.cooldowns.parry/0.72))*100+'%';
 }
 
 function updatePatrolStatus(){
@@ -3772,6 +3903,7 @@ function tick(){
     updateDebugPanel();
     updatePatrolStatus();
   }
+  if((hudFrame%20)===0) updateRenderVisibility();
   updateAbilityCooldownUI();
 
   renderer.render(scene, camera);
