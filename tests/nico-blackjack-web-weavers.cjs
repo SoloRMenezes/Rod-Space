@@ -79,6 +79,10 @@ assert.match(weavers,/Math\.min\(dist\*0\.96,maxClearRope\)/);
 assert.match(weavers,/const SWING_LANE_SPRING = 4\.2/);
 assert.match(weavers,/P\.swingLaneCenter\.copy\(P\.pos\)/);
 assert.match(weavers,/laneOffset\*SWING_LANE_SPRING-laneSpeed\*SWING_LANE_DAMPING/);
+assert.match(weavers,/const BLOCKS = 9/);
+assert.match(weavers,/const BLOCK = 58/);
+assert.match(weavers,/function rooftopAnchorPoints/);
+assert.match(weavers,/const diagonalAvenue=/);
 
 const sling=read('sling_champ.html');
 assert.match(sling,/\.5\*\(other\.mass\|\|1\)\*speed\*speed/);

@@ -379,7 +379,7 @@
             <button class="btn-primary roll-button" id="roll-100000-btn" style="display:none;background:#c2410c" onclick="spin(100000)">Pull 100,000 · 3,000,000</button>
             <button class="btn-primary roll-button" id="roll-1000000-btn" style="display:none;background:#b91c1c;grid-column:1/-1" onclick="spin(1000000)">Pull 1,000,000 · 40,000,000</button>
         </div>
-        <div id="bulk-overflow-note" style="display:none;color:var(--text-dim);font-size:.68rem;margin-top:9px">Items that do not fit in your bag are automatically sold.</div>
+        <div id="bulk-overflow-note" style="display:none;color:var(--text-dim);font-size:.68rem;margin-top:9px">Bulk pulls require enough empty bag slots for every item.</div>
 
         <div style="margin-top: 2.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -405,10 +405,10 @@
             </div>
         </div>
 
-        <div class="shop-card"><h3>🧲 Luck magnet <span id="luck-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Slightly improves every rare drop.</p><button class="btn-primary" onclick="buyUpgrade('luck')">Upgrade · <span id="luck-price">150</span></button></div>
+        <div class="shop-card"><h3>🧲 Luck magnet <span id="luck-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Slightly improves every rare drop. Maximum level 10.</p><button class="btn-primary" id="luck-upgrade-btn" onclick="buyUpgrade('luck')">Upgrade · <span id="luck-price">150</span></button></div>
         <div class="shop-card"><h3>🎒 Bigger bag <span id="bag-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Adds four inventory spaces.</p><button class="btn-primary" onclick="buyUpgrade('bag')">Upgrade · <span id="bag-price">120</span></button></div>
         <div class="shop-card"><h3>⚡ Roll accelerator <span id="speed-level" style="color:var(--text-dim)"></span></h3><p id="speed-description" style="color:var(--text-dim);font-size:.8rem">Removes 0.1 seconds from every roll. Level 10 is instant.</p><button class="btn-primary" id="speed-upgrade-btn" onclick="buyUpgrade('speed')">Upgrade · <span id="speed-price">100</span></button></div>
-        <div class="shop-card"><h3>📦 Bulk pull permits</h3><p style="color:var(--text-dim);font-size:.8rem">Permanently unlock faster bulk pulls. Convenience costs extra, and overflow is automatically sold.</p><div id="bulk-permit-buttons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn-primary" id="unlock-50-btn" onclick="buyBulkUnlock(50)">Unlock Roll 50 · 1,500</button><button class="btn-primary" id="unlock-100-btn" onclick="buyBulkUnlock(100)">Unlock Roll 100 · 3,000</button><button class="btn-primary" id="unlock-500-btn" onclick="buyBulkUnlock(500)">Unlock Roll 500 · 10,000</button><button class="btn-primary" id="unlock-1000-btn" onclick="buyBulkUnlock(1000)">Unlock Roll 1,000 · 25,000</button><button class="btn-primary" id="unlock-10000-btn" onclick="buyBulkUnlock(10000)">Unlock Roll 10,000 · 100,000</button><button class="btn-primary" id="unlock-100000-btn" onclick="buyBulkUnlock(100000)">Unlock Roll 100,000 · 500,000</button><button class="btn-primary" id="unlock-1000000-btn" style="grid-column:1/-1" onclick="buyBulkUnlock(1000000)">Unlock Roll 1,000,000 · 2,000,000</button></div></div>
+        <div class="shop-card"><h3>📦 Bulk pull permits</h3><p style="color:var(--text-dim);font-size:.8rem">Permanently unlock faster bulk pulls. You need a bag large enough to hold the entire pull before buying or using one.</p><div id="bulk-permit-buttons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn-primary" id="unlock-50-btn" onclick="buyBulkUnlock(50)">Unlock Roll 50 · 1,500</button><button class="btn-primary" id="unlock-100-btn" onclick="buyBulkUnlock(100)">Unlock Roll 100 · 3,000</button><button class="btn-primary" id="unlock-500-btn" onclick="buyBulkUnlock(500)">Unlock Roll 500 · 10,000</button><button class="btn-primary" id="unlock-1000-btn" onclick="buyBulkUnlock(1000)">Unlock Roll 1,000 · 25,000</button><button class="btn-primary" id="unlock-10000-btn" onclick="buyBulkUnlock(10000)">Unlock Roll 10,000 · 100,000</button><button class="btn-primary" id="unlock-100000-btn" onclick="buyBulkUnlock(100000)">Unlock Roll 100,000 · 500,000</button><button class="btn-primary" id="unlock-1000000-btn" style="grid-column:1/-1" onclick="buyBulkUnlock(1000000)">Unlock Roll 1,000,000 · 2,000,000</button></div></div>
         <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives ten pulls every five minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +100</button></div>
     </div>
 
@@ -475,7 +475,7 @@
     const BULK_COUNTS=[50,100,500,1000,10000,100000,1000000];
     const BULK_UNLOCK_PRICES={50:1500,100:3000,500:10000,1000:25000,10000:100000,100000:500000,1000000:2000000};
     const UPGRADE_BASE_PRICES = { luck: 150, bag: 120, speed: 100 };
-    const MAX_SPEED_LEVEL=10, BASE_ROLL_MS=1000;
+    const MAX_SPEED_LEVEL=10, MAX_LUCK_LEVEL=10, BASE_ROLL_MS=1000;
     const ULTRA_RARITIES=[
         {rarity:'Divine',chance:1/1000000},{rarity:'Void',chance:1/500000},
         {rarity:'Transcendent',chance:1/100000},{rarity:'Celestial',chance:1/20000},
@@ -600,7 +600,7 @@
         coins: Number.isFinite(parseInt(localStorage.getItem('rng_coins')))?parseInt(localStorage.getItem('rng_coins')):300,
         pity: parseInt(localStorage.getItem('rng_pity')) || 0,
         maxInv: Math.max(16,parseInt(localStorage.getItem('rng_bag'))||16),
-        luck: Math.max(0,parseInt(localStorage.getItem('rng_luck'))||0),
+        luck: Math.min(MAX_LUCK_LEVEL,Math.max(0,parseInt(localStorage.getItem('rng_luck'))||0)),
         speed: Math.min(MAX_SPEED_LEVEL,Math.max(0,parseInt(localStorage.getItem('rng_speed'))||0)),
         bulkUnlocks:Object.fromEntries(BULK_COUNTS.map(count=>[count,localStorage.getItem(`rng_bulk_${count}`)==='1'])),
         totalRolls: parseInt(localStorage.getItem('rng_rolls')) || 0,
@@ -645,7 +645,7 @@
         const price=SPIN_PRICES[count]??SPIN_COST*count;
         if(count>5&&!state.bulkUnlocks[count])return notify('Buy this bulk permit in the shop first');
         if (state.coins < price) return notify("Low Balance!");
-        if (count<=5&&state.inventory.length + count > state.maxInv) return notify(`Need ${state.inventory.length+count-state.maxInv} more bag slots`);
+        if (state.inventory.length + count > state.maxInv) return notify(`Need ${state.inventory.length+count-state.maxInv} more empty bag slots`);
         
         const display = document.getElementById('main-display');
         const rollButtons=[...document.querySelectorAll('.roll-button')];
@@ -679,7 +679,6 @@
         state.coins -= price;
         state.totalRolls += count;
         const knownItems=new Set(state.collection.map(item=>item.name));
-        let overflowValue=0,overflowCount=0;
         let last;
         for (let i = 0; i < count; i++) {
             state.pity++;
@@ -706,14 +705,11 @@
                 state.totalLegendary++;
             }
             
-            if(state.inventory.length<state.maxInv)state.inventory.push({ ...item });
-            else{overflowCount++;overflowValue+=SELL_VALUES[item.rarity]??item.sell??0}
+            state.inventory.push({ ...item });
             state.itemCounts[item.name]=(state.itemCounts[item.name]||0)+1;
             if (!knownItems.has(item.name)){knownItems.add(item.name);state.collection.push({...item})}
             last = item;
         }
-
-        state.coins+=overflowValue;
 
         document.getElementById('item-emoji').innerText = last.emoji;
         document.getElementById('item-name').innerText = last.name;
@@ -722,7 +718,6 @@
         const rarityColor=getComputedStyle(document.documentElement).getPropertyValue(`--${last.rarity.toLowerCase()}`).trim();
         display.style.borderColor=rarityColor;display.style.boxShadow=`0 18px 60px ${rarityColor}24, inset 0 0 45px ${rarityColor}12`;
         save();
-        if(overflowCount)notify(`${overflowCount.toLocaleString('en-GB')} overflow items auto-sold for ${overflowValue.toLocaleString('en-GB')} 🪙`);
     }
 
     function updateUI() {
@@ -733,7 +728,8 @@
         document.getElementById('stat-rolls').innerText = state.totalRolls.toLocaleString('en-GB');
         document.getElementById('stat-legendary').innerText = state.totalLegendary.toLocaleString('en-GB');
         document.getElementById('collection-count').innerText=`${state.collection.filter(c=>lootPool.some(i=>i.name===c.name)).length} / ${lootPool.length}`;
-        document.getElementById('luck-level').innerText=`Lv ${state.luck}`;document.getElementById('bag-level').innerText=`${state.maxInv} slots`;document.getElementById('luck-price').innerText=UPGRADE_BASE_PRICES.luck*(state.luck+1);document.getElementById('bag-price').innerText=UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20;
+        document.getElementById('luck-level').innerText=`Lv ${state.luck}/${MAX_LUCK_LEVEL}`;document.getElementById('bag-level').innerText=`${state.maxInv} slots`;document.getElementById('luck-price').innerText=state.luck>=MAX_LUCK_LEVEL?'MAX':UPGRADE_BASE_PRICES.luck*(state.luck+1);document.getElementById('bag-price').innerText=UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20;
+        document.getElementById('luck-upgrade-btn').disabled=state.luck>=MAX_LUCK_LEVEL;
         const speedButton=document.getElementById('speed-upgrade-btn'),speedSeconds=Math.max(0,(BASE_ROLL_MS-state.speed*100)/1000);
         document.getElementById('speed-level').innerText=`Lv ${state.speed}/${MAX_SPEED_LEVEL} · ${speedSeconds?speedSeconds.toFixed(1)+'s':'instant'}`;
         document.getElementById('speed-price').innerText=state.speed>=MAX_SPEED_LEVEL?'MAX':UPGRADE_BASE_PRICES.speed*(state.speed+1);
@@ -742,8 +738,8 @@
         BULK_COUNTS.forEach(count=>{
             const unlocked=state.bulkUnlocks[count],formatted=count.toLocaleString('en-GB');
             document.getElementById(`roll-${count}-btn`).style.display=unlocked?'block':'none';
-            const unlock=document.getElementById(`unlock-${count}-btn`);unlock.disabled=unlocked;
-            unlock.textContent=unlocked?`Roll ${formatted} unlocked`:`Unlock Roll ${formatted} · ${BULK_UNLOCK_PRICES[count].toLocaleString('en-GB')}`;
+            const unlock=document.getElementById(`unlock-${count}-btn`),bagReady=state.maxInv>=count;unlock.disabled=unlocked||!bagReady;
+            unlock.textContent=unlocked?`Roll ${formatted} unlocked`:bagReady?`Unlock Roll ${formatted} · ${BULK_UNLOCK_PRICES[count].toLocaleString('en-GB')}`:`Need ${formatted} bag slots`;
         });
         document.getElementById('bulk-roll-buttons').style.display=hasBulk?'grid':'none';
         document.getElementById('bulk-overflow-note').style.display=hasBulk?'block':'none';
@@ -785,8 +781,8 @@
         save();
     }
     function upgradePrice(type){if(type==='luck')return UPGRADE_BASE_PRICES.luck*(state.luck+1);if(type==='speed')return UPGRADE_BASE_PRICES.speed*(state.speed+1);return UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20}
-    function buyUpgrade(type){if(type==='speed'&&state.speed>=MAX_SPEED_LEVEL)return notify('Roll speed is already instant');const price=upgradePrice(type);if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else if(type==='speed')state.speed++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':type==='speed'?(state.speed===MAX_SPEED_LEVEL?'Rolling is now instant':'Rolling sped up by 0.1s'):'Bag expanded');save();}
-    function buyBulkUnlock(count){const price=BULK_UNLOCK_PRICES[count];if(!price)return;if(state.bulkUnlocks[count])return notify(`Roll ${count.toLocaleString('en-GB')} is already unlocked`);if(state.coins<price)return notify('Not enough coins');state.coins-=price;state.bulkUnlocks[count]=true;notify(`Roll ${count.toLocaleString('en-GB')} unlocked on the game screen`);save()}
+    function buyUpgrade(type){if(type==='luck'&&state.luck>=MAX_LUCK_LEVEL)return notify('Luck is already maxed');if(type==='speed'&&state.speed>=MAX_SPEED_LEVEL)return notify('Roll speed is already instant');const price=upgradePrice(type);if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else if(type==='speed')state.speed++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':type==='speed'?(state.speed===MAX_SPEED_LEVEL?'Rolling is now instant':'Rolling sped up by 0.1s'):'Bag expanded');save();}
+    function buyBulkUnlock(count){const price=BULK_UNLOCK_PRICES[count];if(!price)return;if(state.bulkUnlocks[count])return notify(`Roll ${count.toLocaleString('en-GB')} is already unlocked`);if(state.maxInv<count)return notify(`Expand your bag to ${count.toLocaleString('en-GB')} slots first`);if(state.coins<price)return notify('Not enough coins');state.coins-=price;state.bulkUnlocks[count]=true;notify(`Roll ${count.toLocaleString('en-GB')} unlocked on the game screen`);save()}
     function scrapRun(){const wait=300000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=100;notify('Recovered 100 coins');save();}
 
     function openCollectionDetail(item) {
