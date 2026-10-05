@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>WEB WEAVERS — Queens Patrol</title>
+<title>WEB WEAVERS — Manhattan Patrol</title>
 <link rel="icon" href="data:,">
 <style>
   html,body{margin:0;padding:0;overflow:hidden;background:#0a0f1e;font-family:Arial,Helvetica,sans-serif;}
@@ -18,6 +18,7 @@
   #startTitle{margin:0;color:#e8232a;font-size:clamp(38px,7vw,74px);line-height:.88;text-align:center;
     letter-spacing:0;text-shadow:4px 4px 0 #111;transform:skew(-5deg);}
   #startSub{margin:12px 0 22px;text-align:center;font-weight:900;color:#1b4fa0;letter-spacing:1px;}
+  #startLoadStatus{text-align:center;font-size:12px;font-weight:800;margin:-12px 0 16px;color:#596273;}
   #startActions{display:grid;grid-template-columns:1fr;gap:12px;}
   #startActions .btn{width:100%;height:56px;font-size:18px;padding:0 12px;text-align:center;}
   #btnPlay{background:#e8232a;color:#fff;}
@@ -157,9 +158,10 @@
 <div id="startScreen">
   <div id="startCard">
     <h1 id="startTitle">WEB<br>WEAVERS</h1>
-    <div id="startSub">QUEENS WEB PATROL</div>
+    <div id="startSub">MANHATTAN WEB PATROL</div>
+    <div id="startLoadStatus">LOADING CHARACTER…</div>
     <div id="startActions">
-      <button class="btn" id="btnPlay">PLAY</button>
+      <button class="btn" id="btnPlay" disabled>PLAY</button>
       <button class="btn" id="btnStartSettings">SETTINGS</button>
       <button class="btn" id="btnSkins" disabled>SKINS - SOON</button>
     </div>
@@ -174,7 +176,7 @@
   <div id="cashDisplay" class="comicPanel" style="position:absolute;top:86px;left:16px;padding:7px 12px;color:#146b37;background:#eaffdd;">$<span id="cashValue">0</span></div>
 
   <div id="minimapWrap">
-    <div id="minimapLabel">QUEENS</div>
+    <div id="minimapLabel">MANHATTAN</div>
     <canvas id="minimap" width="190" height="190"></canvas>
   </div>
 
@@ -212,7 +214,7 @@
     align-items:center;justify-content:center;pointer-events:all;z-index:80;">
     <div class="comicPanel menuCard" style="padding:24px 30px;text-align:center;">
       <div class="menuTitle" style="font-size:30px;margin-bottom:10px;">DEFEATED</div>
-      <div class="menuCopy">Queens still needs a web-slinger.</div>
+      <div class="menuCopy">Manhattan still needs a web-slinger.</div>
       <div class="btn menuAction" id="btnRespawn">RESPAWN</div>
       <div class="btn menuAction" id="btnDeathMainMenu" style="margin-top:10px;">MAIN MENU</div>
     </div>
@@ -229,6 +231,9 @@
     <div class="row"><span>Look</span><span>Mouse</span></div>
     <div class="row"><span>Mouse sensitivity</span><span><input id="sensitivitySlider" type="range" min="50" max="180" value="100"><span id="sensitivityValue">100%</span></span></div>
     <div class="row"><span>Render distance</span><span><input id="renderDistanceSlider" type="range" min="220" max="900" step="20" value="520"><span id="renderDistanceValue">520</span></span></div>
+    <div class="row"><span>Resolution</span><span><input id="resolutionSlider" type="range" min="60" max="100" step="5" value="100"><span id="resolutionValue">100%</span></span></div>
+    <div class="row"><span>Animated water</span><span><label class="pillToggle" aria-label="Animated water"><input id="waterToggle" type="checkbox" checked><span class="pillTrack"></span></label></span></div>
+    <div class="row"><span>Swing hold delay</span><span><input id="swingDelaySlider" type="range" min="120" max="420" step="20" value="280"><span id="swingDelayValue">280ms</span></span></div>
     <div class="row"><span>Zoom in / first person</span><span class="keybtn" data-action="zoomIn">I</span></div>
     <div class="row"><span>Zoom out</span><span class="keybtn" data-action="zoomOut">O</span></div>
     <div class="row"><span>Hold to drag camera</span><span>Right Mouse</span></div>
@@ -287,6 +292,9 @@ let debugOn = false;
 let mouseSensitivity = 1;
 let cameraDistance = 7.5;
 let renderDistance = 520;
+let traversalHoldDelay=0.28;
+let resolutionScale=1;
+let animatedWater=true;
 let cameraCollisionDistance = null;
 let firstPersonAutoLock = false;
 let cash=Math.max(0,parseInt(localStorage.getItem('webWeaversCash'))||0);
@@ -306,6 +314,8 @@ loadSettings();
 syncBindingLabels();
 syncSensitivityUI();
 syncRenderDistanceUI();
+syncSwingDelayUI();
+syncQualityUI();
 updateCashUI();
 
 window.addEventListener('keydown', e=>{
@@ -408,10 +418,13 @@ function loadSettings(){
     if(Number.isFinite(saved.mouseSensitivity)) mouseSensitivity = THREE.MathUtils.clamp(saved.mouseSensitivity, 0.5, 1.8);
     if(Number.isFinite(saved.cameraDistance)) cameraDistance = THREE.MathUtils.clamp(saved.cameraDistance, 0.15, 18);
     if(Number.isFinite(saved.renderDistance)) renderDistance = THREE.MathUtils.clamp(saved.renderDistance,220,900);
+    if(Number.isFinite(saved.traversalHoldDelay)) traversalHoldDelay=THREE.MathUtils.clamp(saved.traversalHoldDelay,0.12,0.42);
+    if(Number.isFinite(saved.resolutionScale)) resolutionScale=THREE.MathUtils.clamp(saved.resolutionScale,0.6,1);
+    if(typeof saved.animatedWater==='boolean') animatedWater=saved.animatedWater;
   }
 }
 function saveSettings(){
-  writeSavedSettings({bindings, running, debugOn, mouseSensitivity, cameraDistance, renderDistance});
+  writeSavedSettings({bindings, running, debugOn, mouseSensitivity, cameraDistance, renderDistance, traversalHoldDelay, resolutionScale, animatedWater});
 }
 function syncBindingLabels(){
   ['shiftLock','toggleRun','jump','traversal','webshot','dive','block','zoomIn','zoomOut','debug']
@@ -458,6 +471,36 @@ document.getElementById('renderDistanceSlider').addEventListener('input',e=>{
   renderDistance=THREE.MathUtils.clamp(Number(e.target.value),220,900);
   syncRenderDistanceUI();
   applyRenderDistance();
+  saveSettings();
+});
+function syncSwingDelayUI(){
+  const slider=document.getElementById('swingDelaySlider');
+  const label=document.getElementById('swingDelayValue');
+  if(!slider||!label)return;
+  slider.value=Math.round(traversalHoldDelay*1000);
+  label.textContent=Math.round(traversalHoldDelay*1000)+'ms';
+}
+document.getElementById('swingDelaySlider').addEventListener('input',e=>{
+  traversalHoldDelay=THREE.MathUtils.clamp(Number(e.target.value)/1000,0.12,0.42);
+  syncSwingDelayUI();
+  saveSettings();
+});
+function syncQualityUI(){
+  const slider=document.getElementById('resolutionSlider');
+  const label=document.getElementById('resolutionValue');
+  const water=document.getElementById('waterToggle');
+  if(slider) slider.value=Math.round(resolutionScale*100);
+  if(label) label.textContent=Math.round(resolutionScale*100)+'%';
+  if(water) water.checked=animatedWater;
+}
+document.getElementById('resolutionSlider').addEventListener('input',e=>{
+  resolutionScale=THREE.MathUtils.clamp(Number(e.target.value)/100,0.6,1);
+  syncQualityUI();
+  resizeRenderer();
+  saveSettings();
+});
+document.getElementById('waterToggle').addEventListener('change',e=>{
+  animatedWater=e.target.checked;
   saveSettings();
 });
 
@@ -678,7 +721,7 @@ document.addEventListener('mousemove', e=>{
 // ---------------------------------------------------------------------------------------
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)*resolutionScale);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x8fd3ff);
@@ -697,7 +740,7 @@ function resizeRenderer(){
   const h = Math.max(1, window.innerHeight);
   camera.aspect = w/h;
   camera.updateProjectionMatrix();
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2)*resolutionScale);
   renderer.setSize(w, h);
 }
 window.addEventListener('resize', resizeRenderer);
@@ -1276,9 +1319,15 @@ new THREE.GLTFLoader().load(
     r15Ready=true;
     r15EnemyTemplate=gltf.scene;
     setTimeout(()=>enemies.forEach(attachEnemyAvatar),0);
+    document.getElementById('startLoadStatus').textContent='READY';
+    document.getElementById('btnPlay').disabled=false;
   },
   undefined,
-  error=>console.warn('R15 model unavailable; using fallback avatar.',error)
+  error=>{
+    console.warn('R15 model unavailable; using fallback avatar.',error);
+    document.getElementById('startLoadStatus').textContent='READY · FALLBACK CHARACTER';
+    document.getElementById('btnPlay').disabled=false;
+  }
 );
 
 const P = {
@@ -1368,26 +1417,9 @@ const SWING_MAX_SPEED = 58;
 const SWING_RELEASE_MAX_SPEED = 42;
 const SWING_RELEASE_CARRY = .96;
 const SWING_MAX_RISE_SPEED = 24;
-const SWING_DESCENT_PUMP = 4.5;
-const SWING_ASCENT_PUMP = 1.2;
-const SWING_ENTRY_DOWN_ACCEL = 4;
-const SWING_ENTRY_FORWARD_ACCEL = 2.5;
 const SWING_ENTRY_MAX_TIME = 0.55;
-const SWING_SAFE_REEL_SPEED = 2.5;
-const SWING_LOW_ASCENT_REEL_SPEED = 3;
-const SWING_BOTTOM_REEL_SPEED = 1.5;
-const SWING_LOW_CLEARANCE = 7;
-const SWING_LOW_LIFT_ACCEL = 12;
 const SWING_SKIM_UP_SPEED = 2.5;
-const SWING_PIVOT_FORWARD_MIN = 16;
-const SWING_PIVOT_FORWARD_MAX = 25;
 const SWING_GROUND_PULL_TIME = 0.36;
-const SWING_GROUND_PULL_UP_ACCEL = 22;
-const SWING_GROUND_PULL_FORWARD_ACCEL = 14;
-const SWING_GROUND_PULL_REEL_SPEED = 2.5;
-const SWING_LANE_SPRING = 4.2;
-const SWING_LANE_DAMPING = 3.2;
-const TRAVERSAL_HOLD_TIME = 0.2;
 const MAX_JUMP_CHARGE = 0.85;
 const CHARGED_JUMP_BONUS = 10;
 const DIVE_FORWARD_ACCEL = 13;
@@ -1732,6 +1764,27 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
     }
   }
   return best;
+}
+
+function findLookSwingAnchor(){
+  raycaster.setFromCamera(aimScreenPoint(),camera);
+  raycaster.far=SWING_MAX_RANGE;
+  const hit=raycaster.intersectObjects(collidables(),false)[0];
+  raycaster.far=Infinity;
+  if(!hit)return null;
+  const b=buildingMeshes.find(entry=>entry.mesh===hit.object);
+  if(!b)return null;
+  const inset=0.7;
+  const point=new THREE.Vector3(
+    THREE.MathUtils.clamp(hit.point.x,b.minX+inset,b.maxX-inset),
+    b.h+0.08,
+    THREE.MathUtils.clamp(hit.point.z,b.minZ+inset,b.maxZ-inset)
+  );
+  const distance=P.pos.clone().add(new THREE.Vector3(0,1.35,0)).distanceTo(point);
+  if(distance<SWING_MIN_RANGE||distance>SWING_MAX_RANGE)return null;
+  const ground=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+  const safeLength=Math.max(SWING_MIN_RANGE,Math.min(distance*0.96,point.y-ground-9));
+  return {point,length:safeLength,score:Infinity,targeted:true};
 }
 
 // ---------------------------------------------------------------------------------------
@@ -2257,6 +2310,13 @@ function trySwing(hand,abilId,chosenOverride=null){
 }
 
 function trySmartSwing(){
+  const aimed=findLookSwingAnchor();
+  if(aimed){
+    const toAim=aimed.point.clone().sub(P.pos);
+    const cameraRight=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
+    const hand=toAim.dot(cameraRight)>=0?'left':'right';
+    return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',aimed);
+  }
   const left=findAssistedSwingAnchor('left',null);
   const right=findAssistedSwingAnchor('right',null);
   if(!left && !right) return false;
@@ -3199,7 +3259,7 @@ function updatePlayer(dt){
   }
   if(traversalDown){
     P.traversalHoldT+=dt;
-    if(P.traversalHoldT>=TRAVERSAL_HOLD_TIME && !P.traversalSwingStarted && P.traversalRetryT<=0){
+    if(P.traversalHoldT>=traversalHoldDelay && !P.traversalSwingStarted && P.traversalRetryT<=0){
       P.traversalSwingStarted=trySmartSwing();
       P.traversalRetryT=0.12;
     }
@@ -3208,7 +3268,7 @@ function updatePlayer(dt){
     if(P.traversalSwingStarted || P.state==='swing' || (P.state==='climb'&&P.wallRunFromSwing)){
       P.swingHistoryT=1;
       releaseSwing(null);
-    } else if(P.traversalHoldT<TRAVERSAL_HOLD_TIME && P.cooldowns.zip<=0 && P.state!=='zip'){
+    } else if(P.traversalHoldT<traversalHoldDelay && P.cooldowns.zip<=0 && P.state!=='zip'){
       if(tryZip()) P.cooldowns.zip=0.15;
     }
     P.traversalHoldT=0;
@@ -3290,7 +3350,6 @@ function updatePlayer(dt){
     P.swingAge+=dt;
     P.swingPhaseT+=dt;
     P.swingPeakFlat=Math.max(P.swingPeakFlat,Math.hypot(P.vel.x,P.vel.z));
-    const previousVy=P.swingLastVy;
     P.vel.y += GRAVITY*dt;
     let activeWebs=[P.swingWebs.left,P.swingWebs.right].filter(web=>web.anchor);
     if(!activeWebs.length){
@@ -3310,51 +3369,22 @@ function updatePlayer(dt){
       }
     });
     constraint=swingConstraint(activeWebs);
-    const swingGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
-    const groundClearance=Math.max(0,P.pos.y-swingGround);
-    const lowAssist=THREE.MathUtils.clamp(1-groundClearance/SWING_LOW_CLEARANCE,0,1);
     const radial=P.pos.clone().sub(constraint.anchor).normalize();
     const forwardTangent=cameraForwardFlat();
     forwardTangent.addScaledVector(radial,-forwardTangent.dot(radial));
 
-    // Keep the arc inside the street corridor selected at attachment. This is
-    // a soft spring, not a position clamp: the player can still steer sideways,
-    // but the rope cannot steadily winch them into either facade.
-    const laneOffset=P.pos.clone().sub(P.swingLaneCenter).dot(P.swingLaneRight);
-    const laneSpeed=P.vel.dot(P.swingLaneRight);
-    const laneAccel=THREE.MathUtils.clamp(
-      -laneOffset*SWING_LANE_SPRING-laneSpeed*SWING_LANE_DAMPING,-18,18
-    );
-    P.vel.addScaledVector(P.swingLaneRight,laneAccel*dt);
-
+    // One short launch impulse is the only assisted part of a ground start.
+    // Once airborne, gravity plus the rope constraint form an ordinary
+    // pendulum: no lane spring, automatic pumping, lift or continuous reeling.
     if(P.swingGroundPullT>0){
       P.swingGroundPullT=Math.max(0,P.swingGroundPullT-dt);
-      // This is the street-start web pull: two visible strands and one actual
-      // corridor pivot. It establishes air beneath the player, then hands the
-      // preserved velocity to the ordinary down-then-up pendulum.
-      P.vel.y+=SWING_GROUND_PULL_UP_ACCEL*dt;
+      P.vel.y+=14*dt;
       if(forwardTangent.lengthSq()>0.001){
-        P.vel.addScaledVector(forwardTangent.clone().normalize(),SWING_GROUND_PULL_FORWARD_ACCEL*dt);
-      }
-      activeWebs.forEach(web=>{
-        web.length=Math.max(web.targetLength,web.length-SWING_GROUND_PULL_REEL_SPEED*dt);
-      });
-      if(P.swingGroundPullT===0){
-        P.swingGroundPullAnchor=null;
-        P.swingGroundPullAnchors.left=null;
-        P.swingGroundPullAnchors.right=null;
+        P.vel.addScaledVector(forwardTangent.normalize(),8*dt);
       }
     }
 
     if(P.swingPhase==='entry'){
-      // Rising entries keep rising. Level or slow entries receive a small
-      // tangential dip, never a direct downward teleport or upward zip force.
-      if(P.vel.y<=1 && groundClearance>4){
-        const downTangent=new THREE.Vector3(0,-1,0);
-        downTangent.addScaledVector(radial,-downTangent.dot(radial));
-        if(downTangent.lengthSq()>0.001) P.vel.addScaledVector(downTangent.normalize(),SWING_ENTRY_DOWN_ACCEL*dt);
-      }
-      if(forwardTangent.lengthSq()>0.001) P.vel.addScaledVector(forwardTangent.clone().normalize(),SWING_ENTRY_FORWARD_ACCEL*dt);
       if(P.vel.y<-0.75 || (P.swingPhaseT>=SWING_ENTRY_MAX_TIME && P.vel.y<=0.5)){
         P.swingHasDescended=true;
         setSwingPhase('descent');
@@ -3363,46 +3393,17 @@ function updatePlayer(dt){
 
     if(P.swingPhase==='descent'){
       if(P.vel.y<-0.5) P.swingHasDescended=true;
-      if(forwardTangent.lengthSq()>0.001) P.vel.addScaledVector(forwardTangent.clone().normalize(),SWING_DESCENT_PUMP*dt);
-      // Ground protection only acts when the projected arc is running out of
-      // clearance. It is not part of ordinary mid-air swing acceleration.
-      if(constraint.anchor.y>swingGround+10 && lowAssist>0 && P.vel.y<2){
-        P.vel.y+=SWING_LOW_LIFT_ACCEL*lowAssist*dt;
-        activeWebs.forEach(web=>{
-          web.length=Math.max(web.targetLength,web.length-SWING_SAFE_REEL_SPEED*lowAssist*dt);
-        });
-      }
     } else if(P.swingPhase==='ascent'){
       P.swingPeakRise=Math.max(P.swingPeakRise,P.vel.y);
-      if(forwardTangent.lengthSq()>0.001) P.vel.addScaledVector(forwardTangent.clone().normalize(),SWING_ASCENT_PUMP*dt);
-      // A low start earns its lift only after crossing the bottom of the arc.
-      // This creates the visible down-then-up motion while still raising the next
-      // release above traffic instead of trapping the player in a street skim.
-      if(constraint.anchor.y>swingGround+10 && lowAssist>0){
-        P.vel.y+=SWING_LOW_LIFT_ACCEL*0.55*lowAssist*dt;
-        activeWebs.forEach(web=>{
-          web.length=Math.max(web.targetLength,web.length-SWING_LOW_ASCENT_REEL_SPEED*lowAssist*dt);
-        });
-      }
-      // A slight reel just after the bottom helps convert the downswing into
-      // height, while leaving almost all of the ascent to pendulum momentum.
-      if(P.swingPhaseT<0.32){
-        activeWebs.forEach(web=>{
-          web.length=Math.max(web.targetLength,web.length-SWING_BOTTOM_REEL_SPEED*dt);
-        });
-      }
     }
 
-    // Camera-relative steering stays horizontal. The old full 3D tangent could
-    // turn ordinary WASD input into unexplained lift or downward force.
+    // Small tangential steering changes direction without creating vertical
+    // energy or moving the player toward the anchor.
     if(mv.lengthSq()>0){
-      const horizontalRadial=radial.clone();horizontalRadial.y=0;
-      if(horizontalRadial.lengthSq()>0.001)horizontalRadial.normalize();
-      const swingSteer=mv.clone().addScaledVector(horizontalRadial,-mv.dot(horizontalRadial)*.7);
+      const swingSteer=mv.clone().addScaledVector(radial,-mv.dot(radial));
       if(swingSteer.lengthSq()>0.001){
         swingSteer.normalize();
-        P.vel.x+=swingSteer.x*5*dt;
-        P.vel.z+=swingSteer.z*5*dt;
+        P.vel.addScaledVector(swingSteer,3.2*dt);
       }
     }
     const beforeSwingMove = P.pos.clone();
@@ -3986,7 +3987,7 @@ function tick(){
   const now = performance.now();
   let dt = (now-last)/1000; last=now;
   dt = Math.min(dt, 0.05);
-  oceanUniforms.time.value=now*0.001;
+  if(animatedWater) oceanUniforms.time.value=now*0.001;
 
   updateZoomInput(dt);
   if(!paused){
