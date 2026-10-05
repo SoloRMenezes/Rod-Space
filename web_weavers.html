@@ -1125,6 +1125,13 @@ const r15VisualBone={
   leftFoot:'RightFoot', rightFoot:'LeftFoot'
 };
 
+function applyR15VisualBone(name,rot,amount){
+  // Swapping a bone to the opposite side also mirrors its local coordinate
+  // frame. Pitch remains pitch, while yaw and roll must change sign. Without
+  // this, spread limbs fold across the body (most obvious in wall cling).
+  applyR15Bone(name,{x:rot.x||0,y:-(rot.y||0),z:-(rot.z||0)},amount);
+}
+
 function visibleWebHandWorld(gameHand,fallback){
   const exportedName=gameHand==='left'?r15VisualBone.leftHand:r15VisualBone.rightHand;
   const bone=r15Ready&&r15Bone(exportedName);
@@ -2577,12 +2584,13 @@ function animatePlayer(dt, moveVec){
       legLRot.z=-0.42; legRRot.z=0.42;
       torsoRot.x=-0.14;
     } else {
-      // Four-point stationary wall cling: hands high, feet spread, no idle cycling.
-      armLRot.x=-1.25; armRRot.x=-1.25;
-      armLRot.z=-0.72; armRRot.z=0.72;
-      legLRot.x=-0.82; legRRot.x=-0.82;
-      legLRot.z=-0.52; legRRot.z=0.52;
-      torsoRot.x=-0.08;
+      // Compact four-point wall cling: hands above the shoulders and knees
+      // tucked toward the wall, matching the reference instead of a starfish.
+      armLRot.x=-1.92; armRRot.x=-1.92;
+      armLRot.z=-0.38; armRRot.z=0.38;
+      legLRot.x=0.82; legRRot.x=0.82;
+      legLRot.z=-0.38; legRRot.z=0.38;
+      torsoRot.x=-0.16;
     }
   } else if(P.state==='downed'){
     torsoRot.x = 0.38;
@@ -2664,10 +2672,10 @@ function animatePlayer(dt, moveVec){
     // receive secondary bends so the imported model does not move as four rigid rods.
     applyR15Bone('UpperTorso',torsoRot,amt);
     applyR15Bone('Head',headRot,amt);
-    applyR15Bone(r15VisualBone.leftUpperArm,armLRot,amt);
-    applyR15Bone(r15VisualBone.rightUpperArm,armRRot,amt);
-    applyR15Bone(r15VisualBone.leftUpperLeg,legLRot,amt);
-    applyR15Bone(r15VisualBone.rightUpperLeg,legRRot,amt);
+    applyR15VisualBone(r15VisualBone.leftUpperArm,armLRot,amt);
+    applyR15VisualBone(r15VisualBone.rightUpperArm,armRRot,amt);
+    applyR15VisualBone(r15VisualBone.leftUpperLeg,legLRot,amt);
+    applyR15VisualBone(r15VisualBone.rightUpperLeg,legRRot,amt);
     let leftElbow=P.state==='swing'?0.34:P.state==='zip'?0.58:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:0.12;
     let rightElbow=leftElbow;
     if(P.state==='swing'){
@@ -2677,6 +2685,10 @@ function animatePlayer(dt, moveVec){
       rightElbow=P.swingWebs.right.anchor?swingReachElbow:swingFreeElbow;
       if(P.swingGroundPullT>0) leftElbow=rightElbow=0.16;
     }
+    if(P.state==='climb'){
+      const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
+      leftElbow=rightElbow=wallMoving?0.3:0.56;
+    }
     if(P.meleeT>0){
       const attackProgress=1-P.meleeT/0.34;
       const strike=Math.sin(attackProgress*Math.PI);
@@ -2685,16 +2697,20 @@ function animatePlayer(dt, moveVec){
       else { leftElbow=strikingElbow; rightElbow=1.08; }
     }
     if(P.blocking) leftElbow=rightElbow=1.28;
-    const kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
-    const kneeR=THREE.MathUtils.clamp(Math.max(0,legRRot.x)*0.7+(P.state==='ground'?Math.max(0,step)*0.32:0),0,1.05);
-    applyR15Bone(r15VisualBone.leftLowerArm,{x:-leftElbow,y:0,z:P.blocking?0.12:0},amt);
-    applyR15Bone(r15VisualBone.rightLowerArm,{x:-rightElbow,y:0,z:P.blocking?-0.12:0},amt);
-    applyR15Bone(r15VisualBone.leftHand,{x:0,y:0,z:P.state==='swing'?-0.18:0},amt);
-    applyR15Bone(r15VisualBone.rightHand,{x:0,y:0,z:P.state==='swing'?0.18:0},amt);
-    applyR15Bone(r15VisualBone.leftLowerLeg,{x:kneeL,y:0,z:0},amt);
-    applyR15Bone(r15VisualBone.rightLowerLeg,{x:kneeR,y:0,z:0},amt);
-    applyR15Bone(r15VisualBone.leftFoot,{x:-kneeL*0.35,y:0,z:0},amt);
-    applyR15Bone(r15VisualBone.rightFoot,{x:-kneeR*0.35,y:0,z:0},amt);
+    let kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
+    let kneeR=THREE.MathUtils.clamp(Math.max(0,legRRot.x)*0.7+(P.state==='ground'?Math.max(0,step)*0.32:0),0,1.05);
+    if(P.state==='climb'){
+      const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
+      kneeL=kneeR=wallMoving?0.42:0.68;
+    }
+    applyR15VisualBone(r15VisualBone.leftLowerArm,{x:-leftElbow,y:0,z:P.blocking?0.12:0},amt);
+    applyR15VisualBone(r15VisualBone.rightLowerArm,{x:-rightElbow,y:0,z:P.blocking?-0.12:0},amt);
+    applyR15VisualBone(r15VisualBone.leftHand,{x:0,y:0,z:P.state==='swing'?-0.18:0},amt);
+    applyR15VisualBone(r15VisualBone.rightHand,{x:0,y:0,z:P.state==='swing'?0.18:0},amt);
+    applyR15VisualBone(r15VisualBone.leftLowerLeg,{x:kneeL,y:0,z:0},amt);
+    applyR15VisualBone(r15VisualBone.rightLowerLeg,{x:kneeR,y:0,z:0},amt);
+    applyR15VisualBone(r15VisualBone.leftFoot,{x:-kneeL*0.35,y:0,z:0},amt);
+    applyR15VisualBone(r15VisualBone.rightFoot,{x:-kneeR*0.35,y:0,z:0},amt);
   }
 }
 
