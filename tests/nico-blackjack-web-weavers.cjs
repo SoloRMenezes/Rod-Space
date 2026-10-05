@@ -29,7 +29,7 @@ assert.doesNotMatch(blackjack,/\.card\.hidden/);
 const weavers=read('web_weavers.html');
 assert.ok(fs.statSync(path.join(root,'assets/models/web-weavers-r15.glb')).size>100000);
 assert.ok(fs.statSync(path.join(root,'assets/vendor/GLTFLoader-r128.js')).size>90000);
-assert.match(weavers,/const RESPAWN_TIME = 18;/);
+assert.match(weavers,/const RESPAWN_TIME = 30;/);
 assert.match(weavers,/const previous=p\.pos\.clone\(\);/);
 assert.match(weavers,/raycaster\.intersectObjects\(collidables\(\),false\)/);
 assert.match(weavers,/updatePatrolStatus\(\)/);
@@ -93,6 +93,9 @@ assert.match(weavers,/webWeaversCash/);
 assert.match(weavers,/id="renderDistanceSlider"/);
 assert.match(weavers,/renderDistance, mouseSensitivity|mouseSensitivity, cameraDistance, renderDistance/);
 assert.match(weavers,/function attachEnemyAvatar/);
+assert.match(weavers,/function cloneSkinnedAvatar/);
+assert.match(weavers,/wanderTarget/);
+assert.match(weavers,/const windowTexture=/);
 
 const sling=read('sling_champ.html');
 assert.match(sling,/\.5\*\(other\.mass\|\|1\)\*speed\*speed/);

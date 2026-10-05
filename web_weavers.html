@@ -889,6 +889,32 @@ scene.add(distantSkyline);
 
 // sidewalks/lots (lighter tint under each block so streets read as darker grid lines)
 const lotMat = new THREE.MeshLambertMaterial({color:0x55575e});
+const parkMat = new THREE.MeshLambertMaterial({color:0x587747});
+const trunkMat = new THREE.MeshLambertMaterial({color:0x594332});
+const leavesMat = new THREE.MeshLambertMaterial({color:0x4d7d49});
+const treeTrunkGeo=new THREE.CylinderGeometry(0.42,0.55,3.4,6);
+const treeCrownGeo=new THREE.DodecahedronGeometry(2.2,0);
+
+const windowCanvas=document.createElement('canvas');
+windowCanvas.width=96; windowCanvas.height=160;
+const windowCtx=windowCanvas.getContext('2d');
+windowCtx.fillStyle='#707782';windowCtx.fillRect(0,0,96,160);
+for(let wy=8;wy<154;wy+=18){
+  for(let wx=7;wx<92;wx+=17){
+    windowCtx.fillStyle=((wx+wy)/17)%3<1?'#f3d994':'#263544';
+    windowCtx.fillRect(wx,wy,9,10);
+  }
+}
+const windowTexture=new THREE.CanvasTexture(windowCanvas);
+windowTexture.colorSpace=THREE.SRGBColorSpace;
+windowTexture.minFilter=THREE.LinearMipMapLinearFilter;
+windowTexture.wrapS=windowTexture.wrapT=THREE.RepeatWrapping;
+windowTexture.repeat.set(2,3);
+const buildingMaterialSets=colorPalette.map(color=>{
+  const wall=new THREE.MeshLambertMaterial({color,map:windowTexture});
+  const roof=new THREE.MeshLambertMaterial({color:new THREE.Color(color).multiplyScalar(0.72)});
+  return [wall,wall,roof,roof,wall,wall];
+});
 
 // A Broadway-like diagonal breaks the rigid orthogonal grid and creates a long,
 // readable traversal route through the middle of the borough.
@@ -908,7 +934,7 @@ function addEdges(mesh, color=0x111111){
 
 function makeBuilding(cx, cz, w, d, h, colorIdx){
   const geo = new THREE.BoxGeometry(w, h, d);
-  const mat = new THREE.MeshLambertMaterial({color: colorPalette[colorIdx % colorPalette.length]});
+  const mat = buildingMaterialSets[colorIdx % buildingMaterialSets.length];
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(cx, h/2, cz);
   addEdges(mesh);
@@ -947,7 +973,22 @@ for(let ix=0; ix<BLOCKS; ix++){
     const diagonalLine=(BLOCKS-1)-(ix*0.68)-1.15;
     const isDiagonalAvenue=Math.abs(iz-diagonalLine)<0.34;
     const isPark = !nearCenter && cityRandom()<0.08;
-    if(isPark||isDiagonalAvenue) continue;
+    if(isPark){
+      const park=new THREE.Mesh(new THREE.PlaneGeometry(BLOCK*.86,BLOCK*.86),parkMat);
+      park.rotation.x=-Math.PI/2;park.position.set(bx,0.045,bz);scene.add(park);
+      for(let treeIndex=0;treeIndex<6;treeIndex++){
+        const angle=(treeIndex/6)*Math.PI*2+cityRandom()*.4;
+        const radius=BLOCK*(.19+cityRandom()*.17);
+        const tree=new THREE.Group();
+        const trunk=new THREE.Mesh(treeTrunkGeo,trunkMat);trunk.position.y=1.7;
+        const crown=new THREE.Mesh(treeCrownGeo,leavesMat);crown.position.y=4.5;
+        tree.add(trunk,crown);
+        tree.position.set(bx+Math.cos(angle)*radius,0,bz+Math.sin(angle)*radius);
+        scene.add(tree);
+      }
+      continue;
+    }
+    if(isDiagonalAvenue) continue;
     // Broad towers, paired apartment slabs and occasional three-building blocks
     // create a varied skyline while preserving reliable box collisions.
     const layout=cityRandom();
@@ -1295,6 +1336,7 @@ const P = {
   swingHistoryT:0, quickRecoveryT:0, recoveryRollT:0, recoveryLaunchPending:false,
   recoveryVelocity:new THREE.Vector3(),
   defeatedT:0, recoverPressed:false, blocking:false, parryT:0,
+  lastDamageT:0,
   cooldowns:{swing:0, zip:0, pull:0, melee:0, webshot:0, parry:0},
 };
 
@@ -1607,7 +1649,9 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
   const playerEye=P.pos.clone().add(new THREE.Vector3(0,1.35,0));
   const playerGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
   const groundStart=P.state==='ground' || P.pos.y-playerGround<1.5;
-  const searchPoint=playerEye.clone().addScaledVector(momentumForward,44).addScaledVector(right,sideSign*12);
+  // Search mostly down the travel corridor. A large sideways bias picked deep
+  // facade anchors and made the rope feel like it was winching into a wall.
+  const searchPoint=playerEye.clone().addScaledVector(momentumForward,48).addScaledVector(right,sideSign*6);
   const highFalling=P.vel.y<-10;
   const fallSearchDistance=THREE.MathUtils.clamp(54+Math.abs(P.vel.y)*0.45,58,76);
   const fallSearchPoint=playerEye.clone()
@@ -1628,7 +1672,7 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
     addUniqueAnchorCandidates(candidates,upperBuildingEdgePoints(b,playerEye));
     // Intersections between the player's forward corridor and the complete
     // rooftop perimeter provide continuously sliding targets between corners.
-    for(const offset of [sideSign*7,sideSign*13,0]){
+    for(const offset of [sideSign*4,sideSign*8,0]){
       const corridorOrigin=playerEye.clone().addScaledVector(right,offset);
       addUniqueAnchorCandidates(candidates,upperBuildingEdgeRayPoints(b,corridorOrigin,momentumForward));
     }
@@ -1683,7 +1727,7 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       // much farther building selected by a cinematic scoring bonus.
       const score=belowCatch
         ? 310-Math.abs(horizontalDist-fallSearchDistance)*3.2+forwardDot*190+Math.max(0,sideDot)*28+interiorBonus
-        : 1200-dist*9+forwardDot*(groundStart?190:75)+Math.max(0,sideDot)*12+interiorBonus;
+        : 1200-dist*9+forwardDot*(groundStart?240:110)+Math.max(0,sideDot)*3+interiorBonus;
       if(score>bestScore){ bestScore=score; best={point:point.clone(),length:ropeLength,score}; }
     }
   }
@@ -1719,17 +1763,42 @@ let defeatedCount=0;
 const enemyGeo = new THREE.BoxGeometry(0.9,1.0,0.5);
 const ENEMY_RADIUS = 0.62;
 const ENEMY_HEIGHT = 2.15;
+
+// Object3D.clone() leaves SkinnedMesh skeletons pointing at the source bones.
+// Rebind every cloned mesh to its matching cloned bones so each street enemy
+// can use the player model without copying the player's pose.
+function cloneSkinnedAvatar(source){
+  const clone=source.clone(true);
+  const sourceNodes={},cloneNodes={};
+  source.traverse(node=>{ if(node.name) sourceNodes[node.name]=node; });
+  clone.traverse(node=>{ if(node.name) cloneNodes[node.name]=node; });
+  source.traverse(node=>{
+    if(!node.isSkinnedMesh || !node.name || !cloneNodes[node.name]) return;
+    const clonedMesh=cloneNodes[node.name];
+    const clonedSkeleton=node.skeleton.clone();
+    clonedSkeleton.bones=node.skeleton.bones.map(bone=>cloneNodes[bone.name]||bone);
+    clonedMesh.bind(clonedSkeleton,node.bindMatrix.clone());
+  });
+  return clone;
+}
+
 function attachEnemyAvatar(e){
   if(!r15EnemyTemplate||e.avatar) return;
   [...e.mesh.children].forEach(child=>child.visible=false);
   e.mat.transparent=true;
   e.mat.opacity=0;
   e.mat.depthWrite=false;
-  const avatar=r15EnemyTemplate.clone(true);
+  const avatar=cloneSkinnedAvatar(r15EnemyTemplate);
   avatar.scale.setScalar(0.56);
   avatar.position.y=-0.8;
   const materials=[];
+  const bones={};
+  const rest={};
   avatar.traverse(node=>{
+    if(node.isBone && !bones[node.name]){
+      bones[node.name]=node;
+      rest[node.name]=node.quaternion.clone();
+    }
     if(!node.isMesh) return;
     node.material=node.material.clone();
     if(node.material.color) node.material.color.multiplyScalar(0.72);
@@ -1737,7 +1806,20 @@ function attachEnemyAvatar(e){
   });
   e.avatar=avatar;
   e.avatarMaterials=materials;
+  e.avatarBones=bones;
+  e.avatarRest=rest;
   e.mesh.add(avatar);
+}
+
+function poseEnemyBone(e,name,rot,amount){
+  const bone=e.avatarBones?.[name],rest=e.avatarRest?.[name];
+  if(!bone||!rest)return;
+  const offset=new THREE.Quaternion().setFromEuler(new THREE.Euler(rot.x||0,rot.y||0,rot.z||0,'XYZ'));
+  bone.quaternion.slerp(rest.clone().multiply(offset),amount);
+}
+
+function poseEnemyVisualBone(e,name,rot,amount){
+  poseEnemyBone(e,name,{x:rot.x||0,y:-(rot.y||0),z:-(rot.z||0)},amount);
 }
 
 function setEnemyFlash(e,on){
@@ -1798,6 +1880,7 @@ function makeEnemy(pos, groupId){
   const e = {
     mesh, mat, hp:40, maxHp:40, state:'idle', groupId,
     home:pos.clone(), vel:new THREE.Vector3(), stunT:0, attackCd:0, alertT:0,
+    wanderTarget:pos.clone(), wanderT:Math.random()*2.5,
     hitRadius:ENEMY_RADIUS, hitHeight:ENEMY_HEIGHT,
     alive:true, hpEl:null, parts:{head,armL,armR,legL,legR}, outfitColor:outfitColors[groupId%outfitColors.length],
   };
@@ -1822,11 +1905,11 @@ function spawnGroup(spawnIdx){
   }
   groups.push(g);
 }
-// initial groups at a handful of spawn points
-[0,2,4,6,8].forEach(i=>spawnGroup(i));
+// Three spread-out gangs keep combat occasional; traversal remains the main loop.
+[0,4,8].forEach(i=>spawnGroup(i));
 
 // A five-minute empty map killed the patrol loop. Cleared groups now regroup quickly.
-const RESPAWN_TIME = 18;
+const RESPAWN_TIME = 30;
 
 function removeEnemy(e){
   scene.remove(e.mesh);
@@ -1918,8 +2001,9 @@ function resolveEnemyHitboxes(){
 
 function animateEnemy(e,dt){
   const phase=performance.now()*0.009+e.home.x*0.12;
-  const walking=e.state==='chasing';
-  const stride=walking ? Math.sin(phase)*0.72 : 0;
+  const walking=e.state==='chasing'||(e.state==='idle'&&e.vel.lengthSq()>0.08);
+  const runCycle=e.state==='chasing';
+  const stride=walking ? Math.sin(phase*(runCycle?1.15:0.72))*(runCycle?0.72:0.42) : 0;
   let armL=stride, armR=-stride, legL=-stride, legR=stride;
   if(e.state==='attacking') armR=-1.35;
   if(e.stunT>0){ armL=0.75; armR=-0.75; legL=0.22; legR=-0.22; }
@@ -1929,6 +2013,21 @@ function animateEnemy(e,dt){
     const targetPitch=e.state==='attacking'?-0.22:e.stunT>0?0.28:0;
     e.avatar.rotation.x=THREE.MathUtils.lerp(e.avatar.rotation.x,targetPitch,blend);
     e.avatar.rotation.z=THREE.MathUtils.lerp(e.avatar.rotation.z,walking?Math.sin(phase)*0.035:0,blend);
+    const attackWindup=e.state==='attacking'?THREE.MathUtils.clamp(1-e.attackCd/0.65,0,1):0;
+    const punch=Math.sin(attackWindup*Math.PI);
+    const runLean=walking?-0.16:0;
+    poseEnemyBone(e,'UpperTorso',{x:runLean,y:punch*0.2,z:0},blend);
+    poseEnemyBone(e,'Head',{x:walking?0.05:0,y:-punch*0.08,z:0},blend);
+    poseEnemyVisualBone(e,r15VisualBone.leftUpperArm,
+      {x:walking?stride*0.72:-0.04,y:0,z:walking?-0.05:-0.02},blend);
+    poseEnemyVisualBone(e,r15VisualBone.rightUpperArm,
+      {x:e.state==='attacking'?-0.72-punch*0.5:walking?-stride*0.72:-0.04,y:0,z:e.state==='attacking'?0.18:0.02},blend);
+    poseEnemyVisualBone(e,r15VisualBone.leftLowerArm,{x:walking?-0.5:-0.16,y:0,z:0},blend);
+    poseEnemyVisualBone(e,r15VisualBone.rightLowerArm,{x:e.state==='attacking'?-THREE.MathUtils.lerp(1.2,0.64,punch):walking?-0.5:-0.16,y:0,z:0},blend);
+    poseEnemyVisualBone(e,r15VisualBone.leftUpperLeg,{x:walking?-stride:0,y:0,z:0},blend);
+    poseEnemyVisualBone(e,r15VisualBone.rightUpperLeg,{x:walking?stride:0,y:0,z:0},blend);
+    poseEnemyVisualBone(e,r15VisualBone.leftLowerLeg,{x:walking?Math.max(0,stride)*0.55:0,y:0,z:0},blend);
+    poseEnemyVisualBone(e,r15VisualBone.rightLowerLeg,{x:walking?Math.max(0,-stride)*0.55:0,y:0,z:0},blend);
   }
   e.parts.armL.rotation.x=THREE.MathUtils.lerp(e.parts.armL.rotation.x,armL,blend);
   e.parts.armR.rotation.x=THREE.MathUtils.lerp(e.parts.armR.rotation.x,armR,blend);
@@ -1973,8 +2072,19 @@ function updateEnemies(dt){
     if(e.state==='idle'){
       if(sameLevel && dist < ALERT_RADIUS){ e.state='alert'; e.alertT=0.5; }
       else {
-        // gentle idle bob
-        e.mesh.position.y = 0.8 + Math.sin(performance.now()*0.002 + e.home.x)*0.03;
+        // Gangs mill around their corner instead of standing like target dummies.
+        e.wanderT-=dt;
+        const toWander=e.wanderTarget.clone().sub(e.mesh.position).setY(0);
+        if(e.wanderT<=0||toWander.length()<0.8){
+          const angle=Math.random()*Math.PI*2;
+          const radius=2+Math.random()*5;
+          e.wanderTarget.copy(e.home).add(new THREE.Vector3(Math.cos(angle)*radius,0,Math.sin(angle)*radius));
+          e.wanderT=2.2+Math.random()*3.4;
+        } else {
+          toWander.normalize();
+          e.vel.lerp(toWander.multiplyScalar(1.8),1-Math.exp(-5*dt));
+          e.mesh.lookAt(e.wanderTarget.x,e.mesh.position.y,e.wanderTarget.z);
+        }
       }
     } else if(e.state==='alert'){
       e.alertT -= dt;
@@ -1996,7 +2106,7 @@ function updateEnemies(dt){
       if(!sameLevel){ e.state='idle'; }
       else if(dist>ATTACK_RANGE*1.4){ e.state='chasing'; }
       else if(e.attackCd<=0){
-        e.attackCd = 1.1;
+        e.attackCd = 1.35;
         if(P.invuln<=0 && P.state!=='downed' && enemyHasClearHit(e)){
           if(P.parryT>0){
             P.parryT=0;
@@ -2519,6 +2629,7 @@ function flashDamage(){
 function damagePlayer(amount, grace=0.65, ignoreInvuln=false){
   if((P.invuln>0 && !ignoreInvuln) || P.state==='downed' || P.state==='defeated') return false;
   P.hp = Math.max(0, P.hp-amount);
+  P.lastDamageT=4;
   P.invuln = grace;
   flashDamage();
   if(P.hp<=0){
@@ -2724,10 +2835,12 @@ function animatePlayer(dt, moveVec){
     const groundPullPose=P.swingGroundPullT>0;
     const entryPose=P.swingPhase==='entry';
     const pullBack=Math.sin((1-P.swingGroundPullT/SWING_GROUND_PULL_TIME)*Math.PI)*0.65;
-    armLRot.x = groundPullPose ? -1.55+pullBack*.35 : (leftAttached ? -1.25 : 0.12);
-    armRRot.x = groundPullPose ? -1.55+pullBack*.35 : (rightAttached ? -1.25 : 0.12);
-    armLRot.z = groundPullPose ? -2.45 : (leftAttached ? -2.8 : -0.48);
-    armRRot.z = groundPullPose ? 2.45 : (rightAttached ? 2.8 : 0.48);
+    // The reference hangs from one shoulder with a bent reaching arm. Values
+    // beyond PI/2 made the imported R15 shoulder wrap behind the torso.
+    armLRot.x = groundPullPose ? -1.28+pullBack*.24 : (leftAttached ? -1.12 : -0.22);
+    armRRot.x = groundPullPose ? -1.28+pullBack*.24 : (rightAttached ? -1.12 : -0.22);
+    armLRot.z = groundPullPose ? -0.58 : (leftAttached ? -1.38 : -0.72);
+    armRRot.z = groundPullPose ? 0.58 : (rightAttached ? 1.38 : 0.72);
     const swingKick=Math.sin(P.swingAge*5.5);
     legLRot.x = entryPose ? 0.72 : 0.62+swingKick*0.16;
     legRRot.x = entryPose ? 0.18 : 0.08-swingKick*0.18;
@@ -3034,6 +3147,8 @@ function updatePlayer(dt){
   P.landPoseT=Math.max(0,P.landPoseT-dt);
   P.invuln = Math.max(0, P.invuln-dt);
   P.parryT=Math.max(0,P.parryT-dt);
+  P.lastDamageT=Math.max(0,P.lastDamageT-dt);
+  if(P.lastDamageT===0&&P.hp>0&&P.hp<P.maxHp) P.hp=Math.min(P.maxHp,P.hp+7*dt);
   P.swingHistoryT=Math.max(0,P.swingHistoryT-dt);
   P.quickRecoveryT=Math.max(0,P.quickRecoveryT-dt);
   P.traversalRetryT=Math.max(0,P.traversalRetryT-dt);
@@ -3802,7 +3917,17 @@ function updateEnemyHpBars(){
   const v = new THREE.Vector3();
   enemies.forEach(e=>{
     if(!e.alive){ e.hpEl.style.display='none'; return; }
-    v.copy(e.mesh.position); v.y+=1.9;
+    const worldPoint=e.mesh.position.clone().add(new THREE.Vector3(0,1.9,0));
+    const eye=camera.getWorldPosition(new THREE.Vector3());
+    const toEnemy=worldPoint.clone().sub(eye);
+    const distance=toEnemy.length();
+    if(distance>42){ e.hpEl.style.display='none'; return; }
+    raycaster.set(eye,toEnemy.normalize());
+    raycaster.far=distance;
+    const obstruction=raycaster.intersectObjects(collidables(),false)[0];
+    raycaster.far=Infinity;
+    if(obstruction&&obstruction.distance<distance-0.6){ e.hpEl.style.display='none'; return; }
+    v.copy(worldPoint);
     v.project(camera);
     if(v.z<-1||v.z>1||Math.abs(v.x)>1.12||Math.abs(v.y)>1.12){ e.hpEl.style.display='none'; return; }
     const x=(v.x*0.5+0.5)*innerWidth, y=(-v.y*0.5+0.5)*innerHeight;
