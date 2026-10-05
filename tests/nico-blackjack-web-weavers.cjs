@@ -67,7 +67,12 @@ assert.match(weavers,/const strikingElbow=THREE\.MathUtils\.lerp\(1\.18,0\.38,st
 assert.match(weavers,/visibleWebHandWorld\('left',handL\)/);
 assert.match(weavers,/gameHand==='left'\?r15VisualBone\.leftHand:r15VisualBone\.rightHand/);
 assert.match(weavers,/const sideSign=hand==='left'\?1:-1/);
-assert.match(weavers,/const facadeStart=groundStart/);
+assert.doesNotMatch(weavers,/const facadeStart=groundStart/);
+assert.match(weavers,/if\(groundStart && forwardDot<0\.18\) continue/);
+assert.match(weavers,/Math\.min\(dist\*0\.96,maxClearRope\)/);
+assert.match(weavers,/const SWING_LANE_SPRING = 2\.4/);
+assert.match(weavers,/P\.swingLaneCenter\.copy\(P\.pos\)/);
+assert.match(weavers,/laneOffset\*SWING_LANE_SPRING-laneSpeed\*SWING_LANE_DAMPING/);
 
 const sling=read('sling_champ.html');
 assert.match(sling,/\.5\*\(other\.mass\|\|1\)\*speed\*speed/);

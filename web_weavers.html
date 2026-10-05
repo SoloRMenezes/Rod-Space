@@ -1183,6 +1183,8 @@ const P = {
   swingGroundPullT:0,
   swingGroundPullAnchor:null,
   swingGroundPullAnchors:{left:null,right:null},
+  swingLaneCenter:new THREE.Vector3(),
+  swingLaneRight:new THREE.Vector3(1,0,0),
   swingPeakFlat:0,
   swingRequireRelease:false,
   swingReleaseT:0,
@@ -1244,18 +1246,20 @@ const SWING_ASCENT_PUMP = 1.2;
 const SWING_ENTRY_DOWN_ACCEL = 4;
 const SWING_ENTRY_FORWARD_ACCEL = 2.5;
 const SWING_ENTRY_MAX_TIME = 0.55;
-const SWING_SAFE_REEL_SPEED = 7;
-const SWING_LOW_ASCENT_REEL_SPEED = 11;
-const SWING_BOTTOM_REEL_SPEED = 4;
+const SWING_SAFE_REEL_SPEED = 2.5;
+const SWING_LOW_ASCENT_REEL_SPEED = 3;
+const SWING_BOTTOM_REEL_SPEED = 1.5;
 const SWING_LOW_CLEARANCE = 7;
 const SWING_LOW_LIFT_ACCEL = 12;
 const SWING_SKIM_UP_SPEED = 2.5;
 const SWING_PIVOT_FORWARD_MIN = 16;
 const SWING_PIVOT_FORWARD_MAX = 25;
 const SWING_GROUND_PULL_TIME = 0.36;
-const SWING_GROUND_PULL_UP_ACCEL = 28;
-const SWING_GROUND_PULL_FORWARD_ACCEL = 9;
-const SWING_GROUND_PULL_REEL_SPEED = 10;
+const SWING_GROUND_PULL_UP_ACCEL = 22;
+const SWING_GROUND_PULL_FORWARD_ACCEL = 14;
+const SWING_GROUND_PULL_REEL_SPEED = 2.5;
+const SWING_LANE_SPRING = 2.4;
+const SWING_LANE_DAMPING = 1.8;
 const MAX_TRAVERSAL_SPEED = 60;
 const MAX_FALL_SPEED = -58;
 const MAX_RISE_SPEED = 34;
@@ -1503,9 +1507,9 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
   for(const b of buildingMeshes){
     const candidates=[];
     if(groundStart){
-      const facadeSource=playerEye.clone();
-      facadeSource.y=THREE.MathUtils.clamp(playerEye.y+20,8,Math.max(8,b.h-4));
-      addUniqueAnchorCandidates(candidates,[nearestPointOnBuilding(b,facadeSource)]);
+      const upperFacadeSource=searchPoint.clone();
+      upperFacadeSource.y=Math.max(6,b.h-1.2);
+      addUniqueAnchorCandidates(candidates,[nearestPointOnBuilding(b,upperFacadeSource)]);
     }
     addUniqueAnchorCandidates(candidates,upperBuildingEdgePoints(b,searchPoint));
     addUniqueAnchorCandidates(candidates,upperBuildingEdgePoints(b,playerEye));
@@ -1531,13 +1535,16 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       const horizontal=new THREE.Vector3(to.x,0,to.z);
       const horizontalDist=horizontal.length();
       const belowCatch=point.y<playerEye.y-2 && fallingCatch;
-      const facadeStart=groundStart && point.y<b.h-1.2;
-      if(horizontalDist<(belowCatch?7:(facadeStart?8:14))) continue;
+      if(horizontalDist<(belowCatch?7:14)) continue;
       horizontal.normalize();
       const forwardDot=horizontal.dot(momentumForward);
       const sideDot=horizontal.dot(right)*sideSign;
       if(belowCatch && (horizontalDist<28 || forwardDot<0.35)) continue;
       if(!belowCatch && forwardDot<-0.28) continue;
+      // From street level, choose a roof edge ahead of the player rather than
+      // the nearest side wall. A mostly lateral anchor turns the rope into a
+      // winch and drags the character into the facade.
+      if(groundStart && forwardDot<0.18) continue;
       // A side candidate must actually live on that side of the travel corridor.
       // This makes hand choice deterministic instead of allowing both searches to
       // return the same building with slightly different scores.
@@ -1553,8 +1560,8 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       // Keep the bottom of an assisted arc comfortably above the surface instead
       // of allowing a nearly ground-level rope that turns swinging into fast walking.
       const maxClearRope=point.y-playerGround-12;
-      if(!belowCatch && !facadeStart && maxClearRope<SWING_MIN_RANGE) continue;
-      const idealLength=belowCatch?dist*0.92:facadeStart?dist*0.9:Math.min(dist*0.88,maxClearRope);
+      if(!belowCatch && maxClearRope<SWING_MIN_RANGE) continue;
+      const idealLength=belowCatch?dist*0.96:Math.min(dist*0.96,maxClearRope);
       const ropeLength=Math.max(SWING_MIN_RANGE,idealLength);
       const interiorBonus=Math.min(18,Math.max(0,upperEdgeInteriorClearance(point,b))*1.4);
       // Once an anchor is safe and visible, distance dominates: Q/E should
@@ -1562,7 +1569,7 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       // much farther building selected by a cinematic scoring bonus.
       const score=belowCatch
         ? 310-Math.abs(horizontalDist-fallSearchDistance)*3.2+forwardDot*190+Math.max(0,sideDot)*28+interiorBonus
-        : 1200-dist*12+forwardDot*28+Math.max(0,sideDot)*14+interiorBonus;
+        : 1200-dist*9+forwardDot*(groundStart?190:75)+Math.max(0,sideDot)*12+interiorBonus;
       if(score>bestScore){ bestScore=score; best={point:point.clone(),length:ropeLength,score}; }
     }
   }
@@ -1952,6 +1959,8 @@ function trySwing(hand,abilId){
     P.swingGroundPullAnchors.left=null;
     P.swingGroundPullAnchors.right=null;
     P.activeSwingHand=hand;
+    P.swingLaneCenter.copy(P.pos);
+    P.swingLaneRight.crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
     P.state='swing';
     P.swingAssisted=true;
     P.swingPhaseT=0;
@@ -2921,6 +2930,16 @@ function updatePlayer(dt){
     const radial=P.pos.clone().sub(constraint.anchor).normalize();
     const forwardTangent=cameraForwardFlat();
     forwardTangent.addScaledVector(radial,-forwardTangent.dot(radial));
+
+    // Keep the arc inside the street corridor selected at attachment. This is
+    // a soft spring, not a position clamp: the player can still steer sideways,
+    // but the rope cannot steadily winch them into either facade.
+    const laneOffset=P.pos.clone().sub(P.swingLaneCenter).dot(P.swingLaneRight);
+    const laneSpeed=P.vel.dot(P.swingLaneRight);
+    const laneAccel=THREE.MathUtils.clamp(
+      -laneOffset*SWING_LANE_SPRING-laneSpeed*SWING_LANE_DAMPING,-18,18
+    );
+    P.vel.addScaledVector(P.swingLaneRight,laneAccel*dt);
 
     if(P.swingGroundPullT>0){
       P.swingGroundPullT=Math.max(0,P.swingGroundPullT-dt);
