@@ -74,6 +74,8 @@ assert.match(weavers,/const applyRunCycle=\(isRunning\)=>/);
 assert.match(weavers,/torsoRot\.z=THREE\.MathUtils\.clamp\(step\*\(isRunning\?0\.105:0\.04\)/);
 assert.match(weavers,/applyRunCycle\(true\)/);
 assert.match(weavers,/Math\.atan2\(wallTravel\.x,wallTravel\.z\)/);
+assert.match(weavers,/desired=P\.pos\.clone\(\)\.add\(camOffset\)\.addScaledVector\(shoulderRight,-\.58\)/);
+assert.match(weavers,/desired\.y\+=\.28/);
 assert.match(weavers,/const swingReachElbow=0\.08/);
 assert.match(weavers,/const swingFreeElbow=0\.78/);
 assert.match(weavers,/rigPitch=-0\.08-fastSwing\*0\.24-riseRatio\*0\.14/);

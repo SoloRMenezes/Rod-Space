@@ -3876,10 +3876,16 @@ function updateCamera(dt=1/60){
   const shoulderRight=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
   let desired;
   if(shiftLocked){
-    // A true shoulder rig stays close behind the torso and offsets sideways;
-    // pitch changes the aim, not the camera's orbital height.
-    desired=focus.clone().addScaledVector(flatForward,-5.6).addScaledVector(shoulderRight,1.2);
-    desired.y+=.65;
+    // Keep the normal orbiting third-person camera and only nudge it over the
+    // right shoulder. Pitch, zoom and collision therefore behave exactly as
+    // they do with shift-lock off instead of switching to a separate camera.
+    const camOffset=new THREE.Vector3(
+      -Math.sin(yaw)*Math.cos(pitch)*dist,
+      1.75-Math.sin(pitch)*dist,
+      -Math.cos(yaw)*Math.cos(pitch)*dist
+    );
+    desired=P.pos.clone().add(camOffset).addScaledVector(shoulderRight,-.58);
+    desired.y+=.28;
   } else {
     const camOffset=new THREE.Vector3(
       -Math.sin(yaw)*Math.cos(pitch)*dist,
