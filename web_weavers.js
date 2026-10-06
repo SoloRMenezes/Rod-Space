@@ -47,19 +47,20 @@ let firstPersonAutoLock = false;
 let cash=Math.max(0,parseInt(localStorage.getItem('webWeaversCash'))||0);
 const SKIN_KEY='webWeaversSkinsV1';
 const PLAYER_SKINS=[
-  {id:'midtown',name:'MIDTOWN',price:0,description:'The original street patrol fit.',primary:0x16263f,secondary:0x8f2638,legs:0x263143,shoes:0xf2f4f7,accent:0x596579,skin:0xb97858},
-  {id:'shadow',name:'SHADOW',price:120,description:'Low-profile charcoal with violet sleeves.',primary:0x12151d,secondary:0x513575,legs:0x20242d,shoes:0x0c0e13,accent:0x9a7bd1,skin:0x8d5138},
-  {id:'velocity',name:'VELOCITY',price:180,description:'Electric blue built for fast traversal.',primary:0x123a67,secondary:0x18a9d6,legs:0x101c2d,shoes:0xe6fbff,accent:0x6ee7ff,skin:0xd39a78},
-  {id:'solar',name:'SOLAR',price:240,description:'Warm gold panels with deep burgundy.',primary:0x6f1f32,secondary:0xe3a72f,legs:0x382331,shoes:0xffe4a1,accent:0xffcc45,skin:0xb97858},
-  {id:'toxic',name:'TOXIC',price:300,description:'Dark utility gear with hazard-green accents.',primary:0x16201b,secondary:0x4bbf45,legs:0x202923,shoes:0xb8ff6a,accent:0x7bf05b,skin:0x6f3f30},
-  {id:'arctic',name:'ARCTIC',price:360,description:'Ice-white layers over a navy base.',primary:0xe8f2f7,secondary:0x72b7d6,legs:0x1d3555,shoes:0xffffff,accent:0xbdefff,skin:0xd39a78}
+  {id:'midtown',name:'MIDTOWN',price:0,primary:0x16263f,secondary:0x8f2638,legs:0x263143,shoes:0xf2f4f7,accent:0x596579,skin:0xb97858},
+  {id:'shadow',name:'SHADOW',price:120,primary:0x12151d,secondary:0x513575,legs:0x20242d,shoes:0x0c0e13,accent:0x9a7bd1,skin:0x8d5138},
+  {id:'velocity',name:'VELOCITY',price:180,primary:0x123a67,secondary:0x18a9d6,legs:0x101c2d,shoes:0xe6fbff,accent:0x6ee7ff,skin:0xd39a78},
+  {id:'solar',name:'SOLAR',price:240,primary:0x6f1f32,secondary:0xe3a72f,legs:0x382331,shoes:0xffe4a1,accent:0xffcc45,skin:0xb97858},
+  {id:'toxic',name:'TOXIC',price:300,primary:0x16201b,secondary:0x4bbf45,legs:0x202923,shoes:0xb8ff6a,accent:0x7bf05b,skin:0x6f3f30},
+  {id:'arctic',name:'ARCTIC',price:360,primary:0xe8f2f7,secondary:0x72b7d6,legs:0x1d3555,shoes:0xffffff,accent:0xbdefff,skin:0xd39a78}
 ];
 let skinSave={owned:['midtown'],selected:'midtown'};
 try{skinSave={...skinSave,...JSON.parse(localStorage.getItem(SKIN_KEY)||'{}')};}catch{}
 skinSave.owned=Array.isArray(skinSave.owned)?skinSave.owned.filter(id=>PLAYER_SKINS.some(s=>s.id===id)):['midtown'];
 if(!skinSave.owned.includes('midtown'))skinSave.owned.unshift('midtown');
 if(!skinSave.owned.includes(skinSave.selected))skinSave.selected='midtown';
-let previewSkinId=skinSave.selected;
+const skinThumbnails=new Map();
+let pendingSkinPurchase=null;
 const PROGRESS_KEY='webWeaversProgressV1';
 const UPGRADE_MAX=5;
 let progress={health:0,damage:0,traversal:0,kills:0,gangs:0,missions:0,swingDistance:0,missionIndex:0};
@@ -110,6 +111,7 @@ syncQualityUI();
 updateCashUI();
 
 window.addEventListener('keydown', e=>{
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault();
   if(listeningFor){
     bindings[listeningFor] = e.code;
     document.querySelector(`.keybtn[data-action="${listeningFor}"]`).textContent = prettyKey(e.code);
@@ -391,61 +393,100 @@ document.getElementById('btnStartSettings').onclick = ()=>{
 };
 
 function skinById(id){return PLAYER_SKINS.find(s=>s.id===id)||PLAYER_SKINS[0];}
-function colourCSS(value){return `#${value.toString(16).padStart(6,'0')}`;}
 function saveSkins(){localStorage.setItem(SKIN_KEY,JSON.stringify(skinSave));}
 function renderSkinMenu(){
-  const skin=skinById(previewSkinId),owned=skinSave.owned.includes(skin.id),equipped=skinSave.selected===skin.id;
-  document.getElementById('skinName').textContent=skin.name;
-  document.getElementById('skinDescription').textContent=skin.description;
   document.getElementById('skinsCashValue').textContent=cash.toLocaleString('en-GB');
-  const preview=document.getElementById('skinPreview');
-  preview.style.setProperty('--skin-tone',colourCSS(skin.skin));
-  preview.style.setProperty('--skin-primary',colourCSS(skin.primary));
-  preview.style.setProperty('--skin-secondary',colourCSS(skin.secondary));
-  preview.style.setProperty('--skin-legs',colourCSS(skin.legs));
   const grid=document.getElementById('skinGrid');
   grid.innerHTML='';
   PLAYER_SKINS.forEach(option=>{
-    const card=document.createElement('button');
     const hasSkin=skinSave.owned.includes(option.id);
-    card.className=`skinCard${option.id===skin.id?' selected':''}`;
-    card.dataset.skin=option.id;
-    card.innerHTML=`<span class="skinSwatches"><i style="background:${colourCSS(option.primary)}"></i><i style="background:${colourCSS(option.secondary)}"></i><i style="background:${colourCSS(option.legs)}"></i></span>${option.name}<small class="${hasSkin?'owned':''}">${hasSkin?(skinSave.selected===option.id?'EQUIPPED':'OWNED'):`$${option.price}`}</small>`;
-    card.onclick=()=>{previewSkinId=option.id;renderSkinMenu();};
+    const equipped=skinSave.selected===option.id;
+    const card=document.createElement('article');
+    card.className=`skinCard${hasSkin?'':' locked'}${equipped?' equipped':''}`;
+    const modelButton=document.createElement('button');
+    modelButton.className='skinModelButton';
+    modelButton.type='button';
+    modelButton.disabled=!hasSkin;
+    modelButton.setAttribute('aria-label',hasSkin?`Equip ${option.name}`:`${option.name} is locked`);
+    const image=document.createElement('img');
+    image.alt=`${option.name} player model`;
+    image.src=skinThumbnails.get(option.id)||'';
+    modelButton.appendChild(image);
+    if(hasSkin)modelButton.onclick=()=>{
+      skinSave.selected=option.id;
+      saveSkins();
+      applyPlayerSkin(option.id);
+      renderSkinMenu();
+    };
+    const name=document.createElement('div');
+    name.className='skinModelName';
+    name.textContent=option.name;
+    card.append(modelButton,name);
+    if(hasSkin){
+      const status=document.createElement('div');
+      status.className='skinOwned';
+      status.textContent=equipped?'EQUIPPED':'OWNED · CLICK MODEL TO EQUIP';
+      card.appendChild(status);
+    }else{
+      const price=document.createElement('button');
+      price.type='button';
+      price.className='skinPrice';
+      price.textContent=`$${option.price}`;
+      price.onclick=()=>openSkinConfirm(option.id);
+      card.appendChild(price);
+    }
     grid.appendChild(card);
   });
-  const action=document.getElementById('btnSkinAction');
-  action.disabled=equipped;
-  action.textContent=equipped?'EQUIPPED':owned?'EQUIP':`BUY · $${skin.price}`;
+}
+function openSkinConfirm(id){
+  const skin=skinById(id);
+  pendingSkinPurchase=skin.id;
+  const affordable=cash>=skin.price;
+  document.getElementById('skinConfirmText').textContent=affordable
+    ?`Buy ${skin.name} for $${skin.price}?`
+    :`${skin.name} costs $${skin.price}. You need $${skin.price-cash} more.`;
+  document.getElementById('btnConfirmSkin').disabled=!affordable;
+  const confirm=document.getElementById('skinConfirm');
+  confirm.classList.add('open');
+  confirm.setAttribute('aria-hidden','false');
+}
+function closeSkinConfirm(){
+  pendingSkinPurchase=null;
+  const confirm=document.getElementById('skinConfirm');
+  confirm.classList.remove('open');
+  confirm.setAttribute('aria-hidden','true');
+}
+function confirmSkinPurchase(){
+  if(!pendingSkinPurchase)return;
+  const skin=skinById(pendingSkinPurchase);
+  if(skinSave.owned.includes(skin.id)){closeSkinConfirm();return;}
+  if(cash<skin.price){openSkinConfirm(skin.id);return;}
+  cash-=skin.price;
+  localStorage.setItem('webWeaversCash',String(cash));
+  skinSave.owned.push(skin.id);
+  skinSave.selected=skin.id;
+  saveSkins();
+  applyPlayerSkin(skin.id);
+  updateCashUI();
+  closeSkinConfirm();
+  renderSkinMenu();
 }
 function openSkins(){
-  previewSkinId=skinSave.selected;
   document.getElementById('startCard').style.display='none';
   const panel=document.getElementById('skinsPanel');
   panel.classList.add('open');panel.setAttribute('aria-hidden','false');
   renderSkinMenu();
 }
 function closeSkins(){
+  closeSkinConfirm();
   const panel=document.getElementById('skinsPanel');
   panel.classList.remove('open');panel.setAttribute('aria-hidden','true');
   document.getElementById('startCard').style.display='block';
 }
 document.getElementById('btnSkins').onclick=openSkins;
 document.getElementById('btnCloseSkins').onclick=closeSkins;
-document.getElementById('btnSkinAction').onclick=()=>{
-  const skin=skinById(previewSkinId);
-  if(!skinSave.owned.includes(skin.id)){
-    if(cash<skin.price){document.getElementById('skinDescription').textContent=`You need $${skin.price-cash} more.`;return;}
-    cash-=skin.price;
-    localStorage.setItem('webWeaversCash',String(cash));
-    skinSave.owned.push(skin.id);
-  }
-  skinSave.selected=skin.id;
-  saveSkins();
-  applyPlayerSkin(skin.id);
-  updateCashUI();
-  renderSkinMenu();
-};
+document.getElementById('btnConfirmSkin').onclick=confirmSkinPurchase;
+document.getElementById('btnCancelSkin').onclick=closeSkinConfirm;
 
 function startGame(){
   if(P.state==='defeated') resetDefeatedPlayer();
@@ -968,6 +1009,7 @@ function addStreetFurniture(){
   }
 }
 
+const streetPeople=[];
 function addStreetLife(){
   const carColors=[0xd33b32,0x2767a8,0xe7b62f,0xe9ecef,0x252a33];
   for(let i=0;i<18;i++){
@@ -986,6 +1028,7 @@ function addStreetLife(){
     const shirt=new THREE.Mesh(new THREE.CylinderGeometry(.27,.34,1.05,7),new THREE.MeshLambertMaterial({color:carColors[(i+2)%carColors.length]}));shirt.position.y=.8;
     const face=new THREE.Mesh(new THREE.SphereGeometry(.27,8,6),new THREE.MeshLambertMaterial({color:i%2?0xb97858:0x70422f}));face.position.y=1.55;
     person.add(shirt,face);person.position.set(-HALF_CITY_X+(i%BLOCKS_X)*TILE_X+BLOCK_X*.46,0,-HALF_CITY_Z+(i%BLOCKS_Z)*TILE_Z+8);scene.add(person);
+    streetPeople.push({root:person,index:i,placeholder:[shirt,face]});
   }
 }
 
@@ -1104,6 +1147,54 @@ function applyPlayerSkin(id){
     const colour=skin[mesh.userData.skinRegion]??skin.accent;
     if(mesh.material&&mesh.material.color)mesh.material.color.setHex(colour);
   });
+}
+function generateSkinThumbnails(model){
+  const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});
+  renderer.setPixelRatio(1);
+  renderer.setSize(300,360,false);
+  renderer.setClearColor(0x000000,0);
+  const previewScene=new THREE.Scene();
+  previewScene.add(new THREE.HemisphereLight(0xffffff,0x58709a,1.55));
+  const keyLight=new THREE.DirectionalLight(0xffffff,1.35);
+  keyLight.position.set(-3,5,5);
+  previewScene.add(keyLight);
+  const camera=new THREE.PerspectiveCamera(28,300/360,.01,100);
+  PLAYER_SKINS.forEach(skin=>{
+    const clone=model.clone(true);
+    clone.traverse(node=>{
+      if(!node.isMesh)return;
+      const source=Array.isArray(node.material)?node.material:[node.material];
+      const copies=source.map(material=>{
+        const copy=material.clone();
+        if(copy.color)copy.color.setHex(skin[r15SkinRegion(node.name)]??skin.accent);
+        if('roughness' in copy)copy.roughness=.82;
+        return copy;
+      });
+      node.material=Array.isArray(node.material)?copies:copies[0];
+    });
+    previewScene.add(clone);
+    clone.updateMatrixWorld(true);
+    const bounds=new THREE.Box3().setFromObject(clone);
+    const centre=bounds.getCenter(new THREE.Vector3());
+    const size=bounds.getSize(new THREE.Vector3());
+    clone.position.sub(centre);
+    clone.updateMatrixWorld(true);
+    const height=Math.max(size.y,.1);
+    camera.position.set(height*.72,height*.12,height*2.35);
+    camera.lookAt(0,height*.02,0);
+    camera.near=.01;
+    camera.far=height*8;
+    camera.updateProjectionMatrix();
+    renderer.render(previewScene,camera);
+    skinThumbnails.set(skin.id,renderer.domElement.toDataURL('image/png'));
+    previewScene.remove(clone);
+    clone.traverse(node=>{
+      if(!node.isMesh)return;
+      const materials=Array.isArray(node.material)?node.material:[node.material];
+      materials.forEach(material=>material.dispose());
+    });
+  });
+  renderer.dispose();
 }
 // A compact stylised Spider-Man rather than the old block avatar. The limb
 // groups remain simple pivots so traversal poses stay readable at game scale.
@@ -1329,13 +1420,16 @@ new THREE.GLTFLoader().load(
         node.receiveShadow=true;
       }
     });
+    generateSkinThumbnails(gltf.scene);
     torso.visible=head.visible=armL.visible=armR.visible=legL.visible=legR.visible=false;
     r15Ready=true;
     applyPlayerSkin(skinSave.selected);
     r15EnemyTemplate=gltf.scene;
     setTimeout(()=>enemies.forEach(attachEnemyAvatar),0);
+    setTimeout(()=>streetPeople.forEach(attachStreetAvatar),0);
     document.getElementById('startLoadStatus').textContent='READY';
     document.getElementById('btnPlay').disabled=false;
+    document.getElementById('btnSkins').disabled=false;
   },
   undefined,
   error=>{
@@ -1445,7 +1539,7 @@ const SWING_RELEASE_CARRY = .96;
 const SWING_MAX_RISE_SPEED = 24;
 const SWING_ENTRY_MAX_TIME = 0.55;
 const SWING_SKIM_UP_SPEED = 2.5;
-const SWING_GROUND_PULL_TIME = 0.36;
+const SWING_GROUND_PULL_TIME = 0.2;
 const MAX_JUMP_CHARGE = 0.85;
 const CHARGED_JUMP_BONUS = 10;
 const DIVE_FORWARD_ACCEL = 13;
@@ -1624,23 +1718,11 @@ function crosshairHit(maxDist, includeEnemies=true){
 
 function zipCrosshairHit(maxDist){
   raycaster.setFromCamera(aimScreenPoint(),camera);
-  const targets=nearbyBuildingMeshes(P.pos,maxDist).concat([ground]);
+  const targets=nearbyBuildingMeshes(P.pos,maxDist)
+    .concat([ground],enemies.filter(enemy=>enemy.alive).map(enemy=>enemy.mesh));
   const hits=raycaster.intersectObjects(targets,true).filter(hit=>hit.object.type!=='LineSegments');
-  if(hits.length && hits[0].distance<=maxDist && isValidZipHit(hits[0])) return hits[0];
+  if(hits.length && hits[0].distance<=maxDist) return hits[0];
   return null;
-}
-
-function isValidZipHit(hit){
-  if(!hit) return false;
-  if(hit.object===ground) return true;
-  const b=buildingForObject(hit.object);
-  if(!b) return false;
-  const p=hit.point;
-  const edgeTolerance=2.4;
-  const roofEdge=p.y>=b.h-edgeTolerance;
-  const onXFace=Math.abs(p.x-b.minX)<0.12||Math.abs(p.x-b.maxX)<0.12;
-  const onZFace=Math.abs(p.z-b.minZ)<0.12||Math.abs(p.z-b.maxZ)<0.12;
-  return roofEdge||(onXFace&&onZFace);
 }
 
 function nearestPointOnBuilding(b, source){
@@ -1909,8 +1991,6 @@ applyDebugVisibility();
 
 const enemies = [];
 const groups = []; // {points:[..], members:[enemy idx], defeatedAt:null, homeIdx}
-let patrolWave=1;
-let defeatedCount=0;
 
 const enemyGeo = new THREE.BoxGeometry(0.9,1.0,0.5);
 const ENEMY_RADIUS = 0.62;
@@ -1953,7 +2033,10 @@ function attachEnemyAvatar(e){
     }
     if(!node.isMesh) return;
     node.material=node.material.clone();
-    if(node.material.color) node.material.color.multiplyScalar(0.72);
+    if(node.material.color){
+      const region=r15SkinRegion(node.name);
+      node.material.color.setHex(e.avatarPalette[region]??e.avatarPalette.accent);
+    }
     materials.push(node.material);
   });
   e.avatar=avatar;
@@ -1961,6 +2044,25 @@ function attachEnemyAvatar(e){
   e.avatarBones=bones;
   e.avatarRest=rest;
   e.mesh.add(avatar);
+}
+
+function attachStreetAvatar(person){
+  if(!r15EnemyTemplate||person.avatar)return;
+  person.placeholder.forEach(part=>part.visible=false);
+  const avatar=cloneSkinnedAvatar(r15EnemyTemplate);
+  avatar.scale.setScalar(.48);
+  avatar.position.y=0;
+  const shirts=[0x296da8,0xd16a32,0x4d8b57,0x7b4f9f,0xd2a72f,0x56717d];
+  const trousers=[0x1e2938,0x33313a,0x233244,0x44352e];
+  const skins=[0x6f3f30,0x8d5138,0xb97858,0xd39a78];
+  const palette={primary:shirts[person.index%shirts.length],secondary:shirts[(person.index+2)%shirts.length],legs:trousers[person.index%trousers.length],shoes:0x17191f,skin:skins[person.index%skins.length],accent:0x5b6574};
+  avatar.traverse(node=>{
+    if(!node.isMesh)return;
+    node.material=node.material.clone();
+    if(node.material.color)node.material.color.setHex(palette[r15SkinRegion(node.name)]??palette.accent);
+  });
+  person.avatar=avatar;
+  person.root.add(avatar);
 }
 
 function poseEnemyBone(e,name,rot,amount){
@@ -2039,6 +2141,13 @@ function makeEnemy(pos, groupId, kind='brawler'){
     wanderTarget:pos.clone(), wanderT:Math.random()*2.5,
     hitRadius:ENEMY_RADIUS, hitHeight:ENEMY_HEIGHT,
     alive:true, hpEl:null, parts:{head,armL,armR,legL,legR}, outfitColor:outfitColors[groupId%outfitColors.length],
+    avatarPalette:{
+      primary:outfitColors[(groupId+1)%outfitColors.length],
+      secondary:outfitColors[(groupId+3+enemies.length)%outfitColors.length],
+      legs:0x222a36,shoes:0x101319,
+      skin:skinColors[(groupId+enemies.length)%skinColors.length],
+      accent:hairColors[(groupId*2+enemies.length)%hairColors.length]
+    },
   };
   const hpEl = document.createElement('div');
   hpEl.className='enemyHp';
@@ -2406,6 +2515,9 @@ function trySwing(hand,abilId,chosenOverride=null){
     P.swingGroundPullAnchors.left=null;
     P.swingGroundPullAnchors.right=null;
     P.activeSwingHand=hand;
+    // Prefer the opposite hand next time. The chooser only honours this when
+    // both sides have a valid anchor, so a blocked side never prevents swinging.
+    P.nextSwingHand=otherHand;
     P.swingLaneCenter.copy(P.pos);
     P.swingLaneRight.crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
     P.state='swing';
@@ -2436,18 +2548,23 @@ function trySwing(hand,abilId,chosenOverride=null){
 
 function trySmartSwing(){
   const aimed=findLookSwingAnchor();
+  const left=findAssistedSwingAnchor('left',null);
+  const right=findAssistedSwingAnchor('right',null);
   if(aimed){
     const toAim=aimed.point.clone().sub(P.pos);
     const cameraRight=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
-    const hand=toAim.dot(cameraRight)>=0?'left':'right';
+    let hand=toAim.dot(cameraRight)>=0?'left':'right';
+    if(left&&right)hand=P.nextSwingHand;
+    else if(left)hand='left';
+    else if(right)hand='right';
     return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',aimed);
   }
-  const left=findAssistedSwingAnchor('left',null);
-  const right=findAssistedSwingAnchor('right',null);
   if(!left && !right) return false;
-  let hand='left', chosen=left;
-  if(!left || (right && (right.score||0)>(left.score||0))){ hand='right'; chosen=right; }
-  return trySwing(hand,'abSwingLeft',chosen);
+  let hand=P.nextSwingHand;
+  if(!left)hand='right';
+  else if(!right)hand='left';
+  const chosen=hand==='left'?left:right;
+  return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',chosen);
 }
 
 function cameraForwardFlat(){
@@ -2587,7 +2704,16 @@ function tryZip(){
   comboChainTarget=null;
   comboChainMode=null;
   zipEnemyTarget=enemyForObject(hit.object);
-  if(zipEnemyTarget) combatTarget=zipEnemyTarget;
+  if(zipEnemyTarget){
+    combatTarget=zipEnemyTarget;
+    if(P.state==='ground'){
+      P.pullPoseT=0.5;
+      pullTarget=zipEnemyTarget;
+      zipEnemyTarget=null;
+      pulse('abSwingRight');
+      return true;
+    }
+  }
   zipTarget = zipEnemyTarget
     ? zipEnemyTarget.mesh.position.clone().add(new THREE.Vector3(0,0.8,0))
     : hit.point.clone();
@@ -2759,16 +2885,11 @@ function damageEnemy(e, amount, fromMelee=false){
   setTimeout(()=>{ if(e.alive) setEnemyFlash(e,false); },80);
   if(e.hp<=0 && e.alive){
     e.alive=false;
-    defeatedCount++;
     progress.kills++;saveProgress();updateMissionUI();updateShopUI();
     addCash(5,'ENEMY STOPPED');
     e.mesh.visible=false;
     e.hpEl.style.display='none';
     if(combatTarget===e) combatTarget=null;
-    if(enemies.every(enemy=>!enemy.alive)){
-      patrolWave++;
-      flashMsg(`WAVE ${patrolWave} INCOMING`);
-    }
   }
 }
 
@@ -3140,17 +3261,17 @@ function animatePlayer(dt, moveVec){
     const followThrough=Math.sin(Math.min(1,attackProgress*1.35)*Math.PI);
     const rightPunch=P.meleeSide>0;
     if(rightPunch){
-      armRRot.x=-0.58-strike*0.66;
-      armRRot.z=-0.24-strike*0.18;
-      armLRot.x=-0.76;
-      armLRot.z=-0.24;
-      torsoRot.y=-followThrough*0.4;
+      armRRot.x=-0.82-strike*0.72;
+      armRRot.z=-0.08-strike*0.06;
+      armLRot.x=-0.92;
+      armLRot.z=-0.16;
+      torsoRot.y=-followThrough*0.18;
     } else {
-      armLRot.x=-0.58-strike*0.66;
-      armLRot.z=0.24+strike*0.18;
-      armRRot.x=-0.76;
-      armRRot.z=0.24;
-      torsoRot.y=followThrough*0.4;
+      armLRot.x=-0.82-strike*0.72;
+      armLRot.z=0.08+strike*0.06;
+      armRRot.x=-0.92;
+      armRRot.z=0.16;
+      torsoRot.y=followThrough*0.18;
     }
     torsoRot.x=-0.12*strike;
   }
@@ -3224,9 +3345,9 @@ function animatePlayer(dt, moveVec){
       const strike=Math.sin(attackProgress*Math.PI);
       // Keep the striking elbow slightly bent at full extension. Straightening
       // it completely was what made the old punch resemble a rigid salute.
-      const strikingElbow=THREE.MathUtils.lerp(1.22,0.7,strike);
-      if(P.meleeSide>0){ rightElbow=strikingElbow; leftElbow=1.08; }
-      else { leftElbow=strikingElbow; rightElbow=1.08; }
+      const strikingElbow=THREE.MathUtils.lerp(1.12,0.28,strike);
+      if(P.meleeSide>0){ rightElbow=strikingElbow; leftElbow=1.18; }
+      else { leftElbow=strikingElbow; rightElbow=1.18; }
     }
     if(P.blocking) leftElbow=rightElbow=1.42;
     let kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
@@ -3331,6 +3452,13 @@ document.addEventListener('visibilitychange', ()=>{
 
 function updatePlayer(dt){
   if(paused) return;
+
+  const keyboardLookSpeed=1.85*dt;
+  if(keys.ArrowLeft)yaw+=keyboardLookSpeed;
+  if(keys.ArrowRight)yaw-=keyboardLookSpeed;
+  if(keys.ArrowUp)pitch+=keyboardLookSpeed;
+  if(keys.ArrowDown)pitch-=keyboardLookSpeed;
+  pitch=THREE.MathUtils.clamp(pitch,-1.52,1.52);
 
   // cooldown timers
   for(const k in P.cooldowns) P.cooldowns[k]=Math.max(0,P.cooldowns[k]-dt);
@@ -3526,9 +3654,9 @@ function updatePlayer(dt){
     // pendulum: no lane spring, automatic pumping, lift or continuous reeling.
     if(P.swingGroundPullT>0){
       P.swingGroundPullT=Math.max(0,P.swingGroundPullT-dt);
-      P.vel.y+=14*dt;
+      P.vel.y+=9*dt;
       if(forwardTangent.lengthSq()>0.001){
-        P.vel.addScaledVector(forwardTangent.normalize(),8*dt);
+        P.vel.addScaledVector(forwardTangent.normalize(),5*dt);
       }
     }
 
@@ -3560,7 +3688,11 @@ function updatePlayer(dt){
     const constrainedWebs=[P.swingWebs.left,P.swingWebs.right].filter(web=>web.anchor);
     enforceSwingConstraint(constrainedWebs);
     const swingWall=resolveWallCollision(P.pos,beforeSwingMove);
-    if(swingWall) beginTraversalWallRun(swingWall.normal,swingWall.building,swingImpactVelocity);
+    if(swingWall){
+      // Keep the arc moving past the facade instead of snapping into a wall-run.
+      // The collision resolver has already removed inward speed.
+      P.pos.addScaledVector(swingWall.normal,.08);
+    }
     // A valid overhead web skims upward instead of collapsing into fast walking.
     const landingGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
     if(P.state==='swing' && P.pos.y<=landingGround+1 && P.vel.y<0){
@@ -4174,11 +4306,6 @@ function updateAbilityCooldownUI(){
     : Math.max(0,Math.min(1,P.cooldowns.parry/0.72))*100+'%';
 }
 
-function updatePatrolStatus(){
-  const active=enemies.reduce((count,enemy)=>count+(enemy.alive?1:0),0);
-  document.getElementById('patrolStatus').textContent=`WAVE ${patrolWave} · ${defeatedCount} STOPPED · ${active} ACTIVE`;
-}
-
 // ---------------------------------------------------------------------------------------
 // GAME LOOP
 // ---------------------------------------------------------------------------------------
@@ -4236,7 +4363,6 @@ function tick(){
     drawMinimap();
     updateEnemyHpBars();
     updateDebugPanel();
-    updatePatrolStatus();
   }
   if((hudFrame%20)===0) updateRenderVisibility();
   updateAbilityCooldownUI();

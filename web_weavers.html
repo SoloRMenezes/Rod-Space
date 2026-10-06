@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>WEB WEAVERS — Manhattan Patrol</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="./web_weavers.css?v=6">
+<link rel="stylesheet" href="./web_weavers.css?v=7">
 </head>
 <body>
 
@@ -18,26 +18,27 @@
     <div id="startActions">
       <button class="btn" id="btnPlay" disabled>PLAY</button>
       <button class="btn" id="btnStartSettings">SETTINGS</button>
-      <button class="btn" id="btnSkins">SKINS</button>
+      <button class="btn" id="btnSkins" disabled>SKINS</button>
     </div>
   </div>
   <div id="skinsPanel" aria-hidden="true">
     <div class="skinsHeader">
-      <div><span class="skinsKicker">WARDROBE</span><h2 id="skinName">MIDTOWN</h2></div>
+      <div><span class="skinsKicker">WARDROBE</span><h2>SKINS</h2></div>
       <div class="skinsCash">$<span id="skinsCashValue">0</span></div>
     </div>
-    <div class="skinsBody">
-      <div id="skinPreview" aria-label="Selected skin preview">
-        <div class="previewHead"></div><div class="previewTorso"></div>
-        <div class="previewArm left"></div><div class="previewArm right"></div>
-        <div class="previewLeg left"></div><div class="previewLeg right"></div>
-      </div>
-      <div id="skinGrid"></div>
-    </div>
-    <div id="skinDescription"></div>
+    <div id="skinGrid"></div>
     <div class="skinsActions">
-      <button class="btn" id="btnSkinAction">EQUIPPED</button>
       <button class="btn" id="btnCloseSkins">BACK</button>
+    </div>
+    <div id="skinConfirm" aria-hidden="true">
+      <div class="skinConfirmCard">
+        <h3>BUY SKIN?</h3>
+        <p id="skinConfirmText"></p>
+        <div class="skinConfirmActions">
+          <button class="btn" id="btnConfirmSkin">CONFIRM</button>
+          <button class="btn" id="btnCancelSkin">CANCEL</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -58,7 +59,6 @@
     <div class="btn" id="btnControls">CONTROLS</div>
     <div class="btn" id="btnShop">UPGRADES</div>
   </div>
-  <div id="patrolWrap" class="comicPanel"><span id="patrolStatus">WAVE 1 · 0 STOPPED · 0 ACTIVE</span></div>
   <div id="missionWrap" class="comicPanel"><b id="missionTitle">PATROL OBJECTIVE</b><div id="missionText"></div><div id="missionProgress"><span></span></div></div>
 
   <div id="abilityBar">
@@ -142,6 +142,6 @@
 
 <script src="./assets/vendor/offline-25023b521d77.js"></script>
 <script src="./assets/vendor/GLTFLoader-r128.js"></script>
-<script src="./web_weavers.js?v=12"></script>
+<script src="./web_weavers.js?v=14"></script>
 </body>
 </html>
