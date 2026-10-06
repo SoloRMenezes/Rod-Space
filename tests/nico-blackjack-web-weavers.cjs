@@ -59,7 +59,13 @@ assert.doesNotMatch(weavers,/SWING_DESCENT_PUMP|SWING_LANE_SPRING|SWING_SAFE_REE
 assert.doesNotMatch(weavers,/losingRise[^\n]*autoReleaseSwing\(\)/);
 assert.match(weavers,/limitHorizontalSpeed\(SWING_RELEASE_MAX_SPEED\)/);
 assert.match(weavers,/const GLIDE_MAX_SPEED = 40;/);
-assert.match(weavers,/const flareLift=flareInput\*THREE\.MathUtils\.clamp\(glideSpeed\*0\.32,0,8\)/);
+assert.match(weavers,/const cameraAim=cameraForward3D\(\)/);
+assert.match(weavers,/const targetVertical=THREE\.MathUtils\.clamp\(pitchIntent\*glideSpeed\*0\.58,-GLIDE_MAX_SINK,4\.2\)/);
+assert.match(weavers,/const webWingL=makeWebWing\(-1\)/);
+assert.match(weavers,/clearance:P\.pos\.y-heightAt\(P\.pos\.x,P\.pos\.z,P\.pos\.y\+2\)/);
+assert.match(weavers,/Math\.abs\(climbMove\.x\)>Math\.abs\(climbMove\.y\)\*0\.72/);
+assert.match(weavers,/const verticalStep=step\*\(Math\.sign\(P\.wallRunDirection\.y\)\|\|1\)/);
+assert.match(weavers,/const clingBreath=Math\.sin\(animClock\*1\.6\)\*0\.025/);
 assert.match(weavers,/P\.webshotPoseT=0\.34;/);
 assert.match(weavers,/P\.pullPoseT=0\.5;/);
 assert.match(weavers,/new THREE\.SphereGeometry\(0\.38,16,12\)/);

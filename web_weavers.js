@@ -1220,54 +1220,38 @@ function makeWebWingTexture(){
 }
 const webWingTexture=makeWebWingTexture();
 
-function makeWebWing(){
+function makeWebWing(side){
   const geometry=new THREE.BufferGeometry();
   geometry.setAttribute('position',new THREE.Float32BufferAttribute([
-    0,0,0, 0,0,0, 0,0,0
+    0,0,0,
+    side*0.62,-0.08,0,
+    side*0.5,-1.28,0,
+    side*0.08,-1.08,0
   ],3));
-  geometry.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,0.5,1],2));
-  geometry.setIndex([0,1,2]);
+  geometry.setAttribute('uv',new THREE.Float32BufferAttribute([0.5,1,side<0?0:1,0.92,side<0?0.08:0.92,0,0.5,0.14],2));
+  geometry.setIndex([0,1,2,0,2,3]);
   geometry.computeVertexNormals();
-  const material=new THREE.MeshBasicMaterial({map:webWingTexture,transparent:true,opacity:0.9,side:THREE.DoubleSide});
+  const material=new THREE.MeshBasicMaterial({map:webWingTexture,transparent:true,opacity:0.94,side:THREE.DoubleSide,color:0xdff8ff});
   const wing=new THREE.Mesh(geometry,material);
+  wing.position.set(side*0.08,1.72,-0.29);
   wing.visible=false;
   playerRig.add(wing);
   return wing;
 }
-const webWingL=makeWebWing();
-const webWingR=makeWebWing();
-const webWingLegs=makeWebWing();
+const webWingL=makeWebWing(-1);
+const webWingR=makeWebWing(1);
 applyPlayerSkin(skinSave.selected);
-
-function setWingTriangle(wing,a,b,c){
-  const positions=wing.geometry.attributes.position;
-  positions.setXYZ(0,a.x,a.y,a.z);
-  positions.setXYZ(1,b.x,b.y,b.z);
-  positions.setXYZ(2,c.x,c.y,c.z);
-  positions.needsUpdate=true;
-  wing.geometry.computeVertexNormals();
-}
-
-function rigLocalPoint(object){
-  return playerRig.worldToLocal(object.getWorldPosition(new THREE.Vector3()));
-}
 
 function updateWebWings(){
   const visible=P.state==='air' && P.gliding;
   webWingL.visible=visible;
   webWingR.visible=visible;
-  webWingLegs.visible=visible;
   if(!visible) return;
-  player.updateMatrixWorld(true);
-  const leftHand=rigLocalPoint(handL);
-  const rightHand=rigLocalPoint(handR);
-  const leftFoot=rigLocalPoint(legL.userData.foot);
-  const rightFoot=rigLocalPoint(legR.userData.foot);
-  const wingDepth=-0.12;
-  const wingPoint=point=>new THREE.Vector3(point.x,point.y,wingDepth);
-  setWingTriangle(webWingL,new THREE.Vector3(-0.42,1.48,wingDepth),wingPoint(leftHand),new THREE.Vector3(-0.4,0.72,wingDepth));
-  setWingTriangle(webWingR,new THREE.Vector3(0.42,1.48,wingDepth),wingPoint(rightHand),new THREE.Vector3(0.4,0.72,wingDepth));
-  setWingTriangle(webWingLegs,new THREE.Vector3(0,0.78,wingDepth),wingPoint(leftFoot),wingPoint(rightFoot));
+  // Two rigid back-mounted panels replace the stretched limb membranes. They
+  // fold and bank as one elytra-like glider without changing size on screen.
+  const fold=THREE.MathUtils.clamp(Math.abs(P.glidePitch)*0.13,0,0.16);
+  webWingL.rotation.set(-0.08-P.glidePitch*0.08,0.2+fold,0.08-P.glideBank*0.1);
+  webWingR.rotation.set(-0.08-P.glidePitch*0.08,-0.2-fold,-0.08-P.glideBank*0.1);
 }
 player.position.copy(PLAYER_SPAWN);
 scene.add(player);
@@ -1454,7 +1438,6 @@ const AIR_MAX_SPEED = 50;
 const GLIDE_MIN_SPEED = 11;
 const GLIDE_MAX_SPEED = 40;
 const GLIDE_TURN_RATE = 3.25;
-const GLIDE_GRAVITY_SCALE = 0.34;
 const GLIDE_MAX_SINK = 11;
 const SWING_MAX_SPEED = 58;
 const SWING_RELEASE_MAX_SPEED = 42;
@@ -2475,6 +2458,14 @@ function cameraForwardFlat(){
   return forward.normalize();
 }
 
+function cameraForward3D(){
+  return new THREE.Vector3(
+    Math.sin(yaw)*Math.cos(pitch),
+    Math.sin(pitch),
+    Math.cos(yaw)*Math.cos(pitch)
+  ).normalize();
+}
+
 function giveSwingEntryMomentum(fromGround=false,groundClearance=Infinity){
   const forward = cameraForwardFlat();
   const flatSpeed = Math.hypot(P.vel.x,P.vel.z);
@@ -2934,7 +2925,7 @@ function animatePlayer(dt, moveVec){
   // On a wall, rotate the whole visual rig so its head points along travel.
   // Horizontal and swing-carried runs therefore read as a sideways sprint,
   // while vertical runs treat the wall exactly like the floor.
-  let targetRigRoll=P.state==='climb'?P.climbVisualAngle:(wingPose?-P.glideBank*0.72:0);
+  let targetRigRoll=P.state==='climb'?(wallMoving?P.climbVisualAngle:0):(wingPose?-P.glideBank*0.72:0);
   if(P.state==='swing'){
     const visualRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
     targetRigRoll=THREE.MathUtils.clamp(-P.vel.dot(visualRight)*0.014,-0.25,0.25);
@@ -3027,10 +3018,10 @@ function animatePlayer(dt, moveVec){
       torsoRot.x=-0.18;
     } else if(P.gliding){
       const flutter=Math.sin(animClock*9)*0.04;
-      armLRot.x=-0.14+P.glidePitch*0.18;
-      armRRot.x=-0.14+P.glidePitch*0.18;
-      armLRot.z=-1.46+flutter;
-      armRRot.z=1.46-flutter;
+      armLRot.x=0.38+P.glidePitch*0.12;
+      armRRot.x=0.38+P.glidePitch*0.12;
+      armLRot.z=-0.38+flutter;
+      armRRot.z=0.38-flutter;
       legLRot.x=-0.08-P.glidePitch*0.12;
       legRRot.x=0.08-P.glidePitch*0.12;
       legLRot.z=-0.5; legRRot.z=0.5;
@@ -3098,6 +3089,16 @@ function animatePlayer(dt, moveVec){
       // wall and the complete rig is rolled onto it, so it reads as running on
       // a sideways floor rather than pushing head-first into the facade.
       applyRunCycle(true);
+      if(Math.abs(P.wallRunDirection.y)>=Math.abs(P.wallRunDirection.x)*0.72){
+        const verticalStep=step*(Math.sign(P.wallRunDirection.y)||1);
+        armLRot.x=verticalStep*0.78;
+        armRRot.x=-verticalStep*0.78;
+        legLRot.x=-verticalStep*1.02;
+        legRRot.x=verticalStep*1.02;
+        torsoRot.x=-0.28;
+        torsoRot.z=verticalStep*0.055;
+        headRot.x=0.11;
+      }
     } else if(wallMoving){
       const climb=Math.sin(animClock*(wallRunning?12:7));
       const reach=wallRunning?0.58:0.38;
@@ -3109,13 +3110,15 @@ function animatePlayer(dt, moveVec){
       legLRot.z=-0.42; legRRot.z=0.42;
       torsoRot.x=-0.14;
     } else {
-      // Compact four-point wall cling: hands above the shoulders and knees
-      // tucked toward the wall, matching the reference instead of a starfish.
-      armLRot.x=-1.92; armRRot.x=-1.92;
-      armLRot.z=-0.38; armRRot.z=0.38;
-      legLRot.x=0.82; legRRot.x=0.82;
-      legLRot.z=-0.38; legRRot.z=0.38;
-      torsoRot.x=-0.16;
+      // Upright, relaxed four-point cling. Resetting the rig roll above keeps
+      // this pose from inheriting the last sideways run angle.
+      const clingBreath=Math.sin(animClock*1.6)*0.025;
+      armLRot.x=-1.42+clingBreath; armRRot.x=-1.32-clingBreath;
+      armLRot.z=-0.3; armRRot.z=0.3;
+      legLRot.x=0.64; legRRot.x=0.52;
+      legLRot.z=-0.26; legRRot.z=0.26;
+      torsoRot.x=-0.1;
+      torsoPos.y=-0.06+clingBreath;
     }
   } else if(P.state==='downed'){
     torsoRot.x = 0.38;
@@ -3613,7 +3616,8 @@ function updatePlayer(dt){
         P.swingTelemetry.phase=P.swingPhase;
         const samples=P.swingTelemetry.samples;
         samples.push({t:P.swingAge,phase:P.swingPhase,y:P.pos.y,vy:P.vel.y,
-          speed:P.vel.length(),flat:Math.hypot(P.vel.x,P.vel.z),rope:constraint.length,clearance:groundClearance});
+          speed:P.vel.length(),flat:Math.hypot(P.vel.x,P.vel.z),rope:constraint.length,
+          clearance:P.pos.y-heightAt(P.pos.x,P.pos.z,P.pos.y+2)});
         if(samples.length>240) samples.shift();
       }
     }
@@ -3673,7 +3677,11 @@ function updatePlayer(dt){
       : manualClimbMove;
     if(climbMove.lengthSq()>1) climbMove.normalize();
     if(climbMove.lengthSq()>0.01){
-      P.climbVisualAngle=Math.atan2(-climbMove.x,climbMove.y);
+      // Side runs roll the whole ordinary sprint cycle onto the wall. Vertical
+      // movement stays upright instead of flipping upside-down when descending.
+      P.climbVisualAngle=Math.abs(climbMove.x)>Math.abs(climbMove.y)*0.72
+        ? -Math.sign(climbMove.x)*Math.PI/2
+        : 0;
       P.wallRunDirection.set(climbMove.x,climbMove.y).normalize();
     }
     const wallRunning=running || autoWallRunning;
@@ -3757,29 +3765,26 @@ function updatePlayer(dt){
     if(!activelyGliding) P.vel.y += GRAVITY*dt;
     clampPlayerVelocity();
     if(activelyGliding){
-      const diveInput=keys[bindings.forward]?1:0;
-      const flareInput=keys[bindings.back]?1:0;
       const bankInput=(keys[bindings.right]?1:0)-(keys[bindings.left]?1:0);
-      const steerToward=mv.lengthSq()>0 ? mv.clone().normalize() : cameraForwardFlat();
+      const cameraAim=cameraForward3D();
+      const steerToward=new THREE.Vector3(cameraAim.x,0,cameraAim.z).normalize();
       const glideVelocity=new THREE.Vector3(P.vel.x,0,P.vel.z);
       let glideSpeed=Math.max(GLIDE_MIN_SPEED,glideVelocity.length());
-      glideSpeed+=(diveInput*9-flareInput*7-1.2)*dt;
+      const pitchIntent=THREE.MathUtils.clamp(cameraAim.y,-0.72,0.48);
+      // Looking down trades height for speed; looking up bleeds speed. Direction
+      // comes from the camera rather than WASD, like an elytra flight line.
+      glideSpeed+=(-pitchIntent*11-0.8)*dt;
       glideSpeed=THREE.MathUtils.clamp(glideSpeed,GLIDE_MIN_SPEED,GLIDE_MAX_SPEED);
       if(glideVelocity.lengthSq()<0.01) glideVelocity.copy(steerToward);
       else glideVelocity.normalize().lerp(steerToward,1-Math.exp(-GLIDE_TURN_RATE*dt)).normalize();
-      // Wings turn speed into lift. Pulling back briefly flares upward, but the
-      // drag prevents hovering; diving is the reliable way to regain speed.
-      const lift=THREE.MathUtils.clamp((glideSpeed-GLIDE_MIN_SPEED)*0.34,0,8.5);
-      const flareLift=flareInput*THREE.MathUtils.clamp(glideSpeed*0.32,0,8);
-      const diveForce=diveInput*8;
-      P.vel.y+=(GRAVITY*GLIDE_GRAVITY_SCALE+lift+flareLift-diveForce)*dt;
-      if(flareInput) P.vel.y=Math.min(P.vel.y,2.8);
-      else P.vel.y=Math.min(P.vel.y,0.8);
-      P.vel.y=Math.max(P.vel.y,-GLIDE_MAX_SINK);
+      const targetVertical=THREE.MathUtils.clamp(pitchIntent*glideSpeed*0.58,-GLIDE_MAX_SINK,4.2);
+      P.vel.y=THREE.MathUtils.lerp(P.vel.y,targetVertical,1-Math.exp(-3.4*dt));
+      P.vel.y+=GRAVITY*0.08*dt;
+      P.vel.y=THREE.MathUtils.clamp(P.vel.y,-GLIDE_MAX_SINK,4.2);
       P.vel.x=glideVelocity.x*glideSpeed;
       P.vel.z=glideVelocity.z*glideSpeed;
       P.glideBank=THREE.MathUtils.lerp(P.glideBank,bankInput,1-Math.exp(-5*dt));
-      P.glidePitch=THREE.MathUtils.lerp(P.glidePitch,diveInput-flareInput,1-Math.exp(-4*dt));
+      P.glidePitch=THREE.MathUtils.lerp(P.glidePitch,-pitchIntent,1-Math.exp(-4*dt));
       P.facing=Math.atan2(glideVelocity.x,glideVelocity.z);
       player.rotation.y=P.facing;
     } else {
