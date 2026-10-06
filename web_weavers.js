@@ -2804,7 +2804,16 @@ function animatePlayer(dt, moveVec){
   // a walk cycle continuing while stationary, or freezing during carried
   // momentum after the player releases a key.
   const moving = speedFlat > 0.8 && (P.state==='ground' || P.state==='air');
-  animClock += moving ? dt*THREE.MathUtils.clamp(speedFlat*(running?.82:.68),4.2,11.5) : dt*.55;
+  const wallMoving=P.state==='climb' && (moveVec.lengthSq()>0.04 || P.wallRunAutoT>0);
+  const locomoting=moving || wallMoving;
+  const locomotionSpeed=wallMoving
+    ? Math.max(running || P.wallRunAutoT>0 ? WALL_RUN_SPEED : WALL_CRAWL_SPEED,4)
+    : speedFlat;
+  // Walking used to cycle too slowly for the distance covered. Keep its feet
+  // moving briskly, while a sprint gets a slightly quicker, longer stride.
+  animClock += locomoting
+    ? dt*THREE.MathUtils.clamp(locomotionSpeed*(running?.94:.96),5.8,12.8)
+    : dt*.55;
   const step = Math.sin(animClock);
   const bob = moving ? Math.abs(step) * (running ? 0.08 : 0.045) : 0;
   const amt = 1 - Math.pow(0.001, dt);
@@ -2847,6 +2856,24 @@ function animatePlayer(dt, moveVec){
   let torsoPos = {x:0, y:bob, z:0};
   let headPos = {x:0, y:bob * 0.55, z:0};
 
+  const applyRunCycle=(isRunning)=>{
+    const stride=isRunning?0.9:0.5;
+    armLRot.x=step*stride*0.72;
+    armRRot.x=-step*stride*0.72;
+    legLRot.x=-step*stride;
+    legRRot.x=step*stride;
+    torsoRot.x=isRunning?-0.22:-0.07;
+    headRot.x=isRunning?0.07:0.025;
+    torsoRot.y=step*(isRunning?0.09:0.025);
+    torsoRot.z=THREE.MathUtils.clamp(step*(isRunning?0.105:0.04),-0.115,0.115);
+    headRot.z=-torsoRot.z*0.32;
+    torsoPos.x=isRunning?step*0.045:step*0.012;
+    // The arms still oppose the legs, but also move laterally with the torso
+    // instead of looking pinned to two perfectly straight rails.
+    armLRot.z=-0.045-step*(isRunning?0.12:0.035);
+    armRRot.z=0.045-step*(isRunning?0.12:0.035);
+  };
+
   if(P.state==='ground'){
     if(P.recoveryRollT>0){
       torsoRot.x=0.55;
@@ -2872,16 +2899,7 @@ function animatePlayer(dt, moveVec){
       legLRot.x=legRRot.x=0.58*land;
       legLRot.z=-0.18*land; legRRot.z=0.18*land;
     } else if(moving || speedFlat > 1){
-      const stride = running ? 0.9 : 0.5;
-      armLRot.x = step * stride * 0.72;
-      armRRot.x = -step * stride * 0.72;
-      armLRot.z=-0.035; armRRot.z=0.035;
-      legLRot.x = -step * stride;
-      legRRot.x = step * stride;
-      torsoRot.x = running ? -0.22 : -0.07;
-      headRot.x = running ? 0.07 : 0.025;
-      torsoRot.y=step*(running?0.045:0.02);
-      torsoRot.z = THREE.MathUtils.clamp(step * 0.035, -0.045, 0.045);
+      applyRunCycle(running);
     } else {
       // Idle breathes as one balanced pose. Never alternate the limbs here;
       // that reads as walking even when the physics body is stationary.
@@ -2979,40 +2997,12 @@ function animatePlayer(dt, moveVec){
     torsoRot.x = -0.28;
     headRot.x=0.12;
   } else if(P.state==='climb'){
-    const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
     const wallRunning=running || P.wallRunAutoT>0;
     if(wallMoving && wallRunning){
-      const wallSide=P.wallRunDirection.x;
-      const wallVertical=P.wallRunDirection.y;
-      const sidewaysRun=P.wallRunFromSwing || Math.abs(wallSide)>Math.abs(wallVertical)*0.72;
-      const sideSign=Math.sign(wallSide)||1;
-      const stride=0.85;
-      armLRot.x=step*stride*0.7;
-      armRRot.x=-step*stride*0.7;
-      legLRot.x=-step*stride;
-      legRRot.x=step*stride;
-      if(sidewaysRun){
-        // A lateral wall run keeps the regular sprint cycle, but leans into
-        // travel and opens the trailing arm for balance like the reference pose.
-        torsoRot.x=-0.12;
-        torsoRot.z=sideSign*0.14+THREE.MathUtils.clamp(step*0.025,-0.03,0.03);
-        headRot.z=-sideSign*0.08;
-        if(sideSign>0){
-          armLRot.z=-1.02;
-          armLRot.x=-0.38+step*0.22;
-          armRRot.z=0.16;
-        } else {
-          armRRot.z=1.02;
-          armRRot.x=-0.38-step*0.22;
-          armLRot.z=-0.16;
-        }
-        legLRot.z=sideSign*0.12;
-        legRRot.z=sideSign*0.12;
-      } else {
-        // Up/down wall running is the normal opposing stride, rotated with the
-        // rig so the wall becomes the runner's floor.
-        torsoRot.z=THREE.MathUtils.clamp(step*0.04,-0.05,0.05);
-      }
+      // Wall-running uses the exact sprint cycle. The root faces along the
+      // wall and the complete rig is rolled onto it, so it reads as running on
+      // a sideways floor rather than pushing head-first into the facade.
+      applyRunCycle(true);
     } else if(wallMoving){
       const climb=Math.sin(animClock*(wallRunning?12:7));
       const reach=wallRunning?0.58:0.38;
@@ -3595,6 +3585,8 @@ function updatePlayer(dt){
     const wallSpeed=autoWallRunning?Math.max(WALL_RUN_SPEED,P.wallRunEntrySpeed):(wallRunning?WALL_RUN_SPEED:WALL_CRAWL_SPEED);
     if(P.wallRunFromSwing) P.wallRunMomentum=Math.max(P.wallRunMomentum,wallSpeed);
     const right = new THREE.Vector3().crossVectors(P.climbNormal, new THREE.Vector3(0,1,0)).normalize();
+    const wallTravel=right.clone().multiplyScalar(climbMove.x);
+    wallTravel.y=climbMove.y;
     P.pos.addScaledVector(right,climbMove.x*wallSpeed*dt);
     P.pos.y+=climbMove.y*wallSpeed*dt;
     P.vel.set(0,0,0);
@@ -3608,7 +3600,10 @@ function updatePlayer(dt){
     const alongWall=n.x!==0
       ? P.pos.z>=b.hitMinZ-PLAYER_RADIUS && P.pos.z<=b.hitMaxZ+PLAYER_RADIUS
       : P.pos.x>=b.hitMinX-PLAYER_RADIUS && P.pos.x<=b.hitMaxX+PLAYER_RADIUS;
-    P.facing=Math.atan2(-n.x,-n.z);
+    const sidewaysWallRun=wallRunning && Math.abs(climbMove.x)>Math.abs(climbMove.y)*0.72;
+    P.facing=sidewaysWallRun && wallTravel.lengthSq()>0.01
+      ? Math.atan2(wallTravel.x,wallTravel.z)
+      : Math.atan2(-n.x,-n.z);
     player.rotation.y=P.facing;
 
     // The collision normal points away from the wall, so sample and step in the
