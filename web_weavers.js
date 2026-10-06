@@ -1538,7 +1538,10 @@ const SWING_RELEASE_MAX_SPEED = 42;
 const SWING_RELEASE_CARRY = .96;
 const SWING_MAX_RISE_SPEED = 24;
 const SWING_ENTRY_MAX_TIME = 0.55;
-const SWING_SKIM_UP_SPEED = 2.5;
+const SWING_MIN_GROUND_CLEARANCE = 2.8;
+const SWING_GROUND_RECOVERY_SPEED = 6.5;
+const SWING_LOOK_STEER = 4.2;
+const SWING_INPUT_STEER = 8.5;
 const SWING_GROUND_PULL_TIME = 0.2;
 const MAX_JUMP_CHARGE = 0.85;
 const CHARGED_JUMP_BONUS = 10;
@@ -3673,13 +3676,20 @@ function updatePlayer(dt){
       P.swingPeakRise=Math.max(P.swingPeakRise,P.vel.y);
     }
 
-    // Small tangential steering changes direction without creating vertical
-    // energy or moving the player toward the anchor.
+    // Looking guides every swing, while WASD provides stronger intentional
+    // steering. Both forces are projected onto the rope's tangent so they
+    // redirect the arc without pulling the player closer to the building.
+    const lookSteer=cameraForwardFlat();
+    lookSteer.addScaledVector(radial,-lookSteer.dot(radial));
+    if(lookSteer.lengthSq()>0.001){
+      lookSteer.normalize();
+      P.vel.addScaledVector(lookSteer,SWING_LOOK_STEER*dt);
+    }
     if(mv.lengthSq()>0){
       const swingSteer=mv.clone().addScaledVector(radial,-mv.dot(radial));
       if(swingSteer.lengthSq()>0.001){
         swingSteer.normalize();
-        P.vel.addScaledVector(swingSteer,3.2*(1+progress.traversal*.05)*dt);
+        P.vel.addScaledVector(swingSteer,SWING_INPUT_STEER*(1+progress.traversal*.05)*dt);
       }
     }
     const beforeSwingMove = P.pos.clone();
@@ -3693,35 +3703,12 @@ function updatePlayer(dt){
       // The collision resolver has already removed inward speed.
       P.pos.addScaledVector(swingWall.normal,.08);
     }
-    // A valid overhead web skims upward instead of collapsing into fast walking.
+    // An attached web always keeps the player airborne. If an arc would meet
+    // a road or rooftop, lift it back into a shallow skim without detaching.
     const landingGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
-    if(P.state==='swing' && P.pos.y<=landingGround+1 && P.vel.y<0){
-      if(constraint.anchor.y>landingGround+10){
-        P.pos.y=landingGround+1;
-        P.vel.y=Math.max(P.vel.y,SWING_SKIM_UP_SPEED);
-      } else {
-        const recoveryImpact=P.vel.clone();
-        P.pos.y=landingGround;
-        P.vel.y=0;
-        P.state='ground';
-        P.swingWebs.left.anchor=null;
-        P.swingWebs.right.anchor=null;
-        P.swingWebs.left.physicsPivot=null;
-        P.swingWebs.right.physicsPivot=null;
-        P.swingWebs.left.fallCatch=false;
-        P.swingWebs.right.fallCatch=false;
-        P.swingGroundPullT=0;
-        P.swingGroundPullAnchor=null;
-        P.swingGroundPullAnchors.left=null;
-        P.swingGroundPullAnchors.right=null;
-        P.activeSwingHand=null;
-        P.swingAssisted=false;
-        P.quickRecoveryT=QUICK_RECOVERY_WINDOW;
-        P.recoveryVelocity.copy(recoveryImpact);
-        if(Math.hypot(P.recoveryVelocity.x,P.recoveryVelocity.z)<8){
-          P.recoveryVelocity.copy(cameraForwardFlat()).multiplyScalar(12);
-        }
-      }
+    if(P.state==='swing' && P.pos.y<landingGround+SWING_MIN_GROUND_CLEARANCE){
+      P.pos.y=landingGround+SWING_MIN_GROUND_CLEARANCE;
+      P.vel.y=Math.max(P.vel.y,SWING_GROUND_RECOVERY_SPEED);
     }
     if(P.state==='swing'){
       const currentVy=P.vel.y;
