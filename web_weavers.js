@@ -45,6 +45,21 @@ let cameraShakeT=0;
 let cameraCollisionDistance = null;
 let firstPersonAutoLock = false;
 let cash=Math.max(0,parseInt(localStorage.getItem('webWeaversCash'))||0);
+const SKIN_KEY='webWeaversSkinsV1';
+const PLAYER_SKINS=[
+  {id:'midtown',name:'MIDTOWN',price:0,description:'The original street patrol fit.',primary:0x16263f,secondary:0x8f2638,legs:0x263143,shoes:0xf2f4f7,accent:0x596579,skin:0xb97858},
+  {id:'shadow',name:'SHADOW',price:120,description:'Low-profile charcoal with violet sleeves.',primary:0x12151d,secondary:0x513575,legs:0x20242d,shoes:0x0c0e13,accent:0x9a7bd1,skin:0x8d5138},
+  {id:'velocity',name:'VELOCITY',price:180,description:'Electric blue built for fast traversal.',primary:0x123a67,secondary:0x18a9d6,legs:0x101c2d,shoes:0xe6fbff,accent:0x6ee7ff,skin:0xd39a78},
+  {id:'solar',name:'SOLAR',price:240,description:'Warm gold panels with deep burgundy.',primary:0x6f1f32,secondary:0xe3a72f,legs:0x382331,shoes:0xffe4a1,accent:0xffcc45,skin:0xb97858},
+  {id:'toxic',name:'TOXIC',price:300,description:'Dark utility gear with hazard-green accents.',primary:0x16201b,secondary:0x4bbf45,legs:0x202923,shoes:0xb8ff6a,accent:0x7bf05b,skin:0x6f3f30},
+  {id:'arctic',name:'ARCTIC',price:360,description:'Ice-white layers over a navy base.',primary:0xe8f2f7,secondary:0x72b7d6,legs:0x1d3555,shoes:0xffffff,accent:0xbdefff,skin:0xd39a78}
+];
+let skinSave={owned:['midtown'],selected:'midtown'};
+try{skinSave={...skinSave,...JSON.parse(localStorage.getItem(SKIN_KEY)||'{}')};}catch{}
+skinSave.owned=Array.isArray(skinSave.owned)?skinSave.owned.filter(id=>PLAYER_SKINS.some(s=>s.id===id)):['midtown'];
+if(!skinSave.owned.includes('midtown'))skinSave.owned.unshift('midtown');
+if(!skinSave.owned.includes(skinSave.selected))skinSave.selected='midtown';
+let previewSkinId=skinSave.selected;
 const PROGRESS_KEY='webWeaversProgressV1';
 const UPGRADE_MAX=5;
 let progress={health:0,damage:0,traversal:0,kills:0,gangs:0,missions:0,swingDistance:0,missionIndex:0};
@@ -76,6 +91,8 @@ function updateShopUI(){
 function updateCashUI(){
   const el=document.getElementById('cashValue');
   if(el) el.textContent=cash.toLocaleString('en-GB');
+  const skinsCash=document.getElementById('skinsCashValue');
+  if(skinsCash)skinsCash.textContent=cash.toLocaleString('en-GB');
 }
 function addCash(amount,label){
   cash+=amount;
@@ -373,6 +390,63 @@ document.getElementById('btnStartSettings').onclick = ()=>{
   document.getElementById('bindPanel').style.display='block';
 };
 
+function skinById(id){return PLAYER_SKINS.find(s=>s.id===id)||PLAYER_SKINS[0];}
+function colourCSS(value){return `#${value.toString(16).padStart(6,'0')}`;}
+function saveSkins(){localStorage.setItem(SKIN_KEY,JSON.stringify(skinSave));}
+function renderSkinMenu(){
+  const skin=skinById(previewSkinId),owned=skinSave.owned.includes(skin.id),equipped=skinSave.selected===skin.id;
+  document.getElementById('skinName').textContent=skin.name;
+  document.getElementById('skinDescription').textContent=skin.description;
+  document.getElementById('skinsCashValue').textContent=cash.toLocaleString('en-GB');
+  const preview=document.getElementById('skinPreview');
+  preview.style.setProperty('--skin-tone',colourCSS(skin.skin));
+  preview.style.setProperty('--skin-primary',colourCSS(skin.primary));
+  preview.style.setProperty('--skin-secondary',colourCSS(skin.secondary));
+  preview.style.setProperty('--skin-legs',colourCSS(skin.legs));
+  const grid=document.getElementById('skinGrid');
+  grid.innerHTML='';
+  PLAYER_SKINS.forEach(option=>{
+    const card=document.createElement('button');
+    const hasSkin=skinSave.owned.includes(option.id);
+    card.className=`skinCard${option.id===skin.id?' selected':''}`;
+    card.dataset.skin=option.id;
+    card.innerHTML=`<span class="skinSwatches"><i style="background:${colourCSS(option.primary)}"></i><i style="background:${colourCSS(option.secondary)}"></i><i style="background:${colourCSS(option.legs)}"></i></span>${option.name}<small class="${hasSkin?'owned':''}">${hasSkin?(skinSave.selected===option.id?'EQUIPPED':'OWNED'):`$${option.price}`}</small>`;
+    card.onclick=()=>{previewSkinId=option.id;renderSkinMenu();};
+    grid.appendChild(card);
+  });
+  const action=document.getElementById('btnSkinAction');
+  action.disabled=equipped;
+  action.textContent=equipped?'EQUIPPED':owned?'EQUIP':`BUY · $${skin.price}`;
+}
+function openSkins(){
+  previewSkinId=skinSave.selected;
+  document.getElementById('startCard').style.display='none';
+  const panel=document.getElementById('skinsPanel');
+  panel.classList.add('open');panel.setAttribute('aria-hidden','false');
+  renderSkinMenu();
+}
+function closeSkins(){
+  const panel=document.getElementById('skinsPanel');
+  panel.classList.remove('open');panel.setAttribute('aria-hidden','true');
+  document.getElementById('startCard').style.display='block';
+}
+document.getElementById('btnSkins').onclick=openSkins;
+document.getElementById('btnCloseSkins').onclick=closeSkins;
+document.getElementById('btnSkinAction').onclick=()=>{
+  const skin=skinById(previewSkinId);
+  if(!skinSave.owned.includes(skin.id)){
+    if(cash<skin.price){document.getElementById('skinDescription').textContent=`You need $${skin.price-cash} more.`;return;}
+    cash-=skin.price;
+    localStorage.setItem('webWeaversCash',String(cash));
+    skinSave.owned.push(skin.id);
+  }
+  skinSave.selected=skin.id;
+  saveSkins();
+  applyPlayerSkin(skin.id);
+  updateCashUI();
+  renderSkinMenu();
+};
+
 function startGame(){
   if(P.state==='defeated') resetDefeatedPlayer();
   gameActive=true;
@@ -400,6 +474,7 @@ function showStartScreen(){
   document.getElementById('hud').style.display='none';
   document.getElementById('gameCanvas').style.visibility='hidden';
   document.getElementById('startScreen').style.display='flex';
+  closeSkins();
   if(document.pointerLockElement===canvas) document.exitPointerLock();
   firstPersonAutoLock=false;
   shiftLocked=false;
@@ -1009,6 +1084,27 @@ const limbMat = new THREE.MeshLambertMaterial({color:0x1b4fa0});
 const suitBlueDarkMat = new THREE.MeshLambertMaterial({color:0x12366f});
 const suitBlackMat=new THREE.MeshBasicMaterial({color:0x11151d});
 const suitWhiteMat=new THREE.MeshBasicMaterial({color:0xf5fbff});
+const r15SkinMeshes=[];
+function r15SkinRegion(name){
+  const n=name.toLowerCase();
+  if(n.includes('head')||n.includes('hand'))return 'skin';
+  if(n.includes('foot'))return 'shoes';
+  if(n.includes('leg'))return 'legs';
+  if(n.includes('arm'))return 'secondary';
+  if(n.includes('torso'))return 'primary';
+  return 'accent';
+}
+function applyPlayerSkin(id){
+  const skin=skinById(id);
+  bodyMat.color.setHex(skin.primary);
+  limbMat.color.setHex(skin.secondary);
+  suitBlueDarkMat.color.setHex(skin.accent);
+  suitWhiteMat.color.setHex(skin.shoes);
+  r15SkinMeshes.forEach(mesh=>{
+    const colour=skin[mesh.userData.skinRegion]??skin.accent;
+    if(mesh.material&&mesh.material.color)mesh.material.color.setHex(colour);
+  });
+}
 // A compact stylised Spider-Man rather than the old block avatar. The limb
 // groups remain simple pivots so traversal poses stay readable at game scale.
 const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.34,1.08,8),bodyMat);
@@ -1141,6 +1237,7 @@ function makeWebWing(){
 const webWingL=makeWebWing();
 const webWingR=makeWebWing();
 const webWingLegs=makeWebWing();
+applyPlayerSkin(skinSave.selected);
 
 function setWingTriangle(wing,a,b,c){
   const positions=wing.geometry.attributes.position;
@@ -1241,11 +1338,8 @@ new THREE.GLTFLoader().load(
       }
       if(node.isMesh){
         node.material=node.material.clone();
-        const n=node.name.toLowerCase();
-        const color=n.includes('head')||n.includes('hand')?0xb97858:
-          n.includes('foot')?0xf2f4f7:n.includes('leg')?0x263143:
-          n.includes('arm')?0x8f2638:n.includes('torso')?0x16263f:0x596579;
-        if(node.material.color)node.material.color.setHex(color);
+        node.userData.skinRegion=r15SkinRegion(node.name);
+        r15SkinMeshes.push(node);
         node.material.roughness=.82;
         node.castShadow=true;
         node.receiveShadow=true;
@@ -1253,6 +1347,7 @@ new THREE.GLTFLoader().load(
     });
     torso.visible=head.visible=armL.visible=armR.visible=legL.visible=legR.visible=false;
     r15Ready=true;
+    applyPlayerSkin(skinSave.selected);
     r15EnemyTemplate=gltf.scene;
     setTimeout(()=>enemies.forEach(attachEnemyAvatar),0);
     document.getElementById('startLoadStatus').textContent='READY';
