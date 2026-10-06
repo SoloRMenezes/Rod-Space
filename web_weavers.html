@@ -233,6 +233,7 @@
     <div class="row"><span>Render distance</span><span><input id="renderDistanceSlider" type="range" min="220" max="900" step="20" value="520"><span id="renderDistanceValue">520</span></span></div>
     <div class="row"><span>Resolution</span><span><input id="resolutionSlider" type="range" min="60" max="100" step="5" value="100"><span id="resolutionValue">100%</span></span></div>
     <div class="row"><span>Animated water</span><span><label class="pillToggle" aria-label="Animated water"><input id="waterToggle" type="checkbox" checked><span class="pillTrack"></span></label></span></div>
+    <div class="row"><span>Sound effects</span><span><label class="pillToggle" aria-label="Sound effects"><input id="soundToggle" type="checkbox" checked><span class="pillTrack"></span></label></span></div>
     <div class="row"><span>Swing hold delay</span><span><input id="swingDelaySlider" type="range" min="120" max="420" step="20" value="280"><span id="swingDelayValue">280ms</span></span></div>
     <div class="row"><span>Zoom in / first person</span><span class="keybtn" data-action="zoomIn">I</span></div>
     <div class="row"><span>Zoom out</span><span class="keybtn" data-action="zoomOut">O</span></div>
@@ -295,6 +296,10 @@ let renderDistance = 520;
 let traversalHoldDelay=0.28;
 let resolutionScale=1;
 let animatedWater=true;
+let soundEnabled=true;
+let audioContext=null;
+let hitStopT=0;
+let cameraShakeT=0;
 let cameraCollisionDistance = null;
 let firstPersonAutoLock = false;
 let cash=Math.max(0,parseInt(localStorage.getItem('webWeaversCash'))||0);
@@ -347,6 +352,30 @@ function flashMsg(text){
   el.textContent=text; el.style.opacity=1;
   clearTimeout(flashMsg._t);
   flashMsg._t=setTimeout(()=>{ el.style.opacity=0; },700);
+}
+function ensureAudio(){
+  if(!soundEnabled)return null;
+  if(!audioContext){
+    const AudioCtor=window.AudioContext||window.webkitAudioContext;
+    if(AudioCtor)audioContext=new AudioCtor();
+  }
+  if(audioContext&&audioContext.state==='suspended')audioContext.resume();
+  return audioContext;
+}
+function playSfx(type){
+  const ctx=ensureAudio();if(!ctx)return;
+  const profile={
+    web:[230,520,.09,'sine'],hit:[105,55,.07,'square'],parry:[760,1180,.12,'triangle'],
+    jump:[180,300,.08,'triangle'],hurt:[130,70,.13,'sawtooth']
+  }[type];
+  if(!profile)return;
+  const [start,end,duration,wave]=profile;
+  const oscillator=ctx.createOscillator(),gain=ctx.createGain();
+  oscillator.type=wave;oscillator.frequency.setValueAtTime(start,ctx.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(Math.max(20,end),ctx.currentTime+duration);
+  gain.gain.setValueAtTime(.055,ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+duration);
+  oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start();oscillator.stop(ctx.currentTime+duration);
 }
 function setShiftLock(on){
   if(cameraDistance<=0.6){
@@ -421,10 +450,11 @@ function loadSettings(){
     if(Number.isFinite(saved.traversalHoldDelay)) traversalHoldDelay=THREE.MathUtils.clamp(saved.traversalHoldDelay,0.12,0.42);
     if(Number.isFinite(saved.resolutionScale)) resolutionScale=THREE.MathUtils.clamp(saved.resolutionScale,0.6,1);
     if(typeof saved.animatedWater==='boolean') animatedWater=saved.animatedWater;
+    if(typeof saved.soundEnabled==='boolean') soundEnabled=saved.soundEnabled;
   }
 }
 function saveSettings(){
-  writeSavedSettings({bindings, running, debugOn, mouseSensitivity, cameraDistance, renderDistance, traversalHoldDelay, resolutionScale, animatedWater});
+  writeSavedSettings({bindings, running, debugOn, mouseSensitivity, cameraDistance, renderDistance, traversalHoldDelay, resolutionScale, animatedWater, soundEnabled});
 }
 function syncBindingLabels(){
   ['shiftLock','toggleRun','jump','traversal','webshot','dive','block','zoomIn','zoomOut','debug']
@@ -489,9 +519,11 @@ function syncQualityUI(){
   const slider=document.getElementById('resolutionSlider');
   const label=document.getElementById('resolutionValue');
   const water=document.getElementById('waterToggle');
+  const sound=document.getElementById('soundToggle');
   if(slider) slider.value=Math.round(resolutionScale*100);
   if(label) label.textContent=Math.round(resolutionScale*100)+'%';
   if(water) water.checked=animatedWater;
+  if(sound) sound.checked=soundEnabled;
 }
 document.getElementById('resolutionSlider').addEventListener('input',e=>{
   resolutionScale=THREE.MathUtils.clamp(Number(e.target.value)/100,0.6,1);
@@ -501,6 +533,11 @@ document.getElementById('resolutionSlider').addEventListener('input',e=>{
 });
 document.getElementById('waterToggle').addEventListener('change',e=>{
   animatedWater=e.target.checked;
+  saveSettings();
+});
+document.getElementById('soundToggle').addEventListener('change',e=>{
+  soundEnabled=e.target.checked;
+  if(soundEnabled)ensureAudio();
   saveSettings();
 });
 
@@ -587,7 +624,7 @@ function showStartScreen(){
   clearHeldInputs();
 }
 
-document.getElementById('btnPlay').onclick=startGame;
+document.getElementById('btnPlay').onclick=()=>{ensureAudio();startGame();};
 document.getElementById('btnMainMenu').onclick=showStartScreen;
 document.getElementById('btnDeathMainMenu').onclick=showStartScreen;
 
@@ -2189,6 +2226,24 @@ function enemyHasClearHit(e){
   return !obstruction || obstruction.distance>=distance-0.35;
 }
 
+function enemyRouteDirection(e,desired){
+  if(desired.lengthSq()<0.001)return desired;
+  const base=Math.atan2(desired.x,desired.z);
+  const choices=[0,.42,-.42,.82,-.82,1.25,-1.25,Math.PI];
+  let best=null,bestScore=-Infinity;
+  for(const offset of choices){
+    const dir=new THREE.Vector3(Math.sin(base+offset),0,Math.cos(base+offset));
+    const probe=e.mesh.position.clone().addScaledVector(dir,3.2);
+    const blocked=buildingMeshes.some(b=>
+      b.h>1.6 && probe.x>b.hitMinX-.75&&probe.x<b.hitMaxX+.75&&probe.z>b.hitMinZ-.75&&probe.z<b.hitMaxZ+.75
+    );
+    if(blocked||!isOverIsland(probe.x,probe.z,-1))continue;
+    const score=dir.dot(desired)-Math.abs(offset)*.08;
+    if(score>bestScore){bestScore=score;best=dir;}
+  }
+  return best||desired.clone().multiplyScalar(-1);
+}
+
 function updateEnemies(dt){
   enemies.forEach(e=>{
     if(!e.alive) return;
@@ -2223,7 +2278,8 @@ function updateEnemies(dt){
           e.wanderT=2.2+Math.random()*3.4;
         } else {
           toWander.normalize();
-          e.vel.lerp(toWander.multiplyScalar(1.8),1-Math.exp(-5*dt));
+          const route=enemyRouteDirection(e,toWander);
+          e.vel.lerp(route.multiplyScalar(1.8),1-Math.exp(-5*dt));
           e.mesh.lookAt(e.wanderTarget.x,e.mesh.position.y,e.wanderTarget.z);
         }
       }
@@ -2239,7 +2295,8 @@ function updateEnemies(dt){
       else if(dist>ALERT_RADIUS*2.2){ e.state='idle'; }
       else {
         toPlayer.normalize();
-        e.mesh.position.addScaledVector(toPlayer, CHASE_SPEED*dt);
+        const route=enemyRouteDirection(e,toPlayer);
+        e.mesh.position.addScaledVector(route, CHASE_SPEED*dt);
         e.mesh.lookAt(P.pos.x, e.mesh.position.y, P.pos.z);
       }
     } else if(e.state==='attacking'){
@@ -2254,6 +2311,7 @@ function updateEnemies(dt){
             P.blocking=false;
             e.stunT=1.25;
             e.vel.addScaledVector(toPlayer.lengthSq()>0.001?toPlayer.clone().normalize().multiplyScalar(-1):new THREE.Vector3(0,0,-1),7);
+            playSfx('parry');
             flashMsg('PARRY');
           } else damagePlayer(6);
         }
@@ -2655,6 +2713,7 @@ function tryWebshot(){
   if(P.state==='downed' || P.state==='defeated') return;
   P.webshotPoseT=0.34;
   fireWebshot();
+  playSfx('web');
   pulse('abWebshot');
 }
 
@@ -2705,6 +2764,8 @@ function tryMelee(){
 }
 
 function damageEnemy(e, amount, fromMelee=false){
+  playSfx('hit');
+  if(fromMelee){hitStopT=Math.max(hitStopT,.045);cameraShakeT=Math.max(cameraShakeT,.11);}
   e.hp -= amount;
   setEnemyFlash(e,true);
   setTimeout(()=>{ if(e.alive) setEnemyFlash(e,false); },80);
@@ -2779,6 +2840,7 @@ function damagePlayer(amount, grace=0.65, ignoreInvuln=false){
   P.hp = Math.max(0, P.hp-amount);
   P.lastDamageT=4;
   P.invuln = grace;
+  playSfx('hurt');
   flashDamage();
   if(P.hp<=0){
     P.state='defeated';
@@ -3210,6 +3272,7 @@ function launchChargedJump(){
   const jumpingFromWall=P.state==='climb';
   const wallNormal=jumpingFromWall&&P.climbNormal?P.climbNormal.clone():null;
   P.vel.y=Math.max(P.vel.y,JUMP_SPEED+charge*CHARGED_JUMP_BONUS)*(jumpingFromWall?0.9:1);
+  playSfx('jump');
   if(wallNormal){
     P.vel.addScaledVector(wallNormal,8+charge*3);
     P.pos.addScaledVector(wallNormal,0.45);
@@ -4110,13 +4173,20 @@ function tick(){
   if(animatedWater) oceanUniforms.time.value=now*0.001;
 
   updateZoomInput(dt);
-  if(!paused){
+  if(hitStopT>0)hitStopT=Math.max(0,hitStopT-dt);
+  else if(!paused){
     updatePlayer(dt);
     updateEnemies(dt);
     updateGroups(dt);
     updateProjectiles(dt);
   }
   updateCamera(dt);
+  if(cameraShakeT>0){
+    cameraShakeT=Math.max(0,cameraShakeT-dt);
+    const strength=cameraShakeT*0.9;
+    camera.position.x+=(Math.random()-.5)*strength;
+    camera.position.y+=(Math.random()-.5)*strength;
+  }
 
   // rope visuals
   player.updateMatrixWorld(true);
