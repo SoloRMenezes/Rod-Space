@@ -969,6 +969,13 @@ for(let ix=0; ix<BLOCKS_X; ix++){
 addStreetFurniture();
 addStreetLife();
 
+// Start above the central avenue instead of at street level. Pick a broad,
+// central roof so the first input can immediately flow into traversal.
+const spawnRoof=buildingMeshes
+  .filter(b=>Math.abs((b.minX+b.maxX)*.5)<TILE_X*1.5&&Math.abs((b.minZ+b.maxZ)*.5)<TILE_Z*2.5)
+  .sort((a,b)=>b.h-a.h)[0]||buildingMeshes[0];
+if(spawnRoof)PLAYER_SPAWN.set((spawnRoof.minX+spawnRoof.maxX)*.5,spawnRoof.h+.08,(spawnRoof.minZ+spawnRoof.maxZ)*.5);
+
 // Debug mode shows the actual continuous target surface instead of implying
 // that the web can only grab four discrete rooftop corners.
 const anchorMat = new THREE.LineBasicMaterial({color:0xffe600});
@@ -1896,6 +1903,7 @@ function setEnemyFlash(e,on){
   } else e.mat.color.setHex(on?0xffffff:e.outfitColor);
 }
 function makeEnemy(pos, groupId, kind='brawler'){
+  kind='brawler';
   const outfitColors=[0x7a3b3b,0x36506f,0x55426e,0x52613b];
   const mat = new THREE.MeshLambertMaterial({color:outfitColors[groupId%outfitColors.length]});
   const pantsMat = new THREE.MeshLambertMaterial({color:0x252a34});
@@ -1965,8 +1973,7 @@ function spawnGroup(spawnIdx){
   const g = {spawnIdx, members:[], defeatedAt:null};
   for(let i=0;i<count;i++){
     const off = new THREE.Vector3((Math.random()-0.5)*8,0,(Math.random()-0.5)*8);
-    const roster=['runner','brawler','brute'];
-    const e = makeEnemy(base.clone().add(off), groups.length,roster[i%roster.length]);
+    const e = makeEnemy(base.clone().add(off), groups.length,'brawler');
     g.members.push(e);
   }
   groups.push(g);
@@ -2007,8 +2014,7 @@ function updateGroups(dt){
         const count = 3+((Math.random()*2)|0);
         for(let i=0;i<count;i++){
           const off = new THREE.Vector3((Math.random()-0.5)*8,0,(Math.random()-0.5)*8);
-          const kind=patrolWave%3===0&&i===0?'boss':['runner','brawler','brute'][i%3];
-          const e = makeEnemy(base.clone().add(off), groups.indexOf(g),kind);
+          const e = makeEnemy(base.clone().add(off), groups.indexOf(g),'brawler');
           g.members.push(e);
         }
       }
@@ -3306,13 +3312,6 @@ function updatePlayer(dt){
   }
   if(traversalDown){
     P.traversalHoldT+=dt;
-    // Retry while held when the first frame had no valid roof. This keeps the
-    // input responsive as the camera turns without attaching late on release.
-    if(!P.traversalSwingStarted && P.traversalHoldT>=.12){
-      P.traversalHoldT=0;
-      P.traversalSearchAttempted=true;
-      P.traversalSwingStarted=trySmartSwing();
-    }
   }
   if(!traversalDown&&lastTraversal){
     if(P.traversalSwingStarted || P.state==='swing' || (P.state==='climb'&&P.wallRunFromSwing)){
