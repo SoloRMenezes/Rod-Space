@@ -653,7 +653,7 @@ function resetDefeatedPlayer(){
   P.recoverLock=false;
   P.traversalHoldT=0;
   P.traversalSwingStarted=false;
-  P.traversalRetryT=0;
+  P.traversalSearchAttempted=false;
   P.jumpChargeT=0;
   P.jumpCharging=false;
   P.diving=false;
@@ -856,6 +856,8 @@ function makeIslandShape(rx,rz){
 }
 
 const buildingMeshes = [];      // visual bounds and collision bounds are identical
+const BUILDING_GRID_CELL = 72;
+const buildingSpatialGrid = new Map();
 const parkAreas = [];
 const anchorEdges = [];         // continuous upper perimeters for swing debug viz
 const anchorMarkers = [];
@@ -1056,7 +1058,19 @@ function makeBuilding(cx, cz, w, d, h, colorIdx){
     hitMinX:minX, hitMaxX:maxX,
     hitMinZ:minZ, hitMaxZ:maxZ
   };
+  mesh.userData.buildingRecord=rec;
   buildingMeshes.push(rec);
+  const minGX=Math.floor(rec.hitMinX/BUILDING_GRID_CELL);
+  const maxGX=Math.floor(rec.hitMaxX/BUILDING_GRID_CELL);
+  const minGZ=Math.floor(rec.hitMinZ/BUILDING_GRID_CELL);
+  const maxGZ=Math.floor(rec.hitMaxZ/BUILDING_GRID_CELL);
+  for(let gx=minGX;gx<=maxGX;gx++){
+    for(let gz=minGZ;gz<=maxGZ;gz++){
+      const key=`${gx},${gz}`;
+      if(!buildingSpatialGrid.has(key)) buildingSpatialGrid.set(key,[]);
+      buildingSpatialGrid.get(key).push(rec);
+    }
+  }
   anchorEdges.push([
     new THREE.Vector3(minX,h-0.65,minZ),
     new THREE.Vector3(maxX,h-0.65,minZ),
@@ -1474,7 +1488,7 @@ const P = {
   invuln:0,
   facing: 0,
   gliding:false, wingCooldown:0, peakY:0, downedT:0, pendingFallDamage:0, recoveryT:0, recoverLock:false,
-  traversalHoldT:0, traversalSwingStarted:false, traversalRetryT:0,
+  traversalHoldT:0, traversalSwingStarted:false, traversalSearchAttempted:false,
   jumpChargeT:0, jumpCharging:false, diving:false,
   swingHistoryT:0, quickRecoveryT:0, recoveryRollT:0, recoveryLaunchPending:false,
   recoveryVelocity:new THREE.Vector3(),
@@ -1533,11 +1547,40 @@ const raycaster = new THREE.Raycaster();
 const buildingCollidables=buildingMeshes.map(b=>b.mesh);
 const collidables = () => buildingCollidables;
 
+function nearbyBuildings(point,radius){
+  const found=new Set();
+  const minGX=Math.floor((point.x-radius)/BUILDING_GRID_CELL);
+  const maxGX=Math.floor((point.x+radius)/BUILDING_GRID_CELL);
+  const minGZ=Math.floor((point.z-radius)/BUILDING_GRID_CELL);
+  const maxGZ=Math.floor((point.z+radius)/BUILDING_GRID_CELL);
+  for(let gx=minGX;gx<=maxGX;gx++){
+    for(let gz=minGZ;gz<=maxGZ;gz++){
+      const bucket=buildingSpatialGrid.get(`${gx},${gz}`);
+      if(bucket) bucket.forEach(building=>found.add(building));
+    }
+  }
+  return [...found].filter(building=>
+    building.hitMaxX>=point.x-radius && building.hitMinX<=point.x+radius &&
+    building.hitMaxZ>=point.z-radius && building.hitMinZ<=point.z+radius
+  );
+}
+
+function nearbyBuildingMeshes(point,radius){
+  return nearbyBuildings(point,radius).map(building=>building.mesh);
+}
+
 function objectBelongsTo(object,root){
   for(let node=object;node;node=node.parent){
     if(node===root) return true;
   }
   return false;
+}
+
+function buildingForObject(object){
+  for(let node=object;node;node=node.parent){
+    if(node.userData&&node.userData.buildingRecord) return node.userData.buildingRecord;
+  }
+  return null;
 }
 
 function enemyForObject(object){
@@ -1547,7 +1590,7 @@ function enemyForObject(object){
 function heightAt(x,z, ignoreAboveY=Infinity){
   // returns highest surface (rooftop or ground) at x,z that's at/under ignoreAboveY+0.1
   let best = isOverIsland(x,z) ? 0 : OCEAN_FLOOR;
-  for(const b of buildingMeshes){
+  for(const b of nearbyBuildings({x,z},1)){
     if(x>b.hitMinX && x<b.hitMaxX && z>b.hitMinZ && z<b.hitMaxZ){
       if(b.h <= ignoreAboveY+0.15 && b.h>best) best = b.h;
     }
@@ -1557,7 +1600,7 @@ function heightAt(x,z, ignoreAboveY=Infinity){
 
 function wallAhead(px,pz, dirYaw, dist=0.9){
   const dx = Math.sin(dirYaw), dz = Math.cos(dirYaw);
-  for(const b of buildingMeshes){
+  for(const b of nearbyBuildings({x:px+dx*dist,z:pz+dz*dist},dist+PLAYER_RADIUS)){
     // does the point (px+dx*dist, pz+dz*dist) fall inside a taller-than-player building, while current point is outside?
     const nx = px+dx*dist, nz = pz+dz*dist;
     const inside = nx>b.hitMinX && nx<b.hitMaxX && nz>b.hitMinZ && nz<b.hitMaxZ;
@@ -1609,7 +1652,9 @@ function segmentAabbEntry(from,to,minX,maxX,minZ,maxZ){
 function resolveWallCollision(pos, previousPos=null){
   let hitNormal = null;
   let hitBuilding = null;
-  for(const b of buildingMeshes){
+  const midpoint=previousPos?pos.clone().add(previousPos).multiplyScalar(0.5):pos;
+  const travelRadius=previousPos?Math.hypot(pos.x-previousPos.x,pos.z-previousPos.z)*0.5+PLAYER_RADIUS+1:PLAYER_RADIUS+1;
+  for(const b of nearbyBuildings(midpoint,travelRadius)){
     if(b.h <= pos.y + 1.0) continue;
     const minX=b.hitMinX-PLAYER_RADIUS, maxX=b.hitMaxX+PLAYER_RADIUS, minZ=b.hitMinZ-PLAYER_RADIUS, maxZ=b.hitMaxZ+PLAYER_RADIUS;
     const inside=pos.x>minX && pos.x<maxX && pos.z>minZ && pos.z<maxZ;
@@ -1650,9 +1695,10 @@ function resolveWallCollision(pos, previousPos=null){
 
 function crosshairHit(maxDist, includeEnemies=true){
   raycaster.setFromCamera(aimScreenPoint(), camera);
+  const nearbyMeshes=nearbyBuildingMeshes(P.pos,maxDist);
   const targets = includeEnemies
-    ? collidables().concat(enemies.filter(e=>e.alive).map(e=>e.mesh))
-    : collidables();
+    ? nearbyMeshes.concat(enemies.filter(e=>e.alive).map(e=>e.mesh))
+    : nearbyMeshes;
   const hits = raycaster.intersectObjects(targets,true).filter(hit=>hit.object.type!=='LineSegments');
   if(hits.length && hits[0].distance<=maxDist) return hits[0];
   return null;
@@ -1660,7 +1706,7 @@ function crosshairHit(maxDist, includeEnemies=true){
 
 function zipCrosshairHit(maxDist){
   raycaster.setFromCamera(aimScreenPoint(),camera);
-  const targets=collidables().concat([ground]);
+  const targets=nearbyBuildingMeshes(P.pos,maxDist).concat([ground]);
   const hits=raycaster.intersectObjects(targets,true).filter(hit=>hit.object.type!=='LineSegments');
   if(hits.length && hits[0].distance<=maxDist && isValidZipHit(hits[0])) return hits[0];
   return null;
@@ -1669,7 +1715,7 @@ function zipCrosshairHit(maxDist){
 function isValidZipHit(hit){
   if(!hit) return false;
   if(hit.object===ground) return true;
-  const b=buildingMeshes.find(entry=>objectBelongsTo(hit.object,entry.mesh));
+  const b=buildingForObject(hit.object);
   if(!b) return false;
   const p=hit.point;
   const edgeTolerance=2.4;
@@ -1750,7 +1796,7 @@ function upperEdgeInteriorClearance(point,b){
 }
 
 function buildingForUpperEdgePoint(point){
-  return buildingMeshes.find(b=>{
+  return nearbyBuildings(point,0.2).find(b=>{
     if(Math.abs(point.y-(b.h-0.65))>0.08) return false;
     const onX=(Math.abs(point.x-b.minX)<0.08 || Math.abs(point.x-b.maxX)<0.08) &&
       point.z>=b.minZ-0.08 && point.z<=b.maxZ+0.08;
@@ -1816,8 +1862,17 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
     .addScaledVector(right,sideSign*8);
   let best=null;
   let bestScore=-Infinity;
+  const candidateBuildings=nearbyBuildings(playerEye,SWING_MAX_RANGE)
+    .map(building=>{
+      const dx=Math.max(building.hitMinX-playerEye.x,0,playerEye.x-building.hitMaxX);
+      const dz=Math.max(building.hitMinZ-playerEye.z,0,playerEye.z-building.hitMaxZ);
+      return {building,distanceSq:dx*dx+dz*dz};
+    })
+    .sort((a,b)=>a.distanceSq-b.distanceSq)
+    .slice(0,24);
 
-  for(const b of buildingMeshes){
+  for(const entry of candidateBuildings){
+    const b=entry.building;
     const candidates=[];
     if(groundStart){
       const upperFacadeSource=searchPoint.clone();
@@ -1867,7 +1922,8 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       // Reject anchors hidden behind another building or on a far-facing wall.
       raycaster.set(playerEye,to.clone().normalize());
       raycaster.far=dist+1;
-      const sightHits=raycaster.intersectObjects(collidables(),false);
+      const rayMidpoint=playerEye.clone().addScaledVector(to,0.5);
+      const sightHits=raycaster.intersectObjects(nearbyBuildingMeshes(rayMidpoint,dist*0.5+8),false);
       raycaster.far=Infinity;
       if(!belowCatch && (!sightHits.length || sightHits[0].object!==b.mesh || Math.abs(sightHits[0].distance-dist)>6)) continue;
 
@@ -1894,10 +1950,10 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
 function findLookSwingAnchor(){
   raycaster.setFromCamera(aimScreenPoint(),camera);
   raycaster.far=SWING_MAX_RANGE;
-  const hit=raycaster.intersectObjects(collidables(),false)[0];
+  const hit=raycaster.intersectObjects(nearbyBuildingMeshes(P.pos,SWING_MAX_RANGE),false)[0];
   raycaster.far=Infinity;
   if(!hit)return null;
-  const b=buildingMeshes.find(entry=>entry.mesh===hit.object);
+  const b=hit.object.userData.buildingRecord;
   if(!b)return null;
   const inset=0.7;
   const point=new THREE.Vector3(
@@ -2221,7 +2277,7 @@ function enemyHasClearHit(e){
   if(distance>ATTACK_RANGE*1.65) return false;
   raycaster.set(origin,toPlayer.normalize());
   raycaster.far=distance;
-  const obstruction=raycaster.intersectObjects(collidables(),false)[0];
+  const obstruction=raycaster.intersectObjects(nearbyBuildingMeshes(origin,distance+2),false)[0];
   raycaster.far=Infinity;
   return !obstruction || obstruction.distance>=distance-0.35;
 }
@@ -3325,6 +3381,7 @@ function clearHeldInputs(){
   P.parryT=0;
   P.traversalHoldT=0;
   P.traversalSwingStarted=false;
+  P.traversalSearchAttempted=false;
   P.jumpCharging=false;
   P.diving=false;
   if(P.state === 'swing' || (P.state==='climb' && P.wallRunFromSwing)) releaseSwing(null,false);
@@ -3362,7 +3419,6 @@ function updatePlayer(dt){
   if(P.lastDamageT===0&&P.hp>0&&P.hp<P.maxHp) P.hp=Math.min(P.maxHp,P.hp+7*dt);
   P.swingHistoryT=Math.max(0,P.swingHistoryT-dt);
   P.quickRecoveryT=Math.max(0,P.quickRecoveryT-dt);
-  P.traversalRetryT=Math.max(0,P.traversalRetryT-dt);
   const rollWasActive=P.recoveryRollT>0;
   P.recoveryRollT=Math.max(0,P.recoveryRollT-dt);
   if(rollWasActive && P.recoveryRollT===0 && P.recoveryLaunchPending){
@@ -3407,12 +3463,13 @@ function updatePlayer(dt){
   if(traversalDown&&!lastTraversal){
     P.traversalHoldT=0;
     P.traversalSwingStarted=false;
+    P.traversalSearchAttempted=false;
   }
   if(traversalDown){
     P.traversalHoldT+=dt;
-    if(P.traversalHoldT>=traversalHoldDelay && !P.traversalSwingStarted && P.traversalRetryT<=0){
+    if(P.traversalHoldT>=traversalHoldDelay && !P.traversalSearchAttempted){
+      P.traversalSearchAttempted=true;
       P.traversalSwingStarted=trySmartSwing();
-      P.traversalRetryT=0.12;
     }
   }
   if(!traversalDown&&lastTraversal){
@@ -3424,6 +3481,7 @@ function updatePlayer(dt){
     }
     P.traversalHoldT=0;
     P.traversalSwingStarted=false;
+    P.traversalSearchAttempted=false;
   }
   if(webshotDown && !lastWebshot && P.cooldowns.webshot<=0){ tryWebshot(); P.cooldowns.webshot=0.5; }
   if(meleeDown && !lastMelee && P.cooldowns.melee<=0 && P.state!=='swing'){ tryMelee(); P.cooldowns.melee=0.45; }
@@ -3896,7 +3954,7 @@ function updateProjectiles(dt){
     }
     if(!hit){
       raycaster.set(previous,p.dir);raycaster.far=travel;
-      hit=raycaster.intersectObjects(collidables(),false).length>0;
+      hit=raycaster.intersectObjects(nearbyBuildingMeshes(previous,travel+2),false).length>0;
       raycaster.far=Infinity;
     }
     if(hit || p.life<=0) removeProjectile(i);
@@ -3904,7 +3962,7 @@ function updateProjectiles(dt){
 }
 
 function pointInsideBuildingVolume(point){
-  return buildingMeshes.some(b =>
+  return nearbyBuildings(point,1).some(b =>
     point.x > b.hitMinX &&
     point.x < b.hitMaxX &&
     point.z > b.hitMinZ &&
@@ -3915,7 +3973,7 @@ function pointInsideBuildingVolume(point){
 }
 
 function pushPointOutOfBuildingVolume(point, clearance=0.45){
-  for(const b of buildingMeshes){
+  for(const b of nearbyBuildings(point,clearance+1)){
     const inside =
       point.x > b.hitMinX &&
       point.x < b.hitMaxX &&
@@ -3983,7 +4041,7 @@ function updateCamera(dt=1/60){
   if(desiredDist > 0.1){
     raycaster.set(focus, cameraRay);
     raycaster.far = desiredDist;
-    const hits = raycaster.intersectObjects(collidables(), false);
+    const hits = raycaster.intersectObjects(nearbyBuildingMeshes(focus,desiredDist+2), false);
     if(hits.length) clearDistance=Math.min(clearDistance,Math.max(0.45,hits[0].distance-0.4));
     raycaster.far = Infinity;
 
@@ -4108,7 +4166,7 @@ function updateEnemyHpBars(){
     if(distance>42){ e.hpEl.style.display='none'; return; }
     raycaster.set(eye,toEnemy.normalize());
     raycaster.far=distance;
-    const obstruction=raycaster.intersectObjects(collidables(),false)[0];
+    const obstruction=raycaster.intersectObjects(nearbyBuildingMeshes(eye,distance+2),false)[0];
     raycaster.far=Infinity;
     if(obstruction&&obstruction.distance<distance-0.6){ e.hpEl.style.display='none'; return; }
     v.copy(worldPoint);
