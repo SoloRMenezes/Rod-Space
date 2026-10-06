@@ -155,7 +155,12 @@ function setShiftLock(on){
   }
   firstPersonAutoLock=false;
   shiftLocked = on;
-  if(on){ canvas.requestPointerLock(); document.getElementById('lockHint').style.display='none'; }
+  cameraCollisionDistance=null;
+  if(on){
+    pitch=THREE.MathUtils.clamp(pitch,-0.55,0.65);
+    canvas.requestPointerLock();
+    document.getElementById('lockHint').style.display='none';
+  }
   else if(document.pointerLockElement===canvas) document.exitPointerLock();
 }
 function togglePause(){
@@ -3872,15 +3877,22 @@ function updateCamera(dt=1/60){
   }
 
   const dist = cameraDistance;
-  const camOffset = new THREE.Vector3(
-    -Math.sin(yaw)*Math.cos(pitch)*dist,
-    1.75-Math.sin(pitch)*dist,
-    -Math.cos(yaw)*Math.cos(pitch)*dist
-  );
-  const desired = P.pos.clone().add(camOffset);
-  // Stable right-shoulder framing keeps the avatar clear of the reticle.
+  const flatForward=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw));
   const shoulderRight=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
-  desired.addScaledVector(shoulderRight,1.45);
+  let desired;
+  if(shiftLocked){
+    // A true shoulder rig stays close behind the torso and offsets sideways;
+    // pitch changes the aim, not the camera's orbital height.
+    desired=focus.clone().addScaledVector(flatForward,-5.6).addScaledVector(shoulderRight,1.2);
+    desired.y+=.65;
+  } else {
+    const camOffset=new THREE.Vector3(
+      -Math.sin(yaw)*Math.cos(pitch)*dist,
+      1.75-Math.sin(pitch)*dist,
+      -Math.cos(yaw)*Math.cos(pitch)*dist
+    );
+    desired=P.pos.clone().add(camOffset);
+  }
   const fromFocus = desired.clone().sub(focus);
   const desiredDist = fromFocus.length();
   const cameraRay = fromFocus.clone().normalize();
@@ -3906,7 +3918,7 @@ function updateCamera(dt=1/60){
   const blend=1-Math.exp(-response*dt);
   cameraCollisionDistance=THREE.MathUtils.lerp(cameraCollisionDistance,clearDistance,blend);
   camera.position.copy(focus).addScaledVector(cameraRay,cameraCollisionDistance);
-  camera.lookAt(camera.position.clone().addScaledVector(lookDir,30));
+  camera.lookAt(shiftLocked?camera.position.clone().addScaledVector(lookDir,30):focus);
 }
 
 function updateZoomInput(dt){
@@ -3985,7 +3997,7 @@ function drawMinimap(){
 
 function updateCrosshair(){
   const wrap=document.getElementById('crosshairWrap');
-  const aimingLocked=gameActive && !paused;
+  const aimingLocked=gameActive && !paused && (shiftLocked || firstPersonAutoLock || cameraDistance<=0.6);
   wrap.style.display=aimingLocked?'block':'none';
   if(!aimingLocked) return;
   const hit = zipCrosshairHit(Math.max(SWING_MAX_RANGE,WEBSHOT_RANGE,ZIP_RANGE));

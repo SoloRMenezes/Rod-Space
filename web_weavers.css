@@ -82,15 +82,15 @@ html,body{margin:0;padding:0;overflow:hidden;background:#0a0f1e;font-family:Aria
     border:2px solid #111;border-radius:4px;padding:0 3px;}
 
   #crosshairWrap{position:absolute;top:50%;left:50%;width:0;height:0;display:none;}
-  #crosshair{position:absolute;top:-12px;left:-12px;width:24px;height:24px;color:#7CFC00;
-    filter:drop-shadow(1px 1px 0 #111);transition:color .08s;}
+  #crosshair{position:absolute;top:-7px;left:-7px;width:14px;height:14px;color:#fff;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.8));transition:opacity .08s;}
   #crosshair:before,#crosshair:after{content:"";position:absolute;left:50%;top:50%;background:currentColor;
     transform:translate(-50%,-50%);border-radius:1px;}
-  #crosshair:before{width:22px;height:3px;}
-  #crosshair:after{width:3px;height:22px;}
-  #crosshair.enemy{color:#ff2b2b;}
-  #crosshair.zip{color:#35e67a;filter:drop-shadow(0 0 5px rgba(53,230,122,.8)) drop-shadow(1px 1px 0 #111);}
-  #crosshair.none{color:rgba(255,255,255,.72);}
+  #crosshair:before{width:12px;height:1px;}
+  #crosshair:after{width:1px;height:12px;}
+  #crosshair.enemy,#crosshair.zip,#crosshair.none{color:#fff;}
+  #crosshair.zip{opacity:1;}
+  #crosshair.none{opacity:.72;}
 
   .pillToggle{position:relative;width:46px;height:24px;display:inline-block;vertical-align:middle;}
   .pillToggle input{position:absolute;opacity:0;pointer-events:none;}
