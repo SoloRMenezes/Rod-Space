@@ -63,6 +63,7 @@ assert.match(weavers,/new THREE\.SphereGeometry\(0\.38,16,12\)/);
 assert.match(weavers,/new THREE\.CylinderGeometry\(0\.42,0\.34,1\.08,8\)/);
 assert.match(weavers,/new THREE\.GLTFLoader\(\)\.load/);
 assert.match(weavers,/const r15VisualBone=/);
+assert.match(weavers,/applyR15Bone\(name,\{x:-\(rot\.x\|\|0\),y:-\(rot\.y\|\|0\),z:-\(rot\.z\|\|0\)\},amount\)/);
 assert.match(weavers,/applyR15VisualBone\(r15VisualBone\.leftLowerArm/);
 assert.match(weavers,/const breath=Math\.sin\(animClock\*1\.8\)/);
 assert.match(weavers,/torsoRot\.x = running \? -0\.22 : -0\.07/);

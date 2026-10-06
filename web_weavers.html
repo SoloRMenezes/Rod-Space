@@ -1397,10 +1397,10 @@ const r15VisualBone={
 };
 
 function applyR15VisualBone(name,rot,amount){
-  // Swapping a bone to the opposite side also mirrors its local coordinate
-  // frame. Pitch remains pitch, while yaw and roll must change sign. Without
-  // this, spread limbs fold across the body (most obvious in wall cling).
-  applyR15Bone(name,{x:rot.x||0,y:-(rot.y||0),z:-(rot.z||0)},amount);
+  // The Blender export faces down the opposite local forward axis. Mirror all
+  // three pose axes at the model boundary so forward strides, punches and web
+  // reaches do not animate behind the avatar.
+  applyR15Bone(name,{x:-(rot.x||0),y:-(rot.y||0),z:-(rot.z||0)},amount);
 }
 
 function visibleWebHandWorld(gameHand,fallback){
@@ -2053,7 +2053,7 @@ function poseEnemyBone(e,name,rot,amount){
 }
 
 function poseEnemyVisualBone(e,name,rot,amount){
-  poseEnemyBone(e,name,{x:rot.x||0,y:-(rot.y||0),z:-(rot.z||0)},amount);
+  poseEnemyBone(e,name,{x:-(rot.x||0),y:-(rot.y||0),z:-(rot.z||0)},amount);
 }
 
 function setEnemyFlash(e,on){
@@ -2250,8 +2250,8 @@ function animateEnemy(e,dt){
     const attackWindup=e.state==='attacking'?THREE.MathUtils.clamp(1-e.attackCd/0.65,0,1):0;
     const punch=Math.sin(attackWindup*Math.PI);
     const runLean=walking?-0.16:0;
-    poseEnemyBone(e,'UpperTorso',{x:runLean,y:punch*0.2,z:0},blend);
-    poseEnemyBone(e,'Head',{x:walking?0.05:0,y:-punch*0.08,z:0},blend);
+    poseEnemyBone(e,'UpperTorso',{x:-runLean,y:punch*0.2,z:0},blend);
+    poseEnemyBone(e,'Head',{x:walking?-0.05:0,y:-punch*0.08,z:0},blend);
     poseEnemyVisualBone(e,r15VisualBone.leftUpperArm,
       {x:walking?stride*0.72:-0.04,y:0,z:walking?-0.05:-0.02},blend);
     poseEnemyVisualBone(e,r15VisualBone.rightUpperArm,
@@ -3263,8 +3263,8 @@ function animatePlayer(dt, moveVec){
   if(r15Ready){
     // Drive the authored R15 joints from the same state poses. Elbows and knees
     // receive secondary bends so the imported model does not move as four rigid rods.
-    applyR15Bone('UpperTorso',torsoRot,amt);
-    applyR15Bone('Head',headRot,amt);
+    applyR15Bone('UpperTorso',{x:-(torsoRot.x||0),y:torsoRot.y||0,z:torsoRot.z||0},amt);
+    applyR15Bone('Head',{x:-(headRot.x||0),y:headRot.y||0,z:headRot.z||0},amt);
     applyR15VisualBone(r15VisualBone.leftUpperArm,armLRot,amt);
     applyR15VisualBone(r15VisualBone.rightUpperArm,armRRot,amt);
     applyR15VisualBone(r15VisualBone.leftUpperLeg,legLRot,amt);
