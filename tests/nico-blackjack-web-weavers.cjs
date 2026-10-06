@@ -26,7 +26,10 @@ assert.match(blackjack,/localStorage\.setItem\('blackjack-record'/);
 assert.match(blackjack,/isHidden \? 'card-back'/);
 assert.doesNotMatch(blackjack,/\.card\.hidden/);
 
-const weavers=read('web_weavers.html');
+const weaversHtml=read('web_weavers.html');
+const weaversCss=read('web_weavers.css');
+const weaversJs=read('web_weavers.js');
+const weavers=weaversHtml+'\n'+weaversCss+'\n'+weaversJs;
 assert.ok(fs.statSync(path.join(root,'assets/models/web-weavers-r15.glb')).size>100000);
 assert.ok(fs.statSync(path.join(root,'assets/vendor/GLTFLoader-r128.js')).size>90000);
 assert.match(weavers,/const RESPAWN_TIME = 30;/);
@@ -36,11 +39,11 @@ assert.match(weavers,/updatePatrolStatus\(\)/);
 assert.match(weavers,/#topButtons\{[^}]*display:flex/);
 assert.match(weavers,/traversal:'ShiftLeft'/);
 assert.match(weavers,/shiftLock:'KeyV'/);
-assert.match(weavers,/if\(P\.traversalHoldT>=traversalHoldDelay/);
+assert.match(weavers,/if\(traversalDown&&!lastTraversal\)/);
 assert.match(weavers,/traversalSearchAttempted:false/);
-assert.match(weavers,/if\(P\.traversalHoldT>=traversalHoldDelay && !P\.traversalSearchAttempted\)/);
+assert.match(weavers,/if\(!P\.traversalSwingStarted && P\.traversalHoldT>=\.12\)/);
 assert.doesNotMatch(weavers,/traversalRetryT/);
-assert.match(weavers,/if\(tryZip\(\)\) P\.cooldowns\.zip=0\.15/);
+assert.match(weavers,/zipDown&&!lastZip/);
 assert.match(weavers,/travelDir\.lerp\(mv,\.16\)\.normalize\(\)/);
 assert.match(weavers,/P\.vel\.copy\(exitDir\)\.multiplyScalar\(18\)/);
 assert.match(weavers,/function trySmartSwing\(\)/);
@@ -51,7 +54,7 @@ assert.match(weavers,/P\.quickRecoveryT=QUICK_RECOVERY_WINDOW/);
 assert.doesNotMatch(weavers,/function fallDamageForDrop/);
 assert.match(weavers,/const SWING_RELEASE_CARRY = \.96;/);
 assert.match(weavers,/web\.physicsPivot=web\.anchor\.clone\(\)/);
-assert.match(weavers,/P\.vel\.addScaledVector\(swingSteer,3\.2\*dt\)/);
+assert.match(weavers,/P\.vel\.addScaledVector\(swingSteer,3\.2\*\(1\+progress\.traversal\*\.05\)\*dt\)/);
 assert.doesNotMatch(weavers,/SWING_DESCENT_PUMP|SWING_LANE_SPRING|SWING_SAFE_REEL_SPEED/);
 assert.doesNotMatch(weavers,/losingRise[^\n]*autoReleaseSwing\(\)/);
 assert.match(weavers,/limitHorizontalSpeed\(SWING_RELEASE_MAX_SPEED\)/);
@@ -133,9 +136,10 @@ assert.match(drift,/gridRoadHalfWidth = 8\.2/);
 assert.match(drift,/practiceBottleSpots\.length < 16/);
 assert.match(drift,/col\.map==='training'\?30000:nitroBottleRespawnMs/);
 
-for(const [name,html] of [['nicos_nextbots.html',nico],['Blackjack.html',blackjack],['web_weavers.html',weavers]]){
+for(const [name,html] of [['nicos_nextbots.html',nico],['Blackjack.html',blackjack]]){
   const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match=>match[1]).filter(script=>script.trim());
   scripts.forEach((script,index)=>new vm.Script(script,{filename:`${name}#${index+1}`}));
 }
+new vm.Script(weaversJs,{filename:'web_weavers.js'});
 
 console.log('PASS: Nico five floors and Floor 3 spawn, Blackjack scoring/natural flow, Web Weavers patrol and swept web shots.');

@@ -164,6 +164,9 @@
             gap: 10px;
             margin-top: 15px;
         }
+        .inv-slot{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+        .inventory-emoji{font-size:2rem;line-height:1;}
+        .inventory-rarity{position:absolute;left:5px;right:5px;bottom:5px;font-size:.48rem;font-weight:900;letter-spacing:.04em;text-align:center;text-transform:uppercase;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
         .inv-slot {
             aspect-ratio: 1;
@@ -750,7 +753,7 @@
             const d = document.createElement('div');
             d.className = 'inv-slot';
             d.style.setProperty('--slot-rarity', `var(--${item.rarity.toLowerCase()})`);
-            d.innerHTML = item.emoji;
+            d.innerHTML = `<span class="inventory-emoji">${item.emoji}</span><span class="inventory-rarity rarity-${item.rarity}">${item.rarity}</span>`;
             list.appendChild(d);
         });
 

@@ -24,6 +24,8 @@ assert.match(html,/type==='luck'&&state\.luck>=MAX_LUCK_LEVEL/);
 assert.match(html,/if \(state\.inventory\.length \+ count > state\.maxInv\)/);
 assert.match(html,/if\(state\.maxInv<count\)return notify/);
 assert.doesNotMatch(html,/overflow items auto-sold/);
+assert.match(html,/inventory-rarity rarity-\$\{item\.rarity\}/);
+assert.match(html,/\.inventory-rarity\{/);
 
 const additionsSource=html.match(/const additions = (\{[\s\S]*?\});\n        config\.forEach/)[1];
 const additions=vm.runInNewContext(`(${additionsSource})`);
