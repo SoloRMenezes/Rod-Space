@@ -763,16 +763,22 @@ for(let i=0;i<14;i++){
 }
 
 // ---------------------------------------------------------------------------------------
-// CITY GENERATION  (dense, irregular Queens/Manhattan-inspired street fabric)
+// CITY GENERATION  (long Manhattan-style island with unequal avenues/blocks)
 // ---------------------------------------------------------------------------------------
-const BLOCKS = 9;               // larger city with more routes in every direction
-const BLOCK = 58;               // wider city blocks and building footprints
-const STREET = 18;              // broad avenues leave room to swing between towers
-const TILE = BLOCK+STREET;
-const HALF_CITY = (BLOCKS*TILE)/2;
-const PLAYER_SPAWN = new THREE.Vector3(STREET * 2, 0, STREET * 2);
-const ISLAND_RADIUS_X = HALF_CITY + 58;
-const ISLAND_RADIUS_Z = HALF_CITY + 52;
+const BLOCKS_X = 8;
+const BLOCKS_Z = 12;
+const BLOCK_X = 64;             // long east/west blocks
+const BLOCK_Z = 42;             // shorter north/south blocks
+const STREET_X = 20;            // wider avenues
+const STREET_Z = 16;            // narrower cross streets
+const TILE_X = BLOCK_X+STREET_X;
+const TILE_Z = BLOCK_Z+STREET_Z;
+const HALF_CITY_X = (BLOCKS_X*TILE_X)/2;
+const HALF_CITY_Z = (BLOCKS_Z*TILE_Z)/2;
+const HALF_CITY = Math.max(HALF_CITY_X,HALF_CITY_Z);
+const PLAYER_SPAWN = new THREE.Vector3(0, 0, 0); // central avenue intersection, never inside a lot
+const ISLAND_RADIUS_X = HALF_CITY_X + 58;
+const ISLAND_RADIUS_Z = HALF_CITY_Z + 52;
 const WATER_LEVEL = -3.2;
 const OCEAN_FLOOR = -24;
 
@@ -813,6 +819,7 @@ function makeIslandShape(rx,rz){
 }
 
 const buildingMeshes = [];      // visual bounds and collision bounds are identical
+const parkAreas = [];
 const anchorEdges = [];         // continuous upper perimeters for swing debug viz
 const anchorMarkers = [];
 const colorPalette = [0xc9564f,0xe0a458,0x6a8caf,0xc7b198,0x8fae6b,0xb46a5a,0x9aa5b1];
@@ -937,6 +944,10 @@ const trunkMat = new THREE.MeshLambertMaterial({color:0x594332});
 const leavesMat = new THREE.MeshLambertMaterial({color:0x4d7d49});
 const treeTrunkGeo=new THREE.CylinderGeometry(0.42,0.55,3.4,6);
 const treeCrownGeo=new THREE.DodecahedronGeometry(2.2,0);
+const rooftopMetalMat=new THREE.MeshLambertMaterial({color:0x6f7b83});
+const rooftopDarkMat=new THREE.MeshLambertMaterial({color:0x333b43});
+const lampMat=new THREE.MeshLambertMaterial({color:0x20252b});
+const lampGlowMat=new THREE.MeshBasicMaterial({color:0xffe39a});
 
 const windowCanvas=document.createElement('canvas');
 windowCanvas.width=96; windowCanvas.height=160;
@@ -962,7 +973,7 @@ const buildingMaterialSets=colorPalette.map(color=>{
 // A Broadway-like diagonal breaks the rigid orthogonal grid and creates a long,
 // readable traversal route through the middle of the borough.
 const diagonalAvenue=new THREE.Mesh(
-  new THREE.PlaneGeometry(30,HALF_CITY*2.65),
+  new THREE.PlaneGeometry(30,Math.hypot(HALF_CITY_X,HALF_CITY_Z)*2.25),
   new THREE.MeshLambertMaterial({color:0x34363c})
 );
 diagonalAvenue.rotation.set(-Math.PI/2,0,-0.57);
@@ -981,6 +992,26 @@ function makeBuilding(cx, cz, w, d, h, colorIdx){
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(cx, h/2, cz);
   addEdges(mesh);
+  // Roof silhouettes make towers readable while swinging without adding new
+  // collision shapes that could snag the player.
+  if(h>105){
+    const roofRoom=new THREE.Mesh(
+      new THREE.BoxGeometry(Math.min(10,w*.25),3.2,Math.min(8,d*.28)),
+      rooftopDarkMat
+    );
+    roofRoom.position.set((colorIdx%3-1)*w*.12,h/2+1.6,0);
+    mesh.add(roofRoom);
+  }
+  if(h>150 && colorIdx%2===0){
+    const tank=new THREE.Group();
+    const barrel=new THREE.Mesh(new THREE.CylinderGeometry(2.8,2.8,4.2,10),rooftopMetalMat);
+    barrel.position.y=4.4;
+    const legs=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,4.2,5),rooftopDarkMat);
+    legs.position.y=2.1;
+    tank.add(barrel,legs);
+    tank.position.set(-w*.22,h/2,d*.18);
+    mesh.add(tank);
+  }
   cityGroup.add(mesh);
   const minX = cx-w/2, maxX = cx+w/2, minZ = cz-d/2, maxZ = cz+d/2;
   const rec = {
@@ -998,30 +1029,55 @@ function makeBuilding(cx, cz, w, d, h, colorIdx){
   return rec;
 }
 
+function addStreetFurniture(){
+  const poleGeo=new THREE.CylinderGeometry(.18,.22,5.6,6);
+  const bulbGeo=new THREE.SphereGeometry(.42,8,6);
+  for(let ix=1;ix<BLOCKS_X;ix+=2){
+    for(let iz=1;iz<BLOCKS_Z;iz+=2){
+      const x=-HALF_CITY_X+ix*TILE_X+STREET_X*.28;
+      const z=-HALF_CITY_Z+iz*TILE_Z+STREET_Z*.28;
+      const lamp=new THREE.Group();
+      const pole=new THREE.Mesh(poleGeo,lampMat);pole.position.y=2.8;
+      const bulb=new THREE.Mesh(bulbGeo,lampGlowMat);bulb.position.y=5.65;
+      lamp.add(pole,bulb);lamp.position.set(x,0,z);scene.add(lamp);
+      // Compact zebra crossing at selected intersections.
+      for(let stripe=0;stripe<5;stripe++){
+        const crossing=new THREE.Mesh(
+          new THREE.PlaneGeometry(1.25,STREET_Z*.68),
+          new THREE.MeshBasicMaterial({color:0xd8d5c9})
+        );
+        crossing.rotation.x=-Math.PI/2;
+        crossing.position.set(x-STREET_X*.55+stripe*2.4,0.052,z-STREET_Z*.28);
+        scene.add(crossing);
+      }
+    }
+  }
+}
+
 let citySeed=0x5f3759df;
 const cityRandom=()=>{citySeed=(citySeed*1664525+1013904223)>>>0;return citySeed/4294967296;};
-for(let ix=0; ix<BLOCKS; ix++){
-  for(let iz=0; iz<BLOCKS; iz++){
+for(let ix=0; ix<BLOCKS_X; ix++){
+  for(let iz=0; iz<BLOCKS_Z; iz++){
     // Small block offsets, parks and mixed footprints prevent the old copy-paste grid.
-    const bx = -HALF_CITY + ix*TILE + TILE/2 + (cityRandom()-0.5)*5;
-    const bz = -HALF_CITY + iz*TILE + TILE/2 + (cityRandom()-0.5)*5;
+    const bx = -HALF_CITY_X + ix*TILE_X + TILE_X/2 + (cityRandom()-0.5)*5;
+    const bz = -HALF_CITY_Z + iz*TILE_Z + TILE_Z/2 + (cityRandom()-0.5)*4;
 
     // lot ground tint
-    const lot = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK, BLOCK), lotMat);
+    const lot = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK_X, BLOCK_Z), lotMat);
     lot.rotation.x = -Math.PI/2; lot.position.set(bx, 0.02, bz);
     scene.add(lot);
 
-    const nearCenter = (Math.abs(ix-(BLOCKS-1)/2)<1.7 && Math.abs(iz-(BLOCKS-1)/2)<1.7);
+    const nearCenter = (Math.abs(ix-(BLOCKS_X-1)/2)<1.7 && Math.abs(iz-(BLOCKS_Z-1)/2)<2.3);
     const isLandmark = cityRandom() < (nearCenter?0.7:0.2);
-    const diagonalLine=(BLOCKS-1)-(ix*0.68)-1.15;
-    const isDiagonalAvenue=Math.abs(iz-diagonalLine)<0.34;
+    const isDiagonalAvenue=Math.abs(bz+bx*0.64)<20;
     const isPark = !nearCenter && cityRandom()<0.08;
     if(isPark){
-      const park=new THREE.Mesh(new THREE.PlaneGeometry(BLOCK*.86,BLOCK*.86),parkMat);
+      const park=new THREE.Mesh(new THREE.PlaneGeometry(BLOCK_X*.86,BLOCK_Z*.86),parkMat);
       park.rotation.x=-Math.PI/2;park.position.set(bx,0.045,bz);scene.add(park);
+      parkAreas.push({minX:bx-BLOCK_X*.43,maxX:bx+BLOCK_X*.43,minZ:bz-BLOCK_Z*.43,maxZ:bz+BLOCK_Z*.43});
       for(let treeIndex=0;treeIndex<6;treeIndex++){
         const angle=(treeIndex/6)*Math.PI*2+cityRandom()*.4;
-        const radius=BLOCK*(.19+cityRandom()*.17);
+        const radius=Math.min(BLOCK_X,BLOCK_Z)*(.19+cityRandom()*.17);
         const tree=new THREE.Group();
         const trunk=new THREE.Mesh(treeTrunkGeo,trunkMat);trunk.position.y=1.7;
         const crown=new THREE.Mesh(treeCrownGeo,leavesMat);crown.position.y=4.5;
@@ -1037,20 +1093,21 @@ for(let ix=0; ix<BLOCKS; ix++){
     const layout=cityRandom();
     if(layout<0.46){
       const h = isLandmark ? 190+cityRandom()*150 : 95+cityRandom()*125;
-      makeBuilding(bx,bz, BLOCK*(0.84+cityRandom()*.1), BLOCK*(0.82+cityRandom()*.12), h, (ix+iz));
+      makeBuilding(bx,bz, BLOCK_X*(0.84+cityRandom()*.1), BLOCK_Z*(0.82+cityRandom()*.12), h, (ix+iz));
     } else if(layout<0.86) {
       const h1 = isLandmark? 170+cityRandom()*145 : 100+cityRandom()*120;
       const h2 = 85+cityRandom()*115;
-      makeBuilding(bx-BLOCK*0.245, bz, BLOCK*0.46, BLOCK*0.9, h1, ix);
-      makeBuilding(bx+BLOCK*0.245, bz, BLOCK*0.46, BLOCK*0.9, h2, iz+3);
+      makeBuilding(bx-BLOCK_X*0.245, bz, BLOCK_X*0.46, BLOCK_Z*0.9, h1, ix);
+      makeBuilding(bx+BLOCK_X*0.245, bz, BLOCK_X*0.46, BLOCK_Z*0.9, h2, iz+3);
     } else {
-      const d=BLOCK*0.43;
-      makeBuilding(bx-BLOCK*.25,bz-BLOCK*.23,BLOCK*.44,d,100+cityRandom()*145,ix);
-      makeBuilding(bx+BLOCK*.25,bz-BLOCK*.23,BLOCK*.44,d,90+cityRandom()*130,iz+2);
-      makeBuilding(bx,bz+BLOCK*.24,BLOCK*.92,d,115+cityRandom()*155,ix+iz+4);
+      const d=BLOCK_Z*0.43;
+      makeBuilding(bx-BLOCK_X*.25,bz-BLOCK_Z*.23,BLOCK_X*.44,d,100+cityRandom()*145,ix);
+      makeBuilding(bx+BLOCK_X*.25,bz-BLOCK_Z*.23,BLOCK_X*.44,d,90+cityRandom()*130,iz+2);
+      makeBuilding(bx,bz+BLOCK_Z*.24,BLOCK_X*.92,d,115+cityRandom()*155,ix+iz+4);
     }
   }
 }
+addStreetFurniture();
 
 // Debug mode shows the actual continuous target surface instead of implying
 // that the web can only grab four discrete rooftop corners.
@@ -1489,15 +1546,46 @@ function wallContact(px,pz, dirYaw, dist=0.9){
 
 // Horizontal hitbox: pushes the player out of any building that's taller than they
 // currently are (buildings short enough to just stand on are handled by heightAt instead).
+function segmentAabbEntry(from,to,minX,maxX,minZ,maxZ){
+  const dx=to.x-from.x,dz=to.z-from.z;
+  let entry=0,exit=1,normal=null;
+  const axes=[
+    {start:from.x,delta:dx,min:minX,max:maxX,negative:new THREE.Vector3(-1,0,0),positive:new THREE.Vector3(1,0,0)},
+    {start:from.z,delta:dz,min:minZ,max:maxZ,negative:new THREE.Vector3(0,0,-1),positive:new THREE.Vector3(0,0,1)}
+  ];
+  for(const axis of axes){
+    if(Math.abs(axis.delta)<1e-7){
+      if(axis.start<=axis.min||axis.start>=axis.max)return null;
+      continue;
+    }
+    let near=(axis.min-axis.start)/axis.delta;
+    let far=(axis.max-axis.start)/axis.delta;
+    let nearNormal=axis.negative;
+    if(near>far){[near,far]=[far,near];nearNormal=axis.positive;}
+    if(near>entry){entry=near;normal=nearNormal;}
+    exit=Math.min(exit,far);
+    if(entry>exit)return null;
+  }
+  return normal&&entry>=0&&entry<=1?{t:entry,normal}:null;
+}
+
 function resolveWallCollision(pos, previousPos=null){
   let hitNormal = null;
   let hitBuilding = null;
   for(const b of buildingMeshes){
     if(b.h <= pos.y + 1.0) continue;
     const minX=b.hitMinX-PLAYER_RADIUS, maxX=b.hitMaxX+PLAYER_RADIUS, minZ=b.hitMinZ-PLAYER_RADIUS, maxZ=b.hitMaxZ+PLAYER_RADIUS;
-    if(pos.x>minX && pos.x<maxX && pos.z>minZ && pos.z<maxZ){
+    const inside=pos.x>minX && pos.x<maxX && pos.z>minZ && pos.z<maxZ;
+    const sweep=!inside&&previousPos?segmentAabbEntry(previousPos,pos,minX,maxX,minZ,maxZ):null;
+    if(inside||sweep){
       let normal;
-      if(previousPos && previousPos.x<=minX){ pos.x=minX; normal=new THREE.Vector3(-1,0,0); }
+      if(sweep){
+        const t=Math.max(0,sweep.t-0.001);
+        pos.x=THREE.MathUtils.lerp(previousPos.x,pos.x,t);
+        pos.z=THREE.MathUtils.lerp(previousPos.z,pos.z,t);
+        normal=sweep.normal;
+      }
+      else if(previousPos && previousPos.x<=minX){ pos.x=minX; normal=new THREE.Vector3(-1,0,0); }
       else if(previousPos && previousPos.x>=maxX){ pos.x=maxX; normal=new THREE.Vector3(1,0,0); }
       else if(previousPos && previousPos.z<=minZ){ pos.z=minZ; normal=new THREE.Vector3(0,0,-1); }
       else if(previousPos && previousPos.z>=maxZ){ pos.z=maxZ; normal=new THREE.Vector3(0,0,1); }
@@ -1793,10 +1881,10 @@ function findLookSwingAnchor(){
 const spawnPoints = [];
 for(let i=0;i<10;i++){
   // Street intersections remain clear even when a block contains two buildings.
-  const ix = 1+((Math.random()*(BLOCKS-1))|0);
-  const iz = 1+((Math.random()*(BLOCKS-1))|0);
-  const x = -HALF_CITY + ix*TILE;
-  const z = -HALF_CITY + iz*TILE;
+  const ix = 1+((Math.random()*(BLOCKS_X-1))|0);
+  const iz = 1+((Math.random()*(BLOCKS_Z-1))|0);
+  const x = -HALF_CITY_X + ix*TILE_X;
+  const z = -HALF_CITY_Z + iz*TILE_Z;
   spawnPoints.push(new THREE.Vector3(x,0,z));
 }
 const spawnMarkers = [];
@@ -3350,6 +3438,7 @@ function updatePlayer(dt){
     P.swingAge+=dt;
     P.swingPhaseT+=dt;
     P.swingPeakFlat=Math.max(P.swingPeakFlat,Math.hypot(P.vel.x,P.vel.z));
+    const previousVy=P.vel.y;
     P.vel.y += GRAVITY*dt;
     let activeWebs=[P.swingWebs.left,P.swingWebs.right].filter(web=>web.anchor);
     if(!activeWebs.length){
@@ -3864,14 +3953,45 @@ function updateZoomInput(dt){
 const mmCanvas = document.getElementById('minimap');
 const mmCtx = mmCanvas.getContext('2d');
 function drawMinimap(){
-  const S=190, scale=S/(HALF_CITY*2.6);
+  const S=190, scale=Math.min((S-18)/(ISLAND_RADIUS_X*2),(S-18)/(ISLAND_RADIUS_Z*2));
   mmCtx.clearRect(0,0,S,S);
   mmCtx.fillStyle='#12233a'; mmCtx.fillRect(0,0,S,S);
   function toMM(x,z){ return [S/2 + x*scale, S/2 + z*scale]; }
-  mmCtx.fillStyle='#4c5568';
+  // Street network and Broadway-like diagonal make the map navigable rather
+  // than a collection of anonymous rectangles.
+  mmCtx.strokeStyle='#758091';mmCtx.lineWidth=Math.max(1,STREET_Z*scale*.55);
+  for(let ix=0;ix<=BLOCKS_X;ix++){
+    const x=-HALF_CITY_X+ix*TILE_X;
+    const [mx1,mz1]=toMM(x,-HALF_CITY_Z);const [mx2,mz2]=toMM(x,HALF_CITY_Z);
+    mmCtx.beginPath();mmCtx.moveTo(mx1,mz1);mmCtx.lineTo(mx2,mz2);mmCtx.stroke();
+  }
+  mmCtx.lineWidth=Math.max(1,STREET_X*scale*.42);
+  for(let iz=0;iz<=BLOCKS_Z;iz++){
+    const z=-HALF_CITY_Z+iz*TILE_Z;
+    const [mx1,mz1]=toMM(-HALF_CITY_X,z);const [mx2,mz2]=toMM(HALF_CITY_X,z);
+    mmCtx.beginPath();mmCtx.moveTo(mx1,mz1);mmCtx.lineTo(mx2,mz2);mmCtx.stroke();
+  }
+  mmCtx.strokeStyle='#949dad';mmCtx.lineWidth=Math.max(2,30*scale*.7);
+  const avenueLength=Math.hypot(HALF_CITY_X,HALF_CITY_Z)*1.2;
+  const ax=Math.sin(-0.57)*avenueLength,az=Math.cos(-0.57)*avenueLength;
+  const [a1x,a1z]=toMM(-ax,-az),[a2x,a2z]=toMM(ax,az);
+  mmCtx.beginPath();mmCtx.moveTo(a1x,a1z);mmCtx.lineTo(a2x,a2z);mmCtx.stroke();
+  parkAreas.forEach(p=>{
+    const [x1,y1]=toMM(p.minX,p.minZ),[x2,y2]=toMM(p.maxX,p.maxZ);
+    mmCtx.fillStyle='#4d8b53';mmCtx.fillRect(x1,y1,x2-x1,y2-y1);
+  });
   buildingMeshes.forEach(b=>{
     const [x1,y1]=toMM(b.minX,b.minZ); const [x2,y2]=toMM(b.maxX,b.maxZ);
+    const shade=Math.round(58+Math.min(90,b.h*.28));
+    mmCtx.fillStyle=`rgb(${shade},${shade+7},${shade+18})`;
     mmCtx.fillRect(x1,y1,x2-x1,y2-y1);
+  });
+  groups.forEach(g=>{
+    if(g.defeatedAt!==null)return;
+    const home=spawnPoints[g.spawnIdx];if(!home)return;
+    const [x,y]=toMM(home.x,home.z);
+    mmCtx.strokeStyle='#ffcf33';mmCtx.lineWidth=1.5;
+    mmCtx.beginPath();mmCtx.arc(x,y,6,0,Math.PI*2);mmCtx.stroke();
   });
   // spawn points (waypoints)
   spawnPoints.forEach(sp=>{
