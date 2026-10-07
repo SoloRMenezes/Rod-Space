@@ -122,6 +122,12 @@ window.addEventListener('keydown', e=>{
   }
   const already = keys[e.code];
   keys[e.code] = true;
+  // Zipping is a committed burst only while the player gives it no other
+  // instruction. Any fresh key except the zip key immediately returns control
+  // with the current momentum intact.
+  if(gameActive && !paused && !already && P.state==='zip' && e.code!==bindings.zip){
+    cancelZip();
+  }
   if(e.code === bindings.menu && !already && gameActive){ togglePause(); }
   if(!gameActive || paused) return;
   if(e.code === bindings.debug) toggleDebug();

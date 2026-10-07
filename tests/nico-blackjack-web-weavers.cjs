@@ -44,6 +44,7 @@ assert.match(weavers,/traversalSearchAttempted:false/);
 assert.doesNotMatch(weavers,/P\.traversalHoldT>=\.12/);
 assert.doesNotMatch(weavers,/traversalRetryT/);
 assert.match(weavers,/zipDown&&!lastZip/);
+assert.match(weavers,/P\.state==='zip' && e\.code!==bindings\.zip/);
 assert.match(weavers,/travelDir\.lerp\(mv,\.16\)\.normalize\(\)/);
 assert.match(weavers,/P\.vel\.copy\(exitDir\)\.multiplyScalar\(18\)/);
 assert.match(weavers,/function trySmartSwing\(\)/);
