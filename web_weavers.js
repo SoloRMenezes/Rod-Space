@@ -1522,7 +1522,7 @@ const JUMP_SPEED = 13.5;
 const SWING_MAX_RANGE = 300;
 const SWING_MIN_RANGE = 12;
 const ZIP_RANGE = 240;
-const ZIP_SPEED = 55;
+const ZIP_SPEED = 72;
 const PULL_RANGE = 26;
 const WEBSHOT_RANGE = 46;
 const WEBSHOT_SPEED = 95;
@@ -1539,15 +1539,17 @@ const GLIDE_MIN_SPEED = 11;
 const GLIDE_MAX_SPEED = 40;
 const GLIDE_TURN_RATE = 3.25;
 const GLIDE_MAX_SINK = 11;
-const SWING_MAX_SPEED = 58;
-const SWING_RELEASE_MAX_SPEED = 42;
-const SWING_RELEASE_CARRY = .96;
-const SWING_MAX_RISE_SPEED = 24;
+const SWING_MAX_SPEED = 72;
+const SWING_RELEASE_MAX_SPEED = 66;
+const SWING_RELEASE_CARRY = .99;
+const SWING_MAX_RISE_SPEED = 30;
 const SWING_ENTRY_MAX_TIME = 0.55;
 const SWING_MIN_GROUND_CLEARANCE = 2.8;
-const SWING_GROUND_RECOVERY_SPEED = 6.5;
-const SWING_LOOK_STEER = 4.2;
-const SWING_INPUT_STEER = 8.5;
+const SWING_GROUND_LOOKAHEAD = 0.8;
+const SWING_LOOK_TURN_RATE = 0.9;
+const SWING_INPUT_TURN_RATE = 2.8;
+const SWING_FORWARD_ACCEL = 11;
+const SWING_POWERED_SPEED = 64;
 const SWING_GROUND_PULL_TIME = 0.2;
 const MAX_JUMP_CHARGE = 0.85;
 const CHARGED_JUMP_BONUS = 10;
@@ -2597,14 +2599,14 @@ function giveSwingEntryMomentum(fromGround=false,groundClearance=Infinity){
   const flatSpeed = Math.hypot(P.vel.x,P.vel.z);
   // Keep every incoming component. Low-speed starts get an additive nudge instead
   // of having their velocity replaced, so diagonal momentum survives attachment.
-  if(flatSpeed<9){
-    const assist=9-flatSpeed;
+  if(flatSpeed<15){
+    const assist=15-flatSpeed;
     P.vel.x += forward.x*assist;
     P.vel.z += forward.z*assist;
   }
   // A street-level start has no room to descend. Give it only enough clearance
   // to establish the rope, then let gravity create the normal downward arc.
-  if(fromGround || groundClearance<1.5) P.vel.y=Math.max(P.vel.y,4.5);
+  if(fromGround || groundClearance<1.5) P.vel.y=Math.max(P.vel.y,7.5);
 }
 
 function swingConstraint(activeWebs){
@@ -3682,21 +3684,38 @@ function updatePlayer(dt){
       P.swingPeakRise=Math.max(P.swingPeakRise,P.vel.y);
     }
 
-    // Looking guides every swing, while WASD provides stronger intentional
-    // steering. Both forces are projected onto the rope's tangent so they
-    // redirect the arc without pulling the player closer to the building.
-    const lookSteer=cameraForwardFlat();
-    lookSteer.addScaledVector(radial,-lookSteer.dot(radial));
-    if(lookSteer.lengthSq()>0.001){
-      lookSteer.normalize();
-      P.vel.addScaledVector(lookSteer,SWING_LOOK_STEER*dt);
-    }
-    if(mv.lengthSq()>0){
-      const swingSteer=mv.clone().addScaledVector(radial,-mv.dot(radial));
-      if(swingSteer.lengthSq()>0.001){
-        swingSteer.normalize();
-        P.vel.addScaledVector(swingSteer,SWING_INPUT_STEER*(1+progress.traversal*.05)*dt);
+    // Camera and WASD rotate the existing horizontal momentum instead of adding
+    // thrust. This gives deliberate steering without creating free speed.
+    const flatSpeed=Math.hypot(P.vel.x,P.vel.z);
+    if(flatSpeed>0.25){
+      const steerIntent=cameraForwardFlat();
+      if(mv.lengthSq()>0.001) steerIntent.multiplyScalar(0.35).addScaledVector(mv,0.9).normalize();
+      steerIntent.addScaledVector(radial,-steerIntent.dot(radial));
+      const desiredFlat=new THREE.Vector3(steerIntent.x,0,steerIntent.z);
+      if(desiredFlat.lengthSq()>0.001){
+        const powering=!!keys[bindings.forward];
+        const phasePower=P.swingPhase==='descent'?1:0.55;
+        const steeredSpeed=powering
+          ? Math.min(SWING_POWERED_SPEED,flatSpeed+SWING_FORWARD_ACCEL*phasePower*dt)
+          : flatSpeed;
+        desiredFlat.normalize().multiplyScalar(steeredSpeed);
+        const currentFlat=new THREE.Vector3(P.vel.x,0,P.vel.z);
+        const turnRate=mv.lengthSq()>0.001?SWING_INPUT_TURN_RATE:SWING_LOOK_TURN_RATE;
+        currentFlat.lerp(desiredFlat,1-Math.exp(-turnRate*dt));
+        if(currentFlat.lengthSq()>0.001) currentFlat.setLength(steeredSpeed);
+        P.vel.x=currentFlat.x;
+        P.vel.z=currentFlat.z;
       }
+    }
+
+    // Predict the next surface crossing and adjust velocity before movement.
+    // The final clamp below is only a numerical safety net, not a bounce.
+    const predictedSwingPos=P.pos.clone().addScaledVector(P.vel,dt);
+    const predictedGround=heightAt(predictedSwingPos.x,predictedSwingPos.z,predictedSwingPos.y+2);
+    const predictedClearance=predictedSwingPos.y-predictedGround;
+    if(predictedClearance<SWING_MIN_GROUND_CLEARANCE+SWING_GROUND_LOOKAHEAD){
+      const minimumVy=(predictedGround+SWING_MIN_GROUND_CLEARANCE-P.pos.y)/Math.max(dt,0.001);
+      P.vel.y=Math.max(P.vel.y,minimumVy);
     }
     const beforeSwingMove = P.pos.clone();
     const swingImpactVelocity=P.vel.clone();
@@ -3709,12 +3728,18 @@ function updatePlayer(dt){
       // The collision resolver has already removed inward speed.
       P.pos.addScaledVector(swingWall.normal,.08);
     }
-    // An attached web always keeps the player airborne. If an arc would meet
-    // a road or rooftop, lift it back into a shallow skim without detaching.
+    // Numerical safety: maintain clearance, then solve the rope again. Raising
+    // toward an overhead anchor normally creates slack; unusual low anchors are
+    // allowed that extra rope rather than snapping the player back underground.
     const landingGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
     if(P.state==='swing' && P.pos.y<landingGround+SWING_MIN_GROUND_CLEARANCE){
       P.pos.y=landingGround+SWING_MIN_GROUND_CLEARANCE;
-      P.vel.y=Math.max(P.vel.y,SWING_GROUND_RECOVERY_SPEED);
+      P.vel.y=Math.max(P.vel.y,0);
+      constrainedWebs.forEach(web=>{
+        if(!web.physicsPivot)return;
+        web.length=Math.max(web.length,P.pos.distanceTo(web.physicsPivot));
+      });
+      enforceSwingConstraint(constrainedWebs);
     }
     if(P.state==='swing'){
       const currentVy=P.vel.y;
