@@ -548,14 +548,15 @@
         if (!ctx) return;
 
         let animId;
+        let renderDpr = 1;
 
         const handleResize = () => {
           if (!containerRef.current || !canvas) return;
           const rect = containerRef.current.getBoundingClientRect();
-          const dpr = window.devicePixelRatio || 1;
-          canvas.width = rect.width * dpr;
-          canvas.height = rect.height * dpr;
-          ctx.scale(dpr, dpr);
+          renderDpr = Math.min(window.devicePixelRatio || 1, 1.5);
+          canvas.width = rect.width * renderDpr;
+          canvas.height = rect.height * renderDpr;
+          ctx.setTransform(renderDpr, 0, 0, renderDpr, 0, 0);
           canvas.style.width = `${rect.width}px`;
           canvas.style.height = `${rect.height}px`;
         };
@@ -599,7 +600,7 @@
           if (activeRef.current && !pausedRef.current) {
             updateGame();
           }
-          drawGame(ctx, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+          drawGame(ctx, canvas.width / renderDpr, canvas.height / renderDpr);
           animId = requestAnimationFrame(loop);
         };
 

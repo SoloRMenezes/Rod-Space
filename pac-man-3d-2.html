@@ -231,8 +231,8 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.rotation.order = "YXZ";
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
-renderer.setPixelRatio(window.devicePixelRatio);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 /* Lighting */
@@ -1450,17 +1450,9 @@ function drawMap() {
 }
 
 
-/* ===== Ultra‑Smooth Minimap Updater (per‑frame) ===== */
-function updateMiniSmooth() {
-  if (mapVisible) {
-    drawMap();
-  }
-  requestAnimationFrame(updateMiniSmooth);
-}
-requestAnimationFrame(updateMiniSmooth);
-
 /* ========= MAIN LOOP ========= */
 let prev = performance.now();
+let lastMapDraw = 0;
 
 function loop(now) {
   const dt = Math.min(0.033, (now - prev) / 1000);
@@ -1538,7 +1530,10 @@ if (g.eyeMeshes) {
     }
   });
 
-  // (minimap updater moved to setInterval)
+  if (mapVisible && now - lastMapDraw >= 66) {
+    drawMap();
+    lastMapDraw = now;
+  }
   // (No wall glow)
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
