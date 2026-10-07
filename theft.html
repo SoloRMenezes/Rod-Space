@@ -121,6 +121,14 @@
         body.go-state .facet-top { fill: #a5f3fc; }
         body.go-state .facet-highlight { fill: rgba(255,255,255,0.7); }
         body.go-state .diamond-container { transform: scale(1.2) rotate(5deg); }
+        body.alarm-state #diamond-svg { filter: drop-shadow(0 0 34px var(--penalty-red)); }
+        body.alarm-state .facet-base, body.alarm-state .facet-side, body.alarm-state .facet-top { fill: var(--penalty-red); }
+
+        #round-hud { position:fixed;left:50%;top:22px;transform:translateX(-50%);z-index:180;text-align:center;pointer-events:none;text-shadow:0 2px 12px #000; }
+        #round-label { font-size:.68rem;font-weight:900;letter-spacing:.24em;color:#94a3b8; }
+        #signal-label { margin-top:5px;font-size:clamp(1rem,4vw,1.6rem);font-weight:950;letter-spacing:.08em; }
+        body.go-state #signal-label { color:var(--accent-go); }
+        body.alarm-state #signal-label { color:var(--penalty-red); }
 
         /* Player Zones */
         .player-zone {
@@ -208,6 +216,7 @@
             <button class="menu-btn" onclick="startGame(3)">3</button>
             <button class="menu-btn" onclick="startGame(4)">4</button>
         </div>
+        <p style="max-width:420px;text-align:center;color:#94a3b8;font-size:.85rem;line-height:1.55;margin:8px 24px 0;">Wait through the security alarms. Grab only when the diamond turns cyan. A false start locks you out for 1.5 seconds.</p>
     </div>
 
     <div id="hand-layer">
@@ -237,6 +246,7 @@
             </svg>
         </div>
     </div>
+    <div id="round-hud" hidden><div id="round-label">ROUND 1 · FIRST TO 5</div><div id="signal-label">WAIT</div></div>
 
     <div id="win-modal">
         <h1 id="winner-text">HEIST COMPLETE!</h1>
@@ -247,6 +257,8 @@
         const WIN_SCORE = 5;
         const PENALTY_DURATION = 1500;
         let isGoSignalActive = false, roundInProgress = false, gameActive = false;
+        let roundNumber = 0, signalTimer = null;
+        let audioContext = null;
 
         const players = {
             'z': { id: 1, score: 0, penalized: false, timer: null, active: false },
@@ -260,6 +272,19 @@
         const gameArena = document.getElementById('game-arena');
         const activeHandContainer = document.getElementById('active-hand-container');
         const lightsLayer = document.getElementById('lights-layer');
+        const roundHud = document.getElementById('round-hud');
+        const roundLabel = document.getElementById('round-label');
+        const signalLabel = document.getElementById('signal-label');
+
+        function tone(frequency, duration=.08, type='square', volume=.035) {
+            try {
+                audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator=audioContext.createOscillator(),gain=audioContext.createGain();
+                oscillator.type=type;oscillator.frequency.value=frequency;gain.gain.value=volume;
+                gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);
+                oscillator.connect(gain);gain.connect(audioContext.destination);oscillator.start();oscillator.stop(audioContext.currentTime+duration);
+            } catch {}
+        }
 
         function createFlashlights() {
             for(let i=0; i<5; i++) {
@@ -302,6 +327,7 @@
         function startGame(count) {
             setupScreen.style.display = 'none';
             gameArena.style.visibility = 'visible';
+            roundHud.hidden = false;
             gameActive = true;
             if (count === 2) { players['z'].active = true; players['p'].active = true; }
             else if (count === 3) { players['z'].active = true; players['m'].active = true; players['p'].active = true; }
@@ -312,17 +338,31 @@
 
         function prepareRound() {
             if (!gameActive) return;
+            clearTimeout(signalTimer);
+            roundNumber++;
             roundInProgress = true;
             isGoSignalActive = false;
-            document.body.classList.remove('go-state');
+            document.body.classList.remove('go-state','alarm-state');
+            roundLabel.textContent=`ROUND ${roundNumber} · FIRST TO ${WIN_SCORE}`;
+            signalLabel.textContent='WAIT';
             diamondBox.style.transform = 'translate(0, 0) scale(1)';
             activeHandContainer.innerHTML = '';
-            setTimeout(() => { if (roundInProgress) triggerGoSignal(); }, Math.random() * 3000 + 1000);
+            const wait=Math.random()*2400+1000;
+            signalTimer=setTimeout(() => {
+                if(!roundInProgress)return;
+                if(Math.random()<.38){
+                    document.body.classList.add('alarm-state');signalLabel.textContent="ALARM — DON'T MOVE";tone(120,.22,'sawtooth',.025);
+                    signalTimer=setTimeout(()=>{document.body.classList.remove('alarm-state');signalLabel.textContent='WAIT';signalTimer=setTimeout(triggerGoSignal,500+Math.random()*1100);},520);
+                } else triggerGoSignal();
+            },wait);
         }
 
         function triggerGoSignal() {
             isGoSignalActive = true;
+            document.body.classList.remove('alarm-state');
             document.body.classList.add('go-state');
+            signalLabel.textContent='GRAB!';tone(720,.12,'sine',.05);
+            navigator.vibrate?.(35);
         }
 
         function handleAction(key) {
@@ -337,18 +377,23 @@
             const p = players[key];
             if (p.penalized) return;
             p.penalized = true;
+            signalLabel.textContent=`PLAYER ${p.id} FALSE START`;
+            tone(90,.18,'sawtooth',.04);navigator.vibrate?.([30,40,30]);
             document.getElementById(`zone-${p.id}`).classList.add('penalty-active');
             clearTimeout(p.timer);
             p.timer = setTimeout(() => {
                 p.penalized = false;
                 document.getElementById(`zone-${p.id}`).classList.remove('penalty-active');
+                if(roundInProgress)signalLabel.textContent=isGoSignalActive?'GRAB!':'WAIT';
             }, PENALTY_DURATION);
         }
 
         function resolveRound(key) {
             roundInProgress = false;
+            clearTimeout(signalTimer);
             isGoSignalActive = false;
             const p = players[key];
+            signalLabel.textContent=`PLAYER ${p.id} STOLE IT`;tone(420,.08,'triangle',.045);
             animateHand(p);
             setTimeout(() => {
                 p.score++;
@@ -390,6 +435,7 @@
 
         function endMatch(id) {
             gameActive = false;
+            clearTimeout(signalTimer);
             const modal = document.getElementById('win-modal');
             const txt = document.getElementById('winner-text');
             txt.innerText = `PLAYER ${id} GOT AWAY!`;
@@ -398,14 +444,14 @@
         }
 
         window.addEventListener('keydown', e => {
+            if(e.repeat)return;
             const key = e.key.toLowerCase();
             if (players[key]) handleAction(key);
         });
 
         document.querySelectorAll('.player-zone').forEach(z => {
             const key = z.getAttribute('data-key');
-            z.addEventListener('touchstart', e => { e.preventDefault(); handleAction(key); }, {passive: false});
-            z.addEventListener('mousedown', () => handleAction(key));
+            z.addEventListener('pointerdown', e => { e.preventDefault(); handleAction(key); });
         });
     </script>
 </body>

@@ -232,6 +232,7 @@
             font-size: 1.25rem;
             text-align: center;
         }
+        .text-input { background:#0f172a;border:1px solid #334155;border-radius:10px;padding:10px 12px;color:white;font-weight:700;width:min(100%,320px); }
 
         .input-label {
             font-size: 0.9rem;
@@ -357,6 +358,10 @@
         <div class="input-row" id="player-count-row">
             <label class="input-label">Player Count (3-12)</label>
             <input type="number" id="player-input" min="3" max="12" value="3" class="number-input">
+        </div>
+        <div class="input-row" id="player-names-row">
+            <label class="input-label">Names</label>
+            <input type="text" id="player-names" maxlength="120" placeholder="Alex, Sam, Jordan" class="text-input">
         </div>
 
         <div class="input-row">
@@ -918,19 +923,36 @@
         return array;
     }
 
+    function uniqueCards(cards) {
+        const seen = new Set();
+        return cards.filter(card => {
+            const key = String(card || '').trim().toLocaleLowerCase();
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+
+    function escapeText(value) {
+        return String(value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+    }
+
     function setMode(mode) {
         gameMode = mode;
         document.getElementById('mode-single').classList.toggle('active', mode === 'single');
         document.getElementById('mode-multi').classList.toggle('active', mode === 'multi');
 
         const row = document.getElementById('player-count-row');
+        const namesRow = document.getElementById('player-names-row');
         const input = document.getElementById('player-input');
 
         if (mode === 'single') {
             row.classList.add('hidden');
+            namesRow.classList.add('hidden');
             input.disabled = true;
         } else {
             row.classList.remove('hidden');
+            namesRow.classList.remove('hidden');
             input.disabled = false;
         }
     }
@@ -967,8 +989,9 @@
           ];
           currentJudgeIndex = -1;
         } else {
+          const chosenNames = document.getElementById('player-names').value.split(',').map(name => name.trim().slice(0,18)).filter(Boolean);
           players = Array.from({ length: pCount }, (_, i) => ({
-            name: `P${i + 1}`,
+            name: chosenNames[i] || `Player ${i + 1}`,
             hand: [],
             score: 0,
             isBot: false
@@ -1001,9 +1024,9 @@
           promptPool = promptPool.concat(roadTripPrompts);
           answerPool = answerPool.concat(roadTripAnswers);
         }
-        deckPrompts = shuffle(promptPool);
+        deckPrompts = shuffle(uniqueCards(promptPool));
         deckPromptsBackup = [...deckPrompts];
-        deckAnswers = shuffle(answerPool);
+        deckAnswers = shuffle(uniqueCards(answerPool));
         deckAnswersBackup = [...deckAnswers];
         players.forEach(p => { for (let i = 0; i < HAND_SIZE; i++) p.hand.push(drawAnswer(p.hand)); });
         document.getElementById('start-menu').classList.add('hidden');
@@ -1236,16 +1259,19 @@
         const container = document.getElementById('scores-container');
         container.innerHTML = players.map((p, i) => `
             <div class="score-pill flex flex-col items-center min-w-[48px] ${i === currentJudgeIndex ? 'is-judge text-yellow-500' : 'text-gray-300'}">
-                <span class="text-[8px] font-black">${p.name}</span>
+                <span class="text-[8px] font-black">${escapeText(p.name)}</span>
                 <span class="text-xs font-bold">${p.score}</span>
             </div>
         `).join('');
     }
 
     function endGame() {
-        const winner = [...players].sort((a,b) => b.score - a.score)[0];
+        const topScore = Math.max(...players.map(player => player.score));
+        const winners = players.filter(player => player.score === topScore);
         document.getElementById('overlay').classList.remove('hidden');
-        document.getElementById('overlay-msg').innerText = `${winner.name} wins with ${winner.score} points!`;
+        document.getElementById('overlay-msg').innerText = winners.length === 1
+          ? `${winners[0].name} wins with ${topScore} points!`
+          : `${winners.map(player => player.name).join(' & ')} tie with ${topScore} points!`;
     }
 
     function backToMenu() {
