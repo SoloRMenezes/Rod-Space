@@ -656,9 +656,10 @@ document.addEventListener('mousemove', e=>{
 // ---------------------------------------------------------------------------------------
 // THREE SCENE
 // ---------------------------------------------------------------------------------------
+const MAX_PIXEL_RATIO = 1.5;
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2)*resolutionScale);
+renderer.setPixelRatio(Math.min(devicePixelRatio,MAX_PIXEL_RATIO)*resolutionScale);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x8fd3ff);
@@ -677,7 +678,7 @@ function resizeRenderer(){
   const h = Math.max(1, window.innerHeight);
   camera.aspect = w/h;
   camera.updateProjectionMatrix();
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2)*resolutionScale);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,MAX_PIXEL_RATIO)*resolutionScale);
   renderer.setSize(w, h);
 }
 window.addEventListener('resize', resizeRenderer);
@@ -2281,6 +2282,7 @@ function resolveEnemyHitboxes(){
 }
 
 function animateEnemy(e,dt){
+  if(!e.mesh.visible)return;
   const phase=performance.now()*0.009+e.home.x*0.12;
   const walking=e.state==='chasing'||(e.state==='idle'&&e.vel.lengthSq()>0.08);
   const runCycle=e.state==='chasing';
@@ -3173,14 +3175,15 @@ function animatePlayer(dt, moveVec){
       legLRot.z=-0.18; legRRot.z=0.14;
       torsoRot.x=-0.18;
     } else {
-      // Falling opens into the wide, low-shouldered skydiving silhouette used
-      // in the reference, with asymmetrical legs so it never reads as a T-pose.
+      // A compact controlled fall: elbows stay bent beside the torso and the
+      // legs trail unevenly. The old near-horizontal arms read as a rigid T-pose.
       const fall=THREE.MathUtils.clamp(-P.vel.y/18,0,1);
-      armLRot.x=-0.12-fall*0.16; armRRot.x=-0.12-fall*0.1;
-      armLRot.z=-1.12-fall*0.18; armRRot.z=1.12+fall*0.18;
-      legLRot.x=0.56; legRRot.x=0.08;
-      legLRot.z=-0.42; legRRot.z=0.34;
-      torsoRot.x=0.05+fall*0.14;
+      armLRot.x=0.28+fall*0.34; armRRot.x=0.18+fall*0.28;
+      armLRot.z=-0.34-fall*0.08; armRRot.z=0.34+fall*0.08;
+      legLRot.x=0.42+fall*0.18; legRRot.x=-0.08+fall*0.1;
+      legLRot.z=-0.16; legRRot.z=0.12;
+      torsoRot.x=-0.1-fall*0.12;
+      headRot.x=0.1+fall*0.08;
     }
   } else if(P.state==='swing'){
     const leftAttached=!!P.swingWebs.left.anchor;
@@ -3341,7 +3344,8 @@ function animatePlayer(dt, moveVec){
     applyR15VisualBone(r15VisualBone.leftUpperLeg,legLRot,amt);
     applyR15VisualBone(r15VisualBone.rightUpperLeg,legRRot,amt);
     const groundMoving=P.state==='ground' && speedFlat>0.8;
-    let leftElbow=P.state==='swing'?0.58:P.state==='zip'?0.52:P.diving?0.18:
+    const falling=P.state==='air'&&!P.gliding&&!P.diving&&P.vel.y<=1.5&&P.swingReleaseT<=0;
+    let leftElbow=P.state==='swing'?0.58:P.state==='zip'?0.52:P.diving?0.18:falling?0.62:
       P.jumpCharging?0.92:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:groundMoving?0.54:0.12;
     let rightElbow=leftElbow;
     if(P.state==='swing'){
@@ -4275,12 +4279,21 @@ function updateRenderVisibility(){
     const dz=(b.minZ+b.maxZ)*0.5-P.pos.z;
     b.mesh.visible=dx*dx+dz*dz<=limitSq;
   });
+  const actorLimitSq=Math.pow(Math.min(renderDistance+35,260),2);
+  enemies.forEach(e=>{
+    const dx=e.mesh.position.x-P.pos.x,dz=e.mesh.position.z-P.pos.z;
+    e.mesh.visible=e.alive&&dx*dx+dz*dz<=actorLimitSq;
+  });
+  streetPeople.forEach(person=>{
+    const dx=person.root.position.x-P.pos.x,dz=person.root.position.z-P.pos.z;
+    person.root.visible=dx*dx+dz*dz<=actorLimitSq;
+  });
 }
 
 function updateEnemyHpBars(){
   const v = new THREE.Vector3();
   enemies.forEach(e=>{
-    if(!e.alive){ e.hpEl.style.display='none'; return; }
+    if(!e.alive||!e.mesh.visible){ e.hpEl.style.display='none'; return; }
     const worldPoint=e.mesh.position.clone().add(new THREE.Vector3(0,1.9,0));
     const eye=camera.getWorldPosition(new THREE.Vector3());
     const toEnemy=worldPoint.clone().sub(eye);
@@ -4387,7 +4400,9 @@ function tick(){
   } else comboLine.visible=false;
 
   document.getElementById('healthBarInner').style.width = P.hp+'%';
-  updateCrosshair();
+  // UI targeting does not need a full scene raycast at render-frame frequency.
+  // Ability activation still performs its own immediate accurate raycast.
+  if((hudFrame&1)===0) updateCrosshair();
   if((hudFrame++&3)===0){
     drawMinimap();
     updateEnemyHpBars();
