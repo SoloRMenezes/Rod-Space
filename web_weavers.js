@@ -706,8 +706,8 @@ const BLOCKS_X = 8;
 const BLOCKS_Z = 12;
 const BLOCK_X = 64;             // long east/west blocks
 const BLOCK_Z = 42;             // shorter north/south blocks
-const STREET_X = 20;            // wider avenues
-const STREET_Z = 16;            // narrower cross streets
+const STREET_X = 28;            // broad avenues with room for traversal and traffic
+const STREET_Z = 22;            // wider cross streets
 const TILE_X = BLOCK_X+STREET_X;
 const TILE_Z = BLOCK_Z+STREET_Z;
 const HALF_CITY_X = (BLOCKS_X*TILE_X)/2;
@@ -1545,7 +1545,8 @@ const SWING_RELEASE_CARRY = .99;
 const SWING_MAX_RISE_SPEED = 30;
 const SWING_ENTRY_MAX_TIME = 0.55;
 const SWING_MIN_GROUND_CLEARANCE = 2.8;
-const SWING_GROUND_LOOKAHEAD = 0.8;
+const SWING_GROUND_REEL_START = 13;
+const SWING_GROUND_REEL_RATE = 12;
 const SWING_LOOK_TURN_RATE = 0.9;
 const SWING_INPUT_TURN_RATE = 2.8;
 const SWING_FORWARD_ACCEL = 11;
@@ -1992,9 +1993,12 @@ for(let i=0;i<10;i++){
   spawnPoints.push(new THREE.Vector3(x,0,z));
 }
 const spawnMarkers = [];
-const spawnMat = new THREE.MeshBasicMaterial({color:0x00e5ff, transparent:true, opacity:0.55});
+const spawnMat = new THREE.MeshBasicMaterial({color:0x00e5ff, transparent:true, opacity:0.7,side:THREE.DoubleSide});
 spawnPoints.forEach(p=>{
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(3,3,0.2,16), spawnMat);
+  // Debug-only enemy spawn marker. Keep it as a thin ring so it cannot be
+  // mistaken for a collectible or a pool placed in the street.
+  const m = new THREE.Mesh(new THREE.RingGeometry(2.25,2.65,20), spawnMat);
+  m.rotation.x=-Math.PI/2;
   m.position.set(p.x,0.15,p.z); m.visible=false;
   scene.add(m); spawnMarkers.push(m);
 });
@@ -3708,14 +3712,23 @@ function updatePlayer(dt){
       }
     }
 
-    // Predict the next surface crossing and adjust velocity before movement.
-    // The final clamp below is only a numerical safety net, not a bounce.
+    // As the bottom of the arc approaches a surface, reel the strand in
+    // gradually. The shorter radius pulls the player upward through the rope
+    // constraint and stores height for the following downswing; it does not
+    // inject an artificial upward velocity.
     const predictedSwingPos=P.pos.clone().addScaledVector(P.vel,dt);
     const predictedGround=heightAt(predictedSwingPos.x,predictedSwingPos.z,predictedSwingPos.y+2);
     const predictedClearance=predictedSwingPos.y-predictedGround;
-    if(predictedClearance<SWING_MIN_GROUND_CLEARANCE+SWING_GROUND_LOOKAHEAD){
-      const minimumVy=(predictedGround+SWING_MIN_GROUND_CLEARANCE-P.pos.y)/Math.max(dt,0.001);
-      P.vel.y=Math.max(P.vel.y,minimumVy);
+    if(predictedClearance<SWING_GROUND_REEL_START && constraint.anchor.y>predictedGround+SWING_MIN_GROUND_CLEARANCE+3){
+      const reelDanger=THREE.MathUtils.clamp(
+        (SWING_GROUND_REEL_START-predictedClearance)/(SWING_GROUND_REEL_START-SWING_MIN_GROUND_CLEARANCE),0,1
+      );
+      const reelAmount=SWING_GROUND_REEL_RATE*(0.25+reelDanger*0.75)*dt;
+      activeWebs.forEach(web=>{
+        web.length=Math.max(SWING_MIN_RANGE,web.length-reelAmount);
+        web.targetLength=Math.min(web.targetLength,web.length);
+      });
+      constraint=swingConstraint(activeWebs);
     }
     const beforeSwingMove = P.pos.clone();
     const swingImpactVelocity=P.vel.clone();
@@ -3728,18 +3741,16 @@ function updatePlayer(dt){
       // The collision resolver has already removed inward speed.
       P.pos.addScaledVector(swingWall.normal,.08);
     }
-    // Numerical safety: maintain clearance, then solve the rope again. Raising
-    // toward an overhead anchor normally creates slack; unusual low anchors are
-    // allowed that extra rope rather than snapping the player back underground.
+    // Numerical fallback only. Normal ground avoidance happens by reeling above;
+    // this catches a large frame or a terrain edge without restoring the old
+    // upward bounce.
     const landingGround=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
     if(P.state==='swing' && P.pos.y<landingGround+SWING_MIN_GROUND_CLEARANCE){
       P.pos.y=landingGround+SWING_MIN_GROUND_CLEARANCE;
       P.vel.y=Math.max(P.vel.y,0);
       constrainedWebs.forEach(web=>{
-        if(!web.physicsPivot)return;
-        web.length=Math.max(web.length,P.pos.distanceTo(web.physicsPivot));
+        if(web.physicsPivot)web.length=Math.max(web.length,P.pos.distanceTo(web.physicsPivot));
       });
-      enforceSwingConstraint(constrainedWebs);
     }
     if(P.state==='swing'){
       const currentVy=P.vel.y;
