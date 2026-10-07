@@ -796,6 +796,18 @@ function buildBattleDeck(sourceCards, size = sourceCards.length) {
   return shuffleCards(validCards.slice(0, Math.max(0, size)));
 }
 
+function buildEnemyBattleDeck(landscapes, size) {
+  const legalCards = cardCatalog.filter((card) => card.playable !== false
+    && (card.faction === "Rainbow" || landscapes.includes(card.faction)));
+  if (!legalCards.length) return [];
+  const deck = [];
+  while (deck.length < size) {
+    const batch = shuffleCards(legalCards.map((card) => card.id));
+    deck.push(...batch.slice(0, size - deck.length));
+  }
+  return shuffleCards(deck);
+}
+
 function getStartingHp(deckSize) {
   return 50;
 }
@@ -856,15 +868,17 @@ function startBattle(selectedLandscapeIds = playerData.decks[playerData.activeDe
     battle = null;
     return false;
   }
-  const enemyLandscapeCards = shuffleCards(landscapeCardCatalog).slice(0, 4);
+  const enemyLandscapeCards = Array.from({ length: LANDSCAPE_SLOTS }, (_, slot) => {
+    const candidates = landscapeCardCatalog.filter((card) => card.variant === slot + 1);
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  });
   const playerLandscapes = playerLandscapeCards.map((card) => card.faction);
   const enemyLandscapes = enemyLandscapeCards.map((card) => card.faction);
   const configuredDeckCards = getDeckCards();
   const playerDrawPile = buildBattleDeck(configuredDeckCards.length ? configuredDeckCards : getBattleCardPool(playerLandscapeCards));
-  const enemyPool = cardCatalog.filter((card) => card.playable !== false).map((card) => card.id);
   const opponentLevel = getOpponentLevel();
   const enemyDeckSize = getEnemyDeckSize(opponentLevel);
-  const enemyDrawPile = buildBattleDeck(Array.from({ length: enemyDeckSize }, (_, index) => enemyPool[index % enemyPool.length]));
+  const enemyDrawPile = buildEnemyBattleDeck(enemyLandscapes, enemyDeckSize);
   if (!playerDrawPile.length) {
     showToast("Build a deck with owned cards before battling");
     battle = null;

@@ -474,6 +474,24 @@
       useEffect(() => { activeRef.current = active; }, [active]);
       useEffect(() => { pausedRef.current = paused; }, [paused]);
 
+      const createInitialState = () => ({
+        player: createInitialPlayer(upgradesRef.current, skinRef.current, trailRef.current),
+        enemies: [], bullets: [], enemyBullets: [], collectibles: [], particles: [], damageTexts: [], activeLasers: [],
+        camera: { x: 0, y: 0 }, kills: 0, level: 1, xp: 0, xpToNext: 100,
+        frameCount: 0, crystalsEarned: 0, gameTime: 0, bossSpawned: false, screenShake: 0,
+        joystick: { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0 }
+      });
+
+      const wasActiveRef = useRef(false);
+      useEffect(() => {
+        if (active && !wasActiveRef.current) {
+          stateRef.current = createInitialState();
+          window.activePlayer = stateRef.current.player;
+          onUpdateHUD(1, 0, 0);
+        }
+        wasActiveRef.current = active;
+      }, [active]);
+
       function createInitialPlayer(u, skin, trail) {
         const baseHp = 100 + (u.armor || 0) * 15;
         return {
@@ -651,14 +669,15 @@
         }
 
         // Camera Lock Center
-        const viewW = canvasRef.current ? canvasRef.current.width / (2 * (window.devicePixelRatio || 1)) : 400;
-        const viewH = canvasRef.current ? canvasRef.current.height / (2 * (window.devicePixelRatio || 1)) : 300;
+        const rect = canvasRef.current?.getBoundingClientRect();
+        const viewW = rect ? rect.width / 2 : 400;
+        const viewH = rect ? rect.height / 2 : 300;
         s.camera.x += (s.player.worldX - s.camera.x - viewW) * 0.085;
         s.camera.y += (s.player.worldY - s.camera.y - viewH) * 0.085;
 
         // Health ticks
         if (s.player.hp < s.player.maxHp) {
-          s.player.hp += s.player.regen / 60;
+          s.player.hp = Math.min(s.player.maxHp, s.player.hp + s.player.regen / 60);
         }
         if (s.player.powerups.doubleDamage > 0) s.player.powerups.doubleDamage--;
         if (s.player.powerups.shield > 0) s.player.powerups.shield--;

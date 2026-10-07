@@ -491,6 +491,18 @@
             const strap=createPart(.14,1.8,.08,pantsMat); strap.position.set(x,3,.56); playerBody.add(strap);
         }
 
+        // Reuse Web Weavers' compact rounded character construction while
+        // preserving Parkour's existing pivots, collision size and animations.
+        const webRed=new THREE.MeshStandardMaterial({color:0x9f263b,roughness:.72});
+        const webBlue=new THREE.MeshStandardMaterial({color:0x1d3555,roughness:.78});
+        torso.geometry.dispose();torso.geometry=new THREE.CylinderGeometry(.82,.68,2,8);torso.material=webRed;
+        head.geometry.dispose();head.geometry=new THREE.SphereGeometry(.68,16,12);head.scale.set(.9,1.04,.82);head.material=webRed;
+        for(const arm of [leftArm,rightArm]){arm.geometry.dispose();arm.geometry=new THREE.CylinderGeometry(.3,.26,2,8);arm.material=webRed;}
+        for(const leg of [leftLeg,rightLeg]){leg.geometry.dispose();leg.geometry=new THREE.CylinderGeometry(.38,.3,2,8);leg.material=webBlue;}
+        for(const root of [...leftArmGroup.children.slice(1),...rightArmGroup.children.slice(1),...leftLegGroup.children.slice(1),...rightLegGroup.children.slice(1)])root.visible=false;
+        hair.visible=false;pack.visible=false;
+        playerBody.children.filter(child=>child!==torso&&child!==headGroup&&child!==leftArmGroup&&child!==rightArmGroup&&child!==leftLegGroup&&child!==rightLegGroup).forEach(child=>child.visible=false);
+
         // Animation state
         let walkCycleTime = 0;
 
@@ -1298,8 +1310,7 @@
         });
 
         // Initialize and Start
-        window.onload = async () => {
-            await initFirebase();
+        function startParkour() {
             syncSettingsToUI();
             buildCourse();
             respawn(true);
@@ -1314,7 +1325,11 @@
             homeScreen.hidden=true;gameUI.hidden=false;playing=true;homeOpen=false;hasRun=true;
             clock.start();
             animate();
-        };
+            // Cloud saves are optional and must never hold the game behind the
+            // loading screen on slow, offline, or blocked networks.
+            void initFirebase();
+        }
+        startParkour();
 
     </script>
 </body>
