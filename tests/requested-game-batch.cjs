@@ -9,6 +9,16 @@ const relic=read('relic_rush.html');
 assert.match(relic,/if \(active && !wasActiveRef\.current\)/,'new expeditions reset engine state');
 assert.match(relic,/getBoundingClientRect\(\)[\s\S]*rect\.width \/ 2/,'camera centers using CSS pixels');
 assert.match(relic,/Math\.min\(s\.player\.maxHp, s\.player\.hp \+ s\.player\.regen/,'regeneration cannot exceed max HP');
+const orbitCoordinates=relic.indexOf('const px = s.player.worldX - s.camera.x');
+const orbitRenderer=relic.indexOf('// Orbit saws drone logic');
+assert.ok(orbitCoordinates>=0&&orbitCoordinates<orbitRenderer,'orbit upgrade receives player screen coordinates before rendering');
+const skillsSource=relic.match(/const baseSkills = (\[[\s\S]*?\n      \]);/)[1];
+const skills=vm.runInNewContext(skillsSource);
+for(const skill of skills){
+  const player={bulletDamage:30,speed:3,fireRate:35,pickupRange:85,bulletCount:1,orbitSaws:0,lifesteal:0,laserLevel:0,laserCooldown:7000,lastLaserTime:0};
+  assert.doesNotThrow(()=>skill.effect(player),`${skill.title} effect should not throw`);
+  for(const [key,value] of Object.entries(player))assert.ok(Number.isFinite(value),`${skill.title} keeps ${key} finite`);
+}
 
 const parkour=read('multiplayer.html');
 assert.match(parkour,/Reuse Web Weavers' compact rounded character construction/);

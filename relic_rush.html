@@ -1764,6 +1764,9 @@
           ctx.restore();
         });
 
+        const px = s.player.worldX - s.camera.x;
+        const py = s.player.worldY - s.camera.y;
+
         // Orbit saws drone logic
         if (s.player.orbitSaws > 0) {
           for (let i = 0; i < s.player.orbitSaws; i++) {
@@ -1796,9 +1799,6 @@
         }
 
         // Draw Player Ship / Mech
-        const px = s.player.worldX - s.camera.x;
-        const py = s.player.worldY - s.camera.y;
-
         ctx.save();
         ctx.translate(px, py);
         ctx.scale(s.player.facing, 1);
