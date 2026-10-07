@@ -108,13 +108,13 @@ html,body{margin:0;padding:0;overflow:hidden;background:#0a0f1e;font-family:Aria
   .ability .key{position:absolute;top:2px;right:4px;font-size:9px;background:#fff17a;color:#111;
     border:2px solid #111;border-radius:4px;padding:0 3px;}
 
-  #crosshairWrap{position:absolute;top:50%;left:50%;width:0;height:0;display:none;}
+  #crosshairWrap{position:absolute;top:48%;left:52%;width:0;height:0;display:none;}
   #crosshair{position:absolute;top:-7px;left:-7px;width:14px;height:14px;color:#fff;
     filter:drop-shadow(0 1px 1px rgba(0,0,0,.8));transition:opacity .08s;}
   #crosshair:before,#crosshair:after{content:"";position:absolute;left:50%;top:50%;background:currentColor;
     transform:translate(-50%,-50%);border-radius:1px;}
-  #crosshair:before{width:12px;height:1px;}
-  #crosshair:after{width:1px;height:12px;}
+  #crosshair:before{width:12px;height:2px;}
+  #crosshair:after{width:2px;height:12px;}
   #crosshair.enemy,#crosshair.zip,#crosshair.none{color:#fff;}
   #crosshair.zip{opacity:1;}
   #crosshair.none{opacity:.72;}
