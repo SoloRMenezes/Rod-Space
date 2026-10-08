@@ -39,7 +39,7 @@ async function watch(game,onRooms,onError=()=>{}){
   },onError);
 }
 
-async function createHost({game,name,pin='',onConnected=()=>{},onStatus=()=>{},onConnectionRequest=async()=>true}){
+async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onStatus=()=>{},onConnectionRequest=async()=>true}){
   const user=await signedIn;
   // A reload can leave the previous advertisement alive until its timeout.
   // Remove this device's older rooms so it appears only once to the game host.
@@ -72,7 +72,7 @@ async function createHost({game,name,pin='',onConnected=()=>{},onStatus=()=>{},o
     });
   };
   let stopped=false;
-  const publish=()=>setDoc(roomRef,{game,name,ownerUid:user.uid,locked:!!pin,pinHash,players:1,createdAt:serverTimestamp(),updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE});
+  const publish=()=>setDoc(roomRef,{game,name,...metadata,ownerUid:user.uid,locked:!!pin,pinHash,players:1,createdAt:serverTimestamp(),updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE});
   await publish();
   const heartbeat=setInterval(()=>updateDoc(roomRef,{updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE,players:1+lan.guests.filter(guest=>guest.channel?.readyState==='open').length+relayPeers.size}).catch(()=>{}),25_000);
   const stopPeers=onSnapshot(collection(roomRef,'peers'),snapshot=>snapshot.docs.forEach(async item=>{

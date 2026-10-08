@@ -114,16 +114,16 @@
         }
         #start-screen{background:radial-gradient(circle at 50% 38%,rgba(52,53,55,.42),rgba(0,0,0,.9) 68%);backdrop-filter:blur(3px)}
         body.menu-active #ui-overlay,body.menu-active #crosshair{display:none}
-        .lobby-card{position:relative;width:min(92vw,620px);background:linear-gradient(145deg,rgba(28,30,31,.97),rgba(12,13,14,.97));border:1px solid #d1b45d;padding:clamp(24px,5vw,46px);color:#fff;box-shadow:0 24px 90px #000,inset 0 0 45px rgba(209,180,93,.035)}
+        .lobby-card{position:relative;width:min(92vw,620px);max-height:92vh;overflow-y:auto;background:linear-gradient(145deg,rgba(28,30,31,.97),rgba(12,13,14,.97));border:1px solid #d1b45d;padding:clamp(24px,5vw,46px);color:#fff;box-shadow:0 24px 90px #000,inset 0 0 45px rgba(209,180,93,.035)}
         .menu-kicker{color:#d1b45d;font-size:.72rem;font-weight:800;letter-spacing:.32em;margin-bottom:12px}.lobby-card h1{font-size:clamp(2.4rem,8vw,5rem);line-height:.84;color:#f1d37e;letter-spacing:-.055em;margin-bottom:18px;text-shadow:0 5px 26px rgba(241,211,126,.16)}.menu-subtitle{max-width:430px;color:#c7c7c7;line-height:1.45}
-        .lobby-actions{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;margin-top:24px}
+        .menu-panel{display:none}.menu-panel.active{display:block}.menu-stack{display:grid;gap:10px;margin-top:24px}.menu-stack button{width:100%;min-height:48px}.menu-stack .primary{background:#f1d37e;color:#111;border-color:#f1d37e}.menu-stack .primary:hover{background:#fff0a9;color:#111}.panel-title{color:#f1d37e;font-size:1.2rem;letter-spacing:.08em;margin-bottom:14px}.panel-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.settings-grid{display:grid;grid-template-columns:1fr 120px;gap:10px}.keybind-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.keybind-row{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #303030;padding-top:8px}.keybind-row button{min-width:92px;padding:7px 10px}.keybind-row button.listening{border-color:#f1d37e;color:#f1d37e}
         .lobby-card button,.lobby-card input{font:inherit;border:1px solid #75683e;background:#101214;color:#fff;padding:11px}.lobby-card button{cursor:pointer;font-weight:700}.lobby-card button:hover{border-color:#f1d37e;color:#f1d37e}
-        #solo-start{background:#f1d37e;color:#111;border-color:#f1d37e}#solo-start:hover{background:#fff0a9;color:#111}.home-link{display:inline-block;margin-top:18px;color:#aaa;font-size:.8rem;text-decoration:none}.home-link:hover{color:#fff}.controls-strip{display:flex;gap:16px;flex-wrap:wrap;padding-top:18px;margin-top:18px;border-top:1px solid #353535;color:#999;font-size:.76rem}.controls-strip b{color:#eee}
+        .home-link{display:inline-block;margin-top:18px;color:#aaa;font-size:.8rem;text-decoration:none}.home-link:hover{color:#fff}.controls-strip{display:flex;gap:16px;flex-wrap:wrap;padding-top:18px;margin-top:18px;border-top:1px solid #353535;color:#999;font-size:.76rem}.controls-strip b{color:#eee}
         #room-panel{display:none;margin-top:16px}.room-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #353535;padding:10px 0}.room-row button{padding:7px 12px}
         #waiting-panel{display:none;margin-top:18px;border-top:1px solid #75683e;padding-top:18px}.waiting-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.room-code{color:#f1d37e;font-size:1.15rem;letter-spacing:.12em}.waiting-title{font-size:1.35rem;font-weight:900;margin-bottom:4px}.player-list{display:grid;gap:7px;margin:16px 0}.player-slot{display:flex;justify-content:space-between;border:1px solid #353535;background:#101214;padding:10px 12px}.player-slot span:last-child{color:#aaa;font-size:.78rem}.waiting-actions{display:flex;gap:8px}.waiting-actions button{flex:1}#room-start{background:#f1d37e;color:#111;border-color:#f1d37e}#room-start:hover{background:#fff0a9;color:#111}
         .lobby-fields{display:grid;grid-template-columns:1fr 120px;gap:8px;margin-top:12px}.lobby-note{color:#aaa;font-size:.82rem;margin-top:10px}#lobby-status{min-height:1.3em;color:#f1d37e;margin-top:10px}
         .map-picker{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px;margin-top:12px;color:#aaa;font-size:.78rem}.map-picker select{width:100%;border:1px solid #75683e;background:#101214;color:#fff;padding:10px;font:inherit}
-        @media(max-width:560px){.lobby-card{padding:24px}.lobby-actions{grid-template-columns:1fr}.lobby-fields{grid-template-columns:1fr}.controls-strip{gap:9px}}
+        @media(max-width:560px){.lobby-card{padding:24px}.lobby-fields,.settings-grid,.keybind-list,.panel-actions{grid-template-columns:1fr}.controls-strip{gap:9px}}
         #mobile-controls{display:none;position:fixed;inset:0;z-index:120;pointer-events:none;touch-action:none}
         .touch-stick{position:absolute;left:22px;bottom:26px;width:132px;height:132px;border:2px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(0,0,0,.28);pointer-events:auto}
         .touch-knob{position:absolute;left:40px;top:40px;width:48px;height:48px;border-radius:50%;background:rgba(241,211,126,.75)}
@@ -141,15 +141,15 @@
         <!-- Start Screen Overlay -->
         <div id="start-screen" style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;">
             <div class="lobby-card">
-                <div class="menu-kicker" id="menu-kicker">PARKING GARAGE</div>
-                <h1>NICO'S<br>NEXTBOTS</h1><p class="menu-subtitle" id="menu-subtitle">Thirty seconds to run. Then the garage starts hunting you.</p>
-                <div class="lobby-fields"><input id="player-name" maxlength="18" placeholder="Your name"><input id="room-pin" inputmode="numeric" maxlength="4" placeholder="PIN optional"></div>
-                <label class="map-picker">MAP<select id="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">DOCKSIDE CONTAINER YARD</option></select></label>
-                <div class="lobby-actions"><button id="solo-start">PLAY SOLO</button><button id="host-start">HOST GAME</button><button id="join-open">JOIN GAME</button></div>
-                <div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div>
+                <div class="menu-kicker">NICO'S</div>
+                <h1>NEXTBOTS</h1>
+                <div class="menu-panel active" id="menu-main"><p class="menu-subtitle">Run, hide and survive together.</p><div class="menu-stack"><button class="primary" id="open-solo">SINGLEPLAYER</button><button id="open-multi">MULTIPLAYER</button><button id="open-menu-settings">SETTINGS</button></div></div>
+                <div class="menu-panel" id="menu-solo"><div class="panel-title">SINGLEPLAYER</div><label class="map-picker">MAP<select class="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">DOCKSIDE CONTAINER YARD</option></select></label><div class="menu-stack"><button class="primary" id="solo-start">START</button><button class="menu-back">BACK</button></div></div>
+                <div class="menu-panel" id="menu-multi"><div class="panel-title">MULTIPLAYER</div><div class="menu-stack"><button class="primary" id="host-open">HOST</button><button id="join-open">JOIN</button><button class="menu-back">BACK</button></div><div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div></div>
+                <div class="menu-panel" id="menu-host"><div class="panel-title">HOST GAME</div><label class="map-picker">MAP<select class="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">DOCKSIDE CONTAINER YARD</option></select></label><div class="menu-stack"><button class="primary" id="host-start">OPEN ROOM</button><button class="menu-back" data-target="menu-multi">BACK</button></div></div>
+                <div class="menu-panel" id="menu-settings"><div class="panel-title">SETTINGS</div><div class="settings-grid"><input id="player-name" maxlength="18" placeholder="Player name"><input id="room-pin" inputmode="numeric" maxlength="4" placeholder="Room PIN"></div><label class="map-picker">MOUSE SENSITIVITY<input type="range" id="menu-sens-slider" min="0.1" max="5" step="0.1" value="1"></label><div class="keybind-list" id="keybind-list"></div><div class="menu-stack"><button class="menu-back">SAVE &amp; BACK</button></div></div>
                 <div id="waiting-panel"><div class="waiting-head"><div><div class="waiting-title">WAITING ROOM</div><div class="lobby-note" id="waiting-message">Waiting for the host to start.</div></div><div class="room-code" id="waiting-code"></div></div><div class="player-list" id="waiting-players"></div><div class="waiting-actions"><button id="room-leave">LEAVE ROOM</button><button id="room-start">START GAME</button></div></div>
                 <div id="lobby-status"></div>
-                <div class="controls-strip"><span><b>WASD</b> MOVE</span><span><b>ARROWS</b> LOOK</span><span><b>SPACE</b> JUMP</span><span><b>CTRL</b> MOUSE LOCK</span></div>
                 <a class="home-link" href="./index.html">← ROD SPACE</a>
             </div>
         </div>
@@ -193,7 +193,7 @@
         const sensSlider = document.getElementById('sens-slider');
         const sensValDisplay = document.getElementById('sens-val');
         const closeSettings = document.getElementById('close-settings');
-        const mapSelect = document.getElementById('map-select');
+        const mapSelects = Array.from(document.querySelectorAll('.map-select'));
 
         // Cheats menu DOM
         const cheatsMenu = document.getElementById('cheats-menu');
@@ -205,14 +205,7 @@
         // Each map unit now corresponds to a 2x2 block in world coordinates.
         // Player (1.5,1.5) and bot (10.5,10.5) are valid open positions (multiplied by 2 for world coords).
         const MAP_ID=new URLSearchParams(location.search).get('map')==='annex'?'annex':'garage';
-        mapSelect.value=MAP_ID;
-        if(MAP_ID==='annex'){
-            document.getElementById('menu-kicker').textContent='DOCKSIDE CONTAINER YARD';
-            document.getElementById('menu-subtitle').textContent='Thirty seconds to find a route across the stacks. Then the yard starts hunting you.';
-        }
-        mapSelect.addEventListener('change',()=>{
-            const url=new URL(location.href);url.searchParams.set('map',mapSelect.value);location.href=url;
-        });
+        mapSelects.forEach(select=>{select.value=MAP_ID;select.addEventListener('change',()=>{sessionStorage.setItem('nicos-menu-panel',select.closest('#menu-host')?'menu-host':'menu-solo');const url=new URL(location.href);url.searchParams.set('map',select.value);location.href=url})});
 const MAP_LAYOUTS={
     garage:{vertical:[35,70,105],horizontal:[24,48,72],verticalDoors:[12,42,82],horizontalDoors:[18,53,88,122]},
     annex:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]}
@@ -382,6 +375,15 @@ for(const floorY of FLOOR_LEVELS)for(let i=0;i<5;i++){
         };
 
         const keys = {};
+        const DEFAULT_BINDINGS={forward:'w',back:'s',left:'a',right:'d',lookLeft:'arrowleft',lookRight:'arrowright',lookUp:'arrowup',lookDown:'arrowdown',jump:' ',pointer:'control'};
+        let keyBindings={...DEFAULT_BINDINGS,...JSON.parse(localStorage.getItem('nicos-keybinds')||'{}')};
+        const bindingLabels={forward:'FORWARD',back:'BACK',left:'LEFT',right:'RIGHT',lookLeft:'LOOK LEFT',lookRight:'LOOK RIGHT',lookUp:'LOOK UP',lookDown:'LOOK DOWN',jump:'JUMP',pointer:'MOUSE LOCK'};
+        const keyName=key=>key===' '?'SPACE':key.startsWith('arrow')?key.replace('arrow','').toUpperCase():key.toUpperCase();
+        function saveBindings(){localStorage.setItem('nicos-keybinds',JSON.stringify(keyBindings))}
+        function renderKeybinds(){
+            const list=document.getElementById('keybind-list');list.replaceChildren();
+            Object.keys(bindingLabels).forEach(action=>{const row=document.createElement('div');row.className='keybind-row';const label=document.createElement('span');label.textContent=bindingLabels[action];const button=document.createElement('button');button.textContent=keyName(keyBindings[action]);button.onclick=()=>{button.textContent='PRESS KEY';button.classList.add('listening');const capture=event=>{event.preventDefault();event.stopImmediatePropagation();keyBindings[action]=event.key.toLowerCase();saveBindings();button.textContent=keyName(keyBindings[action]);button.classList.remove('listening')};addEventListener('keydown',capture,{once:true,capture:true})};row.append(label,button);list.append(row)});
+        }
         let isLocked = false;
         let gameTimer = 0;
         let roundEndsAt=Infinity;
@@ -747,12 +749,12 @@ for (let b = 0; b < botSpawns.length; b++) {
             const key = e.key.toLowerCase();
             keys[key] = true;
             if(e.key.startsWith('Arrow'))e.preventDefault();
-            if (e.key === 'Control' && !e.repeat) {
+            if (key === keyBindings.pointer && !e.repeat) {
                 e.preventDefault();
                 if (!isLocked) canvas.requestPointerLock();
                 else document.exitPointerLock();
             }
-            if (e.code === 'Space' && !player.isJumping) {
+            if (key === keyBindings.jump && !player.isJumping) {
                 player.isJumping = true;
                 player.zVel = 0.20;
             }
@@ -841,10 +843,10 @@ for (let b = 0; b < botSpawns.length; b++) {
             // UI status
             const currentSpeed = player.isJumping?player.jumpSpeed:player.speed;
             const keyLookSpeed=.035*player.sensitivity;
-            if(keys['arrowleft'])player.dir+=keyLookSpeed;
-            if(keys['arrowright'])player.dir-=keyLookSpeed;
-            if(keys['arrowup'])player.pitch=Math.min(Math.PI/2-.01,player.pitch+keyLookSpeed);
-            if(keys['arrowdown'])player.pitch=Math.max(-Math.PI/2+.01,player.pitch-keyLookSpeed);
+            if(keys[keyBindings.lookLeft])player.dir+=keyLookSpeed;
+            if(keys[keyBindings.lookRight])player.dir-=keyLookSpeed;
+            if(keys[keyBindings.lookUp])player.pitch=Math.min(Math.PI/2-.01,player.pitch+keyLookSpeed);
+            if(keys[keyBindings.lookDown])player.pitch=Math.max(-Math.PI/2+.01,player.pitch-keyLookSpeed);
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
             if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;updateSkipButton()}
             else { skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
@@ -856,10 +858,10 @@ for (let b = 0; b < botSpawns.length; b++) {
             // 2D movement (X,Z on map; Y is up in 3D)
             // WASD: W = forward, S = backward, A = strafe left, D = strafe right (relative to camera yaw)
             let moveForward = 0, moveRight = 0;
-            if (keys['w']) moveForward -= 1;
-            if (keys['s']) moveForward += 1;
-            if (keys['d']) moveRight += 1;
-            if (keys['a']) moveRight -= 1;
+            if (keys[keyBindings.forward]) moveForward -= 1;
+            if (keys[keyBindings.back]) moveForward += 1;
+            if (keys[keyBindings.right]) moveRight += 1;
+            if (keys[keyBindings.left]) moveRight -= 1;
             moveForward += touchMoveY; moveRight += touchMoveX;
             // Normalize for diagonal movement
             let moveLen = Math.hypot(moveForward, moveRight);
@@ -1146,6 +1148,11 @@ for (let b = 0; b < botSpawns.length; b++) {
         function lobbyStatus(message){document.getElementById('lobby-status').textContent=message||'';}
         function playerName(){return document.getElementById('player-name').value.trim()||'Player';}
         function roomPin(){return document.getElementById('room-pin').value.replace(/\D/g,'').slice(0,4);}
+        function showMenuPanel(id){
+            document.querySelectorAll('.menu-panel').forEach(panel=>panel.classList.toggle('active',panel.id===id));
+            document.getElementById('waiting-panel').style.display=id==='waiting-panel'?'block':'none';
+            document.getElementById('room-panel').style.display='none';lobbyStatus('');
+        }
         function renderWaitingPlayers(players){
             const list=document.getElementById('waiting-players');list.replaceChildren();
             players.forEach((entry,index)=>{const row=document.createElement('div');row.className='player-slot';const name=document.createElement('span');name.textContent=entry.name;const role=document.createElement('span');role.textContent=index===0?'HOST':'PLAYER';row.append(name,role);list.append(row)});
@@ -1156,8 +1163,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             renderWaitingPlayers(players);roomSession.lan.broadcast('lobby',{players});
         }
         function enterWaitingRoom(){
-            document.querySelector('.lobby-actions').style.display='none';document.querySelector('.lobby-fields').style.display='none';document.querySelector('.map-picker').style.display='none';document.getElementById('room-panel').style.display='none';
-            document.getElementById('waiting-panel').style.display='block';document.getElementById('waiting-code').textContent=roomSession?.roomId?`ROOM ${roomSession.roomId.slice(0,6).toUpperCase()}`:'ROOM';
+            showMenuPanel('waiting-panel');document.getElementById('waiting-code').textContent=roomSession?.roomId?`ROOM ${roomSession.roomId.slice(0,6).toUpperCase()}`:'ROOM';
             document.getElementById('room-start').style.display=netRole==='host'?'block':'none';document.getElementById('waiting-message').textContent=netRole==='host'?'Players can join now. Start whenever everyone is ready.':'Connected. Waiting for the host to start.';
             if(netRole==='host'){lobbyPlayers.clear();broadcastLobby()}else{renderWaitingPlayers([{name:roomSession?.room?.name||'Host'},{name:playerName()}]);roomSession.client.send?.('lobby-hello',{name:playerName()})}
             lobbyStatus('');
@@ -1166,12 +1172,16 @@ for (let b = 0; b < botSpawns.length; b++) {
             try{await roomSession?.stop?.();roomSession?.client?.close?.()}catch{}
             location.reload();
         }
+        async function joinRoom(room,button){
+            if(room.map&&room.map!==MAP_ID){sessionStorage.setItem('nicos-pending-room',room.id);const url=new URL(location.href);url.searchParams.set('map',room.map);location.href=url;return}
+            try{button.disabled=true;lobbyStatus('Connecting…');roomSession=await PartyRooms.join(room,{name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='guest';wireGuestRoom(roomSession);sessionStorage.removeItem('nicos-pending-room');enterWaitingRoom()}catch(error){lobbyStatus(error.message);button.disabled=false}
+        }
         function setupRooms(){
             if(!globalThis.PartyRooms||roomsWatching)return;roomsWatching=true;
             PartyRooms.watch('nicos-nextbots',rooms=>{
                 const list=document.getElementById('room-list');list.replaceChildren();
                 if(!rooms.length){const empty=document.createElement('div');empty.className='lobby-note';empty.textContent='No open games yet.';list.append(empty);return;}
-                rooms.forEach(room=>{const row=document.createElement('div');row.className='room-row';const label=document.createElement('span');label.textContent=`${room.name} · ${room.players||1} player${room.players===1?'':'s'}${room.locked?' · PIN':''}`;const join=document.createElement('button');join.textContent='JOIN';join.onclick=async()=>{try{join.disabled=true;lobbyStatus('Connecting…');roomSession=await PartyRooms.join(room,{name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='guest';wireGuestRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);join.disabled=false}};row.append(label,join);list.append(row);});
+                rooms.forEach(room=>{const row=document.createElement('div');row.className='room-row';const label=document.createElement('span');const mapName=room.map==='annex'?'CONTAINER YARD':'CENTRAL GARAGE';label.textContent=`${room.name} · ${mapName} · ${room.players||1} player${room.players===1?'':'s'}${room.locked?' · PIN':''}`;const join=document.createElement('button');join.textContent='JOIN';join.onclick=()=>joinRoom(room,join);row.append(label,join);list.append(row);if(sessionStorage.getItem('nicos-pending-room')===room.id)join.click()});
             },()=>lobbyStatus('Room list unavailable. Check your connection.'));
         }
 
@@ -1187,7 +1197,16 @@ for (let b = 0; b < botSpawns.length; b++) {
             document.addEventListener('pointerlockchange', updateLockStatus);
             const savedName=localStorage.getItem('nicos-player-name');if(savedName)document.getElementById('player-name').value=savedName;
             document.getElementById('player-name').addEventListener('input',event=>localStorage.setItem('nicos-player-name',event.target.value));
-            document.getElementById('room-pin').addEventListener('input',event=>event.target.value=event.target.value.replace(/\D/g,'').slice(0,4));
+            document.getElementById('room-pin').value=localStorage.getItem('nicos-room-pin')||'';
+            document.getElementById('room-pin').addEventListener('input',event=>{event.target.value=event.target.value.replace(/\D/g,'').slice(0,4);localStorage.setItem('nicos-room-pin',event.target.value)});
+            renderKeybinds();
+            const menuSensitivity=document.getElementById('menu-sens-slider');menuSensitivity.value=player.sensitivity;menuSensitivity.oninput=event=>{player.sensitivity=parseFloat(event.target.value);sensSlider.value=event.target.value;sensValDisplay.textContent=player.sensitivity.toFixed(1);localStorage.setItem('sensitivity',player.sensitivity)};
+            const restoredPanel=sessionStorage.getItem('nicos-menu-panel');if(restoredPanel){sessionStorage.removeItem('nicos-menu-panel');showMenuPanel(restoredPanel)}
+            document.getElementById('open-solo').onclick=()=>showMenuPanel('menu-solo');
+            document.getElementById('open-multi').onclick=()=>showMenuPanel('menu-multi');
+            document.getElementById('open-menu-settings').onclick=()=>showMenuPanel('menu-settings');
+            document.getElementById('host-open').onclick=()=>showMenuPanel('menu-host');
+            document.querySelectorAll('.menu-back').forEach(button=>button.onclick=()=>showMenuPanel(button.dataset.target||'menu-main'));
             skipCountdown.onclick=()=>{
                 if(performance.now()>=botReleaseAt)return;
                 if(netRole==='solo'){releaseBotsEarly();return}
@@ -1198,7 +1217,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             };
             document.getElementById('solo-start').onclick=()=>{netRole='solo';startGame()};
             document.getElementById('join-open').onclick=()=>{document.getElementById('room-panel').style.display='block';lobbyStatus('Choose a host below.');if(globalThis.PartyRooms)setupRooms()};
-            document.getElementById('host-start').onclick=async event=>{try{event.currentTarget.disabled=true;lobbyStatus('Opening room…');roomSession=await PartyRooms.createHost({game:'nicos-nextbots',name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);event.currentTarget.disabled=false}};
+            document.getElementById('host-start').onclick=async event=>{try{event.currentTarget.disabled=true;lobbyStatus('Opening room…');roomSession=await PartyRooms.createHost({game:'nicos-nextbots',name:playerName(),pin:roomPin(),metadata:{map:MAP_ID},onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);event.currentTarget.disabled=false}};
             document.getElementById('room-start').onclick=()=>{if(netRole!=='host'||gameStarted)return;roomSession.lan.broadcast('start',{});startGame()};
             document.getElementById('room-leave').onclick=leaveWaitingRoom;
             if(globalThis.PartyRooms)setupRooms();else addEventListener('partyroomsready',setupRooms,{once:true});
