@@ -296,7 +296,7 @@ const MAP = (() => {
             {x:11,y:25,w:10,d:3,h:2.6,c:0x315f8d},{x:23,y:25,w:10,d:3,h:5.2,c:0xb93b32},{x:35,y:25,w:10,d:3,h:7.8,c:0xd08a24},
             {x:47,y:25,w:10,d:3,h:5.2,c:0x32745a},{x:59,y:25,w:10,d:3,h:2.6,c:0xa94732},
             {x:18,y:36,w:12,d:3,h:2.6,c:0x365f8b},{x:31.5,y:36,w:12,d:3,h:2.6,c:0xb84035},{x:45,y:36,w:12,d:3,h:2.6,c:0xd08a24},
-            {x:66,y:31,w:3,d:15,h:2.6,c:0x33735a},{x:72,y:31,w:3,d:15,h:2.6,c:0xa54235},
+            {x:66,y:31,w:3,d:15,h:2.6,c:0x33735a,open:true},{x:72,y:31,w:3,d:15,h:2.6,c:0xa54235},
             {x:91,y:34,w:15,d:3,h:2.6,c:0x315f8c},{x:108,y:34,w:15,d:3,h:5.2,c:0xc98a29},
             // Central stacks form two parallel elevated lanes. The alternating
             // one-cell and two-cell gaps are short enough to jump but punish a
@@ -304,7 +304,7 @@ const MAP = (() => {
             {x:79,y:44,w:9,d:3,h:2.6,c:0x32745a},{x:90,y:44,w:9,d:3,h:5.2,c:0xb84035},{x:101,y:44,w:9,d:3,h:5.2,c:0x315f8d},{x:112,y:44,w:9,d:3,h:2.6,c:0xd08a24},
             {x:79,y:50,w:9,d:3,h:2.6,c:0xd08a24},{x:90,y:50,w:9,d:3,h:5.2,c:0x32745a},{x:101,y:50,w:9,d:3,h:7.8,c:0xb93b32},{x:112,y:50,w:9,d:3,h:5.2,c:0x315f8d},
             {x:14,y:61,w:15,d:3,h:2.6,c:0xb33d35},{x:31,y:61,w:15,d:3,h:2.6,c:0x315f8b},
-            {x:53,y:57,w:3,d:16,h:2.6,c:0xd08a24},{x:59,y:57,w:3,d:16,h:2.6,c:0x36755c},
+            {x:53,y:57,w:3,d:16,h:2.6,c:0xd08a24,open:true},{x:59,y:57,w:3,d:16,h:2.6,c:0x36755c},
             {x:80,y:60,w:13,d:3,h:2.6,c:0xb54134},{x:94.5,y:60,w:13,d:3,h:2.6,c:0x315e8b},{x:109,y:60,w:13,d:3,h:2.6,c:0xd08a24},
             {x:12,y:70,w:10,d:3,h:2.6,c:0x32745a},{x:24,y:70,w:10,d:3,h:5.2,c:0xd08a24},{x:36,y:70,w:10,d:3,h:5.2,c:0x315f8d},{x:48,y:70,w:10,d:3,h:2.6,c:0xb93b32},
             {x:18,y:81,w:15,d:3,h:2.6,c:0x34745a},{x:39,y:79,w:15,d:3,h:5.2,c:0xb73f35},
@@ -363,7 +363,8 @@ const MAP = (() => {
         // a small spatial bucket per map cell instead of scanning every stack.
         const YARD_CONTAINER_GRID=Array.from({length:MAP_SIZE_X*MAP_SIZE_Y},()=>[]);
         for(const container of YARD_CONTAINERS)for(let y=Math.max(0,Math.floor(container.y));y<Math.min(MAP_SIZE_Y,Math.ceil(container.y+container.d));y++)for(let x=Math.max(0,Math.floor(container.x));x<Math.min(MAP_SIZE_X,Math.ceil(container.x+container.w));x++)YARD_CONTAINER_GRID[y*MAP_SIZE_X+x].push(container);
-        const yardContainerAt=(x,y)=>{const ix=Math.floor(x),iy=Math.floor(y);if(ix<0||iy<0||ix>=MAP_SIZE_X||iy>=MAP_SIZE_Y)return;return YARD_CONTAINER_GRID[iy*MAP_SIZE_X+ix].find(c=>x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.d)};
+        const yardContainerAt=(x,y)=>{const ix=Math.floor(x),iy=Math.floor(y);if(ix<0||iy<0||ix>=MAP_SIZE_X||iy>=MAP_SIZE_Y)return;return YARD_CONTAINER_GRID[iy*MAP_SIZE_X+ix].find(c=>!c.open&&x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.d)};
+        const openContainerWallAt=(x,y)=>YARD_CONTAINERS.some(c=>c.open&&x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.d&&(c.w>c.d?Math.min(Math.abs(y-c.y),Math.abs(y-(c.y+c.d)))<.18:Math.min(Math.abs(x-c.x),Math.abs(x-(c.x+c.w)))<.18));
         function yardSurfaceHeightAt(x,y){
             const access=yardRampAt(x,y);
             if(access){const t=THREE.MathUtils.clamp((x-access.x1)/(access.x2-access.x1),0,1);return t*access.h}
@@ -379,7 +380,8 @@ const MAP = (() => {
             const map=MAP.map(row=>row.slice());
             for(let y=1;y<MAP_SIZE_Y-1;y++)for(let x=1;x<MAP_SIZE_X-1;x++)if(floorBarrierAt(x,y,floorY))map[y][x]=1;
             FLOOR_CAR_SPOTS[floor].forEach(([cx,cy])=>{for(let y=Math.floor(cy-2);y<=Math.ceil(cy+2);y++)for(let x=Math.floor(cx-1);x<=Math.ceil(cx+1);x++)if(map[y])map[y][x]=1;});
-            if(IS_DOCKS)for(const c of YARD_CONTAINERS)for(let y=Math.floor(c.y);y<=Math.ceil(c.y+c.d);y++)for(let x=Math.floor(c.x);x<=Math.ceil(c.x+c.w);x++)if(map[y])map[y][x]=1;
+            // Nextbots may climb container stacks directly, so the dock navigation
+            // grid keeps them traversable. Player collision still uses their real height.
             return map;
         });
         function beginRampRoute(bot,now){
@@ -645,6 +647,7 @@ function wireGuestRoom(session){
             if(IS_DOCKS){
                 const containerGeo=new THREE.BoxGeometry(1,1,1),containerGroups=new Map();
                 for(const c of YARD_CONTAINERS){
+                    if(c.open)continue;
                     const levels=Math.max(1,Math.round(c.h/2.6));
                     if(!containerGroups.has(c.c))containerGroups.set(c.c,[]);
                     for(let level=0;level<levels;level++)containerGroups.get(c.c).push({...c,level});
@@ -660,9 +663,19 @@ function wireGuestRoom(session){
                     });
                     mesh.instanceMatrix.needsUpdate=true;scene.add(mesh);
                 }
+                for(const c of YARD_CONTAINERS.filter(container=>container.open)){
+                    const shell=new THREE.Group(),material=new THREE.MeshPhongMaterial({color:c.c,shininess:18}),horizontal=c.w>c.d;
+                    const roof=new THREE.Mesh(new THREE.BoxGeometry(c.w*2,.18,c.d*2),material);roof.position.y=2.51;shell.add(roof);
+                    for(const side of [-1,1]){
+                        const wall=new THREE.Mesh(new THREE.BoxGeometry(horizontal?c.w*2:.18,2.5,horizontal?.18:c.d*2),material);
+                        wall.position.set(horizontal?0:side*(c.w-.09),1.25,horizontal?side*(c.d-.09):0);shell.add(wall);
+                    }
+                    const floor=new THREE.Mesh(new THREE.BoxGeometry(c.w*2,.12,c.d*2),material);floor.position.y=.06;shell.add(floor);
+                    shell.position.set((c.x+c.w/2)*2+1,0,(c.y+c.d/2)*2+1);scene.add(shell);
+                }
                 const ribMat=new THREE.MeshBasicMaterial({color:0x1b2227,transparent:true,opacity:.42});
                 const ribGeo=new THREE.BoxGeometry(.11,2.28,.08),ribTransforms=[];
-                for(const c of YARD_CONTAINERS)for(let level=0;level<Math.max(1,Math.round(c.h/2.6));level++)for(let step=1;step<Math.floor(c.w/2);step++)ribTransforms.push([(c.x+step*2)*2+1,level*2.6+1.28,c.y*2+.96],[(c.x+step*2)*2+1,level*2.6+1.28,(c.y+c.d)*2+1.04]);
+                for(const c of YARD_CONTAINERS.filter(container=>!container.open))for(let level=0;level<Math.max(1,Math.round(c.h/2.6));level++)for(let step=1;step<Math.floor(c.w/2);step++)ribTransforms.push([(c.x+step*2)*2+1,level*2.6+1.28,c.y*2+.96],[(c.x+step*2)*2+1,level*2.6+1.28,(c.y+c.d)*2+1.04]);
                 const ribs=new THREE.InstancedMesh(ribGeo,ribMat,ribTransforms.length);ribTransforms.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);ribs.setMatrixAt(i,transform)});ribs.instanceMatrix.needsUpdate=true;scene.add(ribs);
                 const rampMat=new THREE.MeshPhongMaterial({color:0xd7c26b,shininess:10});
                 for(const r of YARD_ACCESS_RAMPS){
@@ -833,7 +846,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             look.addEventListener('pointerdown',e=>{lookId=e.pointerId;lastX=e.clientX;lastY=e.clientY;look.setPointerCapture(e.pointerId)});
             look.addEventListener('pointermove',e=>{if(e.pointerId!==lookId)return;player.dir-=(e.clientX-lastX)*.006*player.sensitivity;player.pitch=Math.max(-1.45,Math.min(1.45,player.pitch-(e.clientY-lastY)*.006*player.sensitivity));lastX=e.clientX;lastY=e.clientY});
             for(const type of ['pointerup','pointercancel','lostpointercapture'])look.addEventListener(type,e=>{if(e.pointerId===lookId)lookId=null});
-            document.getElementById('touch-jump').addEventListener('pointerdown',e=>{e.stopPropagation();if(!player.isJumping){player.isJumping=true;player.zVel=.20}});
+            document.getElementById('touch-jump').addEventListener('pointerdown',e=>{e.stopPropagation();if(!player.isJumping){player.isJumping=true;player.zVel=.19}});
             addEventListener('blur',()=>reset());
         }
 
@@ -849,7 +862,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             if (key === keyBindings.jump) e.preventDefault();
             if (key === keyBindings.jump && !e.repeat && !player.isJumping) {
                 player.isJumping = true;
-                player.zVel = 0.20;
+                player.zVel = 0.19;
             }
             // Toggle settings menu with "P"
             if (key === 'p') {
@@ -980,8 +993,9 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const yardAccess=yardRampAt(x,y);
                 const slopeStep=targetRamp||yardAccess?1.05:.65;
                 const insideRampLane=!targetRamp||(y>=targetRamp.y1+.28&&y<=targetRamp.y2-.28);
-                const canReachSurface=player.isJumping?surface<=player.floorY+player.z+.3:Math.abs(surface-player.floorY)<=slopeStep;
-                if(!canReachSurface||!insideRampLane||!canEnterRamp(x,y)||carBlocked(x,y))return false;
+                const mantleAllowance=player.floorY>0?.3:.03;
+                const canReachSurface=player.isJumping?surface<=player.floorY+player.z+mantleAllowance:surface<=player.floorY+slopeStep;
+                if(!canReachSurface||!insideRampLane||!canEnterRamp(x,y)||carBlocked(x,y)||openContainerWallAt(x,y))return false;
                 for(const px of [x-radius,x+radius])for(const py of [y-radius,y+radius])if(MAP[Math.floor(py)]?.[Math.floor(px)]!==0||rampWallAt(px,py)||floorBarrierAt(px,py,player.floorY))return false;
                 return true;
             };
@@ -1003,7 +1017,13 @@ for (let b = 0; b < botSpawns.length; b++) {
             const groundHeight=surfaceHeightAt(player.x,player.y,player.floorY);
             // A jump keeps its take-off floor until landing. Previously crossing
             // above a ramp opening changed floorY mid-air and pulled the player down.
-            if(!player.isJumping)player.floorY=groundHeight<player.floorY-.65?Math.max(groundHeight,player.floorY-.32):groundHeight;
+            if(!player.isJumping){
+                if(groundHeight<player.floorY-.65){
+                    const dropHeight=player.floorY-groundHeight;
+                    player.floorY=groundHeight;player.isJumping=true;player.z=dropHeight;player.zVel=0;
+                }
+                else player.floorY=groundHeight;
+            }
 
             // Jump physics
             if (player.isJumping) {
@@ -1124,16 +1144,17 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const now=performance.now();
                 const localTarget={id:'local',x:player.x,y:player.y,floorY:player.floorY,alive:!isGameOver};
                 const targets=[localTarget,...Array.from(remotePlayers.values())];
-                let locked=targets.find(candidate=>candidate.id===bot.targetId&&candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<2.5);
+                const verticalReach=IS_DOCKS?8:2.5;
+                let locked=targets.find(candidate=>candidate.id===bot.targetId&&candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<verticalReach);
                 if(locked&&Math.hypot(botMapX-locked.x,botMapY-locked.y)>38){bot.targetId=null;locked=null}
                 if(!locked){
-                    locked=targets.filter(candidate=>candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<2.5&&Math.hypot(botMapX-candidate.x,botMapY-candidate.y)<=24).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0];
+                    locked=targets.filter(candidate=>candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<verticalReach&&Math.hypot(botMapX-candidate.x,botMapY-candidate.y)<=24).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0];
                     if(locked)bot.targetId=locked.id;
                 }
                 // Outside the chase radius, bots still stalk the nearest player on their
                 // floor. A wide random offset keeps this looking like roaming rather than
                 // giving every bot perfect knowledge of the player's exact position.
-                const roamTarget=!locked?targets.filter(candidate=>candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<2.5).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0]:null;
+                const roamTarget=!locked?targets.filter(candidate=>candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<verticalReach).sort((a,b)=>Math.hypot(botMapX-a.x,botMapY-a.y)-Math.hypot(botMapX-b.x,botMapY-b.y))[0]:null;
                 if(locked){bot.rampRoute=null;bot.rampStep=0}
                 if(!locked&&bot.rampRoute&&Math.hypot(botMapX-bot.wanderX,botMapY-bot.wanderY)<2){
                     bot.rampStep++;
@@ -1177,7 +1198,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if(MAP[mapY]?.[mapX]===0&&!floorBarrierAt((tryX-1)/2,(bot.mesh.position.z-1)/2,bot.floorY))bot.mesh.position.x=tryX;else bot.vx*=-.28;
                 const tryZ=bot.mesh.position.z+bot.vz,nextMapX=Math.floor((bot.mesh.position.x-1)/2),nextMapY=Math.floor((tryZ-1)/2);
                 if(MAP[nextMapY]?.[nextMapX]===0&&!floorBarrierAt((bot.mesh.position.x-1)/2,(tryZ-1)/2,bot.floorY))bot.mesh.position.z=tryZ;else bot.vz*=-.28;
-                bot.floorY=rampSurfaceHeightAt((bot.mesh.position.x-1)/2,(bot.mesh.position.z-1)/2,bot.floorY);bot.mesh.position.y=BOT_CENTER_Y+bot.floorY;bot.backing.position.set(bot.mesh.position.x,BOT_CENTER_Y+bot.floorY,bot.mesh.position.z);if(bot.label)bot.label.position.set(bot.mesh.position.x,.55+bot.floorY,bot.mesh.position.z);
+                const botSurface=surfaceHeightAt((bot.mesh.position.x-1)/2,(bot.mesh.position.z-1)/2,bot.floorY);bot.floorY=IS_DOCKS?THREE.MathUtils.lerp(bot.floorY,botSurface,.18):botSurface;bot.mesh.position.y=BOT_CENTER_Y+bot.floorY;bot.backing.position.set(bot.mesh.position.x,BOT_CENTER_Y+bot.floorY,bot.mesh.position.z);if(bot.label)bot.label.position.set(bot.mesh.position.x,.55+bot.floorY,bot.mesh.position.z);
             }
             // Gentle separation keeps overlapping chasers visually and tactically distinct.
             if(performance.now()>=botReleaseAt) for(let i=0;i<bots.length;i++)for(let j=i+1;j<bots.length;j++){
