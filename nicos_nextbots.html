@@ -144,9 +144,9 @@
                 <div class="menu-kicker">NICO'S</div>
                 <h1>NEXTBOTS</h1>
                 <div class="menu-panel active" id="menu-main"><p class="menu-subtitle">Run, hide and survive together.</p><div class="menu-stack"><button class="primary" id="open-solo">SINGLEPLAYER</button><button id="open-multi">MULTIPLAYER</button><button id="open-menu-settings">SETTINGS</button></div></div>
-                <div class="menu-panel" id="menu-solo"><div class="panel-title">SINGLEPLAYER</div><label class="map-picker">MAP<select class="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">CONTAINER TERMINAL</option><option value="manhattan">WEB WEAVERS — MANHATTAN</option><option value="tokyo">TOKYO DRIFT — TOKYO</option><option value="training">TOKYO DRIFT — BLANK MAP</option></select></label><div class="menu-stack"><button class="primary" id="solo-start">START</button><button class="menu-back">BACK</button></div></div>
+                <div class="menu-panel" id="menu-solo"><div class="panel-title">SINGLEPLAYER</div><p class="lobby-note">A random map is chosen when the round starts.</p><div class="menu-stack"><button class="primary" id="solo-start">START</button><button class="menu-back">BACK</button></div></div>
                 <div class="menu-panel" id="menu-multi"><div class="panel-title">MULTIPLAYER</div><div class="menu-stack"><button class="primary" id="host-open">HOST</button><button id="join-open">JOIN</button><button class="menu-back">BACK</button></div><div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div></div>
-                <div class="menu-panel" id="menu-host"><div class="panel-title">HOST GAME</div><label class="map-picker">MAP<select class="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">CONTAINER TERMINAL</option><option value="manhattan">WEB WEAVERS — MANHATTAN</option><option value="tokyo">TOKYO DRIFT — TOKYO</option><option value="training">TOKYO DRIFT — BLANK MAP</option></select></label><div class="menu-stack"><button class="primary" id="host-start">OPEN ROOM</button><button class="menu-back" data-target="menu-multi">BACK</button></div></div>
+                <div class="menu-panel" id="menu-host"><div class="panel-title">HOST GAME</div><p class="lobby-note">A random map is chosen when the room opens.</p><div class="menu-stack"><button class="primary" id="host-start">OPEN ROOM</button><button class="menu-back" data-target="menu-multi">BACK</button></div></div>
                 <div class="menu-panel" id="menu-settings"><div class="panel-title">SETTINGS</div><div class="settings-grid"><input id="player-name" maxlength="18" placeholder="Player name"><input id="room-pin" inputmode="numeric" maxlength="4" placeholder="Room PIN"></div><label class="map-picker">MOUSE SENSITIVITY<input type="range" id="menu-sens-slider" min="0.1" max="5" step="0.1" value="1"></label><div class="keybind-list" id="keybind-list"></div><div class="menu-stack"><button class="menu-back">SAVE &amp; BACK</button></div></div>
                 <div id="waiting-panel"><div class="waiting-head"><div><div class="waiting-title">WAITING ROOM</div><div class="lobby-note" id="waiting-message">Waiting for the host to start.</div></div><div class="room-code" id="waiting-code"></div></div><div class="player-list" id="waiting-players"></div><div class="waiting-actions"><button id="room-leave">LEAVE ROOM</button><button id="room-start">START GAME</button></div></div>
                 <div id="lobby-status"></div>
@@ -193,7 +193,6 @@
         const sensSlider = document.getElementById('sens-slider');
         const sensValDisplay = document.getElementById('sens-val');
         const closeSettings = document.getElementById('close-settings');
-        const mapSelects = Array.from(document.querySelectorAll('.map-select'));
 
         // Cheats menu DOM
         const cheatsMenu = document.getElementById('cheats-menu');
@@ -209,7 +208,15 @@
         const IS_GARAGE=MAP_ID==='garage',IS_DOCKS=MAP_ID==='annex';
         const MAP_NAMES={garage:'Central Garage',annex:'Container Terminal',manhattan:'Web Weavers — Manhattan',tokyo:'Tokyo Drift — Tokyo',training:'Tokyo Drift — Blank Map'};
         document.title=`Nico's Nextbots — ${MAP_NAMES[MAP_ID]}`;
-        mapSelects.forEach(select=>{select.value=MAP_ID;select.addEventListener('change',()=>{sessionStorage.setItem('nicos-menu-panel',select.closest('#menu-host')?'menu-host':'menu-solo');const url=new URL(location.href);url.searchParams.set('map',select.value);location.href=url})});
+        const RANDOM_MAPS=['garage','annex','manhattan','tokyo','training'];
+        function queueRandomGame(mode){
+            const previous=localStorage.getItem('nicos-last-random-map');
+            const choices=RANDOM_MAPS.filter(map=>map!==previous);
+            const selected=choices[Math.floor(Math.random()*choices.length)];
+            localStorage.setItem('nicos-last-random-map',selected);
+            sessionStorage.setItem('nicos-random-game',mode);
+            const url=new URL(location.href);url.searchParams.set('map',selected);location.href=url;
+        }
 const MAP_LAYOUTS={
     garage:{vertical:[35,70,105],horizontal:[24,48,72],verticalDoors:[12,42,82],horizontalDoors:[18,53,88,122]},
     annex:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]},
@@ -1245,6 +1252,7 @@ for (let b = 0; b < botSpawns.length; b++) {
         function lobbyStatus(message){document.getElementById('lobby-status').textContent=message||'';}
         function playerName(){return document.getElementById('player-name').value.trim()||'Player';}
         function roomPin(){return document.getElementById('room-pin').value.replace(/\D/g,'').slice(0,4);}
+        async function openHostRoom(button){try{button.disabled=true;lobbyStatus('Opening room…');roomSession=await PartyRooms.createHost({game:'nicos-nextbots',name:playerName(),pin:roomPin(),metadata:{map:MAP_ID},onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);button.disabled=false}}
         function showMenuPanel(id){
             document.querySelectorAll('.menu-panel').forEach(panel=>panel.classList.toggle('active',panel.id===id));
             document.getElementById('waiting-panel').style.display=id==='waiting-panel'?'block':'none';
@@ -1313,12 +1321,22 @@ for (let b = 0; b < botSpawns.length; b++) {
                 else if(roomSession)roomSession.client.send('skip-vote',{});
                 updateSkipButton();
             };
-            document.getElementById('solo-start').onclick=()=>{netRole='solo';startGame()};
+            document.getElementById('solo-start').onclick=()=>queueRandomGame('solo');
             document.getElementById('join-open').onclick=()=>{document.getElementById('room-panel').style.display='block';lobbyStatus('Choose a host below.');if(globalThis.PartyRooms)setupRooms()};
-            document.getElementById('host-start').onclick=async event=>{try{event.currentTarget.disabled=true;lobbyStatus('Opening room…');roomSession=await PartyRooms.createHost({game:'nicos-nextbots',name:playerName(),pin:roomPin(),metadata:{map:MAP_ID},onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);event.currentTarget.disabled=false}};
+            document.getElementById('host-start').onclick=()=>queueRandomGame('host');
             document.getElementById('room-start').onclick=()=>{if(netRole!=='host'||gameStarted)return;roomSession.lan.broadcast('start',{});startGame()};
             document.getElementById('room-leave').onclick=leaveWaitingRoom;
             if(globalThis.PartyRooms)setupRooms();else addEventListener('partyroomsready',setupRooms,{once:true});
+            const pendingRandomGame=sessionStorage.getItem('nicos-random-game');
+            if(pendingRandomGame){
+                sessionStorage.removeItem('nicos-random-game');
+                if(pendingRandomGame==='solo'){netRole='solo';startGame()}
+                else{
+                    showMenuPanel('menu-host');
+                    const launchHost=()=>openHostRoom(document.getElementById('host-start'));
+                    if(globalThis.PartyRooms)launchHost();else addEventListener('partyroomsready',launchHost,{once:true});
+                }
+            }
         }
         init();
     </script>
