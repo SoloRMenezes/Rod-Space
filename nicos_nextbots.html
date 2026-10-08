@@ -72,20 +72,6 @@
             accent-color: #d1b45d;
         }
 
-        #minimap-container {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 150px;
-            height: 150px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid #d1b45d;
-            padding: 5px;
-        }
-        #minimap {
-            width: 100%;
-            height: 100%;
-        }
         .stats {
             margin-top: 5px;
             font-size: 0.75rem;
@@ -127,7 +113,7 @@
             gap: 8px;
         }
         #start-screen{background:radial-gradient(circle at 50% 38%,rgba(52,53,55,.42),rgba(0,0,0,.9) 68%);backdrop-filter:blur(3px)}
-        body.menu-active #ui-overlay,body.menu-active #minimap-container,body.menu-active #crosshair{display:none}
+        body.menu-active #ui-overlay,body.menu-active #crosshair{display:none}
         .lobby-card{position:relative;width:min(92vw,620px);background:linear-gradient(145deg,rgba(28,30,31,.97),rgba(12,13,14,.97));border:1px solid #d1b45d;padding:clamp(24px,5vw,46px);color:#fff;box-shadow:0 24px 90px #000,inset 0 0 45px rgba(209,180,93,.035)}
         .menu-kicker{color:#d1b45d;font-size:.72rem;font-weight:800;letter-spacing:.32em;margin-bottom:12px}.lobby-card h1{font-size:clamp(2.4rem,8vw,5rem);line-height:.84;color:#f1d37e;letter-spacing:-.055em;margin-bottom:18px;text-shadow:0 5px 26px rgba(241,211,126,.16)}.menu-subtitle{max-width:430px;color:#c7c7c7;line-height:1.45}
         .lobby-actions{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;margin-top:24px}
@@ -144,7 +130,7 @@
         #touch-look{position:absolute;right:0;top:0;width:58%;height:100%;pointer-events:auto}
         .touch-button{position:absolute;right:24px;width:74px;height:74px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.45);color:#fff;font-weight:900;pointer-events:auto}
         #touch-jump{bottom:30px}
-        @media(pointer:coarse){#mobile-controls.active{display:block}#minimap-container{width:105px;height:105px}.controls-strip{display:none}}
+        @media(pointer:coarse){#mobile-controls.active{display:block}.controls-strip{display:none}}
     </style>
 <link rel="stylesheet" href="assets/rod-space-home.css">
 <script defer src="assets/rod-space-home.js"></script>
@@ -191,13 +177,9 @@
         </div>
         <div id="ui-overlay">
             <div id="timer-display" style="font-size: 1.1rem; color: #fff;">GET READY · 30</div>
-            <div id="floor-display" style="font-size:.78rem;color:#d1b45d;letter-spacing:.14em;">FLOOR 3 / 5</div>
             <button id="skip-countdown">SKIP</button>
         </div>
         <div id="mobile-controls"><div id="touch-look"></div><div class="touch-stick" id="touch-stick"><div class="touch-knob" id="touch-knob"></div></div><button class="touch-button" id="touch-jump">JUMP</button></div>
-        <div id="minimap-container">
-            <canvas id="minimap"></canvas>
-        </div>
     </div>
 
     <script src="./assets/vendor/offline-8eacf4588bcf.js"></script>
@@ -207,8 +189,6 @@
     <script>
         // --- DOM references ---
         const canvas = document.getElementById('screen'); // Used as WebGLRenderer target
-        const mCanvas = document.getElementById('minimap');
-        const mCtx = mCanvas.getContext('2d');
         const settingsMenu = document.getElementById('settings-menu');
         const sensSlider = document.getElementById('sens-slider');
         const sensValDisplay = document.getElementById('sens-val');
@@ -406,7 +386,6 @@ for(const floorY of FLOOR_LEVELS)for(let i=0;i<5;i++){
         let gameTimer = 0;
         let roundEndsAt=Infinity;
         const timerDisplay = document.getElementById('timer-display');
-        const floorDisplay = document.getElementById('floor-display');
         const skipCountdown=document.getElementById('skip-countdown');
         function formatClock(ms){const total=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(total/60)}:${String(total%60).padStart(2,'0')}`}
 
@@ -579,18 +558,13 @@ function wireGuestRoom(session){
             for(const ramp of RAMPS)for(let tier=0;tier<FLOOR_COUNT-1;tier++){
                 const baseY=tier*FLOOR_HEIGHT;
                 const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1),cx=ramp.x1+ramp.x2+1,cz=ramp.y1+ramp.y2+1;
-                const supportShape=new THREE.Shape();
-                if(ramp.reverse){supportShape.moveTo(-length/2,0);supportShape.lineTo(-length/2,FLOOR_HEIGHT);supportShape.lineTo(length/2,0)}
-                else{supportShape.moveTo(-length/2,0);supportShape.lineTo(length/2,0);supportShape.lineTo(length/2,FLOOR_HEIGHT)}
-                supportShape.closePath();
-                const supportGeo=new THREE.ExtrudeGeometry(supportShape,{depth:width,bevelEnabled:false});supportGeo.translate(0,0,-width/2);
-                const support=new THREE.Mesh(supportGeo,rampMaterial);support.position.set(cx,baseY,cz);scene.add(support);
+                // Keep the ramp as a thin suspended slab. A solid triangular
+                // support used to turn its entire underside into a huge dark wall.
                 const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,baseY+FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
-                // Floor-to-ceiling side walls make the ramp a proper enclosed
-                // corridor. Both ends stay open; there is no wall across its path.
-                const endBrick=brickMaterial(.3,FLOOR_HEIGHT/2),topBrick=brickMaterial(Math.max(1,length/4),.3),faceBrick=brickMaterial(Math.max(1,length/4),FLOOR_HEIGHT/2);
-                const corridorWallMaterials=[endBrick,endBrick,topBrick,topBrick,faceBrick,faceBrick];
-                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,FLOOR_HEIGHT,.6),corridorWallMaterials);guard.position.set(cx,baseY+FLOOR_HEIGHT/2,cz+side*(width/2+.25));scene.add(guard)}
+                // Low sloped safety rails keep the route readable and open. The
+                // former floor-to-ceiling walls hid the ramp and looked like two
+                // oversized brick wedges cutting through the garage.
+                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,1.15,.38),railMat);guard.position.set(cx,baseY+FLOOR_HEIGHT/2+.72,cz+side*(width/2-.22));guard.rotation.z=angle;scene.add(guard)}
                 // Yellow entrance bars clearly mark both ways onto the ramp.
                 for(const end of [ramp.x1*2+1,ramp.x2*2+1]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,baseY+(end===ramp.x1*2+1?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12)),cz);scene.add(bar)}
             }
@@ -720,8 +694,6 @@ for (let b = 0; b < botSpawns.length; b++) {
                 camera.aspect = screenWidth / screenHeight;
                 camera.updateProjectionMatrix();
             }
-            mCanvas.width = 150;
-            mCanvas.height = 150;
         }
 
         // --- Input and Controls ---
@@ -874,7 +846,6 @@ for (let b = 0; b < botSpawns.length; b++) {
             if(keys['arrowup'])player.pitch=Math.min(Math.PI/2-.01,player.pitch+keyLookSpeed);
             if(keys['arrowdown'])player.pitch=Math.max(-Math.PI/2+.01,player.pitch-keyLookSpeed);
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
-            floorDisplay.textContent=MAP_ID==='annex'?'CONTAINER YARD':`FLOOR ${floorIndexAtHeight(player.floorY)+1} / ${FLOOR_COUNT}`;
             if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;updateSkipButton()}
             else { skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
 
@@ -1114,61 +1085,12 @@ for (let b = 0; b < botSpawns.length; b++) {
             }
         }
 
-        // --- Minimap ---
-        let minimapFrame=0;
-        function drawMinimap() {
-            if((minimapFrame++&3)!==0)return;
-            mCtx.fillStyle='#090b0d';mCtx.fillRect(0,0,150,150);
-            const padding=5,viewSize=38,blockSize=(150-padding*2)/viewSize;
-            const viewX=Math.max(0,Math.min(MAP_SIZE_X-viewSize,player.x-viewSize/2));
-            const viewY=Math.max(0,Math.min(MAP_SIZE_Y-viewSize,player.y-viewSize/2));
-            const mapX=x=>padding+(x-viewX)*blockSize,mapY=y=>padding+(y-viewY)*blockSize;
-            for(let y=Math.floor(viewY);y<Math.min(MAP_SIZE_Y,Math.ceil(viewY+viewSize));y++) {
-                for(let x=Math.floor(viewX);x<Math.min(MAP_SIZE_X,Math.ceil(viewX+viewSize));x++) {
-                    if(MAP[y][x] !== 0) {
-                        mCtx.fillStyle = MAP[y][x]===1?'#d1b45d':'#8f949a';
-                        mCtx.fillRect(mapX(x),mapY(y),blockSize+.35,blockSize+.35);
-                    }
-                }
-            }
-            // Player
-            mCtx.fillStyle = '#fff';
-            mCtx.beginPath();
-            mCtx.arc(mapX(player.x),mapY(player.y),3.5,0,Math.PI*2);
-            mCtx.fill();
-            // View direction (corrected: x = sin(dir), y = cos(dir)), flipped to point forward
-            mCtx.strokeStyle = 'rgba(255,255,255,0.3)';
-            mCtx.beginPath();
-            mCtx.moveTo(mapX(player.x),mapY(player.y));
-            mCtx.lineTo(
-                mapX(player.x-Math.sin(player.dir)*2),
-                mapY(player.y-Math.cos(player.dir)*2)
-            );
-            mCtx.stroke();
-            // Bots
-            if (bots && bots.length > 0) {
-                mCtx.fillStyle = '#44f';
-                for (let i = 0; i < bots.length; i++) {
-                    if(Math.abs(bots[i].floorY-player.floorY)>=2.5)continue;
-                    // Convert bot world position to map units for minimap
-                    mCtx.beginPath();
-                    mCtx.arc(
-                        mapX((bots[i].mesh.position.x-1)/2),
-                        mapY((bots[i].mesh.position.z-1)/2),
-                        3, 0, Math.PI*2
-                    );
-                    mCtx.fill();
-                }
-            }
-        }
-
         // --- Render Loop ---
         function render() {
             if (isGameOver) return;
             if (renderer && scene && camera) {
                 renderer.render(scene, camera);
             }
-            drawMinimap();
         }
 
         function gameLoop() {
