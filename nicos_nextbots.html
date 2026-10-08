@@ -225,21 +225,28 @@ const MAP_LAYOUTS={
     training:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]}
 };
 const SCENERY_BOXES=[];
-const SOURCE_PARKS=[],SOURCE_LOTS=[];
-const SOURCE_SCALE=4;
-const SOURCE_MAP_SIZE={annex:[180,140],manhattan:[184,192],tokyo:[234,234],training:[234,234]};
+const SOURCE_PARKS=[],SOURCE_LOTS=[],SOURCE_TREES=[];
+// Direct ports retain the source games' full world dimensions. Nico map units
+// are two world units, so source coordinates divide by two—not four.
+const SOURCE_SCALE=2;
+const SOURCE_MAP_SIZE={annex:[180,140],manhattan:[368,384],tokyo:[468,468],training:[560,560]};
 if(MAP_ID==='manhattan'){
     // Copied from Web Weavers' Manhattan generator: same blocks, street widths,
     // seed, park decisions, diagonal avenue and building-layout decisions.
     const blocksX=8,blocksZ=12,blockX=64,blockZ=42,streetX=28,streetZ=22,tileX=92,tileZ=64,halfX=368,halfZ=384;
     let seed=0x5f3759df;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
-    const add=(cx,cz,w,d,h,color)=>SCENERY_BOXES.push({x:(cx-w/2+halfX)/SOURCE_SCALE,y:(cz-d/2+halfZ)/SOURCE_SCALE,w:w/SOURCE_SCALE,d:d/SOURCE_SCALE,h:h*.5,c:[0xc9564f,0xe0a458,0x6a8caf,0xc7b198,0x8fae6b,0xb46a5a,0x9aa5b1][color%7],kind:'manhattan'});
+    const add=(cx,cz,w,d,h,color)=>SCENERY_BOXES.push({x:(cx-w/2+halfX)/SOURCE_SCALE,y:(cz-d/2+halfZ)/SOURCE_SCALE,w:w/SOURCE_SCALE,d:d/SOURCE_SCALE,h,c:[0xc9564f,0xe0a458,0x6a8caf,0xc7b198,0x8fae6b,0xb46a5a,0x9aa5b1][color%7],kind:'manhattan'});
     for(let ix=0;ix<blocksX;ix++)for(let iz=0;iz<blocksZ;iz++){
         const bx=-halfX+ix*tileX+tileX/2+(random()-.5)*5,bz=-halfZ+iz*tileZ+tileZ/2+(random()-.5)*4;
         SOURCE_LOTS.push({x:(bx-blockX/2+halfX)/SOURCE_SCALE,y:(bz-blockZ/2+halfZ)/SOURCE_SCALE,w:blockX/SOURCE_SCALE,d:blockZ/SOURCE_SCALE});
         const nearCenter=Math.abs(ix-(blocksX-1)/2)<1.7&&Math.abs(iz-(blocksZ-1)/2)<2.3;
         const landmark=random()<(nearCenter?.7:.2),diagonal=Math.abs(bz+bx*.64)<20,isPark=!nearCenter&&random()<.08;
-        if(isPark){SOURCE_PARKS.push({x:(bx-blockX*.43+halfX)/SOURCE_SCALE,y:(bz-blockZ*.43+halfZ)/SOURCE_SCALE,w:blockX*.86/SOURCE_SCALE,d:blockZ*.86/SOURCE_SCALE,kind:'manhattan'});continue}
+        if(isPark){
+            SOURCE_PARKS.push({x:(bx-blockX*.43+halfX)/SOURCE_SCALE,y:(bz-blockZ*.43+halfZ)/SOURCE_SCALE,w:blockX*.86/SOURCE_SCALE,d:blockZ*.86/SOURCE_SCALE,kind:'manhattan'});
+            // Copied seeded park placement calls preserve the source builder's RNG sequence.
+            for(let treeIndex=0;treeIndex<6;treeIndex++){const angle=random()*Math.PI*2,radius=random()*14;SOURCE_TREES.push({x:(bx+Math.cos(angle)*radius+halfX)/SOURCE_SCALE,y:(bz+Math.sin(angle)*radius+halfZ)/SOURCE_SCALE,s:.8+random()*.45})}
+            continue
+        }
         if(diagonal)continue;
         const layout=random();
         if(layout<.46)add(bx,bz,blockX*(.84+random()*.1),blockZ*(.82+random()*.12),landmark?190+random()*150:95+random()*125,ix+iz);
@@ -252,7 +259,7 @@ if(MAP_ID==='tokyo'){
     // four-building lots, parks, tower clearing and seeded height profile.
     const radius=468,road=8.2,centres=Array.from({length:15},(_,i)=>(i-7)*60),ranges=centres.slice(0,-1).map(v=>v+30);
     let seed=9347;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
-    const add=(cx,cz,w,d,h,rural=false,style=0)=>SCENERY_BOXES.push({x:(cx-w/2+radius)/SOURCE_SCALE,y:(cz-d/2+radius)/SOURCE_SCALE,w:w/SOURCE_SCALE,d:d/SOURCE_SCALE,h:h*.5,c:[0x4b565e,0x62534e,0x60686a,0x4b515a,0x807567][style],style,kind:'tokyo',rural});
+    const add=(cx,cz,w,d,h,rural=false,style=0)=>SCENERY_BOXES.push({x:(cx-w/2+radius)/SOURCE_SCALE,y:(cz-d/2+radius)/SOURCE_SCALE,w:w/SOURCE_SCALE,d:d/SOURCE_SCALE,h,c:[0x4b565e,0x62534e,0x60686a,0x4b515a,0x807567][style],style,kind:'tokyo',rural});
     const parking=[[150,150],[-150,210],[210,-150]];
     ranges.forEach((cx,ix)=>ranges.forEach((cz,iz)=>{
         if(parking.some(([x,z])=>x===cx&&z===cz))return;
@@ -281,7 +288,9 @@ const MAP = (() => {
             };
             if(IS_GARAGE)for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0&&clearOfWall(x,y))map[y][x]=2;
             for(const box of SCENERY_BOXES)for(let y=Math.floor(box.y);y<=Math.ceil(box.y+box.d);y++)for(let x=Math.floor(box.x);x<=Math.ceil(box.x+box.w);x++)if(map[y])map[y][x]=3;
-            if(MAP_ID==='tokyo'||MAP_ID==='training')for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(Math.hypot(x-width/2,y-height/2)>116)map[y][x]=1;
+            if(MAP_ID==='manhattan')for(let y=0;y<height;y++)for(let x=0;x<width;x++){const wx=(x-width/2)*2,wz=(y-height/2)*2;if(Math.pow(Math.abs(wx)/426,6)+Math.pow(Math.abs(wz)/436,6)>1)map[y][x]=1}
+            if(MAP_ID==='tokyo')for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(Math.hypot(x-width/2,y-height/2)>232)map[y][x]=1;
+            if(MAP_ID==='training')for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(Math.hypot(x-width/2,y-height/2)>280)map[y][x]=1;
             return map;
         })();
         const sourceBuildingBlocked=(x,y,radius=.32)=>SCENERY_BOXES.some(box=>x+radius>box.x&&x-radius<box.x+box.w&&y+radius>box.y&&y-radius<box.y+box.d);
@@ -579,7 +588,7 @@ function wireGuestRoom(session){
             scene.add(dirLight);
 
             // Floor (scaled 2x: each map unit is 2x2 world units)
-            const expandedTokyoWorld=MAP_ID==='tokyo'||MAP_ID==='training',floorWidth=(expandedTokyoWorld?MAP_SIZE_X+46:MAP_SIZE_X)*2,floorDepth=(expandedTokyoWorld?MAP_SIZE_Y+46:MAP_SIZE_Y)*2;
+            const expandedTokyoWorld=MAP_ID==='tokyo',floorWidth=(expandedTokyoWorld?MAP_SIZE_X+100:MAP_SIZE_X)*2,floorDepth=(expandedTokyoWorld?MAP_SIZE_Y+100:MAP_SIZE_Y)*2;
             const floorGeo = new THREE.PlaneGeometry(floorWidth,floorDepth);
             const makeConcreteTexture=(base,lines=false)=>{
                 const tile=document.createElement('canvas');tile.width=tile.height=256;const ctx=tile.getContext('2d');ctx.fillStyle=base;ctx.fillRect(0,0,256,256);
@@ -596,38 +605,45 @@ function wireGuestRoom(session){
 
             if(MAP_ID==='manhattan'){
                 const lotMat=new THREE.MeshPhongMaterial({color:0x55575e,shininess:2}),parkMat=new THREE.MeshPhongMaterial({color:0x587747,shininess:2}),pathMat=new THREE.MeshBasicMaterial({color:0xb7aa8e});
+                // Copied from Web Weavers: the sixth-power island outline and its
+                // shore replace Nico's rectangular substitute at the exact source size.
+                const makeIslandShape=(rx,rz)=>{const shape=new THREE.Shape(),power=2/6;for(let i=0;i<=128;i++){const t=i/128*Math.PI*2,c=Math.cos(t),s=Math.sin(t),x=rx*Math.sign(c)*Math.pow(Math.abs(c),power),z=rz*Math.sign(s)*Math.pow(Math.abs(s),power);if(i===0)shape.moveTo(x,z);else shape.lineTo(x,z)}shape.closePath();return shape};
+                const ocean=new THREE.Mesh(new THREE.PlaneGeometry(1800,1800),new THREE.MeshPhongMaterial({color:0x073a59,shininess:70}));ocean.rotation.x=-Math.PI/2;ocean.position.set(MAP_SIZE_X,-3.2,MAP_SIZE_Y);scene.add(ocean);
+                const shore=new THREE.Mesh(new THREE.ShapeGeometry(makeIslandShape(435,445)),new THREE.MeshPhongMaterial({color:0xb9c3c5}));shore.rotation.x=-Math.PI/2;shore.position.set(MAP_SIZE_X,-.18,MAP_SIZE_Y);scene.add(shore);
+                const island=new THREE.Mesh(new THREE.ShapeGeometry(makeIslandShape(426,436)),new THREE.MeshPhongMaterial({color:0x3d3f46,shininess:2}));island.rotation.x=-Math.PI/2;island.position.set(MAP_SIZE_X,.005,MAP_SIZE_Y);scene.add(island);
                 for(const lot of SOURCE_LOTS){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(lot.w*2,lot.d*2),lotMat);mesh.rotation.x=-Math.PI/2;mesh.position.set((lot.x+lot.w/2)*2+1,.025,(lot.y+lot.d/2)*2+1);scene.add(mesh)}
                 for(const park of SOURCE_PARKS){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(park.w*2,park.d*2),parkMat);mesh.rotation.x=-Math.PI/2;mesh.position.set((park.x+park.w/2)*2+1,.045,(park.y+park.d/2)*2+1);scene.add(mesh);for(const horizontal of [true,false]){const path=new THREE.Mesh(new THREE.PlaneGeometry(horizontal?park.w*1.9:1.6,horizontal?1.6:park.d*1.9),pathMat);path.rotation.x=-Math.PI/2;path.position.copy(mesh.position);path.position.y=.055;scene.add(path)}}
-                const diagonal=new THREE.Mesh(new THREE.PlaneGeometry(15,Math.hypot(MAP_SIZE_X*2,MAP_SIZE_Y*2)*1.12),new THREE.MeshBasicMaterial({color:0x34363c}));diagonal.rotation.set(-Math.PI/2,0,-.57);diagonal.position.set(MAP_SIZE_X,.06,MAP_SIZE_Y);scene.add(diagonal);
+                const trunkMat=new THREE.MeshPhongMaterial({color:0x5b3c2c}),leafMat=new THREE.MeshPhongMaterial({color:0x4c874d});for(const tree of SOURCE_TREES){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.38,.52,4.4,6),trunkMat);trunk.position.set(tree.x*2+1,2.2,tree.y*2+1);scene.add(trunk);const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(2.8*tree.s,1),leafMat);crown.scale.y=.85;crown.position.set(tree.x*2+1,5.3,tree.y*2+1);scene.add(crown)}
+                const diagonal=new THREE.Mesh(new THREE.PlaneGeometry(30,Math.hypot(MAP_SIZE_X*2,MAP_SIZE_Y*2)*1.12),new THREE.MeshBasicMaterial({color:0x34363c}));diagonal.rotation.set(-Math.PI/2,0,-.57);diagonal.position.set(MAP_SIZE_X,.06,MAP_SIZE_Y);scene.add(diagonal);
             }
             if(MAP_ID==='tokyo'){
-                const roadMat=new THREE.MeshBasicMaterial({color:0x171e28}),roadWidth=8.2,centres=Array.from({length:15},(_,i)=>MAP_SIZE_X+(i-7)*30);
+                const roadMat=new THREE.MeshBasicMaterial({color:0x171e28}),roadWidth=16.4,centres=Array.from({length:15},(_,i)=>MAP_SIZE_X+(i-7)*60);
                 for(const center of centres){const horizontal=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,roadWidth),roadMat);horizontal.rotation.x=-Math.PI/2;horizontal.position.set(MAP_SIZE_X,.04,center);scene.add(horizontal);const vertical=new THREE.Mesh(new THREE.PlaneGeometry(roadWidth,MAP_SIZE_Y*2),roadMat);vertical.rotation.x=-Math.PI/2;vertical.position.set(center,.041,MAP_SIZE_Y);scene.add(vertical)}
-                const outerRoad=new THREE.Mesh(new THREE.RingGeometry(219.4,227.6,192),roadMat);outerRoad.rotation.x=-Math.PI/2;outerRoad.position.set(MAP_SIZE_X,.045,MAP_SIZE_Y);scene.add(outerRoad);
-                const centreRoad=new THREE.Mesh(new THREE.RingGeometry(19,26,96),roadMat);centreRoad.rotation.x=-Math.PI/2;centreRoad.position.set(MAP_SIZE_X,.046,MAP_SIZE_Y);scene.add(centreRoad);
+                const outerRoad=new THREE.Mesh(new THREE.RingGeometry(438.8,455.2,192),roadMat);outerRoad.rotation.x=-Math.PI/2;outerRoad.position.set(MAP_SIZE_X,.045,MAP_SIZE_Y);scene.add(outerRoad);
+                const centreRoad=new THREE.Mesh(new THREE.RingGeometry(38,52,96),roadMat);centreRoad.rotation.x=-Math.PI/2;centreRoad.position.set(MAP_SIZE_X,.046,MAP_SIZE_Y);scene.add(centreRoad);
                 // Tokyo Drift's outer sakura belt, four hill paths and torii shrines.
                 const grassMat=new THREE.MeshPhongMaterial({color:0x344c3c,shininess:2}),barkMat=new THREE.MeshPhongMaterial({color:0x594134}),stoneMat=new THREE.MeshPhongMaterial({color:0x9c9c90}),redMat=new THREE.MeshPhongMaterial({color:0xd44424}),darkMat=new THREE.MeshPhongMaterial({color:0x26303c}),petalMat=new THREE.MeshPhongMaterial({color:0xeebbc9});
                 for(const park of SOURCE_PARKS.filter(p=>p.kind==='tokyo')){const base=new THREE.Mesh(new THREE.BoxGeometry(park.w*2,.3,park.d*2),grassMat);base.position.set((park.x+park.w/2)*2+1,.15,(park.y+park.d/2)*2+1);scene.add(base);for(const horizontal of [true,false]){const path=new THREE.Mesh(new THREE.BoxGeometry(horizontal?park.w*1.9:1.5,.04,horizontal?1.5:park.d*1.9),stoneMat);path.position.set(base.position.x,.34,base.position.z);scene.add(path)}}
-                const grove=new THREE.Mesh(new THREE.RingGeometry(232,280,192),grassMat);grove.rotation.x=-Math.PI/2;grove.position.set(MAP_SIZE_X,.025,MAP_SIZE_Y);scene.add(grove);
-                const treeCount=340,trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.18,.28,2.8,6),barkMat,treeCount),crowns=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),petalMat,treeCount),matrix=new THREE.Matrix4();let treeSeed=9347;
+                const grove=new THREE.Mesh(new THREE.RingGeometry(464,568,192),grassMat);grove.rotation.x=-Math.PI/2;grove.position.set(MAP_SIZE_X,.025,MAP_SIZE_Y);scene.add(grove);
+                const treeCount=340,trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.24,.42,4.7,6),barkMat,treeCount),crowns=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),petalMat,treeCount*3),matrix=new THREE.Matrix4();let treeSeed=9347,crownIndex=0;
                 const treeRandom=()=>{treeSeed=(Math.imul(treeSeed,1664525)+1013904223)>>>0;return treeSeed/4294967296};
-                for(let i=0;i<treeCount;i++){const angle=i/treeCount*Math.PI*2+treeRandom()*.04,radius=238+treeRandom()*41,size=.6+treeRandom()*.75,x=MAP_SIZE_X+Math.cos(angle)*radius,z=MAP_SIZE_Y+Math.sin(angle)*radius;matrix.compose(new THREE.Vector3(x,1.4*size,z),new THREE.Quaternion(),new THREE.Vector3(size, size, size));trunks.setMatrixAt(i,matrix);matrix.compose(new THREE.Vector3(x,4.1*size,z),new THREE.Quaternion(),new THREE.Vector3(2.5*size,1.7*size,2.2*size));crowns.setMatrixAt(i,matrix)}
+                for(let i=0;i<treeCount;i++){const angle=i/treeCount*Math.PI*2+treeRandom()*.04,radius=477+treeRandom()*90,size=1.2+treeRandom()*1.5,x=MAP_SIZE_X+Math.cos(angle)*radius,z=MAP_SIZE_Y+Math.sin(angle)*radius;matrix.compose(new THREE.Vector3(x,2.35*size,z),new THREE.Quaternion(),new THREE.Vector3(size,size,size));trunks.setMatrixAt(i,matrix);for(let canopy=0;canopy<3;canopy++){matrix.compose(new THREE.Vector3(x+(canopy-1)*1.5*size,(5.1+(canopy===1?.7:0))*size,z+(canopy%2?1:-.6)*size),new THREE.Quaternion(),new THREE.Vector3(2.7*size,1.8*size,2.3*size));crowns.setMatrixAt(crownIndex++,matrix)}}
                 trunks.instanceMatrix.needsUpdate=true;crowns.instanceMatrix.needsUpdate=true;scene.add(trunks,crowns);
-                const rail=new THREE.Mesh(new THREE.TorusGeometry(232,.42,6,192),stoneMat);rail.rotation.x=Math.PI/2;rail.position.set(MAP_SIZE_X,1,MAP_SIZE_Y);scene.add(rail);
+                const rail=new THREE.Mesh(new THREE.TorusGeometry(464,.5,6,192),stoneMat);rail.rotation.x=Math.PI/2;rail.position.set(MAP_SIZE_X,1,MAP_SIZE_Y);scene.add(rail);
                 for(let i=0;i<4;i++){
-                    const angle=Math.PI/4+i*Math.PI/2,cos=Math.cos(angle),sin=Math.sin(angle),gateRadius=241,hillRadius=27,hillCentre=255.5;
-                    const hill=new THREE.Mesh(new THREE.SphereGeometry(1,20,10),grassMat);hill.scale.set(hillRadius,6.5,hillRadius);hill.position.set(MAP_SIZE_X+cos*hillCentre,-3,MAP_SIZE_Y+sin*hillCentre);scene.add(hill);
-                    const path=new THREE.Mesh(new THREE.BoxGeometry(5,.16,55),stoneMat);path.position.set(MAP_SIZE_X+cos*252,.1,MAP_SIZE_Y+sin*252);path.rotation.y=angle;scene.add(path);
+                    const angle=Math.PI/4+i*Math.PI/2,cos=Math.cos(angle),sin=Math.sin(angle),gateRadius=482,hillRadius=54,hillCentre=511;
+                    const hill=new THREE.Mesh(new THREE.SphereGeometry(1,24,12),grassMat);hill.scale.set(hillRadius,13,hillRadius);hill.position.set(MAP_SIZE_X+cos*hillCentre,-6,MAP_SIZE_Y+sin*hillCentre);scene.add(hill);
+                    const path=new THREE.Mesh(new THREE.BoxGeometry(5,.16,110),stoneMat);path.position.set(MAP_SIZE_X+cos*504,.1,MAP_SIZE_Y+sin*504);path.rotation.y=angle;scene.add(path);
                     const gate=new THREE.Group();gate.position.set(MAP_SIZE_X+cos*gateRadius,0,MAP_SIZE_Y+sin*gateRadius);gate.rotation.y=-angle;scene.add(gate);
                     for(const side of [-1,1]){const post=new THREE.Mesh(new THREE.CylinderGeometry(.42,.62,10,10),redMat);post.position.set(side*5,5,0);gate.add(post);const foot=new THREE.Mesh(new THREE.CylinderGeometry(.7,.8,1.5,10),stoneMat);foot.position.set(side*5,.75,0);gate.add(foot)}
                     const top=new THREE.Mesh(new THREE.BoxGeometry(14,.9,1.5),darkMat);top.position.y=10;gate.add(top);const beam=new THREE.Mesh(new THREE.BoxGeometry(12,.65,.9),redMat);beam.position.y=8;gate.add(beam);
                 }
             }
             if(MAP_ID==='training'){
-                const road=new THREE.Mesh(new THREE.RingGeometry(214,225,256),new THREE.MeshPhongMaterial({color:0x35383a,shininess:2}));road.rotation.x=-Math.PI/2;road.position.set(MAP_SIZE_X,.045,MAP_SIZE_Y);scene.add(road);
-                const positions=[],colors=[];for(const [inner,outer] of [[213,214],[225,226]])for(let i=0;i<256;i++){const a=i/256*Math.PI*2,b=(i+1)/256*Math.PI*2,color=new THREE.Color(i%2?0xf4efe5:0xc92f32);for(const [radius,angle] of [[inner,a],[outer,a],[outer,b],[inner,a],[outer,b],[inner,b]]){positions.push(MAP_SIZE_X+Math.cos(angle)*radius,.075,MAP_SIZE_Y+Math.sin(angle)*radius);colors.push(color.r,color.g,color.b)}}
+                const road=new THREE.Mesh(new THREE.RingGeometry(428,450,256),new THREE.MeshPhongMaterial({color:0x35383a,shininess:2}));road.rotation.x=-Math.PI/2;road.position.set(MAP_SIZE_X,.045,MAP_SIZE_Y);scene.add(road);
+                const positions=[],colors=[];for(const [inner,outer] of [[426,428],[450,452]])for(let i=0;i<256;i++){const a=i/256*Math.PI*2,b=(i+1)/256*Math.PI*2,color=new THREE.Color(i%2?0xf4efe5:0xc92f32);for(const [radius,angle] of [[inner,a],[outer,a],[outer,b],[inner,a],[outer,b],[inner,b]]){positions.push(MAP_SIZE_X+Math.cos(angle)*radius,.075,MAP_SIZE_Y+Math.sin(angle)*radius);colors.push(color.r,color.g,color.b)}}
                 const kerbGeometry=new THREE.BufferGeometry();kerbGeometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));kerbGeometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));kerbGeometry.computeVertexNormals();scene.add(new THREE.Mesh(kerbGeometry,new THREE.MeshPhongMaterial({vertexColors:true,side:THREE.DoubleSide})));
-                const shedMats=[0x74878d,0xa77e5c,0x829172].map(color=>new THREE.MeshPhongMaterial({color})),stone=new THREE.MeshPhongMaterial({color:0x9c9c90});for(let i=0;i<12;i++){const angle=i/12*Math.PI*2,station=new THREE.Group();station.position.set(MAP_SIZE_X+Math.cos(angle)*247.5,0,MAP_SIZE_Y+Math.sin(angle)*247.5);station.rotation.y=-angle;const shed=new THREE.Mesh(new THREE.BoxGeometry(6,2.5,4),shedMats[i%3]);shed.position.y=1.25;station.add(shed);const roof=new THREE.Mesh(new THREE.BoxGeometry(6.25,.18,4.25),stone);roof.position.y=2.6;station.add(roof);scene.add(station)}
+                const shedMats=[0x74878d,0xa77e5c,0x829172].map(color=>new THREE.MeshPhongMaterial({color})),stone=new THREE.MeshPhongMaterial({color:0x9c9c90});for(let i=0;i<12;i++){const angle=i/12*Math.PI*2,station=new THREE.Group();station.position.set(MAP_SIZE_X+Math.cos(angle)*495,0,MAP_SIZE_Y+Math.sin(angle)*495);station.rotation.y=-angle;const shed=new THREE.Mesh(new THREE.BoxGeometry(12,5,8),shedMats[i%3]);shed.position.y=2.5;station.add(shed);const roof=new THREE.Mesh(new THREE.BoxGeometry(12.5,.36,8.5),stone);roof.position.y=5.2;station.add(roof);scene.add(station)}
             }
 
             // Room dividers are continuous masonry walls; support columns are separate 1x1 posts.
@@ -780,14 +796,14 @@ function wireGuestRoom(session){
             if(SCENERY_BOXES.length){
                 const facadeMats=new Map();
                 const tokyoFacade=box=>{
-                    const key=`tokyo:${box.style}:${box.h>27.5}:${box.rural}`;if(facadeMats.has(key))return facadeMats.get(key);
+                    const key=`tokyo:${box.style}:${box.h>55}:${box.rural}`;if(facadeMats.has(key))return facadeMats.get(key);
                     const canvas=document.createElement('canvas');canvas.width=128;canvas.height=256;const ctx=canvas.getContext('2d'),colors=['#4b565e','#62534e','#60686a','#4b515a','#807567'];ctx.fillStyle=colors[box.style||0];ctx.fillRect(0,0,128,256);
                     const rows=box.rural?2:8;for(let row=0;row<rows;row++){ctx.fillStyle='#303a42';ctx.fillRect(0,row*(box.rural?128:32)+(box.rural?124:30),128,2);for(let col=0;col<5;col++){ctx.fillStyle=(row+col+box.style)%3?'#c7b382':'#1d2b37';ctx.fillRect(7+col*24,(box.rural?28:6)+row*(box.rural?128:32),14,box.rural?50:18)}}
-                    const texture=new THREE.CanvasTexture(canvas);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(1,box.h>27.5?3:1);const material=new THREE.MeshPhongMaterial({map:texture,emissiveMap:texture,emissive:0x343434,emissiveIntensity:.24,shininess:4});facadeMats.set(key,material);return material;
+                    const texture=new THREE.CanvasTexture(canvas);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(1,box.h>55?3:1);const material=new THREE.MeshPhongMaterial({map:texture,emissiveMap:texture,emissive:0x343434,emissiveIntensity:.24,shininess:4});facadeMats.set(key,material);return material;
                 };
                 for(const box of SCENERY_BOXES){
                     if(!facadeMats.has(box.c))facadeMats.set(box.c,new THREE.MeshPhongMaterial({color:box.c,shininess:8}));
-                    const material=box.kind==='tokyo'?tokyoFacade(box):facadeMats.get(box.c),lowerHeight=box.kind==='tokyo'&&box.h>27.5?box.h*.72:box.h;
+                    const material=box.kind==='tokyo'?tokyoFacade(box):facadeMats.get(box.c),lowerHeight=box.kind==='tokyo'&&box.h>55?box.h*.72:box.h;
                     const building=new THREE.Mesh(new THREE.BoxGeometry(box.w*2,lowerHeight,box.d*2),material);building.position.set((box.x+box.w/2)*2+1,lowerHeight/2,(box.y+box.d/2)*2+1);scene.add(building);
                     if(lowerHeight<box.h){const upper=new THREE.Mesh(new THREE.BoxGeometry(box.w*1.52,box.h-lowerHeight,box.d*1.52),material);upper.position.set(building.position.x,lowerHeight+(box.h-lowerHeight)/2,building.position.z);scene.add(upper)}
                     const roof=new THREE.Mesh(new THREE.BoxGeometry(box.w*2+.25,.35,box.d*2+.25),new THREE.MeshBasicMaterial({color:0x20262d}));roof.position.set(building.position.x,box.h+.18,building.position.z);scene.add(roof);
@@ -803,7 +819,7 @@ function wireGuestRoom(session){
                     for(let y=.5;y<46;y+=3.5){const top=Math.min(46,y+3.5),low=halfAt(y),high=halfAt(top),mat=y<34?red:y<40?white:red;corners.forEach(([sx,sz],index)=>{const next=corners[(index+1)%4];beam(new THREE.Vector3(sx*low,y,sz*low),new THREE.Vector3(sx*high,top,sz*high),y<28?.32:.18,mat);if(y>5){beam(new THREE.Vector3(sx*low,y,sz*low),new THREE.Vector3(next[0]*low,y,next[1]*low),.1,mat);beam(new THREE.Vector3(sx*low,y,sz*low),new THREE.Vector3(next[0]*high,top,next[1]*high),.07,mat)}})}
                     for(const [y,width] of [[28,11.5],[46,5.5]]){towerBox(width,1.7,width,0,y,0,new THREE.MeshPhongMaterial({color:0xffd7a3}));towerBox(width+.5,.4,width+.5,0,y+1,0,white)}
                     const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.08,.38,42,8),red);antenna.position.y=67;tower.add(antenna);
-                    tower.position.set(MAP_SIZE_X,0,MAP_SIZE_Y);scene.add(tower);
+                    tower.scale.setScalar(2);tower.position.set(MAP_SIZE_X,0,MAP_SIZE_Y);scene.add(tower);
                 }
             }
 
@@ -827,7 +843,7 @@ function wireGuestRoom(session){
 
             // Start away from the centre so every round opens differently.
             respawnSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&!rampAt(x,y)&&!yardContainerAt(x+.5,y+.5)&&!yardRampAt(x+.5,y+.5)&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)respawnSpawns.push([x+.5,y+.5]);
-            const authoredSpawns={annex:[7.25,26.5],manhattan:[92,96],tokyo:[117,87],training:[117,117]};
+            const authoredSpawns={annex:[7.25,26.5],manhattan:[184,192],tokyo:[234,174],training:[280,280]};
             const spawn=authoredSpawns[MAP_ID]||respawnSpawns[Math.floor(Math.random()*respawnSpawns.length)]||[3.5,3.5];
             player.position = new THREE.Vector3(spawn[0], 12, spawn[1]);
             player.x = spawn[0];
