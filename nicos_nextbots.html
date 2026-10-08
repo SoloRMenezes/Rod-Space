@@ -225,20 +225,48 @@ const MAP_LAYOUTS={
     training:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]}
 };
 const SCENERY_BOXES=[];
-let scenerySeed=MAP_ID==='manhattan'?0x5f3759df:9347;
-const sceneryRandom=()=>{scenerySeed=(Math.imul(scenerySeed,1664525)+1013904223)>>>0;return scenerySeed/4294967296};
-if(MAP_ID==='manhattan')for(let row=0;row<6;row++)for(let col=0;col<8;col++){
-    if((row===2&&col===3)||(row===4&&col===1))continue;
-    const x=5+col*17,y=5+row*15,w=11+(col+row)%3,d=9+(col*2+row)%3;
-    SCENERY_BOXES.push({x,y,w,d,h:18+sceneryRandom()*48,c:[0x7c302d,0x32465e,0x6a5636,0x42523c][(col+row)%4],kind:'manhattan'});
+const SOURCE_PARKS=[],SOURCE_LOTS=[];
+const SOURCE_SCALE=4;
+const SOURCE_MAP_SIZE={manhattan:[184,192],tokyo:[234,234],training:[234,234]};
+if(MAP_ID==='manhattan'){
+    // Copied from Web Weavers' Manhattan generator: same blocks, street widths,
+    // seed, park decisions, diagonal avenue and building-layout decisions.
+    const blocksX=8,blocksZ=12,blockX=64,blockZ=42,streetX=28,streetZ=22,tileX=92,tileZ=64,halfX=368,halfZ=384;
+    let seed=0x5f3759df;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+    const add=(cx,cz,w,d,h,color)=>SCENERY_BOXES.push({x:(cx-w/2+halfX)/SOURCE_SCALE,y:(cz-d/2+halfZ)/SOURCE_SCALE,w:w/SOURCE_SCALE,d:d/SOURCE_SCALE,h:h*.5,c:[0xc9564f,0xe0a458,0x6a8caf,0xc7b198,0x8fae6b,0xb46a5a,0x9aa5b1][color%7],kind:'manhattan'});
+    for(let ix=0;ix<blocksX;ix++)for(let iz=0;iz<blocksZ;iz++){
+        const bx=-halfX+ix*tileX+tileX/2+(random()-.5)*5,bz=-halfZ+iz*tileZ+tileZ/2+(random()-.5)*4;
+        SOURCE_LOTS.push({x:(bx-blockX/2+halfX)/SOURCE_SCALE,y:(bz-blockZ/2+halfZ)/SOURCE_SCALE,w:blockX/SOURCE_SCALE,d:blockZ/SOURCE_SCALE});
+        const nearCenter=Math.abs(ix-(blocksX-1)/2)<1.7&&Math.abs(iz-(blocksZ-1)/2)<2.3;
+        const landmark=random()<(nearCenter?.7:.2),diagonal=Math.abs(bz+bx*.64)<20,isPark=!nearCenter&&random()<.08;
+        if(isPark){SOURCE_PARKS.push({x:(bx-blockX*.43+halfX)/SOURCE_SCALE,y:(bz-blockZ*.43+halfZ)/SOURCE_SCALE,w:blockX*.86/SOURCE_SCALE,d:blockZ*.86/SOURCE_SCALE,kind:'manhattan'});continue}
+        if(diagonal)continue;
+        const layout=random();
+        if(layout<.46)add(bx,bz,blockX*(.84+random()*.1),blockZ*(.82+random()*.12),landmark?190+random()*150:95+random()*125,ix+iz);
+        else if(layout<.86){add(bx-blockX*.245,bz,blockX*.46,blockZ*.9,landmark?170+random()*145:100+random()*120,ix);add(bx+blockX*.245,bz,blockX*.46,blockZ*.9,85+random()*115,iz+3)}
+        else {const d=blockZ*.43;add(bx-blockX*.25,bz-blockZ*.23,blockX*.44,d,100+random()*145,ix);add(bx+blockX*.25,bz-blockZ*.23,blockX*.44,d,90+random()*130,iz+2);add(bx,bz+blockZ*.24,blockX*.92,d,115+random()*155,ix+iz+4)}
+    }
 }
-if(MAP_ID==='tokyo')for(let row=0;row<6;row++)for(let col=0;col<8;col++){
-    const x=6+col*17,y=6+row*15,cx=x+5.5,cy=y+4.5;
-    if(Math.hypot(cx-70,cy-48)<18||(row===0&&col===0))continue;
-    SCENERY_BOXES.push({x,y,w:10.5,d:8.5,h:row===0||row===5?5+sceneryRandom()*5:14+sceneryRandom()*42,c:[0x303b50,0x584c45,0x35465a,0x6b443e][(col*3+row)%4],kind:'tokyo'});
+if(MAP_ID==='tokyo'){
+    // Copied from Tokyo Drift's city generator: its 15-road circular city,
+    // four-building lots, parks, tower clearing and seeded height profile.
+    const radius=468,road=8.2,centres=Array.from({length:15},(_,i)=>(i-7)*60),ranges=centres.slice(0,-1).map(v=>v+30);
+    let seed=9347;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
+    const add=(cx,cz,w,d,h,rural=false)=>SCENERY_BOXES.push({x:(cx-w/2+radius)/SOURCE_SCALE,y:(cz-d/2+radius)/SOURCE_SCALE,w:w/SOURCE_SCALE,d:d/SOURCE_SCALE,h:h*.5,c:[0x4b565e,0x62534e,0x60686a,0x4b515a,0x807567][SCENERY_BOXES.length%5],kind:'tokyo',rural});
+    const parking=[[150,150],[-150,210],[210,-150]];
+    ranges.forEach((cx,ix)=>ranges.forEach((cz,iz)=>{
+        if(parking.some(([x,z])=>x===cx&&z===cz))return;
+        const blockRadius=Math.hypot(cx,cz);
+        if(blockRadius+30<415&&blockRadius>88&&(ix*7+iz*11)%23===0){SOURCE_PARKS.push({x:(cx-21+radius)/SOURCE_SCALE,y:(cz-21+radius)/SOURCE_SCALE,w:42/SOURCE_SCALE,d:42/SOURCE_SCALE,kind:'tokyo'});return}
+        for(const dx of [-11,11])for(const dz of [-11,11]){
+            const x=cx+dx,z=cz+dz,r=Math.hypot(x,z),rural=r>345||(r>255&&random()<(r-255)/90),w=rural?13+random()*3:17+random()*2,d=rural?13+random()*3:17+random()*2;
+            if(r+Math.hypot(w,d)/2>447-road-3||r<55+Math.hypot(w,d)/2)continue;
+            const h=rural?6+random()*6:r>250?18+random()*32:random()<.18?18+random()*14:85+random()*78;random();add(x,z,w,d,h,rural);
+        }
+    }));
 }
 const MAP = (() => {
-            const width = 140, height = 96;
+            const [width,height]=SOURCE_MAP_SIZE[MAP_ID]||[140,96];
             const layout=MAP_LAYOUTS[MAP_ID];
             const map = Array.from({length:height},(_,y)=>Array.from({length:width},(_,x)=>x===0||y===0||x===width-1||y===height-1?1:0));
             // Each layout uses broad sightlines and loading doors, but changes
@@ -253,6 +281,7 @@ const MAP = (() => {
             };
             if(IS_GARAGE)for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0&&clearOfWall(x,y))map[y][x]=2;
             for(const box of SCENERY_BOXES)for(let y=Math.floor(box.y);y<=Math.ceil(box.y+box.d);y++)for(let x=Math.floor(box.x);x<=Math.ceil(box.x+box.w);x++)if(map[y])map[y][x]=3;
+            if(MAP_ID==='tokyo'||MAP_ID==='training')for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(Math.hypot(x-width/2,y-height/2)>116)map[y][x]=1;
             return map;
         })();
         const MAP_SIZE_Y = MAP.length;
@@ -282,9 +311,10 @@ const MAP = (() => {
         const floorIndexAtHeight=height=>clampFloorIndex(Math.round(height/FLOOR_HEIGHT));
         const floorBaseAtHeight=height=>FLOOR_LEVELS[floorIndexAtHeight(height)];
         const RAMPS=IS_GARAGE?[
-            {x1:7,x2:27,y1:7,y2:14,reverse:false},{x1:113,x2:133,y1:7,y2:14,reverse:true},
-            {x1:7,x2:27,y1:44,y2:51,reverse:false},{x1:113,x2:133,y1:44,y2:51,reverse:true},
-            {x1:7,x2:27,y1:81,y2:88,reverse:false},{x1:113,x2:133,y1:81,y2:88,reverse:true}
+            {floor:0,x1:7,x2:27,y1:7,y2:14,reverse:false},{floor:0,x1:113,x2:133,y1:44,y2:51,reverse:true},
+            {floor:1,x1:7,x2:27,y1:81,y2:88,reverse:false},{floor:1,x1:113,x2:133,y1:7,y2:14,reverse:true},
+            {floor:2,x1:7,x2:27,y1:44,y2:51,reverse:false},{floor:2,x1:113,x2:133,y1:81,y2:88,reverse:true},
+            {floor:3,x1:43,x2:63,y1:7,y2:14,reverse:false},{floor:3,x1:77,x2:97,y1:81,y2:88,reverse:true}
         ]:[];
         const YARD_CONTAINERS=IS_DOCKS?[
             {x:9,y:10,w:15,d:3,h:2.6,c:0xb93b32},{x:9,y:15,w:15,d:3,h:2.6,c:0x305f8d},
@@ -327,6 +357,13 @@ const MAP = (() => {
             {x1:62,x2:65,y1:80,y2:83,h:2.6,axis:'x'},
             {x1:14,x2:17,y1:90,y2:93,h:2.6,axis:'x'}
         ]:[];
+        const CONTAINER_LEVEL_HEIGHT=3.2;
+        for(const c of YARD_CONTAINERS){
+            const levels=Math.max(1,Math.round(c.h/2.6));c.h=levels*CONTAINER_LEVEL_HEIGHT;
+            if(c.w>=c.d){const oldW=c.w;c.w*=1.08;c.x-=(c.w-oldW)/2;c.y-=.3;c.d+=.6}
+            else {const oldD=c.d;c.d*=1.08;c.y-=(c.d-oldD)/2;c.x-=.3;c.w+=.6}
+        }
+        for(const ramp of YARD_ACCESS_RAMPS)ramp.h=CONTAINER_LEVEL_HEIGHT;
         const FLOOR_CAR_SPOTS=FLOOR_LEVELS.map((_,floor)=>{
             if(!IS_GARAGE)return [];
             const rows=[[17,40,79],[15,38,62,81],[18,42,77],[14,36,60,83],[17,40,64,80]][floor],spots=[];
@@ -337,9 +374,13 @@ const MAP = (() => {
         // Clear only the ramp and its immediate approach. The old oversized
         // rectangle erased nearby divider walls and created a road-sized gap.
         for(const ramp of RAMPS)for(let y=Math.max(1,ramp.y1-2);y<=Math.min(MAP_SIZE_Y-2,ramp.y2+2);y++)for(let x=Math.max(1,ramp.x1-3);x<=Math.min(MAP_SIZE_X-2,ramp.x2+3);x++)MAP[y][x]=0;
-        function rampAt(x,y){return RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2)}
+        function rampAt(x,y,current=null){
+            const candidates=RAMPS.filter(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2);
+            if(current===null)return candidates[0];
+            const floor=floorIndexAtHeight(current);return candidates.find(r=>r.floor===floor||r.floor+1===floor);
+        }
         function canEnterRamp(x,y){
-            const target=rampAt(x,y);if(!target||rampAt(player.x,player.y))return true;
+            const target=rampAt(x,y,player.floorY);if(!target||rampAt(player.x,player.y,player.floorY))return true;
             const insideLane=player.y>=target.y1+.35&&player.y<=target.y2-.35;
             if(!insideLane)return false;
             const floorIndex=floorIndexAtHeight(player.floorY);
@@ -347,16 +388,15 @@ const MAP = (() => {
             const enteringHigh=target.reverse?player.x<=target.x1+.8:player.x>=target.x2-.8;
             return (enteringLow&&floorIndex<FLOOR_COUNT-1)||(enteringHigh&&floorIndex>0);
         }
-        function rampWallAt(x,y){
-            return RAMPS.some(ramp=>x>=ramp.x1&&x<=ramp.x2&&(
+        function rampWallAt(x,y,current=0){
+            const floor=floorIndexAtHeight(current);return RAMPS.some(ramp=>(ramp.floor===floor||ramp.floor+1===floor)&&x>=ramp.x1&&x<=ramp.x2&&(
                 Math.abs(y-(ramp.y1-.125))<=.16||Math.abs(y-(ramp.y2+.125))<=.16
             ));
         }
         function rampSurfaceHeightAt(x,y,current=0){
-            const ramp=rampAt(x,y);if(!ramp)return floorBaseAtHeight(current);
+            const ramp=rampAt(x,y,current);if(!ramp)return floorBaseAtHeight(current);
             let t=(x-ramp.x1)/(ramp.x2-ramp.x1);if(ramp.reverse)t=1-t;
-            const tier=Math.max(0,Math.min(FLOOR_COUNT-2,Math.round((current-t*FLOOR_HEIGHT)/FLOOR_HEIGHT)));
-            return tier*FLOOR_HEIGHT+t*FLOOR_HEIGHT;
+            return ramp.floor*FLOOR_HEIGHT+t*FLOOR_HEIGHT;
         }
         const yardRampAt=(x,y)=>YARD_ACCESS_RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2);
         // Container collision is queried several times per movement frame. Keep
@@ -364,7 +404,12 @@ const MAP = (() => {
         const YARD_CONTAINER_GRID=Array.from({length:MAP_SIZE_X*MAP_SIZE_Y},()=>[]);
         for(const container of YARD_CONTAINERS)for(let y=Math.max(0,Math.floor(container.y));y<Math.min(MAP_SIZE_Y,Math.ceil(container.y+container.d));y++)for(let x=Math.max(0,Math.floor(container.x));x<Math.min(MAP_SIZE_X,Math.ceil(container.x+container.w));x++)YARD_CONTAINER_GRID[y*MAP_SIZE_X+x].push(container);
         const yardContainerAt=(x,y)=>{const ix=Math.floor(x),iy=Math.floor(y);if(ix<0||iy<0||ix>=MAP_SIZE_X||iy>=MAP_SIZE_Y)return;return YARD_CONTAINER_GRID[iy*MAP_SIZE_X+ix].find(c=>!c.open&&x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.d)};
-        const openContainerWallAt=(x,y)=>YARD_CONTAINERS.some(c=>c.open&&x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.d&&(c.w>c.d?Math.min(Math.abs(y-c.y),Math.abs(y-(c.y+c.d)))<.18:Math.min(Math.abs(x-c.x),Math.abs(x-(c.x+c.w)))<.18));
+        const openContainerWallAt=(x,y)=>YARD_CONTAINERS.some(c=>{
+            if(!c.open||x<c.x||x>c.x+c.w||y<c.y||y>c.y+c.d)return false;
+            const horizontal=c.w>=c.d,cx=c.x+c.w/2,cy=c.y+c.d/2,wall=.16,doorHalf=.62;
+            if(horizontal){const side=Math.min(Math.abs(y-c.y),Math.abs(y-(c.y+c.d)))<wall,end=Math.min(Math.abs(x-c.x),Math.abs(x-(c.x+c.w)))<wall;return side||(end&&Math.abs(y-cy)>doorHalf)}
+            const side=Math.min(Math.abs(x-c.x),Math.abs(x-(c.x+c.w)))<wall,end=Math.min(Math.abs(y-c.y),Math.abs(y-(c.y+c.d)))<wall;return side||(end&&Math.abs(x-cx)>doorHalf);
+        });
         function yardSurfaceHeightAt(x,y){
             const access=yardRampAt(x,y);
             if(access){const t=THREE.MathUtils.clamp((x-access.x1)/(access.x2-access.x1),0,1);return t*access.h}
@@ -386,11 +431,10 @@ const MAP = (() => {
         });
         function beginRampRoute(bot,now){
             if(!RAMPS.length){bot.nextFloorChange=Infinity;return}
-            const ramp=RAMPS[Math.floor(Math.random()*RAMPS.length)],midY=(ramp.y1+ramp.y2)/2;
+            const floorIndex=floorIndexAtHeight(bot.floorY),available=RAMPS.filter(r=>r.floor===floorIndex||r.floor+1===floorIndex),ramp=available[Math.floor(Math.random()*available.length)]||RAMPS[0],midY=(ramp.y1+ramp.y2)/2;
             const low={x:ramp.reverse?ramp.x2-.6:ramp.x1+.6,y:midY};
             const high={x:ramp.reverse?ramp.x1+.6:ramp.x2-.6,y:midY};
-            const floorIndex=floorIndexAtHeight(bot.floorY);
-            const goUp=floorIndex===0||floorIndex<FLOOR_COUNT-1&&Math.random()<.5;
+            const goUp=ramp.floor===floorIndex;
             bot.rampRoute=goUp?[low,high]:[high,low];
             bot.rampStep=0;bot.wanderX=bot.rampRoute[0].x;bot.wanderY=bot.rampRoute[0].y;
             bot.wanderUntil=now+20000;bot._path=null;
@@ -556,12 +600,28 @@ function wireGuestRoom(session){
                 if(lines){ctx.strokeStyle='rgba(10,12,15,.28)';ctx.lineWidth=3;ctx.strokeRect(1.5,1.5,253,253);ctx.beginPath();ctx.moveTo(0,128);ctx.lineTo(256,128);ctx.stroke()}
                 const texture=new THREE.CanvasTexture(tile);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(MAP_SIZE_X/7,MAP_SIZE_Y/7);texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());return texture;
             };
-            const groundBase=MAP_ID==='training'?'#d5d1c5':MAP_ID==='tokyo'?'#1b2633':MAP_ID==='manhattan'?'#555b61':IS_DOCKS?'#41484e':'#30343a';
+            const groundBase=MAP_ID==='training'?'#ddd9cd':MAP_ID==='tokyo'?'#596069':MAP_ID==='manhattan'?'#3d3f46':IS_DOCKS?'#41484e':'#30343a';
             const floorMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture(groundBase,true),color:outdoor?0x9aa1a5:0xb8bcc1,shininess:7});
             floorMesh = new THREE.Mesh(floorGeo, floorMat);
             floorMesh.rotation.x = -Math.PI / 2;
             floorMesh.position.set(MAP_SIZE_X, 0, MAP_SIZE_Y);
             scene.add(floorMesh);
+
+            if(MAP_ID==='manhattan'){
+                const lotMat=new THREE.MeshPhongMaterial({color:0x55575e,shininess:2}),parkMat=new THREE.MeshPhongMaterial({color:0x587747,shininess:2}),pathMat=new THREE.MeshBasicMaterial({color:0xb7aa8e});
+                for(const lot of SOURCE_LOTS){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(lot.w*2,lot.d*2),lotMat);mesh.rotation.x=-Math.PI/2;mesh.position.set((lot.x+lot.w/2)*2+1,.025,(lot.y+lot.d/2)*2+1);scene.add(mesh)}
+                for(const park of SOURCE_PARKS){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(park.w*2,park.d*2),parkMat);mesh.rotation.x=-Math.PI/2;mesh.position.set((park.x+park.w/2)*2+1,.045,(park.y+park.d/2)*2+1);scene.add(mesh);for(const horizontal of [true,false]){const path=new THREE.Mesh(new THREE.PlaneGeometry(horizontal?park.w*1.9:1.6,horizontal?1.6:park.d*1.9),pathMat);path.rotation.x=-Math.PI/2;path.position.copy(mesh.position);path.position.y=.055;scene.add(path)}}
+                const diagonal=new THREE.Mesh(new THREE.PlaneGeometry(15,Math.hypot(MAP_SIZE_X*2,MAP_SIZE_Y*2)*1.12),new THREE.MeshBasicMaterial({color:0x34363c}));diagonal.rotation.set(-Math.PI/2,0,-.57);diagonal.position.set(MAP_SIZE_X,.06,MAP_SIZE_Y);scene.add(diagonal);
+            }
+            if(MAP_ID==='tokyo'){
+                const roadMat=new THREE.MeshBasicMaterial({color:0x171e28}),roadWidth=8.2,centres=Array.from({length:15},(_,i)=>MAP_SIZE_X+(i-7)*30);
+                for(const center of centres){const horizontal=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,roadWidth),roadMat);horizontal.rotation.x=-Math.PI/2;horizontal.position.set(MAP_SIZE_X,.04,center);scene.add(horizontal);const vertical=new THREE.Mesh(new THREE.PlaneGeometry(roadWidth,MAP_SIZE_Y*2),roadMat);vertical.rotation.x=-Math.PI/2;vertical.position.set(center,.041,MAP_SIZE_Y);scene.add(vertical)}
+                const outerRoad=new THREE.Mesh(new THREE.RingGeometry(219.4,227.6,192),roadMat);outerRoad.rotation.x=-Math.PI/2;outerRoad.position.set(MAP_SIZE_X,.045,MAP_SIZE_Y);scene.add(outerRoad);
+                const centreRoad=new THREE.Mesh(new THREE.RingGeometry(19,26,96),roadMat);centreRoad.rotation.x=-Math.PI/2;centreRoad.position.set(MAP_SIZE_X,.046,MAP_SIZE_Y);scene.add(centreRoad);
+            }
+            if(MAP_ID==='training'){
+                const road=new THREE.Mesh(new THREE.RingGeometry(214,225,256),new THREE.MeshPhongMaterial({color:0x35383a,shininess:2}));road.rotation.x=-Math.PI/2;road.position.set(MAP_SIZE_X,.045,MAP_SIZE_Y);scene.add(road);
+            }
 
             // Room dividers are continuous masonry walls; support columns are separate 1x1 posts.
             wallGroup = new THREE.Group();
@@ -571,12 +631,12 @@ function wireGuestRoom(session){
             const wallGeo = new THREE.BoxGeometry(2, BUILDING_HEIGHT, 2);
             const wallSideBrick=brickMaterial(.5,BUILDING_HEIGHT/2),wallTopBrick=brickMaterial(.5,.5);
             const wallMaterials=[wallSideBrick,wallSideBrick,wallTopBrick,wallTopBrick,wallSideBrick,wallSideBrick];
-            let wallCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++){if(MAP[y][x]===1)wallCount++;else if(MAP[y][x]===2)pillarCount++}
+            let wallCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++){if((IS_GARAGE||IS_DOCKS)&&MAP[y][x]===1)wallCount++;else if(MAP[y][x]===2)pillarCount++}
             const walls=new THREE.InstancedMesh(wallGeo,wallMaterials,wallCount),pillars=new THREE.InstancedMesh(wallGeo,wallMaterials,pillarCount);
             const transform=new THREE.Matrix4();let wallIndex=0,pillarIndex=0;
             // Player/map coordinates convert to world coordinates with +1, so
             // cell x occupies world 2x+1..2x+3 and is centred at 2x+2.
-            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1||MAP[y][x]===2){transform.makeTranslation((x+1)*2,BUILDING_HEIGHT/2,(y+1)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
+            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(((IS_GARAGE||IS_DOCKS)&&MAP[y][x]===1)||MAP[y][x]===2){transform.makeTranslation((x+1)*2,BUILDING_HEIGHT/2,(y+1)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
             // Short, floor-specific partitions turn each storey into a different
@@ -589,20 +649,16 @@ function wireGuestRoom(session){
 
             // Only the upper landing needs an opening. Cutting the complete ramp
             // footprint made the upper floor look like it had large random holes.
-            const deckShape=new THREE.Shape();
-            deckShape.moveTo(-MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,MAP_SIZE_Y);deckShape.lineTo(-MAP_SIZE_X,MAP_SIZE_Y);deckShape.closePath();
-            for(const ramp of RAMPS){
-                // Open the deck over almost the full incline. The previous 55%
-                // cutoff left a long slab hanging over the ramp like extra road.
-                const riseStart=ramp.reverse?ramp.x1:ramp.x1+(ramp.x2-ramp.x1)*.1;
-                const riseEnd=ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.1:ramp.x2;
-                const left=Math.min(riseStart,riseEnd)*2+1-MAP_SIZE_X-.45,right=Math.max(riseStart,riseEnd)*2+1-MAP_SIZE_X+.45;
-                const near=ramp.y1*2+1-MAP_SIZE_Y-.45,far=ramp.y2*2+1-MAP_SIZE_Y+.45;
-                const opening=new THREE.Path();opening.moveTo(left,near);opening.lineTo(right,near);opening.lineTo(right,far);opening.lineTo(left,far);opening.closePath();deckShape.holes.push(opening);
-            }
             const deckMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#383c41',true),color:0xb8bcc1,side:THREE.DoubleSide,shininess:5});
-            const deckGeometry=new THREE.ExtrudeGeometry(deckShape,{depth:.65,bevelEnabled:false});
-            for(const floorY of FLOOR_LEVELS.slice(1)){const deck=new THREE.Mesh(deckGeometry,deckMaterial);deck.rotation.x=Math.PI/2;deck.position.set(MAP_SIZE_X,floorY+.32,MAP_SIZE_Y);scene.add(deck)}
+            for(let floor=1;floor<FLOOR_COUNT;floor++){
+                const deckShape=new THREE.Shape();deckShape.moveTo(-MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,MAP_SIZE_Y);deckShape.lineTo(-MAP_SIZE_X,MAP_SIZE_Y);deckShape.closePath();
+                for(const ramp of RAMPS.filter(r=>r.floor===floor-1)){
+                    const riseStart=ramp.reverse?ramp.x1:ramp.x1+(ramp.x2-ramp.x1)*.1,riseEnd=ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.1:ramp.x2;
+                    const left=Math.min(riseStart,riseEnd)*2+1-MAP_SIZE_X-.45,right=Math.max(riseStart,riseEnd)*2+1-MAP_SIZE_X+.45,near=ramp.y1*2+1-MAP_SIZE_Y-.45,far=ramp.y2*2+1-MAP_SIZE_Y+.45;
+                    const opening=new THREE.Path();opening.moveTo(left,near);opening.lineTo(right,near);opening.lineTo(right,far);opening.lineTo(left,far);opening.closePath();deckShape.holes.push(opening);
+                }
+                const deck=new THREE.Mesh(new THREE.ExtrudeGeometry(deckShape,{depth:.65,bevelEnabled:false}),deckMaterial);deck.rotation.x=Math.PI/2;deck.position.set(MAP_SIZE_X,FLOOR_LEVELS[floor]+.32,MAP_SIZE_Y);scene.add(deck);
+            }
             if(IS_GARAGE){
                 const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
                 ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,BUILDING_HEIGHT,MAP_SIZE_Y);scene.add(ceiling);
@@ -611,8 +667,8 @@ function wireGuestRoom(session){
             const rampMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#55575a',true),color:0xb7b8b4,shininess:3});
             const railMat=new THREE.MeshPhongMaterial({color:0xd6d2c4,shininess:4});
             const warningMat=new THREE.MeshBasicMaterial({color:0xe5c94f});
-            for(const ramp of RAMPS)for(let tier=0;tier<FLOOR_COUNT-1;tier++){
-                const baseY=tier*FLOOR_HEIGHT;
+            for(const ramp of RAMPS){
+                const baseY=ramp.floor*FLOOR_HEIGHT;
                 const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1),cx=ramp.x1+ramp.x2+1,cz=ramp.y1+ramp.y2+1;
                 // Keep the ramp as a thin suspended slab. A solid triangular
                 // support used to turn its entire underside into a huge dark wall.
@@ -648,7 +704,7 @@ function wireGuestRoom(session){
                 const containerGeo=new THREE.BoxGeometry(1,1,1),containerGroups=new Map();
                 for(const c of YARD_CONTAINERS){
                     if(c.open)continue;
-                    const levels=Math.max(1,Math.round(c.h/2.6));
+                    const levels=Math.max(1,Math.round(c.h/CONTAINER_LEVEL_HEIGHT));
                     if(!containerGroups.has(c.c))containerGroups.set(c.c,[]);
                     for(let level=0;level<levels;level++)containerGroups.get(c.c).push({...c,level});
                 }
@@ -657,25 +713,30 @@ function wireGuestRoom(session){
                     const mesh=new THREE.InstancedMesh(containerGeo,material,items.length);
                     items.forEach((c,i)=>{
                         transform.compose(
-                            new THREE.Vector3((c.x+c.w/2)*2+1,c.level*2.6+1.28,(c.y+c.d/2)*2+1),
-                            new THREE.Quaternion(),new THREE.Vector3(c.w*2,2.5,c.d*2)
+                            new THREE.Vector3((c.x+c.w/2)*2+1,c.level*CONTAINER_LEVEL_HEIGHT+CONTAINER_LEVEL_HEIGHT/2-.04,(c.y+c.d/2)*2+1),
+                            new THREE.Quaternion(),new THREE.Vector3(c.w*2,CONTAINER_LEVEL_HEIGHT-.08,c.d*2)
                         );mesh.setMatrixAt(i,transform);
                     });
                     mesh.instanceMatrix.needsUpdate=true;scene.add(mesh);
                 }
                 for(const c of YARD_CONTAINERS.filter(container=>container.open)){
                     const shell=new THREE.Group(),material=new THREE.MeshPhongMaterial({color:c.c,shininess:18}),horizontal=c.w>c.d;
-                    const roof=new THREE.Mesh(new THREE.BoxGeometry(c.w*2,.18,c.d*2),material);roof.position.y=2.51;shell.add(roof);
+                    const roof=new THREE.Mesh(new THREE.BoxGeometry(c.w*2,.18,c.d*2),material);roof.position.y=CONTAINER_LEVEL_HEIGHT-.09;shell.add(roof);
                     for(const side of [-1,1]){
-                        const wall=new THREE.Mesh(new THREE.BoxGeometry(horizontal?c.w*2:.18,2.5,horizontal?.18:c.d*2),material);
-                        wall.position.set(horizontal?0:side*(c.w-.09),1.25,horizontal?side*(c.d-.09):0);shell.add(wall);
+                        const wall=new THREE.Mesh(new THREE.BoxGeometry(horizontal?c.w*2:.18,CONTAINER_LEVEL_HEIGHT-.18,horizontal?.18:c.d*2),material);
+                        wall.position.set(horizontal?0:side*(c.w-.09),CONTAINER_LEVEL_HEIGHT/2,horizontal?side*(c.d-.09):0);shell.add(wall);
+                    }
+                    const doorWidth=2.48,sideSpan=((horizontal?c.d:c.w)*2-doorWidth)/2,headerHeight=.55;
+                    for(const end of [-1,1]){
+                        for(const side of [-1,1]){const jamb=new THREE.Mesh(new THREE.BoxGeometry(horizontal?.18:sideSpan,CONTAINER_LEVEL_HEIGHT-headerHeight,horizontal?sideSpan:.18),material);jamb.position.set(horizontal?end*(c.w-.09):side*(doorWidth/2+sideSpan/2), (CONTAINER_LEVEL_HEIGHT-headerHeight)/2, horizontal?side*(doorWidth/2+sideSpan/2):end*(c.d-.09));shell.add(jamb)}
+                        const header=new THREE.Mesh(new THREE.BoxGeometry(horizontal?.18:doorWidth,headerHeight,horizontal?doorWidth:.18),material);header.position.set(horizontal?end*(c.w-.09):0,CONTAINER_LEVEL_HEIGHT-headerHeight/2,horizontal?0:end*(c.d-.09));shell.add(header);
                     }
                     const floor=new THREE.Mesh(new THREE.BoxGeometry(c.w*2,.12,c.d*2),material);floor.position.y=.06;shell.add(floor);
                     shell.position.set((c.x+c.w/2)*2+1,0,(c.y+c.d/2)*2+1);scene.add(shell);
                 }
                 const ribMat=new THREE.MeshBasicMaterial({color:0x1b2227,transparent:true,opacity:.42});
                 const ribGeo=new THREE.BoxGeometry(.11,2.28,.08),ribTransforms=[];
-                for(const c of YARD_CONTAINERS.filter(container=>!container.open))for(let level=0;level<Math.max(1,Math.round(c.h/2.6));level++)for(let step=1;step<Math.floor(c.w/2);step++)ribTransforms.push([(c.x+step*2)*2+1,level*2.6+1.28,c.y*2+.96],[(c.x+step*2)*2+1,level*2.6+1.28,(c.y+c.d)*2+1.04]);
+                for(const c of YARD_CONTAINERS.filter(container=>!container.open))for(let level=0;level<Math.max(1,Math.round(c.h/CONTAINER_LEVEL_HEIGHT));level++)for(let step=1;step<Math.floor(c.w/2);step++)ribTransforms.push([(c.x+step*2)*2+1,level*CONTAINER_LEVEL_HEIGHT+CONTAINER_LEVEL_HEIGHT/2,c.y*2+.96],[(c.x+step*2)*2+1,level*CONTAINER_LEVEL_HEIGHT+CONTAINER_LEVEL_HEIGHT/2,(c.y+c.d)*2+1.04]);
                 const ribs=new THREE.InstancedMesh(ribGeo,ribMat,ribTransforms.length);ribTransforms.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);ribs.setMatrixAt(i,transform)});ribs.instanceMatrix.needsUpdate=true;scene.add(ribs);
                 const rampMat=new THREE.MeshPhongMaterial({color:0xd7c26b,shininess:10});
                 for(const r of YARD_ACCESS_RAMPS){
@@ -743,7 +804,7 @@ function wireGuestRoom(session){
 
             // Start away from the centre so every round opens differently.
             respawnSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&!rampAt(x,y)&&!yardContainerAt(x+.5,y+.5)&&!yardRampAt(x+.5,y+.5)&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)respawnSpawns.push([x+.5,y+.5]);
-            const authoredSpawns={annex:[7.25,26.5],manhattan:[70,48],tokyo:[70,30],training:[70,48]};
+            const authoredSpawns={annex:[7.25,26.5],manhattan:[92,96],tokyo:[117,87],training:[117,117]};
             const spawn=authoredSpawns[MAP_ID]||respawnSpawns[Math.floor(Math.random()*respawnSpawns.length)]||[3.5,3.5];
             player.position = new THREE.Vector3(spawn[0], 12, spawn[1]);
             player.x = spawn[0];
@@ -835,7 +896,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             }
         }
 
-        let touchMoveX=0,touchMoveY=0;
+        let touchMoveX=0,touchMoveY=0,touchJumpHeld=false;
         function initTouchControls(){
             const stick=document.getElementById('touch-stick'),knob=document.getElementById('touch-knob'),look=document.getElementById('touch-look');let stickId=null,lookId=null,lastX=0,lastY=0;
             const updateStick=e=>{const r=stick.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.hypot(dx,dy),k=Math.min(42,len)/(len||1);touchMoveX=len<5?0:dx/42*k;touchMoveY=len<5?0:dy/42*k;knob.style.transform=`translate(${dx*k}px,${dy*k}px)`};
@@ -846,7 +907,9 @@ for (let b = 0; b < botSpawns.length; b++) {
             look.addEventListener('pointerdown',e=>{lookId=e.pointerId;lastX=e.clientX;lastY=e.clientY;look.setPointerCapture(e.pointerId)});
             look.addEventListener('pointermove',e=>{if(e.pointerId!==lookId)return;player.dir-=(e.clientX-lastX)*.006*player.sensitivity;player.pitch=Math.max(-1.45,Math.min(1.45,player.pitch-(e.clientY-lastY)*.006*player.sensitivity));lastX=e.clientX;lastY=e.clientY});
             for(const type of ['pointerup','pointercancel','lostpointercapture'])look.addEventListener(type,e=>{if(e.pointerId===lookId)lookId=null});
-            document.getElementById('touch-jump').addEventListener('pointerdown',e=>{e.stopPropagation();if(!player.isJumping){player.isJumping=true;player.zVel=.19}});
+            const jumpButton=document.getElementById('touch-jump');
+            jumpButton.addEventListener('pointerdown',e=>{e.stopPropagation();touchJumpHeld=true;jumpButton.setPointerCapture(e.pointerId);if(!player.isJumping){player.isJumping=true;player.zVel=.19}});
+            for(const type of ['pointerup','pointercancel','lostpointercapture'])jumpButton.addEventListener(type,()=>{touchJumpHeld=false});
             addEventListener('blur',()=>reset());
         }
 
@@ -987,16 +1050,16 @@ for (let b = 0; b < botSpawns.length; b++) {
             // Grid collision is constant-time; checking every rendered wall was the main frame-rate bottleneck.
             const carBlocked=(x,y)=>player.z<1.55&&carsForFloor(player.floorY).some(([cx,cy])=>Math.abs(x-(cx+.5))<1.12&&Math.abs(y-(cy+.5))<2.05);
             const canStand=(x,y)=>{
-                const radius=.18;
+                const radius=.32;
                 const surface=surfaceHeightAt(x,y,player.floorY);
-                const targetRamp=rampAt(x,y);
+                const targetRamp=rampAt(x,y,player.floorY);
                 const yardAccess=yardRampAt(x,y);
                 const slopeStep=targetRamp||yardAccess?1.05:.65;
                 const insideRampLane=!targetRamp||(y>=targetRamp.y1+.28&&y<=targetRamp.y2-.28);
-                const mantleAllowance=player.floorY>0?.3:.03;
+                const mantleAllowance=player.floorY>0?.9:.03;
                 const canReachSurface=player.isJumping?surface<=player.floorY+player.z+mantleAllowance:surface<=player.floorY+slopeStep;
-                if(!canReachSurface||!insideRampLane||!canEnterRamp(x,y)||carBlocked(x,y)||openContainerWallAt(x,y))return false;
-                for(const px of [x-radius,x+radius])for(const py of [y-radius,y+radius])if(MAP[Math.floor(py)]?.[Math.floor(px)]!==0||rampWallAt(px,py)||floorBarrierAt(px,py,player.floorY))return false;
+                if(!canReachSurface||!insideRampLane||!canEnterRamp(x,y)||carBlocked(x,y))return false;
+                for(const [px,py] of [[x-radius,y],[x+radius,y],[x,y-radius],[x,y+radius],[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]])if(MAP[Math.floor(py)]?.[Math.floor(px)]!==0||rampWallAt(px,py,player.floorY)||floorBarrierAt(px,py,player.floorY)||openContainerWallAt(px,py))return false;
                 return true;
             };
             let nextX = player.x + moveX;
@@ -1011,7 +1074,7 @@ for (let b = 0; b < botSpawns.length; b++) {
 
             // Once on a ramp, keep the player's collision capsule inside its open
             // lane. This also recovers older saves/frames that landed in a guard wall.
-            const activeRamp=rampAt(player.x,player.y);
+            const activeRamp=rampAt(player.x,player.y,player.floorY);
             if(activeRamp)player.y=THREE.MathUtils.clamp(player.y,activeRamp.y1+.32,activeRamp.y2-.32);
 
             const groundHeight=surfaceHeightAt(player.x,player.y,player.floorY);
@@ -1033,8 +1096,8 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if (player.zVel<=0&&player.floorY+player.z<=landingHeight+.04) {
                     player.floorY=landingHeight;
                     player.z = 0;
-                    player.zVel = 0;
-                    player.isJumping = false;
+                    if(keys[keyBindings.jump]||touchJumpHeld){player.zVel=.19;player.isJumping=true}
+                    else {player.zVel=0;player.isJumping=false}
                 }
             }
 
