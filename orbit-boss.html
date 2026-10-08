@@ -362,5 +362,6 @@ let last = performance.now();
 function loop(t){ update(document.hidden?0:Math.min(1/30, (t-last)/1000)); last=t; draw(); requestAnimationFrame(loop); }
 initLevel(); requestAnimationFrame(loop);
 </script>
+<script src="./mobile-landscape-resize.js"></script>
 </body>
 </html>

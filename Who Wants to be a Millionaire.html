@@ -16,19 +16,26 @@
             --error-red: #dc3545;
         }
 
+        html, body { width:var(--game-viewport-width,100vw); height:var(--game-viewport-height,100dvh); }
         body {
-            background: radial-gradient(circle at center, #0a0a4d 0%, #02021a 100%);
+            background:radial-gradient(ellipse at 50% 42%,#24207c 0 9%,#090945 30%,#010117 72%);
             color: white;
             font-family: 'Outfit', sans-serif;
             overflow: hidden;
-            height: 100vh;
+            height: var(--game-viewport-height,100dvh);
             margin: 0;
         }
+        body::before{content:"";position:fixed;inset:-30%;pointer-events:none;opacity:.34;background:repeating-conic-gradient(from -8deg at 50% 45%,transparent 0 10deg,#315eff2b 11deg 13deg,transparent 14deg 28deg);animation:stageSweep 18s linear infinite}
+        @keyframes stageSweep{to{transform:rotate(360deg)}}
+        #game-ui{position:relative;isolation:isolate}
+        #game-ui::before{content:"";position:absolute;inset:68px 20% 42%;z-index:-1;background:radial-gradient(circle,#3550dc55,transparent 65%);filter:blur(12px)}
+        .show-logo{width:clamp(92px,11vw,150px);aspect-ratio:1;border:3px solid #60a5fa;border-radius:50%;display:grid;place-items:center;text-align:center;font-size:clamp(.7rem,1.2vw,1.05rem);font-weight:900;line-height:.92;letter-spacing:.06em;background:radial-gradient(circle,#2736a8,#07072d 67%);box-shadow:0 0 0 5px #17185e,0 0 30px #4687ff99;transform:rotate(-4deg)}
+        .show-logo span{transform:rotate(4deg)}
 
         /* The iconic Hexagon shape for buttons and question box */
         .hex-box {
             position: relative;
-            background: linear-gradient(180deg, #101050 0%, #050520 100%);
+            background: linear-gradient(180deg, #17176b 0%, #050524 52%,#101050 100%);
             border: 2px solid var(--border-blue);
             clip-path: polygon(2% 0, 98% 0, 100% 50%, 98% 100%, 2% 100%, 0 50%);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -97,7 +104,8 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            background: rgba(255,255,255,0.1);
+            background:radial-gradient(circle,#1c2c92,#08082d);
+            box-shadow:0 0 0 2px #111255,0 0 14px #3b82f655;
             transition: 0.3s;
             cursor: pointer;
         }
@@ -134,6 +142,17 @@
         #timer-bar {
             transition: width 1s linear;
         }
+        #ladder-panel{background:linear-gradient(180deg,#080832dd,#11115be6);box-shadow:inset 0 0 30px #11163c,0 12px 35px #0008}
+        #game-ui>header{padding:1rem 1.5rem}
+        #game-ui>header+.flex-1{min-height:0;padding:1rem 2rem;gap:1.25rem}
+        .question-stage{min-height:0;gap:1rem!important}
+        .question-stage #host-bubble{height:1.6rem}
+        .question-stage>.hex-box{padding:1.35rem 2rem}
+        .answer-grid{gap:.75rem 1.4rem}
+        .answer-btn{padding:.9rem 1.25rem}
+        #ladder-panel{padding:1rem;width:15rem}
+        .ladder-item{font-size:.82rem}
+        @media(max-height:540px){#game-ui>header{padding:.4rem .8rem}.show-logo{width:62px}.question-stage{gap:.45rem!important}.question-stage #host-bubble{height:.7rem}.question-stage>.hex-box{padding:.65rem 1.4rem;font-size:.95rem}.answer-grid{gap:.38rem .8rem}.answer-btn{padding:.48rem .8rem;font-size:.78rem}#ladder-panel{padding:.45rem;width:11.5rem}.ladder-item{padding:0 7px;font-size:.61rem}}
     </style>
 </head>
 <body>
@@ -160,32 +179,32 @@
     </div>
 
     <!-- Main Game Interface -->
-    <div id="game-ui" class="hidden h-screen flex flex-col">
+    <div id="game-ui" class="hidden flex flex-col" style="height:var(--game-viewport-height,100dvh)">
         
         <!-- Header: Lifelines & Timer -->
-        <div class="p-6 flex justify-between items-start">
+        <header class="p-6 flex justify-between items-start">
             <div class="flex gap-4">
                 <button id="ll-50" onclick="use5050()" class="lifeline">50:50</button>
                 <button id="ll-phone" onclick="usePhone()" class="lifeline">📞</button>
                 <button id="ll-host" onclick="useHost()" class="lifeline">🎤</button>
             </div>
             
-            <div class="flex flex-col items-center w-48 mt-2">
+            <div class="flex items-center gap-6"><div class="show-logo"><span>WHO WANTS<br>TO BE A<br><b class="text-yellow-400">MILLIONAIRE?</b></span></div><div class="flex flex-col items-center w-48 mt-2">
                 <div class="w-full bg-blue-900/50 rounded-full h-4 border border-blue-400 overflow-hidden">
                     <div id="timer-bar" class="bg-yellow-500 h-full w-full"></div>
                 </div>
                 <p id="timer-text" class="text-xl font-bold mt-1 text-white">30s</p>
-            </div>
+            </div></div>
 
             <div class="text-right">
                 <p class="text-blue-400 uppercase text-xs tracking-widest">Current Level</p>
                 <p id="current-prize-display" class="text-3xl font-bold text-yellow-500">$0</p>
             </div>
-        </div>
+        </header>
 
         <div class="flex-1 flex flex-col lg:flex-row p-4 lg:p-10 gap-10">
             <!-- Left Side: Question Area -->
-            <div class="flex-1 flex flex-col justify-center gap-12">
+            <div class="question-stage flex-1 flex flex-col justify-end pb-5 gap-7">
                 
                 <div id="host-bubble" class="h-12 text-center text-blue-200 italic text-lg transition-opacity duration-500"></div>
 
@@ -193,7 +212,7 @@
                     <span id="question-text">Loading question...</span>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                <div class="answer-grid grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                     <button id="btn-0" onclick="handleAnswer(0)" class="hex-box answer-btn p-5 text-left flex items-center">
                         <span class="text-yellow-500 font-bold mr-4">A:</span> <span class="answer-label">...</span>
                     </button>
@@ -210,12 +229,13 @@
             </div>
 
             <!-- Right Side: Money Ladder -->
-            <div class="hidden lg:flex w-72 flex-col justify-center bg-blue-900/20 rounded-3xl p-6 border border-blue-800">
+            <div id="ladder-panel" class="hidden lg:flex w-72 flex-col justify-center rounded-3xl p-6 border border-blue-700">
                 <div id="ladder-container" class="flex flex-col-reverse gap-1"></div>
             </div>
         </div>
     </div>
 
+    <script src="./mobile-landscape-resize.js"></script>
     <script>
         const PRIZES = ["100", "200", "300", "500", "1,000", "2,000", "4,000", "8,000", "16,000", "32,000", "64,000", "125,000", "250,000", "500,000", "1,000,000"];
         const QUESTION_TIME_LIMIT = 24;
