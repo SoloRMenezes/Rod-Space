@@ -17,6 +17,8 @@ assert.match(nico,/const slopeStep=targetRamp\|\|yardAccess\?1\.05:\.65/);
 assert.match(nico,/if\(activeRamp\)player\.y=THREE\.MathUtils\.clamp/);
 assert.match(nico,/const YARD_CONTAINERS=MAP_ID==='annex'\?\[/);
 assert.match(nico,/const YARD_ACCESS_RAMPS=MAP_ID==='annex'\?\[/);
+assert.match(nico,/h:7\.8/);
+assert.match(nico,/MAP_ID==='annex'\?\[7\.25,26\.5\]/);
 assert.match(nico,/function yardSurfaceHeightAt/);
 assert.doesNotMatch(nico,/id="floor-display"|id="minimap"|drawMinimap/);
 assert.match(nico,/new THREE\.BoxGeometry\(length,1\.15,\.38\)/);

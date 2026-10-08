@@ -263,23 +263,41 @@ const MAP = (() => {
             {x:30,y:11,w:12,d:3,h:2.6,c:0xd08a24},{x:43.5,y:11,w:12,d:3,h:2.6,c:0x32745a},{x:57,y:11,w:12,d:3,h:2.6,c:0xa94732},
             {x:79,y:9,w:15,d:3,h:2.6,c:0x315f8d},{x:79,y:14,w:15,d:3,h:5.2,c:0xc05235},
             {x:101,y:11,w:15,d:3,h:2.6,c:0xd18b27},{x:119,y:11,w:11,d:3,h:2.6,c:0x3d745c},
+            // West-side parkour route: ramp, rising stacks, jump gaps and a
+            // three-container lookout before the route drops back down.
+            {x:11,y:25,w:10,d:3,h:2.6,c:0x315f8d},{x:23,y:25,w:10,d:3,h:5.2,c:0xb93b32},{x:35,y:25,w:10,d:3,h:7.8,c:0xd08a24},
+            {x:47,y:25,w:10,d:3,h:5.2,c:0x32745a},{x:59,y:25,w:10,d:3,h:2.6,c:0xa94732},
             {x:18,y:36,w:12,d:3,h:2.6,c:0x365f8b},{x:31.5,y:36,w:12,d:3,h:2.6,c:0xb84035},{x:45,y:36,w:12,d:3,h:2.6,c:0xd08a24},
             {x:66,y:31,w:3,d:15,h:2.6,c:0x33735a},{x:72,y:31,w:3,d:15,h:2.6,c:0xa54235},
             {x:91,y:34,w:15,d:3,h:2.6,c:0x315f8c},{x:108,y:34,w:15,d:3,h:5.2,c:0xc98a29},
+            // Central stacks form two parallel elevated lanes. The alternating
+            // one-cell and two-cell gaps are short enough to jump but punish a
+            // mistimed run without blocking the ground route below.
+            {x:79,y:44,w:9,d:3,h:2.6,c:0x32745a},{x:90,y:44,w:9,d:3,h:5.2,c:0xb84035},{x:101,y:44,w:9,d:3,h:5.2,c:0x315f8d},{x:112,y:44,w:9,d:3,h:2.6,c:0xd08a24},
+            {x:79,y:50,w:9,d:3,h:2.6,c:0xd08a24},{x:90,y:50,w:9,d:3,h:5.2,c:0x32745a},{x:101,y:50,w:9,d:3,h:7.8,c:0xb93b32},{x:112,y:50,w:9,d:3,h:5.2,c:0x315f8d},
             {x:14,y:61,w:15,d:3,h:2.6,c:0xb33d35},{x:31,y:61,w:15,d:3,h:2.6,c:0x315f8b},
             {x:53,y:57,w:3,d:16,h:2.6,c:0xd08a24},{x:59,y:57,w:3,d:16,h:2.6,c:0x36755c},
             {x:80,y:60,w:13,d:3,h:2.6,c:0xb54134},{x:94.5,y:60,w:13,d:3,h:2.6,c:0x315e8b},{x:109,y:60,w:13,d:3,h:2.6,c:0xd08a24},
+            {x:12,y:70,w:10,d:3,h:2.6,c:0x32745a},{x:24,y:70,w:10,d:3,h:5.2,c:0xd08a24},{x:36,y:70,w:10,d:3,h:5.2,c:0x315f8d},{x:48,y:70,w:10,d:3,h:2.6,c:0xb93b32},
             {x:18,y:81,w:15,d:3,h:2.6,c:0x34745a},{x:39,y:79,w:15,d:3,h:5.2,c:0xb73f35},
             {x:65,y:80,w:13,d:3,h:2.6,c:0x315f8b},{x:79.5,y:80,w:13,d:3,h:2.6,c:0xd08a24},{x:94,y:80,w:13,d:3,h:2.6,c:0x3b745b},
-            {x:116,y:77,w:3,d:12,h:2.6,c:0xb74334}
+            {x:116,y:77,w:3,d:12,h:2.6,c:0xb74334},
+            // Short stacks beside the water leave a final sequence of broad
+            // tops with visible gaps between every landing.
+            {x:17,y:90,w:11,d:3,h:2.6,c:0xb74334},{x:30,y:90,w:11,d:3,h:5.2,c:0x315f8b},{x:43,y:90,w:11,d:3,h:2.6,c:0xd08a24},
+            {x:69,y:90,w:11,d:3,h:2.6,c:0x36755c},{x:82,y:90,w:11,d:3,h:5.2,c:0xb73f35},{x:95,y:90,w:11,d:3,h:2.6,c:0x315f8b}
         ]:[];
         const YARD_ACCESS_RAMPS=MAP_ID==='annex'?[
             {x1:6,x2:9,y1:10,y2:13,h:2.6,axis:'x'},
+            {x1:8,x2:11,y1:25,y2:28,h:2.6,axis:'x'},
             {x1:15,x2:18,y1:36,y2:39,h:2.6,axis:'x'},
             {x1:76,x2:79,y1:9,y2:12,h:2.6,axis:'x'},
             {x1:88,x2:91,y1:34,y2:37,h:2.6,axis:'x'},
+            {x1:76,x2:79,y1:44,y2:47,h:2.6,axis:'x'},
+            {x1:9,x2:12,y1:70,y2:73,h:2.6,axis:'x'},
             {x1:77,x2:80,y1:60,y2:63,h:2.6,axis:'x'},
-            {x1:62,x2:65,y1:80,y2:83,h:2.6,axis:'x'}
+            {x1:62,x2:65,y1:80,y2:83,h:2.6,axis:'x'},
+            {x1:14,x2:17,y1:90,y2:93,h:2.6,axis:'x'}
         ]:[];
         const FLOOR_CAR_SPOTS=FLOOR_LEVELS.map((_,floor)=>{
             if(MAP_ID==='annex')return [];
@@ -642,7 +660,7 @@ function wireGuestRoom(session){
 
             // Start away from the centre so every round opens differently.
             respawnSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&!rampAt(x,y)&&!yardContainerAt(x+.5,y+.5)&&!yardRampAt(x+.5,y+.5)&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)respawnSpawns.push([x+.5,y+.5]);
-            const spawn=respawnSpawns[Math.floor(Math.random()*respawnSpawns.length)];
+            const spawn=MAP_ID==='annex'?[7.25,26.5]:respawnSpawns[Math.floor(Math.random()*respawnSpawns.length)];
             player.position = new THREE.Vector3(spawn[0], 12, spawn[1]);
             player.x = spawn[0];
             player.y = spawn[1];
