@@ -227,7 +227,7 @@ const MAP_LAYOUTS={
 const SCENERY_BOXES=[];
 const SOURCE_PARKS=[],SOURCE_LOTS=[];
 const SOURCE_SCALE=4;
-const SOURCE_MAP_SIZE={manhattan:[184,192],tokyo:[234,234],training:[234,234]};
+const SOURCE_MAP_SIZE={annex:[180,140],manhattan:[184,192],tokyo:[234,234],training:[234,234]};
 if(MAP_ID==='manhattan'){
     // Copied from Web Weavers' Manhattan generator: same blocks, street widths,
     // seed, park decisions, diagonal avenue and building-layout decisions.
@@ -317,54 +317,33 @@ const MAP = (() => {
             {floor:2,x1:7,x2:27,y1:44,y2:51,reverse:false},{floor:2,x1:113,x2:133,y1:81,y2:88,reverse:true},
             {floor:3,x1:43,x2:63,y1:7,y2:14,reverse:false},{floor:3,x1:77,x2:97,y1:81,y2:88,reverse:true}
         ]:[];
-        const YARD_CONTAINERS=IS_DOCKS?[
-            {x:9,y:10,w:15,d:3,h:2.6,c:0xb93b32},{x:9,y:15,w:15,d:3,h:2.6,c:0x305f8d},
-            {x:30,y:11,w:12,d:3,h:2.6,c:0xd08a24},{x:43.5,y:11,w:12,d:3,h:2.6,c:0x32745a},{x:57,y:11,w:12,d:3,h:2.6,c:0xa94732},
-            {x:79,y:9,w:15,d:3,h:2.6,c:0x315f8d},{x:79,y:14,w:15,d:3,h:5.2,c:0xc05235},
-            {x:101,y:11,w:15,d:3,h:2.6,c:0xd18b27},{x:119,y:11,w:11,d:3,h:2.6,c:0x3d745c},
-            // West-side parkour route: ramp, rising stacks, jump gaps and a
-            // three-container lookout before the route drops back down.
-            {x:11,y:25,w:10,d:3,h:2.6,c:0x315f8d},{x:23,y:25,w:10,d:3,h:5.2,c:0xb93b32},{x:35,y:25,w:10,d:3,h:7.8,c:0xd08a24},
-            {x:47,y:25,w:10,d:3,h:5.2,c:0x32745a},{x:59,y:25,w:10,d:3,h:2.6,c:0xa94732},
-            {x:18,y:36,w:12,d:3,h:2.6,c:0x365f8b},{x:31.5,y:36,w:12,d:3,h:2.6,c:0xb84035},{x:45,y:36,w:12,d:3,h:2.6,c:0xd08a24},
-            {x:66,y:31,w:3,d:15,h:2.6,c:0x33735a,open:true},{x:72,y:31,w:3,d:15,h:2.6,c:0xa54235},
-            {x:91,y:34,w:15,d:3,h:2.6,c:0x315f8c},{x:108,y:34,w:15,d:3,h:5.2,c:0xc98a29},
-            // Central stacks form two parallel elevated lanes. The alternating
-            // one-cell and two-cell gaps are short enough to jump but punish a
-            // mistimed run without blocking the ground route below.
-            {x:79,y:44,w:9,d:3,h:2.6,c:0x32745a},{x:90,y:44,w:9,d:3,h:5.2,c:0xb84035},{x:101,y:44,w:9,d:3,h:5.2,c:0x315f8d},{x:112,y:44,w:9,d:3,h:2.6,c:0xd08a24},
-            {x:79,y:50,w:9,d:3,h:2.6,c:0xd08a24},{x:90,y:50,w:9,d:3,h:5.2,c:0x32745a},{x:101,y:50,w:9,d:3,h:7.8,c:0xb93b32},{x:112,y:50,w:9,d:3,h:5.2,c:0x315f8d},
-            {x:14,y:61,w:15,d:3,h:2.6,c:0xb33d35},{x:31,y:61,w:15,d:3,h:2.6,c:0x315f8b},
-            {x:53,y:57,w:3,d:16,h:2.6,c:0xd08a24,open:true},{x:59,y:57,w:3,d:16,h:2.6,c:0x36755c},
-            {x:80,y:60,w:13,d:3,h:2.6,c:0xb54134},{x:94.5,y:60,w:13,d:3,h:2.6,c:0x315e8b},{x:109,y:60,w:13,d:3,h:2.6,c:0xd08a24},
-            {x:12,y:70,w:10,d:3,h:2.6,c:0x32745a},{x:24,y:70,w:10,d:3,h:5.2,c:0xd08a24},{x:36,y:70,w:10,d:3,h:5.2,c:0x315f8d},{x:48,y:70,w:10,d:3,h:2.6,c:0xb93b32},
-            {x:18,y:81,w:15,d:3,h:2.6,c:0x34745a},{x:39,y:79,w:15,d:3,h:5.2,c:0xb73f35},
-            {x:65,y:80,w:13,d:3,h:2.6,c:0x315f8b},{x:79.5,y:80,w:13,d:3,h:2.6,c:0xd08a24},{x:94,y:80,w:13,d:3,h:2.6,c:0x3b745b},
-            {x:116,y:77,w:3,d:12,h:2.6,c:0xb74334},
-            // Short stacks beside the water leave a final sequence of broad
-            // tops with visible gaps between every landing.
-            {x:17,y:90,w:11,d:3,h:2.6,c:0xb74334},{x:30,y:90,w:11,d:3,h:5.2,c:0x315f8b},{x:43,y:90,w:11,d:3,h:2.6,c:0xd08a24},
-            {x:69,y:90,w:11,d:3,h:2.6,c:0x36755c},{x:82,y:90,w:11,d:3,h:5.2,c:0xb73f35},{x:95,y:90,w:11,d:3,h:2.6,c:0x315f8b}
-        ]:[];
-        const YARD_ACCESS_RAMPS=IS_DOCKS?[
-            {x1:6,x2:9,y1:10,y2:13,h:2.6,axis:'x'},
-            {x1:8,x2:11,y1:25,y2:28,h:2.6,axis:'x'},
-            {x1:15,x2:18,y1:36,y2:39,h:2.6,axis:'x'},
-            {x1:76,x2:79,y1:9,y2:12,h:2.6,axis:'x'},
-            {x1:88,x2:91,y1:34,y2:37,h:2.6,axis:'x'},
-            {x1:76,x2:79,y1:44,y2:47,h:2.6,axis:'x'},
-            {x1:9,x2:12,y1:70,y2:73,h:2.6,axis:'x'},
-            {x1:77,x2:80,y1:60,y2:63,h:2.6,axis:'x'},
-            {x1:62,x2:65,y1:80,y2:83,h:2.6,axis:'x'},
-            {x1:14,x2:17,y1:90,y2:93,h:2.6,axis:'x'}
-        ]:[];
-        const CONTAINER_LEVEL_HEIGHT=3.2;
-        for(const c of YARD_CONTAINERS){
-            const levels=Math.max(1,Math.round(c.h/2.6));c.h=levels*CONTAINER_LEVEL_HEIGHT;
-            if(c.w>=c.d){const oldW=c.w;c.w*=1.08;c.x-=(c.w-oldW)/2;c.y-=.3;c.d+=.6}
-            else {const oldD=c.d;c.d*=1.08;c.y-=(c.d-oldD)/2;c.x-=.3;c.w+=.6}
+        const CONTAINER_LEVEL_HEIGHT=3.8;
+        const YARD_CONTAINERS=[];
+        const YARD_ACCESS_RAMPS=[];
+        if(IS_DOCKS){
+            const colors=[0xb84035,0x315f8d,0xd08a24,0x32745a,0xa94732,0xd8d4c7];
+            const addStack=(x,y,w,d,levels,color,open=false)=>YARD_CONTAINERS.push({x,y,w:Math.min(w,10),d:Math.min(d,9),h:Math.min(levels,4)*CONTAINER_LEVEL_HEIGHT,c:colors[color%colors.length],open});
+            // Four organised terminal quadrants. The two central container walls
+            // divide the yard while deliberate 7-unit gate slits keep every area connected.
+            const lanes=[12,27,42,91,106,121];
+            lanes.forEach((y,row)=>{
+                for(let x=9;x<=70;x+=12)addStack(x,y,10,3,1+(x/12+row)%4,row+Math.round(x));
+                for(let x=101;x<=162;x+=12)addStack(x,y,10,3,1+((x/12+row+1)%4),row+Math.round(x));
+            });
+            for(const y of [8,20,35,49,84,98,113,127]){
+                if(y<53||y>81){addStack(86,y,3,9,1+(y%4),y);addStack(91,y,3,9,1+((y+1)%4),y+2)}
+            }
+            for(const x of [8,20,34,48,62,104,118,132,146,160]){
+                if(x<75||x>101){addStack(x,66,10,3,1+(x%4),x);addStack(x,72,10,3,1+((x+2)%4),x+3)}
+            }
+            // Walk-through containers have real side walls, a roof and open hinged doors.
+            addStack(43,57,10,3,1,3,true);addStack(122,78,10,3,1,1,true);
+            addStack(78,24,3,9,2,4,true);addStack(97,103,3,9,1,2,true);
+            // Every height change has its own ramp: ground→1, 1→2, 2→3 and 3→4.
+            const rampChain=(x,y,levels)=>{for(let level=0;level<levels;level++)YARD_ACCESS_RAMPS.push({x1:x+level*5,x2:x+level*5+4,y1:y,y2:y+3,base:level*CONTAINER_LEVEL_HEIGHT,h:(level+1)*CONTAINER_LEVEL_HEIGHT,reverse:false});addStack(x+levels*5-1,y,6,3,levels,x+y)};
+            rampChain(5,12,4);rampChain(151,42,3);rampChain(6,106,3);rampChain(150,121,4);
+            rampChain(68,61,2);rampChain(104,76,2);
         }
-        for(const ramp of YARD_ACCESS_RAMPS)ramp.h=CONTAINER_LEVEL_HEIGHT;
         const FLOOR_CAR_SPOTS=FLOOR_LEVELS.map((_,floor)=>{
             if(!IS_GARAGE)return [];
             const rows=[[17,40,79],[15,38,62,81],[18,42,77],[14,36,60,83],[17,40,64,80]][floor],spots=[];
@@ -405,21 +384,27 @@ const MAP = (() => {
         const YARD_CONTAINER_GRID=Array.from({length:MAP_SIZE_X*MAP_SIZE_Y},()=>[]);
         for(const container of YARD_CONTAINERS)for(let y=Math.max(0,Math.floor(container.y));y<Math.min(MAP_SIZE_Y,Math.ceil(container.y+container.d));y++)for(let x=Math.max(0,Math.floor(container.x));x<Math.min(MAP_SIZE_X,Math.ceil(container.x+container.w));x++)YARD_CONTAINER_GRID[y*MAP_SIZE_X+x].push(container);
         const yardContainerAt=(x,y)=>{const ix=Math.floor(x),iy=Math.floor(y);if(ix<0||iy<0||ix>=MAP_SIZE_X||iy>=MAP_SIZE_Y)return;return YARD_CONTAINER_GRID[iy*MAP_SIZE_X+ix].find(c=>!c.open&&x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.d)};
+        const yardContainerSideBlocked=(x,y,feet,radius=.32)=>{
+            const seen=new Set();for(const px of [x-radius,x+radius])for(const py of [y-radius,y+radius]){
+                const ix=Math.floor(px),iy=Math.floor(py);if(ix<0||iy<0||ix>=MAP_SIZE_X||iy>=MAP_SIZE_Y)continue;
+                for(const c of YARD_CONTAINER_GRID[iy*MAP_SIZE_X+ix])if(!c.open&&!seen.has(c)){seen.add(c);if(c.h>feet+.05&&x+radius>c.x&&x-radius<c.x+c.w&&y+radius>c.y&&y-radius<c.y+c.d)return true}
+            }return false;
+        };
         const openContainerWallAt=(x,y)=>YARD_CONTAINERS.some(c=>{
             if(!c.open||x<c.x||x>c.x+c.w||y<c.y||y>c.y+c.d)return false;
-            const horizontal=c.w>=c.d,cx=c.x+c.w/2,cy=c.y+c.d/2,wall=.16,doorHalf=.62;
+            const horizontal=c.w>=c.d,cx=c.x+c.w/2,cy=c.y+c.d/2,wall=.045,doorHalf=.62;
             if(horizontal){const side=Math.min(Math.abs(y-c.y),Math.abs(y-(c.y+c.d)))<wall,end=Math.min(Math.abs(x-c.x),Math.abs(x-(c.x+c.w)))<wall;return side||(end&&Math.abs(y-cy)>doorHalf)}
             const side=Math.min(Math.abs(x-c.x),Math.abs(x-(c.x+c.w)))<wall,end=Math.min(Math.abs(y-c.y),Math.abs(y-(c.y+c.d)))<wall;return side||(end&&Math.abs(x-cx)>doorHalf);
         });
         function yardSurfaceHeightAt(x,y){
             const access=yardRampAt(x,y);
-            if(access){const t=THREE.MathUtils.clamp((x-access.x1)/(access.x2-access.x1),0,1);return t*access.h}
+            if(access){let t=THREE.MathUtils.clamp((x-access.x1)/(access.x2-access.x1),0,1);if(access.reverse)t=1-t;return access.base+t*(access.h-access.base)}
             return yardContainerAt(x,y)?.h||0;
         }
         function surfaceHeightAt(x,y,current=0){return IS_DOCKS?yardSurfaceHeightAt(x,y):rampSurfaceHeightAt(x,y,current)}
         function floorBarrierAt(x,y,floorY){
             const segments=FLOOR_BARRIERS[floorIndexAtHeight(floorY)]||[];
-            return segments.some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-x1)<.55&&y>=Math.min(y1,y2)-.5&&y<=Math.max(y1,y2)+.5:Math.abs(y-y1)<.55&&x>=Math.min(x1,x2)-.5&&x<=Math.max(x1,x2)+.5);
+            return segments.some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-(x1+.5))<=.275&&y>=Math.min(y1,y2)&&y<=Math.max(y1,y2)+1:Math.abs(y-(y1+.5))<=.275&&x>=Math.min(x1,x2)&&x<=Math.max(x1,x2)+1);
         }
         const carsForFloor=floorY=>FLOOR_CAR_SPOTS[floorIndexAtHeight(floorY)]||[];
         const FLOOR_NAV_MAPS=FLOOR_LEVELS.map((floorY,floor)=>{
@@ -752,6 +737,7 @@ function wireGuestRoom(session){
                     for(const end of [-1,1]){
                         for(const side of [-1,1]){const jamb=new THREE.Mesh(new THREE.BoxGeometry(horizontal?.18:sideSpan,CONTAINER_LEVEL_HEIGHT-headerHeight,horizontal?sideSpan:.18),material);jamb.position.set(horizontal?end*(c.w-.09):side*(doorWidth/2+sideSpan/2), (CONTAINER_LEVEL_HEIGHT-headerHeight)/2, horizontal?side*(doorWidth/2+sideSpan/2):end*(c.d-.09));shell.add(jamb)}
                         const header=new THREE.Mesh(new THREE.BoxGeometry(horizontal?.18:doorWidth,headerHeight,horizontal?doorWidth:.18),material);header.position.set(horizontal?end*(c.w-.09):0,CONTAINER_LEVEL_HEIGHT-headerHeight/2,horizontal?0:end*(c.d-.09));shell.add(header);
+                        for(const side of [-1,1]){const door=new THREE.Mesh(new THREE.BoxGeometry(horizontal?.14:doorWidth/2-.08,CONTAINER_LEVEL_HEIGHT-.28,horizontal?doorWidth/2-.08:.14),material);door.position.set(horizontal?end*(c.w+.56):side*(doorWidth*.31),(CONTAINER_LEVEL_HEIGHT-.28)/2,horizontal?side*(doorWidth*.31):end*(c.d+.56));door.rotation.y=(horizontal?side*end:-side*end)*.72;shell.add(door)}
                     }
                     const floor=new THREE.Mesh(new THREE.BoxGeometry(c.w*2,.12,c.d*2),material);floor.position.y=.06;shell.add(floor);
                     shell.position.set((c.x+c.w/2)*2+1,0,(c.y+c.d/2)*2+1);scene.add(shell);
@@ -762,9 +748,9 @@ function wireGuestRoom(session){
                 const ribs=new THREE.InstancedMesh(ribGeo,ribMat,ribTransforms.length);ribTransforms.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);ribs.setMatrixAt(i,transform)});ribs.instanceMatrix.needsUpdate=true;scene.add(ribs);
                 const rampMat=new THREE.MeshPhongMaterial({color:0xd7c26b,shininess:10});
                 for(const r of YARD_ACCESS_RAMPS){
-                    const length=(r.x2-r.x1)*2,width=(r.y2-r.y1)*2,angle=Math.atan2(r.h,length);
+                    const length=(r.x2-r.x1)*2,width=(r.y2-r.y1)*2,rise=r.h-r.base,angle=Math.atan2(rise,length)*(r.reverse?-1:1);
                     const access=new THREE.Mesh(new THREE.BoxGeometry(length,.28,width),rampMat);
-                    access.position.set((r.x1+r.x2)+1,r.h/2,(r.y1+r.y2)+1);access.rotation.z=angle;scene.add(access);
+                    access.position.set((r.x1+r.x2)+1,(r.base+r.h)/2,(r.y1+r.y2)+1);access.rotation.z=angle;scene.add(access);
                 }
                 const water=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,22),new THREE.MeshPhongMaterial({color:0x244f64,shininess:75}));
                 water.rotation.x=-Math.PI/2;water.position.set(MAP_SIZE_X,.02,MAP_SIZE_Y*2+10);scene.add(water);
@@ -1094,8 +1080,10 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const slopeStep=targetRamp||yardAccess?1.05:.65;
                 const insideRampLane=!targetRamp||(y>=targetRamp.y1+.28&&y<=targetRamp.y2-.28);
                 const mantleAllowance=player.floorY>0?.9:.03;
-                const canReachSurface=player.isJumping?surface<=player.floorY+player.z+mantleAllowance:surface<=player.floorY+slopeStep;
+                const onYardRamp=yardRampAt(player.x,player.y),yardRampReachable=!yardAccess||onYardRamp||Math.abs(player.floorY-yardAccess.base)<.12||Math.abs(player.floorY-yardAccess.h)<.12;
+                const canReachSurface=IS_DOCKS?(yardAccess?yardRampReachable&&surface<=player.floorY+slopeStep:surface<=player.floorY+.05):(player.isJumping?surface<=player.floorY+player.z+mantleAllowance:surface<=player.floorY+slopeStep);
                 if(!canReachSurface||!insideRampLane||!canEnterRamp(x,y)||carBlocked(x,y))return false;
+                if(IS_DOCKS&&!yardAccess&&yardContainerSideBlocked(x,y,player.floorY+player.z,radius))return false;
                 if(SCENERY_BOXES.length&&sourceBuildingBlocked(x,y,radius))return false;
                 for(const [px,py] of [[x-radius,y],[x+radius,y],[x,y-radius],[x,y+radius],[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]]){
                     const cell=MAP[Math.floor(py)]?.[Math.floor(px)];
@@ -1293,11 +1281,12 @@ for (let b = 0; b < botSpawns.length; b++) {
                     if(Math.hypot(steerX-bot.mesh.position.x,steerZ-bot.mesh.position.z)<.45)bot._pathStep++;
                 }
                 const dx=steerX-bot.mesh.position.x,dz=steerZ-bot.mesh.position.z,distance=Math.hypot(dx,dz)||1;
-                const maxSpeed=bot.baseSpeed*.01*bot.speedMult*(locked?1:.62),accel=locked?.018:.011;
+                const maxSpeed=bot.baseSpeed*.01*bot.speedMult*(locked?1:.62),accel=locked?.010:.006;
                 bot.vx+=dx/distance*accel;bot.vz+=dz/distance*accel;
                 const velocity=Math.hypot(bot.vx,bot.vz);if(velocity>maxSpeed){bot.vx=bot.vx/velocity*maxSpeed;bot.vz=bot.vz/velocity*maxSpeed}
-                // Low friction gives the chasers weight: they skid wide, brake, then accelerate into a turn.
-                bot.vx*=.992;bot.vz*=.992;
+                // The nextbots deliberately move as if they are on ice: weak steering,
+                // almost no friction and a wide carried slide through every turn.
+                bot.vx*=.998;bot.vz*=.998;
                 const tryX=bot.mesh.position.x+bot.vx,mapX=Math.floor((tryX-1)/2),mapY=Math.floor((bot.mesh.position.z-1)/2);
                 if(MAP[mapY]?.[mapX]===0&&!floorBarrierAt((tryX-1)/2,(bot.mesh.position.z-1)/2,bot.floorY))bot.mesh.position.x=tryX;else bot.vx*=-.28;
                 const tryZ=bot.mesh.position.z+bot.vz,nextMapX=Math.floor((bot.mesh.position.x-1)/2),nextMapY=Math.floor((tryZ-1)/2);
