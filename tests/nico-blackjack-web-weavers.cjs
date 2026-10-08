@@ -7,12 +7,16 @@ const root=path.resolve(__dirname,'..');
 const read=name=>fs.readFileSync(path.join(root,name),'utf8');
 
 const nico=read('nicos_nextbots.html');
+const partyRooms=read('party-rooms.js');
 assert.match(nico,/const FLOOR_COUNT=MAP_ID==='annex'\?1:5;/);
 assert.match(nico,/const SPAWN_FLOOR_INDEX=MAP_ID==='annex'\?0:2;/);
 assert.match(nico,/for\(const floorY of FLOOR_LEVELS\.slice\(1\)\)/);
 assert.match(nico,/for\(const ramp of RAMPS\)for\(let tier=0;tier<FLOOR_COUNT-1;tier\+\+\)/);
 assert.match(nico,/player\.floorY = SPAWN_FLOOR_Y;/);
-assert.match(nico,/mobileRenderer\?1:1\.5/);
+assert.match(nico,/MOBILE_RENDERER\?\.8:1\.5/);
+assert.match(nico,/remote\.id!==localPeerId&&remote\.alive&&!insideCamera/);
+assert.match(nico,/p\.id!==localPeerId/);
+assert.match(partyRooms,/meta:\{peerId:peerRef\.id,name\}/);
 assert.match(nico,/const slopeStep=targetRamp\|\|yardAccess\?1\.05:\.65/);
 assert.match(nico,/if\(activeRamp\)player\.y=THREE\.MathUtils\.clamp/);
 assert.match(nico,/const YARD_CONTAINERS=MAP_ID==='annex'\?\[/);

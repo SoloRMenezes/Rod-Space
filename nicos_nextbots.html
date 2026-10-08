@@ -421,7 +421,8 @@ let screenWidth, screenHeight;
 let botReleaseAt=Infinity;
 let invulnerableUntil=0;
 let respawnSpawns=[];
-let netRole='solo',roomSession=null,lastNetSend=0,roomsWatching=false;
+const MOBILE_RENDERER=window.matchMedia('(pointer:coarse)').matches||Math.min(innerWidth,innerHeight)<700;
+let netRole='solo',roomSession=null,localPeerId=null,lastNetSend=0,roomsWatching=false;
 const lobbyPlayers=new Map();
 const skipVotes=new Set();let skipVoteSent=false,skipVoteCount=0,skipVoteRequired=1;
 const remotePlayers=new Map();
@@ -430,7 +431,7 @@ function createWebWeaversAvatar(){
     if(!webWeaversAvatarTemplate)return null;
     const avatar=webWeaversAvatarTemplate.clone(true);
     avatar.scale.setScalar(.5);avatar.rotation.y=Math.PI;
-    avatar.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
+    avatar.traverse(node=>{if(node.isMesh){node.castShadow=false;node.receiveShadow=false;}});
     return avatar;
 }
 new THREE.GLTFLoader().load('./assets/models/web-weavers-r15.glb',gltf=>{
@@ -480,11 +481,11 @@ function wireHostRoom(session){
 function wireGuestRoom(session){
     session.client.on('message',({data})=>{if(data.type==='lobby'){renderWaitingPlayers(data.payload.players);return}if(data.type==='start'){startGame();return}if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;roundEndsAt=performance.now()+world.roundIn;
         skipVoteCount=world.skipVotes||0;skipVoteRequired=world.skipRequired||1;updateSkipButton();
-        world.players.filter(p=>p.id!=='host').forEach(p=>{if(p.id!==session.client.meta.peerId)applyPlayerPacket(p.id,p,p.name)});
+        world.players.filter(p=>p.id!=='host').forEach(p=>{if(p.id!==localPeerId)applyPlayerPacket(p.id,p,p.name)});
         const host=world.players.find(p=>p.id==='host');if(host)applyPlayerPacket('host',host,host.name);
         world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.backing.position.x=state.x;bot.backing.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;bot.floorY=state.floorY||0;bot.mesh.position.y=BOT_CENTER_Y+bot.floorY;bot.backing.position.y=BOT_CENTER_Y+bot.floorY;if(bot.label)bot.label.position.y=.55+bot.floorY;});
     });
-    session.client.on('message',({data})=>{if(data.type==='death'&&data.payload.id===session.client.meta.peerId)showGameOverOverlay();});
+    session.client.on('message',({data})=>{if(data.type==='death'&&data.payload.id===localPeerId)showGameOverOverlay();});
 }
 
         // --- Lighting ---
@@ -494,19 +495,18 @@ function wireGuestRoom(session){
             scene = new THREE.Scene();
             // Scene color: backrooms yellow
             scene.background = new THREE.Color(0x15171a);
-            scene.fog = new THREE.Fog(0x15171a, 55, 205);
+            scene.fog = new THREE.Fog(0x15171a, 55, MOBILE_RENDERER?150:205);
 
             // Camera
-            camera = new THREE.PerspectiveCamera(95, window.innerWidth / window.innerHeight, 0.1, 280);
+            camera = new THREE.PerspectiveCamera(95, window.innerWidth / window.innerHeight, 0.1, MOBILE_RENDERER?190:280);
             camera.position.set(player.x, 1.6, player.y); // y=eye height
             camera.rotation.order = 'YXZ';
 
             // Renderer
-            const mobileRenderer=window.matchMedia('(pointer:coarse)').matches||Math.min(innerWidth,innerHeight)<700;
             renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: false, powerPreference:'high-performance' });
             // High-DPI phone screens were rendering several times more pixels than
             // the display needs during play. Keep desktop sharp and mobile stable.
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobileRenderer?1:1.5));
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE_RENDERER?.8:1.5));
             renderer.setClearColor(MAP_ID==='annex'?0x7894a6:0x15171a);
             renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -970,6 +970,13 @@ for (let b = 0; b < botSpawns.length; b++) {
                 camera.position.set(player.x * 2 + 1, 1.6 + player.floorY + player.z, player.y * 2 + 1);
                 // Set camera rotation: pitch (up/down, X), yaw (left/right, Y), roll (Z)
                 camera.rotation.set(player.pitch, player.dir, player.roll, 'YXZ');
+                // Never draw the local network avatar inside its own first-person
+                // camera. Nearby players also disappear only while intersecting the
+                // camera, then return as soon as there is room to see them.
+                remotePlayers.forEach(remote=>{
+                    const insideCamera=remote.mesh.position.distanceToSquared(camera.position)<1.35;
+                    remote.mesh.visible=remote.id!==localPeerId&&remote.alive&&!insideCamera;
+                });
             }
             // --- Bot AI: A* pathfinding and wall sliding for multiple bots ---
             function astar(startX, startY, endX, endY, map) {
@@ -1201,7 +1208,7 @@ for (let b = 0; b < botSpawns.length; b++) {
         }
         async function joinRoom(room,button){
             if(room.map&&room.map!==MAP_ID){sessionStorage.setItem('nicos-pending-room',room.id);const url=new URL(location.href);url.searchParams.set('map',room.map);location.href=url;return}
-            try{button.disabled=true;lobbyStatus('Connecting…');roomSession=await PartyRooms.join(room,{name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='guest';wireGuestRoom(roomSession);sessionStorage.removeItem('nicos-pending-room');enterWaitingRoom()}catch(error){lobbyStatus(error.message);button.disabled=false}
+            try{button.disabled=true;lobbyStatus('Connecting…');roomSession=await PartyRooms.join(room,{name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='guest';localPeerId=roomSession.client.meta?.peerId||roomSession.peerRef?.id||null;remotePlayers.get(localPeerId)?.mesh.removeFromParent();remotePlayers.delete(localPeerId);wireGuestRoom(roomSession);sessionStorage.removeItem('nicos-pending-room');enterWaitingRoom()}catch(error){lobbyStatus(error.message);button.disabled=false}
         }
         function setupRooms(){
             if(!globalThis.PartyRooms||roomsWatching)return;roomsWatching=true;

@@ -122,6 +122,7 @@ async function join(room,{name,pin='',onStatus=()=>{}}){
     let client=null,finished=false,fallbackTimer=0,lastRelaySequence=0;
     const relayListeners=new Map();
     const relayClient={
+      meta:{peerId:peerRef.id,name},
       on(type,handler){if(!relayListeners.has(type))relayListeners.set(type,new Set());relayListeners.get(type).add(handler);return()=>relayListeners.get(type)?.delete(handler)},
       close(){relayListeners.get('close')?.forEach(handler=>handler())}
     };
