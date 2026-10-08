@@ -331,7 +331,11 @@ const MAP = (() => {
             return tier*FLOOR_HEIGHT+t*FLOOR_HEIGHT;
         }
         const yardRampAt=(x,y)=>YARD_ACCESS_RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2);
-        const yardContainerAt=(x,y)=>YARD_CONTAINERS.find(c=>x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.d);
+        // Container collision is queried several times per movement frame. Keep
+        // a small spatial bucket per map cell instead of scanning every stack.
+        const YARD_CONTAINER_GRID=Array.from({length:MAP_SIZE_X*MAP_SIZE_Y},()=>[]);
+        for(const container of YARD_CONTAINERS)for(let y=Math.max(0,Math.floor(container.y));y<Math.min(MAP_SIZE_Y,Math.ceil(container.y+container.d));y++)for(let x=Math.max(0,Math.floor(container.x));x<Math.min(MAP_SIZE_X,Math.ceil(container.x+container.w));x++)YARD_CONTAINER_GRID[y*MAP_SIZE_X+x].push(container);
+        const yardContainerAt=(x,y)=>{const ix=Math.floor(x),iy=Math.floor(y);if(ix<0||iy<0||ix>=MAP_SIZE_X||iy>=MAP_SIZE_Y)return;return YARD_CONTAINER_GRID[iy*MAP_SIZE_X+ix].find(c=>x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.d)};
         function yardSurfaceHeightAt(x,y){
             const access=yardRampAt(x,y);
             if(access){const t=THREE.MathUtils.clamp((x-access.x1)/(access.x2-access.x1),0,1);return t*access.h}
@@ -772,7 +776,8 @@ for (let b = 0; b < botSpawns.length; b++) {
                 if (!isLocked) canvas.requestPointerLock();
                 else document.exitPointerLock();
             }
-            if (key === keyBindings.jump && !player.isJumping) {
+            if (key === keyBindings.jump) e.preventDefault();
+            if (key === keyBindings.jump && !e.repeat && !player.isJumping) {
                 player.isJumping = true;
                 player.zVel = 0.20;
             }
@@ -857,6 +862,7 @@ for (let b = 0; b < botSpawns.length; b++) {
         }
         function hideGameOverOverlay(){const overlay=document.getElementById('game-over-overlay');if(overlay)overlay.style.display='none';isGameOver=false}
 
+        let lastHudSecond=-1;
         function update() {
             // UI status
             const currentSpeed = player.isJumping?player.jumpSpeed:player.speed;
@@ -866,8 +872,9 @@ for (let b = 0; b < botSpawns.length; b++) {
             if(keys[keyBindings.lookUp])player.pitch=Math.min(Math.PI/2-.01,player.pitch+keyLookSpeed);
             if(keys[keyBindings.lookDown])player.pitch=Math.max(-Math.PI/2+.01,player.pitch-keyLookSpeed);
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
-            if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;updateSkipButton()}
-            else { skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
+            const hudSecond=Math.ceil((releaseRemaining>0?releaseRemaining:Math.max(0,roundEndsAt-nowTime))/1000);
+            if(hudSecond!==lastHudSecond){lastHudSecond=hudSecond;if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${hudSecond}`;updateSkipButton()}else{skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime)}}
+            if(releaseRemaining<=0){gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000);if(nowTime>=roundEndsAt){showGameOverOverlay(true);return}}
 
             // --- Stop update if game over ---
             if (isGameOver) return;
@@ -897,14 +904,16 @@ for (let b = 0; b < botSpawns.length; b++) {
             // Grid collision is constant-time; checking every rendered wall was the main frame-rate bottleneck.
             const carBlocked=(x,y)=>player.z<1.55&&carsForFloor(player.floorY).some(([cx,cy])=>Math.abs(x-(cx+.5))<1.12&&Math.abs(y-(cy+.5))<2.05);
             const canStand=(x,y)=>{
-                const radius=.18,points=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
+                const radius=.18;
                 const surface=surfaceHeightAt(x,y,player.floorY);
                 const targetRamp=rampAt(x,y);
                 const yardAccess=yardRampAt(x,y);
                 const slopeStep=targetRamp||yardAccess?1.05:.65;
                 const insideRampLane=!targetRamp||(y>=targetRamp.y1+.28&&y<=targetRamp.y2-.28);
                 const canReachSurface=player.isJumping?surface<=player.floorY+player.z+.3:Math.abs(surface-player.floorY)<=slopeStep;
-                return canReachSurface&&insideRampLane&&canEnterRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0&&!rampWallAt(px,py)&&!floorBarrierAt(px,py,player.floorY));
+                if(!canReachSurface||!insideRampLane||!canEnterRamp(x,y)||carBlocked(x,y))return false;
+                for(const px of [x-radius,x+radius])for(const py of [y-radius,y+radius])if(MAP[Math.floor(py)]?.[Math.floor(px)]!==0||rampWallAt(px,py)||floorBarrierAt(px,py,player.floorY))return false;
+                return true;
             };
             let nextX = player.x + moveX;
             let nextY = player.y + moveY;
