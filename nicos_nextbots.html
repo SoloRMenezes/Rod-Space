@@ -144,9 +144,9 @@
                 <div class="menu-kicker">NICO'S</div>
                 <h1>NEXTBOTS</h1>
                 <div class="menu-panel active" id="menu-main"><p class="menu-subtitle">Run, hide and survive together.</p><div class="menu-stack"><button class="primary" id="open-solo">SINGLEPLAYER</button><button id="open-multi">MULTIPLAYER</button><button id="open-menu-settings">SETTINGS</button></div></div>
-                <div class="menu-panel" id="menu-solo"><div class="panel-title">SINGLEPLAYER</div><label class="map-picker">MAP<select class="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">DOCKSIDE CONTAINER YARD</option></select></label><div class="menu-stack"><button class="primary" id="solo-start">START</button><button class="menu-back">BACK</button></div></div>
+                <div class="menu-panel" id="menu-solo"><div class="panel-title">SINGLEPLAYER</div><label class="map-picker">MAP<select class="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">CONTAINER TERMINAL</option><option value="manhattan">WEB WEAVERS — MANHATTAN</option><option value="tokyo">TOKYO DRIFT — TOKYO</option><option value="training">TOKYO DRIFT — BLANK MAP</option></select></label><div class="menu-stack"><button class="primary" id="solo-start">START</button><button class="menu-back">BACK</button></div></div>
                 <div class="menu-panel" id="menu-multi"><div class="panel-title">MULTIPLAYER</div><div class="menu-stack"><button class="primary" id="host-open">HOST</button><button id="join-open">JOIN</button><button class="menu-back">BACK</button></div><div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div></div>
-                <div class="menu-panel" id="menu-host"><div class="panel-title">HOST GAME</div><label class="map-picker">MAP<select class="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">DOCKSIDE CONTAINER YARD</option></select></label><div class="menu-stack"><button class="primary" id="host-start">OPEN ROOM</button><button class="menu-back" data-target="menu-multi">BACK</button></div></div>
+                <div class="menu-panel" id="menu-host"><div class="panel-title">HOST GAME</div><label class="map-picker">MAP<select class="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">CONTAINER TERMINAL</option><option value="manhattan">WEB WEAVERS — MANHATTAN</option><option value="tokyo">TOKYO DRIFT — TOKYO</option><option value="training">TOKYO DRIFT — BLANK MAP</option></select></label><div class="menu-stack"><button class="primary" id="host-start">OPEN ROOM</button><button class="menu-back" data-target="menu-multi">BACK</button></div></div>
                 <div class="menu-panel" id="menu-settings"><div class="panel-title">SETTINGS</div><div class="settings-grid"><input id="player-name" maxlength="18" placeholder="Player name"><input id="room-pin" inputmode="numeric" maxlength="4" placeholder="Room PIN"></div><label class="map-picker">MOUSE SENSITIVITY<input type="range" id="menu-sens-slider" min="0.1" max="5" step="0.1" value="1"></label><div class="keybind-list" id="keybind-list"></div><div class="menu-stack"><button class="menu-back">SAVE &amp; BACK</button></div></div>
                 <div id="waiting-panel"><div class="waiting-head"><div><div class="waiting-title">WAITING ROOM</div><div class="lobby-note" id="waiting-message">Waiting for the host to start.</div></div><div class="room-code" id="waiting-code"></div></div><div class="player-list" id="waiting-players"></div><div class="waiting-actions"><button id="room-leave">LEAVE ROOM</button><button id="room-start">START GAME</button></div></div>
                 <div id="lobby-status"></div>
@@ -204,12 +204,32 @@
         // 24x24 map: only outer walls (1s), all interior floor (0s).
         // Each map unit now corresponds to a 2x2 block in world coordinates.
         // Player (1.5,1.5) and bot (10.5,10.5) are valid open positions (multiplied by 2 for world coords).
-        const MAP_ID=new URLSearchParams(location.search).get('map')==='annex'?'annex':'garage';
+        const requestedMap=new URLSearchParams(location.search).get('map');
+        const MAP_ID=['garage','annex','manhattan','tokyo','training'].includes(requestedMap)?requestedMap:'garage';
+        const IS_GARAGE=MAP_ID==='garage',IS_DOCKS=MAP_ID==='annex';
+        const MAP_NAMES={garage:'Central Garage',annex:'Container Terminal',manhattan:'Web Weavers — Manhattan',tokyo:'Tokyo Drift — Tokyo',training:'Tokyo Drift — Blank Map'};
+        document.title=`Nico's Nextbots — ${MAP_NAMES[MAP_ID]}`;
         mapSelects.forEach(select=>{select.value=MAP_ID;select.addEventListener('change',()=>{sessionStorage.setItem('nicos-menu-panel',select.closest('#menu-host')?'menu-host':'menu-solo');const url=new URL(location.href);url.searchParams.set('map',select.value);location.href=url})});
 const MAP_LAYOUTS={
     garage:{vertical:[35,70,105],horizontal:[24,48,72],verticalDoors:[12,42,82],horizontalDoors:[18,53,88,122]},
-    annex:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]}
+    annex:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]},
+    manhattan:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]},
+    tokyo:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]},
+    training:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]}
 };
+const SCENERY_BOXES=[];
+let scenerySeed=MAP_ID==='manhattan'?0x5f3759df:9347;
+const sceneryRandom=()=>{scenerySeed=(Math.imul(scenerySeed,1664525)+1013904223)>>>0;return scenerySeed/4294967296};
+if(MAP_ID==='manhattan')for(let row=0;row<6;row++)for(let col=0;col<8;col++){
+    if((row===2&&col===3)||(row===4&&col===1))continue;
+    const x=5+col*17,y=5+row*15,w=11+(col+row)%3,d=9+(col*2+row)%3;
+    SCENERY_BOXES.push({x,y,w,d,h:18+sceneryRandom()*48,c:[0x7c302d,0x32465e,0x6a5636,0x42523c][(col+row)%4],kind:'manhattan'});
+}
+if(MAP_ID==='tokyo')for(let row=0;row<6;row++)for(let col=0;col<8;col++){
+    const x=6+col*17,y=6+row*15,cx=x+5.5,cy=y+4.5;
+    if(Math.hypot(cx-70,cy-48)<18||(row===0&&col===0))continue;
+    SCENERY_BOXES.push({x,y,w:10.5,d:8.5,h:row===0||row===5?5+sceneryRandom()*5:14+sceneryRandom()*42,c:[0x303b50,0x584c45,0x35465a,0x6b443e][(col*3+row)%4],kind:'tokyo'});
+}
 const MAP = (() => {
             const width = 140, height = 96;
             const layout=MAP_LAYOUTS[MAP_ID];
@@ -224,13 +244,14 @@ const MAP = (() => {
                 for(let yy=y-3;yy<=y+3;yy++)for(let xx=x-3;xx<=x+3;xx++)if(map[yy]?.[xx]===1)return false;
                 return true;
             };
-            if(MAP_ID==='garage')for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0&&clearOfWall(x,y))map[y][x]=2;
+            if(IS_GARAGE)for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0&&clearOfWall(x,y))map[y][x]=2;
+            for(const box of SCENERY_BOXES)for(let y=Math.floor(box.y);y<=Math.ceil(box.y+box.d);y++)for(let x=Math.floor(box.x);x<=Math.ceil(box.x+box.w);x++)if(map[y])map[y][x]=3;
             return map;
         })();
         const MAP_SIZE_Y = MAP.length;
         const MAP_SIZE_X = MAP[0].length;
         const FLOOR_HEIGHT=8;
-        const FLOOR_COUNT=MAP_ID==='annex'?1:5;
+        const FLOOR_COUNT=IS_GARAGE?5:1;
         const FLOOR_LEVELS=Array.from({length:FLOOR_COUNT},(_,index)=>index*FLOOR_HEIGHT);
         const GARAGE_BARRIERS=[
             [[18,10,18,22],[50,31,64,31],[91,58,91,69],[112,82,128,82]],
@@ -246,19 +267,19 @@ const MAP = (() => {
             [[16,14,32,14],[50,51,65,51],[78,79,94,79],[118,35,118,48]],
             [[13,69,29,69],[45,25,61,25],[87,48,103,48],[114,83,132,83]]
         ];
-        const FLOOR_BARRIERS=MAP_ID==='annex'?[[]]:GARAGE_BARRIERS;
-        const SPAWN_FLOOR_INDEX=MAP_ID==='annex'?0:2;
+        const FLOOR_BARRIERS=IS_GARAGE?GARAGE_BARRIERS:[[]];
+        const SPAWN_FLOOR_INDEX=IS_GARAGE?2:0;
         const SPAWN_FLOOR_Y=FLOOR_LEVELS[SPAWN_FLOOR_INDEX];
-        const BUILDING_HEIGHT=MAP_ID==='annex'?3.2:FLOOR_COUNT*FLOOR_HEIGHT+3;
+        const BUILDING_HEIGHT=IS_GARAGE?FLOOR_COUNT*FLOOR_HEIGHT+3:3.2;
         const clampFloorIndex=index=>Math.max(0,Math.min(FLOOR_COUNT-1,index));
         const floorIndexAtHeight=height=>clampFloorIndex(Math.round(height/FLOOR_HEIGHT));
         const floorBaseAtHeight=height=>FLOOR_LEVELS[floorIndexAtHeight(height)];
-        const RAMPS=MAP_ID==='annex'?[]:[
+        const RAMPS=IS_GARAGE?[
             {x1:7,x2:27,y1:7,y2:14,reverse:false},{x1:113,x2:133,y1:7,y2:14,reverse:true},
             {x1:7,x2:27,y1:44,y2:51,reverse:false},{x1:113,x2:133,y1:44,y2:51,reverse:true},
             {x1:7,x2:27,y1:81,y2:88,reverse:false},{x1:113,x2:133,y1:81,y2:88,reverse:true}
-        ];
-        const YARD_CONTAINERS=MAP_ID==='annex'?[
+        ]:[];
+        const YARD_CONTAINERS=IS_DOCKS?[
             {x:9,y:10,w:15,d:3,h:2.6,c:0xb93b32},{x:9,y:15,w:15,d:3,h:2.6,c:0x305f8d},
             {x:30,y:11,w:12,d:3,h:2.6,c:0xd08a24},{x:43.5,y:11,w:12,d:3,h:2.6,c:0x32745a},{x:57,y:11,w:12,d:3,h:2.6,c:0xa94732},
             {x:79,y:9,w:15,d:3,h:2.6,c:0x315f8d},{x:79,y:14,w:15,d:3,h:5.2,c:0xc05235},
@@ -287,7 +308,7 @@ const MAP = (() => {
             {x:17,y:90,w:11,d:3,h:2.6,c:0xb74334},{x:30,y:90,w:11,d:3,h:5.2,c:0x315f8b},{x:43,y:90,w:11,d:3,h:2.6,c:0xd08a24},
             {x:69,y:90,w:11,d:3,h:2.6,c:0x36755c},{x:82,y:90,w:11,d:3,h:5.2,c:0xb73f35},{x:95,y:90,w:11,d:3,h:2.6,c:0x315f8b}
         ]:[];
-        const YARD_ACCESS_RAMPS=MAP_ID==='annex'?[
+        const YARD_ACCESS_RAMPS=IS_DOCKS?[
             {x1:6,x2:9,y1:10,y2:13,h:2.6,axis:'x'},
             {x1:8,x2:11,y1:25,y2:28,h:2.6,axis:'x'},
             {x1:15,x2:18,y1:36,y2:39,h:2.6,axis:'x'},
@@ -300,7 +321,7 @@ const MAP = (() => {
             {x1:14,x2:17,y1:90,y2:93,h:2.6,axis:'x'}
         ]:[];
         const FLOOR_CAR_SPOTS=FLOOR_LEVELS.map((_,floor)=>{
-            if(MAP_ID==='annex')return [];
+            if(!IS_GARAGE)return [];
             const rows=[[17,40,79],[15,38,62,81],[18,42,77],[14,36,60,83],[17,40,64,80]][floor],spots=[];
             const hitsBarrier=(x,y)=>FLOOR_BARRIERS[floor].some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-x1)<3&&y>=Math.min(y1,y2)-3&&y<=Math.max(y1,y2)+3:Math.abs(y-y1)<3&&x>=Math.min(x1,x2)-3&&x<=Math.max(x1,x2)+3);
             rows.forEach((cy,row)=>{for(let cx=10+(row%2)*8;cx<MAP_SIZE_X-9;cx+=13+((floor+row)%3))if(MAP[cy][cx]===0&&Math.abs(cx-70)>10&&!rampAt(cx,cy)&&!hitsBarrier(cx,cy))spots.push([cx,cy,(floor+row+cx)%4]);});
@@ -341,7 +362,7 @@ const MAP = (() => {
             if(access){const t=THREE.MathUtils.clamp((x-access.x1)/(access.x2-access.x1),0,1);return t*access.h}
             return yardContainerAt(x,y)?.h||0;
         }
-        function surfaceHeightAt(x,y,current=0){return MAP_ID==='annex'?yardSurfaceHeightAt(x,y):rampSurfaceHeightAt(x,y,current)}
+        function surfaceHeightAt(x,y,current=0){return IS_DOCKS?yardSurfaceHeightAt(x,y):rampSurfaceHeightAt(x,y,current)}
         function floorBarrierAt(x,y,floorY){
             const segments=FLOOR_BARRIERS[floorIndexAtHeight(floorY)]||[];
             return segments.some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-x1)<.55&&y>=Math.min(y1,y2)-.5&&y<=Math.max(y1,y2)+.5:Math.abs(y-y1)<.55&&x>=Math.min(x1,x2)-.5&&x<=Math.max(x1,x2)+.5);
@@ -351,7 +372,7 @@ const MAP = (() => {
             const map=MAP.map(row=>row.slice());
             for(let y=1;y<MAP_SIZE_Y-1;y++)for(let x=1;x<MAP_SIZE_X-1;x++)if(floorBarrierAt(x,y,floorY))map[y][x]=1;
             FLOOR_CAR_SPOTS[floor].forEach(([cx,cy])=>{for(let y=Math.floor(cy-2);y<=Math.ceil(cy+2);y++)for(let x=Math.floor(cx-1);x<=Math.ceil(cx+1);x++)if(map[y])map[y][x]=1;});
-            if(MAP_ID==='annex')for(const c of YARD_CONTAINERS)for(let y=Math.floor(c.y);y<=Math.ceil(c.y+c.d);y++)for(let x=Math.floor(c.x);x<=Math.ceil(c.x+c.w);x++)if(map[y])map[y][x]=1;
+            if(IS_DOCKS)for(const c of YARD_CONTAINERS)for(let y=Math.floor(c.y);y<=Math.ceil(c.y+c.d);y++)for(let x=Math.floor(c.x);x<=Math.ceil(c.x+c.w);x++)if(map[y])map[y][x]=1;
             return map;
         });
         function beginRampRoute(bot,now){
@@ -493,9 +514,9 @@ function wireGuestRoom(session){
 
         function initThree() {
             scene = new THREE.Scene();
-            // Scene color: backrooms yellow
-            scene.background = new THREE.Color(0x15171a);
-            scene.fog = new THREE.Fog(0x15171a, 55, MOBILE_RENDERER?150:205);
+            const skyColor=MAP_ID==='manhattan'?0x82cff5:MAP_ID==='training'?0xb9d9ea:IS_DOCKS?0x7894a6:0x15171a;
+            scene.background = new THREE.Color(skyColor);
+            scene.fog = new THREE.Fog(skyColor, 55, MOBILE_RENDERER?150:205);
 
             // Camera
             camera = new THREE.PerspectiveCamera(95, window.innerWidth / window.innerHeight, 0.1, MOBILE_RENDERER?190:280);
@@ -507,13 +528,14 @@ function wireGuestRoom(session){
             // High-DPI phone screens were rendering several times more pixels than
             // the display needs during play. Keep desktop sharp and mobile stable.
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE_RENDERER?.8:1.5));
-            renderer.setClearColor(MAP_ID==='annex'?0x7894a6:0x15171a);
+            const outdoor=!IS_GARAGE;
+            renderer.setClearColor(MAP_ID==='tokyo'?0x111b2b:MAP_ID==='manhattan'?0x7fc8ef:outdoor?0x7894a6:0x15171a);
             renderer.setSize(window.innerWidth, window.innerHeight);
 
             // Lighting
-            ambientLight = new THREE.AmbientLight(MAP_ID==='annex'?0xe8f2ff:0xd7deea, MAP_ID==='annex'?0.88:0.62);
+            ambientLight = new THREE.AmbientLight(outdoor?0xe8f2ff:0xd7deea, outdoor?0.88:0.62);
             scene.add(ambientLight);
-            dirLight = new THREE.DirectionalLight(0xffffff, MAP_ID==='annex'?0.72:0.18);
+            dirLight = new THREE.DirectionalLight(0xffffff, outdoor?0.72:0.18);
             dirLight.position.set(0, 10, 0);
             scene.add(dirLight);
 
@@ -525,7 +547,8 @@ function wireGuestRoom(session){
                 if(lines){ctx.strokeStyle='rgba(10,12,15,.28)';ctx.lineWidth=3;ctx.strokeRect(1.5,1.5,253,253);ctx.beginPath();ctx.moveTo(0,128);ctx.lineTo(256,128);ctx.stroke()}
                 const texture=new THREE.CanvasTexture(tile);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(MAP_SIZE_X/7,MAP_SIZE_Y/7);texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());return texture;
             };
-            const floorMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture(MAP_ID==='annex'?'#41484e':'#30343a',true),color:MAP_ID==='annex'?0x8a9298:0xb8bcc1,shininess:7});
+            const groundBase=MAP_ID==='training'?'#d5d1c5':MAP_ID==='tokyo'?'#1b2633':MAP_ID==='manhattan'?'#555b61':IS_DOCKS?'#41484e':'#30343a';
+            const floorMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture(groundBase,true),color:outdoor?0x9aa1a5:0xb8bcc1,shininess:7});
             floorMesh = new THREE.Mesh(floorGeo, floorMat);
             floorMesh.rotation.x = -Math.PI / 2;
             floorMesh.position.set(MAP_SIZE_X, 0, MAP_SIZE_Y);
@@ -544,7 +567,7 @@ function wireGuestRoom(session){
             const transform=new THREE.Matrix4();let wallIndex=0,pillarIndex=0;
             // Player/map coordinates convert to world coordinates with +1, so
             // cell x occupies world 2x+1..2x+3 and is centred at 2x+2.
-            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]){transform.makeTranslation((x+1)*2,BUILDING_HEIGHT/2,(y+1)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
+            for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++)if(MAP[y][x]===1||MAP[y][x]===2){transform.makeTranslation((x+1)*2,BUILDING_HEIGHT/2,(y+1)*2);if(MAP[y][x]===1)walls.setMatrixAt(wallIndex++,transform);else pillars.setMatrixAt(pillarIndex++,transform)}
             walls.instanceMatrix.needsUpdate=true;pillars.instanceMatrix.needsUpdate=true;wallGroup.add(walls,pillars);scene.add(wallGroup);
 
             // Short, floor-specific partitions turn each storey into a different
@@ -571,7 +594,7 @@ function wireGuestRoom(session){
             const deckMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#383c41',true),color:0xb8bcc1,side:THREE.DoubleSide,shininess:5});
             const deckGeometry=new THREE.ExtrudeGeometry(deckShape,{depth:.65,bevelEnabled:false});
             for(const floorY of FLOOR_LEVELS.slice(1)){const deck=new THREE.Mesh(deckGeometry,deckMaterial);deck.rotation.x=Math.PI/2;deck.position.set(MAP_SIZE_X,floorY+.32,MAP_SIZE_Y);scene.add(deck)}
-            if(MAP_ID==='garage'){
+            if(IS_GARAGE){
                 const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
                 ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,BUILDING_HEIGHT,MAP_SIZE_Y);scene.add(ceiling);
             }
@@ -610,9 +633,9 @@ function wireGuestRoom(session){
             const lampPositions=[];for(let z=14;z<MAP_SIZE_Y*2-10;z+=24)for(let x=14;x<MAP_SIZE_X*2-10;x+=28)lampPositions.push([x,z]);
             const lampGeo=new THREE.BoxGeometry(8,.10,.65),lampMat=new THREE.MeshBasicMaterial({color:0xeaf6dd});
             const allLampPositions=FLOOR_LEVELS.flatMap(floorY=>lampPositions.map(([x,z])=>[x,floorY+7.7,z]));
-            if(MAP_ID==='garage'){const garageLamps=new THREE.InstancedMesh(lampGeo,lampMat,allLampPositions.length);allLampPositions.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);garageLamps.setMatrixAt(i,transform)});garageLamps.instanceMatrix.needsUpdate=true;scene.add(garageLamps)}
+            if(IS_GARAGE){const garageLamps=new THREE.InstancedMesh(lampGeo,lampMat,allLampPositions.length);allLampPositions.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);garageLamps.setMatrixAt(i,transform)});garageLamps.instanceMatrix.needsUpdate=true;scene.add(garageLamps)}
 
-            if(MAP_ID==='annex'){
+            if(IS_DOCKS){
                 const containerGeo=new THREE.BoxGeometry(1,1,1),containerGroups=new Map();
                 for(const c of YARD_CONTAINERS){
                     const levels=Math.max(1,Math.round(c.h/2.6));
@@ -642,6 +665,42 @@ function wireGuestRoom(session){
                 }
                 const water=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,22),new THREE.MeshPhongMaterial({color:0x244f64,shininess:75}));
                 water.rotation.x=-Math.PI/2;water.position.set(MAP_SIZE_X,.02,MAP_SIZE_Y*2+10);scene.add(water);
+                // Real terminals are organised around truck corridors, gates and
+                // quay cranes. These lightweight props keep the parkour routes but
+                // make the yard read as working dock infrastructure.
+                const laneMat=new THREE.MeshBasicMaterial({color:0xe8d36b}),whiteMat=new THREE.MeshBasicMaterial({color:0xe7ecec});
+                for(const x of [35,70,105,140,175,210,245]){const lane=new THREE.Mesh(new THREE.BoxGeometry(.18,.035,150),laneMat);lane.position.set(x,.045,98);scene.add(lane)}
+                for(let z=20;z<180;z+=22){const dash=new THREE.Mesh(new THREE.BoxGeometry(7,.04,.3),whiteMat);dash.position.set(140,.05,z);scene.add(dash)}
+                const steel=new THREE.MeshPhongMaterial({color:0xd39a2f,shininess:20}),darkSteel=new THREE.MeshPhongMaterial({color:0x26313a});
+                for(const craneX of [48,140,232]){
+                    const crane=new THREE.Group();
+                    for(const side of [-1,1]){const leg=new THREE.Mesh(new THREE.BoxGeometry(2.1,28,2.1),steel);leg.position.set(side*13,14,0);crane.add(leg)}
+                    const beam=new THREE.Mesh(new THREE.BoxGeometry(35,2.2,2.3),steel);beam.position.y=27;crane.add(beam);
+                    const boom=new THREE.Mesh(new THREE.BoxGeometry(2,2,32),steel);boom.position.set(0,27,15);crane.add(boom);
+                    const trolley=new THREE.Mesh(new THREE.BoxGeometry(4,2.3,4),darkSteel);trolley.position.set(0,25,13);crane.add(trolley);
+                    crane.position.set(craneX,0,MAP_SIZE_Y*2-5);scene.add(crane);
+                }
+                const boothMat=new THREE.MeshPhongMaterial({color:0xd8d4c7}),glassMat=new THREE.MeshPhongMaterial({color:0x31586c,shininess:80});
+                for(let i=0;i<5;i++){const booth=new THREE.Mesh(new THREE.BoxGeometry(5,3.4,7),boothMat);booth.position.set(18+i*12,1.7,8);scene.add(booth);const windowPane=new THREE.Mesh(new THREE.BoxGeometry(3.6,1.4,.12),glassMat);windowPane.position.set(18+i*12,2.1,4.44);scene.add(windowPane)}
+                for(const [x,z,color] of [[42,53,0xd8d4c7],[135,68,0x2d6486],[218,116,0xb94437],[164,160,0xd0a22b]]){
+                    const cab=new THREE.Mesh(new THREE.BoxGeometry(4.2,3.2,5.5),new THREE.MeshPhongMaterial({color}));cab.position.set(x,1.65,z);scene.add(cab);
+                    const trailer=new THREE.Mesh(new THREE.BoxGeometry(5,4.8,16),new THREE.MeshPhongMaterial({color:0xd4d7d6}));trailer.position.set(x,2.5,z+10);scene.add(trailer);
+                }
+            }
+
+            if(SCENERY_BOXES.length){
+                const facadeMats=new Map();
+                for(const box of SCENERY_BOXES){
+                    if(!facadeMats.has(box.c))facadeMats.set(box.c,new THREE.MeshPhongMaterial({color:box.c,shininess:box.kind==='tokyo'?28:8}));
+                    const building=new THREE.Mesh(new THREE.BoxGeometry(box.w*2,box.h,box.d*2),facadeMats.get(box.c));building.position.set((box.x+box.w/2)*2+1,box.h/2,(box.y+box.d/2)*2+1);scene.add(building);
+                    const roof=new THREE.Mesh(new THREE.BoxGeometry(box.w*2+.25,.35,box.d*2+.25),new THREE.MeshBasicMaterial({color:0x20262d}));roof.position.set(building.position.x,box.h+.18,building.position.z);scene.add(roof);
+                    if(box.h>12){const windows=new THREE.Mesh(new THREE.BoxGeometry(box.w*1.45,box.h*.72,.08),new THREE.MeshBasicMaterial({color:box.kind==='tokyo'?0xf0c675:0xb8d5d8,transparent:true,opacity:.58}));windows.position.set(building.position.x,box.h*.52,building.position.z-box.d-0.05);scene.add(windows)}
+                }
+                if(MAP_ID==='tokyo'){
+                    const tower=new THREE.Group(),red=new THREE.MeshBasicMaterial({color:0xd44424}),white=new THREE.MeshBasicMaterial({color:0xe8e4d8});
+                    for(const [size,y,color] of [[12,6,red],[8,17,white],[5,28,red],[2.5,40,white]]){const tier=new THREE.Mesh(new THREE.CylinderGeometry(size*.35,size*.5,12,6),color);tier.position.y=y;tower.add(tier)}
+                    tower.position.set(MAP_SIZE_X,0,MAP_SIZE_Y);scene.add(tower);
+                }
             }
 
             // Varied low-poly hatchbacks, saloons, SUVs and vans fill the bays.
@@ -664,7 +723,8 @@ function wireGuestRoom(session){
 
             // Start away from the centre so every round opens differently.
             respawnSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&!rampAt(x,y)&&!yardContainerAt(x+.5,y+.5)&&!yardRampAt(x+.5,y+.5)&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)respawnSpawns.push([x+.5,y+.5]);
-            const spawn=MAP_ID==='annex'?[7.25,26.5]:respawnSpawns[Math.floor(Math.random()*respawnSpawns.length)];
+            const authoredSpawns={annex:[7.25,26.5],manhattan:[70,48],tokyo:[70,30],training:[70,48]};
+            const spawn=authoredSpawns[MAP_ID]||respawnSpawns[Math.floor(Math.random()*respawnSpawns.length)]||[3.5,3.5];
             player.position = new THREE.Vector3(spawn[0], 12, spawn[1]);
             player.x = spawn[0];
             player.y = spawn[1];
@@ -1218,7 +1278,8 @@ for (let b = 0; b < botSpawns.length; b++) {
             PartyRooms.watch('nicos-nextbots',rooms=>{
                 const list=document.getElementById('room-list');list.replaceChildren();
                 if(!rooms.length){const empty=document.createElement('div');empty.className='lobby-note';empty.textContent='No open games yet.';list.append(empty);return;}
-                rooms.forEach(room=>{const row=document.createElement('div');row.className='room-row';const label=document.createElement('span');const mapName=room.map==='annex'?'CONTAINER YARD':'CENTRAL GARAGE';label.textContent=`${room.name} · ${mapName} · ${room.players||1} player${room.players===1?'':'s'}${room.locked?' · PIN':''}`;const join=document.createElement('button');join.textContent='JOIN';join.onclick=()=>joinRoom(room,join);row.append(label,join);list.append(row);if(sessionStorage.getItem('nicos-pending-room')===room.id)join.click()});
+                const mapNames={garage:'CENTRAL GARAGE',annex:'CONTAINER TERMINAL',manhattan:'WEB WEAVERS — MANHATTAN',tokyo:'TOKYO DRIFT — TOKYO',training:'TOKYO DRIFT — BLANK MAP'};
+                rooms.forEach(room=>{const row=document.createElement('div');row.className='room-row';const label=document.createElement('span');const mapName=mapNames[room.map]||mapNames.garage;label.textContent=`${room.name} · ${mapName} · ${room.players||1} player${room.players===1?'':'s'}${room.locked?' · PIN':''}`;const join=document.createElement('button');join.textContent='JOIN';join.onclick=()=>joinRoom(room,join);row.append(label,join);list.append(row);if(sessionStorage.getItem('nicos-pending-room')===room.id)join.click()});
             },()=>lobbyStatus('Room list unavailable. Check your connection.'));
         }
 
