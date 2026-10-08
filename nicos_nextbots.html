@@ -125,7 +125,7 @@
         .map-picker{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px;margin-top:12px;color:#aaa;font-size:.78rem}.map-picker select{width:100%;border:1px solid #75683e;background:#101214;color:#fff;padding:10px;font:inherit}
         @media(max-width:560px){.lobby-card{padding:24px}.lobby-fields,.settings-grid,.keybind-list,.panel-actions{grid-template-columns:1fr}.controls-strip{gap:9px}}
         #mobile-controls{display:none;position:fixed;inset:0;z-index:120;pointer-events:none;touch-action:none}
-        .touch-stick{position:absolute;left:22px;bottom:26px;width:132px;height:132px;border:2px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(0,0,0,.28);pointer-events:auto}
+        .touch-stick{position:absolute;left:22px;bottom:26px;width:132px;height:132px;border:2px solid rgba(255,255,255,.35);border-radius:50%;background:rgba(0,0,0,.28);pointer-events:none;opacity:.16;transition:opacity .12s}
         .touch-knob{position:absolute;left:40px;top:40px;width:48px;height:48px;border-radius:50%;background:rgba(241,211,126,.75)}
         #touch-look{position:absolute;right:0;top:0;width:58%;height:100%;pointer-events:auto}
         .touch-button{position:absolute;right:24px;width:74px;height:74px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.45);color:#fff;font-weight:900;pointer-events:auto}
@@ -758,13 +758,16 @@ for (let b = 0; b < botSpawns.length; b++) {
         let touchMoveX=0,touchMoveY=0;
         function initTouchControls(){
             const stick=document.getElementById('touch-stick'),knob=document.getElementById('touch-knob'),look=document.getElementById('touch-look');let stickId=null,lookId=null,lastX=0,lastY=0;
-            const reset=()=>{touchMoveX=touchMoveY=0;knob.style.transform='translate(0,0)'};
-            stick.addEventListener('pointerdown',e=>{stickId=e.pointerId;stick.setPointerCapture(e.pointerId)});
-            stick.addEventListener('pointermove',e=>{if(e.pointerId!==stickId)return;const r=stick.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.hypot(dx,dy)||1,k=Math.min(42,len)/len;touchMoveX=dx/42*k;touchMoveY=dy/42*k;knob.style.transform=`translate(${dx*k}px,${dy*k}px)`});
-            stick.addEventListener('pointerup',reset);stick.addEventListener('pointercancel',reset);
+            const updateStick=e=>{const r=stick.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.hypot(dx,dy),k=Math.min(42,len)/(len||1);touchMoveX=len<5?0:dx/42*k;touchMoveY=len<5?0:dy/42*k;knob.style.transform=`translate(${dx*k}px,${dy*k}px)`};
+            const reset=e=>{if(e&&e.pointerId!==stickId)return;stickId=null;touchMoveX=touchMoveY=0;knob.style.transform='translate(0,0)';for(const key of ['position','left','top','bottom','opacity'])stick.style[key]=''};
+            canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||!gameStarted||e.clientX>=innerWidth/2||stickId!==null)return;e.preventDefault();stickId=e.pointerId;Object.assign(stick.style,{position:'fixed',left:`${e.clientX-66}px`,top:`${e.clientY-66}px`,bottom:'auto',opacity:'.88'});canvas.setPointerCapture(e.pointerId);updateStick(e)});
+            canvas.addEventListener('pointermove',e=>{if(e.pointerId===stickId)updateStick(e)});
+            for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,reset);
             look.addEventListener('pointerdown',e=>{lookId=e.pointerId;lastX=e.clientX;lastY=e.clientY;look.setPointerCapture(e.pointerId)});
             look.addEventListener('pointermove',e=>{if(e.pointerId!==lookId)return;player.dir-=(e.clientX-lastX)*.006*player.sensitivity;player.pitch=Math.max(-1.45,Math.min(1.45,player.pitch-(e.clientY-lastY)*.006*player.sensitivity));lastX=e.clientX;lastY=e.clientY});
+            for(const type of ['pointerup','pointercancel','lostpointercapture'])look.addEventListener(type,e=>{if(e.pointerId===lookId)lookId=null});
             document.getElementById('touch-jump').addEventListener('pointerdown',e=>{e.stopPropagation();if(!player.isJumping){player.isJumping=true;player.zVel=.20}});
+            addEventListener('blur',()=>reset());
         }
 
         function handleKeyDown(e) {
