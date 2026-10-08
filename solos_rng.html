@@ -330,6 +330,14 @@
             position: relative;
             overflow: hidden;
         }
+        .hourly-stock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:12px}
+        .stock-item{min-width:0;padding:10px 7px;text-align:center;background:#101116;border:1px solid #32343c;border-radius:8px}
+        .stock-item img{width:64px;height:64px;object-fit:contain;display:block;margin:0 auto 5px;filter:drop-shadow(0 5px 8px #0008)}
+        .stock-item strong{display:block;min-height:28px;font-size:.64rem;line-height:1.15}
+        .stock-item button{width:100%;padding:8px 3px;margin-top:7px;font-size:.58rem}
+        .item-image{width:2.4rem;height:2.4rem;object-fit:contain}
+        .item-emoji-display .item-image{width:5rem;height:5rem}
+        @media(max-width:560px){.hourly-stock{grid-template-columns:repeat(2,1fr)}.stock-item:last-child{grid-column:1/-1}}
 
         .rarity-table {
             width: 100%;
@@ -398,20 +406,14 @@
         <p style="color:var(--text-dim);font-size:.85rem;margin:0 0 20px;">Permanent upgrades. No fake checkout.</p>
 
         <div class="shop-card" style="border:1px solid var(--limited); background:linear-gradient(135deg, #f472b611, transparent);">
-            <div style="font-size:0.6rem; color:var(--limited); font-weight:bold;">ODDITY OF THE WEEK</div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h3 id="limited-item-name" class="rarity-Limited" style="margin:5px 0;">Pastel de Nata</h3>
-                    <button class="btn-primary" style="background:var(--limited); padding:10px 18px; font-size:0.75rem; width:auto;" onclick="buyLimitedItem()">Claim for 500</button>
-                </div>
-                <div id="limited-item-emoji" style="font-size:3rem; filter:drop-shadow(0 0 10px var(--limited));">🧁</div>
-            </div>
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:center"><div style="font-size:0.6rem;color:var(--limited);font-weight:bold">HOURLY ODDITIES · ONE EACH</div><div id="stock-timer" style="font-size:.58rem;color:var(--text-dim)"></div></div>
+            <div class="hourly-stock" id="hourly-stock"></div>
         </div>
 
         <div class="shop-card"><h3>🧲 Luck magnet <span id="luck-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Slightly improves every rare drop. Maximum level 10.</p><button class="btn-primary" id="luck-upgrade-btn" onclick="buyUpgrade('luck')">Upgrade · <span id="luck-price">150</span></button></div>
         <div class="shop-card"><h3>🎒 Bigger bag <span id="bag-level" style="color:var(--text-dim)"></span></h3><p style="color:var(--text-dim);font-size:.8rem">Adds four inventory spaces.</p><button class="btn-primary" onclick="buyUpgrade('bag')">Upgrade · <span id="bag-price">120</span></button></div>
         <div class="shop-card"><h3>⚡ Roll accelerator <span id="speed-level" style="color:var(--text-dim)"></span></h3><p id="speed-description" style="color:var(--text-dim);font-size:.8rem">Removes 0.1 seconds from every roll. Level 10 is instant.</p><button class="btn-primary" id="speed-upgrade-btn" onclick="buyUpgrade('speed')">Upgrade · <span id="speed-price">100</span></button></div>
-        <div class="shop-card"><h3>📦 Bulk pull permits</h3><p style="color:var(--text-dim);font-size:.8rem">Permanently unlock faster bulk pulls. You need a bag large enough to hold the entire pull before buying or using one.</p><div id="bulk-permit-buttons" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><button class="btn-primary" id="unlock-50-btn" onclick="buyBulkUnlock(50)">Unlock Roll 50 · 1,500</button><button class="btn-primary" id="unlock-100-btn" onclick="buyBulkUnlock(100)">Unlock Roll 100 · 3,000</button><button class="btn-primary" id="unlock-500-btn" onclick="buyBulkUnlock(500)">Unlock Roll 500 · 10,000</button><button class="btn-primary" id="unlock-1000-btn" onclick="buyBulkUnlock(1000)">Unlock Roll 1,000 · 25,000</button><button class="btn-primary" id="unlock-10000-btn" onclick="buyBulkUnlock(10000)">Unlock Roll 10,000 · 100,000</button><button class="btn-primary" id="unlock-100000-btn" onclick="buyBulkUnlock(100000)">Unlock Roll 100,000 · 500,000</button><button class="btn-primary" id="unlock-1000000-btn" style="grid-column:1/-1" onclick="buyBulkUnlock(1000000)">Unlock Roll 1,000,000 · 2,000,000</button></div></div>
+        <div class="shop-card"><h3>📦 Bulk pull permits</h3><p style="color:var(--text-dim);font-size:.8rem">Permits unlock in order. Expand your bag enough for the next pull, then buy its permit.</p><div id="bulk-permit-buttons"><button class="btn-primary" id="unlock-50-btn" onclick="buyBulkUnlock(50)">Unlock Roll 50 · 1,500</button><button class="btn-primary" id="unlock-100-btn" onclick="buyBulkUnlock(100)">Unlock Roll 100 · 3,000</button><button class="btn-primary" id="unlock-500-btn" onclick="buyBulkUnlock(500)">Unlock Roll 500 · 10,000</button><button class="btn-primary" id="unlock-1000-btn" onclick="buyBulkUnlock(1000)">Unlock Roll 1,000 · 25,000</button><button class="btn-primary" id="unlock-10000-btn" onclick="buyBulkUnlock(10000)">Unlock Roll 10,000 · 100,000</button><button class="btn-primary" id="unlock-100000-btn" onclick="buyBulkUnlock(100000)">Unlock Roll 100,000 · 500,000</button><button class="btn-primary" id="unlock-1000000-btn" onclick="buyBulkUnlock(1000000)">Unlock Roll 1,000,000 · 2,000,000</button></div></div>
         <div class="shop-card"><h3>🧹 Broke?</h3><p style="color:var(--text-dim);font-size:.8rem">A scrap run gives ten pulls every five minutes.</p><button class="btn-primary" id="scrap-btn" onclick="scrapRun()">Scrap run · +100</button></div>
     </div>
 
@@ -594,10 +596,15 @@
     const lootPool = generatePool();
     const RARITY_POOLS=Object.groupBy?Object.groupBy(lootPool,item=>item.rarity):lootPool.reduce((groups,item)=>((groups[item.rarity]??=[]).push(item),groups),{});
     const limitedPool = [
-        { name: "Pastel de Nata", emoji: "🧁", price: 500, rarity: "Limited" },
-        { name: "Chronos Key", emoji: "⏳", price: 500, rarity: "Limited" },
-        { name: "Golden Sardine", emoji: "🐟", price: 750, rarity: "Limited" }
+        {name:"Pastel de Nata",image:"./assets/solos-rng/pastel-de-nata.png",price:500,rarity:"Limited",sell:250},
+        {name:"Golden Sardine",image:"./assets/solos-rng/golden-sardine.png",price:750,rarity:"Limited",sell:375},
+        {name:"Chronos Key",image:"./assets/solos-rng/chronos-key.png",price:900,rarity:"Limited",sell:450},
+        {name:"Azulejo Relic",image:"./assets/solos-rng/azulejo-relic.png",price:650,rarity:"Limited",sell:325},
+        {name:"Cork Crown",image:"./assets/solos-rng/cork-crown.png",price:800,rarity:"Limited",sell:400}
     ];
+    const stockHour=()=>Math.floor(Date.now()/3600000),stockKey=()=>`rng_hourly_stock_${stockHour()}`;
+    const purchasedStock=()=>new Set(JSON.parse(localStorage.getItem(stockKey())||'[]'));
+    const itemVisual=(item,className='item-image')=>item.image?`<img class="${className}" src="${item.image}" alt="">`:`<span>${item.emoji}</span>`;
 
     let state = {
         coins: Number.isFinite(parseInt(localStorage.getItem('rng_coins')))?parseInt(localStorage.getItem('rng_coins')):300,
@@ -714,7 +721,7 @@
             last = item;
         }
 
-        document.getElementById('item-emoji').innerText = last.emoji;
+        document.getElementById('item-emoji').innerHTML = itemVisual(last);
         document.getElementById('item-name').innerText = last.name;
         document.getElementById('item-name').className = 'item-name';
         document.getElementById('item-rarity').innerText = last.rarity;
@@ -738,10 +745,11 @@
         document.getElementById('speed-price').innerText=state.speed>=MAX_SPEED_LEVEL?'MAX':UPGRADE_BASE_PRICES.speed*(state.speed+1);
         speedButton.disabled=state.speed>=MAX_SPEED_LEVEL;
         const hasBulk=BULK_COUNTS.some(count=>state.bulkUnlocks[count]);
+        const nextBulk=BULK_COUNTS.find(count=>!state.bulkUnlocks[count]);
         BULK_COUNTS.forEach(count=>{
             const unlocked=state.bulkUnlocks[count],formatted=count.toLocaleString('en-GB');
             document.getElementById(`roll-${count}-btn`).style.display=unlocked?'block':'none';
-            const unlock=document.getElementById(`unlock-${count}-btn`),bagReady=state.maxInv>=count;unlock.disabled=unlocked||!bagReady;
+            const unlock=document.getElementById(`unlock-${count}-btn`),bagReady=state.maxInv>=count;unlock.style.display=count===nextBulk?'block':'none';unlock.disabled=!bagReady;
             unlock.textContent=unlocked?`Roll ${formatted} unlocked`:bagReady?`Unlock Roll ${formatted} · ${BULK_UNLOCK_PRICES[count].toLocaleString('en-GB')}`:`Need ${formatted} bag slots`;
         });
         document.getElementById('bulk-roll-buttons').style.display=hasBulk?'grid':'none';
@@ -753,14 +761,11 @@
             const d = document.createElement('div');
             d.className = 'inv-slot';
             d.style.setProperty('--slot-rarity', `var(--${item.rarity.toLowerCase()})`);
-            d.innerHTML = `<span class="inventory-emoji">${item.emoji}</span>`;
+            d.innerHTML = itemVisual(item,'inventory-emoji item-image');
             list.appendChild(d);
         });
 
-        const week = Math.ceil(new Date().getDate() / 7) % limitedPool.length;
-        const lim = limitedPool[week];
-        document.getElementById('limited-item-name').innerText = lim.name;
-        document.getElementById('limited-item-emoji').innerText = lim.emoji;
+        renderHourlyStock();
     }
 
     function hardReset() {
@@ -770,9 +775,9 @@
         }
     }
 
-    function buyLimitedItem() {
-        const week = Math.ceil(new Date().getDate() / 7) % limitedPool.length;
-        const item = { ...limitedPool[week], rarity: "Limited", sell: 250 };
+    function buyLimitedItem(index) {
+        const item={...limitedPool[index]},bought=purchasedStock();
+        if(bought.has(item.name))return notify('Already bought this hour');
         if (state.coins < item.price) return notify("Low Balance!");
         if (state.inventory.length >= state.maxInv) return notify("Inventory Full!");
         
@@ -780,16 +785,20 @@
         state.inventory.push(item);
         state.itemCounts[item.name]=(state.itemCounts[item.name]||0)+1;
         if (!state.collection.some(c => c.name === item.name)) state.collection.push(item);
+        bought.add(item.name);localStorage.setItem(stockKey(),JSON.stringify([...bought]));
         notify("Bought " + item.name + "!");
         save();
     }
+    function renderHourlyStock(){const grid=document.getElementById('hourly-stock');if(!grid)return;const bought=purchasedStock();grid.innerHTML=limitedPool.map((item,index)=>`<article class="stock-item">${itemVisual(item)}<strong>${item.name}</strong><button class="btn-primary" onclick="buyLimitedItem(${index})" ${bought.has(item.name)?'disabled':''}>${bought.has(item.name)?'SOLD':`${item.price.toLocaleString('en-GB')} coins`}</button></article>`).join('')}
+    function updateStockTimer(){const timer=document.getElementById('stock-timer');if(!timer)return;const remaining=3600000-Date.now()%3600000,minutes=Math.floor(remaining/60000),seconds=Math.floor(remaining%60000/1000);timer.textContent=`REFRESH ${minutes}:${String(seconds).padStart(2,'0')}`;if(stockKey()!==timer.dataset.key){timer.dataset.key=stockKey();renderHourlyStock()}}
+    setInterval(updateStockTimer,1000);updateStockTimer();
     function upgradePrice(type){if(type==='luck')return UPGRADE_BASE_PRICES.luck*(state.luck+1);if(type==='speed')return UPGRADE_BASE_PRICES.speed*(state.speed+1);return UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20}
     function buyUpgrade(type){if(type==='luck'&&state.luck>=MAX_LUCK_LEVEL)return notify('Luck is already maxed');if(type==='speed'&&state.speed>=MAX_SPEED_LEVEL)return notify('Roll speed is already instant');const price=upgradePrice(type);if(state.coins<price)return notify('Not enough coins');state.coins-=price;if(type==='luck')state.luck++;else if(type==='speed')state.speed++;else state.maxInv+=4;notify(type==='luck'?'Luck improved':type==='speed'?(state.speed===MAX_SPEED_LEVEL?'Rolling is now instant':'Rolling sped up by 0.1s'):'Bag expanded');save();}
-    function buyBulkUnlock(count){const price=BULK_UNLOCK_PRICES[count];if(!price)return;if(state.bulkUnlocks[count])return notify(`Roll ${count.toLocaleString('en-GB')} is already unlocked`);if(state.maxInv<count)return notify(`Expand your bag to ${count.toLocaleString('en-GB')} slots first`);if(state.coins<price)return notify('Not enough coins');state.coins-=price;state.bulkUnlocks[count]=true;notify(`Roll ${count.toLocaleString('en-GB')} unlocked on the game screen`);save()}
+    function buyBulkUnlock(count){const price=BULK_UNLOCK_PRICES[count],next=BULK_COUNTS.find(value=>!state.bulkUnlocks[value]);if(!price)return;if(count!==next)return notify('Unlock the previous bulk permit first');if(state.maxInv<count)return notify(`Expand your bag to ${count.toLocaleString('en-GB')} slots first`);if(state.coins<price)return notify('Not enough coins');state.coins-=price;state.bulkUnlocks[count]=true;notify(`Roll ${count.toLocaleString('en-GB')} unlocked on the game screen`);save()}
     function scrapRun(){const wait=300000-(Date.now()-state.lastScrap);if(state.coins>=SPIN_COST)return notify('Use this when you cannot afford a pull');if(wait>0)return notify(`Scrap run ready in ${Math.ceil(wait/60000)}m`);state.lastScrap=Date.now();state.coins+=100;notify('Recovered 100 coins');save();}
 
     function openCollectionDetail(item) {
-        document.getElementById('collection-detail-emoji').textContent=item.emoji;
+        document.getElementById('collection-detail-emoji').innerHTML=itemVisual(item);
         document.getElementById('collection-detail-name').textContent=item.name;
         const rarity=document.getElementById('collection-detail-rarity');
         rarity.textContent=item.rarity;
@@ -817,7 +826,7 @@
             if (owned) {
                 d.classList.add('owned');
                 d.style.borderColor = `var(--${item.rarity.toLowerCase()})`;
-                d.innerHTML = `${item.emoji}`;
+                d.innerHTML = itemVisual(item);
                 d.tabIndex=0;
                 d.setAttribute('role','button');
                 d.setAttribute('aria-label',`View ${item.name}`);
