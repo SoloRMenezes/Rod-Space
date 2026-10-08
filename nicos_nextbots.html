@@ -134,6 +134,7 @@
         .lobby-card button,.lobby-card input{font:inherit;border:1px solid #75683e;background:#101214;color:#fff;padding:11px}.lobby-card button{cursor:pointer;font-weight:700}.lobby-card button:hover{border-color:#f1d37e;color:#f1d37e}
         #solo-start{background:#f1d37e;color:#111;border-color:#f1d37e}#solo-start:hover{background:#fff0a9;color:#111}.home-link{display:inline-block;margin-top:18px;color:#aaa;font-size:.8rem;text-decoration:none}.home-link:hover{color:#fff}.controls-strip{display:flex;gap:16px;flex-wrap:wrap;padding-top:18px;margin-top:18px;border-top:1px solid #353535;color:#999;font-size:.76rem}.controls-strip b{color:#eee}
         #room-panel{display:none;margin-top:16px}.room-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #353535;padding:10px 0}.room-row button{padding:7px 12px}
+        #waiting-panel{display:none;margin-top:18px;border-top:1px solid #75683e;padding-top:18px}.waiting-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.room-code{color:#f1d37e;font-size:1.15rem;letter-spacing:.12em}.waiting-title{font-size:1.35rem;font-weight:900;margin-bottom:4px}.player-list{display:grid;gap:7px;margin:16px 0}.player-slot{display:flex;justify-content:space-between;border:1px solid #353535;background:#101214;padding:10px 12px}.player-slot span:last-child{color:#aaa;font-size:.78rem}.waiting-actions{display:flex;gap:8px}.waiting-actions button{flex:1}#room-start{background:#f1d37e;color:#111;border-color:#f1d37e}#room-start:hover{background:#fff0a9;color:#111}
         .lobby-fields{display:grid;grid-template-columns:1fr 120px;gap:8px;margin-top:12px}.lobby-note{color:#aaa;font-size:.82rem;margin-top:10px}#lobby-status{min-height:1.3em;color:#f1d37e;margin-top:10px}
         .map-picker{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:10px;margin-top:12px;color:#aaa;font-size:.78rem}.map-picker select{width:100%;border:1px solid #75683e;background:#101214;color:#fff;padding:10px;font:inherit}
         @media(max-width:560px){.lobby-card{padding:24px}.lobby-actions{grid-template-columns:1fr}.lobby-fields{grid-template-columns:1fr}.controls-strip{gap:9px}}
@@ -154,12 +155,13 @@
         <!-- Start Screen Overlay -->
         <div id="start-screen" style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;">
             <div class="lobby-card">
-                <div class="menu-kicker">PARKING GARAGE</div>
-                <h1>NICO'S<br>NEXTBOTS</h1><p class="menu-subtitle">Thirty seconds to run. Then the garage starts hunting you.</p>
+                <div class="menu-kicker" id="menu-kicker">PARKING GARAGE</div>
+                <h1>NICO'S<br>NEXTBOTS</h1><p class="menu-subtitle" id="menu-subtitle">Thirty seconds to run. Then the garage starts hunting you.</p>
                 <div class="lobby-fields"><input id="player-name" maxlength="18" placeholder="Your name"><input id="room-pin" inputmode="numeric" maxlength="4" placeholder="PIN optional"></div>
-                <label class="map-picker">MAP<select id="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">FREIGHT ANNEX</option></select></label>
+                <label class="map-picker">MAP<select id="map-select"><option value="garage">CENTRAL GARAGE</option><option value="annex">DOCKSIDE CONTAINER YARD</option></select></label>
                 <div class="lobby-actions"><button id="solo-start">PLAY SOLO</button><button id="host-start">HOST GAME</button><button id="join-open">JOIN GAME</button></div>
                 <div id="room-panel"><strong>OPEN GAMES</strong><div id="room-list"></div></div>
+                <div id="waiting-panel"><div class="waiting-head"><div><div class="waiting-title">WAITING ROOM</div><div class="lobby-note" id="waiting-message">Waiting for the host to start.</div></div><div class="room-code" id="waiting-code"></div></div><div class="player-list" id="waiting-players"></div><div class="waiting-actions"><button id="room-leave">LEAVE ROOM</button><button id="room-start">START GAME</button></div></div>
                 <div id="lobby-status"></div>
                 <div class="controls-strip"><span><b>WASD</b> MOVE</span><span><b>ARROWS</b> LOOK</span><span><b>SPACE</b> JUMP</span><span><b>CTRL</b> MOUSE LOCK</span></div>
                 <a class="home-link" href="./index.html">← ROD SPACE</a>
@@ -224,12 +226,16 @@
         // Player (1.5,1.5) and bot (10.5,10.5) are valid open positions (multiplied by 2 for world coords).
         const MAP_ID=new URLSearchParams(location.search).get('map')==='annex'?'annex':'garage';
         mapSelect.value=MAP_ID;
+        if(MAP_ID==='annex'){
+            document.getElementById('menu-kicker').textContent='DOCKSIDE CONTAINER YARD';
+            document.getElementById('menu-subtitle').textContent='Thirty seconds to find a route across the stacks. Then the yard starts hunting you.';
+        }
         mapSelect.addEventListener('change',()=>{
             const url=new URL(location.href);url.searchParams.set('map',mapSelect.value);location.href=url;
         });
 const MAP_LAYOUTS={
     garage:{vertical:[35,70,105],horizontal:[24,48,72],verticalDoors:[12,42,82],horizontalDoors:[18,53,88,122]},
-    annex:{vertical:[28,56,84,112],horizontal:[32,64],verticalDoors:[17,48,78],horizontalDoors:[12,42,70,98,128]}
+    annex:{vertical:[],horizontal:[],verticalDoors:[],horizontalDoors:[]}
 };
 const MAP = (() => {
             const width = 140, height = 96;
@@ -245,13 +251,13 @@ const MAP = (() => {
                 for(let yy=y-3;yy<=y+3;yy++)for(let xx=x-3;xx<=x+3;xx++)if(map[yy]?.[xx]===1)return false;
                 return true;
             };
-            for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0&&clearOfWall(x,y))map[y][x]=2;
+            if(MAP_ID==='garage')for(let y=10;y<height-8;y+=14)for(let x=10;x<width-8;x+=14)if(map[y][x]===0&&clearOfWall(x,y))map[y][x]=2;
             return map;
         })();
         const MAP_SIZE_Y = MAP.length;
         const MAP_SIZE_X = MAP[0].length;
         const FLOOR_HEIGHT=8;
-        const FLOOR_COUNT=5;
+        const FLOOR_COUNT=MAP_ID==='annex'?1:5;
         const FLOOR_LEVELS=Array.from({length:FLOOR_COUNT},(_,index)=>index*FLOOR_HEIGHT);
         const GARAGE_BARRIERS=[
             [[18,10,18,22],[50,31,64,31],[91,58,91,69],[112,82,128,82]],
@@ -267,19 +273,43 @@ const MAP = (() => {
             [[16,14,32,14],[50,51,65,51],[78,79,94,79],[118,35,118,48]],
             [[13,69,29,69],[45,25,61,25],[87,48,103,48],[114,83,132,83]]
         ];
-        const FLOOR_BARRIERS=MAP_ID==='annex'?ANNEX_BARRIERS:GARAGE_BARRIERS;
-        const SPAWN_FLOOR_INDEX=2;
+        const FLOOR_BARRIERS=MAP_ID==='annex'?[[]]:GARAGE_BARRIERS;
+        const SPAWN_FLOOR_INDEX=MAP_ID==='annex'?0:2;
         const SPAWN_FLOOR_Y=FLOOR_LEVELS[SPAWN_FLOOR_INDEX];
-        const BUILDING_HEIGHT=FLOOR_COUNT*FLOOR_HEIGHT+3;
+        const BUILDING_HEIGHT=MAP_ID==='annex'?3.2:FLOOR_COUNT*FLOOR_HEIGHT+3;
         const clampFloorIndex=index=>Math.max(0,Math.min(FLOOR_COUNT-1,index));
         const floorIndexAtHeight=height=>clampFloorIndex(Math.round(height/FLOOR_HEIGHT));
         const floorBaseAtHeight=height=>FLOOR_LEVELS[floorIndexAtHeight(height)];
-        const RAMPS=[
+        const RAMPS=MAP_ID==='annex'?[]:[
             {x1:7,x2:27,y1:7,y2:14,reverse:false},{x1:113,x2:133,y1:7,y2:14,reverse:true},
             {x1:7,x2:27,y1:44,y2:51,reverse:false},{x1:113,x2:133,y1:44,y2:51,reverse:true},
             {x1:7,x2:27,y1:81,y2:88,reverse:false},{x1:113,x2:133,y1:81,y2:88,reverse:true}
         ];
+        const YARD_CONTAINERS=MAP_ID==='annex'?[
+            {x:9,y:10,w:15,d:3,h:2.6,c:0xb93b32},{x:9,y:15,w:15,d:3,h:2.6,c:0x305f8d},
+            {x:30,y:11,w:12,d:3,h:2.6,c:0xd08a24},{x:43.5,y:11,w:12,d:3,h:2.6,c:0x32745a},{x:57,y:11,w:12,d:3,h:2.6,c:0xa94732},
+            {x:79,y:9,w:15,d:3,h:2.6,c:0x315f8d},{x:79,y:14,w:15,d:3,h:5.2,c:0xc05235},
+            {x:101,y:11,w:15,d:3,h:2.6,c:0xd18b27},{x:119,y:11,w:11,d:3,h:2.6,c:0x3d745c},
+            {x:18,y:36,w:12,d:3,h:2.6,c:0x365f8b},{x:31.5,y:36,w:12,d:3,h:2.6,c:0xb84035},{x:45,y:36,w:12,d:3,h:2.6,c:0xd08a24},
+            {x:66,y:31,w:3,d:15,h:2.6,c:0x33735a},{x:72,y:31,w:3,d:15,h:2.6,c:0xa54235},
+            {x:91,y:34,w:15,d:3,h:2.6,c:0x315f8c},{x:108,y:34,w:15,d:3,h:5.2,c:0xc98a29},
+            {x:14,y:61,w:15,d:3,h:2.6,c:0xb33d35},{x:31,y:61,w:15,d:3,h:2.6,c:0x315f8b},
+            {x:53,y:57,w:3,d:16,h:2.6,c:0xd08a24},{x:59,y:57,w:3,d:16,h:2.6,c:0x36755c},
+            {x:80,y:60,w:13,d:3,h:2.6,c:0xb54134},{x:94.5,y:60,w:13,d:3,h:2.6,c:0x315e8b},{x:109,y:60,w:13,d:3,h:2.6,c:0xd08a24},
+            {x:18,y:81,w:15,d:3,h:2.6,c:0x34745a},{x:39,y:79,w:15,d:3,h:5.2,c:0xb73f35},
+            {x:65,y:80,w:13,d:3,h:2.6,c:0x315f8b},{x:79.5,y:80,w:13,d:3,h:2.6,c:0xd08a24},{x:94,y:80,w:13,d:3,h:2.6,c:0x3b745b},
+            {x:116,y:77,w:3,d:12,h:2.6,c:0xb74334}
+        ]:[];
+        const YARD_ACCESS_RAMPS=MAP_ID==='annex'?[
+            {x1:6,x2:9,y1:10,y2:13,h:2.6,axis:'x'},
+            {x1:15,x2:18,y1:36,y2:39,h:2.6,axis:'x'},
+            {x1:76,x2:79,y1:9,y2:12,h:2.6,axis:'x'},
+            {x1:88,x2:91,y1:34,y2:37,h:2.6,axis:'x'},
+            {x1:77,x2:80,y1:60,y2:63,h:2.6,axis:'x'},
+            {x1:62,x2:65,y1:80,y2:83,h:2.6,axis:'x'}
+        ]:[];
         const FLOOR_CAR_SPOTS=FLOOR_LEVELS.map((_,floor)=>{
+            if(MAP_ID==='annex')return [];
             const rows=[[17,40,79],[15,38,62,81],[18,42,77],[14,36,60,83],[17,40,64,80]][floor],spots=[];
             const hitsBarrier=(x,y)=>FLOOR_BARRIERS[floor].some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-x1)<3&&y>=Math.min(y1,y2)-3&&y<=Math.max(y1,y2)+3:Math.abs(y-y1)<3&&x>=Math.min(x1,x2)-3&&x<=Math.max(x1,x2)+3);
             rows.forEach((cy,row)=>{for(let cx=10+(row%2)*8;cx<MAP_SIZE_X-9;cx+=13+((floor+row)%3))if(MAP[cy][cx]===0&&Math.abs(cx-70)>10&&!rampAt(cx,cy)&&!hitsBarrier(cx,cy))spots.push([cx,cy,(floor+row+cx)%4]);});
@@ -309,7 +339,14 @@ const MAP = (() => {
             const tier=Math.max(0,Math.min(FLOOR_COUNT-2,Math.round((current-t*FLOOR_HEIGHT)/FLOOR_HEIGHT)));
             return tier*FLOOR_HEIGHT+t*FLOOR_HEIGHT;
         }
-        function surfaceHeightAt(x,y,current=0){return rampSurfaceHeightAt(x,y,current)}
+        const yardRampAt=(x,y)=>YARD_ACCESS_RAMPS.find(r=>x>=r.x1&&x<=r.x2&&y>=r.y1&&y<=r.y2);
+        const yardContainerAt=(x,y)=>YARD_CONTAINERS.find(c=>x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.d);
+        function yardSurfaceHeightAt(x,y){
+            const access=yardRampAt(x,y);
+            if(access){const t=THREE.MathUtils.clamp((x-access.x1)/(access.x2-access.x1),0,1);return t*access.h}
+            return yardContainerAt(x,y)?.h||0;
+        }
+        function surfaceHeightAt(x,y,current=0){return MAP_ID==='annex'?yardSurfaceHeightAt(x,y):rampSurfaceHeightAt(x,y,current)}
         function floorBarrierAt(x,y,floorY){
             const segments=FLOOR_BARRIERS[floorIndexAtHeight(floorY)]||[];
             return segments.some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-x1)<.55&&y>=Math.min(y1,y2)-.5&&y<=Math.max(y1,y2)+.5:Math.abs(y-y1)<.55&&x>=Math.min(x1,x2)-.5&&x<=Math.max(x1,x2)+.5);
@@ -319,9 +356,11 @@ const MAP = (() => {
             const map=MAP.map(row=>row.slice());
             for(let y=1;y<MAP_SIZE_Y-1;y++)for(let x=1;x<MAP_SIZE_X-1;x++)if(floorBarrierAt(x,y,floorY))map[y][x]=1;
             FLOOR_CAR_SPOTS[floor].forEach(([cx,cy])=>{for(let y=Math.floor(cy-2);y<=Math.ceil(cy+2);y++)for(let x=Math.floor(cx-1);x<=Math.ceil(cx+1);x++)if(map[y])map[y][x]=1;});
+            if(MAP_ID==='annex')for(const c of YARD_CONTAINERS)for(let y=Math.floor(c.y);y<=Math.ceil(c.y+c.d);y++)for(let x=Math.floor(c.x);x<=Math.ceil(c.x+c.w);x++)if(map[y])map[y][x]=1;
             return map;
         });
         function beginRampRoute(bot,now){
+            if(!RAMPS.length){bot.nextFloorChange=Infinity;return}
             const ramp=RAMPS[Math.floor(Math.random()*RAMPS.length)],midY=(ramp.y1+ramp.y2)/2;
             const low={x:ramp.reverse?ramp.x2-.6:ramp.x1+.6,y:midY};
             const high={x:ramp.reverse?ramp.x1+.6:ramp.x2-.6,y:midY};
@@ -337,7 +376,7 @@ const MAP = (() => {
 const botSpawns=[];
 const BOT_CENTER_Y=3.9;
 // Keep roughly the original total bot count while spreading them across five floors.
-const centralBotCells=[];for(let y=4;y<MAP_SIZE_Y-4;y++)for(let x=4;x<MAP_SIZE_X-4;x++){const d=Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2);if(MAP[y][x]===0&&d>9&&d<24)centralBotCells.push([x,y])}
+const centralBotCells=[];for(let y=4;y<MAP_SIZE_Y-4;y++)for(let x=4;x<MAP_SIZE_X-4;x++){const d=Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2);if(MAP[y][x]===0&&!yardContainerAt(x,y)&&d>9&&d<24)centralBotCells.push([x,y])}
 const sharedBotCell=centralBotCells.reduce((best,cell)=>Math.hypot(cell[0]-(MAP_SIZE_X/2+16),cell[1]-MAP_SIZE_Y/2)<Math.hypot(best[0]-(MAP_SIZE_X/2+16),best[1]-MAP_SIZE_Y/2)?cell:best);
 for(const floorY of FLOOR_LEVELS)for(let i=0;i<5;i++){
     const [x,y]=sharedBotCell;
@@ -380,6 +419,7 @@ let botReleaseAt=Infinity;
 let invulnerableUntil=0;
 let respawnSpawns=[];
 let netRole='solo',roomSession=null,lastNetSend=0,roomsWatching=false;
+const lobbyPlayers=new Map();
 const skipVotes=new Set();let skipVoteSent=false,skipVoteCount=0,skipVoteRequired=1;
 const remotePlayers=new Map();
 let webWeaversAvatarTemplate=null;
@@ -430,11 +470,12 @@ function networkTick(now){
     }else roomSession.client.send('player',state);
 }
 function wireHostRoom(session){
-    session.lan.on('message',({peer,data})=>{if(data.type==='player')applyPlayerPacket(peer.meta.id,data.payload,peer.meta.name);else if(data.type==='skip-vote'&&performance.now()<botReleaseAt){skipVotes.add(peer.meta.id);checkSkipVote()}});
-    session.lan.on('close',peer=>{remotePlayers.get(peer.meta.id)?.mesh.removeFromParent();remotePlayers.delete(peer.meta.id);skipVotes.delete(peer.meta.id);checkSkipVote()});
+    session.lan.on('message',({peer,data})=>{if(data.type==='lobby-hello'){lobbyPlayers.set(peer.meta.id,data.payload.name||peer.meta.name||'Player');broadcastLobby()}else if(data.type==='player')applyPlayerPacket(peer.meta.id,data.payload,peer.meta.name);else if(data.type==='skip-vote'&&performance.now()<botReleaseAt){skipVotes.add(peer.meta.id);checkSkipVote()}});
+    session.lan.on('open',peer=>{lobbyPlayers.set(peer.meta.id,peer.meta.name||'Player');broadcastLobby()});
+    session.lan.on('close',peer=>{remotePlayers.get(peer.meta.id)?.mesh.removeFromParent();remotePlayers.delete(peer.meta.id);lobbyPlayers.delete(peer.meta.id);skipVotes.delete(peer.meta.id);broadcastLobby();checkSkipVote()});
 }
 function wireGuestRoom(session){
-    session.client.on('message',({data})=>{if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;roundEndsAt=performance.now()+world.roundIn;
+    session.client.on('message',({data})=>{if(data.type==='lobby'){renderWaitingPlayers(data.payload.players);return}if(data.type==='start'){startGame();return}if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;roundEndsAt=performance.now()+world.roundIn;
         skipVoteCount=world.skipVotes||0;skipVoteRequired=world.skipRequired||1;updateSkipButton();
         world.players.filter(p=>p.id!=='host').forEach(p=>{if(p.id!==session.client.meta.peerId)applyPlayerPacket(p.id,p,p.name)});
         const host=world.players.find(p=>p.id==='host');if(host)applyPlayerPacket('host',host,host.name);
@@ -463,13 +504,13 @@ function wireGuestRoom(session){
             // High-DPI phone screens were rendering several times more pixels than
             // the display needs during play. Keep desktop sharp and mobile stable.
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobileRenderer?1:1.5));
-            renderer.setClearColor(0x15171a);
+            renderer.setClearColor(MAP_ID==='annex'?0x7894a6:0x15171a);
             renderer.setSize(window.innerWidth, window.innerHeight);
 
             // Lighting
-            ambientLight = new THREE.AmbientLight(0xd7deea, 0.62);
+            ambientLight = new THREE.AmbientLight(MAP_ID==='annex'?0xe8f2ff:0xd7deea, MAP_ID==='annex'?0.88:0.62);
             scene.add(ambientLight);
-            dirLight = new THREE.DirectionalLight(0xffffff, 0.18);
+            dirLight = new THREE.DirectionalLight(0xffffff, MAP_ID==='annex'?0.72:0.18);
             dirLight.position.set(0, 10, 0);
             scene.add(dirLight);
 
@@ -481,7 +522,7 @@ function wireGuestRoom(session){
                 if(lines){ctx.strokeStyle='rgba(10,12,15,.28)';ctx.lineWidth=3;ctx.strokeRect(1.5,1.5,253,253);ctx.beginPath();ctx.moveTo(0,128);ctx.lineTo(256,128);ctx.stroke()}
                 const texture=new THREE.CanvasTexture(tile);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(MAP_SIZE_X/7,MAP_SIZE_Y/7);texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());return texture;
             };
-            const floorMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture('#30343a',true),color:0xb8bcc1,shininess:7});
+            const floorMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture(MAP_ID==='annex'?'#41484e':'#30343a',true),color:MAP_ID==='annex'?0x8a9298:0xb8bcc1,shininess:7});
             floorMesh = new THREE.Mesh(floorGeo, floorMat);
             floorMesh.rotation.x = -Math.PI / 2;
             floorMesh.position.set(MAP_SIZE_X, 0, MAP_SIZE_Y);
@@ -527,8 +568,10 @@ function wireGuestRoom(session){
             const deckMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#383c41',true),color:0xb8bcc1,side:THREE.DoubleSide,shininess:5});
             const deckGeometry=new THREE.ExtrudeGeometry(deckShape,{depth:.65,bevelEnabled:false});
             for(const floorY of FLOOR_LEVELS.slice(1)){const deck=new THREE.Mesh(deckGeometry,deckMaterial);deck.rotation.x=Math.PI/2;deck.position.set(MAP_SIZE_X,floorY+.32,MAP_SIZE_Y);scene.add(deck)}
-            const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
-            ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,BUILDING_HEIGHT,MAP_SIZE_Y);scene.add(ceiling);
+            if(MAP_ID==='garage'){
+                const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,MAP_SIZE_Y*2),new THREE.MeshPhongMaterial({map:makeConcreteTexture('#555a61',true),color:0xaeb2b7,side:THREE.DoubleSide,shininess:2}));
+                ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,BUILDING_HEIGHT,MAP_SIZE_Y);scene.add(ceiling);
+            }
 
             const rampMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#55575a',true),color:0xb7b8b4,shininess:3});
             const railMat=new THREE.MeshPhongMaterial({color:0xd6d2c4,shininess:4});
@@ -569,7 +612,39 @@ function wireGuestRoom(session){
             const lampPositions=[];for(let z=14;z<MAP_SIZE_Y*2-10;z+=24)for(let x=14;x<MAP_SIZE_X*2-10;x+=28)lampPositions.push([x,z]);
             const lampGeo=new THREE.BoxGeometry(8,.10,.65),lampMat=new THREE.MeshBasicMaterial({color:0xeaf6dd});
             const allLampPositions=FLOOR_LEVELS.flatMap(floorY=>lampPositions.map(([x,z])=>[x,floorY+7.7,z]));
-            const garageLamps=new THREE.InstancedMesh(lampGeo,lampMat,allLampPositions.length);allLampPositions.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);garageLamps.setMatrixAt(i,transform)});garageLamps.instanceMatrix.needsUpdate=true;scene.add(garageLamps);
+            if(MAP_ID==='garage'){const garageLamps=new THREE.InstancedMesh(lampGeo,lampMat,allLampPositions.length);allLampPositions.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);garageLamps.setMatrixAt(i,transform)});garageLamps.instanceMatrix.needsUpdate=true;scene.add(garageLamps)}
+
+            if(MAP_ID==='annex'){
+                const containerGeo=new THREE.BoxGeometry(1,1,1),containerGroups=new Map();
+                for(const c of YARD_CONTAINERS){
+                    const levels=Math.max(1,Math.round(c.h/2.6));
+                    if(!containerGroups.has(c.c))containerGroups.set(c.c,[]);
+                    for(let level=0;level<levels;level++)containerGroups.get(c.c).push({...c,level});
+                }
+                for(const [color,items] of containerGroups){
+                    const material=new THREE.MeshPhongMaterial({color,shininess:18});
+                    const mesh=new THREE.InstancedMesh(containerGeo,material,items.length);
+                    items.forEach((c,i)=>{
+                        transform.compose(
+                            new THREE.Vector3((c.x+c.w/2)*2+1,c.level*2.6+1.28,(c.y+c.d/2)*2+1),
+                            new THREE.Quaternion(),new THREE.Vector3(c.w*2,2.5,c.d*2)
+                        );mesh.setMatrixAt(i,transform);
+                    });
+                    mesh.instanceMatrix.needsUpdate=true;scene.add(mesh);
+                }
+                const ribMat=new THREE.MeshBasicMaterial({color:0x1b2227,transparent:true,opacity:.42});
+                const ribGeo=new THREE.BoxGeometry(.11,2.28,.08),ribTransforms=[];
+                for(const c of YARD_CONTAINERS)for(let level=0;level<Math.max(1,Math.round(c.h/2.6));level++)for(let step=1;step<Math.floor(c.w/2);step++)ribTransforms.push([(c.x+step*2)*2+1,level*2.6+1.28,c.y*2+.96],[(c.x+step*2)*2+1,level*2.6+1.28,(c.y+c.d)*2+1.04]);
+                const ribs=new THREE.InstancedMesh(ribGeo,ribMat,ribTransforms.length);ribTransforms.forEach(([x,y,z],i)=>{transform.makeTranslation(x,y,z);ribs.setMatrixAt(i,transform)});ribs.instanceMatrix.needsUpdate=true;scene.add(ribs);
+                const rampMat=new THREE.MeshPhongMaterial({color:0xd7c26b,shininess:10});
+                for(const r of YARD_ACCESS_RAMPS){
+                    const length=(r.x2-r.x1)*2,width=(r.y2-r.y1)*2,angle=Math.atan2(r.h,length);
+                    const access=new THREE.Mesh(new THREE.BoxGeometry(length,.28,width),rampMat);
+                    access.position.set((r.x1+r.x2)+1,r.h/2,(r.y1+r.y2)+1);access.rotation.z=angle;scene.add(access);
+                }
+                const water=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,22),new THREE.MeshPhongMaterial({color:0x244f64,shininess:75}));
+                water.rotation.x=-Math.PI/2;water.position.set(MAP_SIZE_X,.02,MAP_SIZE_Y*2+10);scene.add(water);
+            }
 
             // Varied low-poly hatchbacks, saloons, SUVs and vans fill the bays.
             const carColors=[0x9e2f32,0x315c83,0x44474b,0xb6b7b0,0x6d5132,0x284f43];
@@ -590,7 +665,7 @@ function wireGuestRoom(session){
             }));
 
             // Start away from the centre so every round opens differently.
-            respawnSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&!rampAt(x,y)&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)respawnSpawns.push([x+.5,y+.5]);
+            respawnSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&!rampAt(x,y)&&!yardContainerAt(x+.5,y+.5)&&!yardRampAt(x+.5,y+.5)&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)respawnSpawns.push([x+.5,y+.5]);
             const spawn=respawnSpawns[Math.floor(Math.random()*respawnSpawns.length)];
             player.position = new THREE.Vector3(spawn[0], 12, spawn[1]);
             player.x = spawn[0];
@@ -799,7 +874,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             if(keys['arrowup'])player.pitch=Math.min(Math.PI/2-.01,player.pitch+keyLookSpeed);
             if(keys['arrowdown'])player.pitch=Math.max(-Math.PI/2+.01,player.pitch-keyLookSpeed);
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
-            floorDisplay.textContent=`FLOOR ${floorIndexAtHeight(player.floorY)+1} / ${FLOOR_COUNT}`;
+            floorDisplay.textContent=MAP_ID==='annex'?'CONTAINER YARD':`FLOOR ${floorIndexAtHeight(player.floorY)+1} / ${FLOOR_COUNT}`;
             if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${Math.ceil(releaseRemaining/1000)}`;updateSkipButton()}
             else { skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime); gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000); if(nowTime>=roundEndsAt){showGameOverOverlay(true);return} }
 
@@ -834,9 +909,11 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const radius=.18,points=[[x-radius,y-radius],[x+radius,y-radius],[x-radius,y+radius],[x+radius,y+radius]];
                 const surface=surfaceHeightAt(x,y,player.floorY);
                 const targetRamp=rampAt(x,y);
-                const slopeStep=targetRamp?1.05:.65;
+                const yardAccess=yardRampAt(x,y);
+                const slopeStep=targetRamp||yardAccess?1.05:.65;
                 const insideRampLane=!targetRamp||(y>=targetRamp.y1+.28&&y<=targetRamp.y2-.28);
-                return Math.abs(surface-player.floorY)<=slopeStep&&insideRampLane&&canEnterRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0&&!rampWallAt(px,py)&&!floorBarrierAt(px,py,player.floorY));
+                const canReachSurface=player.isJumping?surface<=player.floorY+player.z+.3:Math.abs(surface-player.floorY)<=slopeStep;
+                return canReachSurface&&insideRampLane&&canEnterRamp(x,y)&&!carBlocked(x,y)&&points.every(([px,py])=>MAP[Math.floor(py)]?.[Math.floor(px)]===0&&!rampWallAt(px,py)&&!floorBarrierAt(px,py,player.floorY));
             };
             let nextX = player.x + moveX;
             let nextY = player.y + moveY;
@@ -862,7 +939,9 @@ for (let b = 0; b < botSpawns.length; b++) {
             if (player.isJumping) {
                 player.z += player.zVel;
                 player.zVel -= 0.008;
-                if (player.z <= 0) {
+                const landingHeight=surfaceHeightAt(player.x,player.y,player.floorY);
+                if (player.zVel<=0&&player.floorY+player.z<=landingHeight+.04) {
+                    player.floorY=landingHeight;
                     player.z = 0;
                     player.zVel = 0;
                     player.isJumping = false;
@@ -1145,12 +1224,32 @@ for (let b = 0; b < botSpawns.length; b++) {
         function lobbyStatus(message){document.getElementById('lobby-status').textContent=message||'';}
         function playerName(){return document.getElementById('player-name').value.trim()||'Player';}
         function roomPin(){return document.getElementById('room-pin').value.replace(/\D/g,'').slice(0,4);}
+        function renderWaitingPlayers(players){
+            const list=document.getElementById('waiting-players');list.replaceChildren();
+            players.forEach((entry,index)=>{const row=document.createElement('div');row.className='player-slot';const name=document.createElement('span');name.textContent=entry.name;const role=document.createElement('span');role.textContent=index===0?'HOST':'PLAYER';row.append(name,role);list.append(row)});
+        }
+        function broadcastLobby(){
+            if(netRole!=='host'||!roomSession)return;
+            const players=[{id:'host',name:playerName()},...Array.from(lobbyPlayers,(entry)=>({id:entry[0],name:entry[1]}))];
+            renderWaitingPlayers(players);roomSession.lan.broadcast('lobby',{players});
+        }
+        function enterWaitingRoom(){
+            document.querySelector('.lobby-actions').style.display='none';document.querySelector('.lobby-fields').style.display='none';document.querySelector('.map-picker').style.display='none';document.getElementById('room-panel').style.display='none';
+            document.getElementById('waiting-panel').style.display='block';document.getElementById('waiting-code').textContent=roomSession?.roomId?`ROOM ${roomSession.roomId.slice(0,6).toUpperCase()}`:'ROOM';
+            document.getElementById('room-start').style.display=netRole==='host'?'block':'none';document.getElementById('waiting-message').textContent=netRole==='host'?'Players can join now. Start whenever everyone is ready.':'Connected. Waiting for the host to start.';
+            if(netRole==='host'){lobbyPlayers.clear();broadcastLobby()}else{renderWaitingPlayers([{name:roomSession?.room?.name||'Host'},{name:playerName()}]);roomSession.client.send?.('lobby-hello',{name:playerName()})}
+            lobbyStatus('');
+        }
+        async function leaveWaitingRoom(){
+            try{await roomSession?.stop?.();roomSession?.client?.close?.()}catch{}
+            location.reload();
+        }
         function setupRooms(){
             if(!globalThis.PartyRooms||roomsWatching)return;roomsWatching=true;
             PartyRooms.watch('nicos-nextbots',rooms=>{
                 const list=document.getElementById('room-list');list.replaceChildren();
                 if(!rooms.length){const empty=document.createElement('div');empty.className='lobby-note';empty.textContent='No open games yet.';list.append(empty);return;}
-                rooms.forEach(room=>{const row=document.createElement('div');row.className='room-row';const label=document.createElement('span');label.textContent=`${room.name} · ${room.players||1} player${room.players===1?'':'s'}${room.locked?' · PIN':''}`;const join=document.createElement('button');join.textContent='JOIN';join.onclick=async()=>{try{join.disabled=true;lobbyStatus('Connecting…');roomSession=await PartyRooms.join(room,{name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='guest';wireGuestRoom(roomSession);startGame()}catch(error){lobbyStatus(error.message);join.disabled=false}};row.append(label,join);list.append(row);});
+                rooms.forEach(room=>{const row=document.createElement('div');row.className='room-row';const label=document.createElement('span');label.textContent=`${room.name} · ${room.players||1} player${room.players===1?'':'s'}${room.locked?' · PIN':''}`;const join=document.createElement('button');join.textContent='JOIN';join.onclick=async()=>{try{join.disabled=true;lobbyStatus('Connecting…');roomSession=await PartyRooms.join(room,{name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='guest';wireGuestRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);join.disabled=false}};row.append(label,join);list.append(row);});
             },()=>lobbyStatus('Room list unavailable. Check your connection.'));
         }
 
@@ -1177,7 +1276,9 @@ for (let b = 0; b < botSpawns.length; b++) {
             };
             document.getElementById('solo-start').onclick=()=>{netRole='solo';startGame()};
             document.getElementById('join-open').onclick=()=>{document.getElementById('room-panel').style.display='block';lobbyStatus('Choose a host below.');if(globalThis.PartyRooms)setupRooms()};
-            document.getElementById('host-start').onclick=async event=>{try{event.currentTarget.disabled=true;lobbyStatus('Opening room…');roomSession=await PartyRooms.createHost({game:'nicos-nextbots',name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);startGame()}catch(error){lobbyStatus(error.message);event.currentTarget.disabled=false}};
+            document.getElementById('host-start').onclick=async event=>{try{event.currentTarget.disabled=true;lobbyStatus('Opening room…');roomSession=await PartyRooms.createHost({game:'nicos-nextbots',name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);event.currentTarget.disabled=false}};
+            document.getElementById('room-start').onclick=()=>{if(netRole!=='host'||gameStarted)return;roomSession.lan.broadcast('start',{});startGame()};
+            document.getElementById('room-leave').onclick=leaveWaitingRoom;
             if(globalThis.PartyRooms)setupRooms();else addEventListener('partyroomsready',setupRooms,{once:true});
         }
         init();

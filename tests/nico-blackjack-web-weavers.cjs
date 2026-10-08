@@ -7,14 +7,23 @@ const root=path.resolve(__dirname,'..');
 const read=name=>fs.readFileSync(path.join(root,name),'utf8');
 
 const nico=read('nicos_nextbots.html');
-assert.match(nico,/const FLOOR_COUNT=5;/);
-assert.match(nico,/const SPAWN_FLOOR_INDEX=2;/);
+assert.match(nico,/const FLOOR_COUNT=MAP_ID==='annex'\?1:5;/);
+assert.match(nico,/const SPAWN_FLOOR_INDEX=MAP_ID==='annex'\?0:2;/);
 assert.match(nico,/for\(const floorY of FLOOR_LEVELS\.slice\(1\)\)/);
 assert.match(nico,/for\(const ramp of RAMPS\)for\(let tier=0;tier<FLOOR_COUNT-1;tier\+\+\)/);
 assert.match(nico,/player\.floorY = SPAWN_FLOOR_Y;/);
 assert.match(nico,/mobileRenderer\?1:1\.5/);
-assert.match(nico,/const slopeStep=targetRamp\?1\.05:\.65/);
+assert.match(nico,/const slopeStep=targetRamp\|\|yardAccess\?1\.05:\.65/);
 assert.match(nico,/if\(activeRamp\)player\.y=THREE\.MathUtils\.clamp/);
+assert.match(nico,/const YARD_CONTAINERS=MAP_ID==='annex'\?\[/);
+assert.match(nico,/const YARD_ACCESS_RAMPS=MAP_ID==='annex'\?\[/);
+assert.match(nico,/function yardSurfaceHeightAt/);
+assert.match(nico,/MAP_ID==='annex'\?'CONTAINER YARD'/);
+assert.match(nico,/id="waiting-panel"/);
+assert.match(nico,/function enterWaitingRoom\(\)/);
+assert.match(nico,/roomSession\.lan\.broadcast\('start'/);
+assert.match(nico,/if\(data\.type==='start'\)\{startGame\(\);return\}/);
+assert.doesNotMatch(nico,/wireHostRoom\(roomSession\);startGame\(\)/);
 
 const blackjack=read('Blackjack.html');
 const scoreCode=['getCardValue','calculateScore'].map(name=>blackjack.match(new RegExp(`function ${name}\\([^]*?\\n        \\}`))[0]).join('\n');
