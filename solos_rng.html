@@ -334,6 +334,9 @@
         .stock-item{min-width:0;padding:10px 7px;text-align:center;background:#101116;border:1px solid #32343c;border-radius:8px;display:flex;flex-direction:column;align-items:center}
         .stock-item img{width:72px;height:72px;object-fit:contain;object-position:center;display:block;margin:0 auto 5px;filter:drop-shadow(0 5px 8px #0008)}
         .stock-item strong{display:block;min-height:28px;font-size:.64rem;line-height:1.15}
+        .stock-tier{font-size:.48rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-top:4px;color:var(--text-dim)}
+        .stock-tier.prestige{color:var(--mythic)}
+        .stock-tier.rare{color:var(--rare)}
         .stock-item button{width:100%;padding:8px 3px;margin-top:7px;font-size:.58rem}
         .item-image{width:2.4rem;height:2.4rem;object-fit:contain}
         .item-emoji-display .item-image{width:5rem;height:5rem}
@@ -608,21 +611,21 @@
     const lootPool = generatePool();
     const RARITY_POOLS=Object.groupBy?Object.groupBy(lootPool,item=>item.rarity):lootPool.reduce((groups,item)=>((groups[item.rarity]??=[]).push(item),groups),{});
     const limitedPool = [
-        {name:"Pastel de Nata",image:"./assets/solos-rng/pastel-de-nata.png",price:100000,rarity:"Mythic Oddity",sell:50000},
-        {name:"Golden Sardine",image:"./assets/solos-rng/golden-sardine.png",price:750,rarity:"Limited",sell:375},
-        {name:"Chronos Key",image:"./assets/solos-rng/chronos-key.png",price:900,rarity:"Limited",sell:450},
-        {name:"Azulejo Relic",image:"./assets/solos-rng/azulejo-relic.png",price:650,rarity:"Limited",sell:325},
-        {name:"Cork Crown",image:"./assets/solos-rng/cork-crown.png",price:800,rarity:"Limited",sell:400},
-        {name:"Barcelos Rooster",image:"./assets/solos-rng/barcelos-rooster.png",price:1200,rarity:"Limited",sell:600},
-        {name:"Tram Ticket",image:"./assets/solos-rng/tram-ticket.png",price:1500,rarity:"Limited",sell:750},
-        {name:"Sea Compass",image:"./assets/solos-rng/sea-compass.png",price:2400,rarity:"Limited",sell:1200},
-        {name:"Belém Tower",image:"./assets/solos-rng/belem-tower.png",price:3600,rarity:"Limited",sell:1800},
-        {name:"Silver Caravel",image:"./assets/solos-rng/silver-caravel.png",price:5200,rarity:"Limited",sell:2600},
-        {name:"Jacaranda Bloom",image:"./assets/solos-rng/jacaranda-bloom.png",price:6800,rarity:"Limited",sell:3400},
-        {name:"Ceramic Swallow",image:"./assets/solos-rng/ceramic-swallow.png",price:8200,rarity:"Limited",sell:4100},
-        {name:"Explorer Astrolabe",image:"./assets/solos-rng/explorer-astrolabe.png",price:11000,rarity:"Limited",sell:5500},
-        {name:"Port Ruby",image:"./assets/solos-rng/port-goblet.png",price:14500,rarity:"Limited",sell:7250},
-        {name:"Moonlit Fado",image:"./assets/solos-rng/fado-guitar.png",price:20000,rarity:"Limited",sell:10000}
+        {name:"Pastel de Nata",image:"./assets/solos-rng/pastel-de-nata.png",price:1000000,rarity:"Limited",tier:"Prestige",sell:500000},
+        {name:"Moonlit Fado",image:"./assets/solos-rng/fado-guitar.png",price:925000,rarity:"Limited",tier:"Prestige",sell:462500},
+        {name:"Port Ruby",image:"./assets/solos-rng/port-goblet.png",price:850000,rarity:"Limited",tier:"Prestige",sell:425000},
+        {name:"Explorer Astrolabe",image:"./assets/solos-rng/explorer-astrolabe.png",price:590000,rarity:"Limited",tier:"Rare",sell:295000},
+        {name:"Ceramic Swallow",image:"./assets/solos-rng/ceramic-swallow.png",price:555000,rarity:"Limited",tier:"Rare",sell:277500},
+        {name:"Jacaranda Bloom",image:"./assets/solos-rng/jacaranda-bloom.png",price:525000,rarity:"Limited",tier:"Rare",sell:262500},
+        {name:"Silver Caravel",image:"./assets/solos-rng/silver-caravel.png",price:490000,rarity:"Limited",tier:"Rare",sell:245000},
+        {name:"Belém Tower",image:"./assets/solos-rng/belem-tower.png",price:450000,rarity:"Limited",tier:"Rare",sell:225000},
+        {name:"Sea Compass",image:"./assets/solos-rng/sea-compass.png",price:180000,rarity:"Limited",tier:"Common",sell:90000},
+        {name:"Tram Ticket",image:"./assets/solos-rng/tram-ticket.png",price:165000,rarity:"Limited",tier:"Common",sell:82500},
+        {name:"Barcelos Rooster",image:"./assets/solos-rng/barcelos-rooster.png",price:150000,rarity:"Limited",tier:"Common",sell:75000},
+        {name:"Cork Crown",image:"./assets/solos-rng/cork-crown.png",price:140000,rarity:"Limited",tier:"Common",sell:70000},
+        {name:"Golden Sardine",image:"./assets/solos-rng/golden-sardine.png",price:130000,rarity:"Limited",tier:"Common",sell:65000},
+        {name:"Chronos Key",image:"./assets/solos-rng/chronos-key.png",price:115000,rarity:"Limited",tier:"Common",sell:57500},
+        {name:"Azulejo Relic",image:"./assets/solos-rng/azulejo-relic.png",price:100000,rarity:"Limited",tier:"Common",sell:50000}
     ];
     const stockHour=()=>Math.floor(Date.now()/3600000),stockKey=()=>`rng_hourly_stock_${stockHour()}`;
     const hourlyItems=()=>{const seed=stockHour();return limitedPool.map((item,index)=>({item,index,sort:((index+1)*2654435761^(seed*1597334677))>>>0})).sort((a,b)=>a.sort-b.sort).slice(0,5)};
@@ -826,7 +829,7 @@
         notify("Bought " + item.name + "!");
         save();
     }
-    function renderHourlyStock(){const grid=document.getElementById('hourly-stock');if(!grid)return;const bought=purchasedStock();grid.innerHTML=hourlyItems().map(({item,index})=>`<article class="stock-item">${itemVisual(item)}<strong>${item.name}</strong><button class="btn-primary" onclick="buyLimitedItem(${index})" ${bought.has(item.name)?'disabled':''}>${bought.has(item.name)?'SOLD':`${item.price.toLocaleString('en-GB')} coins`}</button></article>`).join('')}
+    function renderHourlyStock(){const grid=document.getElementById('hourly-stock');if(!grid)return;const bought=purchasedStock();grid.innerHTML=hourlyItems().map(({item,index})=>`<article class="stock-item">${itemVisual(item)}<strong>${item.name}</strong><span class="stock-tier ${item.tier.toLowerCase()}">${item.tier}</span><button class="btn-primary" onclick="buyLimitedItem(${index})" ${bought.has(item.name)?'disabled':''}>${bought.has(item.name)?'SOLD':`${item.price.toLocaleString('en-GB')} coins`}</button></article>`).join('')}
     function updateStockTimer(){const timer=document.getElementById('stock-timer');if(!timer)return;const remaining=3600000-Date.now()%3600000,minutes=Math.floor(remaining/60000),seconds=Math.floor(remaining%60000/1000);timer.textContent=`REFRESH ${minutes}:${String(seconds).padStart(2,'0')}`;if(stockKey()!==timer.dataset.key){timer.dataset.key=stockKey();renderHourlyStock()}}
     setInterval(updateStockTimer,1000);updateStockTimer();
     function bagUpgradeGain(){return Math.max(4,Math.ceil(state.maxInv*.25))}
