@@ -165,6 +165,8 @@
             gap: 10px;
             margin-top: 15px;
         }
+        .inventory-more{margin-top:12px;background:#27272a}
+        .inventory-more[hidden]{display:none}
         .inv-slot{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;}
         .inventory-emoji{font-size:2rem;line-height:1;}
 
@@ -406,10 +408,11 @@
 
         <div style="margin-top: 2.5rem;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.75rem; color:var(--text-dim); font-weight:800; letter-spacing:1px;">INVENTORY</span>
+                <span style="font-size:0.75rem; color:var(--text-dim); font-weight:800; letter-spacing:1px;">INVENTORY <span id="inventory-showing" style="font-weight:600;letter-spacing:0"></span></span>
                 <button onclick="sellAll()" style="background:none; border:none; color:var(--mythic); font-size:0.75rem; font-weight:bold; cursor:pointer;">SELL ALL</button>
             </div>
             <div class="inventory-grid" id="inventory-list"></div>
+            <button class="btn-primary inventory-more" id="inventory-more" onclick="showMoreInventory()" hidden></button>
         </div>
     </div>
 
@@ -647,6 +650,7 @@
         itemCounts: JSON.parse(localStorage.getItem('rng_item_counts')) || {},
         lastScrap:parseInt(localStorage.getItem('rng_last_scrap'))||0
     };
+    let inventoryDisplayLimit=10;
 
     // Older saves did not record lifetime item counts. Preserve the strongest
     // count we can prove from their current inventory and unlocked collection.
@@ -798,16 +802,23 @@
 
         const list = document.getElementById('inventory-list');
         list.innerHTML = '';
-        state.inventory.forEach(item => {
+        const visibleInventory=state.inventory.slice(-inventoryDisplayLimit).reverse();
+        visibleInventory.forEach(item => {
             const d = document.createElement('div');
             d.className = 'inv-slot';
             d.style.setProperty('--slot-rarity', `var(--${item.rarity.toLowerCase()})`);
             d.innerHTML = itemVisual(item,'inventory-emoji item-image');
             list.appendChild(d);
         });
+        const moreButton=document.getElementById('inventory-more'),shown=Math.min(inventoryDisplayLimit,state.inventory.length);
+        document.getElementById('inventory-showing').innerText=state.inventory.length?`· ${shown} of ${state.inventory.length.toLocaleString('en-GB')}`:'';
+        moreButton.hidden=state.inventory.length<=inventoryDisplayLimit;
+        if(!moreButton.hidden){const nextLimit=inventoryDisplayLimit===10?50:inventoryDisplayLimit*2;moreButton.innerText=`Show ${Math.min(nextLimit,state.inventory.length).toLocaleString('en-GB')}`;}
 
         renderHourlyStock();
     }
+
+    function showMoreInventory(){inventoryDisplayLimit=inventoryDisplayLimit===10?50:inventoryDisplayLimit*2;updateUI()}
 
     function hardReset() {
         if (confirm("Are you sure? This will wipe ALL progress (Coins, Rolls, Collection).")) {
