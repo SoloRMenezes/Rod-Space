@@ -332,7 +332,8 @@
         }
         .hourly-stock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:12px}
         .stock-item{min-width:0;padding:10px 7px;text-align:center;background:#101116;border:1px solid #32343c;border-radius:8px;display:flex;flex-direction:column;align-items:center}
-        .stock-item img{width:72px;height:72px;object-fit:contain;object-position:center;display:block;margin:0 auto 5px;filter:drop-shadow(0 5px 8px #0008)}
+        .stock-art{width:100%;height:76px;display:grid;place-items:center;overflow:hidden;margin-bottom:5px}
+        .stock-art img{width:72px;height:72px;object-fit:contain;display:block;transform-origin:center;filter:drop-shadow(0 5px 8px #0008)}
         .stock-item strong{display:block;min-height:28px;font-size:.64rem;line-height:1.15}
         .stock-tier{font-size:.48rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;margin-top:4px;color:var(--text-dim)}
         .stock-tier.prestige{color:var(--mythic)}
@@ -829,7 +830,17 @@
         notify("Bought " + item.name + "!");
         save();
     }
-    function renderHourlyStock(){const grid=document.getElementById('hourly-stock');if(!grid)return;const bought=purchasedStock();grid.innerHTML=hourlyItems().map(({item,index})=>`<article class="stock-item">${itemVisual(item)}<strong>${item.name}</strong><span class="stock-tier ${item.tier.toLowerCase()}">${item.tier}</span><button class="btn-primary" onclick="buyLimitedItem(${index})" ${bought.has(item.name)?'disabled':''}>${bought.has(item.name)?'SOLD':`${item.price.toLocaleString('en-GB')} coins`}</button></article>`).join('')}
+    function centerStockArt(img){
+        const canvas=document.createElement('canvas'),size=96;canvas.width=size;canvas.height=size;
+        const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0,size,size);
+        const pixels=ctx.getImageData(0,0,size,size).data;let left=size,top=size,right=-1,bottom=-1;
+        for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(pixels[(y*size+x)*4+3]>20){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y)}
+        if(right<left)return;
+        const visibleWidth=right-left+1,visibleHeight=bottom-top+1,scale=Math.min(1.35,62/(visibleWidth/size*72),62/(visibleHeight/size*72));
+        const x=(size/2-(left+right)/2)*72/size*scale,y=(size/2-(top+bottom)/2)*72/size*scale;
+        img.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${scale.toFixed(3)})`;
+    }
+    function renderHourlyStock(){const grid=document.getElementById('hourly-stock');if(!grid)return;const bought=purchasedStock();grid.innerHTML=hourlyItems().map(({item,index})=>`<article class="stock-item"><div class="stock-art">${item.image?`<img src="${item.image}" alt="" onload="centerStockArt(this)">`:itemVisual(item)}</div><strong>${item.name}</strong><span class="stock-tier ${item.tier.toLowerCase()}">${item.tier}</span><button class="btn-primary" onclick="buyLimitedItem(${index})" ${bought.has(item.name)?'disabled':''}>${bought.has(item.name)?'SOLD':`${item.price.toLocaleString('en-GB')} coins`}</button></article>`).join('')}
     function updateStockTimer(){const timer=document.getElementById('stock-timer');if(!timer)return;const remaining=3600000-Date.now()%3600000,minutes=Math.floor(remaining/60000),seconds=Math.floor(remaining%60000/1000);timer.textContent=`REFRESH ${minutes}:${String(seconds).padStart(2,'0')}`;if(stockKey()!==timer.dataset.key){timer.dataset.key=stockKey();renderHourlyStock()}}
     setInterval(updateStockTimer,1000);updateStockTimer();
     function bagUpgradeGain(){return Math.max(4,Math.ceil(state.maxInv*.25))}
