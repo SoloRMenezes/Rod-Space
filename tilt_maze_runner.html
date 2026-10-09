@@ -79,6 +79,9 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
     }
+    #runHud { position:fixed; inset:18px 18px auto; z-index:20; display:flex; justify-content:space-between; pointer-events:none; font-weight:900; letter-spacing:.08em; text-transform:uppercase; font-size:12px; }
+    #runHud span { background:rgba(3,4,5,.74); border:1px solid rgba(255,255,255,.14); padding:9px 12px; border-radius:8px; }
+    #objective { color:#ffd45a; }
 
     button {
         min-width: 190px;
@@ -176,6 +179,7 @@
 <audio id="scareSound" src="assets/tilt-maze/jumpscare-scream.mp3" preload="auto"></audio>
 
 <canvas id="game"></canvas>
+<div id="runHud" class="hidden"><span id="levelHud">Maze 1</span><span id="objective">Signals 0 / 3</span><span id="scoreHud">Score 0</span></div>
 
 <script>
 const canvas = document.getElementById("game");
@@ -192,7 +196,7 @@ const ACCEL = 0.11;
 const SPAWN_HOLE_CLEARANCE = 5;
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-let state = { running: false, level: 1, falling: false, scareCooldown: false };
+let state = { running: false, level: 1, falling: false, scareCooldown: false, score:0, shards:0, targetShards:3, startedAt:0 };
 let maze = [], cellSize = 0, worldWidth = 0, worldHeight = 0, startCell = null, exitCell = null;
 let gravity = { x: 0, y: 0 }, keyGravity = { x: 0, y: 0 };
 let audioCtx = null;
@@ -446,6 +450,9 @@ function initLevel() {
     const w = 19 + grow;
     const h = 27 + grow;
     maze = generateMaze(w, h);
+    const candidates=[];
+    for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++)if(maze[y][x]===0&&manhattan({x,y},startCell)>5&&manhattan({x,y},exitCell)>2)candidates.push({x,y});
+    candidates.sort(()=>Math.random()-.5).slice(0,state.targetShards).forEach(c=>maze[c.y][c.x]=4);
     cellSize = clamp(Math.floor(Math.min(innerWidth, innerHeight) / 15), 26, 48);
     worldWidth = w * cellSize;
     worldHeight = h * cellSize;
@@ -458,6 +465,10 @@ function initLevel() {
     ball.r = cellSize * 0.34;
     ball.trail = [];
     state.falling = false;
+    state.shards=0;state.startedAt=performance.now();
+    document.getElementById("levelHud").textContent=`Maze ${state.level}`;
+    document.getElementById("objective").textContent=`Signals 0 / ${state.targetShards}`;
+    document.getElementById("scoreHud").textContent=`Score ${state.score}`;
     fakeHoleCooldowns = new Map();
 }
 
@@ -476,6 +487,7 @@ function triggerScare(cx, cy) {
     setTimeout(() => {
         scare.classList.add("hidden");
         document.body.classList.remove("shake");
+        if(Number.isFinite(cx)&&maze[cy]&&maze[cy][cx]===3){maze[cy][cx]=5;state.score+=40;document.getElementById("scoreHud").textContent=`Score ${state.score}`;}
         ball.vx = 0;
         ball.vy = 0;
         ball.trail = [];
@@ -522,8 +534,14 @@ function update() {
         if (expiresAt <= now) fakeHoleCooldowns.delete(key);
     });
 
-    if (tile === 2) {
+    if(tile===4){
+        maze[cy][cx]=0;state.shards++;state.score+=100+state.level*25;playTone(640,0,.1,.13,"sine");playTone(920,.08,.12,.1,"sine");
+        document.getElementById("objective").textContent=state.shards===state.targetShards?"Exit awakened":`Signals ${state.shards} / ${state.targetShards}`;
+        document.getElementById("scoreHud").textContent=`Score ${state.score}`;
+    }
+    if (tile === 2 && state.shards>=state.targetShards) {
         state.falling = true;
+        const timeBonus=Math.max(0,Math.floor(800-(performance.now()-state.startedAt)/20));state.score+=500+timeBonus;
         playWinSound();
         setTimeout(() => {
             state.level++;
@@ -560,11 +578,15 @@ function drawWalls() {
                 ctx.fillStyle = "#070707";
                 ctx.fillRect(px, py, cellSize, cellSize);
 
-                if (isHoleTile(tile)) {
+                if(tile===4){
+                    const glow=.65+.35*Math.sin(performance.now()*.008+x+y);ctx.fillStyle=`rgba(255,212,90,${glow})`;ctx.beginPath();ctx.moveTo(px+cellSize*.5,py+cellSize*.18);ctx.lineTo(px+cellSize*.8,py+cellSize*.5);ctx.lineTo(px+cellSize*.5,py+cellSize*.82);ctx.lineTo(px+cellSize*.2,py+cellSize*.5);ctx.closePath();ctx.fill();
+                } else if(tile===5){ctx.fillStyle="#192019";ctx.fillRect(px+cellSize*.18,py+cellSize*.18,cellSize*.64,cellSize*.64);ctx.strokeStyle="#6d8a70";ctx.strokeRect(px+cellSize*.18,py+cellSize*.18,cellSize*.64,cellSize*.64);
+                } else if (isHoleTile(tile)) {
                     ctx.fillStyle = "#000";
                     ctx.beginPath();
                     ctx.arc(px + cellSize / 2, py + cellSize / 2, cellSize * 0.34, 0, Math.PI * 2);
                     ctx.fill();
+                    if(tile===2&&state.shards<state.targetShards){ctx.strokeStyle="rgba(255,212,90,.75)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(px+cellSize/2,py+cellSize/2,cellSize*.4,0,Math.PI*2);ctx.stroke();}
                 }
             }
         }
@@ -715,6 +737,7 @@ startBtn.onclick = async () => {
 
 function start() {
     ui.classList.add("hidden");
+    document.getElementById("runHud").classList.remove("hidden");
     state.running = true;
     initLevel();
     requestAnimationFrame(draw);

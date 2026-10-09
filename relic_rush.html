@@ -129,6 +129,9 @@
       { id: "void_raider", type: "skin", title: "Void Raider", desc: "Mysterious dark matter purple armor with indigo helm", cost: 150, color: "from-purple-600 to-indigo-800" },
       { id: "crimson_knight", type: "skin", title: "Crimson Knight", desc: "Aggressive blood-red plated shock-trooper shell", cost: 250, color: "from-red-500 to-rose-700" },
       { id: "neon_phantom", type: "skin", title: "Neon Phantom", desc: "Sleek tactical cyber shell in lime-cyan active grid", cost: 400, color: "from-emerald-400 to-cyan-600" }
+      ,{ id: "coral_depths", type: "skin", title: "Coral Depths", desc: "Expansion theme: pearl armor and reef creatures", cost: 0, expansion: true, color: "from-cyan-300 to-rose-500" }
+      ,{ id: "toxic_jungle", type: "skin", title: "Toxic Jungle", desc: "Expansion theme: acid armor and jungle beasts", cost: 0, expansion: true, color: "from-lime-300 to-emerald-800" }
+      ,{ id: "frost_crypt", type: "skin", title: "Frost Crypt", desc: "Expansion theme: glacial armor and frozen undead", cost: 0, expansion: true, color: "from-sky-200 to-indigo-700" }
     ];
 
     const trailsList = [
@@ -199,7 +202,7 @@
     }
 
     // --- SHOP TAB SCREEN ---
-    function Shop({ upgrades, crystals, onPurchase, cosmetics, onBuyCosmetic, onEquipCosmetic, onClose }) {
+    function Shop({ upgrades, crystals, onPurchase, cosmetics, onBuyCosmetic, onEquipCosmetic, expansionOwned, onBuyExpansion, onClose }) {
       const [activeTab, setActiveTab] = useState("upgrades");
 
       const getUpgradeCost = (item) => {
@@ -276,6 +279,9 @@
 
           {/* Tab Contents */}
           <div className="flex-1 overflow-y-auto pr-1 pb-6">
+            <div onClick={()=>!expansionOwned&&crystals>=500&&onBuyExpansion()} className={`mb-4 p-4 rounded-xl border ${expansionOwned?'border-cyan-500/40 bg-cyan-950/20':'border-fuchsia-500/50 bg-fuchsia-950/20 cursor-pointer'}`}>
+              <div className="flex items-center justify-between gap-3"><div><h3 className="font-black text-sm text-white">EXPANSION PACK</h3><p className="text-xs text-slate-300 mt-1">3 full enemy/player themes + Twin Chambers, Orbit Blade and Nova Laser starting weapons.</p></div><span className={`shrink-0 px-3 py-2 rounded-lg font-black text-xs ${expansionOwned?'bg-cyan-400 text-black':'bg-fuchsia-500 text-white'}`}>{expansionOwned?'OWNED':'500'}</span></div>
+            </div>
             {activeTab === "upgrades" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {shopItems.map((item) => {
@@ -334,7 +340,7 @@
                     <Icon name="award" className="w-4 h-4 text-slate-500" /> ARMOR SKINS
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {skinsList.map((skin) => {
+                    {skinsList.filter(skin=>!skin.expansion||expansionOwned).map((skin) => {
                       const isUnlocked = cosmetics.unlockedSkins.includes(skin.id) || skin.cost === 0;
                       const isEquipped = cosmetics.equippedSkin === skin.id;
                       const canAfford = crystals >= skin.cost;
@@ -506,7 +512,7 @@
           bulletSpeed: 8,
           bulletSize: 6,
           bulletDamage: 30 * (1 + (u.damage || 0) * 0.05),
-          bulletCount: 1,
+          bulletCount: u.arsenal ? 2 : 1,
           pickupRange: 85,
           shield: (u.armor || 0) * 4,
           dodge: 0.02,
@@ -514,11 +520,11 @@
           critChance: (u.crit || 0) * 0.04,
           regen: (u.regen || 0) * 0.15,
           xpMult: 1.0,
-          orbitSaws: 0,
+          orbitSaws: u.arsenal ? 1 : 0,
           orbitAngle: 0,
           facing: 1,
           animFrame: 0,
-          laserLevel: 0,
+          laserLevel: u.arsenal ? 1 : 0,
           laserCooldown: 7000,
           lastLaserTime: 0,
           equippedSkin: skin,
@@ -1657,6 +1663,11 @@
           ctx.save();
           ctx.translate(ex, ey);
 
+          const themeSkin=s.player.equippedSkin||"vanguard";
+          if(themeSkin==="coral_depths")ctx.filter="hue-rotate(145deg) saturate(1.25) brightness(1.15)";
+          else if(themeSkin==="toxic_jungle")ctx.filter="hue-rotate(70deg) saturate(1.4)";
+          else if(themeSkin==="frost_crypt")ctx.filter="hue-rotate(205deg) saturate(.75) brightness(1.2)";
+
           if (e.flash > 0) ctx.filter = "brightness(3)";
 
           if (e.type === "seeker") {
@@ -1836,6 +1847,12 @@
           bodyColor = "#dc2626"; coreColor = "#facc15"; visorColor = "#111827";
         } else if (currentSkinId === "neon_phantom") {
           bodyColor = "#10b981"; coreColor = "#22d3ee"; visorColor = "#06b6d4";
+        } else if(currentSkinId==="coral_depths"){
+          bodyColor="#67e8f9";coreColor="#fb7185";visorColor="#fff7ed";
+        } else if(currentSkinId==="toxic_jungle"){
+          bodyColor="#65a30d";coreColor="#d9f99d";visorColor="#14532d";
+        } else if(currentSkinId==="frost_crypt"){
+          bodyColor="#bae6fd";coreColor="#818cf8";visorColor="#172554";
         }
 
         ctx.fillStyle = bodyColor;
@@ -1926,6 +1943,7 @@
       const [levelUpChoices, setLevelUpChoices] = useState(null);
       const [isMuted, setIsMuted] = useState(false);
       const [highScore, setHighScore] = useState({ lvl: 1, kills: 0 });
+      const [expansionOwned,setExpansionOwned]=useState(false);
 
       // Persistence
       useEffect(() => {
@@ -1946,6 +1964,7 @@
         if (savedHighScore) {
           try { setHighScore(JSON.parse(savedHighScore)); } catch(e){}
         }
+        setExpansionOwned(localStorage.getItem("ss_expansion")==="1");
       }, []);
 
       useEffect(() => { sfx.setMute(isMuted); }, [isMuted]);
@@ -2029,6 +2048,13 @@
           localStorage.setItem("ss_cosmetics", JSON.stringify(updated));
           return updated;
         });
+      };
+      const handleBuyExpansion=()=>{
+        if(expansionOwned||crystals<500)return;
+        setCrystals(prev=>{const next=prev-500;localStorage.setItem("ss_crystals",String(next));return next;});
+        setExpansionOwned(true);localStorage.setItem("ss_expansion","1");
+        setUpgrades(prev=>{const next={...prev,arsenal:1};localStorage.setItem("ss_upgrades",JSON.stringify(next));return next;});
+        setCosmetics(prev=>{const next={...prev,unlockedSkins:[...new Set([...prev.unlockedSkins,"coral_depths","toxic_jungle","frost_crypt"])]};localStorage.setItem("ss_cosmetics",JSON.stringify(next));return next;});sfx.playSpecial();
       };
 
       const handleEquipCosmetic = (type, id) => {
@@ -2183,6 +2209,8 @@
                 cosmetics={cosmetics}
                 onBuyCosmetic={handleBuyCosmetic}
                 onEquipCosmetic={handleEquipCosmetic}
+                expansionOwned={expansionOwned}
+                onBuyExpansion={handleBuyExpansion}
                 onClose={handleCloseShop}
               />
             )}

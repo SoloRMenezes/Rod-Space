@@ -40,9 +40,10 @@
 const canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
 const state={w:0,h:0,lvl:1,running:false,started:false,time:0,cx:0,cy:0,mobile:false,scale:1};
 const player={ang:0, r:200, maxRadius:200, currentSpeed:0.8, dir:1, lastShot:0};
-const boss={hp:50, maxHp:50, r:50, fireT:0, hue:190};
+const boss={hp:50, maxHp:50, r:50, fireT:0, hue:282};
 const bullets=[], stars=[], lasers=[], hearts=[];
 let keyLocked = false, shields=3, invincible=0;
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
 const hud={hp:document.getElementById("hp-bar"),lvl:document.getElementById("lvl"),shields:document.getElementById("scr"),pattern:document.getElementById("pattern")};
 const hudCache={hp:-1,lvl:-1,shields:-1,pattern:""};
 
@@ -100,6 +101,14 @@ function initLevel(preserveEnemyShots=false){
 
 }
 
+function spawnAlienShot(angle,speed,kind="spore",extra={}){
+    const reach=boss.r*(.45+Math.random()*.38);
+    bullets.push({x:state.cx+Math.cos(angle)*reach,y:state.cy+Math.sin(angle)*reach,
+        vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,p:false,kind,age:0,
+        phase:Math.random()*Math.PI*2,curve:(Math.random()-.5)*.18,
+        wobble:.12+Math.random()*.18,wobbleSpeed:3+Math.random()*3,...extra});
+}
+
 function update(dt){
     if(!state.running) return;
     state.time += dt; invincible=Math.max(0,invincible-dt);
@@ -126,14 +135,14 @@ function update(dt){
         boss.fireT = 0;
         const count=Math.min(12,6+Math.floor((state.lvl-1)/2));
         for(let i=0; i<count; i++){
-            const a = (i/count)*Math.PI*2 + state.time*(.55+state.lvl*.015);
+            const a = (i/count)*Math.PI*2 + state.time*(.55+state.lvl*.015) + (Math.random()-.5)*.12;
             const speed=player.maxRadius*(.65+state.lvl*.035);
-            bullets.push({x:state.cx, y:state.cy, vx:Math.cos(a)*speed, vy:Math.sin(a)*speed, p:false});
+            spawnAlienShot(a,speed*(.9+Math.random()*.2),"spore");
             // Boss 5 introduces an offset echo ring, creating moving lanes
             // instead of merely repeating the opening radial burst.
             if(state.lvl>=5 && i%2===0){
                 const echo=a+Math.PI/count;
-                bullets.push({x:state.cx,y:state.cy,vx:Math.cos(echo)*speed*.62,vy:Math.sin(echo)*speed*.62,p:false,kind:"echo"});
+                spawnAlienShot(echo,speed*.62,"larva",{curve:(i%4?1:-1)*.28,wobble:.22});
             }
         }
     }
@@ -147,7 +156,7 @@ function update(dt){
         const offsets=state.lvl>=9?[-spread,0,spread]:state.lvl>=5?[-spread,spread]:[0];
         offsets.forEach(offset=>{
             const speed=player.maxRadius*(.95+state.lvl*.025);
-            bullets.push({x:state.cx,y:state.cy,vx:Math.cos(a+offset)*speed,vy:Math.sin(a+offset)*speed,p:false});
+            spawnAlienShot(a+offset,speed,"seeker",{homingFor:.72,curve:offset*.32,wobble:.08,r:state.mobile?4:6});
         });
     }
 
@@ -166,7 +175,7 @@ function update(dt){
                 boss.spiralShotT=.105;
                 const a=state.time*1.6+boss.spiralIndex*.43;
                 const speed=player.maxRadius*(.72+state.lvl*.025);
-                bullets.push({x:state.cx,y:state.cy,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,p:false,kind:"spiral"});
+                spawnAlienShot(a,speed,"helix",{curve:.34*(boss.spiralIndex%2?1:-1),wobble:.2});
                 boss.spiralIndex++;
                 boss.spiralShots--;
             }
@@ -180,7 +189,7 @@ function update(dt){
             boss.heavyT=Math.max(2.1,4.3-(state.lvl-15)*.22);
             const a=Math.atan2(py-state.cy,px-state.cx);
             const speed=player.maxRadius*.48;
-            bullets.push({x:state.cx,y:state.cy,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,p:false,kind:"heavy",r:state.mobile?8.5:12,splitAt:player.r*.5});
+            spawnAlienShot(a,speed,"egg",{r:state.mobile?8.5:12,splitAt:player.r*.5,curve:.04,wobble:.04});
         }
     }
 
@@ -252,12 +261,23 @@ function update(dt){
     }
 
     for(let i=bullets.length-1;i>=0;i--) {
-        const b=bullets[i];b.x+=b.vx*dt;b.y+=b.vy*dt;
-        if(b.kind==="heavy" && Math.hypot(b.x-state.cx,b.y-state.cy)>=b.splitAt){
+        const b=bullets[i];
+        if(!b.p){
+            b.age=(b.age||0)+dt;
+            let turn=(b.curve||0)+Math.sin((b.phase||0)+b.age*(b.wobbleSpeed||4))*(b.wobble||0);
+            if(b.homingFor && b.age<b.homingFor){
+                const current=Math.atan2(b.vy,b.vx),target=Math.atan2(py-b.y,px-b.x);
+                const delta=Math.atan2(Math.sin(target-current),Math.cos(target-current));
+                turn+=clamp(delta,-.75,.75)*1.4;
+            }
+            if(turn){const c=Math.cos(turn*dt),s=Math.sin(turn*dt),vx=b.vx;b.vx=vx*c-b.vy*s;b.vy=vx*s+b.vy*c;}
+        }
+        b.x+=b.vx*dt;b.y+=b.vy*dt;
+        if(b.kind==="egg" && Math.hypot(b.x-state.cx,b.y-state.cy)>=b.splitAt){
             const base=Math.atan2(b.vy,b.vx),pieces=2+Math.floor(Math.random()*3);
             for(let piece=0;piece<pieces;piece++){
                 const spread=(piece-(pieces-1)/2)*.22,speed=player.maxRadius*(.92+state.lvl*.018);
-                bullets.push({x:b.x,y:b.y,vx:Math.cos(base+spread)*speed,vy:Math.sin(base+spread)*speed,p:false,kind:"shard",r:state.mobile?3.5:5});
+                bullets.push({x:b.x,y:b.y,vx:Math.cos(base+spread)*speed,vy:Math.sin(base+spread)*speed,p:false,kind:"shard",age:0,phase:piece*2.1,curve:spread*.55,wobble:.1,wobbleSpeed:6,r:state.mobile?3.5:5});
             }
             bullets.splice(i,1);continue;
         }
@@ -278,8 +298,8 @@ function update(dt){
         if((!b.p&&Math.hypot(b.x-state.cx,b.y-state.cy)>player.r+55)||(b.x<0||b.x>state.w||b.y<0||b.y>state.h))bullets.splice(i,1);
     }
 
-    boss.hue = 190 - (1 - boss.hp/boss.maxHp) * 190;
-    const hp=Math.round((boss.hp/boss.maxHp)*1000)/10,pattern=state.lvl>=20?"FINAL":state.lvl>=15?"SPLITTER":state.lvl>=10?"OVERDRIVE":state.lvl>=7?"CROSSFIRE":state.lvl>=6?"SPIRAL":state.lvl>=4?"LASER":state.lvl>=3?"HUNTER":"RADIAL";
+    boss.hue = 282 + (1 - boss.hp/boss.maxHp) * 48;
+    const hp=Math.round((boss.hp/boss.maxHp)*1000)/10,pattern=state.lvl>=20?"RUPTURE":state.lvl>=15?"EGG BURST":state.lvl>=10?"FEEDING FRENZY":state.lvl>=7?"NERVE WEB":state.lvl>=6?"HELIX":state.lvl>=4?"BIOBEAM":state.lvl>=3?"STALKER":"SPORES";
     if(hudCache.hp!==hp){hudCache.hp=hp;hud.hp.style.width=hp+"%"}
     if(hudCache.lvl!==state.lvl){hudCache.lvl=state.lvl;hud.lvl.innerText=state.lvl}
     if(hudCache.shields!==shields){hudCache.shields=shields;hud.shields.innerText=shields}
@@ -305,14 +325,28 @@ function drawStars(){
 }
 
 function drawBoss(){
-    const t = state.time, h = boss.hue;
-    ctx.save(); ctx.translate(state.cx, state.cy); ctx.strokeStyle = `hsla(${h}, 100%, 50%, 0.3)`; ctx.rotate(t * 0.3);
-    const satelliteW=10*state.scale,satelliteH=30*state.scale;
-    for(let i=0; i<6; i++){ ctx.rotate(Math.PI/3); ctx.strokeRect(boss.r+10*state.scale,-satelliteH/2,satelliteW,satelliteH); }
-    ctx.rotate(-t * 0.8); ctx.strokeStyle = `hsl(${h}, 100%, 50%)`; ctx.lineWidth = 3;
-    ctx.beginPath(); for(let i=0; i<6; i++){ const a = (i/6)*Math.PI*2; ctx.lineTo(Math.cos(a)*boss.r, Math.sin(a)*boss.r); }
-    ctx.closePath(); ctx.stroke();
-    ctx.fillStyle = `hsla(${h}, 100%, 70%, ${0.2 + Math.sin(t*10)*0.1})`; ctx.beginPath(); ctx.arc(0,0,(20+Math.sin(t*5)*5)*state.scale,0,Math.PI*2);ctx.fill();
+    const t=state.time,h=boss.hue,pulse=1+Math.sin(t*3.2)*.045;
+    ctx.save();ctx.translate(state.cx,state.cy);
+    ctx.lineCap="round";
+    for(let i=0;i<7;i++){
+        const a=i*.91+.25*Math.sin(i*2.7),reach=boss.r*(1.28+(i%3)*.12);
+        const sway=Math.sin(t*2.1+i*1.8)*boss.r*.25;
+        ctx.strokeStyle=`hsla(${h+18},80%,55%,${.28+i*.025})`;ctx.lineWidth=(7-i*.35)*state.scale;
+        ctx.beginPath();ctx.moveTo(Math.cos(a)*boss.r*.55,Math.sin(a)*boss.r*.55);
+        ctx.bezierCurveTo(Math.cos(a)*boss.r*.9-Math.sin(a)*sway,Math.sin(a)*boss.r*.9+Math.cos(a)*sway,
+            Math.cos(a)*reach+Math.sin(a)*sway,Math.sin(a)*reach-Math.cos(a)*sway,
+            Math.cos(a)*reach,Math.sin(a)*reach);ctx.stroke();
+        ctx.fillStyle=`hsl(${h+35},85%,62%)`;ctx.beginPath();ctx.arc(Math.cos(a)*reach,Math.sin(a)*reach,2.4*state.scale,0,Math.PI*2);ctx.fill();
+    }
+    const blob=(radius,phase)=>{ctx.beginPath();for(let i=0;i<=32;i++){const a=i/32*Math.PI*2,r=radius*(1+.085*Math.sin(a*5+t*2.4+phase)+.045*Math.sin(a*3-t*1.7));const x=Math.cos(a)*r,y=Math.sin(a)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();};
+    ctx.shadowColor=`hsl(${h},90%,55%)`;ctx.shadowBlur=state.mobile?6:22;
+    blob(boss.r*pulse,0);ctx.fillStyle=`hsl(${h},46%,20%)`;ctx.fill();ctx.strokeStyle=`hsl(${h+28},92%,63%)`;ctx.lineWidth=2.5;ctx.stroke();
+    blob(boss.r*.72,1.8);ctx.fillStyle=`hsla(${h+22},75%,38%,.5)`;ctx.fill();ctx.shadowBlur=0;
+    for(let i=0;i<8;i++){const a=i*2.23+.3,r=boss.r*(.4+.25*Math.sin(i*4.1));ctx.fillStyle=`hsla(${h+55},90%,70%,${.18+(i%3)*.08})`;ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r,(2+i%3)*state.scale,0,Math.PI*2);ctx.fill();}
+    const target=Math.atan2(state.cy+Math.sin(player.ang)*player.r-state.cy,state.cx+Math.cos(player.ang)*player.r-state.cx);
+    const blink=Math.max(.08,Math.min(1,(Math.sin(t*.78+1)*18+17)));
+    ctx.save();ctx.rotate(target);ctx.scale(1,blink);ctx.fillStyle="#d7ffc4";ctx.beginPath();ctx.ellipse(boss.r*.18,0,boss.r*.34,boss.r*.21,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#20102e";ctx.beginPath();ctx.arc(boss.r*.27,0,boss.r*.13,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(boss.r*.31,-boss.r*.05,boss.r*.035,0,Math.PI*2);ctx.fill();ctx.restore();
     ctx.restore();
 }
 
@@ -327,10 +361,10 @@ function drawLasers(){
     lasers.forEach(l=>{
         const length=Math.hypot(state.w,state.h), active=l.phase==="fire";
         ctx.save();ctx.translate(state.cx,state.cy);ctx.rotate(l.angle);
-        ctx.strokeStyle=active?"#ff304f":l.phase==="lock"?"rgba(255,48,79,.55)":"rgba(255,80,100,.16)";
-        ctx.lineWidth=(active?18:l.phase==="lock"?5:3)*state.scale;
-        ctx.shadowColor="#ff304f";ctx.shadowBlur=active&&!state.mobile?24:0;
-        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(length,0);ctx.stroke();ctx.restore();
+        ctx.strokeStyle=active?"#ff4bb7":l.phase==="lock"?"rgba(191,92,255,.62)":"rgba(142,255,176,.18)";
+        ctx.lineWidth=(active?15:l.phase==="lock"?5:3)*state.scale;
+        ctx.shadowColor="#ff4bb7";ctx.shadowBlur=active&&!state.mobile?24:0;
+        ctx.beginPath();ctx.moveTo(0,0);for(let d=14;d<length;d+=14)ctx.lineTo(d,Math.sin(d*.035+state.time*9+l.angle*4)*(active?7:3));ctx.stroke();ctx.restore();
     });
 }
 
@@ -347,10 +381,7 @@ function draw(){
     ctx.strokeStyle="#ffffff18";ctx.beginPath();ctx.arc(state.cx,state.cy,player.r,0,Math.PI*2);ctx.stroke();
     drawBoss(); drawLasers(); if(invincible===0 || Math.floor(state.time*10)%2===0)drawPlayer(px, py, lookAngle);
     hearts.forEach(h=>drawHeart(state.cx+Math.cos(h.angle)*h.radius,state.cy+Math.sin(h.angle)*h.radius,h.phase==="hold"?1+.12*Math.sin(state.time*8):.85));
-    ctx.beginPath(); bullets.forEach(b => { if(!b.p&&!b.kind){ const r=state.mobile?3:4;ctx.moveTo(b.x+r,b.y);ctx.arc(b.x,b.y,r,0,7); }});
-    ctx.fillStyle = "#ff3333"; ctx.fill();
-    ctx.beginPath(); bullets.forEach(b => { if(!b.p&&b.kind){ const r=b.r||(b.kind==="spiral"?(state.mobile?3.5:5):(state.mobile?3:4));ctx.moveTo(b.x+r,b.y);ctx.arc(b.x,b.y,r,0,7); }});
-    ctx.fillStyle = "#ff9f1c"; ctx.fill();
+    bullets.forEach(b=>{if(b.p)return;const r=b.r||(state.mobile?4:6),a=Math.atan2(b.vy,b.vx);ctx.save();ctx.translate(b.x,b.y);ctx.rotate(a);ctx.fillStyle=b.kind==="egg"?"#ff7ec8":b.kind==="seeker"?"#b8ff6a":b.kind==="shard"?"#ff3f8d":"#a86cff";ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=state.mobile?0:9;ctx.beginPath();if(b.kind==="shard"){ctx.moveTo(r*1.8,0);ctx.lineTo(-r,-r*.7);ctx.lineTo(-r*.45,r*.85);}else{for(let i=0;i<9;i++){const p=i/9*Math.PI*2,rr=r*(1+.16*Math.sin(p*3+(b.phase||0)));const x=Math.cos(p)*rr*(b.kind==="seeker"?1.45:1),y=Math.sin(p)*rr;i?ctx.lineTo(x,y):ctx.moveTo(x,y);} }ctx.closePath();ctx.fill();ctx.fillStyle="rgba(15,5,25,.55)";ctx.beginPath();ctx.arc(r*.18,0,r*.28,0,Math.PI*2);ctx.fill();ctx.restore();});
     ctx.beginPath(); bullets.forEach(b => { if(b.p){ const r=state.mobile?2:3;ctx.moveTo(b.x+r,b.y);ctx.arc(b.x,b.y,r,0,7); }});
     ctx.fillStyle = "#00f2ff"; ctx.fill();
 

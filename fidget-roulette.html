@@ -9,18 +9,19 @@
             --felt: #1a4d2e; --gold: #d4af37; --gold-bright: #f9e29c;
             --wood: #3d1f05; --rim: #2b1606; --table-bg: #0e3a1a;
             --red: #b22222; --black: #111;
+            --wheel-size: min(42vw, 500px);
         }
 
         body {
             margin: 0; background-color: #05140a;
             background: radial-gradient(circle at 50% 50%, #1a4d2e, #050f08);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            min-height: 100vh; overflow-x: hidden; font-family: 'Segoe UI', Tahoma, sans-serif;
+            min-height: 100dvh; overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif;
             color: white;
         }
 
         .stats-bar {
-            display: flex; gap: 20px; margin-bottom: 20px; background: rgba(0,0,0,0.6);
+            position:fixed;top:max(10px,env(safe-area-inset-top));display: flex; gap: 20px; background: rgba(0,0,0,0.72);
             padding: 10px 20px; border-radius: 50px; border: 2px solid var(--gold);
             z-index: 10; font-size: 0.8rem;
         }
@@ -28,23 +29,26 @@
 
         .game-wrapper {
             display: flex; flex-direction: row; align-items: center; gap: 40px;
-            padding: 20px; z-index: 1; transition: transform 0.3s;
+            padding: 70px 18px 12px; z-index: 1; width:100%; justify-content:center;
         }
 
         /* MOBILE OVERRIDE */
-        @media (max-width: 1000px) {
-            .game-wrapper { 
-                flex-direction: column; 
-                transform: scale(0.7); /* Shrinks the whole game to fit phone width */
-                margin-top: -50px;
-            }
+        @media (orientation:portrait) and (max-width: 1000px) {
+            :root{--wheel-size:min(72vw,330px)}
+            .game-wrapper{flex-direction:column;gap:22px;padding-top:72px;justify-content:flex-start;overflow:auto;max-height:100dvh}
+            .table-section{order:2}
         }
-        @media (max-width: 500px) {
-            .game-wrapper { transform: scale(0.55); } /* Extra shrink for small phones */
+        @media (orientation:landscape) and (max-height: 650px) {
+            :root{--wheel-size:min(43vw,74vh)}
+            .game-wrapper{gap:20px;padding:58px 12px 8px;align-items:center}
+            .table-section{width:min(52vw,620px)}
+            .table-grid{grid-template-rows:repeat(3,min(7.4vh,42px));grid-template-columns:min(7vw,48px) repeat(12,1fr);padding:6px;gap:2px}
+            .bet-belts{padding:6px}.btn{padding:8px 0}.cell{font-size:clamp(.58rem,1.55vw,1rem)}
+            .stats-bar{font-size:.62rem;padding:6px 14px}.stat-item span{font-size:.85rem}
         }
 
         /* Table */
-        .table-section { display: flex; flex-direction: column; width: 620px; }
+        .table-section { display: flex; flex-direction: column; width:min(620px,94vw); }
         .table-grid {
             background: var(--table-bg); padding: 10px; border-radius: 12px 12px 0 0;
             border: 4px solid var(--gold); border-bottom: none;
@@ -89,7 +93,7 @@
 
         /* Wheel */
         .roulette-container {
-            position: relative; width: 500px; height: 500px;
+            position: relative; width:var(--wheel-size); height:var(--wheel-size); flex:0 0 var(--wheel-size);
             border-radius: 50%; background: var(--wood);
             box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 0 12px var(--rim), 0 0 0 16px var(--gold);
             display: flex; justify-content: center; align-items: center;
@@ -103,7 +107,7 @@
         }
 
         .wheel {
-            position: relative; width: 440px; height: 440px; border-radius: 50%;
+            position: relative; width:88%; height:88%; border-radius: 50%;
             transition: transform 6s cubic-bezier(0.15, 0, 0.2, 1);
             border: 8px solid #111; box-sizing: border-box;
         }
@@ -118,7 +122,7 @@
             position: absolute; width: 18px; height: 18px; 
             background: radial-gradient(circle at 30% 30%, #fff, #999);
             border-radius: 50%; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) translateY(-220px);
+            transform: translate(-50%, -50%) translateY(calc(var(--wheel-size) * -.44));
             box-shadow: 0 2px 5px rgba(0,0,0,0.6);
         }
 
@@ -129,15 +133,15 @@
             width: 100%; 
             text-align: center;
             left: 0; 
-            transform-origin: 50% 205px; 
+            transform-origin: 50% calc(var(--wheel-size) * .41);
             font-weight: 900; 
-            font-size: 1rem; 
+            font-size: clamp(.55rem, calc(var(--wheel-size) * .032), 1rem);
             color: white;
             pointer-events: none;
         }
 
         .spindle-hub {
-            position: absolute; width: 130px; height: 130px; z-index: 450;
+            position: absolute; width:26%; aspect-ratio:1; z-index: 450;
             border-radius: 50%; border: 4px solid #443300;
             background: radial-gradient(circle at 30% 30%, var(--gold-bright) 0%, var(--gold) 40%, #886600 100%);
             display: flex; align-items: center; justify-content: center;
@@ -148,9 +152,15 @@
             background: transparent; cursor: pointer;
             color: #2b1606; font-weight: 900; font-size: 1.2rem;
         }
+        #helpBtn{position:fixed;top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));z-index:40;width:38px;height:38px;border-radius:50%;border:2px solid var(--gold);background:#06150b;color:var(--gold-bright);font-weight:900;font-size:20px}
+        #help{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.78);display:grid;place-items:center;padding:20px}
+        #help[hidden]{display:none}.help-card{max-width:420px;background:#092113;border:2px solid var(--gold);border-radius:16px;padding:24px;box-shadow:0 18px 80px #000}.help-card h2{margin:0 0 12px;color:var(--gold-bright)}.help-card li{margin:9px 0;line-height:1.35}.help-card button{width:100%;padding:12px;background:var(--gold);border:0;font-weight:900;border-radius:8px}
     </style>
 </head>
 <body>
+
+<button id="helpBtn" aria-label="How to play">?</button>
+<div id="help" hidden><div class="help-card"><h2>How to play</h2><ol><li>Tap any number or outside bet to place 10 coins.</li><li>Tap again to add another 10 coins to that bet.</li><li>Press the centre of the wheel to spin.</li><li>Straight numbers pay 36×, dozens pay 3× and red/black, odd/even or high/low pay 2×.</li></ol><button id="closeHelp">Got it</button></div></div>
 
 <div class="stats-bar">
     <div class="stat-item">BALANCE: <span id="balance">1000</span></div>
@@ -207,6 +217,9 @@
     const balanceEl = document.getElementById('balance');
     const lastWinEl = document.getElementById('lastWin');
     const totalBetEl = document.getElementById('totalBet');
+    document.getElementById('helpBtn').onclick=()=>document.getElementById('help').hidden=false;
+    document.getElementById('closeHelp').onclick=()=>document.getElementById('help').hidden=true;
+    document.getElementById('help').onclick=e=>{if(e.target.id==='help')e.currentTarget.hidden=true};
 
     let balance = 1000;
     let currentBets = new Map();
@@ -280,9 +293,9 @@
         ballRotation += ballSpins - (ballRotation % 360);
         ballTrack.style.transform = `rotate(${ballRotation}deg)`;
 
-        ball.style.transform = `translate(-50%, -50%) translateY(-220px)`; 
+        ball.style.transform = `translate(-50%, -50%) translateY(calc(var(--wheel-size) * -.44))`;
         setTimeout(() => {
-            ball.style.transform = `translate(-50%, -50%) translateY(-178px)`; 
+            ball.style.transform = `translate(-50%, -50%) translateY(calc(var(--wheel-size) * -.356))`;
         }, 1200);
 
         setTimeout(() => finalize(winNum), 6000);
