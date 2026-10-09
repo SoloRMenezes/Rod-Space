@@ -69,6 +69,12 @@ self.addEventListener('fetch', e => {
   const url=new URL(e.request.url);
   if(e.request.method!=='GET'||url.origin!==BASE.origin||!url.pathname.startsWith(BASE.pathname)) return;
   e.respondWith((async()=>{
+    try {
+      const fresh=await fetch(e.request,{cache:'no-store'});
+      if(fresh.ok) return fresh;
+    } catch(error) {
+      // Fall through to the downloaded copy when the network is unavailable.
+    }
     url.search='';url.hash='';
     for(const item of await installed(false)) {
       if(e.request.mode==='navigate') {
