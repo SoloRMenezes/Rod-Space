@@ -348,6 +348,14 @@
         }
         .rarity-table td { padding: 8px 0; border-bottom: 1px solid #27272a; }
         .rarity-table td:last-child { text-align: right; color: var(--text-main); font-weight: bold; }
+        .stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+        .stat-card{background:var(--card);padding:16px;border-radius:16px;border:1px solid #27272a;min-width:0}
+        .stat-label{font-size:.6rem;color:var(--text-dim);font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+        .stat-value{font-size:1.25rem;font-weight:900;margin-top:4px;overflow-wrap:anywhere}
+        .stats-panel{background:var(--card);padding:18px;border-radius:18px;border:1px solid #27272a;margin-bottom:14px}
+        .stats-panel-title{font-size:.64rem;color:var(--text-dim);font-weight:800;letter-spacing:.1em;margin-bottom:12px}
+        .collection-meter{height:8px;background:#27272a;border-radius:99px;overflow:hidden;margin-top:10px}
+        #stat-collection-bar{height:100%;width:0;background:var(--accent);border-radius:inherit}
     </style>
 </head>
 <body class="home-mode">
@@ -418,20 +426,24 @@
     </div>
 
     <div id="screen-stats" class="screen">
-        <h2>Your Progress</h2>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom: 20px;">
-            <div style="background:var(--card); padding:20px; border-radius:20px; border:1px solid #27272a;">
-                <div style="font-size:0.7rem; color:var(--text-dim);">TOTAL ROLLS</div>
-                <div id="stat-rolls" style="font-size:1.5rem; font-weight:bold;">0</div>
-            </div>
-            <div style="background:var(--card); padding:20px; border-radius:20px; border:1px solid #27272a;">
-                <div style="font-size:0.7rem; color:var(--text-dim);">LEGENDARIES+</div>
-                <div id="stat-legendary" style="font-size:1.5rem; font-weight:bold; color:var(--legendary);">0</div>
-            </div>
+        <h2 style="margin-bottom:5px">Stats</h2>
+        <p style="color:var(--text-dim);font-size:.8rem;margin:0 0 18px">Your luck, collection and best finds.</p>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">Rolls</div><div class="stat-value" id="stat-rolls">0</div></div>
+            <div class="stat-card"><div class="stat-label">Legendary+</div><div class="stat-value rarity-Legendary" id="stat-legendary">0</div></div>
+            <div class="stat-card"><div class="stat-label">Lucky rate</div><div class="stat-value" id="stat-lucky-rate">0%</div></div>
+            <div class="stat-card"><div class="stat-label">Best find</div><div class="stat-value" id="stat-best-find">None yet</div></div>
         </div>
 
-        <div style="background:var(--card); padding:20px; border-radius:20px; border:1px solid #27272a; margin-bottom: 20px;">
-            <div style="font-size:0.7rem; color:var(--text-dim); margin-bottom: 10px; letter-spacing: 1px;">DROP CHANCES</div>
+        <div class="stats-panel">
+            <div class="stats-panel-title">COLLECTION</div>
+            <div style="display:flex;justify-content:space-between;gap:12px"><strong id="stat-collection">0 / 0</strong><span id="stat-collection-percent" style="color:var(--text-dim)">0%</span></div>
+            <div class="collection-meter"><div id="stat-collection-bar"></div></div>
+            <div style="display:flex;justify-content:space-between;gap:12px;margin-top:13px;font-size:.75rem;color:var(--text-dim)"><span>Inventory value</span><strong id="stat-inventory-value" style="color:var(--text-main)">0 coins</strong></div>
+        </div>
+
+        <details class="stats-panel">
+            <summary class="stats-panel-title" style="cursor:pointer;margin:0">DROP CHANCES</summary>
             <table class="rarity-table">
                 <tr><td class="rarity-Common">Common</td><td>66%</td></tr>
                 <tr><td class="rarity-Uncommon">Uncommon</td><td>22%</td></tr>
@@ -445,7 +457,7 @@
                 <tr><td class="rarity-Void">Void</td><td>0.0002% · 1 in 500,000</td></tr>
                 <tr><td class="rarity-Divine">Divine</td><td>0.0001% · 1 in 1,000,000</td></tr>
             </table>
-        </div>
+        </details>
 
         <button class="btn-primary" style="background: #ef444422; color: #ef4444; border: 1px solid #ef444444;" onclick="hardReset()">HARD RESET DATA</button>
     </div>
@@ -748,6 +760,18 @@
         document.getElementById('pity-progress').style.width = (state.pity/PITY_LIMIT*100) + "%";
         document.getElementById('stat-rolls').innerText = state.totalRolls.toLocaleString('en-GB');
         document.getElementById('stat-legendary').innerText = state.totalLegendary.toLocaleString('en-GB');
+        document.getElementById('stat-lucky-rate').innerText=state.totalRolls?`${(state.totalLegendary/state.totalRolls*100).toFixed(2)}%`:'0%';
+        const rarityRank=['Common','Uncommon','Rare','Epic','Legendary','Mythic','Rainbow','Celestial','Transcendent','Void','Divine'];
+        const bestRarity=state.collection.reduce((best,item)=>rarityRank.indexOf(item.rarity)>rarityRank.indexOf(best)?item.rarity:best,'');
+        const bestFind=document.getElementById('stat-best-find');
+        bestFind.innerText=bestRarity||'None yet';bestFind.className=`stat-value ${bestRarity?`rarity-${bestRarity}`:''}`;
+        const foundCount=state.collection.filter(c=>lootPool.some(i=>i.name===c.name)).length;
+        const collectionPercent=Math.round(foundCount/lootPool.length*100);
+        document.getElementById('stat-collection').innerText=`${foundCount} / ${lootPool.length}`;
+        document.getElementById('stat-collection-percent').innerText=`${collectionPercent}%`;
+        document.getElementById('stat-collection-bar').style.width=`${collectionPercent}%`;
+        const inventoryValue=state.inventory.reduce((sum,item)=>sum+(SELL_VALUES[item.rarity]??item.sell??0),0);
+        document.getElementById('stat-inventory-value').innerText=`${inventoryValue.toLocaleString('en-GB')} coins`;
         document.getElementById('collection-count').innerText=`${state.collection.filter(c=>lootPool.some(i=>i.name===c.name)).length} / ${lootPool.length}`;
         document.getElementById('luck-level').innerText=`Lv ${state.luck}/${MAX_LUCK_LEVEL}`;document.getElementById('bag-level').innerText=`${state.maxInv} slots`;document.getElementById('luck-price').innerText=state.luck>=MAX_LUCK_LEVEL?'MAX':UPGRADE_BASE_PRICES.luck*(state.luck+1);document.getElementById('bag-price').innerText=UPGRADE_BASE_PRICES.bag+Math.max(0,state.maxInv-16)*20;
         document.getElementById('luck-upgrade-btn').disabled=state.luck>=MAX_LUCK_LEVEL;
