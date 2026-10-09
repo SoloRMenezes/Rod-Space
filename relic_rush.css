@@ -1,0 +1,31 @@
+body {
+      font-family: 'Inter', sans-serif;
+      background-color: #050508;
+      color: #f1f5f9;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-display {
+      font-family: 'Inter', sans-serif;
+      font-weight: 900;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Hide scrollbar for clean UI */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1c1c27;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #2e2e3d;
+    }

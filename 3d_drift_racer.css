@@ -1,0 +1,108 @@
+html,
+    body {
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
+      margin: 0;
+      overflow: hidden;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+    #game-canvas,
+    #hud-layer,
+    #screens-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100dvw;
+      height: 100dvh;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.2);
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+    }
+    body.is-touch-wide #hud-layer {
+      padding: 0.55rem 0.75rem;
+    }
+    body.is-touch-wide #hud-layer > div:first-child > div {
+      transform: scale(0.78);
+      transform-origin: top left;
+    }
+    body.is-touch-wide #hud-layer > div:first-child > div:last-child {
+      transform-origin: top right;
+    }
+    body.is-touch-wide #touch-controls {
+      padding: 0 1.5rem 1rem;
+    }
+    body.is-touch-wide #touch-up,
+    body.is-touch-wide #touch-nitro {
+      width: 4.6rem;
+      height: 4.6rem;
+    }
+    body.is-touch-wide #touch-down {
+      width: 4.6rem;
+      height: 3.45rem;
+    }
+    #rotate-device { display: none; z-index: 60; }
+    body.is-mobile-device.is-touch-tall #rotate-device { display: flex; }
+    body.is-mobile-device #hud-layer { padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+    body.is-mobile-device #hud-layer > div:first-child > div { transform: none; }
+    body.is-mobile-device #hud-layer > div:first-child > div:first-child { width: 125px; padding: 7px; }
+    body.is-mobile-device #hud-layer > div:first-child > div:last-child { width: 112px; padding: 7px; }
+    body.is-mobile-device #hud-layer > div:first-child button { min-width: 44px; min-height: 44px; }
+    body.is-mobile-device #touch-controls { display: flex; padding: 0; }
+    body.is-mobile-device #touch-controls > div:first-child { flex-direction: row; align-items: flex-end; gap: 12px; }
+    body.is-mobile-device #touch-up, body.is-mobile-device #touch-down, body.is-mobile-device #touch-nitro { width: 68px; height: 64px; border-radius: 15px; }
+    body.is-mobile-device #hud-layer > div:nth-child(2) { top: 80px; gap: 4px; }
+    body.is-mobile-device #alert-banner { padding: 6px 10px; }
+    body.is-mobile-device #drift-mult { font-size: 18px; }
+    body.is-mobile-device #screens-overlay { align-items: flex-start; }
+    body.is-mobile-device #screens-overlay > div { margin: auto; padding: 16px; }
+    body.is-mobile-device #screen-main-menu { gap: 10px; }
+    body.is-mobile-device #screen-main-menu h1 { font-size: 32px; }
+    body.is-mobile-device #screen-main-menu > .grid > div { padding: 8px; }
+    body.is-mobile-device #garage-preview-model { height: 125px; }
+    #rotate-device { position: fixed; inset: 0; z-index: 50; background: #090d15; color: white; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-left)); text-align: center; }
+    #rotate-device { z-index: 60; }
+    #mobile-centre { display: none; }
+    body.is-mobile-device #mobile-centre { display: block; position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); min-height: 44px; padding: 8px 12px; background: #111827dd; border-radius: 8px; pointer-events: auto; color: white; font-size: 11px; }
+    @media (max-width: 700px) { body.is-mobile-device #hud-layer > div:first-child { gap: 4px; } body.is-mobile-device #hud-layer > div:first-child > div:nth-child(2) { gap: 1px; padding: 2px; } }
+    #garage-preview-model {
+      position: relative;
+      height: 12rem;
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+      background:
+        radial-gradient(circle at 50% 34%, rgba(186, 230, 253, 0.28), transparent 42%),
+        linear-gradient(180deg, rgba(30, 41, 59, 0.96), rgba(8, 13, 24, 0.98));
+    }
+    #garage-preview-model:active {
+      cursor: grabbing;
+    }
+    #garage-preview-model canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #garage-preview-model::before {
+      content: "";
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      bottom: 1.35rem;
+      height: 0.35rem;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.55);
+      filter: blur(6px);
+    }
+    #minimap { position: absolute; top: 24px; right: 24px; width: 144px; height: 144px; border-radius: 50%; border: 1px solid #64748b; background: #0a101b; }
+    body.is-mobile-device #minimap { display: none; }
