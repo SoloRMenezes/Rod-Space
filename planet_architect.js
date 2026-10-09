@@ -1,5 +1,5 @@
 "use strict";
-const SAVE_KEY="chronos_save_v2";
+const SAVE_KEY="chronos_save_v3";
 const eras=[
  {name:"The Pre-Void",kicker:"ERA I · PRIMORDIAL",desc:"Darkness moves upon the deep.",min:0,image:"assets/chronos/era-0-pre-void.png",alt:"A primordial black hole"},
  {name:"Hadean Inferno",kicker:"ERA II · IGNITION",desc:"Stone becomes fire beneath impossible gravity.",min:300,image:"assets/chronos/era-1-hadean-inferno.png",alt:"A molten world falling around a black hole"},
@@ -8,7 +8,7 @@ const eras=[
  {name:"Techno-Organic",kicker:"ERA V · TRANSCENDENCE",desc:"Life and machine become one celestial mind.",min:1000000,image:"assets/chronos/era-4-techno-organic.png",alt:"A violet techno-organic world surrounding a black hole"}
 ];
 const upgrades=[
- {id:"focus",icon:"✦",name:"Divine Will",cost:10,type:"click",power:1.7,desc:"Stronger manual harvests"},
+ {id:"focus",icon:"✦",name:"Divine Will",cost:10,type:"click",power:.75,desc:"Strengthens every manual harvest"},
  {id:"gravity",icon:"◉",name:"Primal Mass",cost:40,type:"auto",power:1.5,desc:"Passively bends Essence inward"},
  {id:"flare",icon:"☼",name:"Solar Flare",cost:180,type:"crit",power:2,desc:"Raises critical harvest chance"},
  {id:"core",icon:"◆",name:"Iron Heart",cost:900,type:"auto",power:12,desc:"A dense, tireless planetary core"},
@@ -63,14 +63,14 @@ const defaultState={essence:0,totalEssence:0,autoRate:0,clickPower:1,critChance:
 let state=load(),toastTimer,cometTimer;
 let upgradeSignature="",achievementSignature="";
 const $=id=>document.getElementById(id);
-function load(){try{const raw=JSON.parse(localStorage.getItem(SAVE_KEY)||localStorage.getItem("chronos_save"));return raw?{...defaultState,...raw,upgradesOwned:{...(raw.upgradesOwned||{})},claimed:[...(raw.claimed||[])]}:{...defaultState};}catch{return {...defaultState}}}
+function load(){try{const raw=JSON.parse(localStorage.getItem(SAVE_KEY));return raw?{...defaultState,...raw,upgradesOwned:{...(raw.upgradesOwned||{})},claimed:[...(raw.claimed||[])]}:{...defaultState};}catch{return {...defaultState}}}
 function save(){state.lastTick=Date.now();localStorage.setItem(SAVE_KEY,JSON.stringify(state))}
 const numberTiers=[[1e3,"K"],[1e6,"M"],[1e9,"B"],[1e12,"T"],[1e15,"Qa"],[1e18,"Qi"],[1e21,"Sx"],[1e24,"Sp"],[1e27,"Oc"],[1e30,"No"],[1e33,"Dc"],[1e36,"Ud"],[1e39,"Dd"],[1e42,"Td"],[1e45,"Qad"],[1e48,"Qid"],[1e51,"Sxd"],[1e54,"Spd"],[1e57,"Ocd"],[1e60,"Nod"],[1e63,"Vg"],[1e66,"Uvg"],[1e69,"Dvg"],[1e72,"Tvg"]];
 function format(n){if(!Number.isFinite(n))return"∞";const abs=Math.abs(n);if(abs<1000)return Math.floor(n).toLocaleString();let tier=numberTiers[0];for(const candidate of numberTiers){if(abs<candidate[0])break;tier=candidate}const value=n/tier[0],digits=value>=100?0:value>=10?1:2;return `${value.toFixed(digits)} ${tier[1]}`}
 function multiplier(){return 1+state.aether*.12}
-function rates(){let auto=0,click=1,crit=0;for(const u of upgrades){const n=state.upgradesOwned[u.id]||0;if(u.type==="auto")auto+=u.power*n;if(u.type==="click")click*=Math.pow(u.power,n);if(u.type==="crit")crit+=u.power*n}state.autoRate=auto*multiplier();state.clickPower=Math.max(1,Math.round(click*(1+state.eraIndex*.55)*multiplier()));state.critChance=Math.min(45,crit)}
-function unitCost(u,count){return Math.floor(u.cost*Math.pow(1.18,count))}
-function purchasePlan(u){let count=state.upgradesOwned[u.id]||0,total=0,qty=0,limit=state.buyAmount===Infinity?9999:state.buyAmount;while(qty<limit){const cost=unitCost(u,count+qty);if(total+cost>state.essence)break;total+=cost;qty++}return{qty,total,next:unitCost(u,count)}}
+function rates(){let auto=0,click=1,crit=0;for(const u of upgrades){const n=state.upgradesOwned[u.id]||0;if(u.type==="auto")auto+=u.power*n;if(u.type==="click")click+=u.power*n;if(u.type==="crit")crit+=u.power*n}state.autoRate=auto*multiplier();state.clickPower=Math.max(1,Math.round(click*(1+state.eraIndex*.35)*multiplier()));state.critChance=Math.min(35,crit)}
+function unitCost(u,count){return Math.floor(u.cost*Math.pow(1.28,count))}
+function purchasePlan(u){let count=state.upgradesOwned[u.id]||0,total=0,qty=0,limit=state.buyAmount===Infinity?250:state.buyAmount;while(qty<limit){const cost=unitCost(u,count+qty);if(!Number.isFinite(cost)||total+cost>state.essence)break;total+=cost;qty++}return{qty,total,next:unitCost(u,count)}}
 function buy(id){const u=upgrades.find(x=>x.id===id),plan=purchasePlan(u);if(!plan.qty)return;state.essence-=plan.total;state.upgradesOwned[id]=(state.upgradesOwned[id]||0)+plan.qty;rates();log(`Forged ${plan.qty} ${u.name}.`);update();save()}
 function harvest(e){const crit=Math.random()*100<state.critChance,quick=Date.now()-(state.lastClick||0)<650;state.combo=quick?(state.combo||0)+1:0;state.lastClick=Date.now();const combo=Math.min(2.5,1+state.combo*.04),gain=state.clickPower*combo*(crit?5:1);state.essence+=gain;state.totalEssence+=gain;state.clicks++;spawn(e.clientX||innerWidth/2,e.clientY||innerHeight/2,`${crit?"CRITICAL ":""}+${format(gain)}`);const b=$("planetButton");b.classList.remove("harvest");void b.offsetWidth;b.classList.add("harvest");update()}
 function spawn(x,y,text){const p=document.createElement("span");p.className="particle";p.textContent=text;p.style.left=x+"px";p.style.top=y+"px";document.body.append(p);setTimeout(()=>p.remove(),760)}
@@ -84,8 +84,8 @@ function renderAchievements(){const status=achievements.map(a=>`${a.id}:${a.test
 function claim(id){const a=achievements.find(x=>x.id===id);if(!a||state.claimed.includes(id)||!a.test(state))return;state.claimed.push(id);state.aether+=a.reward;rates();toast(`Seal claimed · +${a.reward} Aether`);update();save()}
 function anomaly(){const comet=$("cometButton");if(!comet.hidden||Date.now()<state.nextComet)return;state.nextComet=Date.now()+240000+Math.random()*240000;comet.style.setProperty("--comet-top",`${18+Math.random()*49}%`);comet.hidden=false;comet.style.animation="none";void comet.offsetWidth;comet.style.animation="";clearTimeout(cometTimer);cometTimer=setTimeout(()=>{if(comet.hidden)return;comet.hidden=true;log("A rare comet escaped beyond the horizon.");save()},9500);save()}
 function catchComet(e){const comet=$("cometButton");if(comet.hidden)return;clearTimeout(cometTimer);comet.hidden=true;state.cometsCaught=(state.cometsCaught||0)+1;const reward=Math.max(5000,state.autoRate*180,state.clickPower*800);state.essence+=reward;state.totalEssence+=reward;spawn(e.clientX||innerWidth/2,e.clientY||innerHeight/2,`COMET +${format(reward)}`);toast(`Rare comet caught · +${format(reward)}`);log(`Comet ${state.cometsCaught} was caught before it crossed the horizon.`);update();save()}
-function rewardForRise(){return Math.floor(Math.sqrt(state.totalEssence/100000))}
-function renderRise(){const reward=rewardForRise();$("aetherDisplay").textContent=format(state.aether);$("aetherRewardDisplay").textContent=format(reward);$("aetherTopDisplay").textContent=format(state.aether);$("nextMultiplier").textContent=(1+(state.aether+reward)*.12).toFixed(2)+"×";$("rebirthButton").disabled=reward<1;$("rebirthRequirement").textContent=reward<1?`Create ${format(Math.max(0,100000-state.totalEssence))} more lifetime Essence to ascend.`:"Your upgrades, Essence, era and prophecies will reset."}
+function rewardForRise(){return state.totalEssence<1e6?0:Math.floor(Math.log10(state.totalEssence/1e6)+1)}
+function renderRise(){const reward=rewardForRise();$("aetherDisplay").textContent=format(state.aether);$("aetherRewardDisplay").textContent=format(reward);$("aetherTopDisplay").textContent=format(state.aether);$("nextMultiplier").textContent=(1+(state.aether+reward)*.12).toFixed(2)+"×";$("rebirthButton").disabled=reward<1;$("rebirthRequirement").textContent=reward<1?`Create ${format(Math.max(0,1e6-state.totalEssence))} more lifetime Essence to ascend.`:"Your upgrades, Essence, era and prophecies will reset."}
 function ascend(){const reward=rewardForRise();if(reward<1)return;const keep={aether:state.aether+reward,rebirthCount:state.rebirthCount+1,claimed:state.claimed,cometsCaught:state.cometsCaught};state={...defaultState,...keep,lastTick:Date.now(),nextComet:Date.now()+120000+Math.random()*120000};rates();renderEra(true);toast(`Ascended · +${reward} Aether`);setView("home");update();save()}
 function update(){renderEra();$("essenceDisplay").textContent=format(state.essence);$("flowDisplay").textContent=format(state.autoRate)+"/s";$("clickPower").textContent="+"+format(state.clickPower);renderUpgrades();renderMission();renderAchievements();renderRise()}
 function setView(name){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===`view-${name}`));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===name));if(name==="achievements")renderAchievements();if(name==="rebirth")renderRise()}
