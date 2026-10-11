@@ -8,6 +8,7 @@ body {
       user-select: none;
       -webkit-user-select: none;
     }
+    .relic-theme{--theme-glow:#facc15;--theme-deep:#171108;background:radial-gradient(circle at 50% 30%,var(--theme-deep),#050508 72%)!important;transition:background .35s}.relic-theme>div{box-shadow:0 0 55px color-mix(in srgb,var(--theme-glow) 22%,transparent)!important;border-color:color-mix(in srgb,var(--theme-glow) 28%,#1a1a26)!important}.theme-coral_depths{--theme-glow:#35d6df;--theme-deep:#102d35}.theme-toxic_jungle{--theme-glow:#a3e635;--theme-deep:#173019}.theme-frost_crypt{--theme-glow:#93c5fd;--theme-deep:#111d3a}.theme-void_raider{--theme-glow:#8b5cf6;--theme-deep:#21113d}.theme-crimson_knight{--theme-glow:#ef4444;--theme-deep:#3b1010}.theme-neon_phantom{--theme-glow:#2dd4bf;--theme-deep:#07352f}.relic-theme button,.relic-theme [class*="border-"]{transition:border-color .25s,box-shadow .25s,background-color .25s}.relic-theme button:focus-visible{outline:2px solid var(--theme-glow);outline-offset:2px}
     .font-display {
       font-family: 'Inter', sans-serif;
       font-weight: 900;

@@ -26,7 +26,9 @@ def gather(page):
   if p.name=='multiplayer.html':todo.extend((root/'assets/vendor/three160').rglob('*.js'))
   if p.name=='3d_drift_racer.html':todo.extend(x for x in (root/'assets/vendor').glob('tokyo-*') if x.is_file())
   if p.name.startswith('backrooms'):todo.extend(root.glob('backrooms*.html'))
-  if p.name=='DND.html':todo.append(root/'DNDC.html')
+  if p.name=='DND.html':
+   todo.append(root/'DNDC.html')
+   todo.extend((root/'assets/dnd/backgrounds').glob('*.webp'))
  return sorted(str(p.relative_to(root.resolve())) for p in found)
 result={}
 for block in source.split('},'):

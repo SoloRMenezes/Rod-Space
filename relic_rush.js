@@ -93,7 +93,7 @@ const skinsList = [{
   id: "coral_depths",
   type: "skin",
   title: "Coral Depths",
-  desc: "Expansion theme: pearl armor and reef creatures",
+  desc: "Expansion theme: pearl armor, reef creatures and new weapons",
   cost: 0,
   expansion: true,
   color: "from-cyan-300 to-rose-500"
@@ -491,7 +491,7 @@ function Shop({
     className: "font-black text-sm text-white"
   }, "EXPANSION PACK"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-300 mt-1"
-  }, "3 full enemy/player themes + Twin Chambers, Orbit Blade and Nova Laser starting weapons.")), /*#__PURE__*/React.createElement("span", {
+  }, "3 full-game themes plus Prism Volley and Arc Chain weapons. Twin Chambers, Orbit Blade and Nova Laser now start free.")), /*#__PURE__*/React.createElement("span", {
     className: `shrink-0 px-3 py-2 rounded-lg font-black text-xs ${expansionOwned ? 'bg-cyan-400 text-black' : 'bg-fuchsia-500 text-white'}`
   }, expansionOwned ? 'OWNED' : '500'))), activeTab === "upgrades" ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
@@ -667,7 +667,8 @@ function GameCanvas({
       startY: 0,
       currentX: 0,
       currentY: 0
-    }
+    },
+    keys: {}
   });
   const upgradesRef = useRef(upgrades);
   const skinRef = useRef(equippedSkin);
@@ -717,7 +718,8 @@ function GameCanvas({
       startY: 0,
       currentX: 0,
       currentY: 0
-    }
+    },
+    keys: {}
   });
   const wasActiveRef = useRef(false);
   useEffect(() => {
@@ -742,7 +744,7 @@ function GameCanvas({
       bulletSpeed: 8,
       bulletSize: 6,
       bulletDamage: 30 * (1 + (u.damage || 0) * 0.05),
-      bulletCount: u.arsenal ? 2 : 1,
+      bulletCount: u.arsenal ? 3 : 2,
       pickupRange: 85,
       shield: (u.armor || 0) * 4,
       dodge: 0.02,
@@ -750,11 +752,12 @@ function GameCanvas({
       critChance: (u.crit || 0) * 0.04,
       regen: (u.regen || 0) * 0.15,
       xpMult: 1.0,
-      orbitSaws: u.arsenal ? 1 : 0,
+      orbitSaws: u.arsenal ? 2 : 1,
       orbitAngle: 0,
       facing: 1,
       animFrame: 0,
-      laserLevel: u.arsenal ? 1 : 0,
+      laserLevel: u.arsenal ? 2 : 1,
+      expansionArsenal: Boolean(u.arsenal),
       laserCooldown: 7000,
       lastLaserTime: 0,
       equippedSkin: skin,
@@ -891,6 +894,15 @@ function GameCanvas({
     canvas.addEventListener("pointerdown", handlePointerDown);
     canvas.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+    const handleKeyDown = e => {
+      stateRef.current.keys[e.key.toLowerCase()] = true;
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(e.key.toLowerCase())) e.preventDefault();
+    };
+    const handleKeyUp = e => {
+      stateRef.current.keys[e.key.toLowerCase()] = false;
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     // Animation Loop
     const loop = () => {
@@ -906,6 +918,8 @@ function GameCanvas({
       canvas.removeEventListener("pointerdown", handlePointerDown);
       canvas.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
       cancelAnimationFrame(animId);
     };
   }, []);
@@ -937,6 +951,18 @@ function GameCanvas({
           emitTrailParticles(s.player.worldX, s.player.worldY + 4, s.player.equippedTrail);
         }
       }
+    }
+    const keyX = (s.keys.d || s.keys.arrowright ? 1 : 0) - (s.keys.a || s.keys.arrowleft ? 1 : 0);
+    const keyY = (s.keys.s || s.keys.arrowdown ? 1 : 0) - (s.keys.w || s.keys.arrowup ? 1 : 0);
+    if ((keyX || keyY) && !s.joystick.active) {
+      const length = Math.hypot(keyX, keyY);
+      moveX = keyX / length;
+      moveY = keyY / length;
+      s.player.worldX += moveX * s.player.speed;
+      s.player.worldY += moveY * s.player.speed;
+      s.player.animFrame += 0.16;
+      if (moveX) s.player.facing = moveX > 0 ? 1 : -1;
+      if (s.frameCount % 2 === 0) emitTrailParticles(s.player.worldX, s.player.worldY + 4, s.player.equippedTrail);
     }
 
     // Camera Lock Center
@@ -1009,6 +1035,46 @@ function GameCanvas({
         triggerLaserBlast();
         s.player.lastLaserTime = now;
       }
+    }
+
+    // These are expansion weapons, while the three classic weapons above
+    // remain available in every run from the beginning.
+    if (s.player.expansionArsenal && s.frameCount % 150 === 0) {
+      for (let i = 0; i < 8; i++) {
+        const angle = i * Math.PI / 4;
+        s.bullets.push({
+          worldX: s.player.worldX,
+          worldY: s.player.worldY,
+          vx: Math.cos(angle) * 6,
+          vy: Math.sin(angle) * 6,
+          life: 55,
+          damage: s.player.bulletDamage * .75,
+          isCrit: false,
+          size: 8
+        });
+      }
+      s.damageTexts.push({
+        id: Math.random().toString(),
+        worldX: s.player.worldX,
+        worldY: s.player.worldY - 24,
+        text: "PRISM VOLLEY",
+        color: "#22d3ee",
+        life: 36,
+        maxLife: 36,
+        vy: -.5
+      });
+    }
+    if (s.player.expansionArsenal && s.frameCount % 240 === 0 && s.enemies.length) {
+      const targets = s.enemies.map((enemy, index) => ({
+        enemy,
+        index,
+        distance: Math.hypot(enemy.worldX - s.player.worldX, enemy.worldY - s.player.worldY)
+      })).sort((a, b) => a.distance - b.distance).slice(0, 3).sort((a, b) => b.index - a.index);
+      targets.forEach(({
+        enemy,
+        index
+      }) => applyBulletDamageToEnemy(enemy, index, s.player.bulletDamage * 1.4, true));
+      s.screenShake = Math.max(s.screenShake, 8);
     }
 
     // Friend bullets logic
@@ -2301,7 +2367,7 @@ function App() {
     setScreen("gameover");
   };
   const handleLevelUp = choices => {
-    setGameActive(false);
+    setPaused(true);
     setLevelUpChoices(choices);
   };
   const selectSkill = choice => {
@@ -2309,7 +2375,7 @@ function App() {
     const activePlayer = window.activePlayer;
     if (activePlayer) choice.effect(activePlayer);
     setLevelUpChoices(null);
-    setGameActive(true);
+    setPaused(false);
   };
   const handleUpdateHUD = (lvl, kills, crystalsEarned) => {
     setCurrentLevel(lvl);
@@ -2324,7 +2390,7 @@ function App() {
     return id;
   };
   return /*#__PURE__*/React.createElement("div", {
-    className: "relative w-screen h-screen flex justify-center items-center bg-[#050508] overflow-hidden select-none font-sans"
+    className: `relic-theme theme-${cosmetics.equippedSkin} relative w-screen h-screen flex justify-center items-center bg-[#050508] overflow-hidden select-none font-sans`
   }, /*#__PURE__*/React.createElement("div", {
     className: "relative w-full h-full max-w-[800px] max-h-[1000px] sm:max-h-[700px] border-0 sm:border-2 border-[#1a1a26] bg-[#0c0c10] overflow-hidden flex flex-col shadow-2xl rounded-none sm:rounded-2xl"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2386,7 +2452,7 @@ function App() {
     className: "bg-[#181824] px-4 py-2 rounded-xl border border-[#2b2b3c] font-mono text-yellow-400 shadow flex items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "inline-block w-2.5 h-2.5 rounded-full bg-yellow-400"
-  }), "DRAG ANYWHERE TO MOVE"))), /*#__PURE__*/React.createElement("div", {
+  }), "WASD / ARROWS / DRAG TO MOVE"))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col sm:flex-row gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleStartGame,

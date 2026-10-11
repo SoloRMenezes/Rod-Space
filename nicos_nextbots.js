@@ -346,7 +346,7 @@ function ensureRemotePlayer(id,name='Player'){
     remote={id,name,x:0,y:0,floorY:0,dir:0,alive:true,mesh,usesAvatar:Boolean(avatar)};remotePlayers.set(id,remote);return remote;
 }
 function applyPlayerPacket(id,data,name){
-    const remote=ensureRemotePlayer(id,name);Object.assign(remote,{x:data.x,y:data.y,floorY:data.floorY||0,dir:data.dir||0,alive:data.alive!==false});
+    const remote=ensureRemotePlayer(id,name),moved=Math.hypot((data.x||0)-(remote.x||0),(data.y||0)-(remote.y||0));Object.assign(remote,{x:data.x,y:data.y,floorY:data.floorY||0,dir:data.dir||0,alive:data.alive!==false,moving:moved>.008,animPhase:(remote.animPhase||0)+moved*8});
     remote.mesh.visible=remote.alive;remote.mesh.position.set(remote.x*2+1,remote.floorY+(remote.usesAvatar?0:1),remote.y*2+1);remote.mesh.rotation.y=remote.dir+(remote.usesAvatar?Math.PI:0);
 }
 function networkTick(now){
@@ -988,6 +988,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 remotePlayers.forEach(remote=>{
                     const insideCamera=remote.mesh.position.distanceToSquared(camera.position)<1.35;
                     remote.mesh.visible=remote.id!==localPeerId&&remote.alive&&!insideCamera;
+                    if(remote.usesAvatar){const stride=remote.moving?Math.sin((remote.animPhase||0)+nowTime*.012)*.07:Math.sin(nowTime*.002)*.012;remote.mesh.position.y=remote.floorY+Math.abs(stride);remote.mesh.rotation.z=stride*.08}
                 });
             }
             // --- Bot AI: A* pathfinding and wall sliding for multiple bots ---
