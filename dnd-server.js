@@ -94,6 +94,7 @@ const server = http.createServer(async (req, res) => {
         guest,
         name: String(source.name || (guest ? 'Guest' : `Hero ${state.players.length + 1}`)).slice(0, 40),
         race: String(source.race || 'Human').slice(0, 30),
+        className: String(source.className || 'Adventurer').slice(0, 30),
         level: Math.max(1, Number(source.level) || 1),
         invest: Array.isArray(source.invest) && source.invest.length === 6 ? source.invest.map(value => Math.max(1, Number(value) || 1)) : [1, 1, 1, 1, 1, 1],
         currentHP: Math.max(0, Number(source.currentHP) || 26),
@@ -115,7 +116,7 @@ const server = http.createServer(async (req, res) => {
       const player = state.players.find(item => Number(item.id) === id);
       if (!player) return sendJson(res, 404, { error: 'Player not found' });
       const patch = await readJson(req);
-      const allowed = ['name', 'race', 'level', 'invest', 'currentHP', 'inventory'];
+      const allowed = ['name', 'race', 'className', 'level', 'invest', 'currentHP', 'inventory'];
       for (const key of allowed) if (Object.hasOwn(patch, key)) player[key] = patch[key];
       persistAndBroadcast();
       return sendJson(res, 200, snapshot());

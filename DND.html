@@ -196,7 +196,7 @@ function normalizeState(state) {
   const base = { players: [], monsters: [], logs: [], turn: -1, bag: [], loc: "Forest", weath: "Sunny" };
   const next = { ...base, ...(state || {}) };
   next.players = next.players.map(player => ({
-    race: 'Human', level: 1, invest: [1,1,1,1,1,1], currentHP: 26, inventory: [], conds: [], ...player
+    race: 'Human', className: 'Adventurer', level: 1, invest: [1,1,1,1,1,1], currentHP: 26, inventory: [], conds: [], ...player
   }));
   return next;
 }
@@ -330,7 +330,7 @@ function openChest() {
 
 function addPlayer() {
   const id = Date.now();
-  S.players.push({ id, name: 'Hero', conds: [], race: 'Human', level: 1, invest: [1,1,1,1,1,1], currentHP: 26, inventory: [] });
+  S.players.push({ id, name: 'Hero', conds: [], race: 'Human', className: 'Adventurer', level: 1, invest: [1,1,1,1,1,1], currentHP: 26, inventory: [] });
   save();
 }
 
@@ -371,7 +371,7 @@ function render() {
       </div>
       <input class="p-name-in" value="${p.name}" onchange="S.players[${i}].name=this.value;save()">
       <div style="display:flex; gap:14px; margin-top:5px; color:var(--muted); font-size:11px; font-weight:bold;">
-        <span>❤️ ${p.currentHP ?? '—'} HP</span><span>🎒 ${(p.inventory || []).length} items</span><span>${p.guest ? 'Guest · ' : ''}${p.race || 'Human'} · Lv ${p.level || 1}</span>
+        <span>❤️ ${p.currentHP ?? '—'} HP</span><span>🎒 ${(p.inventory || []).length} items</span><span>${p.guest ? 'Guest · ' : ''}${p.race || 'Human'} ${p.className || 'Adventurer'} · Lv ${p.level || 1}</span>
       </div>
       <div class="p-cond-bar">
         ${P_CONDS.map(c => `<div class="p-tag ${p.conds.includes(c)?'active':''}" onclick="const idx=S.players[${i}].conds.indexOf('${c}'); if(idx>-1) S.players[${i}].conds.splice(idx,1); else S.players[${i}].conds.push('${c}'); save()">${c}</div>`).join('')}
