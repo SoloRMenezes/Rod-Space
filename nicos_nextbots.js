@@ -15,6 +15,9 @@
         // Each map unit now corresponds to a 2x2 block in world coordinates.
         // Player (1.5,1.5) and bot (10.5,10.5) are valid open positions (multiplied by 2 for world coords).
         const requestedMap=new URLSearchParams(location.search).get('map');
+        const requestedDevice=new URLSearchParams(location.search).get('device');
+        const IS_PHONE=requestedDevice==='phone'||(requestedDevice!=='host'&&(navigator.userAgentData?.mobile||/iPhone|iPod|Android.+Mobile|Windows Phone/i.test(navigator.userAgent)));
+        const LAN_GAME_KEY=`nicos-nextbots-lan:${location.host}`;
         const MAP_ID=['garage','annex','manhattan','tokyo','training'].includes(requestedMap)?requestedMap:'garage';
         const IS_GARAGE=MAP_ID==='garage',IS_DOCKS=MAP_ID==='annex';
         const MAP_NAMES={garage:'Central Garage',annex:'Container Terminal',manhattan:'Web Weavers — Manhattan',tokyo:'Tokyo Drift — Tokyo',training:'Tokyo Drift — Blank Map'};
@@ -302,7 +305,7 @@ let botReleaseAt=Infinity;
 let invulnerableUntil=0;
 let respawnSpawns=[];
 const MOBILE_RENDERER=window.matchMedia('(pointer:coarse)').matches||Math.min(innerWidth,innerHeight)<700;
-let netRole='solo',roomSession=null,localPeerId=null,lastNetSend=0,roomsWatching=false;
+let netRole='solo',roomSession=null,localPeerId=null,lastNetSend=0,roomsWatching=false,joiningLAN=false;
 const lobbyPlayers=new Map();
 const skipVotes=new Set();let skipVoteSent=false,skipVoteCount=0,skipVoteRequired=1;
 const remotePlayers=new Map();
@@ -1192,12 +1195,11 @@ for (let b = 0; b < botSpawns.length; b++) {
 
         function lobbyStatus(message){document.getElementById('lobby-status').textContent=message||'';}
         function playerName(){return document.getElementById('player-name').value.trim()||'Player';}
-        function roomPin(){return document.getElementById('room-pin').value.replace(/\D/g,'').slice(0,4);}
-        async function openHostRoom(button){try{button.disabled=true;lobbyStatus('Opening room…');roomSession=await PartyRooms.createHost({game:'nicos-nextbots',name:playerName(),pin:roomPin(),metadata:{map:MAP_ID},onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);button.disabled=false}}
+        async function openHostRoom(button){try{button.disabled=true;lobbyStatus('Opening LAN lobby…');roomSession=await PartyRooms.createHost({game:LAN_GAME_KEY,name:playerName(),metadata:{map:MAP_ID},onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);button.disabled=false}}
         function showMenuPanel(id){
             document.querySelectorAll('.menu-panel').forEach(panel=>panel.classList.toggle('active',panel.id===id));
             document.getElementById('waiting-panel').style.display=id==='waiting-panel'?'block':'none';
-            document.getElementById('room-panel').style.display='none';lobbyStatus('');
+            lobbyStatus('');
         }
         function renderWaitingPlayers(players){
             const list=document.getElementById('waiting-players');list.replaceChildren();
@@ -1209,8 +1211,8 @@ for (let b = 0; b < botSpawns.length; b++) {
             renderWaitingPlayers(players);roomSession.lan.broadcast('lobby',{players});
         }
         function enterWaitingRoom(){
-            showMenuPanel('waiting-panel');document.getElementById('waiting-code').textContent=roomSession?.roomId?`ROOM ${roomSession.roomId.slice(0,6).toUpperCase()}`:'ROOM';
-            document.getElementById('room-start').style.display=netRole==='host'?'block':'none';document.getElementById('waiting-message').textContent=netRole==='host'?'Players can join now. Start whenever everyone is ready.':'Connected. Waiting for the host to start.';
+            showMenuPanel('waiting-panel');document.getElementById('waiting-code').textContent='LAN';
+            document.getElementById('room-start').style.display=netRole==='host'?'block':'none';document.getElementById('waiting-message').textContent=netRole==='host'?'Phones on this Wi-Fi join automatically. Start when everyone is here.':'Connected. Waiting for the host to start.';
             if(netRole==='host'){lobbyPlayers.clear();broadcastLobby()}else{renderWaitingPlayers([{name:roomSession?.room?.name||'Host'},{name:playerName()}]);roomSession.client.send?.('lobby-hello',{name:playerName()})}
             lobbyStatus('');
         }
@@ -1220,16 +1222,19 @@ for (let b = 0; b < botSpawns.length; b++) {
         }
         async function joinRoom(room,button){
             if(room.map&&room.map!==MAP_ID){sessionStorage.setItem('nicos-pending-room',room.id);const url=new URL(location.href);url.searchParams.set('map',room.map);location.href=url;return}
-            try{button.disabled=true;lobbyStatus('Connecting…');roomSession=await PartyRooms.join(room,{name:playerName(),pin:roomPin(),onStatus:lobbyStatus});netRole='guest';localPeerId=roomSession.client.meta?.peerId||roomSession.peerRef?.id||null;remotePlayers.get(localPeerId)?.mesh.removeFromParent();remotePlayers.delete(localPeerId);wireGuestRoom(roomSession);sessionStorage.removeItem('nicos-pending-room');enterWaitingRoom()}catch(error){lobbyStatus(error.message);button.disabled=false}
+            try{button.disabled=true;lobbyStatus('Connecting to the LAN game…');roomSession=await PartyRooms.join(room,{name:playerName(),onStatus:lobbyStatus});netRole='guest';localPeerId=roomSession.client.meta?.peerId||roomSession.peerRef?.id||null;remotePlayers.get(localPeerId)?.mesh.removeFromParent();remotePlayers.delete(localPeerId);wireGuestRoom(roomSession);sessionStorage.removeItem('nicos-pending-room');enterWaitingRoom()}catch(error){joiningLAN=false;lobbyStatus(error.message);button.disabled=false}
         }
         function setupRooms(){
             if(!globalThis.PartyRooms||roomsWatching)return;roomsWatching=true;
-            PartyRooms.watch('nicos-nextbots',rooms=>{
-                const list=document.getElementById('room-list');list.replaceChildren();
-                if(!rooms.length){const empty=document.createElement('div');empty.className='lobby-note';empty.textContent='No open games yet.';list.append(empty);return;}
-                const mapNames={garage:'CENTRAL GARAGE',annex:'CONTAINER TERMINAL',manhattan:'WEB WEAVERS — MANHATTAN',tokyo:'TOKYO DRIFT — TOKYO',training:'TOKYO DRIFT — BLANK MAP'};
-                rooms.forEach(room=>{const row=document.createElement('div');row.className='room-row';const label=document.createElement('span');const mapName=mapNames[room.map]||mapNames.garage;label.textContent=`${room.name} · ${mapName} · ${room.players||1} player${room.players===1?'':'s'}${room.locked?' · PIN':''}`;const join=document.createElement('button');join.textContent='JOIN';join.onclick=()=>joinRoom(room,join);row.append(label,join);list.append(row);if(sessionStorage.getItem('nicos-pending-room')===room.id)join.click()});
-            },()=>lobbyStatus('Room list unavailable. Check your connection.'));
+            PartyRooms.watch(LAN_GAME_KEY,rooms=>{
+                if(roomSession||joiningLAN)return;
+                const pendingRoom=sessionStorage.getItem('nicos-pending-room');
+                const room=(pendingRoom&&rooms.find(entry=>entry.id===pendingRoom))||rooms[0];
+                if(!room){lobbyStatus('Waiting for the PC or iPad to open the LAN lobby…');return}
+                joiningLAN=true;
+                const hiddenButton={disabled:false};
+                joinRoom(room,hiddenButton);
+            },()=>lobbyStatus('LAN discovery is unavailable. Check the internet connection.'));
         }
 
         function init() {
@@ -1244,15 +1249,12 @@ for (let b = 0; b < botSpawns.length; b++) {
             document.addEventListener('pointerlockchange', updateLockStatus);
             const savedName=localStorage.getItem('nicos-player-name');if(savedName)document.getElementById('player-name').value=savedName;
             document.getElementById('player-name').addEventListener('input',event=>localStorage.setItem('nicos-player-name',event.target.value));
-            document.getElementById('room-pin').value=localStorage.getItem('nicos-room-pin')||'';
-            document.getElementById('room-pin').addEventListener('input',event=>{event.target.value=event.target.value.replace(/\D/g,'').slice(0,4);localStorage.setItem('nicos-room-pin',event.target.value)});
             renderKeybinds();
             const menuSensitivity=document.getElementById('menu-sens-slider');menuSensitivity.value=player.sensitivity;menuSensitivity.oninput=event=>{player.sensitivity=parseFloat(event.target.value);sensSlider.value=event.target.value;sensValDisplay.textContent=player.sensitivity.toFixed(1);localStorage.setItem('sensitivity',player.sensitivity)};
             const restoredPanel=sessionStorage.getItem('nicos-menu-panel');if(restoredPanel){sessionStorage.removeItem('nicos-menu-panel');showMenuPanel(restoredPanel)}
             document.getElementById('open-solo').onclick=()=>showMenuPanel('menu-solo');
             document.getElementById('open-multi').onclick=()=>showMenuPanel('menu-multi');
             document.getElementById('open-menu-settings').onclick=()=>showMenuPanel('menu-settings');
-            document.getElementById('host-open').onclick=()=>showMenuPanel('menu-host');
             document.querySelectorAll('.menu-back').forEach(button=>button.onclick=()=>showMenuPanel(button.dataset.target||'menu-main'));
             skipCountdown.onclick=()=>{
                 if(performance.now()>=botReleaseAt)return;
@@ -1263,20 +1265,23 @@ for (let b = 0; b < botSpawns.length; b++) {
                 updateSkipButton();
             };
             document.getElementById('solo-start').onclick=()=>queueRandomGame('solo');
-            document.getElementById('join-open').onclick=()=>{document.getElementById('room-panel').style.display='block';lobbyStatus('Choose a host below.');if(globalThis.PartyRooms)setupRooms()};
-            document.getElementById('host-start').onclick=()=>queueRandomGame('host');
+            document.getElementById('lan-start').onclick=()=>queueRandomGame('host');
             document.getElementById('room-start').onclick=()=>{if(netRole!=='host'||gameStarted)return;roomSession.lan.broadcast('start',{});startGame()};
             document.getElementById('room-leave').onclick=leaveWaitingRoom;
-            if(globalThis.PartyRooms)setupRooms();else addEventListener('partyroomsready',setupRooms,{once:true});
             const pendingRandomGame=sessionStorage.getItem('nicos-random-game');
             if(pendingRandomGame){
                 sessionStorage.removeItem('nicos-random-game');
                 if(pendingRandomGame==='solo'){netRole='solo';startGame()}
                 else{
-                    showMenuPanel('menu-host');
-                    const launchHost=()=>openHostRoom(document.getElementById('host-start'));
+                    showMenuPanel('menu-multi');
+                    const launchHost=()=>openHostRoom(document.getElementById('lan-start'));
                     if(globalThis.PartyRooms)launchHost();else addEventListener('partyroomsready',launchHost,{once:true});
                 }
+            }else if(IS_PHONE){
+                showMenuPanel('menu-multi');
+                document.getElementById('lan-message').textContent='Looking for the game on this Wi-Fi. Keep this page open.';
+                document.getElementById('lan-start').style.display='none';
+                if(globalThis.PartyRooms)setupRooms();else addEventListener('partyroomsready',setupRooms,{once:true});
             }
         }
         init();

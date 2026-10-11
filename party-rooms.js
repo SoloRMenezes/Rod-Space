@@ -45,7 +45,7 @@ async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onSta
   // Remove this device's older rooms so it appears only once to the game host.
   await cleanOwnedRooms(game);
   const roomRef=doc(collection(db,'rooms'));
-  const pinHash=await hash(`${roomRef.id}:${pin}`);
+  const pinHash=pin?await hash(`${roomRef.id}:${pin}`):'';
   const lan=PartyLan.host();
   const pending=new Map();
   const relayPeers=new Map(),relayPending=new Map(),relaySending=new Set();
@@ -113,7 +113,7 @@ async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onSta
 
 async function join(room,{name,pin='',onStatus=()=>{}}){
   const user=await signedIn;
-  const supplied=await hash(`${room.id}:${pin}`);
+  const supplied=room.locked?await hash(`${room.id}:${pin}`):'';
   if(room.locked&&supplied!==room.pinHash)throw Error('Wrong PIN');
   const roomRef=doc(db,'rooms',room.id);
   const peerRef=doc(collection(roomRef,'peers'));
