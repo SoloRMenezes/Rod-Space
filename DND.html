@@ -10,6 +10,12 @@
   const query = new URLSearchParams(location.search);
   const phone = navigator.userAgentData?.mobile === true || /iPhone|iPod|Android.+Mobile|Windows Phone/i.test(navigator.userAgent);
   const page = query.has('player') || (phone && query.get('mode') !== 'dm') ? 'DNDC.html' : 'dnd-ai.html';
+  if (location.hostname.endsWith('github.io')) {
+    const lanTarget = new URL(page, 'http://192.168.1.2:4173/');
+    lanTarget.search = location.search;
+    location.replace(lanTarget);
+    return;
+  }
   const target = new URL(page, location.href);
   target.search = location.search;
   location.replace(target);
