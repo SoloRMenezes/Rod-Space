@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>⚔️ DM COMMAND CENTER</title>
+<script>
+(() => {
+  const query = new URLSearchParams(location.search);
+  const phoneUA = /iPhone|iPod|Android.+Mobile|Windows Phone/i.test(navigator.userAgent);
+  const mobileHint = navigator.userAgentData?.mobile === true;
+  const wantsPlayer = query.has('player') || ((phoneUA || mobileHint) && query.get('mode') !== 'dm');
+  if (wantsPlayer) {
+    const playerPage = new URL('DNDC.html', location.href);
+    playerPage.search = location.search;
+    location.replace(playerPage);
+  }
+})();
+</script>
 <script src="./assets/vendor/offline-4ad6e54ad218.js"></script>
 <style>
 :root {
@@ -63,6 +76,9 @@ body {
 .dice-btn { padding: 12px; background: #241508; border: 1px solid var(--border); color: #fff; border-radius: 8px; font-weight: 900; }
 .atk-btn { grid-column: span 4; background: var(--red); color: #fff; height: 60px; font-size: 20px; font-weight: 900; margin-top: 8px; border-radius: 10px; border: none; }
 .btn-gold { background: var(--gold); color: #000; font-weight: bold; padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; }
+.connection { font: 800 11px 'Segoe UI', sans-serif; letter-spacing: .08em; color: #ffb347; }
+.connection.online { color: #69db8c; }
+.join-url { color: #222; background: #fff; padding: 10px; border-radius: 8px; max-width: min(90vw, 560px); overflow-wrap: anywhere; text-align: center; font: 700 13px system-ui; }
 </style>
 </head>
 <body>
@@ -114,7 +130,10 @@ body {
       📍 <span id="loc-display">Forest</span> | ☁️ <span id="weath-display">Sunny</span>
     </button>
   </div>
-  <button class="btn-gold" style="background:var(--red); color:#fff;" onclick="newSession()">Reset Session</button>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <span id="connection" class="connection">LOCAL ONLY</span>
+    <button class="btn-gold" style="background:var(--red); color:#fff;" onclick="newSession()">Reset Session</button>
+  </div>
 </div>
 
 <div id="main">
@@ -156,7 +175,12 @@ body {
   </div>
 </div>
 
-<div id="qr-modal" class="modal"><div style="background:#fff; padding:20px; border-radius:15px; margin-bottom:20px;"><div id="qr-code"></div></div><button class="btn-gold" onclick="toggleModal('qr-modal', false)">Done</button></div>
+<div id="qr-modal" class="modal">
+  <h2 style="color:var(--gold); margin-bottom:14px;">Connect this player</h2>
+  <div style="background:#fff; padding:20px; border-radius:15px; margin-bottom:12px;"><div id="qr-code"></div></div>
+  <div id="join-url" class="join-url"></div>
+  <button class="btn-gold" style="margin-top:14px" onclick="toggleModal('qr-modal', false)">Done</button>
+</div>
 
 <script>
 const PRESETS = [
@@ -168,11 +192,72 @@ const PRESETS = [
 const P_CONDS = ["Regen", "Blessed", "Shield", "Hasted", "Poisoned", "Cursed"];
 const M_CONDS = ["Blinded", "Poisoned", "Stunned", "Prone", "Burning"];
 
-let S = JSON.parse(localStorage.getItem('dnd_dm_vLogic')) || { 
-  players: [], monsters: [], logs: [], turn: -1, bag: [], loc: "Forest", weath: "Sunny" 
-};
+function normalizeState(state) {
+  const base = { players: [], monsters: [], logs: [], turn: -1, bag: [], loc: "Forest", weath: "Sunny" };
+  const next = { ...base, ...(state || {}) };
+  next.players = next.players.map(player => ({
+    race: 'Human', level: 1, invest: [1,1,1,1,1,1], currentHP: 26, inventory: [], conds: [], ...player
+  }));
+  return next;
+}
 
-function save() { localStorage.setItem('dnd_dm_vLogic', JSON.stringify(S)); render(); }
+let S = normalizeState(JSON.parse(localStorage.getItem('dnd_dm_vLogic')) || {
+  players: [], monsters: [], logs: [], turn: -1, bag: [], loc: "Forest", weath: "Sunny" 
+});
+let lanConnected = false;
+let applyingRemoteState = false;
+let saveTimer = 0;
+let lanOrigin = location.origin;
+
+function save() {
+  localStorage.setItem('dnd_dm_vLogic', JSON.stringify(S));
+  render();
+  if (!applyingRemoteState && lanConnected) {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => fetch('/api/dnd/state', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(S)
+    }).catch(() => setConnection(false)), 80);
+  }
+}
+
+function setConnection(online) {
+  lanConnected = online;
+  const el = document.getElementById('connection');
+  el.textContent = online ? 'LAN LIVE' : 'LOCAL ONLY';
+  el.classList.toggle('online', online);
+}
+
+function applyRemote(payload) {
+  if (!payload || !payload.state) return;
+  applyingRemoteState = true;
+  S = normalizeState(payload.state);
+  localStorage.setItem('dnd_dm_vLogic', JSON.stringify(S));
+  render();
+  applyingRemoteState = false;
+  setConnection(true);
+}
+
+async function connectLAN() {
+  try {
+    const infoResponse = await fetch('/api/dnd/info', { cache: 'no-store' });
+    if (infoResponse.ok) lanOrigin = (await infoResponse.json()).lanOrigin || location.origin;
+    const response = await fetch('/api/dnd/state', { cache: 'no-store' });
+    if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) throw new Error('No LAN host');
+    const remote = await response.json();
+    const remoteIsEmpty = !remote.state.players.length && !remote.state.monsters.length && !remote.state.logs.length;
+    const localHasGame = S.players.length || S.monsters.length || S.logs.length;
+    if (remoteIsEmpty && localHasGame) {
+      const seeded = await fetch('/api/dnd/state', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(S) });
+      applyRemote(await seeded.json());
+    } else {
+      applyRemote(remote);
+    }
+    const events = new EventSource('/api/dnd/events');
+    events.addEventListener('state', event => applyRemote(JSON.parse(event.data)));
+    events.onopen = () => setConnection(true);
+    events.onerror = () => setConnection(false);
+  } catch { setConnection(false); }
+}
 function log(msg, type='norm') {
   const t = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
   S.logs.unshift({ t, msg, type });
@@ -244,11 +329,17 @@ function openChest() {
 }
 
 function addPlayer() {
-  S.players.push({ id: Date.now(), name: 'Hero', conds: [] });
+  const id = Date.now();
+  S.players.push({ id, name: 'Hero', conds: [], race: 'Human', level: 1, invest: [1,1,1,1,1,1], currentHP: 26, inventory: [] });
   save();
+}
+
+function showPlayerQR(id) {
   toggleModal('qr-modal', true);
   document.getElementById('qr-code').innerHTML = '';
-  new QRCode(document.getElementById('qr-code'), { text: "https://solormenezes.github.io/Rod-Space/DNDC", width: 200, height: 200 });
+  const playerURL = `${lanOrigin}${location.pathname}?player=${id}`;
+  document.getElementById('join-url').textContent = playerURL;
+  new QRCode(document.getElementById('qr-code'), { text: playerURL, width: 200, height: 200 });
 }
 
 function summon(idx) {
@@ -274,8 +365,14 @@ function render() {
   // Players
   document.getElementById('players-grid').innerHTML = S.players.map((p, i) => `
     <div class="p-card ${S.turn === i ? 'active-turn' : ''}">
-      <button style="position:absolute; right:10px; top:10px; background:none; border:none; color:var(--red); font-size:18px;" onclick="S.players.splice(${i},1);save()">✕</button>
+      <div style="position:absolute; right:10px; top:10px; display:flex; gap:10px;">
+        ${p.clientId ? '<span title="Phone connected" style="color:#69db8c; font-size:16px;">● 📱</span>' : `<button title="Show player QR" style="background:none; border:none; color:var(--gold); font-size:18px;" onclick="showPlayerQR(${p.id})">📱</button>`}
+        <button title="Remove player" style="background:none; border:none; color:var(--red); font-size:18px;" onclick="S.players.splice(${i},1);save()">✕</button>
+      </div>
       <input class="p-name-in" value="${p.name}" onchange="S.players[${i}].name=this.value;save()">
+      <div style="display:flex; gap:14px; margin-top:5px; color:var(--muted); font-size:11px; font-weight:bold;">
+        <span>❤️ ${p.currentHP ?? '—'} HP</span><span>🎒 ${(p.inventory || []).length} items</span><span>${p.guest ? 'Guest · ' : ''}${p.race || 'Human'} · Lv ${p.level || 1}</span>
+      </div>
       <div class="p-cond-bar">
         ${P_CONDS.map(c => `<div class="p-tag ${p.conds.includes(c)?'active':''}" onclick="const idx=S.players[${i}].conds.indexOf('${c}'); if(idx>-1) S.players[${i}].conds.splice(idx,1); else S.players[${i}].conds.push('${c}'); save()">${c}</div>`).join('')}
       </div>
@@ -312,6 +409,7 @@ function render() {
 
 function newSession() { if(confirm('Wipe everything?')) { S={players:[],monsters:[],logs:[],turn:-1,bag:[],loc:"Forest",weath:"Sunny"}; save(); } }
 render();
+connectLAN();
 </script>
 </body>
 </html>

@@ -46,13 +46,13 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "DND.html",
-        "bytes": 17090,
-        "hash": "0078eef0774fc706394fd0516ba1326497daecac5f361f2f8e076435f55e7f14"
+        "bytes": 21535,
+        "hash": "61df4c3b7865cc2688cae6681705d6376d1a8771a078c3b746826c58040ddc2f"
       },
       {
         "path": "DNDC.html",
-        "bytes": 11430,
-        "hash": "5f772714055c5e67193c406dc8beba5cde753ef6cdddfb54ada039f243a4e3e0"
+        "bytes": 14592,
+        "hash": "1284406c1119914b73b345d16c90cb9f9b326967a509265f6e8de575e16de7bb"
       },
       {
         "path": "assets/vendor/offline-4ad6e54ad218.js",
@@ -60,8 +60,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36"
       }
     ],
-    "bytes": 48447,
-    "version": "87408d4141d64383"
+    "bytes": 56054,
+    "version": "228fe38717b20c62"
   },
   "piano": {
     "name": "Virtual Piano",
