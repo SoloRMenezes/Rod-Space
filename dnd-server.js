@@ -9,7 +9,7 @@ const os = require('node:os');
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT) || 4173;
 const STATE_FILE = path.join(ROOT, '.dnd-session.json');
-const EMPTY_STATE = { players: [], monsters: [], logs: [], turn: -1, bag: [], loc: 'Forest', weath: 'Sunny' };
+const EMPTY_STATE = { players: [], monsters: [], logs: [], turn: -1, bag: [], loc: 'Forest', weath: 'Sunny', discovery: '' };
 const clients = new Set();
 const networkAddresses = Object.values(os.networkInterfaces()).flat().filter(info => info && info.family === 'IPv4' && !info.internal);
 const lanOrigin = networkAddresses[0] ? `http://${networkAddresses[0].address}:${PORT}` : `http://localhost:${PORT}`;
@@ -29,6 +29,17 @@ function sendJson(res, status, value) {
 }
 
 function snapshot() { return { state, revision }; }
+
+function addLog(message, type = 'norm') {
+  const t = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  state.logs.unshift({ t, msg: message, type });
+  state.logs = state.logs.slice(0, 150);
+}
+
+function maxHP(player) {
+  const raceHealth = { Human: 1.2, Vessel: 1.1, Elf: 1.3, Orc: 1.9, Titan: 2, Fae: 1.1, Automaton: 1.7 }[player.race] || 1.2;
+  return 10 + Math.round(((player.invest?.[0] || 1) * raceHealth) * 5) + ((Number(player.level) || 1) * 10);
+}
 
 function persistAndBroadcast() {
   revision += 1;
@@ -99,7 +110,8 @@ const server = http.createServer(async (req, res) => {
         invest: Array.isArray(source.invest) && source.invest.length === 6 ? source.invest.map(value => Math.max(1, Number(value) || 1)) : [1, 1, 1, 1, 1, 1],
         currentHP: Math.max(0, Number(source.currentHP) || 26),
         inventory: Array.isArray(source.inventory) ? source.inventory.slice(0, 100).map(item => String(item).slice(0, 80)) : [],
-        conds: Array.isArray(source.conds) ? source.conds.slice(0, 20).map(String) : []
+        conds: Array.isArray(source.conds) ? source.conds.slice(0, 20).map(String) : [],
+        chest: []
       };
       let player = state.players.find(item => item.clientId === deviceId);
       if (!player) {
@@ -116,8 +128,68 @@ const server = http.createServer(async (req, res) => {
       const player = state.players.find(item => Number(item.id) === id);
       if (!player) return sendJson(res, 404, { error: 'Player not found' });
       const patch = await readJson(req);
-      const allowed = ['name', 'race', 'className', 'level', 'invest', 'currentHP', 'inventory'];
+      const allowed = ['race', 'className', 'level', 'invest'];
       for (const key of allowed) if (Object.hasOwn(patch, key)) player[key] = patch[key];
+      persistAndBroadcast();
+      return sendJson(res, 200, snapshot());
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/dnd/action') {
+      const body = await readJson(req);
+      const player = state.players.find(item => Number(item.id) === Number(body.playerId));
+      if (!player) return sendJson(res, 404, { error: 'Player not found' });
+      const itemIndex = Number(body.itemIndex);
+      if (body.type === 'discard' && player.inventory?.[itemIndex]) player.inventory.splice(itemIndex, 1);
+      else if (body.type === 'give' && player.inventory?.[itemIndex]) {
+        const target = state.players.find(item => Number(item.id) === Number(body.targetId) && Number(item.id) !== Number(player.id));
+        if (!target) return sendJson(res, 400, { error: 'Choose another player' });
+        target.inventory ||= [];
+        target.inventory.push(player.inventory.splice(itemIndex, 1)[0]);
+      } else if (body.type === 'open-chest' && Array.isArray(player.chest) && player.chest.length) {
+        player.inventory ||= [];
+        player.inventory.push(...player.chest);
+        player.chest = [];
+        addLog(`🎁 ${player.name} opened their chest.`);
+      } else if (body.type === 'use' && player.inventory?.[itemIndex]) {
+        const item = player.inventory[itemIndex];
+        const monster = state.monsters.find(entry => Number(entry.cur) > 0);
+        let used = true;
+        if (item === 'Health Potion') player.currentHP = Math.min(maxHP(player), Number(player.currentHP) + 10);
+        else if (item === 'Greater Healing Potion') player.currentHP = Math.min(maxHP(player), Number(player.currentHP) + 20);
+        else if (item === 'Phoenix Down') player.currentHP = Number(player.currentHP) <= 0 ? Math.ceil(maxHP(player) / 2) : Number(player.currentHP);
+        else if (item === 'Antidote') player.conds = (player.conds || []).filter(condition => condition !== 'Poisoned');
+        else if (item === 'Regen Herb') { player.conds ||= []; if (!player.conds.includes('Regen')) player.conds.push('Regen'); }
+        else if (item === 'Shield Charm') { player.conds ||= []; if (!player.conds.includes('Shield')) player.conds.push('Shield'); }
+        else if (item === 'Lucky Coin') { player.conds ||= []; if (!player.conds.includes('Blessed')) player.conds.push('Blessed'); }
+        else if (item === 'Bomb' && monster) monster.cur = Math.max(0, Number(monster.cur) - 12);
+        else if (item === 'Fire Flask' && monster) { monster.conds ||= []; if (!monster.conds.includes('Burning')) monster.conds.push('Burning'); }
+        else if (item === 'Smoke Bomb' && monster) { monster.conds ||= []; if (!monster.conds.includes('Blinded')) monster.conds.push('Blinded'); }
+        else used = false;
+        if (!used) return sendJson(res, 400, { error: 'That item cannot be used right now' });
+        player.inventory.splice(itemIndex, 1);
+        addLog(`🧪 ${player.name} used ${item}.`, 'atk');
+      } else if (body.type === 'combat') {
+        if (Number(player.currentHP) <= 0) return sendJson(res, 400, { error: 'Dead characters cannot act' });
+        if (Number(state.players[state.turn]?.id) !== Number(player.id)) return sendJson(res, 400, { error: 'Wait for your turn' });
+        if (player.acted) return sendJson(res, 400, { error: 'You already acted this turn' });
+        const monster = state.monsters.find(entry => Number(entry.cur) > 0);
+        if (body.move === 'defend') {
+          player.conds ||= [];
+          if (!player.conds.includes('Shield')) player.conds.push('Shield');
+          addLog(`🛡️ ${player.name} braces for the next hit.`, 'atk');
+        } else if (monster) {
+          const roll = Math.floor(Math.random() * 20) + 1;
+          const strength = Number(player.invest?.[3]) || 1;
+          const magic = Number(player.invest?.[4]) || 1;
+          const skill = body.move === 'skill';
+          const hit = roll + (player.conds?.includes('Blessed') ? 3 : 0) >= (skill ? 8 : 9);
+          const damage = hit ? Math.max(1, (skill ? magic + 5 : strength + 3) + Math.floor(Math.random() * 6) + (roll === 20 ? 6 : 0)) : 0;
+          monster.cur = Math.max(0, Number(monster.cur) - damage);
+          addLog(hit ? `${skill ? '✨' : '⚔️'} ${player.name} hits ${monster.n} for ${damage}.` : `❌ ${player.name} misses ${monster.n}.`, 'atk');
+          if (monster.cur === 0) addLog(`☠️ ${monster.n} is defeated!`, 'atk');
+        } else return sendJson(res, 400, { error: 'There is no living monster to target' });
+        player.acted = true;
+      } else return sendJson(res, 400, { error: 'Invalid action' });
       persistAndBroadcast();
       return sendJson(res, 200, snapshot());
     }

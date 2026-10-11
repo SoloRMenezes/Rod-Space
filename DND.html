@@ -60,6 +60,7 @@ body {
 #players-grid { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
 .p-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; position: relative; }
 .p-card.active-turn { border: 2px solid var(--gold); background: #301e0a; }
+.p-card.dead,.m-card.dead { opacity:.58; filter:saturate(.45); }.dead-label { color:#ff655d; font-weight:950; letter-spacing:.08em; }
 .p-name-in { background: none; border: none; color: #fff; font-size: 20px; font-weight: 900; width: 80%; }
 .p-cond-bar { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
 .p-tag { font-size: 10px; padding: 4px 8px; border-radius: 5px; border: 1px solid var(--border); cursor: pointer; opacity: 0.3; font-weight: bold; }
@@ -79,6 +80,7 @@ body {
 .connection { font: 800 11px 'Segoe UI', sans-serif; letter-spacing: .08em; color: #ffb347; }
 .connection.online { color: #69db8c; }
 .join-url { color: #222; background: #fff; padding: 10px; border-radius: 8px; max-width: min(90vw, 560px); overflow-wrap: anywhere; text-align: center; font: 700 13px system-ui; }
+.adventure-actions { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; padding:12px; }.adventure-actions button { min-height:48px; }.discovery { margin:0 12px 12px; padding:12px; border:1px solid var(--border); border-radius:9px; background:#0b0805; color:var(--text); line-height:1.4; }.hp-readout { min-width:100px; text-align:right; font-size:20px; font-weight:900; }.chest-mark { font-size:18px; filter:drop-shadow(0 3px 4px #000); }
 </style>
 </head>
 <body>
@@ -114,14 +116,6 @@ body {
   </div>
 </div>
 
-<!-- LOOT OVERLAY -->
-<div id="chest-overlay">
-  <div id="big-chest" onclick="openChest()">🎁</div>
-  <div id="loot-results" style="text-align:center; margin-top:20px;"></div>
-  <button id="close-loot" class="btn-gold" style="display:none; margin-top:20px; width:200px;" onclick="toggleModal('chest-overlay', false)">Collect Items</button>
-</div>
-<div id="floating-chest" onclick="triggerLoot()">🎁</div>
-
 <!-- MAIN UI -->
 <div id="header">
   <div style="display:flex; align-items:center; gap:15px;">
@@ -143,8 +137,9 @@ body {
       <div id="players-grid"></div>
     </div>
     <div class="panel">
-      <div class="panel-header"><h2>🎒 Team Bag</h2></div>
-      <div id="bag-list" style="padding:10px; max-height:180px; overflow-y:auto;"></div>
+      <div class="panel-header"><h2>🧭 Adventure</h2><span>DM controls discoveries</span></div>
+      <div class="adventure-actions"><button class="btn-gold" onclick="findChest()">🧰 FIND CHESTS</button><button class="btn-gold" onclick="exploreEvent()">🗺️ EXPLORE</button><button class="btn-gold" onclick="shortRest()">🔥 SHORT REST</button><button class="btn-gold" onclick="triggerTrap()">⚠️ TRAP</button></div>
+      <div id="discovery-text" class="discovery">Choose what the party discovers next.</div>
     </div>
     <div class="panel">
       <div id="chronicle-list" style="height:150px; background:#000; padding:12px; font-family:monospace; font-size:12px; overflow-y:auto;"></div>
@@ -184,20 +179,21 @@ body {
 
 <script>
 const PRESETS = [
-  { n: "Goblin", hp: 12, atk: "Scimitar" }, { n: "Orc", hp: 15, atk: "Greataxe" },
-  { n: "Zombie", hp: 22, atk: "Slam" }, { n: "Vampire", hp: 144, atk: "Bite" },
-  { n: "Red Dragon", hp: 256, atk: "Fire Breath" }, { n: "Skeleton", hp: 13, atk: "Bow" },
-  { n: "Lich", hp: 135, atk: "Disintegrate" }, { n: "Kraken", hp: 472, atk: "Tentacle" }
+  { n: "Goblin", hp: 12, atk: "Scimitar", dmg:[2,6] }, { n: "Orc", hp: 22, atk: "Greataxe", dmg:[4,9] },
+  { n: "Zombie", hp: 30, atk: "Slam", dmg:[3,7] }, { n: "Vampire", hp: 84, atk: "Bite", dmg:[6,12] },
+  { n: "Red Dragon", hp: 156, atk: "Fire Breath", dmg:[10,20] }, { n: "Skeleton", hp: 16, atk: "Bow", dmg:[2,7] },
+  { n: "Lich", hp: 110, atk: "Disintegrate", dmg:[8,16] }, { n: "Kraken", hp: 190, atk: "Tentacle", dmg:[9,18] }
 ];
 const P_CONDS = ["Regen", "Blessed", "Shield", "Hasted", "Poisoned", "Cursed"];
 const M_CONDS = ["Blinded", "Poisoned", "Stunned", "Prone", "Burning"];
 
 function normalizeState(state) {
-  const base = { players: [], monsters: [], logs: [], turn: -1, bag: [], loc: "Forest", weath: "Sunny" };
+  const base = { players: [], monsters: [], logs: [], turn: -1, bag: [], loc: "Forest", weath: "Sunny", discovery: '' };
   const next = { ...base, ...(state || {}) };
   next.players = next.players.map(player => ({
-    race: 'Human', className: 'Adventurer', level: 1, invest: [1,1,1,1,1,1], currentHP: 26, inventory: [], conds: [], ...player
+    race: 'Human', className: 'Adventurer', level: 1, invest: [1,1,1,1,1,1], currentHP: 26, inventory: [], conds: [], chest: [], ...player
   }));
+  next.monsters = next.monsters.map(monster => ({ potions: 1, conds: [], ...monster }));
   return next;
 }
 
@@ -266,67 +262,77 @@ function log(msg, type='norm') {
 
 function toggleModal(id, open) { document.getElementById(id).classList.toggle('open', open); }
 
-function nextTurn() {
-  if (!S.players.length) return;
-  
-  // Monster DoT Logic (Damage over Time)
-  S.monsters.forEach(m => {
-    if (m.conds.includes("Poisoned")) {
-      m.cur -= 2;
-      log(`🤢 ${m.n} takes 2 Poison damage!`);
-    }
-    if (m.conds.includes("Burning")) {
-      m.cur -= 3;
-      log(`🔥 ${m.n} takes 3 Burning damage!`);
-    }
-  });
+function maxHP(player) {
+  const raceHealth = { Human:1.2, Vessel:1.1, Elf:1.3, Orc:1.9, Titan:2, Fae:1.1, Automaton:1.7 }[player.race] || 1.2;
+  return 10 + Math.round((player.invest?.[0] || 1) * raceHealth * 5) + ((Number(player.level) || 1) * 10);
+}
+function esc(value=''){return String(value).replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]))}
+function changeHP(target, amount) { target.currentHP = Math.max(0, Math.min(maxHP(target), Number(target.currentHP || 0) + amount)); }
+function damageMonster(monster, amount) { monster.cur = Math.max(0, Math.min(Number(monster.hp), Number(monster.cur || 0) - amount)); }
+function livingPlayers(){ return S.players.filter(player => Number(player.currentHP) > 0); }
+function livingMonsters(){ return S.monsters.filter(monster => Number(monster.cur) > 0); }
 
-  S.turn = (S.turn + 1) % S.players.length;
+function nextTurn() {
+  if (!livingPlayers().length) { log('☠️ The whole party is down.', 'atk'); return; }
+  let attempts = 0;
+  do { S.turn = (S.turn + 1) % S.players.length; attempts += 1; } while (Number(S.players[S.turn].currentHP) <= 0 && attempts <= S.players.length);
   const p = S.players[S.turn];
-  log(`>> Turn: ${p.name}`);
-  
-  if (p.conds.includes("Regen")) log(`✨ Regen: ${p.name} recovers health!`);
-  if (Math.random() < 0.3) document.getElementById('floating-chest').style.display = 'block';
+  p.acted = false;
+  if (p.conds.includes('Poisoned')) { changeHP(p, -2); log(`🤢 ${p.name} takes 2 poison damage.`, 'atk'); }
+  if (p.conds.includes('Cursed')) { changeHP(p, -1); log(`🌑 ${p.name} takes 1 curse damage.`, 'atk'); }
+  if (p.conds.includes('Regen') && p.currentHP > 0) { changeHP(p, 3); log(`✨ ${p.name} regenerates 3 HP.`); }
+  if (S.turn === 0) S.monsters.forEach(monster => {
+    if (monster.cur <= 0) return;
+    if (monster.conds.includes('Poisoned')) { damageMonster(monster, 2); log(`🤢 ${monster.n} takes 2 poison damage.`, 'atk'); }
+    if (monster.conds.includes('Burning')) { damageMonster(monster, 3); log(`🔥 ${monster.n} takes 3 burning damage.`, 'atk'); }
+  });
+  if (p.currentHP <= 0) log(`☠️ ${p.name} has died.`, 'atk');
+  else log(`>> Turn: ${p.name}`);
   save();
 }
 
 function playerAtk() {
-  const p = S.players[S.turn] || { name: "Player", conds: [] };
+  const p = S.players[S.turn];
+  const monster = livingMonsters()[0];
+  if (!p || p.currentHP <= 0 || !monster) return;
   const r = Math.floor(Math.random()*20)+1;
-  let mod = p.conds.includes("Blessed") ? " (+Blessed)" : p.conds.includes("Poisoned") ? " (-Poisoned)" : "";
-  let res = r <= 7 ? "❌ FAIL" : r <= 15 ? "⚔️ HIT" : "💥 CRIT (1.4x)";
-  log(`${p.name} Attack: [${r}]${mod} -> ${res}`, 'atk');
+  const hit = r + (p.conds.includes('Blessed') ? 3 : 0) >= 9;
+  const damage = hit ? (Number(p.invest?.[3]) || 1) + 3 + Math.floor(Math.random()*6) + (r === 20 ? 6 : 0) : 0;
+  damageMonster(monster, damage);
+  p.acted = true;
+  log(hit ? `⚔️ ${p.name} hits ${monster.n} for ${damage}.` : `❌ ${p.name} misses ${monster.n}.`, 'atk');
+  if (monster.cur === 0) log(`☠️ ${monster.n} is defeated!`, 'atk');
   document.getElementById('dice-res').textContent = r;
+  save();
 }
 
 function monsterAtk(mIdx) {
   const m = S.monsters[mIdx];
-  if (m.conds.includes("Stunned")) { log(`🚫 ${m.n} is STUNNED!`, 'atk'); return; }
-  
-  const dmg = Math.floor(Math.random() * 10) + 5;
-  let blind = m.conds.includes("Blinded") ? " (Miss Chance!)" : "";
-  log(`🐉 ${m.n} uses ${m.atk} for ${dmg} damage${blind}!`, 'atk');
+  const target = S.players[S.turn]?.currentHP > 0 ? S.players[S.turn] : livingPlayers()[0];
+  if (!m || m.cur <= 0 || !target) return;
+  if (m.conds.includes('Stunned')) { log(`🚫 ${m.n} loses its turn while stunned.`, 'atk'); return; }
+  if (m.conds.includes('Blinded') && Math.random() < .5) { log(`🌫️ ${m.n} misses ${target.name}.`, 'atk'); return; }
+  let dmg = m.dmg ? m.dmg[0] + Math.floor(Math.random() * (m.dmg[1] - m.dmg[0] + 1)) : 3 + Math.floor(Math.random()*6);
+  if (target.conds.includes('Shield')) { dmg = Math.ceil(dmg / 2); target.conds.splice(target.conds.indexOf('Shield'), 1); }
+  changeHP(target, -dmg);
+  log(`🐉 ${m.n} uses ${m.atk} on ${target.name} for ${dmg} damage.`, 'atk');
+  if (target.currentHP === 0) log(`☠️ ${target.name} has died.`, 'atk');
+  save();
 }
+function monsterPotion(mIdx){const monster=S.monsters[mIdx];if(!monster||monster.cur<=0||monster.cur>=monster.hp||monster.potions<=0)return;monster.cur=Math.min(monster.hp,Number(monster.cur)+10);monster.potions-=1;log(`🧪 ${monster.n} drinks a potion and heals 10 HP.`,'atk');save()}
 
-function triggerLoot() {
-  document.getElementById('floating-chest').style.display = 'none';
-  document.getElementById('loot-results').innerHTML = '';
-  document.getElementById('close-loot').style.display = 'none';
-  toggleModal('chest-overlay', true);
+const LOOT = ['Health Potion','Health Potion','Greater Healing Potion','Phoenix Down','Antidote','Regen Herb','Shield Charm','Lucky Coin','Bomb','Fire Flask','Smoke Bomb'];
+function randomLoot(){const count=1+Math.floor(Math.random()*3),items=[];while(items.length<count)items.push(LOOT[Math.floor(Math.random()*LOOT.length)]);return items}
+function findChest(){
+  const eligible=livingPlayers(); if(!eligible.length)return;
+  eligible.forEach(player=>player.chest=randomLoot());
+  S.discovery=`🧰 The party discovered ${eligible.length} locked chest${eligible.length===1?'':'s'}. Each player received different loot on their phone.`;
+  log('🧰 The DM revealed personal chests for the party.'); save();
 }
-
-function openChest() {
-  document.getElementById('big-chest').style.display = 'none';
-  const LOOT = ["Health Potion", "Iron Sword", "Phoenix Down", "Golden Coin", "Regen Herb"];
-  LOOT.forEach((item, i) => {
-    setTimeout(() => {
-      const div = document.createElement('div'); div.className = 'loot-item reveal'; div.innerHTML = `✨ ${item}`;
-      document.getElementById('loot-results').appendChild(div);
-      S.bag.push(item); if(i === 4) document.getElementById('close-loot').style.display = 'block';
-      save();
-    }, i * 400);
-  });
-}
+const EVENTS=['A wounded courier offers a reward for safe passage.','A sealed stone door has three glowing runes and no visible handle.','Tracks split toward a ruined tower and a torch-lit cave.','A merchant offers one item in exchange for a dangerous favour.','The party hears someone calling for help beyond the fog.','An ancient shrine offers power, but asks for a sacrifice.'];
+function exploreEvent(){S.discovery=`🗺️ ${EVENTS[Math.floor(Math.random()*EVENTS.length)]}`;log(S.discovery);save()}
+function shortRest(){livingPlayers().forEach(player=>changeHP(player,Math.max(3,Math.ceil(maxHP(player)*.25))));S.discovery='🔥 The party rests and recovers 25% of maximum HP.';log(S.discovery);save()}
+function triggerTrap(){const victims=livingPlayers();if(!victims.length)return;const victim=victims[Math.floor(Math.random()*victims.length)],damage=3+Math.floor(Math.random()*8);changeHP(victim,-damage);S.discovery=`⚠️ ${victim.name} triggered a trap and lost ${damage} HP.`;log(S.discovery,'atk');save()}
 
 function addPlayer() {
   const id = Date.now();
@@ -344,7 +350,7 @@ function showPlayerQR(id) {
 
 function summon(idx) {
   const p = PRESETS[idx];
-  S.monsters.push({ id: Date.now(), ...p, cur: p.hp, conds: [] });
+  S.monsters.push({ id: Date.now(), ...p, cur: p.hp, conds: [], potions: 1 });
   log(`Summoned ${p.n}`);
   toggleModal('bestiary-modal', false);
   save();
@@ -364,14 +370,14 @@ function render() {
 
   // Players
   document.getElementById('players-grid').innerHTML = S.players.map((p, i) => `
-    <div class="p-card ${S.turn === i ? 'active-turn' : ''}">
+    <div class="p-card ${S.turn === i ? 'active-turn' : ''} ${Number(p.currentHP)<=0?'dead':''}">
       <div style="position:absolute; right:10px; top:10px; display:flex; gap:10px;">
         ${p.clientId ? '<span title="Phone connected" style="color:#69db8c; font-size:16px;">● 📱</span>' : `<button title="Show player QR" style="background:none; border:none; color:var(--gold); font-size:18px;" onclick="showPlayerQR(${p.id})">📱</button>`}
         <button title="Remove player" style="background:none; border:none; color:var(--red); font-size:18px;" onclick="S.players.splice(${i},1);save()">✕</button>
       </div>
-      <input class="p-name-in" value="${p.name}" onchange="S.players[${i}].name=this.value;save()">
+      <div class="p-name-in">${esc(p.name)} ${Number(p.currentHP)<=0?'<span class="dead-label">· DEAD</span>':''}</div>
       <div style="display:flex; gap:14px; margin-top:5px; color:var(--muted); font-size:11px; font-weight:bold;">
-        <span>❤️ ${p.currentHP ?? '—'} HP</span><span>🎒 ${(p.inventory || []).length} items</span><span>${p.guest ? 'Guest · ' : ''}${p.race || 'Human'} ${p.className || 'Adventurer'} · Lv ${p.level || 1}</span>
+        <span>❤️ ${Math.max(0,Number(p.currentHP)||0)} / ${maxHP(p)} HP</span><span>🎒 ${(p.inventory || []).length} items</span>${p.chest?.length?'<span class="chest-mark">🧰 CHEST WAITING</span>':''}<span>${p.guest ? 'Guest · ' : ''}${esc(p.race || 'Human')} ${esc(p.className || 'Adventurer')} · Lv ${p.level || 1}</span>
       </div>
       <div class="p-cond-bar">
         ${P_CONDS.map(c => `<div class="p-tag ${p.conds.includes(c)?'active':''}" onclick="const idx=S.players[${i}].conds.indexOf('${c}'); if(idx>-1) S.players[${i}].conds.splice(idx,1); else S.players[${i}].conds.push('${c}'); save()">${c}</div>`).join('')}
@@ -380,34 +386,32 @@ function render() {
 
   // Monsters
   document.getElementById('monster-list').innerHTML = S.monsters.map((m, mIdx) => `
-    <div class="m-card">
+    <div class="m-card ${Number(m.cur)<=0?'dead':''}">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size:22px; font-weight:900; color:var(--red);">🐉 ${m.n}</span>
-        <button class="btn-gold" style="padding:5px 10px; font-size:11px;" onclick="monsterAtk(${mIdx})">ATTACK</button>
+        <span style="font-size:22px; font-weight:900; color:var(--red);">🐉 ${esc(m.n)} ${Number(m.cur)<=0?'<small class="dead-label">DEAD</small>':''}</span>
+        <button class="btn-gold" style="padding:5px 10px; font-size:11px;" onclick="monsterAtk(${mIdx})" ${Number(m.cur)<=0?'disabled':''}>ATTACK</button>
+        <button class="btn-gold" style="padding:5px 10px; font-size:11px;" onclick="monsterPotion(${mIdx})" ${Number(m.cur)<=0||Number(m.cur)>=Number(m.hp)||Number(m.potions)<=0?'disabled':''}>POTION ${m.potions||0}</button>
         <button style="background:none; border:none; color:#fff; opacity:0.3; font-size:20px;" onclick="S.monsters.splice(${mIdx},1);save()">✕</button>
       </div>
       <div style="display:flex; justify-content:space-between; margin-top:10px;">
-        <span style="font-size:12px; color:var(--muted)">Skill: ${m.atk}</span>
-        <div><input type="number" style="width:70px; background:#000; color:#fff; border:1px solid var(--border); text-align:center; font-size:20px;" value="${m.cur}" onchange="S.monsters[${mIdx}].cur=this.value;save()"> / ${m.hp}</div>
+        <span style="font-size:12px; color:var(--muted)">Skill: ${esc(m.atk)}</span>
+        <div class="hp-readout">${Math.max(0,Number(m.cur)||0)} / ${m.hp}</div>
       </div>
       <div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;">
         ${M_CONDS.map(c => `<div class="cond-tag ${m.conds.includes(c)?'active':''}" onclick="const idx=S.monsters[${mIdx}].conds.indexOf('${c}'); if(idx>-1) S.monsters[${mIdx}].conds.splice(idx,1); else S.monsters[${mIdx}].conds.push('${c}'); save()">${c}</div>`).join('')}
       </div>
     </div>`).join('');
 
-  document.getElementById('bag-list').innerHTML = S.bag.map((item, i) => `
-    <div style="background:#111; padding:8px; border-radius:6px; display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px;">
-      <span>📦 ${item}</span><button style="background:none; border:none; color:var(--red);" onclick="S.bag.splice(${i},1);save()">✕</button>
-    </div>`).join('');
+  document.getElementById('discovery-text').textContent = S.discovery || 'Choose what the party discovers next.';
 
   document.getElementById('bestiary-inject').innerHTML = PRESETS.map((p, i) => `
     <button style="background:#241508; border:2px solid var(--border); color:#fff; padding:15px; border-radius:10px; text-align:left; font-size:18px; font-weight:bold;" onclick="summon(${i})">${p.n} <span style="color:var(--red); float:right;">${p.hp}</span></button>`).join('');
 
-  document.getElementById('chronicle-list').innerHTML = S.logs.map(l => `<div style="color:${l.type==='atk'?'#ff6b6b':'#ccc'}; margin-bottom:5px;">[${l.t}] ${l.msg}</div>`).join('');
-  document.getElementById('turn-name').textContent = S.players[S.turn] ? S.players[S.turn].name : 'WAITING...';
+  document.getElementById('chronicle-list').innerHTML = S.logs.map(l => `<div style="color:${l.type==='atk'?'#ff6b6b':'#ccc'}; margin-bottom:5px;">[${esc(l.t)}] ${esc(l.msg)}</div>`).join('');
+  document.getElementById('turn-name').textContent = S.players[S.turn] ? `${S.players[S.turn].name}${Number(S.players[S.turn].currentHP)<=0?' · DEAD':''}` : 'WAITING...';
 }
 
-function newSession() { if(confirm('Wipe everything?')) { S={players:[],monsters:[],logs:[],turn:-1,bag:[],loc:"Forest",weath:"Sunny"}; save(); } }
+function newSession() { if(confirm('Wipe everything?')) { S={players:[],monsters:[],logs:[],turn:-1,bag:[],loc:"Forest",weath:"Sunny",discovery:''}; save(); } }
 render();
 connectLAN();
 </script>
