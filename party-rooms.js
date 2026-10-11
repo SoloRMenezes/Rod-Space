@@ -48,7 +48,7 @@ async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onSta
   const pinHash=pin?await hash(`${roomRef.id}:${pin}`):'';
   const lan=PartyLan.host();
   const pending=new Map();
-  const relayPeers=new Map(),relayPending=new Map(),relaySending=new Set();
+  const relayPeers=new Map(),relayPending=new Map(),relaySending=new Set(),relayReceived=new Map();
   let relaySequence=0;
   const flushRelay=async(peerId,peerRef)=>{
     if(relaySending.has(peerId))return;
@@ -61,16 +61,17 @@ async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onSta
     relaySending.delete(peerId);
     if(relayPending.has(peerId))flushRelay(peerId,peerRef);
   };
-  const directBroadcast=lan.broadcast.bind(lan);
+  const queueRelay=(peerId,peerRef,type,payload)=>{relayPending.set(peerId,{type,payload,sequence:++relaySequence});flushRelay(peerId,peerRef)};
+  const directBroadcast=lan.broadcast.bind(lan),directSend=lan.send.bind(lan);
   lan.broadcast=(type,payload)=>{
     directBroadcast(type,payload);
-    relayPeers.forEach((peerRef,peerId)=>{
+    relayPeers.forEach(({ref},peerId)=>{
       // Movement only needs the newest state. Coalescing prevents a trail of
       // stale joystick positions from adding seconds of controller latency.
-      relayPending.set(peerId,{type,payload,sequence:++relaySequence});
-      flushRelay(peerId,peerRef);
+      queueRelay(peerId,ref,type,payload);
     });
   };
+  lan.send=(peer,type,payload)=>{const relay=relayPeers.get(peer?.meta?.id);if(relay)queueRelay(peer.meta.id,relay.ref,type,payload);else directSend(peer,type,payload)};
   let stopped=false;
   const publish=()=>setDoc(roomRef,{game,name,...metadata,ownerUid:user.uid,locked:!!pin,pinHash,players:1,createdAt:serverTimestamp(),updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE});
   await publish();
@@ -94,11 +95,13 @@ async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onSta
       try{onStatus(`${data.name} is connecting`);const guest=await invite.accept(data.answer);guest.meta.name=data.name;await updateDoc(item.ref,{status:'connecting'})}catch(error){await updateDoc(item.ref,{status:'error',message:error.message})}
     }
     if(data.status==='relay'&&!relayPeers.has(item.id)){
-      relayPeers.set(item.id,item.ref);
+      const peer={meta:{id:item.id,name:data.name},channel:{readyState:'open'},relay:true};
+      relayPeers.set(item.id,{ref:item.ref,peer});
       onStatus(`${data.name} connected`);
       await updateDoc(item.ref,{status:'connected',transport:'relay'});
-      onConnected({meta:{id:item.id,name:data.name},channel:{readyState:'open'},relay:true});
+      onConnected(peer);
     }
+    if(data.clientMessage?.sequence>(relayReceived.get(item.id)||0)){relayReceived.set(item.id,data.clientMessage.sequence);const relay=relayPeers.get(item.id);if(relay)lan.receive(relay.peer,data.clientMessage.type,data.clientMessage.payload)}
   }));
   lan.on('open',async guest=>{
     const peerId=guest.meta.id;
@@ -119,11 +122,12 @@ async function join(room,{name,pin='',onStatus=()=>{}}){
   const peerRef=doc(collection(roomRef,'peers'));
   await setDoc(peerRef,{guestUid:user.uid,name,pinHash:supplied,status:'requesting',createdAt:serverTimestamp()});
   return new Promise((resolve,reject)=>{
-    let client=null,finished=false,fallbackTimer=0,lastRelaySequence=0;
+    let client=null,finished=false,fallbackTimer=0,lastRelaySequence=0,clientSequence=0;
     const relayListeners=new Map();
     const relayClient={
       meta:{peerId:peerRef.id,name},
       on(type,handler){if(!relayListeners.has(type))relayListeners.set(type,new Set());relayListeners.get(type).add(handler);return()=>relayListeners.get(type)?.delete(handler)},
+      send(type,payload){updateDoc(peerRef,{clientMessage:{type,payload,sequence:++clientSequence}}).catch(()=>{})},
       close(){relayListeners.get('close')?.forEach(handler=>handler())}
     };
     const emitRelay=(type,value)=>relayListeners.get(type)?.forEach(handler=>handler(value));

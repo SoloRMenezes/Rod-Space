@@ -51,17 +51,32 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "DNDC.html",
-        "bytes": 20196,
-        "hash": "6fb6527554a28b8347f8a02fd48f96c1fe838acd96b9e5b6be3a1d478719cd22"
+        "bytes": 20851,
+        "hash": "965726262d46baaf603948597a4925919ca60e56634f4a869f4d2c69cce14c51"
       },
       {
         "path": "dnd-ai.html",
-        "bytes": 7681,
-        "hash": "efb4ea64a1465a48c76bcb4854ad4da5f3bda40c5c0706b84e9e4574378b13d4"
+        "bytes": 7902,
+        "hash": "d4e35f72256fce5f8f68aff5b0275b28fb053443981886335511d5747beb6d2e"
+      },
+      {
+        "path": "dnd-game.js",
+        "bytes": 13276,
+        "hash": "667d9ed492492e5c021c38d75223b40956894eaedd82558df26a6260b34cf671"
+      },
+      {
+        "path": "party-lan.js",
+        "bytes": 3892,
+        "hash": "a2f9e78e7b4985b1a63a192db6c729f7ff33d1c893b6ccdbd0c4c68d8085447c"
+      },
+      {
+        "path": "party-rooms.js",
+        "bytes": 9396,
+        "hash": "78fb78150568c40e1f956746462a69d872cc6e99bd2eaf8fc0964af1c875ef93"
       }
     ],
-    "bytes": 28567,
-    "version": "6dca6ba7521933fe"
+    "bytes": 56007,
+    "version": "15ef01b0288bcc21"
   },
   "piano": {
     "name": "Virtual Piano",
