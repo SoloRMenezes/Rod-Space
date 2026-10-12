@@ -491,7 +491,7 @@ function Shop({
     className: "font-black text-sm text-white"
   }, "EXPANSION PACK"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-300 mt-1"
-  }, "3 full-game themes plus Prism Volley and Arc Chain weapons. Twin Chambers, Orbit Blade and Nova Laser now start free.")), /*#__PURE__*/React.createElement("span", {
+  }, "3 full-game themes and 4 exclusive weapons: Prism Volley, Arc Chain, Rift Mine and Starfall Cannon.")), /*#__PURE__*/React.createElement("span", {
     className: `shrink-0 px-3 py-2 rounded-lg font-black text-xs ${expansionOwned ? 'bg-cyan-400 text-black' : 'bg-fuchsia-500 text-white'}`
   }, expansionOwned ? 'OWNED' : '500'))), activeTab === "upgrades" ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
@@ -1037,8 +1037,7 @@ function GameCanvas({
       }
     }
 
-    // These are expansion weapons, while the three classic weapons above
-    // remain available in every run from the beginning.
+    // Expansion-exclusive weapon set.
     if (s.player.expansionArsenal && s.frameCount % 150 === 0) {
       for (let i = 0; i < 8; i++) {
         const angle = i * Math.PI / 4;
@@ -1075,6 +1074,62 @@ function GameCanvas({
         index
       }) => applyBulletDamageToEnemy(enemy, index, s.player.bulletDamage * 1.4, true));
       s.screenShake = Math.max(s.screenShake, 8);
+    }
+    if (s.player.expansionArsenal && s.frameCount % 300 === 0 && s.enemies.length) {
+      const anchor = s.enemies.reduce((closest, enemy) => {
+        const distance = Math.hypot(enemy.worldX - s.player.worldX, enemy.worldY - s.player.worldY);
+        return !closest || distance < closest.distance ? {
+          enemy,
+          distance
+        } : closest;
+      }, null).enemy;
+      const blastTargets = s.enemies.map((enemy, index) => ({
+        enemy,
+        index,
+        distance: Math.hypot(enemy.worldX - anchor.worldX, enemy.worldY - anchor.worldY)
+      })).filter(({
+        distance
+      }) => distance <= 120).sort((a, b) => b.index - a.index);
+      addExplosionSparks(anchor.worldX, anchor.worldY, "#d946ef", 28);
+      blastTargets.forEach(({
+        enemy,
+        index
+      }) => applyBulletDamageToEnemy(enemy, index, s.player.bulletDamage * 1.1, false));
+      s.damageTexts.push({
+        id: Math.random().toString(),
+        worldX: anchor.worldX,
+        worldY: anchor.worldY - 28,
+        text: "RIFT MINE",
+        color: "#e879f9",
+        life: 42,
+        maxLife: 42,
+        vy: -.55
+      });
+      s.screenShake = Math.max(s.screenShake, 10);
+    }
+    if (s.player.expansionArsenal && s.frameCount % 420 === 0 && s.enemies.length) {
+      const targets = s.enemies.map((enemy, index) => ({
+        enemy,
+        index
+      })).sort((a, b) => b.enemy.hp - a.enemy.hp).slice(0, 5).sort((a, b) => b.index - a.index);
+      targets.forEach(({
+        enemy,
+        index
+      }) => {
+        addExplosionSparks(enemy.worldX, enemy.worldY, "#fef08a", 18);
+        applyBulletDamageToEnemy(enemy, index, s.player.bulletDamage * 2.2, true);
+      });
+      s.damageTexts.push({
+        id: Math.random().toString(),
+        worldX: s.player.worldX,
+        worldY: s.player.worldY - 28,
+        text: "STARFALL CANNON",
+        color: "#facc15",
+        life: 48,
+        maxLife: 48,
+        vy: -.55
+      });
+      s.screenShake = Math.max(s.screenShake, 14);
     }
 
     // Friend bullets logic
