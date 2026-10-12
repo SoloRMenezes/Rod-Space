@@ -93,24 +93,24 @@ const skinsList = [{
   id: "coral_depths",
   type: "skin",
   title: "Coral Depths",
-  desc: "Expansion theme: pearl armor, reef creatures and new weapons",
-  cost: 0,
+  desc: "DLC theme: +35% pickup range in the reef",
+  cost: 650,
   expansion: true,
   color: "from-cyan-300 to-rose-500"
 }, {
   id: "toxic_jungle",
   type: "skin",
   title: "Toxic Jungle",
-  desc: "Expansion theme: acid armor and jungle beasts",
-  cost: 0,
+  desc: "DLC theme: +12% damage and +3% crit chance",
+  cost: 800,
   expansion: true,
   color: "from-lime-300 to-emerald-800"
 }, {
   id: "frost_crypt",
   type: "skin",
   title: "Frost Crypt",
-  desc: "Expansion theme: glacial armor and frozen undead",
-  cost: 0,
+  desc: "DLC theme: +20% max HP and 10 shield",
+  cost: 950,
   expansion: true,
   color: "from-sky-200 to-indigo-700"
 }];
@@ -491,7 +491,7 @@ function Shop({
     className: "font-black text-sm text-white"
   }, "EXPANSION PACK"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-300 mt-1"
-  }, "3 full-game themes and 4 exclusive weapons: Prism Volley, Arc Chain, Rift Mine and Starfall Cannon.")), /*#__PURE__*/React.createElement("span", {
+  }, "Unlocks access to 3 purchasable themes and 4 run weapons across Rare\u2013Mythic tiers.")), /*#__PURE__*/React.createElement("span", {
     className: `shrink-0 px-3 py-2 rounded-lg font-black text-xs ${expansionOwned ? 'bg-cyan-400 text-black' : 'bg-fuchsia-500 text-white'}`
   }, expansionOwned ? 'OWNED' : '500'))), activeTab === "upgrades" ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
@@ -630,6 +630,7 @@ function GameCanvas({
   paused,
   equippedSkin,
   equippedTrail,
+  expansionOwned,
   onGameOver,
   onLevelUp,
   onEarnCrystals,
@@ -673,6 +674,7 @@ function GameCanvas({
   const upgradesRef = useRef(upgrades);
   const skinRef = useRef(equippedSkin);
   const trailRef = useRef(equippedTrail);
+  const expansionOwnedRef = useRef(expansionOwned);
   const activeRef = useRef(active);
   const pausedRef = useRef(paused);
   useEffect(() => {
@@ -684,6 +686,9 @@ function GameCanvas({
   useEffect(() => {
     trailRef.current = equippedTrail;
   }, [equippedTrail]);
+  useEffect(() => {
+    expansionOwnedRef.current = expansionOwned;
+  }, [expansionOwned]);
   useEffect(() => {
     activeRef.current = active;
   }, [active]);
@@ -732,32 +737,36 @@ function GameCanvas({
   }, [active]);
   function createInitialPlayer(u, skin, trail) {
     const baseHp = 100 + (u.armor || 0) * 15;
+    const themedHp = skin === "frost_crypt" ? baseHp * 1.2 : baseHp;
     return {
       worldX: 0,
       worldY: 0,
       size: 18,
       speed: 3.2 * (1 + (u.speed || 0) * 0.04),
-      hp: baseHp,
-      maxHp: baseHp,
+      hp: themedHp,
+      maxHp: themedHp,
       fireRate: 35,
       fireTimer: 0,
       bulletSpeed: 8,
       bulletSize: 6,
-      bulletDamage: 30 * (1 + (u.damage || 0) * 0.05),
-      bulletCount: u.arsenal ? 3 : 2,
-      pickupRange: 85,
-      shield: (u.armor || 0) * 4,
+      bulletDamage: 30 * (1 + (u.damage || 0) * 0.05) * (skin === "toxic_jungle" ? 1.12 : 1),
+      bulletCount: 1,
+      pickupRange: 85 * (skin === "coral_depths" ? 1.35 : 1),
+      shield: (u.armor || 0) * 4 + (skin === "frost_crypt" ? 10 : 0),
       dodge: 0.02,
       lifesteal: 0,
-      critChance: (u.crit || 0) * 0.04,
+      critChance: (u.crit || 0) * 0.04 + (skin === "toxic_jungle" ? 0.03 : 0),
       regen: (u.regen || 0) * 0.15,
       xpMult: 1.0,
-      orbitSaws: u.arsenal ? 2 : 1,
+      orbitSaws: 0,
       orbitAngle: 0,
       facing: 1,
       animFrame: 0,
-      laserLevel: u.arsenal ? 2 : 1,
-      expansionArsenal: Boolean(u.arsenal),
+      laserLevel: 0,
+      prismVolley: false,
+      arcChain: false,
+      riftMine: false,
+      starfallCannon: false,
       laserCooldown: 7000,
       lastLaserTime: 0,
       equippedSkin: skin,
@@ -796,24 +805,41 @@ function GameCanvas({
       p.fireRate *= 0.8;
     }
   }, {
-    id: "mag",
-    rarity: "rare",
-    title: "Tuning Magnet",
-    desc: "+50% Resource pickup range",
-    effect: p => {
-      p.pickupRange *= 1.5;
-    }
-  }, {
     id: "multi",
-    rarity: "rare",
+    rarity: "common",
     title: "Twin Chambers",
-    desc: "+1 Firing weapon projectile",
+    desc: "+1 firing projectile",
     effect: p => {
       p.bulletCount++;
     }
   }, {
+    id: "mag",
+    rarity: "uncommon",
+    title: "Tuning Magnet",
+    desc: "+50% resource pickup range",
+    effect: p => {
+      p.pickupRange *= 1.5;
+    }
+  }, {
+    id: "hull",
+    rarity: "uncommon",
+    title: "Reinforced Hull",
+    desc: "+20 max HP and repair 20 HP",
+    effect: p => {
+      p.maxHp += 20;
+      p.hp = Math.min(p.maxHp, p.hp + 20);
+    }
+  }, {
+    id: "precision",
+    rarity: "uncommon",
+    title: "Precision Matrix",
+    desc: "+8% critical hit chance",
+    effect: p => {
+      p.critChance += 0.08;
+    }
+  }, {
     id: "saw",
-    rarity: "legendary",
+    rarity: "rare",
     title: "Orbit Drone",
     desc: "Gain +1 revolving blade",
     effect: p => {
@@ -821,11 +847,20 @@ function GameCanvas({
     }
   }, {
     id: "vamp",
-    rarity: "legendary",
+    rarity: "rare",
     title: "Soul Siphon",
     desc: "Heal 5% HP on every 5th kill",
     effect: p => {
       p.lifesteal += 0.05;
+    }
+  }, {
+    id: "prism",
+    rarity: "rare",
+    expansion: true,
+    title: "Prism Volley",
+    desc: "Periodic eight-way energy burst",
+    effect: p => {
+      p.prismVolley = true;
     }
   }, {
     id: "laser",
@@ -841,6 +876,52 @@ function GameCanvas({
         p.laserLevel++;
         p.laserCooldown = Math.max(1000, p.laserCooldown - 800);
       }
+    }
+  }, {
+    id: "arc",
+    rarity: "legendary",
+    expansion: true,
+    title: "Arc Chain",
+    desc: "Periodic lightning strike against 3 targets",
+    effect: p => {
+      p.arcChain = true;
+    }
+  }, {
+    id: "rift",
+    rarity: "legendary",
+    expansion: true,
+    title: "Rift Mine",
+    desc: "Periodic blast around the nearest enemy",
+    effect: p => {
+      p.riftMine = true;
+    }
+  }, {
+    id: "ascension",
+    rarity: "mythic",
+    title: "Relic Ascension",
+    desc: "+35% damage, +20% fire rate and +1 projectile",
+    effect: p => {
+      p.bulletDamage *= 1.35;
+      p.fireRate *= 0.8;
+      p.bulletCount++;
+    }
+  }, {
+    id: "singularity",
+    rarity: "mythic",
+    title: "Singularity Drive",
+    desc: "+2 orbit blades and +25% movement speed",
+    effect: p => {
+      p.orbitSaws += 2;
+      p.speed *= 1.25;
+    }
+  }, {
+    id: "starfall",
+    rarity: "mythic",
+    expansion: true,
+    title: "Starfall Cannon",
+    desc: "Bombards the 5 strongest enemies",
+    effect: p => {
+      p.starfallCannon = true;
     }
   }];
   useEffect(() => {
@@ -1038,7 +1119,7 @@ function GameCanvas({
     }
 
     // Expansion-exclusive weapon set.
-    if (s.player.expansionArsenal && s.frameCount % 150 === 0) {
+    if (s.player.prismVolley && s.frameCount % 150 === 0) {
       for (let i = 0; i < 8; i++) {
         const angle = i * Math.PI / 4;
         s.bullets.push({
@@ -1063,7 +1144,7 @@ function GameCanvas({
         vy: -.5
       });
     }
-    if (s.player.expansionArsenal && s.frameCount % 240 === 0 && s.enemies.length) {
+    if (s.player.arcChain && s.frameCount % 240 === 0 && s.enemies.length) {
       const targets = s.enemies.map((enemy, index) => ({
         enemy,
         index,
@@ -1075,7 +1156,7 @@ function GameCanvas({
       }) => applyBulletDamageToEnemy(enemy, index, s.player.bulletDamage * 1.4, true));
       s.screenShake = Math.max(s.screenShake, 8);
     }
-    if (s.player.expansionArsenal && s.frameCount % 300 === 0 && s.enemies.length) {
+    if (s.player.riftMine && s.frameCount % 300 === 0 && s.enemies.length) {
       const anchor = s.enemies.reduce((closest, enemy) => {
         const distance = Math.hypot(enemy.worldX - s.player.worldX, enemy.worldY - s.player.worldY);
         return !closest || distance < closest.distance ? {
@@ -1107,7 +1188,7 @@ function GameCanvas({
       });
       s.screenShake = Math.max(s.screenShake, 10);
     }
-    if (s.player.expansionArsenal && s.frameCount % 420 === 0 && s.enemies.length) {
+    if (s.player.starfallCannon && s.frameCount % 420 === 0 && s.enemies.length) {
       const targets = s.enemies.map((enemy, index) => ({
         enemy,
         index
@@ -1622,22 +1703,28 @@ function GameCanvas({
     s.level++;
     s.xpToNext = Math.floor(s.xpToNext * 1.25);
     sfx.playLevelUp();
-    const luckBonus = (upgradesRef.current.luck || 0) * 10;
+    const luckBonus = (upgradesRef.current.luck || 0) * 0.02;
     const choices = [];
-    let skillPool = [...baseSkills];
+    const rarityOrder = ["common", "uncommon", "rare", "legendary", "mythic"];
+    const highestRarity = s.level >= 16 ? "mythic" : s.level >= 11 ? "legendary" : s.level >= 7 ? "rare" : s.level >= 4 ? "uncommon" : "common";
+    const unlockedRarities = rarityOrder.slice(0, rarityOrder.indexOf(highestRarity) + 1);
+    let skillPool = baseSkills.filter(skill => !skill.expansion || expansionOwnedRef.current);
     if (s.player.laserLevel >= 5) {
       skillPool = skillPool.filter(sk => sk.id !== "laser");
     }
+    const addRandomFrom = pool => {
+      const available = pool.filter(skill => !choices.some(choice => choice.id === skill.id));
+      if (!available.length) return;
+      choices.push(available[Math.floor(Math.random() * available.length)]);
+    };
+    addRandomFrom(skillPool.filter(skill => skill.rarity === highestRarity));
     while (choices.length < 3) {
-      const roll = Math.random() * 100 + luckBonus;
-      let rarity = "common";
-      if (roll > 92) rarity = "legendary";else if (roll > 68) rarity = "rare";
-      let filteredPool = skillPool.filter(sk => sk.rarity === rarity);
-      if (filteredPool.length === 0) filteredPool = skillPool.filter(sk => sk.rarity === "common");
-      const selected = filteredPool[Math.floor(Math.random() * filteredPool.length)];
-      if (!choices.some(c => c.id === selected.id)) {
-        choices.push(selected);
-      }
+      const roll = Math.min(0.999, Math.random() + luckBonus);
+      const weightedIndex = Math.min(unlockedRarities.length - 1, Math.floor(Math.pow(roll, 0.55) * unlockedRarities.length));
+      const before = choices.length;
+      addRandomFrom(skillPool.filter(skill => skill.rarity === unlockedRarities[weightedIndex]));
+      if (choices.length === before) addRandomFrom(skillPool.filter(skill => unlockedRarities.includes(skill.rarity)));
+      if (choices.length === before) break;
     }
     onLevelUp(choices);
   }
@@ -1782,7 +1869,7 @@ function GameCanvas({
           life: 15 + Math.random() * 12,
           maxLife: 30,
           color: Math.random() < 0.5 ? "#facc15" : "#fef08a",
-          size: 2 + Math.random() * 2
+          size: 1.4 + Math.random() * 1.4
         });
       }
     } else if (trailType === "ion_wake") {
@@ -1795,11 +1882,11 @@ function GameCanvas({
           life: 12 + Math.random() * 10,
           maxLife: 25,
           color: "#22d3ee",
-          size: 2.5 + Math.random() * 1.5
+          size: 1.7 + Math.random() * 1.1
         });
       }
     } else if (trailType === "plasma_flame") {
-      for (let k = 0; k < 3; k++) {
+      for (let k = 0; k < 2; k++) {
         s.particles.push({
           x: backX,
           y: backY,
@@ -1808,7 +1895,7 @@ function GameCanvas({
           life: 10 + Math.random() * 8,
           maxLife: 20,
           color: Math.random() < 0.65 ? "#f97316" : "#ef4444",
-          size: 3 + Math.random() * 3.5
+          size: 2 + Math.random() * 2.3
         });
       }
     }
@@ -2406,22 +2493,6 @@ function App() {
     });
     setExpansionOwned(true);
     localStorage.setItem("ss_expansion", "1");
-    setUpgrades(prev => {
-      const next = {
-        ...prev,
-        arsenal: 1
-      };
-      localStorage.setItem("ss_upgrades", JSON.stringify(next));
-      return next;
-    });
-    setCosmetics(prev => {
-      const next = {
-        ...prev,
-        unlockedSkins: [...new Set([...prev.unlockedSkins, "coral_depths", "toxic_jungle", "frost_crypt"])]
-      };
-      localStorage.setItem("ss_cosmetics", JSON.stringify(next));
-      return next;
-    });
     sfx.playSpecial();
   };
   const handleEquipCosmetic = (type, id) => {
@@ -2626,6 +2697,7 @@ function App() {
     paused: paused,
     equippedSkin: cosmetics.equippedSkin,
     equippedTrail: cosmetics.equippedTrail,
+    expansionOwned: expansionOwned,
     onGameOver: handleGameOver,
     onLevelUp: handleLevelUp,
     onEarnCrystals: handleEarnCrystals,
@@ -2639,16 +2711,28 @@ function App() {
   }, "Select an adaptation upgrade"), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-4 w-full max-w-sm"
   }, levelUpChoices.map(choice => {
-    const isLegendary = choice.rarity === "legendary";
-    const isRare = choice.rarity === "rare";
+    const rarityStyles = {
+      common: "bg-slate-900/40 border-slate-600 hover:border-slate-400 hover:bg-slate-900/80",
+      uncommon: "bg-emerald-950/20 border-emerald-600 hover:border-emerald-400 hover:bg-emerald-950/40",
+      rare: "bg-cyan-950/20 border-cyan-500 hover:border-cyan-300 hover:bg-cyan-950/40",
+      legendary: "bg-yellow-950/20 border-yellow-500 hover:border-yellow-300 hover:bg-yellow-950/40 shadow-lg shadow-yellow-950/30",
+      mythic: "bg-fuchsia-950/25 border-fuchsia-500 hover:border-fuchsia-300 hover:bg-fuchsia-950/45 shadow-lg shadow-fuchsia-950/30"
+    };
+    const rarityBadges = {
+      common: "bg-slate-700 text-slate-200",
+      uncommon: "bg-emerald-400 text-black",
+      rare: "bg-cyan-400 text-black",
+      legendary: "bg-yellow-400 text-black",
+      mythic: "bg-fuchsia-500 text-white"
+    };
     return /*#__PURE__*/React.createElement("div", {
       key: choice.id,
       onClick: () => selectSkill(choice),
-      className: `p-4 rounded-2xl border transition-all duration-200 cursor-pointer text-left hover:-translate-y-1 ${isLegendary ? "bg-yellow-950/20 border-yellow-500 hover:border-yellow-300 hover:bg-yellow-950/40 shadow-lg shadow-yellow-950/30" : isRare ? "bg-cyan-950/20 border-cyan-500 hover:border-cyan-300 hover:bg-cyan-950/40" : "bg-slate-900/40 border-[#2d2d3e] hover:border-slate-400 hover:bg-slate-900/80"}`
+      className: `p-4 rounded-2xl border transition-all duration-200 cursor-pointer text-left hover:-translate-y-1 ${rarityStyles[choice.rarity]}`
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex justify-between items-center mb-1"
     }, /*#__PURE__*/React.createElement("span", {
-      className: `text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded ${isLegendary ? "bg-yellow-400 text-black" : isRare ? "bg-cyan-400 text-black" : "bg-slate-800 text-slate-400"}`
+      className: `text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded ${rarityBadges[choice.rarity]}`
     }, choice.rarity)), /*#__PURE__*/React.createElement("h3", {
       className: "font-extrabold text-sm text-slate-200"
     }, choice.title), /*#__PURE__*/React.createElement("p", {
