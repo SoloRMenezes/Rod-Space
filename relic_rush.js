@@ -820,6 +820,41 @@ function GameCanvas({
       p.bulletCount++;
     }
   }, {
+    id: "heavy_caliber",
+    rarity: "common",
+    title: "Heavy Caliber",
+    desc: "+18% damage and +20% projectile size",
+    effect: p => {
+      p.bulletDamage *= 1.18;
+      p.bulletSize *= 1.2;
+    }
+  }, {
+    id: "field_repairs",
+    rarity: "common",
+    title: "Field Repairs",
+    desc: "+0.3 HP regenerated per second",
+    effect: p => {
+      p.regen += 0.3;
+    }
+  }, {
+    id: "longshot_barrel",
+    rarity: "common",
+    title: "Longshot Barrel",
+    desc: "+25% bullet speed and +10% damage",
+    effect: p => {
+      p.bulletSpeed *= 1.25;
+      p.bulletDamage *= 1.1;
+    }
+  }, {
+    id: "scout_rig",
+    rarity: "common",
+    title: "Scout Rig",
+    desc: "+10% movement speed and +25% pickup range",
+    effect: p => {
+      p.speed *= 1.1;
+      p.pickupRange *= 1.25;
+    }
+  }, {
     id: "reef_capacitor",
     rarity: "common",
     expansion: true,
@@ -879,6 +914,43 @@ function GameCanvas({
     desc: "+8% critical hit chance",
     effect: p => {
       p.critChance += 0.08;
+    }
+  }, {
+    id: "kinetic_shell",
+    rarity: "uncommon",
+    title: "Kinetic Shell",
+    desc: "+12% resistance and +4% dodge chance",
+    effect: p => {
+      p.shield += 12;
+      p.dodge += 0.04;
+    }
+  }, {
+    id: "scavenger_protocol",
+    rarity: "uncommon",
+    title: "Scavenger Protocol",
+    desc: "+25% XP and +35% pickup range",
+    effect: p => {
+      p.xpMult *= 1.25;
+      p.pickupRange *= 1.35;
+    }
+  }, {
+    id: "critical_feedback",
+    rarity: "uncommon",
+    title: "Critical Feedback",
+    desc: "+7% critical chance and +12% fire rate",
+    effect: p => {
+      p.critChance += 0.07;
+      p.fireRate *= 0.88;
+    }
+  }, {
+    id: "emergency_reactor",
+    rarity: "uncommon",
+    title: "Emergency Reactor",
+    desc: "+15 max HP, repair 15 HP and +0.25 regeneration",
+    effect: p => {
+      p.maxHp += 15;
+      p.hp = Math.min(p.maxHp, p.hp + 15);
+      p.regen += 0.25;
     }
   }, {
     id: "pearl_plating",
