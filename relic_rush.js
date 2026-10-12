@@ -2270,6 +2270,35 @@ function App() {
     sfx.playHit();
     setScreen("start");
   };
+  const handleResetProgress = () => {
+    const shouldReset = window.confirm("Reset all Relic Rush coins, upgrades, cosmetics and records?");
+    if (!shouldReset) return;
+    ["ss_crystals", "ss_upgrades", "ss_cosmetics", "ss_high_score", "ss_expansion"].forEach(key => {
+      localStorage.removeItem(key);
+    });
+    setCrystals(0);
+    setUpgrades({
+      luck: 0,
+      coinBoost: 0,
+      speed: 0,
+      damage: 0,
+      armor: 0,
+      regen: 0,
+      crit: 0
+    });
+    setCosmetics({
+      unlockedSkins: ["vanguard"],
+      unlockedTrails: ["none"],
+      equippedSkin: "vanguard",
+      equippedTrail: "none"
+    });
+    setHighScore({
+      lvl: 1,
+      kills: 0
+    });
+    setExpansionOwned(false);
+    sfx.playHit();
+  };
   const handleEarnCrystals = amt => {
     setCrystals(prev => {
       const next = prev + amt;
@@ -2453,7 +2482,7 @@ function App() {
   }, /*#__PURE__*/React.createElement("span", {
     className: "inline-block w-2.5 h-2.5 rounded-full bg-yellow-400"
   }), "WASD / ARROWS / DRAG TO MOVE"))), /*#__PURE__*/React.createElement("div", {
-    className: "flex flex-col sm:flex-row gap-3"
+    className: "flex flex-col sm:flex-row gap-3 mb-7"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: handleStartGame,
     className: "flex-1 bg-yellow-400 hover:bg-yellow-300 text-black font-black py-4 px-6 rounded-xl hover:scale-102 active:scale-95 transition-all text-center flex items-center justify-center gap-2 text-sm tracking-wider uppercase cursor-pointer"
@@ -2466,7 +2495,10 @@ function App() {
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "coins",
     className: "w-4 h-4 text-yellow-400"
-  }), "COMMISSARY"))), screen === "shop" && /*#__PURE__*/React.createElement(Shop, {
+  }), "COMMISSARY")), /*#__PURE__*/React.createElement("button", {
+    onClick: handleResetProgress,
+    className: "absolute bottom-2 left-2 px-2.5 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 hover:text-red-400 border border-transparent hover:border-red-500/30 rounded-md transition-colors cursor-pointer"
+  }, "Reset progress")), screen === "shop" && /*#__PURE__*/React.createElement(Shop, {
     upgrades: upgrades,
     crystals: crystals,
     onPurchase: handleBuyUpgrade,
