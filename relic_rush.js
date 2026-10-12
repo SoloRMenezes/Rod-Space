@@ -491,7 +491,7 @@ function Shop({
     className: "font-black text-sm text-white"
   }, "EXPANSION PACK"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-300 mt-1"
-  }, "Unlocks access to 3 purchasable themes and 4 run weapons across Rare\u2013Mythic tiers.")), /*#__PURE__*/React.createElement("span", {
+  }, "Unlocks 3 purchasable themes and 20 run upgrades: new weapons, passives and Mythic transformations.")), /*#__PURE__*/React.createElement("span", {
     className: `shrink-0 px-3 py-2 rounded-lg font-black text-xs ${expansionOwned ? 'bg-cyan-400 text-black' : 'bg-fuchsia-500 text-white'}`
   }, expansionOwned ? 'OWNED' : '500'))), activeTab === "upgrades" ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
@@ -763,10 +763,17 @@ function GameCanvas({
       facing: 1,
       animFrame: 0,
       laserLevel: 0,
+      bulletPierce: 0,
+      revives: 0,
       prismVolley: false,
       arcChain: false,
       riftMine: false,
       starfallCannon: false,
+      needleBarrage: false,
+      frostPulse: false,
+      toxicBloom: false,
+      leviathanWake: false,
+      absoluteZero: false,
       laserCooldown: 7000,
       lastLaserTime: 0,
       equippedSkin: skin,
@@ -813,6 +820,42 @@ function GameCanvas({
       p.bulletCount++;
     }
   }, {
+    id: "reef_capacitor",
+    rarity: "common",
+    expansion: true,
+    title: "Reef Capacitor",
+    desc: "+8% damage resistance",
+    effect: p => {
+      p.shield += 8;
+    }
+  }, {
+    id: "jungle_metabolism",
+    rarity: "common",
+    expansion: true,
+    title: "Jungle Metabolism",
+    desc: "+0.4 HP regenerated per second",
+    effect: p => {
+      p.regen += 0.4;
+    }
+  }, {
+    id: "cryo_lubricant",
+    rarity: "common",
+    expansion: true,
+    title: "Cryo Lubricant",
+    desc: "+10% fire rate",
+    effect: p => {
+      p.fireRate *= 0.9;
+    }
+  }, {
+    id: "salvage_beacon",
+    rarity: "common",
+    expansion: true,
+    title: "Salvage Beacon",
+    desc: "+20% XP from collected biofuel",
+    effect: p => {
+      p.xpMult *= 1.2;
+    }
+  }, {
     id: "mag",
     rarity: "uncommon",
     title: "Tuning Magnet",
@@ -836,6 +879,46 @@ function GameCanvas({
     desc: "+8% critical hit chance",
     effect: p => {
       p.critChance += 0.08;
+    }
+  }, {
+    id: "pearl_plating",
+    rarity: "uncommon",
+    expansion: true,
+    title: "Pearl Plating",
+    desc: "+30 max HP and repair 30 HP",
+    effect: p => {
+      p.maxHp += 30;
+      p.hp = Math.min(p.maxHp, p.hp + 30);
+    }
+  }, {
+    id: "venom_chamber",
+    rarity: "uncommon",
+    expansion: true,
+    title: "Venom Chamber",
+    desc: "+15% damage and +4% critical chance",
+    effect: p => {
+      p.bulletDamage *= 1.15;
+      p.critChance += 0.04;
+    }
+  }, {
+    id: "glacier_treads",
+    rarity: "uncommon",
+    expansion: true,
+    title: "Glacier Treads",
+    desc: "+12% speed and +5% dodge chance",
+    effect: p => {
+      p.speed *= 1.12;
+      p.dodge += 0.05;
+    }
+  }, {
+    id: "undertow_core",
+    rarity: "uncommon",
+    expansion: true,
+    title: "Undertow Core",
+    desc: "+40% pickup range and +15% bullet speed",
+    effect: p => {
+      p.pickupRange *= 1.4;
+      p.bulletSpeed *= 1.15;
     }
   }, {
     id: "saw",
@@ -863,6 +946,34 @@ function GameCanvas({
       p.prismVolley = true;
     }
   }, {
+    id: "needle_barrage",
+    rarity: "rare",
+    expansion: true,
+    title: "Needle Barrage",
+    desc: "Rapidly launches five homing needles",
+    effect: p => {
+      p.needleBarrage = true;
+    }
+  }, {
+    id: "coral_guard",
+    rarity: "rare",
+    expansion: true,
+    title: "Coral Guard",
+    desc: "+1 orbit blade and +5% resistance",
+    effect: p => {
+      p.orbitSaws++;
+      p.shield += 5;
+    }
+  }, {
+    id: "frost_pulse",
+    rarity: "rare",
+    expansion: true,
+    title: "Frost Pulse",
+    desc: "Periodic close-range glacial shockwave",
+    effect: p => {
+      p.frostPulse = true;
+    }
+  }, {
     id: "laser",
     rarity: "legendary",
     title: "Nova Laser Strike",
@@ -876,6 +987,32 @@ function GameCanvas({
         p.laserLevel++;
         p.laserCooldown = Math.max(1000, p.laserCooldown - 800);
       }
+    }
+  }, {
+    id: "phase_rounds",
+    rarity: "legendary",
+    title: "Phase Rounds",
+    desc: "Bullets pierce through 2 enemies",
+    effect: p => {
+      p.bulletPierce += 2;
+    }
+  }, {
+    id: "guardian_halo",
+    rarity: "legendary",
+    title: "Guardian Halo",
+    desc: "+20% resistance and +0.5 HP regeneration",
+    effect: p => {
+      p.shield += 20;
+      p.regen += 0.5;
+    }
+  }, {
+    id: "execution_protocol",
+    rarity: "legendary",
+    title: "Execution Protocol",
+    desc: "+25% damage and +12% critical chance",
+    effect: p => {
+      p.bulletDamage *= 1.25;
+      p.critChance += 0.12;
     }
   }, {
     id: "arc",
@@ -894,6 +1031,25 @@ function GameCanvas({
     desc: "Periodic blast around the nearest enemy",
     effect: p => {
       p.riftMine = true;
+    }
+  }, {
+    id: "toxic_bloom",
+    rarity: "legendary",
+    expansion: true,
+    title: "Toxic Bloom",
+    desc: "Periodic acid burst against 6 nearby enemies",
+    effect: p => {
+      p.toxicBloom = true;
+    }
+  }, {
+    id: "cryo_aegis",
+    rarity: "legendary",
+    expansion: true,
+    title: "Cryo Aegis",
+    desc: "+25% resistance and +0.75 HP regeneration",
+    effect: p => {
+      p.shield += 25;
+      p.regen += 0.75;
     }
   }, {
     id: "ascension",
@@ -915,6 +1071,32 @@ function GameCanvas({
       p.speed *= 1.25;
     }
   }, {
+    id: "phoenix_matrix",
+    rarity: "mythic",
+    title: "Phoenix Matrix",
+    desc: "Revive once at 50% HP",
+    effect: p => {
+      p.revives++;
+    }
+  }, {
+    id: "chrono_engine",
+    rarity: "mythic",
+    title: "Chrono Engine",
+    desc: "+35% fire rate and +15% dodge chance",
+    effect: p => {
+      p.fireRate *= 0.65;
+      p.dodge += 0.15;
+    }
+  }, {
+    id: "gravity_crown",
+    rarity: "mythic",
+    title: "Gravity Crown",
+    desc: "+3 orbit blades and +100% pickup range",
+    effect: p => {
+      p.orbitSaws += 3;
+      p.pickupRange *= 2;
+    }
+  }, {
     id: "starfall",
     rarity: "mythic",
     expansion: true,
@@ -922,6 +1104,35 @@ function GameCanvas({
     desc: "Bombards the 5 strongest enemies",
     effect: p => {
       p.starfallCannon = true;
+    }
+  }, {
+    id: "leviathan_wake",
+    rarity: "mythic",
+    expansion: true,
+    title: "Leviathan Wake",
+    desc: "Periodic twelve-way crushing wave",
+    effect: p => {
+      p.leviathanWake = true;
+    }
+  }, {
+    id: "apex_mutation",
+    rarity: "mythic",
+    expansion: true,
+    title: "Apex Mutation",
+    desc: "+40% damage, +25% fire rate and +1 projectile",
+    effect: p => {
+      p.bulletDamage *= 1.4;
+      p.fireRate *= 0.75;
+      p.bulletCount++;
+    }
+  }, {
+    id: "absolute_zero",
+    rarity: "mythic",
+    expansion: true,
+    title: "Absolute Zero",
+    desc: "Periodic map-wide freeze detonation",
+    effect: p => {
+      p.absoluteZero = true;
     }
   }];
   useEffect(() => {
@@ -1103,7 +1314,9 @@ function GameCanvas({
             life: 60,
             damage: damageValue,
             isCrit,
-            size: s.player.bulletSize
+            size: s.player.bulletSize,
+            pierce: s.player.bulletPierce,
+            hitEnemyIds: []
           });
         }
       }
@@ -1212,6 +1425,105 @@ function GameCanvas({
       });
       s.screenShake = Math.max(s.screenShake, 14);
     }
+    if (s.player.needleBarrage && s.frameCount % 110 === 0 && s.enemies.length) {
+      const target = s.enemies.reduce((nearest, enemy) => {
+        const distance = Math.hypot(enemy.worldX - s.player.worldX, enemy.worldY - s.player.worldY);
+        return !nearest || distance < nearest.distance ? {
+          enemy,
+          distance
+        } : nearest;
+      }, null).enemy;
+      const baseAngle = Math.atan2(target.worldY - s.player.worldY, target.worldX - s.player.worldX);
+      for (let i = -2; i <= 2; i++) {
+        const angle = baseAngle + i * 0.09;
+        s.bullets.push({
+          worldX: s.player.worldX,
+          worldY: s.player.worldY,
+          vx: Math.cos(angle) * 10,
+          vy: Math.sin(angle) * 10,
+          life: 55,
+          damage: s.player.bulletDamage * .45,
+          isCrit: false,
+          size: 4,
+          pierce: 0,
+          hitEnemyIds: []
+        });
+      }
+    }
+    if (s.player.frostPulse && s.frameCount % 300 === 0) {
+      const targets = s.enemies.map((enemy, index) => ({
+        enemy,
+        index,
+        distance: Math.hypot(enemy.worldX - s.player.worldX, enemy.worldY - s.player.worldY)
+      })).filter(({
+        distance
+      }) => distance <= 190).sort((a, b) => b.index - a.index);
+      targets.forEach(({
+        enemy,
+        index
+      }) => applyBulletDamageToEnemy(enemy, index, s.player.bulletDamage * .9, false));
+      addExplosionSparks(s.player.worldX, s.player.worldY, "#bae6fd", 32);
+    }
+    if (s.player.toxicBloom && s.frameCount % 360 === 0 && s.enemies.length) {
+      const targets = s.enemies.map((enemy, index) => ({
+        enemy,
+        index,
+        distance: Math.hypot(enemy.worldX - s.player.worldX, enemy.worldY - s.player.worldY)
+      })).sort((a, b) => a.distance - b.distance).slice(0, 6).sort((a, b) => b.index - a.index);
+      targets.forEach(({
+        enemy,
+        index
+      }) => applyBulletDamageToEnemy(enemy, index, s.player.bulletDamage * 1.25, false));
+      s.damageTexts.push({
+        id: Math.random().toString(),
+        worldX: s.player.worldX,
+        worldY: s.player.worldY - 28,
+        text: "TOXIC BLOOM",
+        color: "#a3e635",
+        life: 42,
+        maxLife: 42,
+        vy: -.55
+      });
+    }
+    if (s.player.leviathanWake && s.frameCount % 210 === 0) {
+      for (let i = 0; i < 12; i++) {
+        const angle = i * Math.PI / 6;
+        s.bullets.push({
+          worldX: s.player.worldX,
+          worldY: s.player.worldY,
+          vx: Math.cos(angle) * 7,
+          vy: Math.sin(angle) * 7,
+          life: 70,
+          damage: s.player.bulletDamage * 1.05,
+          isCrit: false,
+          size: 10,
+          pierce: 1,
+          hitEnemyIds: []
+        });
+      }
+      s.screenShake = Math.max(s.screenShake, 9);
+    }
+    if (s.player.absoluteZero && s.frameCount % 600 === 0 && s.enemies.length) {
+      const targets = s.enemies.map((enemy, index) => ({
+        enemy,
+        index
+      })).sort((a, b) => b.index - a.index);
+      targets.forEach(({
+        enemy,
+        index
+      }) => applyBulletDamageToEnemy(enemy, index, s.player.bulletDamage * 1.1, true));
+      s.damageTexts.push({
+        id: Math.random().toString(),
+        worldX: s.player.worldX,
+        worldY: s.player.worldY - 32,
+        text: "ABSOLUTE ZERO",
+        color: "#e0f2fe",
+        life: 55,
+        maxLife: 55,
+        vy: -.5
+      });
+      s.screenShake = Math.max(s.screenShake, 12);
+    }
 
     // Friend bullets logic
     for (let i = s.bullets.length - 1; i >= 0; i--) {
@@ -1222,9 +1534,11 @@ function GameCanvas({
       let hitResolved = false;
       for (let j = s.enemies.length - 1; j >= 0; j--) {
         const e = s.enemies[j];
-        if (Math.hypot(b.worldX - e.worldX, b.worldY - e.worldY) < e.size + b.size) {
+        if (!b.hitEnemyIds) b.hitEnemyIds = [];
+        if (!b.hitEnemyIds.includes(e.id) && Math.hypot(b.worldX - e.worldX, b.worldY - e.worldY) < e.size + b.size) {
           applyBulletDamageToEnemy(e, j, b.damage, b.isCrit);
-          hitResolved = true;
+          b.hitEnemyIds.push(e.id);
+          if ((b.pierce || 0) > 0) b.pierce--;else hitResolved = true;
           break;
         }
       }
@@ -1587,8 +1901,24 @@ function GameCanvas({
     sfx.playHurt();
     s.screenShake = Math.max(s.screenShake, 11);
     if (s.player.hp <= 0) {
-      s.player.hp = 0;
-      onGameOver(s.level, s.kills);
+      if (s.player.revives > 0) {
+        s.player.revives--;
+        s.player.hp = s.player.maxHp * 0.5;
+        s.player.powerups.shield = 180;
+        s.damageTexts.push({
+          id: Math.random().toString(),
+          worldX: s.player.worldX,
+          worldY: s.player.worldY - 25,
+          text: "PHOENIX REBOOT",
+          color: "#fb7185",
+          life: 70,
+          maxLife: 70,
+          vy: -.5
+        });
+      } else {
+        s.player.hp = 0;
+        onGameOver(s.level, s.kills);
+      }
     }
   }
   function resolveItemAcquired(c) {
