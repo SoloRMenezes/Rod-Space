@@ -27,6 +27,12 @@
         }
         .stat-item span { color: var(--gold-bright); font-weight: 900; font-size: 1.1rem; display: block; }
 
+        .bet-controls { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+        .bet-controls span { color:var(--gold-bright); font-size:.72rem; font-weight:800; letter-spacing:.05em; }
+        .chip-btn { min-width:48px; padding:8px 10px; border:1px solid var(--gold); border-radius:999px; background:#092113; color:white; font-weight:900; cursor:pointer; }
+        .chip-btn.active { background:var(--gold); color:#241600; box-shadow:0 0 0 2px var(--gold-bright); }
+        #betAmount { width:72px; padding:8px 10px; border:1px solid var(--gold); border-radius:8px; background:#06150b; color:white; font:900 .85rem inherit; text-align:center; }
+
         .game-wrapper {
             display: flex; flex-direction: row; align-items: center; gap: 40px;
             padding: 70px 18px 12px; z-index: 1; width:100%; justify-content:center;
@@ -160,7 +166,7 @@
 <body>
 
 <button id="helpBtn" aria-label="How to play">?</button>
-<div id="help" hidden><div class="help-card"><h2>How to play</h2><ol><li>Tap any number or outside bet to place 10 coins.</li><li>Tap again to add another 10 coins to that bet.</li><li>Press the centre of the wheel to spin.</li><li>Straight numbers pay 36×, dozens pay 3× and red/black, odd/even or high/low pay 2×.</li></ol><button id="closeHelp">Got it</button></div></div>
+<div id="help" hidden><div class="help-card"><h2>How to play</h2><ol><li>Choose a chip or enter your own bet amount.</li><li>Tap any number or outside bet to place that amount.</li><li>Tap again to add the same amount to that bet.</li><li>Press the centre of the wheel to spin.</li><li>Straight numbers pay 36×, dozens pay 3× and red/black, odd/even or high/low pay 2×.</li></ol><button id="closeHelp">Got it</button></div></div>
 
 <div class="stats-bar">
     <div class="stat-item">BALANCE: <span id="balance">1000</span></div>
@@ -170,6 +176,15 @@
 
 <div class="game-wrapper">
     <div class="table-section">
+        <div class="bet-controls" aria-label="Choose bet amount">
+            <span>BET</span>
+            <button class="chip-btn" data-amount="1">1</button>
+            <button class="chip-btn" data-amount="5">5</button>
+            <button class="chip-btn active" data-amount="10">10</button>
+            <button class="chip-btn" data-amount="25">25</button>
+            <button class="chip-btn" data-amount="50">50</button>
+            <input id="betAmount" type="number" min="1" step="1" value="10" inputmode="numeric" aria-label="Custom bet amount">
+        </div>
         <div class="table-grid" id="tableGrid">
             <div class="cell green zero" data-bet="0">0</div>
         </div>
@@ -217,6 +232,7 @@
     const balanceEl = document.getElementById('balance');
     const lastWinEl = document.getElementById('lastWin');
     const totalBetEl = document.getElementById('totalBet');
+    const betAmountEl = document.getElementById('betAmount');
     document.getElementById('helpBtn').onclick=()=>document.getElementById('help').hidden=false;
     document.getElementById('closeHelp').onclick=()=>document.getElementById('help').hidden=true;
     document.getElementById('help').onclick=e=>{if(e.target.id==='help')e.currentTarget.hidden=true};
@@ -226,6 +242,25 @@
     let isSpinning = false;
     let wheelRotation = 0;
     let ballRotation = 0;
+
+    function selectedBetAmount() {
+        const amount = Math.floor(Number(betAmountEl.value));
+        return Number.isFinite(amount) && amount > 0 ? amount : 1;
+    }
+
+    document.querySelectorAll('.chip-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            if (isSpinning) return;
+            betAmountEl.value = button.dataset.amount;
+            document.querySelectorAll('.chip-btn').forEach(chip => chip.classList.toggle('active', chip === button));
+        });
+    });
+    betAmountEl.addEventListener('input', () => {
+        document.querySelectorAll('.chip-btn').forEach(chip => chip.classList.toggle('active', chip.dataset.amount === betAmountEl.value));
+    });
+    betAmountEl.addEventListener('change', () => {
+        betAmountEl.value = selectedBetAmount();
+    });
 
     const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
     const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
@@ -262,9 +297,10 @@
         el.addEventListener('click', () => {
             if (isSpinning) return;
             const betKey = el.dataset.bet;
-            if (balance < 10) return;
-            balance -= 10;
-            currentBets.set(betKey, (currentBets.get(betKey) || 0) + 10);
+            const amount = selectedBetAmount();
+            if (balance < amount) return;
+            balance -= amount;
+            currentBets.set(betKey, (currentBets.get(betKey) || 0) + amount);
             el.classList.add('betting');
             updateUI();
         });
