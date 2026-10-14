@@ -65,35 +65,35 @@ const skinsList = [{
   id: "vanguard",
   type: "skin",
   title: "Vanguard Gold",
-  desc: "The standard gold-plated battle chassis",
+  desc: "Gold command-deck UI, industrial grid world and plated battle chassis",
   cost: 0,
   color: "from-yellow-500 to-amber-600"
 }, {
   id: "void_raider",
   type: "skin",
   title: "Void Raider",
-  desc: "Mysterious dark matter purple armor with indigo helm",
+  desc: "Purple void interface, starfield arena and corrupted enemy colours",
   cost: 150,
   color: "from-purple-600 to-indigo-800"
 }, {
   id: "crimson_knight",
   type: "skin",
   title: "Crimson Knight",
-  desc: "Aggressive blood-red plated shock-trooper shell",
+  desc: "Red war-room interface, scorched arena and siege-force enemies",
   cost: 250,
   color: "from-red-500 to-rose-700"
 }, {
   id: "neon_phantom",
   type: "skin",
   title: "Neon Phantom",
-  desc: "Sleek tactical cyber shell in lime-cyan active grid",
+  desc: "Cyber-grid interface, circuit arena and neon enemy force",
   cost: 400,
   color: "from-emerald-400 to-cyan-600"
 }, {
   id: "coral_depths",
   type: "skin",
   title: "Coral Depths",
-  desc: "DLC theme: +35% pickup range in the reef",
+  desc: "Undersea interface and reef arena; +35% pickup range",
   cost: 650,
   expansion: true,
   color: "from-cyan-300 to-rose-500"
@@ -101,7 +101,7 @@ const skinsList = [{
   id: "toxic_jungle",
   type: "skin",
   title: "Toxic Jungle",
-  desc: "DLC theme: +12% damage and +3% crit chance",
+  desc: "Overgrown interface and jungle arena; +12% damage, +3% crit",
   cost: 800,
   expansion: true,
   color: "from-lime-300 to-emerald-800"
@@ -109,11 +109,69 @@ const skinsList = [{
   id: "frost_crypt",
   type: "skin",
   title: "Frost Crypt",
-  desc: "DLC theme: +20% max HP and 10 shield",
+  desc: "Frozen interface and glacial crypt; +20% max HP, 10 shield",
   cost: 950,
   expansion: true,
   color: "from-sky-200 to-indigo-700"
 }];
+const worldThemes = {
+  vanguard: {
+    bg: "#07070b",
+    grid: "#25200f",
+    glow: "#facc15",
+    accent: "#22d3ee",
+    enemyFilter: "none",
+    motif: "rivets"
+  },
+  void_raider: {
+    bg: "#090411",
+    grid: "#2d1748",
+    glow: "#a78bfa",
+    accent: "#f472b6",
+    enemyFilter: "hue-rotate(245deg) saturate(1.35)",
+    motif: "stars"
+  },
+  crimson_knight: {
+    bg: "#120506",
+    grid: "#431319",
+    glow: "#ef4444",
+    accent: "#fb923c",
+    enemyFilter: "hue-rotate(330deg) saturate(1.5)",
+    motif: "embers"
+  },
+  neon_phantom: {
+    bg: "#03110f",
+    grid: "#0b4038",
+    glow: "#2dd4bf",
+    accent: "#a3e635",
+    enemyFilter: "hue-rotate(95deg) saturate(1.45)",
+    motif: "circuits"
+  },
+  coral_depths: {
+    bg: "#04141d",
+    grid: "#124352",
+    glow: "#67e8f9",
+    accent: "#fb7185",
+    enemyFilter: "hue-rotate(145deg) saturate(1.25) brightness(1.15)",
+    motif: "bubbles"
+  },
+  toxic_jungle: {
+    bg: "#071307",
+    grid: "#23451e",
+    glow: "#a3e635",
+    accent: "#facc15",
+    enemyFilter: "hue-rotate(70deg) saturate(1.4)",
+    motif: "vines"
+  },
+  frost_crypt: {
+    bg: "#050b1b",
+    grid: "#1c3158",
+    glow: "#93c5fd",
+    accent: "#818cf8",
+    enemyFilter: "hue-rotate(205deg) saturate(.75) brightness(1.2)",
+    motif: "ice"
+  }
+};
 const trailsList = [{
   id: "none",
   type: "trail",
@@ -546,7 +604,7 @@ function Shop({
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "award",
     className: "w-4 h-4 text-slate-500"
-  }), " ARMOR SKINS"), /*#__PURE__*/React.createElement("div", {
+  }), " WORLD THEMES"), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
   }, skinsList.filter(skin => !skin.expansion || expansionOwned).map(skin => {
     const isUnlocked = cosmetics.unlockedSkins.includes(skin.id) || skin.cost === 0;
@@ -2328,10 +2386,17 @@ function GameCanvas({
       ctx.translate(sx, sy);
     }
 
-    // Draw deep grid map
-    ctx.fillStyle = "#07070b";
+    // Every equipped armor is a complete world theme, not just a player tint.
+    const themeId = s.player.equippedSkin || "vanguard";
+    const worldTheme = worldThemes[themeId] || worldThemes.vanguard;
+    ctx.fillStyle = worldTheme.bg;
     ctx.fillRect(0, 0, width, height);
-    ctx.strokeStyle = "#13131c";
+    const worldGlow = ctx.createRadialGradient(width * .5, height * .45, 20, width * .5, height * .45, Math.max(width, height) * .7);
+    worldGlow.addColorStop(0, `${worldTheme.glow}18`);
+    worldGlow.addColorStop(1, `${worldTheme.glow}00`);
+    ctx.fillStyle = worldGlow;
+    ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = worldTheme.grid;
     ctx.lineWidth = 1;
     const gridSpacing = 80;
     const offX = -s.camera.x % gridSpacing;
@@ -2349,6 +2414,62 @@ function GameCanvas({
       ctx.stroke();
     }
 
+    // Theme-specific scenery moves with the world so each arena has its own identity.
+    ctx.save();
+    ctx.globalAlpha = .32;
+    for (let i = 0; i < 24; i++) {
+      const wx = i * 337 - s.camera.x * .28 % 337;
+      const wy = i * 191 % (height + 180) - 90 - s.camera.y * .18 % 191;
+      const x = (wx % (width + 180) + width + 180) % (width + 180) - 90;
+      const y = (wy % (height + 180) + height + 180) % (height + 180) - 90;
+      ctx.strokeStyle = i % 2 ? worldTheme.glow : worldTheme.accent;
+      ctx.fillStyle = i % 2 ? worldTheme.glow : worldTheme.accent;
+      ctx.lineWidth = 2;
+      if (worldTheme.motif === "stars") {
+        ctx.beginPath();
+        ctx.arc(x, y, 1 + i % 3, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (worldTheme.motif === "embers") {
+        ctx.beginPath();
+        ctx.moveTo(x, y + 10);
+        ctx.lineTo(x + 3, y);
+        ctx.lineTo(x + 6, y + 10);
+        ctx.stroke();
+      } else if (worldTheme.motif === "circuits") {
+        ctx.beginPath();
+        ctx.moveTo(x - 14, y);
+        ctx.lineTo(x, y);
+        ctx.lineTo(x, y + 14);
+        ctx.stroke();
+        ctx.fillRect(x - 2, y - 2, 4, 4);
+      } else if (worldTheme.motif === "bubbles") {
+        ctx.beginPath();
+        ctx.arc(x, y, 4 + i % 9, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (worldTheme.motif === "vines") {
+        ctx.beginPath();
+        ctx.arc(x, y, 9 + i % 8, .2, 2.7);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(x + 8, y - 5, 5, 2, -.6, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (worldTheme.motif === "ice") {
+        ctx.beginPath();
+        ctx.moveTo(x, y - 11);
+        ctx.lineTo(x + 8, y);
+        ctx.lineTo(x, y + 11);
+        ctx.lineTo(x - 8, y);
+        ctx.closePath();
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillRect(x - 1, y - 1, 2, 2);
+      }
+    }
+    ctx.restore();
+
     // Draw Crystals & Loot (No crates!)
     s.collectibles.forEach(col => {
       const cx = col.worldX - s.camera.x;
@@ -2357,8 +2478,8 @@ function GameCanvas({
       ctx.save();
       ctx.translate(cx, cy);
       if (col.type === "xp") {
-        ctx.fillStyle = "#22d3ee";
-        ctx.shadowColor = "#06b6d4";
+        ctx.fillStyle = worldTheme.accent;
+        ctx.shadowColor = worldTheme.accent;
         ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.moveTo(0, -col.size - pulse);
@@ -2419,8 +2540,8 @@ function GameCanvas({
 
     // Bullets
     s.bullets.forEach(b => {
-      ctx.fillStyle = "#ffffff";
-      ctx.shadowColor = "#38bdf8";
+      ctx.fillStyle = worldTheme.glow;
+      ctx.shadowColor = worldTheme.accent;
       ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.arc(b.worldX - s.camera.x, b.worldY - s.camera.y, b.size, 0, Math.PI * 2);
@@ -2429,8 +2550,8 @@ function GameCanvas({
 
     // Enemy Bullets
     s.enemyBullets.forEach(eb => {
-      ctx.fillStyle = "#f43f5e";
-      ctx.shadowColor = "#be123c";
+      ctx.fillStyle = worldTheme.accent;
+      ctx.shadowColor = worldTheme.glow;
       ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.arc(eb.worldX - s.camera.x, eb.worldY - s.camera.y, eb.size, 0, Math.PI * 2);
@@ -2464,8 +2585,7 @@ function GameCanvas({
       const ey = e.worldY - s.camera.y;
       ctx.save();
       ctx.translate(ex, ey);
-      const themeSkin = s.player.equippedSkin || "vanguard";
-      if (themeSkin === "coral_depths") ctx.filter = "hue-rotate(145deg) saturate(1.25) brightness(1.15)";else if (themeSkin === "toxic_jungle") ctx.filter = "hue-rotate(70deg) saturate(1.4)";else if (themeSkin === "frost_crypt") ctx.filter = "hue-rotate(205deg) saturate(.75) brightness(1.2)";
+      ctx.filter = worldTheme.enemyFilter;
       if (e.flash > 0) ctx.filter = "brightness(3)";
       if (e.type === "seeker") {
         const pulse = e.isCharging ? Math.sin(s.frameCount * 0.8) * 4 : 0;
@@ -2944,6 +3064,9 @@ function App() {
     if (id === "void_raider") return "Void Raider";
     if (id === "crimson_knight") return "Crimson Knight";
     if (id === "neon_phantom") return "Neon Phantom";
+    if (id === "coral_depths") return "Coral Depths";
+    if (id === "toxic_jungle") return "Toxic Jungle";
+    if (id === "frost_crypt") return "Frost Crypt";
     return id;
   };
   return /*#__PURE__*/React.createElement("div", {
@@ -2995,7 +3118,7 @@ function App() {
     className: "text-white"
   }, highScore.kills))), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 text-[10px] font-mono text-slate-500 uppercase tracking-widest"
-  }, "Armor: ", /*#__PURE__*/React.createElement("span", {
+  }, "Theme: ", /*#__PURE__*/React.createElement("span", {
     className: "text-yellow-400 font-extrabold"
   }, getSkinsDisplayTitle(cosmetics.equippedSkin)), cosmetics.equippedTrail !== "none" && /*#__PURE__*/React.createElement(React.Fragment, null, " | Trail: ", /*#__PURE__*/React.createElement("span", {
     className: "text-cyan-400 font-extrabold"

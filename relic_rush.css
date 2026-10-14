@@ -8,7 +8,68 @@ body {
       user-select: none;
       -webkit-user-select: none;
     }
-    .relic-theme{--theme-glow:#facc15;--theme-deep:#171108;background:radial-gradient(circle at 50% 30%,var(--theme-deep),#050508 72%)!important;transition:background .35s}.relic-theme>div{box-shadow:0 0 55px color-mix(in srgb,var(--theme-glow) 22%,transparent)!important;border-color:color-mix(in srgb,var(--theme-glow) 28%,#1a1a26)!important}.theme-coral_depths{--theme-glow:#35d6df;--theme-deep:#102d35}.theme-toxic_jungle{--theme-glow:#a3e635;--theme-deep:#173019}.theme-frost_crypt{--theme-glow:#93c5fd;--theme-deep:#111d3a}.theme-void_raider{--theme-glow:#8b5cf6;--theme-deep:#21113d}.theme-crimson_knight{--theme-glow:#ef4444;--theme-deep:#3b1010}.theme-neon_phantom{--theme-glow:#2dd4bf;--theme-deep:#07352f}.relic-theme button,.relic-theme [class*="border-"]{transition:border-color .25s,box-shadow .25s,background-color .25s}.relic-theme button:focus-visible{outline:2px solid var(--theme-glow);outline-offset:2px}
+    .relic-theme {
+      --theme-primary: #facc15;
+      --theme-primary-soft: #fef08a;
+      --theme-accent: #22d3ee;
+      --theme-bg: #050508;
+      --theme-panel: #09090d;
+      --theme-surface: #111118;
+      --theme-surface-2: #181824;
+      --theme-line: #292938;
+      --theme-muted: #94a3b8;
+      --theme-pattern: none;
+      background-color: var(--theme-bg) !important;
+      background-image: var(--theme-pattern), radial-gradient(circle at 50% 22%, color-mix(in srgb, var(--theme-primary) 20%, transparent), transparent 48%) !important;
+      transition: background .35s;
+    }
+    .theme-void_raider {
+      --theme-primary:#a78bfa; --theme-primary-soft:#e9d5ff; --theme-accent:#f472b6;
+      --theme-bg:#07040d; --theme-panel:#0d0717; --theme-surface:#160d25; --theme-surface-2:#211238; --theme-line:#4c2b73; --theme-muted:#c4b5d8;
+      --theme-pattern:radial-gradient(circle at 18% 20%,rgba(168,85,247,.17) 0 2px,transparent 3px),radial-gradient(circle at 76% 68%,rgba(244,114,182,.12) 0 1px,transparent 2px);
+      background-size:120px 120px,80px 80px;
+    }
+    .theme-crimson_knight {
+      --theme-primary:#ef4444; --theme-primary-soft:#fecaca; --theme-accent:#fb923c;
+      --theme-bg:#0e0304; --theme-panel:#160607; --theme-surface:#240a0c; --theme-surface-2:#321013; --theme-line:#6b2026; --theme-muted:#d3a2a5;
+      --theme-pattern:linear-gradient(135deg,transparent 45%,rgba(239,68,68,.08) 46% 48%,transparent 49% 95%,rgba(251,146,60,.05) 96%);
+      background-size:54px 54px;
+    }
+    .theme-neon_phantom {
+      --theme-primary:#2dd4bf; --theme-primary-soft:#99f6e4; --theme-accent:#a3e635;
+      --theme-bg:#02100e; --theme-panel:#031815; --theme-surface:#06231f; --theme-surface-2:#09332d; --theme-line:#146b5f; --theme-muted:#8ebdb6;
+      --theme-pattern:linear-gradient(rgba(45,212,191,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(45,212,191,.055) 1px,transparent 1px);
+      background-size:34px 34px;
+    }
+    .theme-coral_depths {
+      --theme-primary:#67e8f9; --theme-primary-soft:#cffafe; --theme-accent:#fb7185;
+      --theme-bg:#03131a; --theme-panel:#061d26; --theme-surface:#0a2933; --theme-surface-2:#103946; --theme-line:#1d6675; --theme-muted:#92c5cc;
+      --theme-pattern:radial-gradient(ellipse at 15% 100%,rgba(251,113,133,.15) 0 8%,transparent 9%),radial-gradient(ellipse at 88% 110%,rgba(34,211,238,.14) 0 13%,transparent 14%);
+    }
+    .theme-toxic_jungle {
+      --theme-primary:#a3e635; --theme-primary-soft:#ecfccb; --theme-accent:#facc15;
+      --theme-bg:#061006; --theme-panel:#0a190a; --theme-surface:#102611; --theme-surface-2:#173718; --theme-line:#3f6f2d; --theme-muted:#acc49e;
+      --theme-pattern:repeating-linear-gradient(115deg,transparent 0 38px,rgba(163,230,53,.045) 39px 42px,transparent 43px 76px);
+    }
+    .theme-frost_crypt {
+      --theme-primary:#93c5fd; --theme-primary-soft:#e0f2fe; --theme-accent:#818cf8;
+      --theme-bg:#040916; --theme-panel:#081126; --theme-surface:#0d1b35; --theme-surface-2:#142747; --theme-line:#315484; --theme-muted:#a5b8d4;
+      --theme-pattern:linear-gradient(60deg,transparent 47%,rgba(147,197,253,.06) 48% 51%,transparent 52%),linear-gradient(-60deg,transparent 47%,rgba(129,140,248,.05) 48% 51%,transparent 52%);
+      background-size:64px 110px;
+    }
+    .relic-theme > div { box-shadow:0 0 70px color-mix(in srgb,var(--theme-primary) 24%,transparent)!important; border-color:var(--theme-line)!important; }
+    .relic-theme [class*="bg-[#07070a]"], .relic-theme [class*="bg-[#0c0c10]"] { background-color:var(--theme-panel)!important; }
+    .relic-theme [class*="bg-[#0e0e13]"], .relic-theme [class*="bg-[#0b0b0f]"], .relic-theme [class*="bg-[#0a0a0d]"], .relic-theme [class*="bg-[#0c0c11]"] { background-color:color-mix(in srgb,var(--theme-surface) 90%,transparent)!important; }
+    .relic-theme [class*="bg-[#111118]"], .relic-theme [class*="bg-[#101018]"], .relic-theme [class*="bg-[#101017]"], .relic-theme [class*="bg-[#12121a]"], .relic-theme [class*="bg-[#13131c]"], .relic-theme [class*="bg-[#13131e]"] { background-color:var(--theme-surface)!important; }
+    .relic-theme [class*="bg-[#181824]"], .relic-theme [class*="bg-[#1515"], .relic-theme [class*="bg-[#161622]"] { background-color:var(--theme-surface-2)!important; }
+    .relic-theme [class*="text-yellow-4"] { color:var(--theme-primary)!important; }
+    .relic-theme [class*="bg-yellow-4"] { background-color:var(--theme-primary)!important; }
+    .relic-theme [class*="border-yellow-4"], .relic-theme [class*="hover:border-yellow-4"] { border-color:var(--theme-primary)!important; }
+    .relic-theme [class*="text-cyan-4"] { color:var(--theme-accent)!important; }
+    .relic-theme [class*="bg-cyan-4"] { background-color:var(--theme-accent)!important; }
+    .relic-theme [class*="text-slate-4"], .relic-theme [class*="text-slate-5"] { color:var(--theme-muted)!important; }
+    .relic-theme [class*="border-[#1"], .relic-theme [class*="border-[#2"], .relic-theme [class*="border-slate-8"] { border-color:var(--theme-line)!important; }
+    .relic-theme button,.relic-theme [class*="border-"]{transition:border-color .25s,box-shadow .25s,background-color .25s,color .25s}.relic-theme button:focus-visible{outline:2px solid var(--theme-primary);outline-offset:2px}
     .font-display {
       font-family: 'Inter', sans-serif;
       font-weight: 900;
