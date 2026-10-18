@@ -5,8 +5,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "maths-book.html",
-        "bytes": 53798,
-        "hash": "9f52f393a688dfcdd372bef8eb4421d26bdba8df3268ee4952fb8ce8b384f266"
+        "bytes": 53879,
+        "hash": "7b44288584f570f77ea4c7c6c791e99df48955e21f5f9dfc58360c24117a5d00"
       },
       {
         "path": "maths-content.js",
@@ -19,8 +19,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6ab4c00f07ff11232217b7c351e4ee0d5aaa5ac1172a496eea9e45438cc185e3"
       }
     ],
-    "bytes": 848344,
-    "version": "698d284d5f68b1bd"
+    "bytes": 848425,
+    "version": "1a08625bc22ae8d0"
   },
   "double-take": {
     "name": "Double Take",
