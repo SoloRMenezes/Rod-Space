@@ -1,4 +1,27 @@
 self.OFFLINE_CATALOG = {
+  "maths-book": {
+    "name": "Maths Shelf",
+    "page": "maths-book.html",
+    "files": [
+      {
+        "path": "maths-book.html",
+        "bytes": 53794,
+        "hash": "f8e1492d792df872333f4bfd4ba2c886164566e3fd14e0b30ffea3c838906618"
+      },
+      {
+        "path": "maths-content.js",
+        "bytes": 24633,
+        "hash": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401"
+      },
+      {
+        "path": "maths-shelf-3d.js",
+        "bytes": 769067,
+        "hash": "9f78fea380724d7b212aa0fa76e2355117b182e8e4add7e263b32ede34d04855"
+      }
+    ],
+    "bytes": 847494,
+    "version": "1baa8eb40c34f3be"
+  },
   "double-take": {
     "name": "Double Take",
     "page": "double-take.html",
