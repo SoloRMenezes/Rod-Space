@@ -10296,8 +10296,8 @@
   renderer.toneMappingExposure = 1.05;
   var scene = new Vr();
   var camera = new eu(31, 1, 0.1, 60);
-  camera.position.set(0, 2.45, 18.4);
-  camera.lookAt(0, 2.35, 0);
+  camera.position.set(0, 2.65, 18.4);
+  camera.lookAt(0, 2.55, 0);
   scene.add(new Wc(16774888, 3810584, 2.25));
   var keyLight = new hu(16770501, 3.4);
   keyLight.position.set(-5.5, 9, 8);
@@ -10325,14 +10325,14 @@
   var darkWood = woodMaterial(5910296, 0.76);
   var edgeWood = woodMaterial(7881510, 0.67);
   var innerWood = woodMaterial(11102270, 0.83);
-  box(14.6, 5.45, 0.46, innerWood, 0, 2.37, -0.82, false);
+  box(14.6, 6.05, 0.46, innerWood, 0, 2.67, -0.82, false);
   box(15.2, 0.42, 1.18, edgeWood, 0, -0.22, -0.25);
-  box(15.2, 0.34, 1, edgeWood, 0, 5.18, -0.35);
-  box(0.48, 5.72, 1, darkWood, -7.36, 2.46, -0.35);
-  box(0.48, 5.72, 1, darkWood, 7.36, 2.46, -0.35);
+  box(15.2, 0.34, 1, edgeWood, 0, 5.78, -0.35);
+  box(0.48, 6.32, 1, darkWood, -7.36, 2.76, -0.35);
+  box(0.48, 6.32, 1, darkWood, 7.36, 2.76, -0.35);
   box(15.55, 0.24, 1.32, darkWood, 0, -0.48, -0.2);
   for (let i2 = -6; i2 <= 6; i2++) {
-    const strip = box(0.055, 5.05, 0.012, woodMaterial(i2 % 2 ? 9327925 : 11629385, 0.9), i2 * 1.02, 2.43, -0.575, false);
+    const strip = box(0.055, 5.65, 0.012, woodMaterial(i2 % 2 ? 9327925 : 11629385, 0.9), i2 * 1.02, 2.73, -0.575, false);
     strip.receiveShadow = false;
   }
   function spineTexture(data) {
@@ -10407,8 +10407,8 @@
     return model;
   });
   var hitMaterial = new Ma({ transparent: true, opacity: 0, depthWrite: false, side: p });
-  var hitPlane = new Ra(new Ol(totalWidth, 5), hitMaterial);
-  hitPlane.position.set(0, 2.38, 0.55);
+  var hitPlane = new Ra(new Ol(totalWidth, 5.6), hitMaterial);
+  hitPlane.position.set(0, 2.68, 0.55);
   scene.add(hitPlane);
   var raycaster = new yd();
   var pointer = new _i();
@@ -10496,7 +10496,7 @@
     const ease = 1 - Math.exp(-dt2 * 5);
     cameraX += (cameraTargetX - cameraX) * (1 - Math.exp(-dt2 * 9));
     camera.position.x = cameraX;
-    camera.lookAt(cameraX, 2.35, 0);
+    camera.lookAt(cameraX, 2.55, 0);
     models.forEach((model) => {
       model.rotation.x += (model.userData.targetRotation - model.rotation.x) * ease;
       model.position.z += (model.userData.targetZ - model.position.z) * ease;
