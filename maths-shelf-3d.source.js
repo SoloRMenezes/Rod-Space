@@ -159,8 +159,8 @@ const models = bookData.map(data => {
 });
 
 const hitMaterial = new THREE.MeshBasicMaterial({transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide});
-const hitPlane = new THREE.Mesh(new THREE.PlaneGeometry(totalWidth, 5.0), hitMaterial);
-hitPlane.position.set(0, 2.38, 0.55);
+const hitPlane = new THREE.Mesh(new THREE.PlaneGeometry(totalWidth, 5.6), hitMaterial);
+hitPlane.position.set(0, 2.68, 0.55);
 scene.add(hitPlane);
 
 const raycaster = new THREE.Raycaster();
@@ -170,6 +170,7 @@ let pressed = -1;
 let dragStartX = 0;
 let dragStartOffset = 0;
 let didDrag = false;
+let openingIndex = -1;
 let cameraX = 0;
 let cameraTargetX = 0;
 const phoneView = window.matchMedia('(max-width: 650px)');
@@ -196,11 +197,12 @@ function bookAtEvent(event) {
 }
 
 canvas.addEventListener('pointermove', event => {
+  if (openingIndex >= 0) return;
   if (phoneView.matches && pressed >= 0) {
     const movement = event.clientX - dragStartX;
     if (Math.abs(movement) > 5) didDrag = true;
     if (didDrag) {
-      cameraTargetX = THREE.MathUtils.clamp(dragStartOffset - movement * 0.016, -3.85, 3.85);
+      cameraTargetX = THREE.MathUtils.clamp(dragStartOffset - movement * 0.028, -3.85, 3.85);
       setHovered(-1);
       return;
     }
@@ -209,6 +211,7 @@ canvas.addEventListener('pointermove', event => {
 });
 canvas.addEventListener('pointerleave', () => { if (!didDrag) pressed = -1; setHovered(-1); });
 canvas.addEventListener('pointerdown', event => {
+  if (openingIndex >= 0) return;
   pressed = bookAtEvent(event);
   dragStartX = event.clientX;
   dragStartOffset = cameraTargetX;
@@ -218,7 +221,22 @@ canvas.addEventListener('pointerdown', event => {
 canvas.addEventListener('pointerup', event => {
   const index = bookAtEvent(event);
   if (!didDrag && index === pressed && index >= 0 && !bookData[index].disabled) {
-    window.openMathsBook?.(bookData[index].course, bookData[index].mode);
+    if (phoneView.matches) {
+      openingIndex = index;
+      canvas.classList.remove('book-hover');
+      models.forEach((model, modelIndex) => {
+        model.userData.targetRotation = modelIndex === index ? 0.28 : 0;
+        model.userData.targetZ = modelIndex === index ? 0.24 : 0;
+        model.userData.targetY = modelIndex === index ? 0.02 : 0;
+      });
+      window.setTimeout(() => {
+        window.openMathsBook?.(bookData[index].course, bookData[index].mode);
+        openingIndex = -1;
+        setHovered(-1);
+      }, 720);
+    } else {
+      window.openMathsBook?.(bookData[index].course, bookData[index].mode);
+    }
   }
   if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
   pressed = -1;
@@ -247,11 +265,12 @@ function animate() {
   const ease = 1 - Math.exp(-dt * 5);
   cameraX += (cameraTargetX - cameraX) * (1 - Math.exp(-dt * 9));
   camera.position.x = cameraX;
-  camera.lookAt(cameraX, 2.35, 0);
-  models.forEach(model => {
-    model.rotation.x += (model.userData.targetRotation - model.rotation.x) * ease;
-    model.position.z += (model.userData.targetZ - model.position.z) * ease;
-    model.position.y += (model.userData.targetY - model.position.y) * ease;
+  camera.lookAt(cameraX, 2.55, 0);
+  models.forEach((model, index) => {
+    const modelEase = phoneView.matches && openingIndex === index ? 1 - Math.exp(-dt * 2.6) : ease;
+    model.rotation.x += (model.userData.targetRotation - model.rotation.x) * modelEase;
+    model.position.z += (model.userData.targetZ - model.position.z) * modelEase;
+    model.position.y += (model.userData.targetY - model.position.y) * modelEase;
   });
   renderer.render(scene, camera);
   requestAnimationFrame(animate);

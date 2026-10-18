@@ -362,7 +362,10 @@
         ai("MathUtils: .setQuaternionFromProperEuler() encountered an unknown order: " + r2);
     }
   }, normalize: Mi, denormalize: wi };
-  var __i = class __i {
+  var _i = class __i {
+    static {
+      __i.prototype.isVector2 = true;
+    }
     constructor(t2 = 0, e2 = 0) {
       this.x = t2, this.y = e2;
     }
@@ -556,8 +559,6 @@
       yield this.x, yield this.y;
     }
   };
-  __i.prototype.isVector2 = true;
-  var _i = __i;
   var Ai = class {
     constructor(t2 = 0, e2 = 0, s2 = 0, i2 = 1) {
       this.isQuaternion = true, this._x = t2, this._y = e2, this._z = s2, this._w = i2;
@@ -749,7 +750,10 @@
       yield this._x, yield this._y, yield this._z, yield this._w;
     }
   };
-  var _Ti = class _Ti {
+  var Ti = class _Ti {
+    static {
+      _Ti.prototype.isVector3 = true;
+    }
     constructor(t2 = 0, e2 = 0, s2 = 0) {
       this.x = t2, this.y = e2, this.z = s2;
     }
@@ -1015,11 +1019,12 @@
       yield this.x, yield this.y, yield this.z;
     }
   };
-  _Ti.prototype.isVector3 = true;
-  var Ti = _Ti;
   var zi = new Ti();
   var Ci = new Ai();
-  var _Ii = class _Ii {
+  var Ii = class _Ii {
+    static {
+      _Ii.prototype.isMatrix3 = true;
+    }
     constructor(t2, e2, s2, i2, r2, n2, a2, o2, h2) {
       this.elements = [1, 0, 0, 0, 1, 0, 0, 0, 1], void 0 !== t2 && this.set(t2, e2, s2, i2, r2, n2, a2, o2, h2);
     }
@@ -1117,8 +1122,6 @@
       return new this.constructor().fromArray(this.elements);
     }
   };
-  _Ii.prototype.isMatrix3 = true;
-  var Ii = _Ii;
   var Bi = new Ii();
   var ki = new Ii().set(0.4123908, 0.3575843, 0.1804808, 0.212639, 0.7151687, 0.0721923, 0.0193308, 0.1191948, 0.9505322);
   var Oi = new Ii().set(3.2409699, -1.5373832, -0.4986108, -0.9692436, 1.8759675, 0.0415551, 0.0556301, -0.203977, 1.0569715);
@@ -1309,7 +1312,10 @@
     }
   };
   Ji.DEFAULT_IMAGE = null, Ji.DEFAULT_MAPPING = ht, Ji.DEFAULT_ANISOTROPY = 1;
-  var _qi = class _qi {
+  var qi = class _qi {
+    static {
+      _qi.prototype.isVector4 = true;
+    }
     constructor(t2 = 0, e2 = 0, s2 = 0, i2 = 1) {
       this.x = t2, this.y = e2, this.z = s2, this.w = i2;
     }
@@ -1514,8 +1520,6 @@
       yield this.x, yield this.y, yield this.z, yield this.w;
     }
   };
-  _qi.prototype.isVector4 = true;
-  var qi = _qi;
   var Hi = class extends di {
     constructor(t2 = 1, e2 = 1, s2 = {}) {
       super(), s2 = Object.assign({ generateMipmaps: false, internalFormat: null, minFilter: Mt, depthBuffer: true, stencilBuffer: false, resolveDepthBuffer: true, resolveStencilBuffer: true, depthTexture: null, samples: 0, count: 1, depth: 1, multiview: false, useArrayDepthTexture: false }, s2), this.isRenderTarget = true, this.width = t2, this.height = e2, this.depth = s2.depth, this.scissor = new qi(0, 0, t2, e2), this.scissorTest = false, this.viewport = new qi(0, 0, t2, e2), this.textures = [];
@@ -1587,7 +1591,10 @@
       super(null), this.isData3DTexture = true, this.image = { data: t2, width: e2, height: s2, depth: i2 }, this.magFilter = ft, this.minFilter = ft, this.wrapR = yt, this.generateMipmaps = false, this.flipY = false, this.unpackAlignment = 1;
     }
   };
-  var _Qi = class _Qi {
+  var Qi = class _Qi {
+    static {
+      _Qi.prototype.isMatrix4 = true;
+    }
     constructor(t2, e2, s2, i2, r2, n2, a2, o2, h2, l2, c2, u2, d2, p2, m2, y2) {
       this.elements = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], void 0 !== t2 && this.set(t2, e2, s2, i2, r2, n2, a2, o2, h2, l2, c2, u2, d2, p2, m2, y2);
     }
@@ -1775,8 +1782,6 @@
       return t2[e2] = s2[0], t2[e2 + 1] = s2[1], t2[e2 + 2] = s2[2], t2[e2 + 3] = s2[3], t2[e2 + 4] = s2[4], t2[e2 + 5] = s2[5], t2[e2 + 6] = s2[6], t2[e2 + 7] = s2[7], t2[e2 + 8] = s2[8], t2[e2 + 9] = s2[9], t2[e2 + 10] = s2[10], t2[e2 + 11] = s2[11], t2[e2 + 12] = s2[12], t2[e2 + 13] = s2[13], t2[e2 + 14] = s2[14], t2[e2 + 15] = s2[15], t2;
     }
   };
-  _Qi.prototype.isMatrix4 = true;
-  var Qi = _Qi;
   var Ki = new Ti();
   var tr = new Qi();
   var er = new Ti(0, 0, 0);
@@ -6447,7 +6452,10 @@
       for (let t3 = 0, r3 = i3.length; t3 < r3; t3++) fd(i3[t3], e2, s2, true);
     }
   }
-  var _wd = class _wd {
+  var wd = class _wd {
+    static {
+      _wd.prototype.isMatrix2 = true;
+    }
     constructor(t2, e2, s2, i2) {
       this.elements = [1, 0, 0, 1], void 0 !== t2 && this.set(t2, e2, s2, i2);
     }
@@ -6463,8 +6471,6 @@
       return r2[0] = t2, r2[2] = e2, r2[1] = s2, r2[3] = i2, this;
     }
   };
-  _wd.prototype.isMatrix2 = true;
-  var wd = _wd;
   var Md = new _i();
   var _d = new Ti();
   var Ad = new Ti();
@@ -10296,8 +10302,8 @@
   renderer.toneMappingExposure = 1.05;
   var scene = new Vr();
   var camera = new eu(31, 1, 0.1, 60);
-  camera.position.set(0, 2.65, 18.4);
-  camera.lookAt(0, 2.55, 0);
+  camera.position.set(0, 2.45, 18.4);
+  camera.lookAt(0, 2.35, 0);
   scene.add(new Wc(16774888, 3810584, 2.25));
   var keyLight = new hu(16770501, 3.4);
   keyLight.position.set(-5.5, 9, 8);
@@ -10325,14 +10331,14 @@
   var darkWood = woodMaterial(5910296, 0.76);
   var edgeWood = woodMaterial(7881510, 0.67);
   var innerWood = woodMaterial(11102270, 0.83);
-  box(14.6, 6.05, 0.46, innerWood, 0, 2.67, -0.82, false);
+  box(14.6, 5.45, 0.46, innerWood, 0, 2.37, -0.82, false);
   box(15.2, 0.42, 1.18, edgeWood, 0, -0.22, -0.25);
-  box(15.2, 0.34, 1, edgeWood, 0, 5.78, -0.35);
-  box(0.48, 6.32, 1, darkWood, -7.36, 2.76, -0.35);
-  box(0.48, 6.32, 1, darkWood, 7.36, 2.76, -0.35);
+  box(15.2, 0.34, 1, edgeWood, 0, 5.18, -0.35);
+  box(0.48, 5.72, 1, darkWood, -7.36, 2.46, -0.35);
+  box(0.48, 5.72, 1, darkWood, 7.36, 2.46, -0.35);
   box(15.55, 0.24, 1.32, darkWood, 0, -0.48, -0.2);
   for (let i2 = -6; i2 <= 6; i2++) {
-    const strip = box(0.055, 5.65, 0.012, woodMaterial(i2 % 2 ? 9327925 : 11629385, 0.9), i2 * 1.02, 2.73, -0.575, false);
+    const strip = box(0.055, 5.05, 0.012, woodMaterial(i2 % 2 ? 9327925 : 11629385, 0.9), i2 * 1.02, 2.43, -0.575, false);
     strip.receiveShadow = false;
   }
   function spineTexture(data) {
@@ -10417,6 +10423,7 @@
   var dragStartX = 0;
   var dragStartOffset = 0;
   var didDrag = false;
+  var openingIndex = -1;
   var cameraX = 0;
   var cameraTargetX = 0;
   var phoneView = window.matchMedia("(max-width: 650px)");
@@ -10440,11 +10447,12 @@
     return bookData.findIndex((data) => hit.point.x >= data.left && hit.point.x <= data.right);
   }
   canvas.addEventListener("pointermove", (event) => {
+    if (openingIndex >= 0) return;
     if (phoneView.matches && pressed >= 0) {
       const movement = event.clientX - dragStartX;
       if (Math.abs(movement) > 5) didDrag = true;
       if (didDrag) {
-        cameraTargetX = Si.clamp(dragStartOffset - movement * 0.016, -3.85, 3.85);
+        cameraTargetX = Si.clamp(dragStartOffset - movement * 0.028, -3.85, 3.85);
         setHovered(-1);
         return;
       }
@@ -10456,6 +10464,7 @@
     setHovered(-1);
   });
   canvas.addEventListener("pointerdown", (event) => {
+    if (openingIndex >= 0) return;
     pressed = bookAtEvent(event);
     dragStartX = event.clientX;
     dragStartOffset = cameraTargetX;
@@ -10465,7 +10474,22 @@
   canvas.addEventListener("pointerup", (event) => {
     const index = bookAtEvent(event);
     if (!didDrag && index === pressed && index >= 0 && !bookData[index].disabled) {
-      window.openMathsBook?.(bookData[index].course, bookData[index].mode);
+      if (phoneView.matches) {
+        openingIndex = index;
+        canvas.classList.remove("book-hover");
+        models.forEach((model, modelIndex) => {
+          model.userData.targetRotation = modelIndex === index ? 0.28 : 0;
+          model.userData.targetZ = modelIndex === index ? 0.24 : 0;
+          model.userData.targetY = modelIndex === index ? 0.02 : 0;
+        });
+        window.setTimeout(() => {
+          window.openMathsBook?.(bookData[index].course, bookData[index].mode);
+          openingIndex = -1;
+          setHovered(-1);
+        }, 720);
+      } else {
+        window.openMathsBook?.(bookData[index].course, bookData[index].mode);
+      }
     }
     if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
     pressed = -1;
@@ -10497,10 +10521,11 @@
     cameraX += (cameraTargetX - cameraX) * (1 - Math.exp(-dt2 * 9));
     camera.position.x = cameraX;
     camera.lookAt(cameraX, 2.55, 0);
-    models.forEach((model) => {
-      model.rotation.x += (model.userData.targetRotation - model.rotation.x) * ease;
-      model.position.z += (model.userData.targetZ - model.position.z) * ease;
-      model.position.y += (model.userData.targetY - model.position.y) * ease;
+    models.forEach((model, index) => {
+      const modelEase = phoneView.matches && openingIndex === index ? 1 - Math.exp(-dt2 * 2.6) : ease;
+      model.rotation.x += (model.userData.targetRotation - model.rotation.x) * modelEase;
+      model.position.z += (model.userData.targetZ - model.position.z) * modelEase;
+      model.position.y += (model.userData.targetY - model.position.y) * modelEase;
     });
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
