@@ -125,9 +125,19 @@ window.addEventListener('online', () => {
       await navigator.serviceWorker.register('./sw.js');
       registration = await navigator.serviceWorker.ready;
     } else {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      await registration.update().catch(() => {});
+      const updatingWorker = registration.installing || registration.waiting;
+      if (updatingWorker && updatingWorker.state !== 'activated') {
+        await new Promise(resolve => {
+          const finish = () => {
+            if (updatingWorker.state === 'activated' || updatingWorker.state === 'redundant') resolve();
+          };
+          updatingWorker.addEventListener('statechange', finish);
+          finish();
+        });
+      }
     }
-    offlineWorker = registration.active;
+    offlineWorker = registration.active || navigator.serviceWorker.controller;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       offlineWorker = navigator.serviceWorker.controller;
       processOfflineQueue();
