@@ -167,14 +167,20 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 let hovered = -1;
 let pressed = -1;
+let dragStartX = 0;
+let dragStartOffset = 0;
+let didDrag = false;
+let cameraX = 0;
+let cameraTargetX = 0;
+const phoneView = window.matchMedia('(max-width: 650px)');
 
 function setHovered(index) {
   if (hovered === index) return;
   hovered = index;
   canvas.classList.toggle('book-hover', index >= 0 && !bookData[index].disabled);
   models.forEach((model, i) => {
-    model.userData.targetRotation = i === index ? 0.72 : 0;
-    model.userData.targetZ = i === index ? 0.62 : 0;
+    model.userData.targetRotation = i === index ? 0.38 : 0;
+    model.userData.targetZ = i === index ? 0.30 : 0;
     model.userData.targetY = i === index ? 0.02 : 0;
   });
 }
@@ -189,16 +195,36 @@ function bookAtEvent(event) {
   return bookData.findIndex(data => hit.point.x >= data.left && hit.point.x <= data.right);
 }
 
-canvas.addEventListener('pointermove', event => setHovered(bookAtEvent(event)));
-canvas.addEventListener('pointerleave', () => { pressed = -1; setHovered(-1); });
-canvas.addEventListener('pointerdown', event => { pressed = bookAtEvent(event); });
+canvas.addEventListener('pointermove', event => {
+  if (phoneView.matches && pressed >= 0) {
+    const movement = event.clientX - dragStartX;
+    if (Math.abs(movement) > 5) didDrag = true;
+    if (didDrag) {
+      cameraTargetX = THREE.MathUtils.clamp(dragStartOffset - movement * 0.016, -3.85, 3.85);
+      setHovered(-1);
+      return;
+    }
+  }
+  setHovered(bookAtEvent(event));
+});
+canvas.addEventListener('pointerleave', () => { if (!didDrag) pressed = -1; setHovered(-1); });
+canvas.addEventListener('pointerdown', event => {
+  pressed = bookAtEvent(event);
+  dragStartX = event.clientX;
+  dragStartOffset = cameraTargetX;
+  didDrag = false;
+  if (phoneView.matches) canvas.setPointerCapture(event.pointerId);
+});
 canvas.addEventListener('pointerup', event => {
   const index = bookAtEvent(event);
-  if (index === pressed && index >= 0 && !bookData[index].disabled) {
+  if (!didDrag && index === pressed && index >= 0 && !bookData[index].disabled) {
     window.openMathsBook?.(bookData[index].course, bookData[index].mode);
   }
+  if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
   pressed = -1;
+  didDrag = false;
 });
+canvas.addEventListener('pointercancel', () => { pressed = -1; didDrag = false; setHovered(-1); });
 
 function resize() {
   const width = shelfElement.clientWidth;
@@ -206,7 +232,8 @@ function resize() {
   renderer.setSize(width, height, false);
   camera.aspect = width / height;
   const neededDistance = 7.9 / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
-  camera.position.z = Math.max(15.8, neededDistance);
+  camera.position.z = phoneView.matches ? 13.2 : Math.max(15.8, neededDistance);
+  if (!phoneView.matches) cameraTargetX = 0;
   camera.updateProjectionMatrix();
 }
 new ResizeObserver(resize).observe(shelfElement);
@@ -217,7 +244,10 @@ function animate() {
   const now = performance.now();
   const dt = Math.min((now - previousFrame) / 1000, 0.05);
   previousFrame = now;
-  const ease = 1 - Math.exp(-dt * 12);
+  const ease = 1 - Math.exp(-dt * 5);
+  cameraX += (cameraTargetX - cameraX) * (1 - Math.exp(-dt * 9));
+  camera.position.x = cameraX;
+  camera.lookAt(cameraX, 2.35, 0);
   models.forEach(model => {
     model.rotation.x += (model.userData.targetRotation - model.rotation.x) * ease;
     model.position.z += (model.userData.targetZ - model.position.z) * ease;
