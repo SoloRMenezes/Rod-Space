@@ -147,7 +147,11 @@
 
       <!-- Project List Container -->
           <p id="offline-status" role="status" aria-live="polite" style="color:#94a3b8;font-size:13px"></p>
-    <style>#offline-status:empty { display:none; } #offline-status:not(:empty) { margin:16px 0; }</style>
+          <button type="button" data-offline-all="rodspace" class="mb-6 rounded-lg border border-blue-500/50 bg-blue-500/10 px-4 py-2.5 text-sm font-semibold text-blue-200 transition hover:bg-blue-500/20 disabled:cursor-default disabled:opacity-60">↓ Download all games</button>
+    <style>
+      #offline-status:empty { display:none; }
+      #offline-status:not(:empty) { position:fixed;left:50%;bottom:24px;z-index:60;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);padding:10px 14px;border:1px solid #334155;border-radius:10px;background:#0f172a;color:#e2e8f0 !important;box-shadow:0 14px 35px rgba(0,0,0,.45);font-weight:600;text-align:center; }
+    </style>
 
 <div id="projectsSection" class="space-y-12">
         <!-- Rendered dynamically -->
@@ -183,7 +187,7 @@
     </footer>
 
     <script src="offline-catalog.js?v=2"></script>
-    <script src="offline.js?v=3"></script>
+    <script src="offline.js?v=4"></script>
     <!-- Single file data & rendering engine -->
     <script>
       // HARD SAFETY: prevent external analytics crashes (Amplitude / injected scripts)
