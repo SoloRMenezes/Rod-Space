@@ -5,8 +5,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "maths-book.html",
-        "bytes": 54375,
-        "hash": "b7995d6face4b87b3ea3a8030a0a54abfd414448ed7b9c840a86db8d9f30cde1"
+        "bytes": 54508,
+        "hash": "28ebfbfdaf000ef7a67f6ff99002ba67985cc1e6e9a5089f71334bfd1bf56c6c"
       },
       {
         "path": "maths-content.js",
@@ -19,6 +19,11 @@ self.OFFLINE_CATALOG = {
         "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
       },
       {
+        "path": "maths-indices-working.js",
+        "bytes": 8616,
+        "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
+      },
+      {
         "path": "maths-question-bank.js",
         "bytes": 18208,
         "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
@@ -29,8 +34,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6ab4c00f07ff11232217b7c351e4ee0d5aaa5ac1172a496eea9e45438cc185e3"
       }
     ],
-    "bytes": 871467,
-    "version": "6e15f414ee86085b"
+    "bytes": 880216,
+    "version": "5718e2b257caff36"
   },
   "double-take": {
     "name": "Double Take",
