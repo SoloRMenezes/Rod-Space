@@ -5350,12 +5350,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "solos_rng.html",
-        "bytes": 61943,
-        "hash": "ad3af5964c989456c17ba3725e156876f8231a60f44af7e8713f539f217484e6"
+        "bytes": 61956,
+        "hash": "ed1728f2cf83c1d8a8a543e846d08ebf04308226ba1c0caf408d0453b04af19b"
       }
     ],
-    "bytes": 3307818,
-    "version": "eb2fc6e83064c125"
+    "bytes": 3307831,
+    "version": "802cf1a6e9a1285d"
   },
   "blackjack": {
     "name": "Black Jack",
@@ -11363,8 +11363,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "relic_rush.css",
-        "bytes": 1626,
-        "hash": "01a1710d435baed0c02e9d987521f27cc48ee08f870f0d3ef85a01f1103f41ed"
+        "bytes": 5962,
+        "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
       },
       {
         "path": "relic_rush.html",
@@ -11373,12 +11373,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "relic_rush.js",
-        "bytes": 96510,
-        "hash": "0969c4f43ea255104d562b4052dc2cd6894ddffa750fff51b5d93ba9bfb40ae6"
+        "bytes": 116526,
+        "hash": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343"
       }
     ],
-    "bytes": 650549,
-    "version": "8c46de5719e41c74"
+    "bytes": 674901,
+    "version": "a2f2262a0e586144"
   },
   "slot-machine": {
     "name": "Slot Machine",
@@ -11399,12 +11399,12 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "fidget-roulette.html",
-        "bytes": 15272,
-        "hash": "e11497d09a9c6184f8e87339a69e0411f0d3444b5cf315d8f9f38cfe8cdff0bf"
+        "bytes": 17543,
+        "hash": "4e7d84143c57211b19e5f34a0bdb1cc15bc3e0a546f54090b9941f8bd8055eff"
       }
     ],
-    "bytes": 15272,
-    "version": "685be27f0e9002dc"
+    "bytes": 17543,
+    "version": "ad6792fb3617ed1c"
   },
   "tilt-maze": {
     "name": "Tilt Maze Runner",
