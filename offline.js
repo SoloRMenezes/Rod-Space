@@ -1,3 +1,5 @@
+window.__rodSpaceMacApp = window.__rodSpaceMacApp ||
+  (location.hostname === '127.0.0.1' && location.port === '47321');
 window.offlineDownloads = new Map();
 window.offlineOnly = !navigator.onLine;
 
@@ -19,6 +21,7 @@ function sortedOfflineQueue() {
 }
 
 window.offlineCardHTML = id => {
+  if (window.__rodSpaceMacApp) return '';
   const game = OFFLINE_CATALOG[id];
   if (!game) return '';
   const saved = offlineDownloads.get(id);
@@ -174,6 +177,12 @@ window.addEventListener('online', () => {
 });
 
 (async () => {
+  if (window.__rodSpaceMacApp) {
+    window.offlineOnly = false;
+    document.querySelectorAll('[data-offline-all]').forEach(button => button.remove());
+    document.getElementById('offline-status').textContent = '';
+    return;
+  }
   try {
     if (!('serviceWorker' in navigator)) throw Error('Offline downloads are not supported in this browser.');
     let registration = await navigator.serviceWorker.getRegistration('./');

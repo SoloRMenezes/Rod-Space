@@ -215,6 +215,57 @@
           featured: true
         },
         {
+          id: "invincible-sandbox",
+          name: "Invincible Sandbox",
+          description: "Experimental flight sandbox",
+          url: BASE_URL + "invincible-sandbox.html",
+          icon: "🦸",
+          type: "prototype",
+          pill: "Prototype",
+          date: "2026-10-12",
+          tags: ["PC Only"]
+        },
+        {
+          id: "dream-grounds",
+          name: "Dream Grounds",
+          description: "Build your dreamscape",
+          url: BASE_URL + "dream-grounds.html",
+          icon: "🌙",
+          type: "prototype",
+          pill: "Prototype",
+          date: "2026-09-21"
+        },
+        {
+          id: "japanese-srs",
+          name: "Japanese SRS Cards",
+          description: "Japanese memory trainer",
+          url: BASE_URL + "jp_srs_cards.html",
+          icon: "あ",
+          type: "prototype",
+          pill: "Prototype",
+          date: "2026-09-21"
+        },
+        {
+          id: "terraria-prototype",
+          name: "Terraria Prototype",
+          description: "Experimental block adventure",
+          url: BASE_URL + "terraria.html",
+          icon: "⛏️",
+          type: "prototype",
+          pill: "Prototype",
+          date: "2026-10-08"
+        },
+        {
+          id: "monthly-grind",
+          name: "The Monthly Grind",
+          description: "Monthly progress experiment",
+          url: BASE_URL + "the-monthly-grind.html",
+          icon: "📅",
+          type: "prototype",
+          pill: "Prototype",
+          date: "2026-09-21"
+        },
+        {
           id: "double-take",
           name: "Double Take",
           description: "Most pairs wins",
@@ -414,6 +465,16 @@
           type: "solo",
           pill: "Game",
           date: "2026-01-22"
+        },
+        {
+          id: "two-fingers",
+          name: "Two Fingers",
+          description: "Fingerboard with two fingers",
+          url: BASE_URL + "fingerboard.html",
+          icon: "🛹",
+          type: "solo",
+          pill: "Game",
+          date: "2026-10-13"
         },
         {
           id: "solos-rng",
@@ -697,10 +758,11 @@
       // Categories setup
       const CATEGORIES = [
         { id: "all", label: "All Works" },
-        { id: "downloads", label: "Downloads" },
+        ...(!window.__rodSpaceMacApp ? [{ id: "downloads", label: "Downloads" }] : []),
         { id: "solo", label: "Solo Games" },
         { id: "party", label: "Party Games" },
         { id: "tool", label: "Tools" },
+        { id: "prototype", label: "Prototypes" },
         { id: "favorites", label: "Starred ★" }
       ];
 
@@ -723,6 +785,7 @@
           if (activeCategory === "solo") return proj.type === "solo";
           if (activeCategory === "party") return proj.type === "party";
           if (activeCategory === "tool") return proj.type === "tool";
+          if (activeCategory === "prototype") return proj.type === "prototype";
           return true;
         });
 
@@ -923,5 +986,6 @@
       renderCategories();
       render();
     </script>
+  <script src="rod-space-app-menu.js"></script>
 </body>
 </html>

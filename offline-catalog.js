@@ -11466,5 +11466,48 @@ self.OFFLINE_CATALOG = {
     ],
     "bytes": 1758495,
     "version": "6d02b397640db5c2"
+  },
+  "two-fingers": {
+    "name": "Two Fingers",
+    "page": "fingerboard.html",
+    "files": [
+      {
+        "path": "fingerboard.html",
+        "bytes": 6375,
+        "hash": "e92b4d1456a9b0b40400c3e41b8b8f910b5d2bb5a333b689c7457ce78a2be1d3"
+      },
+      {
+        "path": "fingerboard-3d.js",
+        "bytes": 21799,
+        "hash": "f0774c21598f7aa1424adc77389a6fe1ee5b55ef1ddaf229da86a3551a2688b1"
+      },
+      {
+        "path": "assets/models/skateboard-free-model.glb",
+        "bytes": 35359456,
+        "hash": "069071dde7b10e22810dc56e4844b3e7947fd7f05a8894361d7fbba4cc99974b"
+      },
+      {
+        "path": "assets/models/skateboard-model-CREDITS.txt",
+        "bytes": 248,
+        "hash": "6b4fd10dcc69f3a1b943b0908dce39214897445e812d33cef8d967af06e07c8e"
+      },
+      {
+        "path": "assets/vendor/three160/three.module.js",
+        "bytes": 1272971,
+        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
+      },
+      {
+        "path": "assets/vendor/three160/loaders/GLTFLoader.js",
+        "bytes": 108535,
+        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
+      },
+      {
+        "path": "assets/vendor/three160/utils/BufferGeometryUtils.js",
+        "bytes": 31919,
+        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
+      }
+    ],
+    "bytes": 36801303,
+    "version": "e7edce2ea7f0af77"
   }
 };

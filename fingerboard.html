@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#eeeadc">
+  <title>Two Fingers — 3D Fingerboard</title>
+  <style>
+    :root{--ink:#171717;--paper:#eeeadc;--acid:#d8ff38;--red:#ff4b35;--blue:#3274ff}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif;touch-action:none;user-select:none}
+    canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+    .hud{position:fixed;z-index:2;inset:max(12px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) auto max(14px,env(safe-area-inset-left));display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+    .brand{font-weight:1000;font-size:clamp(25px,5vw,47px);line-height:.8;letter-spacing:-.075em;text-transform:uppercase;transform:rotate(-2deg);text-shadow:2px 2px 0 var(--paper)}
+    .brand span{display:block;font-size:.29em;letter-spacing:.2em;margin:8px 0 0 3px}
+    .stats{display:flex;gap:8px}.stat{min-width:70px;padding:7px 10px;text-align:right;border:3px solid var(--ink);background:#eeeadced;box-shadow:4px 4px 0 var(--ink)}.stat b{display:block;font-size:clamp(18px,4.5vw,27px);line-height:1}.stat small{font-size:9px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
+    .actions{position:fixed;z-index:3;right:max(14px,env(safe-area-inset-right));top:max(91px,calc(env(safe-area-inset-top) + 78px));display:flex;gap:8px}
+    button{border:3px solid var(--ink);background:var(--acid);color:var(--ink);box-shadow:4px 4px 0 var(--ink);padding:12px 16px;font:900 12px Arial;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}button:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}.icon{width:40px;height:40px;padding:0;background:var(--paper);font-size:18px}
+    .touch-guide{position:fixed;z-index:2;left:14px;right:14px;bottom:max(12px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;pointer-events:none}.touch-guide div{width:40%;max-width:200px;padding-top:6px;border-top:3px solid #17171750;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#17171790}.touch-guide div:last-child{text-align:right}.touch-guide b{display:block;color:var(--ink);font-size:12px;margin-bottom:2px}
+    #trick{position:fixed;z-index:2;top:18%;left:50%;transform:translateX(-50%) rotate(-2deg);font-size:clamp(28px,7vw,64px);font-weight:1000;text-align:center;text-transform:uppercase;text-shadow:3px 3px 0 var(--paper);opacity:0;transition:opacity .12s;pointer-events:none}#trick.show{opacity:1}#trick small{display:block;font-size:.25em;letter-spacing:.13em}
+    .overlay{position:fixed;z-index:5;inset:0;display:grid;place-items:center;padding:20px;background:#17171755;backdrop-filter:blur(6px)}.panel{width:min(540px,100%);max-height:92vh;overflow:auto;padding:clamp(20px,4vw,34px);border:4px solid var(--ink);background:var(--paper);box-shadow:9px 9px 0 var(--ink);transform:rotate(-.35deg)}h1{margin:0 0 18px;font-size:clamp(42px,12vw,78px);line-height:.79;letter-spacing:-.075em;text-transform:uppercase}h1 em{font-style:normal;color:var(--red)}.lead{max-width:420px;margin:0 0 18px;font-size:15px;font-weight:800;line-height:1.4}.how{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0 22px}.how div{min-height:72px;padding:11px;border:3px solid var(--ink);background:#fff}.how b{display:block;margin-bottom:5px;font-size:11px;letter-spacing:.11em}.how span{font-size:12px;font-weight:700;line-height:1.25}.start{width:100%;font-size:14px}.desk{margin:12px 0 0;text-align:center;font-size:10px;font-weight:800;line-height:1.45;opacity:.62}.hidden{display:none!important}.rotate{display:none;position:fixed;z-index:10;inset:0;place-items:center;padding:30px;background:var(--paper);text-align:center;font-weight:1000}
+    @media(orientation:portrait) and (max-width:700px){.rotate{display:grid}}
+    @media(max-height:520px){.hud{top:8px}.brand{font-size:26px}.stat{padding:5px 8px}.stat b{font-size:19px}.actions{top:62px}.touch-guide{bottom:7px}.panel{padding:17px}.how{margin:9px 0 14px}.how div{min-height:61px;padding:8px}h1{font-size:48px;margin-bottom:10px}.lead{margin-bottom:10px}}
+  </style>
+</head>
+<body>
+  <div class="hud"><div class="brand">Two<br>Fingers<span>3D Fingerboard</span></div><div class="stats"><div class="stat"><b id="score">0</b><small>Score</small></div><div class="stat"><b id="best">0</b><small>Best</small></div></div></div>
+  <div class="actions"><button class="icon" id="pause" aria-label="Pause">Ⅱ</button><button class="icon" id="sound" aria-label="Toggle sound">♪</button></div>
+  <div id="trick"><span></span><small></small></div>
+  <div class="touch-guide"><div><b id="input-label">Touch: two fingers</b><span id="input-hint">hold to roll</span></div><div><b>Keyboard: W + S</b>hold both to roll</div></div>
+  <div class="overlay" id="intro"><section class="panel"><h1>Two<br><em>Fingers.</em></h1><p class="lead">Movement test. The Mac controls mimic two fingers: hold W and S together to roll, then use release-based arrow sequences for the two basic pops.</p><div class="how"><div><b>① ROLL</b><span>Hold W + S together.</span></div><div><b>② STEER</b><span>Use A/D while rolling.</span></div><div><b>③ OLLIE</b><span>Release ↑ then release ↓.</span></div><div><b>④ NOLLIE</b><span>Release ↓ then release ↑.</span></div></div><button class="start" id="start">Test movement</button><p class="desk">No reverse for now · a trick triggers only after both arrow keys are released in order</p></section></div>
+  <div class="overlay hidden" id="gameover"><section class="panel"><h1>Run<br><em>over.</em></h1><p class="lead" id="final"></p><button class="start" id="again">Run it back</button></section></div>
+  <div class="overlay hidden" id="paused"><section class="panel"><h1>Paused.</h1><button class="start" id="resume">Keep skating</button></section></div>
+  <div class="rotate">↻<br><br>Turn your phone sideways.<br>The 3D park needs the space.</div>
+  <script type="module" src="./fingerboard-3d.js?v=native-trackpad"></script>
+  <script src="rod-space-app-menu.js"></script>
+</body>
+</html>
