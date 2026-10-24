@@ -40,7 +40,7 @@
       #rodspace-app-menu-actions .danger:hover,#rodspace-app-menu-actions .danger:focus-visible{border-color:#fb7185;background:#4c0519}
       @media(max-width:600px){#rodspace-app-menu-trigger{min-height:64px;width:36px;font-size:10px}#rodspace-app-menu-panel{padding:21px}}
     </style>
-    <button id="rodspace-app-menu-trigger" aria-label="${passive ? 'Back to Rod Space' : 'Open game menu'}">${passive ? 'ROD SPACE' : 'R MENU'}</button>
+    ${passive ? '<button id="rodspace-app-menu-trigger" aria-label="Back to Rod Space">ROD SPACE</button>' : ''}
     ${passive ? '' : `
       <div id="rodspace-app-menu-backdrop" role="dialog" aria-modal="true" aria-labelledby="rodspace-app-menu-title">
         <section id="rodspace-app-menu-panel">
@@ -67,9 +67,14 @@
   const setOpen = open => {
     backdrop.classList.toggle('open', open);
     if (open) root.querySelector('[data-action="resume"]').focus();
-    else trigger.focus();
+    else document.activeElement?.blur();
   };
-  trigger.addEventListener('click', () => setOpen(true));
+  window.__rodSpaceOpenMenu = () => setOpen(true);
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    setOpen(!backdrop.classList.contains('open'));
+  });
   backdrop.addEventListener('click', event => {
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (action === 'resume') setOpen(false);
