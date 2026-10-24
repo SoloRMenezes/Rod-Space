@@ -1,6 +1,6 @@
 self.OFFLINE_CATALOG = {
   "maths-book": {
-    "name": "Maths Shelf",
+    "name": "Bookshelf",
     "page": "maths-book.html",
     "files": [
       {
@@ -170,8 +170,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 43914,
-        "hash": "5c7f62c4f84c61bf7c51ddb16c9f72c72dfe46e812fa7a47426c3d877f70b077"
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "assets/chronos/era-0-pre-void.png",
@@ -5420,13 +5420,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 21799,
-        "hash": "f0774c21598f7aa1424adc77389a6fe1ee5b55ef1ddaf229da86a3551a2688b1"
+        "bytes": 22925,
+        "hash": "bd5c5ada642ed4c238c240a2c061293e1c7410b16a8d35ba979cab4210c91c67"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 6824,
-        "hash": "1331209421097eb0845269e3794a9954b8c8223502db5b748334885eb9b0039d"
+        "bytes": 6822,
+        "hash": "9e24d2324a129e115fef0dd2f6767d6c47ccf302eba0769da850df8e8b28afc0"
       },
       {
         "path": "hood-brawlers.js",
@@ -5445,8 +5445,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 35909,
-        "hash": "51d916c493c2f780020ffe4821f7b97a00af0ee33ed740b29f05d16e1f3459c9"
+        "bytes": 35910,
+        "hash": "9658b1e7cd659c976111b35daf33967f3a6af034f4f6bda603650fa6186d5b83"
       },
       {
         "path": "invincible-sandbox.html",
@@ -5460,8 +5460,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 54553,
-        "hash": "bb995cb06f782a768d4990a777c7edc8d687bc7bdfb1f25bbe80895ebc0d3292"
+        "bytes": 58369,
+        "hash": "c308a3d2902312b88ac795efbea00e9f5e0504be39bd809921d951777b3a9807"
       },
       {
         "path": "maths-content.js",
@@ -5485,8 +5485,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 769913,
-        "hash": "6ab4c00f07ff11232217b7c351e4ee0d5aaa5ac1172a496eea9e45438cc185e3"
+        "bytes": 770400,
+        "hash": "ddcb24d8e80a2607de720adcbaa1ca865ca3fe79ab882dd00dc5f85ee5fe8658"
       },
       {
         "path": "mobile-gesture-guard.js",
@@ -5500,8 +5500,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "multiplayer.html",
-        "bytes": 73488,
-        "hash": "ee9ef8a9a30879802c41e5753e03213bd9a162d31d0446e42e293a13b503d13a"
+        "bytes": 74738,
+        "hash": "35738bf04ab84c98cc685138e0b132da36f184002dd0d6bc28e0da277297c5a0"
       },
       {
         "path": "nextup/app.js",
@@ -5535,8 +5535,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 663502,
-        "hash": "8894ce36090ea6f83aae9e52a3fa7749202c980e3d5dd3370fe758e3bf200519"
+        "bytes": 660640,
+        "hash": "55f59a69c0387b7034de0b99e71e6ed2fddcc649ff78b44cf7e4836f06f16725"
       },
       {
         "path": "offline.js",
@@ -5641,7 +5641,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "ddd7f18418f46f8e81691d889bfef597adc74d79f44ffc4cf9e86fbbf3b32369"
+        "hash": "76933fb0d7e02f17c3d005dc970e160eb8bff0604813e0f515b54bd619b93bcc"
       },
       {
         "path": "terraria.html",
@@ -5714,8 +5714,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 357886130,
-    "version": "a57b5965360d8e8f"
+    "bytes": 357890313,
+    "version": "f45bf94218b8b0c9"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -6082,8 +6082,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 43914,
-        "hash": "5c7f62c4f84c61bf7c51ddb16c9f72c72dfe46e812fa7a47426c3d877f70b077"
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "assets/vendor/tailwind.js",
@@ -6101,8 +6101,8 @@ self.OFFLINE_CATALOG = {
         "hash": "f75768726e05f1b0fa065f7b0a00cae2c9454f25019d2f8def77aef868b9f721"
       }
     ],
-    "bytes": 457749,
-    "version": "abd056dcc2fdff66"
+    "bytes": 458116,
+    "version": "19804a5c4a6dc1fc"
   },
   "card-wars": {
     "name": "Card Wars",
@@ -11103,13 +11103,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 21799,
-        "hash": "f0774c21598f7aa1424adc77389a6fe1ee5b55ef1ddaf229da86a3551a2688b1"
+        "bytes": 22925,
+        "hash": "bd5c5ada642ed4c238c240a2c061293e1c7410b16a8d35ba979cab4210c91c67"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 6824,
-        "hash": "1331209421097eb0845269e3794a9954b8c8223502db5b748334885eb9b0039d"
+        "bytes": 6822,
+        "hash": "9e24d2324a129e115fef0dd2f6767d6c47ccf302eba0769da850df8e8b28afc0"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -11117,8 +11117,8 @@ self.OFFLINE_CATALOG = {
         "hash": "f75768726e05f1b0fa065f7b0a00cae2c9454f25019d2f8def77aef868b9f721"
       }
     ],
-    "bytes": 36806602,
-    "version": "4cf561b8a0c0b041"
+    "bytes": 36807726,
+    "version": "e6cece7890a6cb48"
   },
   "solos-rng": {
     "name": "Solo's RNG",
@@ -11695,8 +11695,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 43914,
-        "hash": "5c7f62c4f84c61bf7c51ddb16c9f72c72dfe46e812fa7a47426c3d877f70b077"
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "assets/chronos/era-0-pre-void.png",
@@ -16945,13 +16945,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 21799,
-        "hash": "f0774c21598f7aa1424adc77389a6fe1ee5b55ef1ddaf229da86a3551a2688b1"
+        "bytes": 22925,
+        "hash": "bd5c5ada642ed4c238c240a2c061293e1c7410b16a8d35ba979cab4210c91c67"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 6824,
-        "hash": "1331209421097eb0845269e3794a9954b8c8223502db5b748334885eb9b0039d"
+        "bytes": 6822,
+        "hash": "9e24d2324a129e115fef0dd2f6767d6c47ccf302eba0769da850df8e8b28afc0"
       },
       {
         "path": "hood-brawlers.js",
@@ -16970,8 +16970,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 35909,
-        "hash": "51d916c493c2f780020ffe4821f7b97a00af0ee33ed740b29f05d16e1f3459c9"
+        "bytes": 35910,
+        "hash": "9658b1e7cd659c976111b35daf33967f3a6af034f4f6bda603650fa6186d5b83"
       },
       {
         "path": "invincible-sandbox.html",
@@ -16985,8 +16985,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 54553,
-        "hash": "bb995cb06f782a768d4990a777c7edc8d687bc7bdfb1f25bbe80895ebc0d3292"
+        "bytes": 58369,
+        "hash": "c308a3d2902312b88ac795efbea00e9f5e0504be39bd809921d951777b3a9807"
       },
       {
         "path": "maths-content.js",
@@ -17010,8 +17010,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 769913,
-        "hash": "6ab4c00f07ff11232217b7c351e4ee0d5aaa5ac1172a496eea9e45438cc185e3"
+        "bytes": 770400,
+        "hash": "ddcb24d8e80a2607de720adcbaa1ca865ca3fe79ab882dd00dc5f85ee5fe8658"
       },
       {
         "path": "mobile-gesture-guard.js",
@@ -17025,8 +17025,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "multiplayer.html",
-        "bytes": 73488,
-        "hash": "ee9ef8a9a30879802c41e5753e03213bd9a162d31d0446e42e293a13b503d13a"
+        "bytes": 74738,
+        "hash": "35738bf04ab84c98cc685138e0b132da36f184002dd0d6bc28e0da277297c5a0"
       },
       {
         "path": "nextup/app.js",
@@ -17060,8 +17060,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 663502,
-        "hash": "8894ce36090ea6f83aae9e52a3fa7749202c980e3d5dd3370fe758e3bf200519"
+        "bytes": 660640,
+        "hash": "55f59a69c0387b7034de0b99e71e6ed2fddcc649ff78b44cf7e4836f06f16725"
       },
       {
         "path": "offline.js",
@@ -17166,7 +17166,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "ddd7f18418f46f8e81691d889bfef597adc74d79f44ffc4cf9e86fbbf3b32369"
+        "hash": "76933fb0d7e02f17c3d005dc970e160eb8bff0604813e0f515b54bd619b93bcc"
       },
       {
         "path": "terraria.html",
@@ -17239,8 +17239,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 357886130,
-    "version": "755780ebd24a20f1"
+    "bytes": 357890313,
+    "version": "8ec7d933c631961a"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -17450,6 +17450,11 @@ self.OFFLINE_CATALOG = {
     "page": "multiplayer.html",
     "files": [
       {
+        "path": "assets/models/web-weavers-r15.glb",
+        "bytes": 172216,
+        "hash": "62e52e6027b5c864e5bacc88c509b043e30954c47b516d1fb3e33b80b7492421"
+      },
+      {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
         "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
@@ -17481,8 +17486,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "multiplayer.html",
-        "bytes": 73488,
-        "hash": "ee9ef8a9a30879802c41e5753e03213bd9a162d31d0446e42e293a13b503d13a"
+        "bytes": 74738,
+        "hash": "35738bf04ab84c98cc685138e0b132da36f184002dd0d6bc28e0da277297c5a0"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -17490,7 +17495,7 @@ self.OFFLINE_CATALOG = {
         "hash": "f75768726e05f1b0fa065f7b0a00cae2c9454f25019d2f8def77aef868b9f721"
       }
     ],
-    "bytes": 1904095,
-    "version": "9d9b9c24ea38d94b"
+    "bytes": 2077561,
+    "version": "d820e227d0860ca3"
   }
 };

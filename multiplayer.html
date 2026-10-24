@@ -205,6 +205,7 @@
     <script type="module">
         import * as THREE from 'three';
         import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
         let initializeApp, getAuth, signInAnonymously, signInWithCustomToken, getFirestore, doc, getDoc, setDoc;
         // --- Firebase Setup ---
@@ -502,6 +503,27 @@
         for(const root of [...leftArmGroup.children.slice(1),...rightArmGroup.children.slice(1),...leftLegGroup.children.slice(1),...rightLegGroup.children.slice(1)])root.visible=false;
         hair.visible=false;pack.visible=false;
         playerBody.children.filter(child=>child!==torso&&child!==headGroup&&child!==leftArmGroup&&child!==rightArmGroup&&child!==leftLegGroup&&child!==rightLegGroup).forEach(child=>child.visible=false);
+
+        // Use the supplied Roblox R15 character wherever the player is visible.
+        const robloxAvatarRoot=new THREE.Group();
+        robloxAvatarRoot.scale.setScalar(.56);
+        playerBody.add(robloxAvatarRoot);
+        const robloxBones={};
+        const robloxRest={};
+        new GLTFLoader().load('./assets/models/web-weavers-r15.glb',gltf=>{
+            robloxAvatarRoot.add(gltf.scene);
+            gltf.scene.traverse(node=>{
+                if(node.isBone){robloxBones[node.name]=node;robloxRest[node.name]=node.quaternion.clone()}
+                if(node.isMesh){
+                    node.material=node.material.clone();
+                    const part=node.name.toLowerCase();
+                    node.material.color.setHex(part.includes('leg')||part.includes('foot')?0x101827:0x9f263b);
+                    node.material.roughness=.8;
+                    node.castShadow=true;node.receiveShadow=true;
+                }
+            });
+            [torso,headGroup,leftArmGroup,rightArmGroup,leftLegGroup,rightLegGroup].forEach(part=>part.visible=false);
+        },undefined,error=>console.warn('Roblox avatar unavailable; using fallback character.',error));
 
         // Animation state
         let walkCycleTime = 0;

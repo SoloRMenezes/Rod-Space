@@ -266,6 +266,7 @@ function showTrick(name, points, bank = true) {
 function reset() {
   Object.assign(state, { x: 0, y: .34, z: 17, vy: 0, pitch: 0, roll: 0, yaw: 0, pitchV: 0, rollV: 0, yawV: 0, air: false, flipTurns: 0, popTime: 0, popName: 'OLLIE', grinding: false, grindTime: 0 });
   arrowReleases = [];
+  contactReleases = [];
   score = elapsed = 0; speed = 5.4; populate();
   $('#score').textContent = '0';
 }
@@ -305,8 +306,14 @@ function land(surface = .34, obstacle = null) {
 const pointers = new Map();
 const nativeTrackpadIDs = new Set();
 let backId = null, frontId = null;
+let contactReleases = [];
 function assignPointers() {
   const list = [...pointers.values()].sort((a, b) => a.x - b.x);
+  if (list.length === 1 && (list[0].role === 'back' || list[0].role === 'front')) {
+    backId = list[0].role === 'back' ? list[0].id : null;
+    frontId = list[0].role === 'front' ? list[0].id : null;
+    return;
+  }
   backId = list[0]?.id ?? null; frontId = list.at(-1)?.id ?? null;
   list.forEach(p => p.role = p.id === backId ? 'back' : p.id === frontId ? 'front' : 'extra');
 }
@@ -322,18 +329,31 @@ function contactMove(id, x, y) {
   if (pointers.size >= 2) state.yaw = wrap(state.yaw - dx * .0024);
 }
 function contactUp(id) {
+  const lifted = pointers.get(id);
+  if (!lifted) return;
+  const now = performance.now();
+  if (lifted.role === 'front' || lifted.role === 'back') {
+    contactReleases = contactReleases.filter(input => now - input.time < 650);
+    contactReleases.push({ role: lifted.role, time: now });
+    const sequence = contactReleases.slice(-2).map(input => input.role).join(',');
+    if (sequence === 'back,front') { pop('OLLIE'); contactReleases = []; }
+    if (sequence === 'front,back') { pop('NOLLIE'); contactReleases = []; }
+  }
   pointers.delete(id); assignPointers();
 }
 function pointerDown(event) {
+  if (event.pointerType === 'mouse') return;
   event.preventDefault();
   contactDown(event.pointerId, event.clientX, event.clientY);
   renderer.domElement.setPointerCapture?.(event.pointerId);
 }
 function pointerMove(event) {
+  if (event.pointerType === 'mouse') return;
   event.preventDefault();
   contactMove(event.pointerId, event.clientX, event.clientY);
 }
 function pointerUp(event) {
+  if (event.pointerType === 'mouse') return;
   contactUp(event.pointerId);
 }
 renderer.domElement.addEventListener('pointerdown', pointerDown, { passive: false });
@@ -440,7 +460,11 @@ function update(dt) {
     }
     const { surface, object } = nearbySurface();
     if (state.air && state.vy <= 0 && state.y <= surface) land(surface, object);
-    if (!state.air) state.y = surface;
+    if (!state.air) {
+      state.y = surface;
+      const brakingOnTail = pointers.size === 1 && [...pointers.values()][0]?.role === 'back';
+      state.pitch += ((brakingOnTail ? .24 : 0) - state.pitch) * Math.min(1, dt * 11);
+    }
     if (surface < -1 && !state.air) finish();
     if (object?.type === 'cone' && Math.abs(object.root.position.z - state.z) < .72 && state.y < 1.25) finish();
     if (object?.type === 'ledge' && Math.abs(object.root.position.z - state.z) < object.length * .45 && state.y < object.height && !state.air) finish();

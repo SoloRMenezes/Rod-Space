@@ -171,8 +171,9 @@ let dragStartX = 0;
 let dragStartOffset = 0;
 let didDrag = false;
 let openingIndex = -1;
-let cameraX = 0;
-let cameraTargetX = 0;
+const shelfPositionKey = 'bookshelf:scroll:mathematics';
+let cameraX = Number(localStorage.getItem(shelfPositionKey)) || 0;
+let cameraTargetX = cameraX;
 const phoneView = window.matchMedia('(max-width: 650px)');
 
 function setHovered(index) {
@@ -198,7 +199,7 @@ function bookAtEvent(event) {
 
 canvas.addEventListener('pointermove', event => {
   if (openingIndex >= 0) return;
-  if (phoneView.matches && pressed >= 0) {
+  if (pressed >= 0) {
     const movement = event.clientX - dragStartX;
     if (Math.abs(movement) > 5) didDrag = true;
     if (didDrag) {
@@ -216,7 +217,7 @@ canvas.addEventListener('pointerdown', event => {
   dragStartX = event.clientX;
   dragStartOffset = cameraTargetX;
   didDrag = false;
-  if (phoneView.matches) canvas.setPointerCapture(event.pointerId);
+  canvas.setPointerCapture(event.pointerId);
 });
 canvas.addEventListener('pointerup', event => {
   const index = bookAtEvent(event);
@@ -243,6 +244,12 @@ canvas.addEventListener('pointerup', event => {
   didDrag = false;
 });
 canvas.addEventListener('pointercancel', () => { pressed = -1; didDrag = false; setHovered(-1); });
+canvas.addEventListener('wheel', event => {
+  if (Math.abs(event.deltaX) < Math.abs(event.deltaY) && !event.shiftKey) return;
+  event.preventDefault();
+  cameraTargetX = THREE.MathUtils.clamp(cameraTargetX + (event.deltaX || event.deltaY) * 0.012, -3.85, 3.85);
+  localStorage.setItem(shelfPositionKey, String(cameraTargetX));
+}, {passive: false});
 
 function resize() {
   const width = shelfElement.clientWidth;
@@ -251,7 +258,6 @@ function resize() {
   camera.aspect = width / height;
   const neededDistance = 7.9 / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
   camera.position.z = phoneView.matches ? 13.2 : Math.max(15.8, neededDistance);
-  if (!phoneView.matches) cameraTargetX = 0;
   camera.updateProjectionMatrix();
 }
 new ResizeObserver(resize).observe(shelfElement);
@@ -264,6 +270,7 @@ function animate() {
   previousFrame = now;
   const ease = 1 - Math.exp(-dt * 5);
   cameraX += (cameraTargetX - cameraX) * (1 - Math.exp(-dt * 9));
+  if (Math.abs(cameraTargetX - cameraX) > 0.001) localStorage.setItem(shelfPositionKey, String(cameraTargetX));
   camera.position.x = cameraX;
   camera.lookAt(cameraX, 2.55, 0);
   models.forEach((model, index) => {
