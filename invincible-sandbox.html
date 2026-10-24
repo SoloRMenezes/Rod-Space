@@ -8,7 +8,7 @@
 @media(max-width:700px){.cards{grid-template-columns:1fr 1fr}.title{font-size:35px}.help{font-size:11px}}
 </style></head><body><div id="menu"><div class="panel"><h1 class="title">VILTRUM SANDBOX</h1><div class="sub">Choose a character, then go anywhere. This is a local fan prototype.</div><div class="cards" id="cards"></div><button id="start">ENTER THE WORLD</button></div></div>
 <div id="hud"><div class="top"><div id="who"></div><div class="bar"><div class="fill" id="hp"></div></div><div class="speed" id="speed">0</div><div class="loc" id="loc">EARTH</div><div id="output"></div></div><div class="help">WASD move · SPACE up/jump · C down<br>F fly · E grab/throw · CLICK punch<br>Q / R decrease/increase output · SHIFT boost<br>V power · ESC release mouse</div><div class="event" id="event"></div><div class="cross"></div><div class="warn" id="warn"></div><div class="prompt" id="prompt"></div><div class="boss" id="boss"><label id="bossname">CONQUEST</label><div class="bar"><div class="fill" id="bosshp"></div></div></div></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script>
+<script src="assets/vendor/three-r128.min.js"></script><script>
 const chars=[
  {name:'Invincible',race:'Viltrumite',colors:[0xf3dc25,0x1f7ec2],max:230,space:true,power:'Shockwave'},
  {name:'Omni-Man',race:'Viltrumite',colors:[0xf4f4f0,0xc51f35],max:310,space:true,power:'Thunder Clap'},
