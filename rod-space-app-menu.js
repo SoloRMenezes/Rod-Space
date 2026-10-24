@@ -37,7 +37,7 @@
       #rodspace-app-menu-actions button{appearance:none;width:100%;min-height:50px;border:1px solid #334155;border-radius:11px;background:#161b22;color:#e2e8f0;cursor:pointer;font:800 14px/1 inherit;text-align:left;padding:0 17px;box-shadow:none;text-transform:none;letter-spacing:0}
       #rodspace-app-menu-actions button:hover,#rodspace-app-menu-actions button:focus-visible{border-color:#60a5fa;background:#1e293b;color:#fff;outline:none}
       #rodspace-app-menu-actions .primary{border-color:#2563eb;background:#2563eb;color:#fff}
-      #rodspace-app-menu-actions .danger:hover,#rodspace-app-menu-actions .danger:focus-visible{border-color:#fb7185;background:#4c0519}
+      html.rodspace-pointer-locked,html.rodspace-pointer-locked *{cursor:none!important}
       @media(max-width:600px){#rodspace-app-menu-trigger{min-height:64px;width:36px;font-size:10px}#rodspace-app-menu-panel{padding:21px}}
     </style>
     ${passive ? '<button id="rodspace-app-menu-trigger" aria-label="Back to Rod Space">ROD SPACE</button>' : ''}
@@ -50,12 +50,20 @@
             <button class="primary" data-action="resume">Close menu</button>
             <button data-action="restart">Restart game</button>
             <button data-action="home">Back to Rod Space</button>
-            <button class="danger" data-action="quit">Quit app</button>
           </div>
         </section>
       </div>`}
   `;
   document.documentElement.append(root);
+
+  const syncPointerLockCursor = () => {
+    document.documentElement.classList.toggle(
+      'rodspace-pointer-locked',
+      Boolean(document.pointerLockElement)
+    );
+  };
+  document.addEventListener('pointerlockchange', syncPointerLockCursor);
+  syncPointerLockCursor();
 
   const trigger = root.querySelector('#rodspace-app-menu-trigger');
   if (passive) {
@@ -80,11 +88,6 @@
     if (action === 'resume') setOpen(false);
     if (action === 'restart') location.reload();
     if (action === 'home') location.href = '/';
-    if (action === 'quit') {
-      const nativeQuit = window.webkit?.messageHandlers?.rodSpaceApp;
-      if (nativeQuit) nativeQuit.postMessage('quit');
-      else window.close();
-    }
     if (event.target === backdrop) setOpen(false);
   });
 })();
