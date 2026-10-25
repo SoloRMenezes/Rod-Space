@@ -78,11 +78,12 @@
     else document.activeElement?.blur();
   };
   window.__rodSpaceOpenMenu = () => setOpen(true);
-  document.addEventListener('keydown', event => {
+  window.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
     event.preventDefault();
+    event.stopImmediatePropagation();
     setOpen(!backdrop.classList.contains('open'));
-  });
+  }, true);
   backdrop.addEventListener('click', event => {
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (action === 'resume') setOpen(false);
