@@ -286,6 +286,7 @@ function finish() {
 
 function pop(name = 'OLLIE', power = 7.4) {
   if (!running || paused || state.air) return;
+  window.dispatchEvent(new CustomEvent('two-fingers-pop', { detail: name }));
   state.air = true; state.grinding = false; state.vy = power;
   state.pitchV = name === 'NOLLIE' ? 1.1 : -1.1;
   state.flipTurns = 0; state.popTime = elapsed; state.popName = name;
@@ -308,13 +309,13 @@ const nativeTrackpadIDs = new Set();
 let backId = null, frontId = null;
 let contactReleases = [];
 function assignPointers() {
-  const list = [...pointers.values()].sort((a, b) => a.x - b.x);
+  const list = [...pointers.values()].sort((a, b) => a.y - b.y);
   if (list.length === 1 && (list[0].role === 'back' || list[0].role === 'front')) {
     backId = list[0].role === 'back' ? list[0].id : null;
     frontId = list[0].role === 'front' ? list[0].id : null;
     return;
   }
-  backId = list[0]?.id ?? null; frontId = list.at(-1)?.id ?? null;
+  frontId = list[0]?.id ?? null; backId = list.at(-1)?.id ?? null;
   list.forEach(p => p.role = p.id === backId ? 'back' : p.id === frontId ? 'front' : 'extra');
 }
 function contactDown(id, x, y, source = 'screen') {
@@ -323,10 +324,7 @@ function contactDown(id, x, y, source = 'screen') {
 }
 function contactMove(id, x, y) {
   const pointer = pointers.get(id); if (!pointer) return;
-  const dx = x - pointer.x;
   pointer.x = x; pointer.y = y;
-  if (!running || paused) return;
-  if (pointers.size >= 2) state.yaw = wrap(state.yaw - dx * .0024);
 }
 function contactUp(id) {
   const lifted = pointers.get(id);
@@ -336,8 +334,8 @@ function contactUp(id) {
     contactReleases = contactReleases.filter(input => now - input.time < 650);
     contactReleases.push({ role: lifted.role, time: now });
     const sequence = contactReleases.slice(-2).map(input => input.role).join(',');
-    if (sequence === 'back,front') { pop('OLLIE'); contactReleases = []; }
-    if (sequence === 'front,back') { pop('NOLLIE'); contactReleases = []; }
+    if (sequence === 'front,back') { pop('OLLIE'); contactReleases = []; }
+    if (sequence === 'back,front') { pop('NOLLIE'); contactReleases = []; }
   }
   pointers.delete(id); assignPointers();
 }
@@ -437,6 +435,16 @@ function update(dt) {
   const direction = touchDriving ? 1 : keyboardDirection;
   if (keys.has('KeyA')) state.yaw = wrap(state.yaw + 2.15 * dt);
   if (keys.has('KeyD')) state.yaw = wrap(state.yaw - 2.15 * dt);
+  if (touchDriving) {
+    const boardContacts = [pointers.get(frontId), pointers.get(backId)].filter(Boolean);
+    const trackpadCentre = boardContacts.reduce((sum, pointer) => sum + pointer.x / innerWidth, 0) / boardContacts.length;
+    const offset = trackpadCentre - .5;
+    const deadZone = .12;
+    const steering = Math.abs(offset) <= deadZone
+      ? 0
+      : Math.sign(offset) * Math.min(1, (Math.abs(offset) - deadZone) / (.5 - deadZone));
+    state.yaw = wrap(state.yaw - steering * 2.15 * dt);
+  }
   elapsed += dt; speed = 5.4; if (driving) score += dt * 9;
   trickTimer -= dt; if (trickTimer < 0) $('#trick').classList.remove('show');
 

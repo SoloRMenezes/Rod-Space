@@ -10,6 +10,7 @@
 
   const passivePages = new Set([
     '/maths-book.html',
+    '/trackpad-scale.html',
     '/piano.html',
     '/counter.html',
     '/sidequests.html',

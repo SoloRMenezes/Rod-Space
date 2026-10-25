@@ -275,6 +275,17 @@
           date: "2026-01-22"
         },
         {
+          id: "force-pad",
+          name: "Force Pad",
+          description: "Trackpad pressure estimate",
+          url: BASE_URL + "trackpad-scale.html",
+          icon: "⚖️",
+          type: "tool",
+          pill: "Tool",
+          date: "2026-10-25",
+          appOnly: true
+        },
+        {
           id: "would-you-rather",
           name: "Would You Rather",
           description: "Choices",
@@ -736,7 +747,7 @@
       };
 
       function getFilteredAndSorted() {
-        let items = PROJECTS_DATA.filter(proj => proj.type !== "party").filter(proj => {
+        let items = PROJECTS_DATA.filter(proj => proj.type !== "party").filter(proj => !proj.appOnly || window.__rodSpaceMacApp).filter(proj => {
           if (window.offlineOnly && !window.offlineDownloads?.has(proj.id)) return false;
           const isFav = favorites.includes(proj.id);
 
