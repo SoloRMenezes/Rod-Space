@@ -5454,14 +5454,19 @@ self.OFFLINE_CATALOG = {
         "hash": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d"
       },
       {
+        "path": "japanese-book.html",
+        "bytes": 10756,
+        "hash": "4b03f7df73ef26cab8831ea9b8034a49f5b4d60a6454eaf7140296ebc0b57a6b"
+      },
+      {
         "path": "jp_srs_cards.html",
         "bytes": 37649,
         "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
       },
       {
         "path": "maths-book.html",
-        "bytes": 58369,
-        "hash": "c308a3d2902312b88ac795efbea00e9f5e0504be39bd809921d951777b3a9807"
+        "bytes": 58676,
+        "hash": "ae0b5f9b8453acc4569e50ad657483448a3da72a5136046a6a8d38b5c39f0422"
       },
       {
         "path": "maths-content.js",
@@ -5535,8 +5540,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 660640,
-        "hash": "55f59a69c0387b7034de0b99e71e6ed2fddcc649ff78b44cf7e4836f06f16725"
+        "bytes": 660816,
+        "hash": "8de5fa4315d943c8c834233b64320f90ae262763f1e507f8c0fbd9ff5941fdb5"
       },
       {
         "path": "offline.js",
@@ -5641,7 +5646,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "76933fb0d7e02f17c3d005dc970e160eb8bff0604813e0f515b54bd619b93bcc"
+        "hash": "b5c84caa7d07f089e71527b8bfbc7c623e9ca6ce21384edd30c7584f3a610631"
       },
       {
         "path": "terraria.html",
@@ -5714,8 +5719,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 357890313,
-    "version": "f45bf94218b8b0c9"
+    "bytes": 357901552,
+    "version": "ef59c59519319a21"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -16979,14 +16984,19 @@ self.OFFLINE_CATALOG = {
         "hash": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d"
       },
       {
+        "path": "japanese-book.html",
+        "bytes": 10756,
+        "hash": "4b03f7df73ef26cab8831ea9b8034a49f5b4d60a6454eaf7140296ebc0b57a6b"
+      },
+      {
         "path": "jp_srs_cards.html",
         "bytes": 37649,
         "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
       },
       {
         "path": "maths-book.html",
-        "bytes": 58369,
-        "hash": "c308a3d2902312b88ac795efbea00e9f5e0504be39bd809921d951777b3a9807"
+        "bytes": 58676,
+        "hash": "ae0b5f9b8453acc4569e50ad657483448a3da72a5136046a6a8d38b5c39f0422"
       },
       {
         "path": "maths-content.js",
@@ -17060,8 +17070,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 660640,
-        "hash": "55f59a69c0387b7034de0b99e71e6ed2fddcc649ff78b44cf7e4836f06f16725"
+        "bytes": 660816,
+        "hash": "8de5fa4315d943c8c834233b64320f90ae262763f1e507f8c0fbd9ff5941fdb5"
       },
       {
         "path": "offline.js",
@@ -17166,7 +17176,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "76933fb0d7e02f17c3d005dc970e160eb8bff0604813e0f515b54bd619b93bcc"
+        "hash": "b5c84caa7d07f089e71527b8bfbc7c623e9ca6ce21384edd30c7584f3a610631"
       },
       {
         "path": "terraria.html",
@@ -17239,8 +17249,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 357890313,
-    "version": "8ec7d933c631961a"
+    "bytes": 357901552,
+    "version": "a61714b00cd32efb"
   },
   "backrooms": {
     "name": "The Backrooms",
