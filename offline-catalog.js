@@ -5541,7 +5541,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 879347,
-        "hash": "1a6fe22c051ab32b5b3eccf1eb1aa118a8d657c9bafc57453bd96fbe33ce7d08"
+        "hash": "3c09c2a9ee62341295697c09b537450054161c826d0daebc9e8d78d994e735eb"
       },
       {
         "path": "offline.js",
@@ -5646,7 +5646,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "cb88a94509a4b446ed8b08a427c378222e8e8f4e2a5560eec20b266a4623b807"
+        "hash": "bed918bbff73e11450e3f2699cbe981ecd058e350df635ba5d8ec037534ab42a"
       },
       {
         "path": "terraria.html",
@@ -5690,8 +5690,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 3119,
-        "hash": "0b29eb6c3579b2b85feab19cece27a418da050dd450f81000986110456065f14"
+        "bytes": 3361,
+        "hash": "14541c2fbef61e0ad00c8cb718ed45946b4bbbc4ae397c74647e16ba68a1f943"
       },
       {
         "path": "truth-or-dare.html",
@@ -5724,8 +5724,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358124118,
-    "version": "195405b1da231062"
+    "bytes": 358124360,
+    "version": "61ffa48c11cf262c"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -11447,7 +11447,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 879347,
-        "hash": "1a6fe22c051ab32b5b3eccf1eb1aa118a8d657c9bafc57453bd96fbe33ce7d08"
+        "hash": "3c09c2a9ee62341295697c09b537450054161c826d0daebc9e8d78d994e735eb"
       },
       {
         "path": "offline.js",
@@ -11552,7 +11552,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "cb88a94509a4b446ed8b08a427c378222e8e8f4e2a5560eec20b266a4623b807"
+        "hash": "bed918bbff73e11450e3f2699cbe981ecd058e350df635ba5d8ec037534ab42a"
       },
       {
         "path": "terraria.html",
@@ -11596,8 +11596,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 3119,
-        "hash": "0b29eb6c3579b2b85feab19cece27a418da050dd450f81000986110456065f14"
+        "bytes": 3361,
+        "hash": "14541c2fbef61e0ad00c8cb718ed45946b4bbbc4ae397c74647e16ba68a1f943"
       },
       {
         "path": "truth-or-dare.html",
@@ -11630,8 +11630,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358124118,
-    "version": "be867a26afdf9ab7"
+    "bytes": 358124360,
+    "version": "40c064300c5efaa1"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -22804,7 +22804,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 879347,
-        "hash": "1a6fe22c051ab32b5b3eccf1eb1aa118a8d657c9bafc57453bd96fbe33ce7d08"
+        "hash": "3c09c2a9ee62341295697c09b537450054161c826d0daebc9e8d78d994e735eb"
       },
       {
         "path": "offline.js",
@@ -22909,7 +22909,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "cb88a94509a4b446ed8b08a427c378222e8e8f4e2a5560eec20b266a4623b807"
+        "hash": "bed918bbff73e11450e3f2699cbe981ecd058e350df635ba5d8ec037534ab42a"
       },
       {
         "path": "terraria.html",
@@ -22953,8 +22953,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 3119,
-        "hash": "0b29eb6c3579b2b85feab19cece27a418da050dd450f81000986110456065f14"
+        "bytes": 3361,
+        "hash": "14541c2fbef61e0ad00c8cb718ed45946b4bbbc4ae397c74647e16ba68a1f943"
       },
       {
         "path": "truth-or-dare.html",
@@ -22987,8 +22987,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358124118,
-    "version": "d29a47676c358c51"
+    "bytes": 358124360,
+    "version": "13453878be17abc8"
   },
   "backrooms": {
     "name": "The Backrooms",
