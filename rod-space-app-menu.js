@@ -7,9 +7,9 @@
   const path = decodeURIComponent(location.pathname).replace(/\/$/, '') || '/';
   const hubs = new Set(['/', '/index.html', '/party.html']);
   if (hubs.has(path)) return;
+  if (path === '/maths-book.html' || path === '/japanese-book.html') return;
 
   const passivePages = new Set([
-    '/maths-book.html',
     '/trackpad-scale.html',
     '/piano.html',
     '/counter.html',

@@ -5455,8 +5455,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "japanese-book.html",
-        "bytes": 10756,
-        "hash": "4b03f7df73ef26cab8831ea9b8034a49f5b4d60a6454eaf7140296ebc0b57a6b"
+        "bytes": 17838,
+        "hash": "7e5a0ec74741c3bcc9dd494a67b2bbe1af004def58597f6b6b667d0e28f70ad5"
       },
       {
         "path": "jp_srs_cards.html",
@@ -5465,8 +5465,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 58676,
-        "hash": "ae0b5f9b8453acc4569e50ad657483448a3da72a5136046a6a8d38b5c39f0422"
+        "bytes": 60097,
+        "hash": "84a408b307d781071a411dd4eb887526cffb70390decfb65b4bd92548008854c"
       },
       {
         "path": "maths-content.js",
@@ -5490,8 +5490,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 770400,
-        "hash": "ddcb24d8e80a2607de720adcbaa1ca865ca3fe79ab882dd00dc5f85ee5fe8658"
+        "bytes": 770390,
+        "hash": "99e6ce2f79f27ef67e33cd3f411fb4bf6a93e0d06e3673bb0620b8bc8b2546ec"
       },
       {
         "path": "mobile-gesture-guard.js",
@@ -5541,7 +5541,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 879347,
-        "hash": "3c09c2a9ee62341295697c09b537450054161c826d0daebc9e8d78d994e735eb"
+        "hash": "ee7ed7969e1fc324588a897bf9fb009df6dd6506cf5b5d163dbcaf8b6a225127"
       },
       {
         "path": "offline.js",
@@ -5615,8 +5615,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "shit-spiral.html",
@@ -5646,7 +5646,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "bed918bbff73e11450e3f2699cbe981ecd058e350df635ba5d8ec037534ab42a"
+        "hash": "2a1d95ea66b8d243f62c6f202f80482860120ae7fc248dc387179c0bc65e4e83"
       },
       {
         "path": "terraria.html",
@@ -5690,8 +5690,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 3361,
-        "hash": "14541c2fbef61e0ad00c8cb718ed45946b4bbbc4ae397c74647e16ba68a1f943"
+        "bytes": 3410,
+        "hash": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7"
       },
       {
         "path": "truth-or-dare.html",
@@ -5724,8 +5724,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358124360,
-    "version": "61ffa48c11cf262c"
+    "bytes": 358132955,
+    "version": "21d1103feaffea41"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -5743,8 +5743,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "terraria.html",
@@ -5752,8 +5752,8 @@ self.OFFLINE_CATALOG = {
         "hash": "76e090d6745a53fd10d1c956d4c6a906c17a8dd10d15baa65bb4be6c616a29c5"
       }
     ],
-    "bytes": 442954,
-    "version": "87e7c89a0a7ff548"
+    "bytes": 443007,
+    "version": "76f660601d661307"
   },
   "double-take": {
     "name": "Double Take",
@@ -5766,12 +5766,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 62767,
-    "version": "50c96915a5b2a9de"
+    "bytes": 62820,
+    "version": "c72d594bc89d9822"
   },
   "shit-spiral": {
     "name": "Shit Spiral",
@@ -5794,8 +5794,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "shit-spiral.html",
@@ -5803,8 +5803,8 @@ self.OFFLINE_CATALOG = {
         "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
       }
     ],
-    "bytes": 51962,
-    "version": "284e1dc1133c28c2"
+    "bytes": 52015,
+    "version": "6c290a1ffd2f610e"
   },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
@@ -5857,12 +5857,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 1099103,
-    "version": "cf705ee7f7c75200"
+    "bytes": 1099156,
+    "version": "e0ea18e4127e13b6"
   },
   "piano": {
     "name": "Virtual Piano",
@@ -5875,12 +5875,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 12644,
-    "version": "7a56a1ec467e8cff"
+    "bytes": 12697,
+    "version": "f30ad7f6b36b4b24"
   },
   "counter": {
     "name": "Counter",
@@ -5898,12 +5898,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 458676,
-    "version": "8ff766bad98f82e5"
+    "bytes": 458729,
+    "version": "7c196bee179fb287"
   },
   "force-pad": {
     "name": "Force Pad",
@@ -11361,8 +11361,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "japanese-book.html",
-        "bytes": 10756,
-        "hash": "4b03f7df73ef26cab8831ea9b8034a49f5b4d60a6454eaf7140296ebc0b57a6b"
+        "bytes": 17838,
+        "hash": "7e5a0ec74741c3bcc9dd494a67b2bbe1af004def58597f6b6b667d0e28f70ad5"
       },
       {
         "path": "jp_srs_cards.html",
@@ -11371,8 +11371,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 58676,
-        "hash": "ae0b5f9b8453acc4569e50ad657483448a3da72a5136046a6a8d38b5c39f0422"
+        "bytes": 60097,
+        "hash": "84a408b307d781071a411dd4eb887526cffb70390decfb65b4bd92548008854c"
       },
       {
         "path": "maths-content.js",
@@ -11396,8 +11396,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 770400,
-        "hash": "ddcb24d8e80a2607de720adcbaa1ca865ca3fe79ab882dd00dc5f85ee5fe8658"
+        "bytes": 770390,
+        "hash": "99e6ce2f79f27ef67e33cd3f411fb4bf6a93e0d06e3673bb0620b8bc8b2546ec"
       },
       {
         "path": "mobile-gesture-guard.js",
@@ -11447,7 +11447,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 879347,
-        "hash": "3c09c2a9ee62341295697c09b537450054161c826d0daebc9e8d78d994e735eb"
+        "hash": "ee7ed7969e1fc324588a897bf9fb009df6dd6506cf5b5d163dbcaf8b6a225127"
       },
       {
         "path": "offline.js",
@@ -11521,8 +11521,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "shit-spiral.html",
@@ -11552,7 +11552,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "bed918bbff73e11450e3f2699cbe981ecd058e350df635ba5d8ec037534ab42a"
+        "hash": "2a1d95ea66b8d243f62c6f202f80482860120ae7fc248dc387179c0bc65e4e83"
       },
       {
         "path": "terraria.html",
@@ -11596,8 +11596,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 3361,
-        "hash": "14541c2fbef61e0ad00c8cb718ed45946b4bbbc4ae397c74647e16ba68a1f943"
+        "bytes": 3410,
+        "hash": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7"
       },
       {
         "path": "truth-or-dare.html",
@@ -11630,8 +11630,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358124360,
-    "version": "40c064300c5efaa1"
+    "bytes": 358132955,
+    "version": "a718c78908172a07"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -11649,8 +11649,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "would-you-rather.html",
@@ -11658,8 +11658,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 458683,
-    "version": "83094e77391eff1b"
+    "bytes": 458736,
+    "version": "0f3aef5433309875"
   },
   "karaoke-night": {
     "name": "Karaoke Night",
@@ -11777,13 +11777,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
     "note": "Online song search and streaming need internet. Local content works offline.",
-    "bytes": 156368653,
-    "version": "63a015ef0bf27273"
+    "bytes": 156368706,
+    "version": "b644e7ef2b8f5324"
   },
   "nextup": {
     "name": "NextUp",
@@ -11806,13 +11806,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
     "note": "Online song search and streaming need internet. Local content works offline.",
-    "bytes": 88015,
-    "version": "a9104b12e5f1973e"
+    "bytes": 88068,
+    "version": "398157095a2a0347"
   },
   "who-wants-to-be-a-millionaire": {
     "name": "Who Wants to be a Millionaire",
@@ -11835,12 +11835,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 458186,
-    "version": "cf52f2ffa63820ea"
+    "bytes": 458239,
+    "version": "89096a6ecd7a3ee8"
   },
   "card-wars": {
     "name": "Card Wars",
@@ -16593,12 +16593,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 165155851,
-    "version": "87cbd97baa255d9f"
+    "bytes": 165155904,
+    "version": "26746e6577db37ee"
   },
   "truth-or-dare": {
     "name": "Truth or Dare",
@@ -16611,8 +16611,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "truth-or-dare.html",
@@ -16620,8 +16620,8 @@ self.OFFLINE_CATALOG = {
         "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
       }
     ],
-    "bytes": 59299,
-    "version": "5aa3f677fd30d600"
+    "bytes": 59352,
+    "version": "12c3e3f06b3d14cf"
   },
   "whos-more-likely": {
     "name": "Who's More Likely To?",
@@ -16639,8 +16639,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "whos-more-likely.html",
@@ -16648,8 +16648,8 @@ self.OFFLINE_CATALOG = {
         "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
       }
     ],
-    "bytes": 461961,
-    "version": "80decb490e719f19"
+    "bytes": 462014,
+    "version": "e7045c1f949d6e9c"
   },
   "impostor": {
     "name": "Impostor",
@@ -16667,12 +16667,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 438419,
-    "version": "db8027194c736dc0"
+    "bytes": 438472,
+    "version": "ddbde008e6c75e65"
   },
   "sidequests": {
     "name": "Side Quests",
@@ -16680,8 +16680,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "sidequests.html",
@@ -16689,8 +16689,8 @@ self.OFFLINE_CATALOG = {
         "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
       }
     ],
-    "bytes": 28950,
-    "version": "933fd862d1aaaf93"
+    "bytes": 29003,
+    "version": "98cf63ab20651fd5"
   },
   "darts": {
     "name": "Darts",
@@ -16703,12 +16703,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 34751,
-    "version": "82da570e45957920"
+    "bytes": 34804,
+    "version": "a81cf58b08109bf1"
   },
   "tic-tac-toe": {
     "name": "Tic Tac Toe",
@@ -16716,8 +16716,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "tic-tac-toe.html",
@@ -16725,8 +16725,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
       }
     ],
-    "bytes": 14002,
-    "version": "5d5cb51e8ba03d8a"
+    "bytes": 14055,
+    "version": "ca0bff1392838b55"
   },
   "dots-boxes": {
     "name": "Dots & Boxes",
@@ -16739,12 +16739,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 17461,
-    "version": "1d23b6fe618f909f"
+    "bytes": 17514,
+    "version": "8e48a64b189bd403"
   },
   "theft": {
     "name": "Theft",
@@ -16752,8 +16752,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "theft.html",
@@ -16761,8 +16761,8 @@ self.OFFLINE_CATALOG = {
         "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
       }
     ],
-    "bytes": 26682,
-    "version": "3a3ef65cbdc3d1a0"
+    "bytes": 26735,
+    "version": "7597bff8d8a3ef3a"
   },
   "cards-against": {
     "name": "Cards Against Boredom",
@@ -16785,12 +16785,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 470584,
-    "version": "1c660b676c6978a0"
+    "bytes": 470637,
+    "version": "ac63f8253a853134"
   },
   "reaction": {
     "name": "Reaction Game",
@@ -16808,12 +16808,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 36173,
-    "version": "63183a96065f2c7b"
+    "bytes": 36226,
+    "version": "eb97582b4b546355"
   },
   "two-fingers": {
     "name": "Two Fingers",
@@ -16851,12 +16851,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 36808278,
-    "version": "083ecf67d3886125"
+    "bytes": 36808331,
+    "version": "6bbd4ce1f6f7a70a"
   },
   "solos-rng": {
     "name": "Solo's RNG",
@@ -16939,8 +16939,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "solos_rng.html",
@@ -16948,8 +16948,8 @@ self.OFFLINE_CATALOG = {
         "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
       }
     ],
-    "bytes": 3313034,
-    "version": "a52077ae09ce12c5"
+    "bytes": 3313087,
+    "version": "ac147cf516f83623"
   },
   "blackjack": {
     "name": "Black Jack",
@@ -16967,12 +16967,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 433933,
-    "version": "178c6cc9981b51f6"
+    "bytes": 433986,
+    "version": "6c070b590c95a55a"
   },
   "3d-drift": {
     "name": "Tokyo Drift",
@@ -17055,12 +17055,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 3232603,
-    "version": "e9ecda415a305f46"
+    "bytes": 3232656,
+    "version": "34d332a7eda772a1"
   },
   "web_weavers": {
     "name": "Web Weavers",
@@ -17088,8 +17088,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "web_weavers.css",
@@ -17107,8 +17107,8 @@ self.OFFLINE_CATALOG = {
         "hash": "7c139934f706c6d4d3854d4cdd2b332959c3d6810e54322a16024a6727b017a9"
       }
     ],
-    "bytes": 1079682,
-    "version": "4b53f0d6d18478fd"
+    "bytes": 1079735,
+    "version": "dd3f856a3ece5744"
   },
   "hood-brawlers": {
     "name": "Hood Brawlers",
@@ -17146,12 +17146,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 131789,
-    "version": "f742d132dd9955b2"
+    "bytes": 131842,
+    "version": "ef409063d4547f6e"
   },
   "planet-architect": {
     "name": "Planet Architect",
@@ -17199,12 +17199,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 8148322,
-    "version": "71d3bc39d0d1cd4e"
+    "bytes": 8148375,
+    "version": "b346d43c9df7c94e"
   },
   "orbit-boss": {
     "name": "Orbit Boss",
@@ -17227,12 +17227,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 28077,
-    "version": "3e41a2385df26141"
+    "bytes": 28130,
+    "version": "bca7629df751d2f7"
   },
   "pac-man-3d": {
     "name": "Pac-Man 3D",
@@ -17255,12 +17255,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 1330331,
-    "version": "98e6f5f880d28199"
+    "bytes": 1330384,
+    "version": "d2dda544c7c9145f"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",
@@ -22718,8 +22718,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "japanese-book.html",
-        "bytes": 10756,
-        "hash": "4b03f7df73ef26cab8831ea9b8034a49f5b4d60a6454eaf7140296ebc0b57a6b"
+        "bytes": 17838,
+        "hash": "7e5a0ec74741c3bcc9dd494a67b2bbe1af004def58597f6b6b667d0e28f70ad5"
       },
       {
         "path": "jp_srs_cards.html",
@@ -22728,8 +22728,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 58676,
-        "hash": "ae0b5f9b8453acc4569e50ad657483448a3da72a5136046a6a8d38b5c39f0422"
+        "bytes": 60097,
+        "hash": "84a408b307d781071a411dd4eb887526cffb70390decfb65b4bd92548008854c"
       },
       {
         "path": "maths-content.js",
@@ -22753,8 +22753,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 770400,
-        "hash": "ddcb24d8e80a2607de720adcbaa1ca865ca3fe79ab882dd00dc5f85ee5fe8658"
+        "bytes": 770390,
+        "hash": "99e6ce2f79f27ef67e33cd3f411fb4bf6a93e0d06e3673bb0620b8bc8b2546ec"
       },
       {
         "path": "mobile-gesture-guard.js",
@@ -22804,7 +22804,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 879347,
-        "hash": "3c09c2a9ee62341295697c09b537450054161c826d0daebc9e8d78d994e735eb"
+        "hash": "bddae5c3e0734034c63a7b088bd99edfe5c5ab063fe04f8fe4c8b3417c31ab6c"
       },
       {
         "path": "offline.js",
@@ -22878,8 +22878,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "shit-spiral.html",
@@ -22909,7 +22909,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5969,
-        "hash": "bed918bbff73e11450e3f2699cbe981ecd058e350df635ba5d8ec037534ab42a"
+        "hash": "e73913461f14051f38d1619f4f47edcaff2225aa58d3ba23357c957ab0d8e710"
       },
       {
         "path": "terraria.html",
@@ -22953,8 +22953,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 3361,
-        "hash": "14541c2fbef61e0ad00c8cb718ed45946b4bbbc4ae397c74647e16ba68a1f943"
+        "bytes": 3410,
+        "hash": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7"
       },
       {
         "path": "truth-or-dare.html",
@@ -22987,8 +22987,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358124360,
-    "version": "13453878be17abc8"
+    "bytes": 358132955,
+    "version": "3efdab2cbe9513f1"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -23041,12 +23041,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 715657,
-    "version": "e1106585be3f0c42"
+    "bytes": 715710,
+    "version": "07eceaecdb77e068"
   },
   "sling-champ": {
     "name": "Sling Champ",
@@ -23064,8 +23064,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "sling_champ.html",
@@ -23073,8 +23073,8 @@ self.OFFLINE_CATALOG = {
         "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
       }
     ],
-    "bytes": 149117,
-    "version": "434b9d9463a47892"
+    "bytes": 149170,
+    "version": "4aad768294036ec8"
   },
   "relic-rush": {
     "name": "Relic Rush",
@@ -23117,12 +23117,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 679831,
-    "version": "3f6cb19205c9e039"
+    "bytes": 679884,
+    "version": "1522cdd67d4be30b"
   },
   "slot-machine": {
     "name": "Slot Machine",
@@ -23130,8 +23130,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "slot-machine.html",
@@ -23139,8 +23139,8 @@ self.OFFLINE_CATALOG = {
         "hash": "115f9de9122a314f603f90cac639f6bd26a787283feabaea789b29a2c4a02a5e"
       }
     ],
-    "bytes": 20913,
-    "version": "bd511b011893681d"
+    "bytes": 20966,
+    "version": "a39dcd7d11d78794"
   },
   "fidget-roulette": {
     "name": "Fidget Roulette",
@@ -23153,12 +23153,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 22759,
-    "version": "4017973b8081043d"
+    "bytes": 22812,
+    "version": "43ea65ee98d8af0c"
   },
   "tilt-maze": {
     "name": "Tilt Maze Runner",
@@ -23181,8 +23181,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
         "path": "tilt_maze_runner.html",
@@ -23190,8 +23190,8 @@ self.OFFLINE_CATALOG = {
         "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
       }
     ],
-    "bytes": 1972423,
-    "version": "80b457285f19981f"
+    "bytes": 1972476,
+    "version": "8fabca4b6edb92f6"
   },
   "multiplayer-test": {
     "name": "Parkour",
@@ -23239,11 +23239,11 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5168,
-        "hash": "be895876d33839fdc8628bf2eb732bb6a04a8c25123bef80d151e98e8cc5c807"
+        "bytes": 5221,
+        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 2077631,
-    "version": "93356387aadcfd36"
+    "bytes": 2077684,
+    "version": "e36259eb5787e6d9"
   }
 };

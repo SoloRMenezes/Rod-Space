@@ -10403,7 +10403,7 @@
     return pivot;
   }
   var totalWidth = bookData.reduce((sum, data) => sum + data.width, 0);
-  var cursorX = -totalWidth / 2;
+  var cursorX = -6.75;
   var models = bookData.map((data) => {
     const model = makeBook(data);
     model.position.x = cursorX + data.width / 2;
