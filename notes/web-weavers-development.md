@@ -78,3 +78,10 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Wall animation reads actual speed. Removed the crawl's extra sevenfold phase multiplier and shared moving/idle detection across shoulders, elbows and knees.
 - Focused Node checks and Chrome traversal scenarios pass. Native WKWebView confirms wall velocity/jump checks and zero obstructed strands; native crawl pose inspected, no page errors in successful runs. One capture harness typo used a nonexistent building registry and was corrected; this was not a game error.
 - Branch is v20. Installed app, native source and DMG remain at verified v19 pending the next bundle checkpoint. Continue low-altitude recovery and wall-to-swing transitions; no extended performance claim.
+
+## Wall jump strand cleanup checkpoint
+- Reproduced swing -> wall run -> jump leaving an occupied hand and blocking another swing. Both old-strand cleanup and the next attachment failed before the fix and pass afterwards.
+- Charged wall jump releases an inherited strand before leaving climb state, clears the traversal-start flag for queued catching, and stops the old automatic wall-run timer. Actual wall velocity is retained.
+- Focused Node tests, full Chrome traversal checks, native WKWebView checks, and checks against the installed-app origin pass. No page errors in successful runs. The installed-origin harness initially had no server because Rod Space was closed; stopped that harness, launched the app, confirmed HTTP and reran successfully.
+- Installed app and temporary native source updated to v21; ad-hoc signature verifies. App-served and development JS SHA-256: 42a3303a78ea3dfbcd74223e7cabf2f2d1d2bc3c695eff3cd26e582edf2439a6. Previous v19 installed files preserved in /private/tmp/web-weavers-app-update/v19-installed-files.
+- DMG remains v19 pending the next packaging checkpoint. Low-altitude recovery and sustained wall/swing animation refinement remain the development priorities.

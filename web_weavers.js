@@ -3503,6 +3503,13 @@ function launchChargedJump(){
   const charge=THREE.MathUtils.clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
   const jumpingFromWall=P.state==='climb';
   const wallNormal=jumpingFromWall&&P.climbNormal?P.climbNormal.clone():null;
+  if(jumpingFromWall){
+    // A jump leaves the wall independently of its old strand. Clear the
+    // occupied hand before changing state so held Swing can catch again.
+    if(P.wallRunFromSwing) releaseSwing(null,false);
+    P.traversalSwingStarted=false;
+    P.wallRunAutoT=0;
+  }
   P.vel.y=Math.max(P.vel.y,JUMP_SPEED+charge*CHARGED_JUMP_BONUS)*(jumpingFromWall?0.9:1);
   playSfx('jump');
   if(wallNormal){

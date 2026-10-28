@@ -117,6 +117,16 @@ const result=await page.evaluate(()=>{
  const wallJump=P.state==='air' && P.vel.y>JUMP_SPEED && P.wallDetachT>0;
  const wallJumpCarriesSpeed=Math.abs(P.vel.x-wallTravelVelocity.x)<1e-8 && Math.abs(P.vel.x)>8;
  const wallVelocityMatchesMotion=Math.abs(wallDisplacement.x*60-wallTravelVelocity.x)<1e-6;
+ // A wall jump must free a strand inherited from a previous swing.
+ P.state='air';P.cooldowns.swing=0;P.activeSwingHand=null;
+ trySwing('left','abSwingLeft',{point:new THREE.Vector3((b.minX+b.maxX)/2,b.h,b.maxZ),length:30});
+ beginTraversalWallRun(new THREE.Vector3(0,0,1),b,new THREE.Vector3(14,4,0));
+ P.traversalSwingStarted=true;
+ P.jumpChargeT=0;launchChargedJump();
+ const wallJumpClearsWeb=P.activeSwingHand===null && !P.swingWebs.left.anchor && !P.swingWebs.right.anchor && !P.traversalSwingStarted;
+ P.cooldowns.swing=0;
+ const swingAfterWallJump=trySwing('right','abSwingRight',{point:new THREE.Vector3((b.minX+b.maxX)/2,b.h,b.maxZ),length:30});
+ releaseSwing();
  const skinVelocity=P.vel.clone(),skinPosition=P.pos.clone();
  for(const skin of PLAYER_SKINS)applyPlayerSkin(skin.id);
  applyPlayerSkin(skinSave.selected);
@@ -133,7 +143,7 @@ const result=await page.evaluate(()=>{
  raycaster.set(focus,offset.clone().normalize());raycaster.far=offset.length();
  const cameraBlocked=raycaster.intersectObjects(nearbyBuildingMeshes(focus,10),false).length>0;
  raycaster.far=Infinity;
- return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,cosmeticSkins,independentSkeleton,rig:r15Ready};
+ return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,cosmeticSkins,independentSkeleton,rig:r15Ready};
 });
 if(process.env.SCREENSHOT_PATH) await page.screenshot({path:process.env.SCREENSHOT_PATH});
 console.log(JSON.stringify({result,errors},null,2));await browser.close();
@@ -146,6 +156,7 @@ if(!process.env.BASELINE_SOURCE){
  assert.ok(result.zipClearedSwing && result.swingAfterZip,'swing to zip to swing clears old strand');
  assert.ok(result.wallRunning && result.wallJump,'wall run to charged jump');
  assert.ok(result.wallJumpCarriesSpeed && result.wallVelocityMatchesMotion,'wall velocity represents motion and survives a jump');
+ assert.ok(result.wallJumpClearsWeb && result.swingAfterWallJump,'swing to wall to jump frees the hand for another catch');
  assert.ok(result.cosmeticSkins && result.independentSkeleton,'cosmetic skins and independent avatar bones');
  for(const alignment of result.armChecks) assert.ok(alignment>.98,'both R15 shoulders reach toward their web');
  for(const release of result.releases){assert.deepEqual(release.immediate,release.before);assert.deepEqual(release.afterClamp,release.before);}
