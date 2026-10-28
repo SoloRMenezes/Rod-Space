@@ -36,3 +36,15 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Swing leg trailing responds to velocity/rise rather than an unrelated repeating sine kick. The same GLB, skeleton ownership, cosmetic skin system and keybinds remain.
 - Real-time key interaction exercised ground launch, release/re-press, turning, diving and recatching with no page errors or non-finite state. The deliberately building-facing route still loses speed against facades; this is not evidence of a polished unrestricted street route. Zip was attempted but not confirmed by that real-time run.
 - Visual screenshots inspected for the arm/web connection. Browser tests cover both R15 shoulder chains alongside earlier regressions.
+
+## Fifth checkpoint
+- Aimed anchors with nearly horizontal elevation defer to assisted targeting. Ground-launch impulses now apply only at street level; slow airborne catches preserve incoming velocity, including motion opposite the camera.
+- Swing-to-zip clears the occupied web hand. Reproduced the old failure (zipClearedSwing=false, swingAfterZip=false) against the saved prior code; both pass after the fix.
+- Expanded browser checks confirm actual zip movement, wall-run to charged jump, cosmetic-only skin application and independent cloned R15 skeletons, without page errors.
+- A live avenue run reached ~24 m/s after launch and ~38 m/s through the next swing, then turned/dived/caught successfully. These are one run's measurements, not hardware-independent benchmarks.
+- Earlier/faster ground reeling was investigated and discarded: it failed to eliminate ground skimming in an isolated low-anchor fixture. No unproven reeling tuning was retained.
+
+## Remaining priorities
+- Sustained rope obstruction handling after a valid attachment (especially around corners).
+- Low-altitude slack-rope recovery without ground skimming or artificial launch energy.
+- Broader performance measurement and long-session gameplay assessment; no 60 FPS guarantee.

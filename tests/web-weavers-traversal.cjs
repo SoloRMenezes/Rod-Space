@@ -44,3 +44,10 @@ assert.ok(Math.abs(turn.speed-40)<1e-8,'unpowered steering conserves speed');
 assert.ok(Math.abs(turn.radial)<1e-8,'steering introduces no radial velocity');
 assert.ok(turn.turn>20,'directional control produces a meaningful turn');
 console.log('Web Weavers tangent steering checks passed');
+
+vm.runInContext(`${definition('giveSwingEntryMomentum')}`,context);
+for(const velocity of [[-10,-5,0],[3,4,2],[0,-20,0]]){
+ const incoming=JSON.parse(vm.runInContext(`P.vel.fromArray(${JSON.stringify(velocity)});giveSwingEntryMomentum(false,30);JSON.stringify(P.vel.toArray());`,context));
+ assert.deepEqual(incoming,velocity,'airborne attachment adds no launch impulse');
+}
+console.log('Web Weavers airborne catch momentum checks passed');

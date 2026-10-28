@@ -75,6 +75,34 @@ const result=await page.evaluate(()=>{
  camera.lookAt((b.minX+b.maxX)/2,35,b.maxZ);camera.updateMatrixWorld(true);
  const aimed=findLookSwingAnchor();
  const aimedOnWall=!!aimed && Math.abs(aimed.point.z-b.maxZ)<.1 && Math.abs(aimed.point.y-b.h)>1;
+ P.pos.z=b.maxZ+40;camera.position.z=b.maxZ+40;camera.lookAt((b.minX+b.maxX)/2,16,b.maxZ);camera.updateMatrixWorld(true);
+ const lowAimRejected=findLookSwingAnchor()===null;
+ P.pos.z=b.maxZ+10;
+ camera.position.copy(P.pos).add(new THREE.Vector3(0,1.35,0));camera.lookAt((b.minX+b.maxX)/2,35,b.maxZ);camera.updateMatrixWorld(true);
+
+ Object.keys(keys).forEach(k=>delete keys[k]);lastTraversal=false;
+ P.cooldowns.swing=0;P.activeSwingHand=null;
+ trySwing('left','abSwingLeft',{point:new THREE.Vector3((b.minX+b.maxX)/2,b.h,b.maxZ),length:30});
+ const zipStarted=tryZip();const zipState=P.state;
+ const zipClearedSwing=P.activeSwingHand===null && !P.swingWebs.left.anchor && !P.swingWebs.right.anchor;
+ for(let i=0;i<10;i++)updatePlayer(1/60);
+ const zipMoved=P.pos.distanceTo(new THREE.Vector3((b.minX+b.maxX)/2,10,b.maxZ+10))>1;
+ cancelZip();P.cooldowns.swing=0;
+ const swingAfterZip=trySwing('right','abSwingRight',{point:new THREE.Vector3((b.minX+b.maxX)/2,b.h,b.maxZ),length:30});
+ releaseSwing();
+ P.pos.set((b.minX+b.maxX)/2,15,b.maxZ+PLAYER_RADIUS);
+ beginTraversalWallRun(new THREE.Vector3(0,0,1),b,new THREE.Vector3(14,4,0));
+ updatePlayer(1/60);const wallRunning=P.state==='climb';
+ P.jumpChargeT=MAX_JUMP_CHARGE;launchChargedJump();
+ const wallJump=P.state==='air' && P.vel.y>JUMP_SPEED && P.wallDetachT>0;
+ const skinVelocity=P.vel.clone(),skinPosition=P.pos.clone();
+ for(const skin of PLAYER_SKINS)applyPlayerSkin(skin.id);
+ applyPlayerSkin(skinSave.selected);
+ const cosmeticSkins=P.vel.equals(skinVelocity)&&P.pos.equals(skinPosition);
+ const clone=cloneSkinnedAvatar(r15EnemyTemplate),sourceBones=new Set(Object.values(r15Bones));
+ let independentSkeleton=true;
+ clone.traverse(node=>{if(node.isSkinnedMesh && node.skeleton.bones.some(bone=>sourceBones.has(bone)))independentSkeleton=false;});
+
 
  P.pos.set((b.minX+b.maxX)/2,10,b.maxZ+1);P.vel.set(0,0,0);yaw=0;pitch=0;cameraDistance=7.5;shiftLocked=false;
  cameraCollisionDistance=7.5;updateCamera(1/60);
@@ -83,18 +111,23 @@ const result=await page.evaluate(()=>{
  raycaster.set(focus,offset.clone().normalize());raycaster.far=offset.length();
  const cameraBlocked=raycaster.intersectObjects(nearbyBuildingMeshes(focus,10),false).length>0;
  raycaster.far=Infinity;
- return {releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,armChecks,rig:r15Ready};
+ return {releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,cosmeticSkins,independentSkeleton,rig:r15Ready};
 });
 if(process.env.SCREENSHOT_PATH) await page.screenshot({path:process.env.SCREENSHOT_PATH});
 console.log(JSON.stringify({result,errors},null,2));await browser.close();
 if(!process.env.BASELINE_SOURCE){
  assert.deepEqual(errors,[]);
  assert.ok(result.rig);
+ assert.ok(result.zipStarted && result.zipState==='zip' && result.zipMoved,'zip starts and moves');
+ assert.ok(result.zipClearedSwing && result.swingAfterZip,'swing to zip to swing clears old strand');
+ assert.ok(result.wallRunning && result.wallJump,'wall run to charged jump');
+ assert.ok(result.cosmeticSkins && result.independentSkeleton,'cosmetic skins and independent avatar bones');
  for(const alignment of result.armChecks) assert.ok(alignment>.98,'both R15 shoulders reach toward their web');
  for(const release of result.releases){assert.deepEqual(release.immediate,release.before);assert.deepEqual(release.afterClamp,release.before);}
  assert.ok(result.chain?.attached && result.chain.reattached,'rapid held reattachment');
  assert.equal(result.cameraBlocked,false,'camera stays in front of facade');
  assert.ok(result.aimedOnWall,'aimed wall hit stays on the wall');
+ assert.ok(result.lowAimRejected,'nearly horizontal aimed web defers to assisted targeting');
  assert.ok(result.anchorChecks.length>=3,'street and falling anchors available');
  for(const anchor of result.anchorChecks) assert.ok(anchor.error!==null && anchor.error<.2,'anchor touches first visible surface');
  for(const rate of result.rates.slice(1)){

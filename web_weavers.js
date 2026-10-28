@@ -2004,7 +2004,7 @@ function findLookSwingAnchor(){
   const to=point.clone().sub(eye),distance=to.length();
   if(distance<SWING_MIN_RANGE||distance>SWING_MAX_RANGE)return null;
   const fallingCatch=P.vel.y<-10 && point.y<eye.y-2 && Math.hypot(to.x,to.z)>28;
-  if(point.y<eye.y+4 && !fallingCatch)return null;
+  if(!fallingCatch && (point.y<eye.y+4 || to.y/distance<0.35))return null;
   raycaster.set(eye,to.multiplyScalar(1/distance));
   raycaster.far=distance+0.1;
   const visible=raycaster.intersectObjects(nearbyBuildingMeshes(eye,distance+2),false)[0];
@@ -2637,9 +2637,9 @@ function cameraForward3D(){
 function giveSwingEntryMomentum(fromGround=false,groundClearance=Infinity){
   const forward = cameraForwardFlat();
   const flatSpeed = Math.hypot(P.vel.x,P.vel.z);
-  // Keep every incoming component. Low-speed starts get an additive nudge instead
-  // of having their velocity replaced, so diagonal momentum survives attachment.
-  if(flatSpeed<15){
+  // Only street-level starts need launch assistance. Mid-air catches preserve
+  // incoming velocity, including slow motion opposite the camera direction.
+  if(flatSpeed<15 && (fromGround || groundClearance<1.5)){
     const assist=15-flatSpeed;
     P.vel.x += forward.x*assist;
     P.vel.z += forward.z*assist;
@@ -2784,6 +2784,12 @@ function tryZip(){
       pulse('abSwingRight');
       return true;
     }
+  }
+  // A zip replaces the current strand. Leaving its hand occupied prevented
+  // the next swing after an airborne zip or a cancelled zip.
+  if(P.state==='swing' || (P.state==='climb' && P.wallRunFromSwing)){
+    releaseSwing(null,false);
+    P.traversalSwingStarted=false;
   }
   zipTarget = zipEnemyTarget
     ? zipEnemyTarget.mesh.position.clone().add(new THREE.Vector3(0,0.8,0))
