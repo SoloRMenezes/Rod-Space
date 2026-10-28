@@ -14,9 +14,13 @@ Working branch: codex/web-weavers-traversal. The configured Coding folder no lon
 - `node tests/web-weavers-traversal.cjs`, JavaScript syntax and diff whitespace checks pass.
 
 ## Next priorities
-1. Reduce frame-rate-dependent pendulum energy loss; measure 30/60/120 Hz trajectories.
-2. Fix camera collision easing that temporarily leaves the camera beyond an obstruction.
-3. Check sustained rope visibility around buildings and physics-driven arm reach.
-4. Broaden actual traversal and combat/skin regression checks.
+1. Check sustained rope visibility around buildings and physics-driven arm reach.
+2. Broaden actual traversal and combat/skin regression checks.
 
 Browser checks use isolated test storage. No claim about a player's existing saved game or sustained hardware 60 FPS.
+
+## Second checkpoint
+- Physics steps are bounded to 1/120 second; animation and telemetry sampling remain once per render. Mission DOM updates occur once per 25-metre bucket instead of repeatedly inside a distance window.
+- Camera retracts to collision clearance immediately and eases outward. First-person following uses elapsed time.
+- Browser regression harness covers real model loading, release vectors, rapid reattachment, frame-rate trajectories and a real facade camera obstruction. 30/60/120 Hz positions match exactly; 144 Hz differs by about 0.01 metres after 3 seconds. No page errors.
+- Existing combined nico/blackjack/weavers suite fails on its first assertion: it expects FLOOR_COUNT inside nicos_nextbots.html, but that unchanged game now loads nicos_nextbots.js. This is unrelated to Web Weavers changes.

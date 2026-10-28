@@ -74,6 +74,7 @@ const missions=[
   {name:'CLEAR THE BLOCKS',text:'Clear 2 gangs',stat:'gangs',step:2,reward:100},
 ];
 let missionStart=0;
+let lastSwingMissionBucket=-1;
 function currentMission(){return missions[Math.floor(progress.missionIndex)%missions.length];}
 function updateMissionUI(){
   const m=currentMission(),value=Math.max(0,progress[m.stat]-missionStart),ratio=Math.min(1,value/m.step);
@@ -3464,7 +3465,17 @@ document.addEventListener('visibilitychange', ()=>{
   if(document.hidden) clearHeldInputs();
 });
 
+// Bound physics steps independently of display refresh. Input edges are consumed
+// by the first step; the expensive rig pose is updated only once per render.
 function updatePlayer(dt){
+  const elapsed=Math.min(Math.max(dt,0),0.05);
+  if(!elapsed || paused) return;
+  const steps=Math.ceil(elapsed/(1/120));
+  const step=elapsed/steps;
+  for(let i=0;i<steps;i++) stepPlayer(step,i===steps-1?elapsed:0);
+}
+
+function stepPlayer(dt,visualDt=dt){
   if(paused) return;
 
   const keyboardLookSpeed=1.85*dt;
@@ -3643,7 +3654,11 @@ function updatePlayer(dt){
   }
   else if(P.state==='swing'){
     progress.swingDistance+=P.vel.length()*dt;
-    if((progress.swingDistance|0)%25===0) updateMissionUI();
+    const missionBucket=Math.floor(progress.swingDistance/25);
+    if(missionBucket!==lastSwingMissionBucket){
+      lastSwingMissionBucket=missionBucket;
+      updateMissionUI();
+    }
     P.swingHistoryT=1;
     P.swingAge+=dt;
     P.swingPhaseT+=dt;
@@ -3781,7 +3796,7 @@ function updatePlayer(dt){
         // release, so the player can let go at any point in the arc.
       }
       P.swingLastVy=P.vel.y;
-      if(P.swingTelemetry){
+      if(P.swingTelemetry && visualDt>0){
         P.swingTelemetry.phase=P.swingPhase;
         const samples=P.swingTelemetry.samples;
         samples.push({t:P.swingAge,phase:P.swingPhase,y:P.pos.y,vy:P.vel.y,
@@ -4035,8 +4050,10 @@ function updatePlayer(dt){
   constrainToIsland(P.pos,P.vel);
   if(P.state!=='downed') P.downedT = 0;
 
-  animatePlayer(dt, mv);
-  updateWebWings();
+  if(visualDt>0){
+    animatePlayer(visualDt, mv);
+    updateWebWings();
+  }
 
   // health regen (slow) when not in combat
   if(P.hp>0 && P.state!=='defeated' && !playerInCombat()) P.hp = Math.min(P.maxHp, P.hp + dt*0.6);
@@ -4135,7 +4152,7 @@ function updateCamera(dt=1/60){
   if(firstPerson){
     cameraCollisionDistance=null;
     const eye = new THREE.Vector3(P.pos.x, P.pos.y + 1.62, P.pos.z);
-    camera.position.lerp(eye, 0.35);
+    camera.position.lerp(eye, 1-Math.exp(-26*dt));
     camera.lookAt(eye.clone().addScaledVector(lookDir, 12));
     return;
   }
@@ -4184,9 +4201,11 @@ function updateCamera(dt=1/60){
   }
 
   if(cameraCollisionDistance===null) cameraCollisionDistance=clearDistance;
-  const response=clearDistance<cameraCollisionDistance ? 30 : 7;
-  const blend=1-Math.exp(-response*dt);
-  cameraCollisionDistance=THREE.MathUtils.lerp(cameraCollisionDistance,clearDistance,blend);
+  // An obstruction is a hard limit, not a smoothing target. Easing inward
+  // leaves the camera inside a facade for several frames during fast turns.
+  // Only the return to the requested distance is eased.
+  cameraCollisionDistance=Math.min(clearDistance,
+    THREE.MathUtils.lerp(cameraCollisionDistance,clearDistance,1-Math.exp(-7*dt)));
   camera.position.copy(focus).addScaledVector(cameraRay,cameraCollisionDistance);
   camera.lookAt(shiftLocked?camera.position.clone().addScaledVector(lookDir,30):focus);
 }
