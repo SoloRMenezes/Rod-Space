@@ -1,6 +1,6 @@
 # Web Weavers development checkpoint
 
-Working branch: codex/web-weavers-traversal. The configured Coding folder no longer exists; development uses a fresh checkout of SoloRMenezes/Rod-Space in /private/tmp/web-weavers-development. Existing Documents/GitHub and legacy copies were not modified.
+Working branch: codex/web-weavers-traversal in /private/tmp/web-weavers-development. Current native source: /private/tmp/rodspace-native-work. Installed app: /Applications/Rod Space/Rod Space.app. The configured Coding folder no longer exists. Native integration and backups are recorded below; Documents/GitHub and legacy copies were not modified.
 
 ## Completed
 - Ordinary release preserves all incoming velocity components. Air uses the same effective 60 m/s traversal envelope as swinging, avoiding an instant 58-to-50 m/s brake. Space still performs the existing deliberate jump.
@@ -58,3 +58,9 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Native WKWebView loaded the actual installed-app origin with isolated storage. R15 loading, chaining, release vectors, both arms, zip transitions, wall jumps, camera collision, cosmetic skins and independent skeletons passed. No page errors were logged. Snapshot inspected. This does not verify every physical native mouse/trackpad gesture.
 - Draft GitHub PR creation was rejected by automatic approval review for unverified publication authorization; no PR was created. Existing checkpoint branch pushes succeeded.
 - Existing DMG has not been regenerated yet.
+
+## Obstructed strand checkpoint
+- Added segment/building intersection checks from the actual animated hand to the active anchor. A strand blocked by a facade releases without a velocity impulse; a held Swing input uses the existing queued catch mechanism.
+- Matched ten-second city route: 64 obstructed frames before, zero after. The corrected route retained 416 attached frames out of 600; reduced attachment time is expected when formerly invalid strands release. No runtime errors.
+- Geometry tests cover attached surfaces, a building crossing, above-roof travel, parallel misses and origins inside a building. Full Chrome and native WebKit traversal regressions pass.
+- App cache version advanced to v19. Installer refresh is being prepared from the tested signed app.

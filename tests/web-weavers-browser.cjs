@@ -11,6 +11,23 @@ await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
 if(process.env.BASELINE_SOURCE) await page.route('**/web_weavers.js?*',r=>r.fulfill({body:fs.readFileSync(process.env.BASELINE_SOURCE,'utf8'),contentType:'application/javascript'}));
 await page.goto((process.env.GAME_URL || 'http://127.0.0.1:8765/web_weavers.html'));await page.waitForFunction(()=>typeof r15Ready!=='undefined'&&r15Ready);await page.click('#btnPlay');
 const result=await page.evaluate(()=>{
+ // Sustained real-city turns: check rendered hand-to-anchor lines, not only attachment rays.
+ Object.keys(keys).forEach(k=>delete keys[k]);
+ P.pos.set(-184,15,-250);P.vel.set(0,0,35);P.state='air';P.cooldowns.swing=0;P.activeSwingHand=null;yaw=0;pitch=.1;updateCamera(1);
+ keys[bindings.forward]=true;keys[bindings.traversal]=true;lastTraversal=false;
+ let blockedStrands=0,attachedFrames=0;
+ for(let i=0;i<600;i++){
+  if(i>180)yaw+=.006;
+  keys[bindings.traversal]=i%120!==119;
+  updatePlayer(1/60);updateCamera(1/60);player.updateMatrixWorld(true);
+  if(P.state!=='swing'||!P.activeSwingHand)continue;
+  attachedFrames++;
+  const origin=visibleWebHandWorld(P.activeSwingHand,handL),anchor=P.swingWebs[P.activeSwingHand].anchor;
+  const delta=anchor.clone().sub(origin),distance=delta.length();
+  raycaster.set(origin,delta.normalize());raycaster.far=distance-.2;
+  if(raycaster.intersectObjects(nearbyBuildingMeshes(origin,distance+2),false).length)blockedStrands++;
+  raycaster.far=Infinity;
+ }
  const rates=[];
  for(const hz of [30,60,120,144]){
    Object.keys(keys).forEach(k=>delete keys[k]);
@@ -111,13 +128,15 @@ const result=await page.evaluate(()=>{
  raycaster.set(focus,offset.clone().normalize());raycaster.far=offset.length();
  const cameraBlocked=raycaster.intersectObjects(nearbyBuildingMeshes(focus,10),false).length>0;
  raycaster.far=Infinity;
- return {releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,cosmeticSkins,independentSkeleton,rig:r15Ready};
+ return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,cosmeticSkins,independentSkeleton,rig:r15Ready};
 });
 if(process.env.SCREENSHOT_PATH) await page.screenshot({path:process.env.SCREENSHOT_PATH});
 console.log(JSON.stringify({result,errors},null,2));await browser.close();
 if(!process.env.BASELINE_SOURCE){
  assert.deepEqual(errors,[]);
  assert.ok(result.rig);
+ assert.equal(result.blockedStrands,0,'sustained turns never render a strand through a building');
+ assert.ok(result.attachedFrames>200,'obstruction recovery maintains useful swinging time');
  assert.ok(result.zipStarted && result.zipState==='zip' && result.zipMoved,'zip starts and moves');
  assert.ok(result.zipClearedSwing && result.swingAfterZip,'swing to zip to swing clears old strand');
  assert.ok(result.wallRunning && result.wallJump,'wall run to charged jump');

@@ -50,3 +50,19 @@ for(const velocity of [[-10,-5,0],[3,4,2],[0,-20,0]]){
  assert.deepEqual(incoming,velocity,'airborne attachment adds no launch impulse');
 }
 console.log('Web Weavers airborne catch momentum checks passed');
+
+vm.runInContext(`
+function nearbyBuildings(){return [{minX:0,maxX:10,minZ:0,maxZ:10,h:20}];}
+${definition('swingWebObstructed')}
+`,context);
+for(const [from,to,blocked] of [
+ [[-5,10,5],[0,10,5],false],
+ [[-5,10,5],[15,10,5],true],
+ [[-5,25,5],[15,25,5],false],
+ [[-5,10,-1],[15,10,-1],false],
+ [[5,10,5],[15,10,5],true],
+ [[-5,10,5],[-.03,10,5],false]
+]){
+ assert.equal(vm.runInContext(`swingWebObstructed(new THREE.Vector3(...${JSON.stringify(from)}),new THREE.Vector3(...${JSON.stringify(to)}))`,context),blocked,'web obstruction geometry');
+}
+console.log('Web Weavers web obstruction checks passed');

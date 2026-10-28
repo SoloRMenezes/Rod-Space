@@ -1415,6 +1415,31 @@ function applyR15VisualBone(name,rot,amount){
   applyR15Bone(name,{x:-(rot.x||0),y:-(rot.y||0),z:-(rot.z||0)},amount);
 }
 
+function swingWebObstructed(from,to){
+  const midpoint=from.clone().add(to).multiplyScalar(0.5);
+  const radius=Math.hypot(to.x-from.x,to.z-from.z)*0.5+1;
+  const length=from.distanceTo(to);
+  if(length<0.2) return false;
+  // Segment/box tests use the same building bounds as targeting and collision.
+  // Exclude the endpoint margin so the attached face is not an obstruction.
+  for(const b of nearbyBuildings(midpoint,radius)){
+    let enter=0,exit=1-0.12/length;
+    for(const [start,delta,min,max] of [
+      [from.x,to.x-from.x,b.minX,b.maxX],
+      [from.y,to.y-from.y,0,b.h],
+      [from.z,to.z-from.z,b.minZ,b.maxZ]
+    ]){
+      if(Math.abs(delta)<1e-8){if(start<min || start>max){exit=-1;break;}continue;}
+      let near=(min-start)/delta,far=(max-start)/delta;
+      if(near>far)[near,far]=[far,near];
+      enter=Math.max(enter,near);exit=Math.min(exit,far);
+      if(enter>exit)break;
+    }
+    if(enter<=exit && exit>=0)return true;
+  }
+  return false;
+}
+
 function visibleWebHandWorld(gameHand,fallback){
   const exportedName=gameHand==='left'?r15VisualBone.leftHand:r15VisualBone.rightHand;
   const bone=r15Ready&&r15Bone(exportedName);
@@ -4119,6 +4144,16 @@ function stepPlayer(dt,visualDt=dt){
   if(visualDt>0){
     animatePlayer(visualDt, mv);
     updateWebWings();
+    if(P.state==='swing' && P.activeSwingHand){
+      const hand=P.activeSwingHand,web=P.swingWebs[hand];
+      const origin=visibleWebHandWorld(hand,hand==='left'?handL:handR);
+      if(swingWebObstructed(origin,web.anchor)){
+        // Break an obstructed strand without redirecting momentum. A held
+        // traversal input queues the next visible catch through the normal retry.
+        releaseSwing(null,false);
+        P.traversalSwingStarted=false;
+      }
+    }
   }
 
   // health regen (slow) when not in combat
