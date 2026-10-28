@@ -1410,6 +1410,26 @@ function visibleWebHandWorld(gameHand,fallback){
   return bone?bone.getWorldPosition(new THREE.Vector3()):fallback.getWorldPosition(new THREE.Vector3());
 }
 
+// Aim the authored shoulder/hand chain in its parent's coordinate system.
+// Using the actual joints avoids assumptions about this export's mirrored axes.
+const swingArmAim={from:new THREE.Vector3(),to:new THREE.Vector3(),rotation:new THREE.Quaternion()};
+function aimR15SwingArm(hand,dt){
+  const anchor=P.swingWebs[hand].anchor;
+  const shoulder=r15Bone(r15VisualBone[hand+'UpperArm']);
+  const wrist=r15Bone(r15VisualBone[hand+'Hand']);
+  if(!anchor || !shoulder || !wrist) return;
+  shoulder.updateWorldMatrix(true,true);
+  wrist.getWorldPosition(swingArmAim.from);
+  shoulder.parent.worldToLocal(swingArmAim.from).sub(shoulder.position);
+  swingArmAim.to.copy(anchor);
+  shoulder.parent.worldToLocal(swingArmAim.to).sub(shoulder.position);
+  if(swingArmAim.from.lengthSq()<1e-6 || swingArmAim.to.lengthSq()<1e-6) return;
+  swingArmAim.rotation.setFromUnitVectors(swingArmAim.from.normalize(),swingArmAim.to.normalize());
+  swingArmAim.rotation.multiply(shoulder.quaternion);
+  shoulder.quaternion.slerp(swingArmAim.rotation,1-Math.exp(-18*dt));
+  shoulder.updateMatrixWorld(true);
+}
+
 new THREE.GLTFLoader().load(
   './assets/models/web-weavers-r15.glb',
   gltf=>{
@@ -2634,6 +2654,32 @@ function swingConstraint(activeWebs){
   return {anchor:web.physicsPivot||web.anchor,length:web.length};
 }
 
+function steerSwingVelocity(radial,mv,dt){
+  // Steer within the rope's tangent plane. Rotating only X/Z creates
+  // outward velocity that the constraint immediately deletes, braking turns.
+  const radialSpeed=P.vel.dot(radial);
+  const tangent=P.vel.clone().addScaledVector(radial,-radialSpeed);
+  const tangentSpeed=tangent.length();
+  if(tangentSpeed>0.25){
+    const steerIntent=cameraForwardFlat();
+    if(mv.lengthSq()>0.001) steerIntent.multiplyScalar(0.35).addScaledVector(mv,0.9).normalize();
+    steerIntent.addScaledVector(radial,-steerIntent.dot(radial));
+    if(steerIntent.lengthSq()>0.001){
+      steerIntent.normalize();
+      tangent.multiplyScalar(1/tangentSpeed);
+      const angle=Math.atan2(radial.dot(tangent.clone().cross(steerIntent)),
+        THREE.MathUtils.clamp(tangent.dot(steerIntent),-1,1));
+      const turnRate=mv.lengthSq()>0.001?SWING_INPUT_TURN_RATE:SWING_LOOK_TURN_RATE;
+      tangent.applyAxisAngle(radial,angle*(1-Math.exp(-turnRate*dt)));
+      const phasePower=P.swingPhase==='descent'?1:0.55;
+      const pumpedSpeed=keys[bindings.forward] && tangentSpeed<SWING_POWERED_SPEED
+        ? Math.min(SWING_POWERED_SPEED,tangentSpeed+SWING_FORWARD_ACCEL*phasePower*dt)
+        : tangentSpeed;
+      P.vel.copy(tangent).multiplyScalar(pumpedSpeed).addScaledVector(radial,radialSpeed);
+    }
+  }
+}
+
 function enforceSwingConstraint(activeWebs){
   if(!activeWebs.length) return;
   const constraint=swingConstraint(activeWebs);
@@ -3205,9 +3251,10 @@ function animatePlayer(dt, moveVec){
     armRRot.x = groundPullPose ? -1.28+pullBack*.24 : (rightAttached ? -1.12 : -0.22);
     armLRot.z = groundPullPose ? -0.58 : (leftAttached ? -1.38 : -0.72);
     armRRot.z = groundPullPose ? 0.58 : (rightAttached ? 1.38 : 0.72);
-    const swingKick=Math.sin(P.swingAge*5.5);
-    legLRot.x = entryPose ? 0.72 : 0.62+swingKick*0.16;
-    legRRot.x = entryPose ? 0.18 : 0.08-swingKick*0.18;
+    const trail=THREE.MathUtils.clamp(P.vel.length()/45,0,1);
+    const rise=THREE.MathUtils.clamp(P.vel.y/25,-1,1);
+    legLRot.x = entryPose ? 0.72 : 0.38+trail*0.42-rise*0.18;
+    legRRot.x = entryPose ? 0.18 : 0.08+trail*0.3-rise*0.12;
     const facingRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
     const lateralSpeed=P.vel.dot(facingRight);
     const swingSideLean=THREE.MathUtils.clamp(-lateralSpeed*0.03,-0.52,0.52);
@@ -3347,8 +3394,8 @@ function animatePlayer(dt, moveVec){
     // receive secondary bends so the imported model does not move as four rigid rods.
     applyR15Bone('UpperTorso',{x:-(torsoRot.x||0),y:torsoRot.y||0,z:torsoRot.z||0},amt);
     applyR15Bone('Head',{x:-(headRot.x||0),y:headRot.y||0,z:headRot.z||0},amt);
-    applyR15VisualBone(r15VisualBone.leftUpperArm,armLRot,amt);
-    applyR15VisualBone(r15VisualBone.rightUpperArm,armRRot,amt);
+    if(P.state!=='swing' || !P.swingWebs.left.anchor) applyR15VisualBone(r15VisualBone.leftUpperArm,armLRot,amt);
+    if(P.state!=='swing' || !P.swingWebs.right.anchor) applyR15VisualBone(r15VisualBone.rightUpperArm,armRRot,amt);
     applyR15VisualBone(r15VisualBone.leftUpperLeg,legLRot,amt);
     applyR15VisualBone(r15VisualBone.rightUpperLeg,legRRot,amt);
     const groundMoving=P.state==='ground' && speedFlat>0.8;
@@ -3397,6 +3444,10 @@ function animatePlayer(dt, moveVec){
     applyR15VisualBone(r15VisualBone.rightLowerLeg,{x:kneeR,y:0,z:0},amt);
     applyR15VisualBone(r15VisualBone.leftFoot,{x:-kneeL*0.35,y:0,z:0},amt);
     applyR15VisualBone(r15VisualBone.rightFoot,{x:-kneeR*0.35,y:0,z:0},amt);
+    if(P.state==='swing'){
+      aimR15SwingArm('left',dt);
+      aimR15SwingArm('right',dt);
+    }
   }
 }
 
@@ -3723,29 +3774,7 @@ function stepPlayer(dt,visualDt=dt){
       P.swingPeakRise=Math.max(P.swingPeakRise,P.vel.y);
     }
 
-    // Camera and WASD rotate the existing horizontal momentum instead of adding
-    // thrust. This gives deliberate steering without creating free speed.
-    const flatSpeed=Math.hypot(P.vel.x,P.vel.z);
-    if(flatSpeed>0.25){
-      const steerIntent=cameraForwardFlat();
-      if(mv.lengthSq()>0.001) steerIntent.multiplyScalar(0.35).addScaledVector(mv,0.9).normalize();
-      steerIntent.addScaledVector(radial,-steerIntent.dot(radial));
-      const desiredFlat=new THREE.Vector3(steerIntent.x,0,steerIntent.z);
-      if(desiredFlat.lengthSq()>0.001){
-        const powering=!!keys[bindings.forward];
-        const phasePower=P.swingPhase==='descent'?1:0.55;
-        const steeredSpeed=powering
-          ? Math.min(SWING_POWERED_SPEED,flatSpeed+SWING_FORWARD_ACCEL*phasePower*dt)
-          : flatSpeed;
-        desiredFlat.normalize().multiplyScalar(steeredSpeed);
-        const currentFlat=new THREE.Vector3(P.vel.x,0,P.vel.z);
-        const turnRate=mv.lengthSq()>0.001?SWING_INPUT_TURN_RATE:SWING_LOOK_TURN_RATE;
-        currentFlat.lerp(desiredFlat,1-Math.exp(-turnRate*dt));
-        if(currentFlat.lengthSq()>0.001) currentFlat.setLength(steeredSpeed);
-        P.vel.x=currentFlat.x;
-        P.vel.z=currentFlat.z;
-      }
-    }
+    steerSwingVelocity(radial,mv,dt);
 
     // As the bottom of the arc approaches a surface, reel the strand in
     // gradually. The shorter radius pulls the player upward through the rope

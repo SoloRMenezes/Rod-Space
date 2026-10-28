@@ -27,3 +27,20 @@ for (const velocity of [[58,0,0], [40,20,0], [35,-15,20]]) {
   assert.deepEqual(JSON.parse(result), velocity, 'release preserves legal incoming velocity');
 }
 console.log('Web Weavers release momentum checks passed');
+
+vm.runInContext(`
+const SWING_INPUT_TURN_RATE=2.8,SWING_LOOK_TURN_RATE=.9,SWING_FORWARD_ACCEL=11,SWING_POWERED_SPEED=64;
+const keys={},bindings={forward:'KeyW'};
+function cameraForwardFlat(){return new THREE.Vector3(1,0,0);}
+${definition('steerSwingVelocity')}
+`,context);
+const turn=JSON.parse(vm.runInContext(`
+P.vel.set(0,0,40);P.swingPhase='descent';
+const radial=new THREE.Vector3(.6,-.8,0);
+for(let i=0;i<60;i++)steerSwingVelocity(radial,new THREE.Vector3(1,0,0),1/60);
+JSON.stringify({speed:P.vel.length(),radial:P.vel.dot(radial),turn:P.vel.x});
+`,context));
+assert.ok(Math.abs(turn.speed-40)<1e-8,'unpowered steering conserves speed');
+assert.ok(Math.abs(turn.radial)<1e-8,'steering introduces no radial velocity');
+assert.ok(turn.turn>20,'directional control produces a meaningful turn');
+console.log('Web Weavers tangent steering checks passed');

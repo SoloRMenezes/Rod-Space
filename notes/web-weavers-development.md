@@ -29,3 +29,10 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Reticle targeting attaches to the actual aimed facade/roof surface instead of replacing every hit with an inset roof anchor. Low wall hits defer to existing assisted selection.
 - Assisted rooftop candidates terminate at the first visible surface. Falling catches now require the same unobstructed line of sight; surface offsets follow the sightline to avoid moving an edge anchor off the building.
 - Browser tests cover aimed facade attachment and assisted street/air/falling anchors. Existing momentum, chaining, camera and timestep regressions pass without page errors.
+
+## Fourth checkpoint
+- Swing steering rotates velocity within the rope tangent plane. Focused tests verify a meaningful turn without speed loss or newly introduced radial velocity. Existing W pumping remains phase dependent.
+- Loaded and inspected the authored R15 shoulder/elbow/hand hierarchy. Attached shoulders now aim at the actual anchor in parent coordinates; free arms and release poses keep existing blending. Both hands reach alignment >0.99 in browser checks (the sampled original left arm was ~0.05).
+- Swing leg trailing responds to velocity/rise rather than an unrelated repeating sine kick. The same GLB, skeleton ownership, cosmetic skin system and keybinds remain.
+- Real-time key interaction exercised ground launch, release/re-press, turning, diving and recatching with no page errors or non-finite state. The deliberately building-facing route still loses speed against facades; this is not evidence of a polished unrestricted street route. Zip was attempted but not confirmed by that real-time run.
+- Visual screenshots inspected for the arm/web connection. Browser tests cover both R15 shoulder chains alongside earlier regressions.

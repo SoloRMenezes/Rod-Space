@@ -22,6 +22,17 @@ const result=await page.evaluate(()=>{
    for(let i=0;i<hz*3;i++)updatePlayer(1/hz);
    rates.push({hz,pos:P.pos.toArray(),vel:P.vel.toArray(),speed:P.vel.length()});
  }
+ const armChecks=[];
+ for(const hand of ['left','right']){
+  P.pos.set(0,500,0);P.vel.set(0,4,28);P.state='air';P.activeSwingHand=null;P.cooldowns.swing=0;
+  trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',{point:new THREE.Vector3(hand==='left'?25:-25,550,20),length:60});
+  for(let i=0;i<60;i++)animatePlayer(1/60,new THREE.Vector3());
+  player.updateMatrixWorld(true);
+  const shoulder=r15Bone(r15VisualBone[hand+'UpperArm']).getWorldPosition(new THREE.Vector3());
+  const wrist=visibleWebHandWorld(hand,handL);
+  armChecks.push(wrist.clone().sub(shoulder).normalize().dot(P.swingWebs[hand].anchor.clone().sub(shoulder).normalize()));
+  releaseSwing();
+ }
  const releases=[];
  for(const velocity of [[58,0,0],[40,20,0],[35,-15,20]]){
    P.state='swing';P.swingAssisted=true;P.vel.fromArray(velocity);P.activeSwingHand='left';
@@ -72,13 +83,14 @@ const result=await page.evaluate(()=>{
  raycaster.set(focus,offset.clone().normalize());raycaster.far=offset.length();
  const cameraBlocked=raycaster.intersectObjects(nearbyBuildingMeshes(focus,10),false).length>0;
  raycaster.far=Infinity;
- return {releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,rig:r15Ready};
+ return {releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,armChecks,rig:r15Ready};
 });
 if(process.env.SCREENSHOT_PATH) await page.screenshot({path:process.env.SCREENSHOT_PATH});
 console.log(JSON.stringify({result,errors},null,2));await browser.close();
 if(!process.env.BASELINE_SOURCE){
  assert.deepEqual(errors,[]);
  assert.ok(result.rig);
+ for(const alignment of result.armChecks) assert.ok(alignment>.98,'both R15 shoulders reach toward their web');
  for(const release of result.releases){assert.deepEqual(release.immediate,release.before);assert.deepEqual(release.afterClamp,release.before);}
  assert.ok(result.chain?.attached && result.chain.reattached,'rapid held reattachment');
  assert.equal(result.cameraBlocked,false,'camera stays in front of facade');
