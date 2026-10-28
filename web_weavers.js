@@ -1535,7 +1535,8 @@ const PLAYER_RADIUS = 0.55;
 const CLIMB_WALL_OFFSET = 0.3;
 const AIR_CONTROL = 18;
 const AIR_DRAG = 0.997;
-const AIR_MAX_SPEED = 50;
+// Air and swing share the traversal envelope: releasing must not brake a fast arc.
+const AIR_MAX_SPEED = 60;
 const GLIDE_MIN_SPEED = 11;
 const GLIDE_MAX_SPEED = 40;
 const GLIDE_TURN_RATE = 3.25;
@@ -2658,14 +2659,8 @@ function releaseSwing(hand=null,boost=true){
     P.swingRequireRelease=true;
     return;
   }
-  if(boost && P.swingAssisted){
-    // Manual release is immediate and momentum-preserving. A tiny upward carry
-    // keeps the animation readable without redirecting the player toward camera.
-    if(P.vel.y>-2) P.vel.y=Math.min(SWING_MAX_RISE_SPEED,P.vel.y+1.25);
-    P.vel.x*=SWING_RELEASE_CARRY;
-    P.vel.z*=SWING_RELEASE_CARRY;
-    limitHorizontalSpeed(SWING_RELEASE_MAX_SPEED);
-  }
+  // Letting go removes tension only. Space remains the deliberate jump action;
+  // ordinary release preserves the exact velocity at every point of the arc.
   P.state='air';
   P.swingAssisted=false;
   P.swingPhase='release';
@@ -3549,8 +3544,17 @@ function updatePlayer(dt){
   if(traversalDown&&!lastTraversal){
     P.traversalSearchAttempted=true;
     P.traversalSwingStarted=trySmartSwing();
+    P.swingWebs.left.retry=P.swingWebs.right.retry=0.1;
   }
   if(traversalDown){
+    // A quick re-press during cooldown or just outside anchor range stays queued.
+    // Retry at 10 Hz rather than raycasting the city every simulation step.
+    if(!P.traversalSwingStarted && P.cooldowns.swing<=0 &&
+       P.swingWebs.left.retry<=0 && P.swingWebs.right.retry<=0 &&
+       (P.state==='air' || P.state==='ground')){
+      P.traversalSwingStarted=trySmartSwing();
+      P.swingWebs.left.retry=P.swingWebs.right.retry=0.1;
+    }
     P.traversalHoldT+=dt;
   }
   if(!traversalDown&&lastTraversal){
