@@ -27,7 +27,7 @@ const SETTINGS_KEY = 'webSlingerPrototypeSettings';
 const keys = {};
 let listeningFor = null;
 let running = true;       // Ctrl toggles this
-let shiftLocked = false;  // Shift toggles this
+let shiftLocked = false;
 let paused = true;
 let gameActive = false;
 let debugOn = false;
@@ -176,7 +176,7 @@ function setShiftLock(on){
   if(cameraDistance<=0.6){
     shiftLocked=false;
     firstPersonAutoLock=true;
-    if(gameActive && !paused && document.pointerLockElement!==canvas) canvas.requestPointerLock();
+    if(gameActive && !paused) requestMouseLock();
     return;
   }
   firstPersonAutoLock=false;
@@ -184,21 +184,21 @@ function setShiftLock(on){
   cameraCollisionDistance=null;
   if(on){
     pitch=THREE.MathUtils.clamp(pitch,-0.55,0.65);
-    canvas.requestPointerLock();
+    requestMouseLock();
     document.getElementById('lockHint').style.display='none';
   }
-  else if(document.pointerLockElement===canvas) document.exitPointerLock();
+  else releaseMouseLock();
 }
 function togglePause(){
   if(!gameActive) return;
   if(document.getElementById('deathOverlay').style.display==='flex') return;
   paused = !paused;
   document.getElementById('pauseOverlay').style.display = paused?'flex':'none';
-  if(paused && document.pointerLockElement===canvas) document.exitPointerLock();
+  if(paused) releaseMouseLock();
   if(paused) clearHeldInputs();
   else if(cameraDistance<=0.6){
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   }
 }
 function adjustCameraZoom(delta, persist=false){
@@ -208,10 +208,10 @@ function adjustCameraZoom(delta, persist=false){
   if(gameActive && !paused && isFirstPerson && !wasFirstPerson){
     shiftLocked=false;
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   } else if(wasFirstPerson && !isFirstPerson && firstPersonAutoLock){
     firstPersonAutoLock=false;
-    if(document.pointerLockElement===canvas) document.exitPointerLock();
+    releaseMouseLock();
   }
   if(persist) saveSettings();
 }
@@ -508,7 +508,7 @@ function startGame(){
   clearHeldInputs();
   if(cameraDistance<=0.6){
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   }
 }
 
@@ -523,7 +523,7 @@ function showStartScreen(){
   document.getElementById('gameCanvas').style.visibility='hidden';
   document.getElementById('startScreen').style.display='flex';
   closeSkins();
-  if(document.pointerLockElement===canvas) document.exitPointerLock();
+  releaseMouseLock();
   firstPersonAutoLock=false;
   shiftLocked=false;
   clearHeldInputs();
@@ -609,14 +609,14 @@ function respawnPlayer(){
   flashMsg('BACK ON PATROL');
   if(cameraDistance<=0.6){
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   }
 }
 
 function showDeathScreen(){
   paused=true;
   document.getElementById('deathOverlay').style.display='flex';
-  if(document.pointerLockElement===canvas) document.exitPointerLock();
+  releaseMouseLock();
   shiftLocked=false;
   firstPersonAutoLock=false;
   clearHeldInputs();
@@ -631,6 +631,25 @@ document.getElementById('btnRespawn').onclick=respawnPlayer;
 const canvas = document.getElementById('gameCanvas');
 let yaw = 0, pitch = -0.15;
 let cursorClientX=innerWidth*0.5, cursorClientY=innerHeight*0.5;
+const nativeMouseHandler=window.webkit?.messageHandlers?.rodSpaceControls;
+const hasNativeMouse=Boolean(window.__rodSpaceMacApp&&nativeMouseHandler);
+function requestMouseLock(){
+  if(hasNativeMouse)nativeMouseHandler.postMessage({type:'mouseLock',enabled:true});
+  else if(document.pointerLockElement!==canvas)canvas.requestPointerLock?.().catch?.(()=>{});
+}
+function releaseMouseLock(){
+  if(hasNativeMouse)nativeMouseHandler.postMessage({type:'mouseLock',enabled:false});
+  else if(document.pointerLockElement===canvas)document.exitPointerLock?.();
+}
+function applyLookDelta(dx,dy){
+  if(!gameActive||paused)return;
+  const firstPersonLook=cameraDistance<=0.6;
+  if(!mouseDown[2]&&!shiftLocked&&!firstPersonLook)return;
+  const lookRate=0.0028*mouseSensitivity;
+  yaw-=dx*lookRate;
+  pitch=THREE.MathUtils.clamp(pitch-dy*lookRate,-1.52,1.52);
+}
+window.__rodSpaceNativeMouse={move:applyLookDelta};
 
 function aimScreenPoint(){
   // Every aimed action follows the over-shoulder reticle. The old free-cursor
@@ -638,27 +657,19 @@ function aimScreenPoint(){
   return {x:0,y:0};
 }
 document.addEventListener('pointerlockchange', ()=>{
-  if(document.pointerLockElement!==canvas) shiftLocked = false;
+  if(!hasNativeMouse&&document.pointerLockElement!==canvas) shiftLocked = false;
 });
 document.addEventListener('mousemove', e=>{
   cursorClientX=e.clientX;
   cursorClientY=e.clientY;
-  if(!gameActive || paused) return;
-  const firstPersonLook=cameraDistance<=0.6;
-  if(!mouseDown[2] && !shiftLocked && !firstPersonLook) return;
-  const lookRate = 0.0028 * mouseSensitivity;
-  yaw -= e.movementX*lookRate;
-  pitch -= e.movementY*lookRate;
-  // Nearly full vertical look: stop just short of straight up/down to avoid
-  // the camera flipping at the poles.
-  pitch = THREE.MathUtils.clamp(pitch,-1.52,1.52);
+  if(!hasNativeMouse)applyLookDelta(e.movementX,e.movementY);
 });
 
 // ---------------------------------------------------------------------------------------
 // THREE SCENE
 // ---------------------------------------------------------------------------------------
-const MAX_PIXEL_RATIO = 1.5;
-const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+const MAX_PIXEL_RATIO = window.__rodSpaceMacApp ? 1 : 1.5;
+const renderer = new THREE.WebGLRenderer({canvas, antialias:!window.__rodSpaceMacApp,powerPreference:'high-performance'});
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio,MAX_PIXEL_RATIO)*resolutionScale);
 
@@ -1564,16 +1575,17 @@ const GLIDE_TURN_RATE = 3.25;
 const GLIDE_MAX_SINK = 11;
 const SWING_MAX_SPEED = 72;
 const SWING_RELEASE_MAX_SPEED = 66;
-const SWING_RELEASE_CARRY = .99;
+const SWING_RELEASE_CARRY = 1;
 const SWING_MAX_RISE_SPEED = 30;
 const SWING_ENTRY_MAX_TIME = 0.55;
 const SWING_MIN_GROUND_CLEARANCE = 2.8;
 const SWING_GROUND_REEL_START = 13;
 const SWING_GROUND_REEL_RATE = 12;
-const SWING_LOOK_TURN_RATE = 0.9;
-const SWING_INPUT_TURN_RATE = 2.8;
-const SWING_FORWARD_ACCEL = 11;
-const SWING_POWERED_SPEED = 64;
+const SWING_LOOK_TURN_RATE = 1.7;
+const SWING_INPUT_TURN_RATE = 4.8;
+const SWING_FORWARD_ACCEL = 7;
+const SWING_POWERED_SPEED = 58;
+const SWING_ATTACH_REEL_RATE = 9;
 const SWING_GROUND_PULL_TIME = 0.2;
 const MAX_JUMP_CHARGE = 0.85;
 const CHARGED_JUMP_BONUS = 10;
@@ -2557,7 +2569,8 @@ function trySwing(hand,abilId,chosenOverride=null){
     // corridor pivot made the body move around a different centre than the web.
     web.physicsPivot=web.anchor.clone();
     web.length=P.pos.distanceTo(web.physicsPivot);
-    web.targetLength=Math.min(web.length,chosen.length);
+    // Retain the native build's limited slack take-up, never a radius snap.
+    web.targetLength=Math.min(web.length,Math.max(chosen.length,web.length-10,SWING_MIN_RANGE));
     web.auto=false;
     P.swingGroundPullT=groundPull?SWING_GROUND_PULL_TIME:0;
     // One input creates one strand, including from the ground. A second fake
@@ -2671,7 +2684,7 @@ function steerSwingVelocity(radial,mv,dt){
         THREE.MathUtils.clamp(tangent.dot(steerIntent),-1,1));
       const turnRate=mv.lengthSq()>0.001?SWING_INPUT_TURN_RATE:SWING_LOOK_TURN_RATE;
       tangent.applyAxisAngle(radial,angle*(1-Math.exp(-turnRate*dt)));
-      const phasePower=P.swingPhase==='descent'?1:0.55;
+      const phasePower=P.swingPhase==='descent'?THREE.MathUtils.clamp(-P.vel.y/18,0,1):0;
       const pumpedSpeed=keys[bindings.forward] && tangentSpeed<SWING_POWERED_SPEED
         ? Math.min(SWING_POWERED_SPEED,tangentSpeed+SWING_FORWARD_ACCEL*phasePower*dt)
         : tangentSpeed;
@@ -3756,6 +3769,12 @@ function stepPlayer(dt,visualDt=dt){
     const forwardTangent=cameraForwardFlat();
     forwardTangent.addScaledVector(radial,-forwardTangent.dot(radial));
 
+    // Take up at most the limited attachment slack at the native build's rate.
+    activeWebs.forEach(web=>{
+      if(web.length>web.targetLength) web.length=Math.max(web.targetLength,web.length-SWING_ATTACH_REEL_RATE*dt);
+    });
+    constraint=swingConstraint(activeWebs);
+
     // One short launch impulse is the only assisted part of a ground start.
     // Once airborne, gravity plus the rope constraint form an ordinary
     // pendulum: no lane spring, automatic pumping, lift or continuous reeling.
@@ -4479,8 +4498,46 @@ function tick(){
     updateDebugPanel();
   }
   if((hudFrame%20)===0) updateRenderVisibility();
-  updateAbilityCooldownUI();
+  if((hudFrame&1)===0) updateAbilityCooldownUI();
 
   renderer.render(scene, camera);
+}
+if(new URLSearchParams(location.search).has('qa')){
+  window.__webWeaversQA={
+    start:startGame,
+    syntheticSwing(){
+      startGame();
+      P.pos.copy(PLAYER_SPAWN).add(new THREE.Vector3(0,28,0));
+      P.vel.set(0,-3,-20);
+      P.state='swing';
+      P.activeSwingHand='left';
+      const web=P.swingWebs.left;
+      web.anchor=P.pos.clone().add(new THREE.Vector3(-8,30,-24));
+      web.physicsPivot=web.anchor.clone();
+      web.length=P.pos.distanceTo(web.anchor);
+      web.targetLength=web.length-7;
+      web.fallCatch=false;
+      P.swingAssisted=true;
+      P.swingPhase='descent';
+      P.swingHasDescended=true;
+      P.swingAge=P.swingPhaseT=0;
+      P.swingPeakFlat=Math.hypot(P.vel.x,P.vel.z);
+      P.swingBottomSpeed=0;
+      return this.snapshot();
+    },
+    setInput(code,on){keys[code]=on;},
+    release(){releaseSwing(null,true);},
+    step(seconds){
+      const wasPaused=paused;paused=false;
+      for(let remaining=seconds;remaining>0;remaining-=1/120)updatePlayer(Math.min(1/120,remaining));
+      paused=wasPaused;
+      return this.snapshot();
+    },
+    snapshot(){
+      const web=P.activeSwingHand?P.swingWebs[P.activeSwingHand]:null;
+      return {state:P.state,phase:P.swingPhase,pos:P.pos.toArray(),vel:P.vel.toArray(),speed:P.vel.length(),
+        ropeLength:web?.length||0,anchorDistance:web?.anchor?P.pos.distanceTo(web.anchor):0,activeHand:P.activeSwingHand};
+    }
+  };
 }
 tick();

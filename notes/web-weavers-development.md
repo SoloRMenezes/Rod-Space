@@ -48,3 +48,13 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Sustained rope obstruction handling after a valid attachment (especially around corners).
 - Low-altitude slack-rope recovery without ground skimming or artificial launch energy.
 - Broader performance measurement and long-session gameplay assessment; no 60 FPS guarantee.
+
+## Native app integration checkpoint
+- User clarified the current copies are /private/tmp/rodspace-native-work and /Applications/Rod Space/Rod Space.app. Inspected both and found native mouse/rendering changes in the app plus newer uncommitted traversal/QA changes in the temporary checkout.
+- Preserved native mouse locking, native rendering settings, HUD throttling, limited 9 m/s attachment slack take-up (at most 10 metres), native steering tuning and descent-only pumping. Retained the ?qa=1 interface. Combined these with this branch's verified momentum, transition, targeting, animation and camera changes. Script version is v18.
+- Original native source files are backed up in /private/tmp/web-weavers-app-update/native-source-before. The previous installed app is preserved as /private/tmp/web-weavers-app-update/Rod Space.before.app. Unrelated fingerboard work was not changed.
+- Installed the staged update using the existing ad-hoc signing format; codesign --verify --deep --strict passed. Only Web Weavers JS/HTML, offline catalog, shell cache metadata and signature-related bytes changed in the app bundle.
+- Installed app launched and served HTTP 200 at 127.0.0.1:47321. Served JS, bundled JS and temporary source JS hashes match.
+- Native WKWebView loaded the actual installed-app origin with isolated storage. R15 loading, chaining, release vectors, both arms, zip transitions, wall jumps, camera collision, cosmetic skins and independent skeletons passed. No page errors were logged. Snapshot inspected. This does not verify every physical native mouse/trackpad gesture.
+- Draft GitHub PR creation was rejected by automatic approval review for unverified publication authorization; no PR was created. Existing checkpoint branch pushes succeeded.
+- Existing DMG has not been regenerated yet.

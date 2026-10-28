@@ -13,7 +13,7 @@ function definition(name) {
   return source.slice(start, end < 0 ? undefined : end);
 }
 const constants = source.slice(source.indexOf('const GRAVITY ='), source.indexOf('const GRAVITY =') + 5000)
-  .split('\n').filter(line => /^const (AIR_MAX_SPEED|SWING_MAX_SPEED|SWING_MAX_RISE_SPEED|MAX_RISE_SPEED|MAX_FALL_SPEED|MAX_TRAVERSAL_SPEED) =/.test(line)).join('\n');
+  .split('\n').filter(line => /^const (AIR_MAX_SPEED|SWING_MAX_SPEED|SWING_MAX_RISE_SPEED|MAX_RISE_SPEED|MAX_FALL_SPEED|MAX_TRAVERSAL_SPEED|SWING_INPUT_TURN_RATE|SWING_LOOK_TURN_RATE|SWING_FORWARD_ACCEL|SWING_POWERED_SPEED) =/.test(line)).join('\n');
 vm.runInContext(`${constants}
 const P={state:'swing',vel:new THREE.Vector3(),swingAssisted:true,
  swingWebs:{left:{},right:{}},swingGroundPullAnchors:{},cooldowns:{swing:0}};
@@ -29,7 +29,6 @@ for (const velocity of [[58,0,0], [40,20,0], [35,-15,20]]) {
 console.log('Web Weavers release momentum checks passed');
 
 vm.runInContext(`
-const SWING_INPUT_TURN_RATE=2.8,SWING_LOOK_TURN_RATE=.9,SWING_FORWARD_ACCEL=11,SWING_POWERED_SPEED=64;
 const keys={},bindings={forward:'KeyW'};
 function cameraForwardFlat(){return new THREE.Vector3(1,0,0);}
 ${definition('steerSwingVelocity')}
