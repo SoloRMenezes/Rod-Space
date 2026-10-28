@@ -57,10 +57,17 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Installed app launched and served HTTP 200 at 127.0.0.1:47321. Served JS, bundled JS and temporary source JS hashes match.
 - Native WKWebView loaded the actual installed-app origin with isolated storage. R15 loading, chaining, release vectors, both arms, zip transitions, wall jumps, camera collision, cosmetic skins and independent skeletons passed. No page errors were logged. Snapshot inspected. This does not verify every physical native mouse/trackpad gesture.
 - Draft GitHub PR creation was rejected by automatic approval review for unverified publication authorization; no PR was created. Existing checkpoint branch pushes succeeded.
-- Existing DMG has not been regenerated yet.
+- At this checkpoint the existing DMG had not yet been regenerated; see installer delivery below.
 
 ## Obstructed strand checkpoint
 - Added segment/building intersection checks from the actual animated hand to the active anchor. A strand blocked by a facade releases without a velocity impulse; a held Swing input uses the existing queued catch mechanism.
 - Matched ten-second city route: 64 obstructed frames before, zero after. The corrected route retained 416 attached frames out of 600; reduced attachment time is expected when formerly invalid strands release. No runtime errors.
 - Geometry tests cover attached surfaces, a building crossing, above-roof travel, parallel misses and origins inside a building. Full Chrome and native WebKit traversal regressions pass.
-- App cache version advanced to v19. Installer refresh is being prepared from the tested signed app.
+- App cache version advanced to v19. The tested signed app was used for the installer refresh below.
+
+## Installer delivery
+- Installed app and /private/tmp/rodspace-native-work now contain the tested v19 build. App-served JS returned HTTP 200 and matches both copies (SHA-256 bc7adcbbeb365cd8521c9e4d5cf4378b63fde41e773438d2419d3da3ab80c257).
+- Refreshed /Applications/Rod Space/Rod Space.dmg. hdiutil verify passed; mounted read-only, verified the enclosed app signature and matching JS hash, then detached it.
+- Previous installer is /private/tmp/web-weavers-app-update/Rod Space.before.dmg. Original app and native-source backups remain at the paths above.
+- Checked Web Weavers download sizes/hashes in branch, native source and installed app catalogs. No unrelated game content was replaced.
+- Work remains active: extended play/performance assessment and low-altitude slack-rope recovery still need attention.
