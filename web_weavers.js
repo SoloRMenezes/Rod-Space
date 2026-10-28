@@ -3126,10 +3126,10 @@ function animatePlayer(dt, moveVec){
   // a walk cycle continuing while stationary, or freezing during carried
   // momentum after the player releases a key.
   const moving = speedFlat > 0.8 && (P.state==='ground' || P.state==='air');
-  const wallMoving=P.state==='climb' && (moveVec.lengthSq()>0.04 || P.wallRunAutoT>0);
+  const wallMoving=P.state==='climb' && P.vel.lengthSq()>0.04;
   const locomoting=moving || wallMoving;
   const locomotionSpeed=wallMoving
-    ? Math.max(running || P.wallRunAutoT>0 ? WALL_RUN_SPEED : WALL_CRAWL_SPEED,4)
+    ? P.vel.length()
     : speedFlat;
   // Walking used to cycle too slowly for the distance covered. Keep its feet
   // moving briskly, while a sprint gets a slightly quicker, longer stride.
@@ -3338,7 +3338,7 @@ function animatePlayer(dt, moveVec){
         headRot.x=0.11;
       }
     } else if(wallMoving){
-      const climb=Math.sin(animClock*(wallRunning?12:7));
+      const climb=step;
       const reach=wallRunning?0.58:0.38;
       armLRot.x=-1.28+climb*reach;
       armRRot.x=-1.28-climb*reach;
@@ -3455,7 +3455,6 @@ function animatePlayer(dt, moveVec){
       if(P.swingGroundPullT>0) leftElbow=rightElbow=0.16;
     }
     if(P.state==='climb'){
-      const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
       leftElbow=rightElbow=wallMoving?0.3:0.56;
     }
     if(P.meleeT>0){
@@ -3471,7 +3470,6 @@ function animatePlayer(dt, moveVec){
     let kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
     let kneeR=THREE.MathUtils.clamp(Math.max(0,legRRot.x)*0.7+(P.state==='ground'?Math.max(0,step)*0.32:0),0,1.05);
     if(P.state==='climb'){
-      const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
       kneeL=kneeR=wallMoving?0.42:0.68;
     }
     if(P.jumpCharging){
@@ -3965,9 +3963,10 @@ function stepPlayer(dt,visualDt=dt){
     const right = new THREE.Vector3().crossVectors(P.climbNormal, new THREE.Vector3(0,1,0)).normalize();
     const wallTravel=right.clone().multiplyScalar(climbMove.x);
     wallTravel.y=climbMove.y;
-    P.pos.addScaledVector(right,climbMove.x*wallSpeed*dt);
-    P.pos.y+=climbMove.y*wallSpeed*dt;
-    P.vel.set(0,0,0);
+    // Keep velocity consistent with wall travel so jumps, releases and the
+    // animation cycle inherit the motion the player actually sees.
+    P.vel.copy(wallTravel).multiplyScalar(wallSpeed);
+    P.pos.addScaledVector(P.vel,dt);
 
     const b=P.climbBuilding;
     const n=P.climbNormal;

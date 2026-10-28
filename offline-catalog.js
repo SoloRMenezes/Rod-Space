@@ -17099,16 +17099,16 @@ self.OFFLINE_CATALOG = {
       {
         "path": "web_weavers.html",
         "bytes": 8599,
-        "hash": "567b2fcee4e7414dc650d86bff1b1e3a4cccf914ff90601b9b0be87b756c6722"
+        "hash": "0c83bf7d12d8b4804768498e290469c0cbb547326b2dd126a00134d045650f2b"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 186797,
-        "hash": "bc7adcbbeb365cd8521c9e4d5cf4378b63fde41e773438d2419d3da3ab80c257"
+        "bytes": 186657,
+        "hash": "0d7c11a26afc8e00f1a10ac7c2bd51f6a9fcf009698ad5d9ff699cbdf1bc618e"
       }
     ],
-    "bytes": 1087226,
-    "version": "95ea2911e66de537"
+    "bytes": 1087086,
+    "version": "503db5fd182ba74b"
   },
   "hood-brawlers": {
     "name": "Hood Brawlers",

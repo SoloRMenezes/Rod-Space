@@ -71,3 +71,10 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Previous installer is /private/tmp/web-weavers-app-update/Rod Space.before.dmg. Original app and native-source backups remain at the paths above.
 - Checked Web Weavers download sizes/hashes in branch, native source and installed app catalogs. No unrelated game content was replaced.
 - Work remains active: extended play/performance assessment and low-altitude slack-rope recovery still need attention.
+
+## Wall momentum and crawl cadence checkpoint
+- User explicitly prioritised swing mechanics, wall walking/running and animations. Draft PR #4 is now open after explicit publication approval.
+- Wall movement now records its actual travel velocity instead of zero. Charged wall jumps retain the sideways motion; the browser fixture failed both motion/velocity consistency and carried-speed checks before the change and passes afterwards.
+- Wall animation reads actual speed. Removed the crawl's extra sevenfold phase multiplier and shared moving/idle detection across shoulders, elbows and knees.
+- Focused Node checks and Chrome traversal scenarios pass. Native WKWebView confirms wall velocity/jump checks and zero obstructed strands; native crawl pose inspected, no page errors in successful runs. One capture harness typo used a nonexistent building registry and was corrected; this was not a game error.
+- Branch is v20. Installed app, native source and DMG remain at verified v19 pending the next bundle checkpoint. Continue low-altitude recovery and wall-to-swing transitions; no extended performance claim.
