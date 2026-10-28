@@ -3844,7 +3844,11 @@ function stepPlayer(dt,visualDt=dt){
       );
       const reelAmount=SWING_GROUND_REEL_RATE*(0.25+reelDanger*0.75)*dt;
       activeWebs.forEach(web=>{
-        web.length=Math.max(SWING_MIN_RANGE,web.length-reelAmount);
+        // Slack carries no tension. Take it up to the predicted position before
+        // applying the bounded safety reel, rather than winding empty rope
+        // while the player slides along the ground under a distant anchor.
+        const distance=predictedSwingPos.distanceTo(web.physicsPivot||web.anchor);
+        web.length=Math.max(SWING_MIN_RANGE,Math.min(web.length,distance)-reelAmount);
         web.targetLength=Math.min(web.targetLength,web.length);
       });
       constraint=swingConstraint(activeWebs);
