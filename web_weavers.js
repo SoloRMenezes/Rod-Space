@@ -2013,12 +2013,17 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       const ropeLength=Math.max(SWING_MIN_RANGE,idealLength);
       const roofInterior=Math.min(point.x-b.minX,b.maxX-point.x,point.z-b.minZ,b.maxZ-point.z);
       const interiorBonus=Math.min(26,Math.max(0,roofInterior)*1.8);
-      // Once an anchor is safe and visible, distance dominates: Q/E should
-      // attach to the closest usable building on that side, not a taller but
-      // much farther building selected by a cinematic scoring bonus.
-      const score=belowCatch
+      // Favor nearby visible anchors for ordinary traversal. Fast-fall catches
+      // additionally account for the speed the rope constraint would discard.
+      // During a fast fall, a nearby overhead anchor can discard nearly all
+      // descending speed at the first taut frame. Prefer geometry that carries
+      // the incoming trajectory into the arc instead of ranking distance alone.
+      const catchRadial=P.pos.clone().sub(point).normalize();
+      const outwardSpeed=Math.max(0,P.vel.dot(catchRadial));
+      const catchLoss=highFalling?outwardSpeed*outwardSpeed/Math.max(1,P.vel.lengthSq()):0;
+      const score=(belowCatch
         ? 310-Math.abs(horizontalDist-fallSearchDistance)*3.2+forwardDot*190+Math.max(0,sideDot)*28+interiorBonus
-        : 1200-dist*9+forwardDot*(groundStart?240:110)+Math.max(0,sideDot)*3+interiorBonus;
+        : 1200-dist*9+forwardDot*(groundStart?240:110)+Math.max(0,sideDot)*3+interiorBonus)-catchLoss*2000;
       if(score>bestScore){ bestScore=score; best={point:point.clone(),length:ropeLength,score}; }
     }
   }
@@ -2652,6 +2657,10 @@ function trySmartSwing(){
   let hand=P.nextSwingHand;
   if(!left)hand='right';
   else if(!right)hand='left';
+  else if(P.vel.y<-10 && Math.abs(left.score-right.score)>20){
+    // Alternate hands only when both catches are comparably useful.
+    hand=left.score>right.score?'left':'right';
+  }
   const chosen=hand==='left'?left:right;
   return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',chosen);
 }
