@@ -1911,7 +1911,8 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       addUniqueAnchorCandidates(candidates,upperBuildingEdgeRayPoints(b,playerEye,fallDirection));
     }
 
-    for(const point of candidates){
+    for(const candidate of candidates){
+      const point=candidate.clone();
       if(excludePoint && point.distanceTo(excludePoint)<12) continue;
       const to=point.clone().sub(playerEye);
       const dist=to.length();
@@ -1940,7 +1941,12 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       const rayMidpoint=playerEye.clone().addScaledVector(to,0.5);
       const sightHits=raycaster.intersectObjects(nearbyBuildingMeshes(rayMidpoint,dist*0.5+8),false);
       raycaster.far=Infinity;
-      if(!belowCatch && (!sightHits.length || sightHits[0].object!==b.mesh || Math.abs(sightHits[0].distance-dist)>6)) continue;
+      if(!sightHits.length || sightHits[0].object!==b.mesh || Math.abs(sightHits[0].distance-dist)>6) continue;
+      // Roof candidates are slightly inset. From below, their sightline hits
+      // the facade first: attach there rather than drawing through the roof.
+      // Falling catches must pass the same visibility test as every other web.
+      point.copy(sightHits[0].point);
+      point.addScaledVector(to,-0.03/dist);
 
       // Keep the bottom of an assisted arc comfortably above the surface instead
       // of allowing a nearly ground-level rope that turns swinging into fast walking.
@@ -1970,14 +1976,20 @@ function findLookSwingAnchor(){
   if(!hit)return null;
   const b=hit.object.userData.buildingRecord;
   if(!b)return null;
-  const inset=0.7;
-  const point=new THREE.Vector3(
-    THREE.MathUtils.clamp(hit.point.x,b.minX+inset,b.maxX-inset),
-    b.h+0.08,
-    THREE.MathUtils.clamp(hit.point.z,b.minZ+inset,b.maxZ-inset)
-  );
-  const distance=P.pos.clone().add(new THREE.Vector3(0,1.35,0)).distanceTo(point);
+  // Aimed webs use the actual surface under the reticle. Promoting a wall
+  // hit to an inset rooftop could put the strand straight through the building.
+  const point=hit.point.clone();
+  if(hit.face) point.addScaledVector(hit.face.normal.clone().transformDirection(hit.object.matrixWorld),0.03);
+  const eye=P.pos.clone().add(new THREE.Vector3(0,1.35,0));
+  const to=point.clone().sub(eye),distance=to.length();
   if(distance<SWING_MIN_RANGE||distance>SWING_MAX_RANGE)return null;
+  const fallingCatch=P.vel.y<-10 && point.y<eye.y-2 && Math.hypot(to.x,to.z)>28;
+  if(point.y<eye.y+4 && !fallingCatch)return null;
+  raycaster.set(eye,to.multiplyScalar(1/distance));
+  raycaster.far=distance+0.1;
+  const visible=raycaster.intersectObjects(nearbyBuildingMeshes(eye,distance+2),false)[0];
+  raycaster.far=Infinity;
+  if(!visible || visible.object!==b.mesh || Math.abs(visible.distance-distance)>0.15)return null;
   const ground=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
   const safeLength=Math.max(SWING_MIN_RANGE,Math.min(distance*0.96,point.y-ground-9));
   return {point,length:safeLength,score:Infinity,targeted:true};

@@ -47,7 +47,24 @@ const result=await page.evaluate(()=>{
    if(P.activeSwingHand)setSwingRope(ropeLine,visibleWebHandWorld(P.activeSwingHand,handL),P.swingWebs[P.activeSwingHand].anchor);
    renderer.render(scene,camera);
  }
- const b=buildingMeshes.find(b=>b.h>30);
+ const anchorChecks=[];
+ for(const altitude of [0,60,180]){
+  P.pos.set(-250,altitude,-250);P.vel.set(0,altitude? -20:0,25);P.state=altitude?'air':'ground';yaw=0;pitch=0;updateCamera(1);
+  for(const hand of ['left','right']){
+   const choice=findAssistedSwingAnchor(hand);if(!choice)continue;
+   const eye=P.pos.clone().add(new THREE.Vector3(0,1.35,0)),to=choice.point.clone().sub(eye),distance=to.length();
+   raycaster.set(eye,to.normalize());raycaster.far=distance+.2;
+   const hit=raycaster.intersectObjects(nearbyBuildingMeshes(eye,distance+2),false)[0];raycaster.far=Infinity;
+   anchorChecks.push({altitude,hand,error:hit?Math.abs(hit.distance-distance):null});
+  }
+ }
+ const b=buildingMeshes.find(b=>b.h>50);
+ P.pos.set((b.minX+b.maxX)/2,10,b.maxZ+10);P.vel.set(0,0,0);P.state='air';
+ camera.position.copy(P.pos).add(new THREE.Vector3(0,1.35,0));
+ camera.lookAt((b.minX+b.maxX)/2,35,b.maxZ);camera.updateMatrixWorld(true);
+ const aimed=findLookSwingAnchor();
+ const aimedOnWall=!!aimed && Math.abs(aimed.point.z-b.maxZ)<.1 && Math.abs(aimed.point.y-b.h)>1;
+
  P.pos.set((b.minX+b.maxX)/2,10,b.maxZ+1);P.vel.set(0,0,0);yaw=0;pitch=0;cameraDistance=7.5;shiftLocked=false;
  cameraCollisionDistance=7.5;updateCamera(1/60);
  const focus=P.pos.clone().add(new THREE.Vector3(0,1.45,0));
@@ -55,7 +72,7 @@ const result=await page.evaluate(()=>{
  raycaster.set(focus,offset.clone().normalize());raycaster.far=offset.length();
  const cameraBlocked=raycaster.intersectObjects(nearbyBuildingMeshes(focus,10),false).length>0;
  raycaster.far=Infinity;
- return {releases,spot,chain,rates,cameraBlocked,rig:r15Ready};
+ return {releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,rig:r15Ready};
 });
 if(process.env.SCREENSHOT_PATH) await page.screenshot({path:process.env.SCREENSHOT_PATH});
 console.log(JSON.stringify({result,errors},null,2));await browser.close();
@@ -65,6 +82,9 @@ if(!process.env.BASELINE_SOURCE){
  for(const release of result.releases){assert.deepEqual(release.immediate,release.before);assert.deepEqual(release.afterClamp,release.before);}
  assert.ok(result.chain?.attached && result.chain.reattached,'rapid held reattachment');
  assert.equal(result.cameraBlocked,false,'camera stays in front of facade');
+ assert.ok(result.aimedOnWall,'aimed wall hit stays on the wall');
+ assert.ok(result.anchorChecks.length>=3,'street and falling anchors available');
+ for(const anchor of result.anchorChecks) assert.ok(anchor.error!==null && anchor.error<.2,'anchor touches first visible surface');
  for(const rate of result.rates.slice(1)){
   const delta=Math.hypot(...rate.pos.map((x,i)=>x-result.rates[0].pos[i]));
   assert.ok(delta<.05,`trajectory drift at ${rate.hz} Hz: ${delta}`);

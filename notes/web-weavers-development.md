@@ -24,3 +24,8 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Camera retracts to collision clearance immediately and eases outward. First-person following uses elapsed time.
 - Browser regression harness covers real model loading, release vectors, rapid reattachment, frame-rate trajectories and a real facade camera obstruction. 30/60/120 Hz positions match exactly; 144 Hz differs by about 0.01 metres after 3 seconds. No page errors.
 - Existing combined nico/blackjack/weavers suite fails on its first assertion: it expects FLOOR_COUNT inside nicos_nextbots.html, but that unchanged game now loads nicos_nextbots.js. This is unrelated to Web Weavers changes.
+
+## Third checkpoint
+- Reticle targeting attaches to the actual aimed facade/roof surface instead of replacing every hit with an inset roof anchor. Low wall hits defer to existing assisted selection.
+- Assisted rooftop candidates terminate at the first visible surface. Falling catches now require the same unobstructed line of sight; surface offsets follow the sightline to avoid moving an edge anchor off the building.
+- Browser tests cover aimed facade attachment and assisted street/air/falling anchors. Existing momentum, chaining, camera and timestep regressions pass without page errors.
