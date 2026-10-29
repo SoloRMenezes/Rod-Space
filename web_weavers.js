@@ -3151,6 +3151,11 @@ function animatePlayer(dt, moveVec){
   const step = Math.sin(animClock);
   const bob = moving ? Math.abs(step) * (running ? 0.08 : 0.045) : 0;
   const amt = 1 - Math.pow(0.001, dt);
+  // The authored crawl reach extends beyond the physics centre's wall offset.
+  // Ease the visual rig back so wrists and feet meet the facade instead of
+  // disappearing into it; collision and traversal positions stay unchanged.
+  const wallCrawling=P.state==='climb' && !running && P.wallRunAutoT<=0;
+  playerRig.position.z=THREE.MathUtils.lerp(playerRig.position.z,wallCrawling?-0.4:0,amt);
   const wingPose=P.state==='air' && P.gliding;
   // The physics root stays upright; only the visual rig rolls and pitches.
   let rigPitch=wingPose?Math.PI/2+P.glidePitch*0.55:0;

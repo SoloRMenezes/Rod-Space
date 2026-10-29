@@ -5706,12 +5706,12 @@ self.OFFLINE_CATALOG = {
       {
         "path": "web_weavers.html",
         "bytes": 8599,
-        "hash": "995a0bd9277b83a9885a72c2704bff9cb32a95978dcb5c3ea0df1fe44a094ccc"
+        "hash": "165cbc9e15042d713082a7132ccfb6fbe090fcbcce90c76366f3f99eab6c75f6"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 188809,
-        "hash": "4e9059e7e9752e19b6c7f5feaee0d17f19c7ed58df3330d059da031eeb756c50"
+        "bytes": 189205,
+        "hash": "255f09ae8a738dea48442b70d7572b681320d44ca796f044790bff8a1ef3842e"
       },
       {
         "path": "whos-more-likely.html",
@@ -5724,8 +5724,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358142458,
-    "version": "b83f82d2126a1627"
+    "bytes": 358142854,
+    "version": "6dcabd655c408fac"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -11612,12 +11612,12 @@ self.OFFLINE_CATALOG = {
       {
         "path": "web_weavers.html",
         "bytes": 8599,
-        "hash": "995a0bd9277b83a9885a72c2704bff9cb32a95978dcb5c3ea0df1fe44a094ccc"
+        "hash": "165cbc9e15042d713082a7132ccfb6fbe090fcbcce90c76366f3f99eab6c75f6"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 188809,
-        "hash": "4e9059e7e9752e19b6c7f5feaee0d17f19c7ed58df3330d059da031eeb756c50"
+        "bytes": 189205,
+        "hash": "255f09ae8a738dea48442b70d7572b681320d44ca796f044790bff8a1ef3842e"
       },
       {
         "path": "whos-more-likely.html",
@@ -11630,8 +11630,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358142458,
-    "version": "f334431a0926ba0e"
+    "bytes": 358142854,
+    "version": "84de41e9881d0d57"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -17099,16 +17099,16 @@ self.OFFLINE_CATALOG = {
       {
         "path": "web_weavers.html",
         "bytes": 8599,
-        "hash": "995a0bd9277b83a9885a72c2704bff9cb32a95978dcb5c3ea0df1fe44a094ccc"
+        "hash": "165cbc9e15042d713082a7132ccfb6fbe090fcbcce90c76366f3f99eab6c75f6"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 188809,
-        "hash": "4e9059e7e9752e19b6c7f5feaee0d17f19c7ed58df3330d059da031eeb756c50"
+        "bytes": 189205,
+        "hash": "255f09ae8a738dea48442b70d7572b681320d44ca796f044790bff8a1ef3842e"
       }
     ],
-    "bytes": 1089238,
-    "version": "a1eaa190884cc4f6"
+    "bytes": 1089634,
+    "version": "98f3e5b30063614e"
   },
   "hood-brawlers": {
     "name": "Hood Brawlers",
@@ -22969,12 +22969,12 @@ self.OFFLINE_CATALOG = {
       {
         "path": "web_weavers.html",
         "bytes": 8599,
-        "hash": "995a0bd9277b83a9885a72c2704bff9cb32a95978dcb5c3ea0df1fe44a094ccc"
+        "hash": "165cbc9e15042d713082a7132ccfb6fbe090fcbcce90c76366f3f99eab6c75f6"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 188809,
-        "hash": "4e9059e7e9752e19b6c7f5feaee0d17f19c7ed58df3330d059da031eeb756c50"
+        "bytes": 189205,
+        "hash": "255f09ae8a738dea48442b70d7572b681320d44ca796f044790bff8a1ef3842e"
       },
       {
         "path": "whos-more-likely.html",
@@ -22987,8 +22987,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358142458,
-    "version": "ee23d84708b5bb0d"
+    "bytes": 358142854,
+    "version": "9515df558d72a78c"
   },
   "backrooms": {
     "name": "The Backrooms",

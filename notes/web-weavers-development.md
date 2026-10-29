@@ -129,3 +129,10 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Initial broad fixtures could pass through strand obstruction and ordinary air-to-wall entry, so the regression was refined to observe the first actual collision at 120 Hz. Before: air gap then climb with zero entry velocity. After: direct climb at ~12.5 m/s, free hand and successful held-input recatch. Passive contact does not enter climb.
 - Full Chrome and native traversal scenarios pass, as do focused Node checks. No native page errors. This does not change the separate air-to-wall entry path when the web releases before physical contact.
 - Branch v27 combines the preceding wall-entry-direction fix and this transition. Installed app/native source remain v25, DMG v23. Next delivery should include both wall fixes; further assess fast facade approaches and wall-animation contact quality.
+
+## v27 delivery and crawl contact checkpoint
+- Installed v27 wall-direction and intentional swing-wall transition fixes, preserving prior v25 files. App signature and installed-origin native transition tests passed. App-served JS matches branch hash 4e9059e7e9752e19b6c7f5feaee0d17f19c7ed58df3330d059da031eeb756c50. Native source also updated; DMG remains v23.
+- Measured actual loaded R15 crawl joints over a cycle: wrists reached ~0.35 m behind the wall plane and feet ~0.31 m behind it. Added a blended visual-only 0.4 m crawl/idle-cling offset away from the wall, preserving collision position, velocity and controls.
+- After settling, sampled crawl wrists remain at least ~0.05 m outside the plane and feet ~0.088 m outside. Regression checks confirm no physics changes and removal of the offset in air. Chrome/native traversal checks and Node tests pass; native crawl snapshot inspected.
+- This measures joint clearance, not every skinned vertex. Vertical wall-run wrists still penetrate by ~0.145 m at part of their cycle; wall-running contact and pose quality remain open work. Side-run feet were outside the wall plane in the measured cycle.
+- Branch v28 includes the crawl visual correction; installed app/native source remain v27, DMG v23.

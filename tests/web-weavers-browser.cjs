@@ -164,6 +164,16 @@ const result=await page.evaluate(()=>{
  clone.traverse(node=>{if(node.isSkinnedMesh && node.skeleton.bones.some(bone=>sourceBones.has(bone)))independentSkeleton=false;});
 
 
+ P.pos.set((b.minX+b.maxX)/2,40,b.hitMaxZ+CLIMB_WALL_OFFSET);P.vel.set(0,6.2,0);P.state='climb';P.climbNormal=new THREE.Vector3(0,0,1);P.climbBuilding=b;P.wallRunAutoT=0;P.wallFlipT=0;P.climbVisualAngle=0;P.facing=Math.PI;player.rotation.y=P.facing;running=false;
+ const crawlPosition=P.pos.clone(),crawlVelocity=P.vel.clone();let crawlJointClearance=Infinity;
+ for(let i=0;i<120;i++){
+  animatePlayer(1/60,new THREE.Vector3(0,0,-1));player.updateMatrixWorld(true);
+  if(i<60)continue;
+  for(const limb of ['leftHand','rightHand','leftFoot','rightFoot'])crawlJointClearance=Math.min(crawlJointClearance,r15Bone(r15VisualBone[limb]).getWorldPosition(new THREE.Vector3()).z-b.maxZ);
+ }
+ const crawlVisualOnly=P.pos.equals(crawlPosition)&&P.vel.equals(crawlVelocity);
+ P.state='air';for(let i=0;i<60;i++)animatePlayer(1/60,new THREE.Vector3());
+ const crawlOffsetCleared=Math.abs(playerRig.position.z)<.001;
  P.pos.set((b.minX+b.maxX)/2,10,b.maxZ+1);P.vel.set(0,0,0);yaw=0;pitch=0;cameraDistance=7.5;shiftLocked=false;
  cameraCollisionDistance=7.5;updateCamera(1/60);
  const focus=P.pos.clone().add(new THREE.Vector3(0,1.45,0));
@@ -171,7 +181,7 @@ const result=await page.evaluate(()=>{
  raycaster.set(focus,offset.clone().normalize());raycaster.far=offset.length();
  const cameraBlocked=raycaster.intersectObjects(nearbyBuildingMeshes(focus,10),false).length>0;
  raycaster.far=Infinity;
- return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallContactChecks,wallEntryChecks,cosmeticSkins,independentSkeleton,rig:r15Ready};
+ return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallContactChecks,wallEntryChecks,crawlJointClearance,crawlVisualOnly,crawlOffsetCleared,cosmeticSkins,independentSkeleton,rig:r15Ready};
 });
 if(process.env.SCREENSHOT_PATH) await page.screenshot({path:process.env.SCREENSHOT_PATH});
 console.log(JSON.stringify({result,errors},null,2));await browser.close();
@@ -188,6 +198,7 @@ if(!process.env.BASELINE_SOURCE){
  assert.ok(!result.wallContactChecks[0].enteredWall,'glancing swing contact does not force a wall run');
  assert.ok(result.wallContactChecks[1].enteredWall && result.wallContactChecks[1].handFree && result.wallContactChecks[1].recaught && result.wallContactChecks[1].entrySpeed>5 && !result.wallContactChecks[1].contactStates.includes('air'),'intentional swing-wall-jump-held catch completes');
  for(const entry of result.wallEntryChecks)assert.ok(entry.alignment>.999 && entry.velocityAlignment>.999 && entry.speed>=11,'wall-run entry follows incoming wall-tangent motion');
+ assert.ok(result.crawlJointClearance>0 && result.crawlVisualOnly && result.crawlOffsetCleared,'crawl joints stay outside the wall without changing physics or retaining an airborne offset');
  assert.ok(result.cosmeticSkins && result.independentSkeleton,'cosmetic skins and independent avatar bones');
  for(const alignment of result.armChecks) assert.ok(alignment>.98,'both R15 shoulders reach toward their web');
  for(const release of result.releases){assert.deepEqual(release.immediate,release.before);assert.deepEqual(release.afterClamp,release.before);}
