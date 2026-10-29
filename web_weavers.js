@@ -1601,7 +1601,6 @@ const GLIDE_MAX_SINK = 11;
 const SWING_MAX_SPEED = 72;
 const SWING_RELEASE_MAX_SPEED = 66;
 const SWING_RELEASE_CARRY = 1;
-const SWING_MAX_RISE_SPEED = 30;
 const SWING_ENTRY_MAX_TIME = 0.55;
 const SWING_MIN_GROUND_CLEARANCE = 2.8;
 const SWING_GROUND_REEL_START = 13;
@@ -1620,7 +1619,6 @@ const QUICK_RECOVERY_WINDOW = 0.85;
 const QUICK_RECOVERY_ROLL_TIME = 0.28;
 const MAX_TRAVERSAL_SPEED = 60;
 const MAX_FALL_SPEED = -58;
-const MAX_RISE_SPEED = 34;
 const KEY_ZOOM_SPEED = 8.5;
 const WING_MIN_CLEARANCE = 5;
 
@@ -2808,8 +2806,10 @@ function limitHorizontalSpeed(maxSpeed){
 }
 
 function clampPlayerVelocity(){
-  const riseCap=P.state==='swing'?SWING_MAX_RISE_SPEED:MAX_RISE_SPEED;
-  P.vel.y = THREE.MathUtils.clamp(P.vel.y, MAX_FALL_SPEED, riseCap);
+  // Upward travel shares the total speed envelope with horizontal motion.
+  // A separate rise cap deleted momentum gained through the downswing and
+  // changed the release direction even when total speed was already legal.
+  P.vel.y = Math.max(P.vel.y, MAX_FALL_SPEED);
   if(P.state === 'swing') limitHorizontalSpeed(SWING_MAX_SPEED);
   else if(P.state !== 'zip') limitHorizontalSpeed(AIR_MAX_SPEED);
   if(P.state!=='zip' && P.vel.length()>MAX_TRAVERSAL_SPEED) P.vel.setLength(MAX_TRAVERSAL_SPEED);

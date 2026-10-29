@@ -21,7 +21,7 @@ ${definition('releaseSwing')}
 ${definition('limitHorizontalSpeed')}
 ${definition('clampPlayerVelocity')}
 `, context);
-for (const velocity of [[58,0,0], [40,20,0], [35,-15,20]]) {
+for (const velocity of [[58,0,0], [40,20,0], [35,-15,20], [20,50,0], [0,58,0]]) {
   const result = vm.runInContext(`P.state='swing';P.swingAssisted=true;P.vel.fromArray(${JSON.stringify(velocity)});
     releaseSwing();clampPlayerVelocity();JSON.stringify(P.vel.toArray());`, context);
   assert.deepEqual(JSON.parse(result), velocity, 'release preserves legal incoming velocity');
@@ -66,3 +66,12 @@ for(const [from,to,blocked] of [
  assert.equal(vm.runInContext(`swingWebObstructed(new THREE.Vector3(...${JSON.stringify(from)}),new THREE.Vector3(...${JSON.stringify(to)}))`,context),blocked,'web obstruction geometry');
 }
 console.log('Web Weavers web obstruction checks passed');
+
+for(const state of ['swing','air']){
+ const velocity=JSON.parse(vm.runInContext(`P.state='${state}';P.vel.set(20,50,0);clampPlayerVelocity();JSON.stringify(P.vel.toArray());`,context));
+ assert.deepEqual(velocity,[20,50,0],'legal ascending momentum survives the velocity limiter');
+ const capped=JSON.parse(vm.runInContext(`P.state='${state}';P.vel.set(60,80,0);clampPlayerVelocity();JSON.stringify(P.vel.toArray());`,context));
+ assert.ok(Math.abs(Math.hypot(...capped)-60)<1e-8,'total traversal speed remains bounded');
+ assert.ok(Math.abs(capped[1]/capped[0]-80/60)<1e-8,'speed limiting preserves ascent direction');
+}
+console.log('Web Weavers ascent momentum checks passed');

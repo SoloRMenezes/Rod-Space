@@ -51,7 +51,7 @@ const result=await page.evaluate(()=>{
   releaseSwing();
  }
  const releases=[];
- for(const velocity of [[58,0,0],[40,20,0],[35,-15,20]]){
+ for(const velocity of [[58,0,0],[40,20,0],[35,-15,20],[20,50,0],[0,58,0]]){
    P.state='swing';P.swingAssisted=true;P.vel.fromArray(velocity);P.activeSwingHand='left';
    releaseSwing();const immediate=P.vel.toArray();clampPlayerVelocity();releases.push({before:velocity,immediate,afterClamp:P.vel.toArray()});
  }

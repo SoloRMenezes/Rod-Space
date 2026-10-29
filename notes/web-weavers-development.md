@@ -108,3 +108,10 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - All six full-arc cases now reach positive swing ascent above 5 m/s, compared with one former route never ascending. Deep slack falls retain zero sideways drift in the early sample. Chrome and native full-arc checks, 24 low-swing cases, existing traversal tests and Node checks pass. No page errors.
 - These results do not eliminate later facade collisions or guarantee sustained speed on every route. Next investigate ascent velocity clipping and useful attachment geometry over the full arc, not just initial catch retention.
 - Branch v24 has slack-rope steering fix. Installed app/native source and DMG remain verified v23 until the next delivery checkpoint.
+
+## Ascent momentum checkpoint
+- Reproduced upward momentum loss: the limiter changed an otherwise legal [20,50,0] release to [20,34,0]. Swing ascent was separately capped at 30 m/s, before the existing total 60 m/s envelope.
+- Removed the separate upward caps. Total traversal speed remains limited to 60 m/s and the existing fall terminal speed remains. Ascending velocity direction is preserved when limiting total speed; no launch impulse was added.
+- New focused checks cover upward release, legal ascent and direction-preserving total-speed limiting. Browser release tests include [20,50,0] and [0,58,0]. Existing traversal, 24 low-swing and six eight-second high-drop tests pass. Sampled upward speeds in high-drop routes now reach ~33-44 m/s rather than flattening at 30.
+- Native WebKit and installed-app-origin checks preserve all release vectors without page errors. Installed app and native source are v25, including the prior slack-rope fix. Signature verifies; app-served source matches. Previous v23 installed files backed up. DMG remains verified v23.
+- Continue checking full-arc attachment geometry and wall collision transitions; a passed momentum test is not proof that every city route is enjoyable.
