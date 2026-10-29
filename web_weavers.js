@@ -2878,19 +2878,21 @@ function beginTraversalWallRun(normal,building,incoming){
   comboChainMode=null;
 
   const wallRight=new THREE.Vector3().crossVectors(normal,new THREE.Vector3(0,1,0)).normalize();
-  let across=entryVelocity.dot(wallRight);
-  if(Math.abs(across)<3){
-    const cameraAcross=cameraForwardFlat().dot(wallRight);
-    across=(Math.abs(cameraAcross)>0.12?Math.sign(cameraAcross):1)*Math.max(7,Math.hypot(entryVelocity.x,entryVelocity.z)*0.45);
-  }
-  const entrySpeed=THREE.MathUtils.clamp(Math.max(11,entryVelocity.length()*0.72),11,22);
-  const upward=THREE.MathUtils.clamp(entryVelocity.y/Math.max(entrySpeed,1),0.18,0.72);
+  const across=entryVelocity.dot(wallRight);
+  const wallMotion=new THREE.Vector2(across,entryVelocity.y);
+  // Preserve the direction along the facade, including vertical and descending
+  // approaches. A head-on approach has no usable tangent: run upward instead
+  // of inventing an arbitrary left/right turn.
+  const tangentSpeed=wallMotion.length();
+  if(tangentSpeed<3) wallMotion.set(0,1);
+  else wallMotion.multiplyScalar(1/tangentSpeed);
+  const entrySpeed=THREE.MathUtils.clamp(tangentSpeed,11,22);
   P.state='climb';
   P.gliding=false;
   P.climbNormal=normal.clone();
   P.climbBuilding=building;
   P.wallRunAutoT=4;
-  P.wallRunDirection.set(Math.sign(across)||1,upward).normalize();
+  P.wallRunDirection.copy(wallMotion);
   P.wallRunEntrySpeed=entrySpeed;
   P.wallRunFromSwing=fromSwing;
   P.swingGroundPullT=0;
@@ -2898,8 +2900,9 @@ function beginTraversalWallRun(normal,building,incoming){
   P.swingGroundPullAnchors.left=null;
   P.swingGroundPullAnchors.right=null;
   P.wallRunMomentum=fromSwing?Math.max(entryVelocity.length(),P.swingPeakFlat,entrySpeed):0;
-  P.climbVisualAngle=Math.atan2(-P.wallRunDirection.x,P.wallRunDirection.y);
-  P.vel.set(0,0,0);
+  P.climbVisualAngle=Math.abs(wallMotion.x)>Math.abs(wallMotion.y)*0.72 ? -Math.sign(wallMotion.x)*Math.PI/2 : 0;
+  P.vel.copy(wallRight).multiplyScalar(wallMotion.x*entrySpeed);
+  P.vel.y=wallMotion.y*entrySpeed;
 }
 
 function resumeSwingFromWall(jumpBoost=false){
