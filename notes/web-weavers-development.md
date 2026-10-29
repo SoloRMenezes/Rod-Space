@@ -100,3 +100,11 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - All six smart-catch cases now pass a 90% first-frame speed-retention threshold in Chrome and native WebKit, with sampled initial speeds about 49.3 m/s. Existing full traversal checks, the 24 low-swing cases and focused Node checks pass. No page errors.
 - This verifies catch behavior, not universally good full swing arcs. One route still releases around obstructing geometry, and some higher routes remain in descent after three seconds. Continue longer drop/catch/arc/release tests and visual review of attachment choices.
 - Branch v23 contains both low-altitude recovery and high-drop attachment scoring. Installed app/native source remain v21; DMG remains v19 pending delivery of this checkpoint.
+
+## v23 delivery and slack-rope physics checkpoint
+- Delivered v23 to the installed app and temporary native source; app-served JS hash d13bb09ccfc655189ced6ec599a01a490a65578a39225ae9100a70dd121938b2. Installed-origin native high-catch checks passed. Backed up prior installed v21 files.
+- Refreshed the private DMG to v23. Checksum validation, read-only mounted app signature and enclosed JS hash passed. Installed and staged DMG hashes match db3426add5dc050b8510ce0d3edc49cbf8839705ecad5b270cf8be3cca03f828. Original installer backup remains preserved.
+- Extended high-drop traces to eight seconds. Found automatic tangent steering redirected a slack fall sideways into a facade (x velocity reached ~20 m/s without input). Swing steering now starts when the predicted step reaches rope tension; while slack, ordinary air input applies. No-input falling velocity is left alone.
+- All six full-arc cases now reach positive swing ascent above 5 m/s, compared with one former route never ascending. Deep slack falls retain zero sideways drift in the early sample. Chrome and native full-arc checks, 24 low-swing cases, existing traversal tests and Node checks pass. No page errors.
+- These results do not eliminate later facade collisions or guarantee sustained speed on every route. Next investigate ascent velocity clipping and useful attachment geometry over the full arc, not just initial catch retention.
+- Branch v24 has slack-rope steering fix. Installed app/native source and DMG remain verified v23 until the next delivery checkpoint.

@@ -3838,7 +3838,11 @@ function stepPlayer(dt,visualDt=dt){
       P.swingPeakRise=Math.max(P.swingPeakRise,P.vel.y);
     }
 
-    steerSwingVelocity(radial,mv,dt);
+    // A slack strand cannot redirect falling momentum. Use ordinary air input
+    // until the next step reaches the rope radius, then steer along the arc.
+    const nextRopeDistance=P.pos.clone().addScaledVector(P.vel,dt).distanceTo(constraint.anchor);
+    if(nextRopeDistance>=constraint.length-0.05) steerSwingVelocity(radial,mv,dt);
+    else if(mv.lengthSq()>0.001) P.vel.addScaledVector(mv,AIR_CONTROL*dt);
 
     // As the bottom of the arc approaches a surface, reel the strand in
     // gradually. The shorter radius pulls the player upward through the rope

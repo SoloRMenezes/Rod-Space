@@ -1,4 +1,4 @@
-// Drop for 1.5 seconds, then use the normal smart-swing selector.
+// Drop for 1.5 seconds, then trace eight seconds using the normal smart-swing selector.
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const fs=require('fs');
 (async()=>{
@@ -19,7 +19,7 @@ const result=await page.evaluate(()=>{
   if(!attached){trials.push({altitude,heading,before,catchPosition,attached:false});continue;}
   const anchor=P.swingWebs[P.activeSwingHand].anchor.toArray();lastTraversal=true;keys[bindings.traversal]=true;P.traversalSwingStarted=true;
   const samples=[];
-  for(let i=0;i<180;i++){
+  for(let i=0;i<480;i++){
    const old=P.vel.clone();updatePlayer(1/60);updateCamera(1/60);
    if(i%15===0 || old.length()-P.vel.length()>5)samples.push({frame:i,state:P.state,position:P.pos.toArray(),velocity:P.vel.toArray(),speed:P.vel.length(),lost:old.length()-P.vel.length()});
   }
@@ -36,6 +36,11 @@ if(!process.env.BASELINE_SOURCE){
   const incoming=Math.hypot(...trial.before);
   assert.ok(trial.samples[0].speed>=incoming*.9,'assisted catch retains high-drop momentum');
   for(const sample of trial.samples)assert.ok(Number.isFinite(sample.speed),'trajectory remains finite');
+  assert.ok(trial.samples.some(sample=>sample.state==='swing' && sample.velocity[1]>5),'drop develops into an ascending swing arc');
+  if(trial.anchor[1]<trial.catchPosition[1]-40){
+   const early=trial.samples.find(sample=>sample.frame===15);
+   assert.ok(Math.abs(early.velocity[0])<.01,'slack rope does not invent sideways motion during a straight fall');
+  }
  }
 }
 })().catch(e=>{console.error(e);process.exit(1)});
