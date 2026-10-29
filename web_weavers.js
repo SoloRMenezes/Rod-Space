@@ -4265,6 +4265,31 @@ function pushPointOutOfBuildingVolume(point, clearance=0.45){
   return point;
 }
 
+const speedLineOverlay=document.getElementById('speedLines');
+let speedLineVisualIntensity=0;
+
+function speedLineIntensityForSpeed(speed){
+  if(!Number.isFinite(speed)||speed<=48)return 0;
+  const handoff=THREE.MathUtils.smoothstep(speed,48,58)*0.5;
+  const overdrive=THREE.MathUtils.clamp((speed-58)/42,0,1)*0.5;
+  return THREE.MathUtils.clamp(handoff+overdrive,0,1);
+}
+
+function updateSpeedLines(dt=1/60){
+  if(!speedLineOverlay)return;
+  const active=gameActive&&!paused;
+  if(!active){
+    speedLineVisualIntensity=0;
+  }else{
+    const safeDt=THREE.MathUtils.clamp(Number.isFinite(dt)?dt:1/60,0,0.1);
+    const target=speedLineIntensityForSpeed(P.vel.length());
+    speedLineVisualIntensity=THREE.MathUtils.lerp(speedLineVisualIntensity,target,1-Math.exp(-9*safeDt));
+  }
+  const intensity=THREE.MathUtils.clamp(speedLineVisualIntensity,0,1);
+  speedLineOverlay.style.setProperty('--speed-line-opacity',(intensity*0.88).toFixed(3));
+  speedLineOverlay.style.setProperty('--speed-line-scale',(0.7+intensity*0.95).toFixed(3));
+}
+
 function updateCamera(dt=1/60){
   const firstPerson = cameraDistance <= 0.6;
   player.visible = !firstPerson;
@@ -4530,6 +4555,7 @@ function tick(){
     updateGroups(dt);
     updateProjectiles(dt);
   }
+  updateSpeedLines(dt);
   updateCamera(dt);
   if(cameraShakeT>0){
     cameraShakeT=Math.max(0,cameraShakeT-dt);

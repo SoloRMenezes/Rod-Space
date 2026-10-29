@@ -5,7 +5,7 @@ const fs=require('fs');
 const assert=require('node:assert/strict');
 (async()=>{
 const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});
-const page=await browser.newPage({viewport:{width:1280,height:800}});const errors=[];
+const page=await browser.newPage({viewport:{width:Number(process.env.VIEWPORT_WIDTH)||1280,height:Number(process.env.VIEWPORT_HEIGHT)||800}});const errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
 if(process.env.BASELINE_SOURCE) await page.route('**/web_weavers.js?*',r=>r.fulfill({body:fs.readFileSync(process.env.BASELINE_SOURCE,'utf8'),contentType:'application/javascript'}));
@@ -181,9 +181,45 @@ const result=await page.evaluate(()=>{
  raycaster.set(focus,offset.clone().normalize());raycaster.far=offset.length();
  const cameraBlocked=raycaster.intersectObjects(nearbyBuildingMeshes(focus,10),false).length>0;
  raycaster.far=Infinity;
- return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallContactChecks,wallEntryChecks,crawlJointClearance,crawlVisualOnly,crawlOffsetCleared,cosmeticSkins,independentSkeleton,rig:r15Ready};
+ const speedLineOverlay=document.getElementById('speedLines');
+ const savedActive=gameActive,savedPaused=paused,savedVelocity=P.vel.clone();
+ const speedLineCurve=[0,48,58,80,1e9,Number.NaN].map(speedLineIntensityForSpeed);
+ gameActive=false;paused=false;P.vel.set(80,0,0);updateSpeedLines(1/60);
+ const inactiveOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-opacity'));
+ gameActive=true;paused=false;updateSpeedLines(1/60);
+ const firstActiveOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-opacity'));
+ updateSpeedLines(1/60);
+ const secondActiveOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-opacity'));
+ const agedStreak=speedLineOverlay.querySelector('.speedStreak');
+ const agedAnimation=agedStreak.getAnimations()[0];
+ agedAnimation.currentTime=60000;
+ const agedTranslationBefore=new DOMMatrixReadOnly(getComputedStyle(agedStreak).transform).m42;
+ P.vel.set(79,0,0);updateSpeedLines(1/60);
+ const agedTranslationAfter=new DOMMatrixReadOnly(getComputedStyle(agedStreak).transform).m42;
+ const thresholdSamples=[];
+ for(const speed of [47.5,48.5,47.5,48.5,47.5,48.5]){
+   P.vel.set(speed,0,0);updateSpeedLines(1/60);
+   thresholdSamples.push(Number(speedLineOverlay.style.getPropertyValue('--speed-line-opacity')));
+ }
+ paused=true;updateSpeedLines(1/60);
+ const pausedOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-opacity'));
+ gameActive=savedActive;paused=savedPaused;P.vel.copy(savedVelocity);
+ const speedLines={
+   edges:speedLineOverlay.querySelectorAll('.speedEdge').length,
+   streaks:speedLineOverlay.querySelectorAll('.speedStreak').length,
+   curve:speedLineCurve,
+   inactiveOpacity,firstActiveOpacity,secondActiveOpacity,pausedOpacity,
+   agedTranslationBefore,agedTranslationAfter,thresholdSamples
+ };
+ return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallContactChecks,wallEntryChecks,crawlJointClearance,crawlVisualOnly,crawlOffsetCleared,cosmeticSkins,independentSkeleton,speedLines,rig:r15Ready};
 });
-if(process.env.SCREENSHOT_PATH) await page.screenshot({path:process.env.SCREENSHOT_PATH});
+if(process.env.SCREENSHOT_PATH){
+ await page.evaluate(()=>{
+  gameActive=true;paused=false;P.vel.set(80,0,0);
+  for(let i=0;i<30;i++)updateSpeedLines(1/60);
+ });
+ await page.screenshot({path:process.env.SCREENSHOT_PATH});
+}
 console.log(JSON.stringify({result,errors},null,2));await browser.close();
 if(!process.env.BASELINE_SOURCE){
  assert.deepEqual(errors,[]);
@@ -200,6 +236,17 @@ if(!process.env.BASELINE_SOURCE){
  for(const entry of result.wallEntryChecks)assert.ok(entry.alignment>.999 && entry.velocityAlignment>.999 && entry.speed>=11,'wall-run entry follows incoming wall-tangent motion');
  assert.ok(result.crawlJointClearance>0 && result.crawlVisualOnly && result.crawlOffsetCleared,'crawl joints stay outside the wall without changing physics or retaining an airborne offset');
  assert.ok(result.cosmeticSkins && result.independentSkeleton,'cosmetic skins and independent avatar bones');
+ assert.equal(result.speedLines.edges,4,'speed lines cover all four viewport edges');
+ assert.ok(result.speedLines.streaks>=24 && result.speedLines.streaks<=48,'speed lines use a fixed, modest streak count');
+ assert.deepEqual(result.speedLines.curve.slice(0,2),[0,0],'speed lines stay off through speed 48');
+ assert.ok(result.speedLines.curve[2]>0 && result.speedLines.curve[3]>result.speedLines.curve[2],'speed lines fade in at 58 and strengthen above it');
+ assert.equal(result.speedLines.curve[4],1,'speed-line intensity stays capped at extreme speed');
+ assert.equal(result.speedLines.curve[5],0,'invalid speed cannot show the overlay');
+ assert.equal(result.speedLines.inactiveOpacity,0,'speed lines stay hidden before gameplay');
+ assert.ok(result.speedLines.firstActiveOpacity>0 && result.speedLines.secondActiveOpacity>result.speedLines.firstActiveOpacity && result.speedLines.secondActiveOpacity<1,'active speed lines ramp smoothly instead of flashing on');
+ assert.ok(Math.abs(result.speedLines.agedTranslationAfter-result.speedLines.agedTranslationBefore)<0.1,'small speed changes preserve the phase of aged streak animations');
+ assert.ok(result.speedLines.thresholdSamples.every((value,index,samples)=>index===0||Math.abs(value-samples[index-1])<0.08),'speed lines remain subdued across repeated threshold crossings');
+ assert.equal(result.speedLines.pausedOpacity,0,'speed lines disappear while paused');
  for(const alignment of result.armChecks) assert.ok(alignment>.98,'both R15 shoulders reach toward their web');
  for(const release of result.releases){assert.deepEqual(release.immediate,release.before);assert.deepEqual(release.afterClamp,release.before);}
  assert.ok(result.chain?.attached && result.chain.reattached,'rapid held reattachment');
