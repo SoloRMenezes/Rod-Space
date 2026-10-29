@@ -3870,15 +3870,22 @@ function stepPlayer(dt,visualDt=dt){
       constraint=swingConstraint(activeWebs);
     }
     const beforeSwingMove = P.pos.clone();
-    const swingImpactVelocity=P.vel.clone();
     P.pos.addScaledVector(P.vel, dt);
     const constrainedWebs=[P.swingWebs.left,P.swingWebs.right].filter(web=>web.anchor);
     enforceSwingConstraint(constrainedWebs);
+    const swingImpactVelocity=P.vel.clone();
     const swingWall=resolveWallCollision(P.pos,beforeSwingMove);
     if(swingWall){
-      // Keep the arc moving past the facade instead of snapping into a wall-run.
-      // The collision resolver has already removed inward speed.
-      P.pos.addScaledVector(swingWall.normal,.08);
+      if(P.wallDetachT<=0 && mv.dot(swingWall.normal)<-0.35){
+        // Deliberately steering into a facade enters wall movement. The old
+        // strand is released so a later jump can queue a fresh visible catch.
+        releaseSwing(null,false);
+        P.traversalSwingStarted=false;
+        beginTraversalWallRun(swingWall.normal,swingWall.building,swingImpactVelocity);
+      } else {
+        // A glancing hit keeps sliding instead of forcing an unwanted wall run.
+        P.pos.addScaledVector(swingWall.normal,.08);
+      }
     }
     // Numerical fallback only. Normal ground avoidance happens by reeling above;
     // this catches a large frame or a terrain edge without restoring the old

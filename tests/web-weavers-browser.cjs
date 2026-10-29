@@ -127,6 +127,25 @@ const result=await page.evaluate(()=>{
  P.cooldowns.swing=0;
  const swingAfterWallJump=trySwing('right','abSwingRight',{point:new THREE.Vector3((b.minX+b.maxX)/2,b.h,b.maxZ),length:30});
  releaseSwing();
+ const wallContactChecks=[];
+ for(const intentional of [false,true]){
+  releaseSwing();Object.keys(keys).forEach(k=>delete keys[k]);
+  P.pos.set((b.minX+b.maxX)/2,20,b.hitMaxZ+.65);P.vel.set(12,5,-20);P.state='air';P.cooldowns.swing=0;P.activeSwingHand=null;P.wallDetachT=0;yaw=Math.PI;pitch=0;updateCamera(1);
+  trySwing('left','abSwingLeft',{point:new THREE.Vector3((b.minX+b.maxX)/2,b.h,b.maxZ+.03),length:100});
+  keys[bindings.traversal]=true;lastTraversal=true;P.traversalSwingStarted=true;
+  if(intentional)keys[bindings.forward]=true;
+  let enteredWall=false;const contactStates=[];let entrySpeed=0;
+  for(let i=0;i<60;i++){stepPlayer(1/120,1/120);contactStates.push(P.state);if(P.state==='climb'){enteredWall=true;entrySpeed=P.vel.length();break;}}
+  const handFree=!P.activeSwingHand&&!P.swingWebs.left.anchor&&!P.swingWebs.right.anchor;
+  let recaught=false;
+  if(enteredWall){
+   for(let i=0;i<12;i++)updatePlayer(1/60);
+   P.jumpChargeT=.2;launchChargedJump();keys[bindings.forward]=false;
+   for(let i=0;i<60;i++){updatePlayer(1/60);updateCamera(1/60);if(P.state==='swing'){recaught=true;break;}}
+  }
+  wallContactChecks.push({intentional,enteredWall,handFree,recaught,contactStates,entrySpeed});
+ }
+ releaseSwing();Object.keys(keys).forEach(k=>delete keys[k]);lastTraversal=false;
  const wallEntryChecks=[];
  for(const incoming of [new THREE.Vector3(0,18,-25),new THREE.Vector3(18,0,-25),new THREE.Vector3(-18,-8,-25)]){
   P.state='air';
@@ -152,7 +171,7 @@ const result=await page.evaluate(()=>{
  raycaster.set(focus,offset.clone().normalize());raycaster.far=offset.length();
  const cameraBlocked=raycaster.intersectObjects(nearbyBuildingMeshes(focus,10),false).length>0;
  raycaster.far=Infinity;
- return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallEntryChecks,cosmeticSkins,independentSkeleton,rig:r15Ready};
+ return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallContactChecks,wallEntryChecks,cosmeticSkins,independentSkeleton,rig:r15Ready};
 });
 if(process.env.SCREENSHOT_PATH) await page.screenshot({path:process.env.SCREENSHOT_PATH});
 console.log(JSON.stringify({result,errors},null,2));await browser.close();
@@ -166,6 +185,8 @@ if(!process.env.BASELINE_SOURCE){
  assert.ok(result.wallRunning && result.wallJump,'wall run to charged jump');
  assert.ok(result.wallJumpCarriesSpeed && result.wallVelocityMatchesMotion,'wall velocity represents motion and survives a jump');
  assert.ok(result.wallJumpClearsWeb && result.swingAfterWallJump,'swing to wall to jump frees the hand for another catch');
+ assert.ok(!result.wallContactChecks[0].enteredWall,'glancing swing contact does not force a wall run');
+ assert.ok(result.wallContactChecks[1].enteredWall && result.wallContactChecks[1].handFree && result.wallContactChecks[1].recaught && result.wallContactChecks[1].entrySpeed>5 && !result.wallContactChecks[1].contactStates.includes('air'),'intentional swing-wall-jump-held catch completes');
  for(const entry of result.wallEntryChecks)assert.ok(entry.alignment>.999 && entry.velocityAlignment>.999 && entry.speed>=11,'wall-run entry follows incoming wall-tangent motion');
  assert.ok(result.cosmeticSkins && result.independentSkeleton,'cosmetic skins and independent avatar bones');
  for(const alignment of result.armChecks) assert.ok(alignment>.98,'both R15 shoulders reach toward their web');
