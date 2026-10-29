@@ -4288,7 +4288,6 @@ function updateSpeedLines(dt=1/60){
   const intensity=THREE.MathUtils.clamp(speedLineVisualIntensity,0,1);
   speedLineOverlay.style.setProperty('--speed-line-opacity',(intensity*0.88).toFixed(3));
   speedLineOverlay.style.setProperty('--speed-line-scale',(0.7+intensity*0.95).toFixed(3));
-  speedLineOverlay.style.setProperty('--speed-line-duration',`${(0.7-intensity*0.48).toFixed(3)}s`);
 }
 
 function updateCamera(dt=1/60){

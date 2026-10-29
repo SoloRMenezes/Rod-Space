@@ -190,6 +190,17 @@ const result=await page.evaluate(()=>{
  const firstActiveOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-opacity'));
  updateSpeedLines(1/60);
  const secondActiveOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-opacity'));
+ const agedStreak=speedLineOverlay.querySelector('.speedStreak');
+ const agedAnimation=agedStreak.getAnimations()[0];
+ agedAnimation.currentTime=60000;
+ const agedTranslationBefore=new DOMMatrixReadOnly(getComputedStyle(agedStreak).transform).m42;
+ P.vel.set(79,0,0);updateSpeedLines(1/60);
+ const agedTranslationAfter=new DOMMatrixReadOnly(getComputedStyle(agedStreak).transform).m42;
+ const thresholdSamples=[];
+ for(const speed of [47.5,48.5,47.5,48.5,47.5,48.5]){
+   P.vel.set(speed,0,0);updateSpeedLines(1/60);
+   thresholdSamples.push(Number(speedLineOverlay.style.getPropertyValue('--speed-line-opacity')));
+ }
  paused=true;updateSpeedLines(1/60);
  const pausedOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-opacity'));
  gameActive=savedActive;paused=savedPaused;P.vel.copy(savedVelocity);
@@ -197,7 +208,8 @@ const result=await page.evaluate(()=>{
    edges:speedLineOverlay.querySelectorAll('.speedEdge').length,
    streaks:speedLineOverlay.querySelectorAll('.speedStreak').length,
    curve:speedLineCurve,
-   inactiveOpacity,firstActiveOpacity,secondActiveOpacity,pausedOpacity
+   inactiveOpacity,firstActiveOpacity,secondActiveOpacity,pausedOpacity,
+   agedTranslationBefore,agedTranslationAfter,thresholdSamples
  };
  return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallContactChecks,wallEntryChecks,crawlJointClearance,crawlVisualOnly,crawlOffsetCleared,cosmeticSkins,independentSkeleton,speedLines,rig:r15Ready};
 });
@@ -232,6 +244,8 @@ if(!process.env.BASELINE_SOURCE){
  assert.equal(result.speedLines.curve[5],0,'invalid speed cannot show the overlay');
  assert.equal(result.speedLines.inactiveOpacity,0,'speed lines stay hidden before gameplay');
  assert.ok(result.speedLines.firstActiveOpacity>0 && result.speedLines.secondActiveOpacity>result.speedLines.firstActiveOpacity && result.speedLines.secondActiveOpacity<1,'active speed lines ramp smoothly instead of flashing on');
+ assert.ok(Math.abs(result.speedLines.agedTranslationAfter-result.speedLines.agedTranslationBefore)<0.1,'small speed changes preserve the phase of aged streak animations');
+ assert.ok(result.speedLines.thresholdSamples.every((value,index,samples)=>index===0||Math.abs(value-samples[index-1])<0.08),'speed lines remain subdued across repeated threshold crossings');
  assert.equal(result.speedLines.pausedOpacity,0,'speed lines disappear while paused');
  for(const alignment of result.armChecks) assert.ok(alignment>.98,'both R15 shoulders reach toward their web');
  for(const release of result.releases){assert.deepEqual(release.immediate,release.before);assert.deepEqual(release.afterClamp,release.before);}
