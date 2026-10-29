@@ -92,6 +92,56 @@ html,body{margin:0;padding:0;overflow:hidden;background:#0a0f1e;font-family:Aria
   #hud{position:fixed;inset:0;pointer-events:none;font-weight:800;color:#111;display:none;}
   #hud *{box-sizing:border-box;}
 
+  #speedLines{
+    --speed-line-opacity:0;
+    --speed-line-scale:.7;
+    --speed-line-duration:.7s;
+    position:absolute;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    pointer-events:none;
+    opacity:var(--speed-line-opacity);
+    mix-blend-mode:screen;
+    filter:drop-shadow(0 0 3px rgba(255,255,255,.7));
+    will-change:opacity;
+  }
+  .speedEdge{position:absolute;overflow:hidden;pointer-events:none;}
+  .speedEdge.top,.speedEdge.bottom{left:0;width:100%;height:min(23vh,210px);}
+  .speedEdge.left,.speedEdge.right{top:0;width:min(21vw,210px);height:100%;}
+  .speedEdge.top{top:0}.speedEdge.right{right:0}.speedEdge.bottom{bottom:0}.speedEdge.left{left:0}
+  .speedStreak{
+    position:absolute;
+    display:block;
+    border-radius:999px;
+    animation-duration:var(--speed-line-duration);
+    animation-delay:var(--delay);
+    animation-timing-function:linear;
+    animation-iteration-count:infinite;
+    will-change:transform;
+  }
+  .speedEdge.top .speedStreak,.speedEdge.bottom .speedStreak{
+    left:var(--p);
+    width:2px;
+    height:var(--len);
+    transform:scaleY(var(--speed-line-scale));
+  }
+  .speedEdge.left .speedStreak,.speedEdge.right .speedStreak{
+    top:var(--p);
+    width:var(--len);
+    height:2px;
+    transform:scaleX(var(--speed-line-scale));
+  }
+  .speedEdge.top .speedStreak{bottom:-18%;background:linear-gradient(to top,transparent,rgba(255,255,255,.75) 45%,#fff);animation-name:speedLineTop;}
+  .speedEdge.bottom .speedStreak{top:-18%;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.75) 45%,#fff);animation-name:speedLineBottom;}
+  .speedEdge.left .speedStreak{right:-18%;background:linear-gradient(to left,transparent,rgba(255,255,255,.75) 45%,#fff);animation-name:speedLineLeft;}
+  .speedEdge.right .speedStreak{left:-18%;background:linear-gradient(to right,transparent,rgba(255,255,255,.75) 45%,#fff);animation-name:speedLineRight;}
+  @keyframes speedLineTop{from{transform:translateY(0) scaleY(var(--speed-line-scale))}to{transform:translateY(-30vh) scaleY(var(--speed-line-scale))}}
+  @keyframes speedLineBottom{from{transform:translateY(0) scaleY(var(--speed-line-scale))}to{transform:translateY(30vh) scaleY(var(--speed-line-scale))}}
+  @keyframes speedLineLeft{from{transform:translateX(0) scaleX(var(--speed-line-scale))}to{transform:translateX(-28vw) scaleX(var(--speed-line-scale))}}
+  @keyframes speedLineRight{from{transform:translateX(0) scaleX(var(--speed-line-scale))}to{transform:translateX(28vw) scaleX(var(--speed-line-scale))}}
+  @media(prefers-reduced-motion:reduce){.speedStreak{animation-play-state:paused;}}
+
   #healthWrap{position:absolute;top:16px;left:16px;width:280px;}
   #healthLabel{background:#e8232a;color:#fff;padding:4px 10px;display:inline-block;
     border:3px solid #111;border-radius:6px 6px 0 0;font-size:13px;letter-spacing:1px;
