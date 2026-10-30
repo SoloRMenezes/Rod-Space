@@ -141,3 +141,7 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - v28 is installed in the native source and local app. The installed-origin WKWebView traversal suite passes, including crawl joint clearance, and the app serves the same game JS as the branch. The app bundle retains newer speed-line CSS/assets already present locally; those files are not part of this branch.
 - Added a Chrome measurement for real R15 wrist joints during a vertical wall run. Before adjustment, a wrist entered the facade by 0.334 m. Reduced the arm swing arc and moved only the visual rig 0.2 m away during vertical wall runs; the minimum tested wrist clearance is now 0.109 m. Physical position and velocity remain unchanged.
 - v29 regression: focused traversal checks and full Chrome scenario pass. The 24-route low-swing and six-route high-drop Chrome matrices pass. Next assess the full hand/foot contact pose and side-run spacing visually.
+
+## v29 native delivery
+- Commit 373b7bf was pushed to the draft PR. Native source, signed installed app, app-served JS and refreshed DMG now share the v29 Web Weavers code hash edf98360adf48fe76ecb16f37aa3e31812cc35b5cd163f73a68e4c13a3e7cd9f.
+- Installed-origin WKWebView checks pass: crawl contact clearance, wall catch, no blocked strands, no page errors. App and mounted DMG signatures pass; DMG checksum verifies. Preserved newer local speed-line CSS/assets outside this branch. Remaining priority: side wall-run arm spacing and extended hands-on feel/performance review.
