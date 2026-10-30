@@ -27,7 +27,7 @@ const SETTINGS_KEY = 'webSlingerPrototypeSettings';
 const keys = {};
 let listeningFor = null;
 let running = true;       // Ctrl toggles this
-let shiftLocked = false;  // Shift toggles this
+let shiftLocked = false;
 let paused = true;
 let gameActive = false;
 let debugOn = false;
@@ -74,6 +74,7 @@ const missions=[
   {name:'CLEAR THE BLOCKS',text:'Clear 2 gangs',stat:'gangs',step:2,reward:100},
 ];
 let missionStart=0;
+let lastSwingMissionBucket=-1;
 function currentMission(){return missions[Math.floor(progress.missionIndex)%missions.length];}
 function updateMissionUI(){
   const m=currentMission(),value=Math.max(0,progress[m.stat]-missionStart),ratio=Math.min(1,value/m.step);
@@ -175,7 +176,7 @@ function setShiftLock(on){
   if(cameraDistance<=0.6){
     shiftLocked=false;
     firstPersonAutoLock=true;
-    if(gameActive && !paused && document.pointerLockElement!==canvas) canvas.requestPointerLock();
+    if(gameActive && !paused) requestMouseLock();
     return;
   }
   firstPersonAutoLock=false;
@@ -183,21 +184,21 @@ function setShiftLock(on){
   cameraCollisionDistance=null;
   if(on){
     pitch=THREE.MathUtils.clamp(pitch,-0.55,0.65);
-    canvas.requestPointerLock();
+    requestMouseLock();
     document.getElementById('lockHint').style.display='none';
   }
-  else if(document.pointerLockElement===canvas) document.exitPointerLock();
+  else releaseMouseLock();
 }
 function togglePause(){
   if(!gameActive) return;
   if(document.getElementById('deathOverlay').style.display==='flex') return;
   paused = !paused;
   document.getElementById('pauseOverlay').style.display = paused?'flex':'none';
-  if(paused && document.pointerLockElement===canvas) document.exitPointerLock();
+  if(paused) releaseMouseLock();
   if(paused) clearHeldInputs();
   else if(cameraDistance<=0.6){
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   }
 }
 function adjustCameraZoom(delta, persist=false){
@@ -207,10 +208,10 @@ function adjustCameraZoom(delta, persist=false){
   if(gameActive && !paused && isFirstPerson && !wasFirstPerson){
     shiftLocked=false;
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   } else if(wasFirstPerson && !isFirstPerson && firstPersonAutoLock){
     firstPersonAutoLock=false;
-    if(document.pointerLockElement===canvas) document.exitPointerLock();
+    releaseMouseLock();
   }
   if(persist) saveSettings();
 }
@@ -507,7 +508,7 @@ function startGame(){
   clearHeldInputs();
   if(cameraDistance<=0.6){
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   }
 }
 
@@ -522,7 +523,7 @@ function showStartScreen(){
   document.getElementById('gameCanvas').style.visibility='hidden';
   document.getElementById('startScreen').style.display='flex';
   closeSkins();
-  if(document.pointerLockElement===canvas) document.exitPointerLock();
+  releaseMouseLock();
   firstPersonAutoLock=false;
   shiftLocked=false;
   clearHeldInputs();
@@ -535,6 +536,7 @@ document.getElementById('btnDeathMainMenu').onclick=showStartScreen;
 function resetDefeatedPlayer(){
   P.pos.copy(PLAYER_SPAWN);
   P.vel.set(0,0,0);
+  cameraLead.set(0,0,0);
   P.hp=P.maxHp;
   P.invuln=1.5;
   P.state='ground';
@@ -562,6 +564,7 @@ function resetDefeatedPlayer(){
   P.jumpCharging=false;
   P.diving=false;
   P.swingHistoryT=0;
+  P.swingReleaseHand=null;
   P.quickRecoveryT=0;
   P.recoveryRollT=0;
   P.recoveryLaunchPending=false;
@@ -608,14 +611,14 @@ function respawnPlayer(){
   flashMsg('BACK ON PATROL');
   if(cameraDistance<=0.6){
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   }
 }
 
 function showDeathScreen(){
   paused=true;
   document.getElementById('deathOverlay').style.display='flex';
-  if(document.pointerLockElement===canvas) document.exitPointerLock();
+  releaseMouseLock();
   shiftLocked=false;
   firstPersonAutoLock=false;
   clearHeldInputs();
@@ -630,6 +633,25 @@ document.getElementById('btnRespawn').onclick=respawnPlayer;
 const canvas = document.getElementById('gameCanvas');
 let yaw = 0, pitch = -0.15;
 let cursorClientX=innerWidth*0.5, cursorClientY=innerHeight*0.5;
+const nativeMouseHandler=window.webkit?.messageHandlers?.rodSpaceControls;
+const hasNativeMouse=Boolean(window.__rodSpaceMacApp&&nativeMouseHandler);
+function requestMouseLock(){
+  if(hasNativeMouse)nativeMouseHandler.postMessage({type:'mouseLock',enabled:true});
+  else if(document.pointerLockElement!==canvas)canvas.requestPointerLock?.().catch?.(()=>{});
+}
+function releaseMouseLock(){
+  if(hasNativeMouse)nativeMouseHandler.postMessage({type:'mouseLock',enabled:false});
+  else if(document.pointerLockElement===canvas)document.exitPointerLock?.();
+}
+function applyLookDelta(dx,dy){
+  if(!gameActive||paused)return;
+  const firstPersonLook=cameraDistance<=0.6;
+  if(!mouseDown[2]&&!shiftLocked&&!firstPersonLook)return;
+  const lookRate=0.0028*mouseSensitivity;
+  yaw-=dx*lookRate;
+  pitch=THREE.MathUtils.clamp(pitch-dy*lookRate,-1.52,1.52);
+}
+window.__rodSpaceNativeMouse={move:applyLookDelta};
 
 function aimScreenPoint(){
   // Every aimed action follows the over-shoulder reticle. The old free-cursor
@@ -637,27 +659,19 @@ function aimScreenPoint(){
   return {x:0,y:0};
 }
 document.addEventListener('pointerlockchange', ()=>{
-  if(document.pointerLockElement!==canvas) shiftLocked = false;
+  if(!hasNativeMouse&&document.pointerLockElement!==canvas) shiftLocked = false;
 });
 document.addEventListener('mousemove', e=>{
   cursorClientX=e.clientX;
   cursorClientY=e.clientY;
-  if(!gameActive || paused) return;
-  const firstPersonLook=cameraDistance<=0.6;
-  if(!mouseDown[2] && !shiftLocked && !firstPersonLook) return;
-  const lookRate = 0.0028 * mouseSensitivity;
-  yaw -= e.movementX*lookRate;
-  pitch -= e.movementY*lookRate;
-  // Nearly full vertical look: stop just short of straight up/down to avoid
-  // the camera flipping at the poles.
-  pitch = THREE.MathUtils.clamp(pitch,-1.52,1.52);
+  if(!hasNativeMouse)applyLookDelta(e.movementX,e.movementY);
 });
 
 // ---------------------------------------------------------------------------------------
 // THREE SCENE
 // ---------------------------------------------------------------------------------------
-const MAX_PIXEL_RATIO = 1.5;
-const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+const MAX_PIXEL_RATIO = window.__rodSpaceMacApp ? 1 : 1.5;
+const renderer = new THREE.WebGLRenderer({canvas, antialias:!window.__rodSpaceMacApp,powerPreference:'high-performance'});
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio,MAX_PIXEL_RATIO)*resolutionScale);
 
@@ -666,6 +680,8 @@ scene.background = new THREE.Color(0x8fd3ff);
 scene.fog = new THREE.Fog(0x8fd3ff, renderDistance*0.58, renderDistance);
 
 const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, renderDistance);
+const cameraLead = new THREE.Vector3();
+const cameraLeadTarget = new THREE.Vector3();
 function applyRenderDistance(){
   if(typeof camera==='undefined'||typeof scene==='undefined') return;
   camera.far=renderDistance;
@@ -1403,10 +1419,55 @@ function applyR15VisualBone(name,rot,amount){
   applyR15Bone(name,{x:-(rot.x||0),y:-(rot.y||0),z:-(rot.z||0)},amount);
 }
 
+function swingWebObstructed(from,to){
+  const midpoint=from.clone().add(to).multiplyScalar(0.5);
+  const radius=Math.hypot(to.x-from.x,to.z-from.z)*0.5+1;
+  const length=from.distanceTo(to);
+  if(length<0.2) return false;
+  // Segment/box tests use the same building bounds as targeting and collision.
+  // Exclude the endpoint margin so the attached face is not an obstruction.
+  for(const b of nearbyBuildings(midpoint,radius)){
+    let enter=0,exit=1-0.12/length;
+    for(const [start,delta,min,max] of [
+      [from.x,to.x-from.x,b.minX,b.maxX],
+      [from.y,to.y-from.y,0,b.h],
+      [from.z,to.z-from.z,b.minZ,b.maxZ]
+    ]){
+      if(Math.abs(delta)<1e-8){if(start<min || start>max){exit=-1;break;}continue;}
+      let near=(min-start)/delta,far=(max-start)/delta;
+      if(near>far)[near,far]=[far,near];
+      enter=Math.max(enter,near);exit=Math.min(exit,far);
+      if(enter>exit)break;
+    }
+    if(enter<=exit && exit>=0)return true;
+  }
+  return false;
+}
+
 function visibleWebHandWorld(gameHand,fallback){
   const exportedName=gameHand==='left'?r15VisualBone.leftHand:r15VisualBone.rightHand;
   const bone=r15Ready&&r15Bone(exportedName);
   return bone?bone.getWorldPosition(new THREE.Vector3()):fallback.getWorldPosition(new THREE.Vector3());
+}
+
+// Aim the authored shoulder/hand chain in its parent's coordinate system.
+// Using the actual joints avoids assumptions about this export's mirrored axes.
+const swingArmAim={from:new THREE.Vector3(),to:new THREE.Vector3(),rotation:new THREE.Quaternion()};
+function aimR15SwingArm(hand,dt){
+  const anchor=P.swingWebs[hand].anchor;
+  const shoulder=r15Bone(r15VisualBone[hand+'UpperArm']);
+  const wrist=r15Bone(r15VisualBone[hand+'Hand']);
+  if(!anchor || !shoulder || !wrist) return;
+  shoulder.updateWorldMatrix(true,true);
+  wrist.getWorldPosition(swingArmAim.from);
+  shoulder.parent.worldToLocal(swingArmAim.from).sub(shoulder.position);
+  swingArmAim.to.copy(anchor);
+  shoulder.parent.worldToLocal(swingArmAim.to).sub(shoulder.position);
+  if(swingArmAim.from.lengthSq()<1e-6 || swingArmAim.to.lengthSq()<1e-6) return;
+  swingArmAim.rotation.setFromUnitVectors(swingArmAim.from.normalize(),swingArmAim.to.normalize());
+  swingArmAim.rotation.multiply(shoulder.quaternion);
+  shoulder.quaternion.slerp(swingArmAim.rotation,1-Math.exp(-18*dt));
+  shoulder.updateMatrixWorld(true);
 }
 
 new THREE.GLTFLoader().load(
@@ -1475,6 +1536,7 @@ const P = {
   swingPeakFlat:0,
   swingRequireRelease:false,
   swingReleaseT:0,
+  swingReleaseHand:null,
   climbNormal: null,
   climbBuilding: null,
   climbVisualAngle:0,
@@ -1535,23 +1597,24 @@ const PLAYER_RADIUS = 0.55;
 const CLIMB_WALL_OFFSET = 0.3;
 const AIR_CONTROL = 18;
 const AIR_DRAG = 0.997;
-const AIR_MAX_SPEED = 50;
+// Air and swing share the traversal envelope: releasing must not brake a fast arc.
+const AIR_MAX_SPEED = 60;
 const GLIDE_MIN_SPEED = 11;
 const GLIDE_MAX_SPEED = 40;
 const GLIDE_TURN_RATE = 3.25;
 const GLIDE_MAX_SINK = 11;
 const SWING_MAX_SPEED = 72;
 const SWING_RELEASE_MAX_SPEED = 66;
-const SWING_RELEASE_CARRY = .99;
-const SWING_MAX_RISE_SPEED = 30;
+const SWING_RELEASE_CARRY = 1;
 const SWING_ENTRY_MAX_TIME = 0.55;
 const SWING_MIN_GROUND_CLEARANCE = 2.8;
 const SWING_GROUND_REEL_START = 13;
 const SWING_GROUND_REEL_RATE = 12;
-const SWING_LOOK_TURN_RATE = 0.9;
-const SWING_INPUT_TURN_RATE = 2.8;
-const SWING_FORWARD_ACCEL = 11;
-const SWING_POWERED_SPEED = 64;
+const SWING_LOOK_TURN_RATE = 1.7;
+const SWING_INPUT_TURN_RATE = 4.8;
+const SWING_FORWARD_ACCEL = 7;
+const SWING_POWERED_SPEED = 58;
+const SWING_ATTACH_REEL_RATE = 9;
 const SWING_GROUND_PULL_TIME = 0.2;
 const MAX_JUMP_CHARGE = 0.85;
 const CHARGED_JUMP_BONUS = 10;
@@ -1561,7 +1624,6 @@ const QUICK_RECOVERY_WINDOW = 0.85;
 const QUICK_RECOVERY_ROLL_TIME = 0.28;
 const MAX_TRAVERSAL_SPEED = 60;
 const MAX_FALL_SPEED = -58;
-const MAX_RISE_SPEED = 34;
 const KEY_ZOOM_SPEED = 8.5;
 const WING_MIN_CLEARANCE = 5;
 
@@ -1909,7 +1971,8 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       addUniqueAnchorCandidates(candidates,upperBuildingEdgeRayPoints(b,playerEye,fallDirection));
     }
 
-    for(const point of candidates){
+    for(const candidate of candidates){
+      const point=candidate.clone();
       if(excludePoint && point.distanceTo(excludePoint)<12) continue;
       const to=point.clone().sub(playerEye);
       const dist=to.length();
@@ -1938,7 +2001,12 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       const rayMidpoint=playerEye.clone().addScaledVector(to,0.5);
       const sightHits=raycaster.intersectObjects(nearbyBuildingMeshes(rayMidpoint,dist*0.5+8),false);
       raycaster.far=Infinity;
-      if(!belowCatch && (!sightHits.length || sightHits[0].object!==b.mesh || Math.abs(sightHits[0].distance-dist)>6)) continue;
+      if(!sightHits.length || sightHits[0].object!==b.mesh || Math.abs(sightHits[0].distance-dist)>6) continue;
+      // Roof candidates are slightly inset. From below, their sightline hits
+      // the facade first: attach there rather than drawing through the roof.
+      // Falling catches must pass the same visibility test as every other web.
+      point.copy(sightHits[0].point);
+      point.addScaledVector(to,-0.03/dist);
 
       // Keep the bottom of an assisted arc comfortably above the surface instead
       // of allowing a nearly ground-level rope that turns swinging into fast walking.
@@ -1948,12 +2016,17 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       const ropeLength=Math.max(SWING_MIN_RANGE,idealLength);
       const roofInterior=Math.min(point.x-b.minX,b.maxX-point.x,point.z-b.minZ,b.maxZ-point.z);
       const interiorBonus=Math.min(26,Math.max(0,roofInterior)*1.8);
-      // Once an anchor is safe and visible, distance dominates: Q/E should
-      // attach to the closest usable building on that side, not a taller but
-      // much farther building selected by a cinematic scoring bonus.
-      const score=belowCatch
+      // Favor nearby visible anchors for ordinary traversal. Fast-fall catches
+      // additionally account for the speed the rope constraint would discard.
+      // During a fast fall, a nearby overhead anchor can discard nearly all
+      // descending speed at the first taut frame. Prefer geometry that carries
+      // the incoming trajectory into the arc instead of ranking distance alone.
+      const catchRadial=P.pos.clone().sub(point).normalize();
+      const outwardSpeed=Math.max(0,P.vel.dot(catchRadial));
+      const catchLoss=highFalling?outwardSpeed*outwardSpeed/Math.max(1,P.vel.lengthSq()):0;
+      const score=(belowCatch
         ? 310-Math.abs(horizontalDist-fallSearchDistance)*3.2+forwardDot*190+Math.max(0,sideDot)*28+interiorBonus
-        : 1200-dist*9+forwardDot*(groundStart?240:110)+Math.max(0,sideDot)*3+interiorBonus;
+        : 1200-dist*9+forwardDot*(groundStart?240:110)+Math.max(0,sideDot)*3+interiorBonus)-catchLoss*2000;
       if(score>bestScore){ bestScore=score; best={point:point.clone(),length:ropeLength,score}; }
     }
   }
@@ -1968,16 +2041,27 @@ function findLookSwingAnchor(){
   if(!hit)return null;
   const b=hit.object.userData.buildingRecord;
   if(!b)return null;
-  const inset=0.7;
-  const point=new THREE.Vector3(
-    THREE.MathUtils.clamp(hit.point.x,b.minX+inset,b.maxX-inset),
-    b.h+0.08,
-    THREE.MathUtils.clamp(hit.point.z,b.minZ+inset,b.maxZ-inset)
-  );
-  const distance=P.pos.clone().add(new THREE.Vector3(0,1.35,0)).distanceTo(point);
+  // Aimed webs use the actual surface under the reticle. Promoting a wall
+  // hit to an inset rooftop could put the strand straight through the building.
+  const point=hit.point.clone();
+  if(hit.face) point.addScaledVector(hit.face.normal.clone().transformDirection(hit.object.matrixWorld),0.03);
+  const eye=P.pos.clone().add(new THREE.Vector3(0,1.35,0));
+  const to=point.clone().sub(eye),distance=to.length();
   if(distance<SWING_MIN_RANGE||distance>SWING_MAX_RANGE)return null;
+  const fallingCatch=P.vel.y<-10 && point.y<eye.y-2 && Math.hypot(to.x,to.z)>28;
+  if(!fallingCatch && (point.y<eye.y+4 || to.y/distance<0.35))return null;
+  raycaster.set(eye,to.multiplyScalar(1/distance));
+  raycaster.far=distance+0.1;
+  const visible=raycaster.intersectObjects(nearbyBuildingMeshes(eye,distance+2),false)[0];
+  raycaster.far=Infinity;
+  if(!visible || visible.object!==b.mesh || Math.abs(visible.distance-distance)>0.15)return null;
   const ground=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
-  const safeLength=Math.max(SWING_MIN_RANGE,Math.min(distance*0.96,point.y-ground-9));
+  // A lower aimed catch needs the same near-full rope as an assisted fall.
+  // The street-clearance cap is for overhead arcs; here it can collapse the
+  // requested radius and reel away the speed the player gained while diving.
+  const safeLength=fallingCatch
+    ? Math.max(SWING_MIN_RANGE,distance*0.96)
+    : Math.max(SWING_MIN_RANGE,Math.min(distance*0.96,point.y-ground-9));
   return {point,length:safeLength,score:Infinity,targeted:true};
 }
 
@@ -2523,7 +2607,8 @@ function trySwing(hand,abilId,chosenOverride=null){
     // corridor pivot made the body move around a different centre than the web.
     web.physicsPivot=web.anchor.clone();
     web.length=P.pos.distanceTo(web.physicsPivot);
-    web.targetLength=Math.min(web.length,chosen.length);
+    // Retain the native build's limited slack take-up, never a radius snap.
+    web.targetLength=Math.min(web.length,Math.max(chosen.length,web.length-10,SWING_MIN_RANGE));
     web.auto=false;
     P.swingGroundPullT=groundPull?SWING_GROUND_PULL_TIME:0;
     // One input creates one strand, including from the ground. A second fake
@@ -2532,6 +2617,7 @@ function trySwing(hand,abilId,chosenOverride=null){
     P.swingGroundPullAnchors.left=null;
     P.swingGroundPullAnchors.right=null;
     P.activeSwingHand=hand;
+    P.swingReleaseHand=null;
     // Prefer the opposite hand next time. The chooser only honours this when
     // both sides have a valid anchor, so a blocked side never prevents swinging.
     P.nextSwingHand=otherHand;
@@ -2568,18 +2654,38 @@ function trySmartSwing(){
   const left=findAssistedSwingAnchor('left',null);
   const right=findAssistedSwingAnchor('right',null);
   if(aimed){
+    // A lower reticle hit can sit below the rooftop directly under a dive.
+    // That rope cannot clear the roof, even at full length. If a visible
+    // assisted anchor rises above it, catch there so the fall can become an arc.
+    if(P.vel.y<-10 && aimed.point.y<P.pos.y-2){
+      const roof=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+      if(aimed.point.y<roof+SWING_GROUND_REEL_START){
+        const safeLeft=left && left.point.y>=roof+SWING_GROUND_REEL_START ? left : null;
+        const safeRight=right && right.point.y>=roof+SWING_GROUND_REEL_START ? right : null;
+        if(safeLeft || safeRight){
+          const hand=safeLeft && (!safeRight || safeLeft.score>=safeRight.score) ? 'left' : 'right';
+          return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',hand==='left'?safeLeft:safeRight);
+        }
+      }
+    }
     const toAim=aimed.point.clone().sub(P.pos);
     const cameraRight=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
-    let hand=toAim.dot(cameraRight)>=0?'left':'right';
-    if(left&&right)hand=P.nextSwingHand;
-    else if(left)hand='left';
-    else if(right)hand='right';
+    const aimSide=toAim.dot(cameraRight);
+    // Alternate near the reticle centre, but let a deliberate side aim use
+    // the hand already nearest that surface. Crossing the body with the
+    // opposite strand makes the shot read as attached to the wrong building.
+    let hand=aimSide>=0?'left':'right';
+    if(Math.abs(aimSide)<6 && left&&right)hand=P.nextSwingHand;
     return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',aimed);
   }
   if(!left && !right) return false;
   let hand=P.nextSwingHand;
   if(!left)hand='right';
   else if(!right)hand='left';
+  else if(P.vel.y<-10 && Math.abs(left.score-right.score)>20){
+    // Alternate hands only when both catches are comparably useful.
+    hand=left.score>right.score?'left':'right';
+  }
   const chosen=hand==='left'?left:right;
   return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',chosen);
 }
@@ -2603,9 +2709,9 @@ function cameraForward3D(){
 function giveSwingEntryMomentum(fromGround=false,groundClearance=Infinity){
   const forward = cameraForwardFlat();
   const flatSpeed = Math.hypot(P.vel.x,P.vel.z);
-  // Keep every incoming component. Low-speed starts get an additive nudge instead
-  // of having their velocity replaced, so diagonal momentum survives attachment.
-  if(flatSpeed<15){
+  // Only street-level starts need launch assistance. Mid-air catches preserve
+  // incoming velocity, including slow motion opposite the camera direction.
+  if(flatSpeed<15 && (fromGround || groundClearance<1.5)){
     const assist=15-flatSpeed;
     P.vel.x += forward.x*assist;
     P.vel.z += forward.z*assist;
@@ -2618,6 +2724,32 @@ function giveSwingEntryMomentum(fromGround=false,groundClearance=Infinity){
 function swingConstraint(activeWebs){
   const web=activeWebs[0];
   return {anchor:web.physicsPivot||web.anchor,length:web.length};
+}
+
+function steerSwingVelocity(radial,mv,dt){
+  // Steer within the rope's tangent plane. Rotating only X/Z creates
+  // outward velocity that the constraint immediately deletes, braking turns.
+  const radialSpeed=P.vel.dot(radial);
+  const tangent=P.vel.clone().addScaledVector(radial,-radialSpeed);
+  const tangentSpeed=tangent.length();
+  if(tangentSpeed>0.25){
+    const steerIntent=cameraForwardFlat();
+    if(mv.lengthSq()>0.001) steerIntent.multiplyScalar(0.35).addScaledVector(mv,0.9).normalize();
+    steerIntent.addScaledVector(radial,-steerIntent.dot(radial));
+    if(steerIntent.lengthSq()>0.001){
+      steerIntent.normalize();
+      tangent.multiplyScalar(1/tangentSpeed);
+      const angle=Math.atan2(radial.dot(tangent.clone().cross(steerIntent)),
+        THREE.MathUtils.clamp(tangent.dot(steerIntent),-1,1));
+      const turnRate=mv.lengthSq()>0.001?SWING_INPUT_TURN_RATE:SWING_LOOK_TURN_RATE;
+      tangent.applyAxisAngle(radial,angle*(1-Math.exp(-turnRate*dt)));
+      const phasePower=P.swingPhase==='descent'?THREE.MathUtils.clamp(-P.vel.y/18,0,1):0;
+      const pumpedSpeed=keys[bindings.forward] && tangentSpeed<SWING_POWERED_SPEED
+        ? Math.min(SWING_POWERED_SPEED,tangentSpeed+SWING_FORWARD_ACCEL*phasePower*dt)
+        : tangentSpeed;
+      P.vel.copy(tangent).multiplyScalar(pumpedSpeed).addScaledVector(radial,radialSpeed);
+    }
+  }
 }
 
 function enforceSwingConstraint(activeWebs){
@@ -2636,6 +2768,7 @@ function releaseSwing(hand=null,boost=true){
   const wallSwing=P.state==='climb' && P.wallRunFromSwing;
   if(P.state!=='swing' && !wallSwing) return;
   if(hand && P.activeSwingHand!==hand) return;
+  P.swingReleaseHand=P.activeSwingHand;
   P.swingWebs.left.anchor=null;
   P.swingWebs.right.anchor=null;
   P.swingWebs.left.physicsPivot=null;
@@ -2658,14 +2791,8 @@ function releaseSwing(hand=null,boost=true){
     P.swingRequireRelease=true;
     return;
   }
-  if(boost && P.swingAssisted){
-    // Manual release is immediate and momentum-preserving. A tiny upward carry
-    // keeps the animation readable without redirecting the player toward camera.
-    if(P.vel.y>-2) P.vel.y=Math.min(SWING_MAX_RISE_SPEED,P.vel.y+1.25);
-    P.vel.x*=SWING_RELEASE_CARRY;
-    P.vel.z*=SWING_RELEASE_CARRY;
-    limitHorizontalSpeed(SWING_RELEASE_MAX_SPEED);
-  }
+  // Letting go removes tension only. Space remains the deliberate jump action;
+  // ordinary release preserves the exact velocity at every point of the arc.
   P.state='air';
   P.swingAssisted=false;
   P.swingPhase='release';
@@ -2707,8 +2834,10 @@ function limitHorizontalSpeed(maxSpeed){
 }
 
 function clampPlayerVelocity(){
-  const riseCap=P.state==='swing'?SWING_MAX_RISE_SPEED:MAX_RISE_SPEED;
-  P.vel.y = THREE.MathUtils.clamp(P.vel.y, MAX_FALL_SPEED, riseCap);
+  // Upward travel shares the total speed envelope with horizontal motion.
+  // A separate rise cap deleted momentum gained through the downswing and
+  // changed the release direction even when total speed was already legal.
+  P.vel.y = Math.max(P.vel.y, MAX_FALL_SPEED);
   if(P.state === 'swing') limitHorizontalSpeed(SWING_MAX_SPEED);
   else if(P.state !== 'zip') limitHorizontalSpeed(AIR_MAX_SPEED);
   if(P.state!=='zip' && P.vel.length()>MAX_TRAVERSAL_SPEED) P.vel.setLength(MAX_TRAVERSAL_SPEED);
@@ -2730,6 +2859,12 @@ function tryZip(){
       pulse('abSwingRight');
       return true;
     }
+  }
+  // A zip replaces the current strand. Leaving its hand occupied prevented
+  // the next swing after an airborne zip or a cancelled zip.
+  if(P.state==='swing' || (P.state==='climb' && P.wallRunFromSwing)){
+    releaseSwing(null,false);
+    P.traversalSwingStarted=false;
   }
   zipTarget = zipEnemyTarget
     ? zipEnemyTarget.mesh.position.clone().add(new THREE.Vector3(0,0.8,0))
@@ -2771,19 +2906,21 @@ function beginTraversalWallRun(normal,building,incoming){
   comboChainMode=null;
 
   const wallRight=new THREE.Vector3().crossVectors(normal,new THREE.Vector3(0,1,0)).normalize();
-  let across=entryVelocity.dot(wallRight);
-  if(Math.abs(across)<3){
-    const cameraAcross=cameraForwardFlat().dot(wallRight);
-    across=(Math.abs(cameraAcross)>0.12?Math.sign(cameraAcross):1)*Math.max(7,Math.hypot(entryVelocity.x,entryVelocity.z)*0.45);
-  }
-  const entrySpeed=THREE.MathUtils.clamp(Math.max(11,entryVelocity.length()*0.72),11,22);
-  const upward=THREE.MathUtils.clamp(entryVelocity.y/Math.max(entrySpeed,1),0.18,0.72);
+  const across=entryVelocity.dot(wallRight);
+  const wallMotion=new THREE.Vector2(across,entryVelocity.y);
+  // Preserve the direction along the facade, including vertical and descending
+  // approaches. A head-on approach has no usable tangent: run upward instead
+  // of inventing an arbitrary left/right turn.
+  const tangentSpeed=wallMotion.length();
+  if(tangentSpeed<3) wallMotion.set(0,1);
+  else wallMotion.multiplyScalar(1/tangentSpeed);
+  const entrySpeed=THREE.MathUtils.clamp(tangentSpeed,11,22);
   P.state='climb';
   P.gliding=false;
   P.climbNormal=normal.clone();
   P.climbBuilding=building;
   P.wallRunAutoT=4;
-  P.wallRunDirection.set(Math.sign(across)||1,upward).normalize();
+  P.wallRunDirection.copy(wallMotion);
   P.wallRunEntrySpeed=entrySpeed;
   P.wallRunFromSwing=fromSwing;
   P.swingGroundPullT=0;
@@ -2791,8 +2928,9 @@ function beginTraversalWallRun(normal,building,incoming){
   P.swingGroundPullAnchors.left=null;
   P.swingGroundPullAnchors.right=null;
   P.wallRunMomentum=fromSwing?Math.max(entryVelocity.length(),P.swingPeakFlat,entrySpeed):0;
-  P.climbVisualAngle=Math.atan2(-P.wallRunDirection.x,P.wallRunDirection.y);
-  P.vel.set(0,0,0);
+  P.climbVisualAngle=Math.abs(wallMotion.x)>Math.abs(wallMotion.y)*0.72 ? -Math.sign(wallMotion.x)*Math.PI/2 : 0;
+  P.vel.copy(wallRight).multiplyScalar(wallMotion.x*entrySpeed);
+  P.vel.y=wallMotion.y*entrySpeed;
 }
 
 function resumeSwingFromWall(jumpBoost=false){
@@ -3022,373 +3160,260 @@ function blendPart(part, base, rot, posOffset, amt){
   part.position.z = THREE.MathUtils.lerp(part.position.z, base.pos.z + (posOffset.z||0), amt);
 }
 
+// Every player state supplies a complete target pose to the same R15 joints.
+// Root motion remains owned by physics; this only changes the visible rig.
 function animatePlayer(dt, moveVec){
-  const speedFlat = Math.hypot(P.vel.x, P.vel.z);
-  // Drive locomotion from real horizontal speed as well as input. This avoids
-  // a walk cycle continuing while stationary, or freezing during carried
-  // momentum after the player releases a key.
-  const moving = speedFlat > 0.8 && (P.state==='ground' || P.state==='air');
-  const wallMoving=P.state==='climb' && (moveVec.lengthSq()>0.04 || P.wallRunAutoT>0);
-  const locomoting=moving || wallMoving;
-  const locomotionSpeed=wallMoving
-    ? Math.max(running || P.wallRunAutoT>0 ? WALL_RUN_SPEED : WALL_CRAWL_SPEED,4)
-    : speedFlat;
-  // Walking used to cycle too slowly for the distance covered. Keep its feet
-  // moving briskly, while a sprint gets a slightly quicker, longer stride.
-  animClock += locomoting
-    ? dt*THREE.MathUtils.clamp(locomotionSpeed*(running?.94:.96),5.8,12.8)
-    : dt*.55;
-  const step = Math.sin(animClock);
-  const bob = moving ? Math.abs(step) * (running ? 0.08 : 0.045) : 0;
-  const amt = 1 - Math.pow(0.001, dt);
-  const wingPose=P.state==='air' && P.gliding;
-  // The physics root stays upright; only the visual rig rolls and pitches.
-  let rigPitch=wingPose?Math.PI/2+P.glidePitch*0.55:0;
-  if(P.diving) rigPitch=Math.PI/2.35;
-  if(P.state==='zip') rigPitch=-0.38;
-  if(P.recoveryRollT>0){
-    const rollProgress=1-P.recoveryRollT/QUICK_RECOVERY_ROLL_TIME;
-    rigPitch=-rollProgress*Math.PI*2;
-  }
-  if(P.state==='swing'){
-    const swingSpeed=Math.max(1,P.vel.length());
-    const fastSwing=THREE.MathUtils.clamp((swingSpeed-10)/28,0,1);
-    const riseRatio=THREE.MathUtils.clamp(P.vel.y/swingSpeed,-1,1);
-    // The reference keeps the torso visibly in the travel arc: almost horizontal
-    // at speed, nose-up on ascent and nose-down on descent.
-    rigPitch=-0.08-fastSwing*0.24-riseRatio*0.14;
-  }
-  if(P.wallFlipT>0) rigPitch=-(1-P.wallFlipT/0.65)*Math.PI*2;
-  playerRig.rotation.x=(P.wallFlipT>0||P.recoveryRollT>0) ? rigPitch : THREE.MathUtils.lerp(playerRig.rotation.x,rigPitch,amt);
-  // On a wall, rotate the whole visual rig so its head points along travel.
-  // Horizontal and swing-carried runs therefore read as a sideways sprint,
-  // while vertical runs treat the wall exactly like the floor.
-  let targetRigRoll=P.state==='climb'?(wallMoving?P.climbVisualAngle:0):(wingPose?-P.glideBank*0.72:0);
-  if(P.state==='swing'){
-    const visualRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
-    targetRigRoll=THREE.MathUtils.clamp(-P.vel.dot(visualRight)*0.014,-0.25,0.25);
-  }
-  const rollDelta=Math.atan2(Math.sin(targetRigRoll-playerRig.rotation.z),Math.cos(targetRigRoll-playerRig.rotation.z));
-  playerRig.rotation.z+=rollDelta*(1-Math.exp(-14*dt));
-
-  let torsoRot = {x:0, y:0, z:0};
-  let headRot = {x:0, y:0, z:0};
-  let armLRot = {x:0, y:0, z:0};
-  let armRRot = {x:0, y:0, z:0};
-  let legLRot = {x:0, y:0, z:0};
-  let legRRot = {x:0, y:0, z:0};
-  let torsoPos = {x:0, y:bob, z:0};
-  let headPos = {x:0, y:bob * 0.55, z:0};
-
-  const applyRunCycle=(isRunning)=>{
-    const stride=isRunning?0.9:0.5;
-    armLRot.x=step*stride*0.72;
-    armRRot.x=-step*stride*0.72;
-    legLRot.x=-step*stride;
-    legRRot.x=step*stride;
-    torsoRot.x=isRunning?-0.22:-0.07;
-    headRot.x=isRunning?0.07:0.025;
-    torsoRot.y=step*(isRunning?0.09:0.025);
-    torsoRot.z=THREE.MathUtils.clamp(step*(isRunning?0.105:0.04),-0.115,0.115);
-    headRot.z=-torsoRot.z*0.32;
-    torsoPos.x=isRunning?step*0.045:step*0.012;
-    // The arms still oppose the legs, but also move laterally with the torso
-    // instead of looking pinned to two perfectly straight rails.
-    armLRot.z=-0.045-step*(isRunning?0.12:0.035);
-    armRRot.z=0.045-step*(isRunning?0.12:0.035);
-  };
-
+  const clamp=THREE.MathUtils.clamp;
+  const flatSpeed=Math.hypot(P.vel.x,P.vel.z);
+  const speed=P.vel.length();
+  const onWall=P.state==='climb';
+  const wallRun=onWall && (running || P.wallRunAutoT>0);
+  const moving=P.state==='ground' ? flatSpeed>0.8 : onWall ? speed>0.2 : false;
+  const gaitSpeed=onWall?speed:flatSpeed;
+  animClock+=dt*(moving?clamp(gaitSpeed*0.82,4.2,15):0.8);
+  const step=Math.sin(animClock), otherStep=-step;
+  const blend=1-Math.exp(-13*dt);
+  const pose={torso:{x:0,y:0,z:0},head:{x:0,y:0,z:0},
+    leftArm:{x:0,y:0,z:-0.08},rightArm:{x:0,y:0,z:0.08},
+    leftLeg:{x:0,y:0,z:0},rightLeg:{x:0,y:0,z:0},
+    leftElbow:0.18,rightElbow:0.18,leftKnee:0.08,rightKnee:0.08,
+    rootY:0,rootZ:0,rootPitch:0,rootRoll:0};
+  const velRight=P.vel.x*Math.cos(P.facing)-P.vel.z*Math.sin(P.facing);
+  const lateral=clamp(velRight/28,-1,1);
+  const vertical=clamp(P.vel.y/24,-1,1);
+  const sway=Math.sin(animClock*1.7);
   if(P.state==='ground'){
     if(P.recoveryRollT>0){
-      torsoRot.x=0.55;
-      torsoPos.y=-0.28;
-      armLRot.x=armRRot.x=-0.85;
-      armLRot.z=-0.45; armRRot.z=0.45;
-      legLRot.x=legRRot.x=1.05;
-    } else if(P.jumpCharging){
-      const charge=THREE.MathUtils.clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
-      torsoPos.y=-0.08-charge*0.3;
-      torsoRot.x=0.08+charge*0.24;
-      headRot.x=-charge*0.08;
-      armLRot.x=armRRot.x=-0.58-charge*0.24;
-      armLRot.z=-0.42; armRRot.z=0.42;
-      legLRot.x=0.48+charge*0.72;
-      legRRot.x=0.32+charge*0.58;
-      legLRot.z=-0.18; legRRot.z=0.18;
-    } else if(P.landPoseT>0){
-      const land=P.landPoseT/0.22;
-      torsoPos.y=-0.2*land;
-      torsoRot.x=0.16*land;
-      armLRot.x=armRRot.x=-0.45*land;
-      legLRot.x=legRRot.x=0.58*land;
-      legLRot.z=-0.18*land; legRRot.z=0.18*land;
-    } else if(moving || speedFlat > 1){
-      applyRunCycle(running);
-    } else {
-      // Idle breathes as one balanced pose. Never alternate the limbs here;
-      // that reads as walking even when the physics body is stationary.
-      const breath=Math.sin(animClock*1.8);
-      torsoPos.y=breath*0.012;
-      headPos.y=breath*0.006;
-      armLRot.x=-0.025-breath*0.008;
-      armRRot.x=-0.025-breath*0.008;
-      armLRot.z=0;
-      armRRot.z=0;
+      const progress=1-P.recoveryRollT/QUICK_RECOVERY_ROLL_TIME;
+      pose.rootPitch=-progress*Math.PI*2;
+      pose.torso.x=0.3;pose.rootY=-0.23;
+      pose.leftArm.x=pose.rightArm.x=-0.8;
+      pose.leftLeg.x=pose.rightLeg.x=0.8;
+      pose.leftKnee=pose.rightKnee=0.85;
+    }else if(P.jumpCharging){
+      const charge=clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
+      pose.rootY=-0.12-charge*0.22;
+      pose.torso.x=0.13+charge*0.14;
+      pose.leftArm.x=pose.rightArm.x=-0.35-charge*0.2;
+      pose.leftArm.z=-0.24;pose.rightArm.z=0.24;
+      pose.leftLeg.x=pose.rightLeg.x=0.32+charge*0.22;
+      pose.leftKnee=pose.rightKnee=0.48+charge*0.4;
+    }else if(P.landPoseT>0){
+      const impact=clamp(P.landPoseT/0.22,0,1);
+      pose.rootY=-0.22*impact;pose.torso.x=0.27*impact;
+      pose.leftArm.x=-0.48*impact;pose.rightArm.x=-0.38*impact;
+      pose.leftLeg.x=pose.rightLeg.x=0.42*impact;
+      pose.leftKnee=pose.rightKnee=0.7*impact;
+    }else if(moving){
+      const sprint=running?1:0;
+      const stride=(0.48+sprint*0.36)*clamp(flatSpeed/(running?12:7),0.55,1.12);
+      pose.rootY=Math.abs(step)*(0.025+sprint*0.045);
+      pose.torso.x=-0.05-sprint*0.16;
+      pose.torso.y=step*(0.025+sprint*0.07);
+      pose.torso.z=step*(0.025+sprint*0.055)-lateral*0.08;
+      pose.head.y=-pose.torso.y*0.4;
+      pose.leftArm.x=step*stride*0.72;
+      pose.rightArm.x=otherStep*stride*0.72;
+      pose.leftElbow=0.38+sprint*0.18;
+      pose.rightElbow=pose.leftElbow;
+      pose.leftLeg.x=otherStep*stride;
+      pose.rightLeg.x=step*stride;
+      pose.leftKnee=0.1+Math.max(0,step)*0.55;
+      pose.rightKnee=0.1+Math.max(0,otherStep)*0.55;
+      pose.rootRoll=-lateral*0.08;
+    }else{
+      pose.rootY=sway*0.012;
+      pose.leftArm.x=pose.rightArm.x=-0.03+sway*0.012;
+      pose.head.x=-sway*0.012;
     }
-  } else if(P.state==='air'){
+  }else if(P.state==='swing'){
+    const entry=P.swingPhase==='entry';
+    const fast=clamp((speed-8)/38,0,1);
+    const pull=P.swingGroundPullT>0;
+    pose.rootPitch=-0.08-fast*0.23-vertical*0.2;
+    pose.rootRoll=clamp(-lateral*0.28,-0.28,0.28);
+    pose.torso.x=-0.1-vertical*0.18;
+    pose.torso.z=-lateral*0.28;
+    pose.head.x=0.1+vertical*0.08;
+    pose.leftArm.x=P.swingWebs.left.anchor||pull?-1.05:-0.2;
+    pose.rightArm.x=P.swingWebs.right.anchor||pull?-1.05:-0.2;
+    pose.leftArm.z=P.swingWebs.left.anchor||pull?-0.8:-0.32;
+    pose.rightArm.z=P.swingWebs.right.anchor||pull?0.8:0.32;
+    pose.leftElbow=P.swingWebs.left.anchor||pull?0.1:0.72;
+    pose.rightElbow=P.swingWebs.right.anchor||pull?0.1:0.72;
+    // A long, asymmetric trail reads as velocity; climbing the arc folds the knees.
+    const tuck=clamp((vertical+0.15)*0.75,0,0.8);
+    pose.leftLeg.x=(entry?0.58:0.38)+fast*0.18+tuck*0.3;
+    pose.rightLeg.x=(entry?-0.18:-0.32)+fast*0.12+tuck*0.16;
+    pose.leftLeg.z=-0.25-lateral*0.12;
+    pose.rightLeg.z=0.19-lateral*0.12;
+    pose.leftKnee=0.58+tuck*0.34;
+    pose.rightKnee=0.2+tuck*0.24;
+    pose.torso.y=P.activeSwingHand==='left'?-0.1:0.1;
+  }else if(P.state==='air'){
     if(P.diving){
-      armLRot.x=armRRot.x=0.82;
-      armLRot.z=-0.2; armRRot.z=0.2;
-      legLRot.x=-0.2; legRRot.x=0.12;
-      legLRot.z=-0.08; legRRot.z=0.08;
-      torsoRot.x=-0.28;
-      headRot.x=0.28;
-    } else if(P.swingReleaseT>0 && !P.gliding){
-      const release=Math.sin((P.swingReleaseT/0.35)*Math.PI);
-      armLRot.x=-0.75-release*0.45;
-      armRRot.x=-0.75-release*0.45;
-      armLRot.z=0.7+release*0.25;
-      armRRot.z=-0.7-release*0.25;
-      legLRot.x=0.65;
-      legRRot.x=0.25;
-      legLRot.z=0.18;
-      legRRot.z=-0.18;
-      torsoRot.x=-0.18;
-    } else if(P.gliding){
-      const flutter=Math.sin(animClock*9)*0.04;
-      armLRot.x=0.38+P.glidePitch*0.12;
-      armRRot.x=0.38+P.glidePitch*0.12;
-      armLRot.z=-0.38+flutter;
-      armRRot.z=0.38-flutter;
-      legLRot.x=-0.08-P.glidePitch*0.12;
-      legRRot.x=0.08-P.glidePitch*0.12;
-      legLRot.z=-0.5; legRRot.z=0.5;
-      torsoRot.x=-0.1;
-      headRot.x=0.18;
-    } else if(P.vel.y>1.5 || P.jumpPoseT>0){
-      // Compact superhero rise from the reference: both arms balance the body
-      // while one knee leads, rather than a stiff one-arm salute.
-      const rise=THREE.MathUtils.clamp(P.vel.y/13.5,0,1);
-      armLRot.x=-0.24-rise*0.18; armRRot.x=-0.1-rise*0.12;
-      armLRot.z=-0.62; armRRot.z=0.62;
-      legLRot.x=0.9; legRRot.x=0.2;
-      legLRot.z=-0.18; legRRot.z=0.14;
-      torsoRot.x=-0.18;
-    } else {
-      // A compact controlled fall: elbows stay bent beside the torso and the
-      // legs trail unevenly. The old near-horizontal arms read as a rigid T-pose.
-      const fall=THREE.MathUtils.clamp(-P.vel.y/18,0,1);
-      armLRot.x=0.28+fall*0.34; armRRot.x=0.18+fall*0.28;
-      armLRot.z=-0.34-fall*0.08; armRRot.z=0.34+fall*0.08;
-      legLRot.x=0.42+fall*0.18; legRRot.x=-0.08+fall*0.1;
-      legLRot.z=-0.16; legRRot.z=0.12;
-      torsoRot.x=-0.1-fall*0.12;
-      headRot.x=0.1+fall*0.08;
+      pose.rootPitch=1.13;pose.rootRoll=-lateral*0.12;
+      pose.torso.x=-0.16;pose.head.x=0.19;
+      pose.leftArm.x=pose.rightArm.x=0.72;
+      pose.leftArm.z=-0.18;pose.rightArm.z=0.18;
+      pose.leftElbow=pose.rightElbow=0.12;
+      pose.leftLeg.x=-0.1;pose.rightLeg.x=0.08;
+      pose.leftKnee=pose.rightKnee=0.07;
+    }else if(P.gliding){
+      pose.rootPitch=Math.PI/2+P.glidePitch*0.48;
+      pose.rootRoll=-P.glideBank*0.6;
+      pose.torso.x=-0.08;pose.head.x=0.13;
+      pose.leftArm.x=pose.rightArm.x=0.27;
+      pose.leftArm.z=-0.5;pose.rightArm.z=0.5;
+      pose.leftElbow=pose.rightElbow=0.2;
+      pose.leftLeg.x=-0.08;pose.rightLeg.x=0.08;
+      pose.leftLeg.z=-0.25;pose.rightLeg.z=0.25;
+    }else if(P.swingReleaseT>0){
+      const fade=clamp(P.swingReleaseT/0.35,0,1);
+      const left=P.swingReleaseHand==='left';
+      pose.rootPitch=-0.17-vertical*0.18;
+      pose.rootRoll=-lateral*0.17;
+      pose.torso.x=-0.15;pose.torso.y=left?-0.12:0.12;
+      pose.leftArm.x=left?-1.2*fade:-0.2;
+      pose.rightArm.x=left?-0.2:-1.2*fade;
+      pose.leftArm.z=left?-0.65:-0.27;
+      pose.rightArm.z=left?0.27:0.65;
+      pose.leftElbow=left?0.16:0.55;
+      pose.rightElbow=left?0.55:0.16;
+      pose.leftLeg.x=0.22+vertical*0.13;
+      pose.rightLeg.x=-0.12;
+      pose.leftKnee=0.34;pose.rightKnee=0.18;
+    }else if(P.vel.y>1.5 || P.jumpPoseT>0){
+      const rise=clamp(P.vel.y/20,0,1);
+      pose.rootPitch=-0.16-rise*0.1;
+      pose.torso.x=-0.12;pose.head.x=0.07;
+      pose.leftArm.x=-0.25-rise*0.18;
+      pose.rightArm.x=-0.12-rise*0.12;
+      pose.leftArm.z=-0.38;pose.rightArm.z=0.34;
+      pose.leftElbow=0.35;pose.rightElbow=0.42;
+      pose.leftLeg.x=0.45;pose.rightLeg.x=-0.04;
+      pose.leftKnee=0.72;pose.rightKnee=0.23;
+    }else{
+      const fall=clamp(-P.vel.y/28,0,1);
+      const clearance=P.pos.y-heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+      const prepare=clamp((9-clearance)/7,0,1)*fall;
+      pose.rootPitch=fall*0.18;pose.rootRoll=-lateral*0.12;
+      pose.torso.x=-0.1;pose.head.x=0.13;
+      pose.leftArm.x=0.18+fall*0.18;
+      pose.rightArm.x=0.12+fall*0.22;
+      pose.leftArm.z=-0.24;pose.rightArm.z=0.24;
+      pose.leftElbow=0.48+fall*0.18;
+      pose.rightElbow=0.48+fall*0.18;
+      pose.leftLeg.x=0.05+prepare*0.32;
+      pose.rightLeg.x=-0.1+prepare*0.28;
+      pose.leftKnee=0.16+prepare*0.72;
+      pose.rightKnee=0.2+prepare*0.65;
     }
-  } else if(P.state==='swing'){
-    const leftAttached=!!P.swingWebs.left.anchor;
-    const rightAttached=!!P.swingWebs.right.anchor;
-    const groundPullPose=P.swingGroundPullT>0;
-    const entryPose=P.swingPhase==='entry';
-    const pullBack=Math.sin((1-P.swingGroundPullT/SWING_GROUND_PULL_TIME)*Math.PI)*0.65;
-    // The reference hangs from one shoulder with a bent reaching arm. Values
-    // beyond PI/2 made the imported R15 shoulder wrap behind the torso.
-    armLRot.x = groundPullPose ? -1.28+pullBack*.24 : (leftAttached ? -1.12 : -0.22);
-    armRRot.x = groundPullPose ? -1.28+pullBack*.24 : (rightAttached ? -1.12 : -0.22);
-    armLRot.z = groundPullPose ? -0.58 : (leftAttached ? -1.38 : -0.72);
-    armRRot.z = groundPullPose ? 0.58 : (rightAttached ? 1.38 : 0.72);
-    const swingKick=Math.sin(P.swingAge*5.5);
-    legLRot.x = entryPose ? 0.72 : 0.62+swingKick*0.16;
-    legRRot.x = entryPose ? 0.18 : 0.08-swingKick*0.18;
-    const facingRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
-    const lateralSpeed=P.vel.dot(facingRight);
-    const swingSideLean=THREE.MathUtils.clamp(-lateralSpeed*0.03,-0.52,0.52);
-    legLRot.z = (entryPose ? 0.18 : 0.08)+swingSideLean*0.9;
-    legRRot.z = (entryPose ? -0.18 : -0.08)+swingSideLean*0.9;
-    torsoRot.x = entryPose ? -0.18 : THREE.MathUtils.clamp(-P.vel.y*0.012,-0.28,0.2);
-    torsoRot.z = swingSideLean;
-    if(leftAttached!==rightAttached){
-      torsoRot.y=leftAttached?-0.16:0.16;
-      headRot.y=-torsoRot.y*0.45;
+  }else if(P.state==='zip'){
+    pose.rootPitch=-0.33;pose.rootRoll=-lateral*0.11;
+    pose.torso.x=-0.18;pose.head.x=0.12;
+    pose.leftArm.x=pose.rightArm.x=-1.1;
+    pose.leftArm.z=-0.28;pose.rightArm.z=0.28;
+    pose.leftElbow=pose.rightElbow=0.28;
+    pose.leftLeg.x=0.25;pose.rightLeg.x=-0.05;
+    pose.leftKnee=0.48;pose.rightKnee=0.32;
+  }else if(onWall){
+    const verticalRun=wallRun && Math.abs(P.wallRunDirection.y)>=Math.abs(P.wallRunDirection.x)*0.72;
+    pose.rootRoll=moving?P.climbVisualAngle:0;
+    pose.rootZ=wallRun?(verticalRun?-0.34:-0.12):-0.5;
+    if(wallRun && moving){
+      const stride=verticalRun?0.78:0.68;
+      const cycle=step*(verticalRun?(Math.sign(P.wallRunDirection.y)||1):1);
+      pose.torso.x=-0.16;
+      pose.torso.y=cycle*0.045;
+      pose.head.x=0.1;
+      pose.leftArm.x=cycle*stride*0.65;
+      pose.rightArm.x=-cycle*stride*0.65;
+      pose.leftElbow=pose.rightElbow=0.52;
+      pose.leftLeg.x=-cycle*stride;
+      pose.rightLeg.x=cycle*stride;
+      pose.leftKnee=0.2+Math.max(0,-cycle)*0.58;
+      pose.rightKnee=0.2+Math.max(0,cycle)*0.58;
+    }else if(moving){
+      pose.torso.x=-0.1;
+      pose.leftArm.x=-1.13+step*0.34;
+      pose.rightArm.x=-1.13-step*0.34;
+      pose.leftArm.z=-0.42;pose.rightArm.z=0.42;
+      pose.leftElbow=pose.rightElbow=0.42;
+      pose.leftLeg.x=-0.58-step*0.29;
+      pose.rightLeg.x=-0.58+step*0.29;
+      pose.leftLeg.z=-0.25;pose.rightLeg.z=0.25;
+      pose.leftKnee=0.4+Math.max(0,-step)*0.27;
+      pose.rightKnee=0.4+Math.max(0,step)*0.27;
+    }else{
+      pose.rootY=-0.05+sway*0.01;
+      pose.torso.x=-0.1;
+      pose.leftArm.x=-1.36;pose.rightArm.x=-1.3;
+      pose.leftArm.z=-0.25;pose.rightArm.z=0.25;
+      pose.leftElbow=pose.rightElbow=0.55;
+      pose.leftLeg.x=0.48;pose.rightLeg.x=0.55;
+      pose.leftKnee=pose.rightKnee=0.68;
     }
-  } else if(P.state==='zip'){
-    const zipFlutter=Math.sin(animClock*13)*0.12;
-    armLRot.x = -1.15;
-    armRRot.x = -1.08;
-    armLRot.z=-0.34; armRRot.z=0.34;
-    legLRot.x = 0.48+zipFlutter;
-    legRRot.x = 0.18-zipFlutter;
-    legLRot.z=-0.16; legRRot.z=0.16;
-    torsoRot.x = -0.28;
-    headRot.x=0.12;
-  } else if(P.state==='climb'){
-    const wallRunning=running || P.wallRunAutoT>0;
-    if(wallMoving && wallRunning){
-      // Wall-running uses the exact sprint cycle. The root faces along the
-      // wall and the complete rig is rolled onto it, so it reads as running on
-      // a sideways floor rather than pushing head-first into the facade.
-      applyRunCycle(true);
-      if(Math.abs(P.wallRunDirection.y)>=Math.abs(P.wallRunDirection.x)*0.72){
-        const verticalStep=step*(Math.sign(P.wallRunDirection.y)||1);
-        armLRot.x=verticalStep*0.78;
-        armRRot.x=-verticalStep*0.78;
-        legLRot.x=-verticalStep*1.02;
-        legRRot.x=verticalStep*1.02;
-        torsoRot.x=-0.28;
-        torsoRot.z=verticalStep*0.055;
-        headRot.x=0.11;
-      }
-    } else if(wallMoving){
-      const climb=Math.sin(animClock*(wallRunning?12:7));
-      const reach=wallRunning?0.58:0.38;
-      armLRot.x=-1.28+climb*reach;
-      armRRot.x=-1.28-climb*reach;
-      legLRot.x=-0.72-climb*reach;
-      legRRot.x=-0.72+climb*reach;
-      armLRot.z=-0.58; armRRot.z=0.58;
-      legLRot.z=-0.42; legRRot.z=0.42;
-      torsoRot.x=-0.14;
-    } else {
-      // Upright, relaxed four-point cling. Resetting the rig roll above keeps
-      // this pose from inheriting the last sideways run angle.
-      const clingBreath=Math.sin(animClock*1.6)*0.025;
-      armLRot.x=-1.42+clingBreath; armRRot.x=-1.32-clingBreath;
-      armLRot.z=-0.3; armRRot.z=0.3;
-      legLRot.x=0.64; legRRot.x=0.52;
-      legLRot.z=-0.26; legRRot.z=0.26;
-      torsoRot.x=-0.1;
-      torsoPos.y=-0.06+clingBreath;
-    }
-  } else if(P.state==='downed'){
-    torsoRot.x = 0.38;
-    headRot.x = -0.18;
-    armLRot.x = -0.85;
-    armRRot.x = -0.85;
-    armLRot.z = 0.32;
-    armRRot.z = -0.32;
-    legLRot.x = 1.0;
-    legRRot.x = 1.0;
-    legLRot.z = 0.2;
-    legRRot.z = -0.2;
-    torsoPos.y = -0.25;
+  }else if(P.state==='downed' || P.state==='defeated'){
+    pose.rootY=-0.22;
+    pose.torso.x=0.32;pose.torso.z=P.state==='defeated'?-1.4:0;
+    pose.leftArm.x=pose.rightArm.x=-0.75;
+    pose.leftLeg.x=pose.rightLeg.x=0.9;
+    pose.leftKnee=pose.rightKnee=0.72;
   }
-
+  if(P.wallFlipT>0)pose.rootPitch=-(1-P.wallFlipT/0.65)*Math.PI*2;
   if(P.meleeT>0 && P.state!=='downed' && P.state!=='defeated'){
-    const attackProgress=1-P.meleeT/0.34;
-    const strike=Math.sin(attackProgress*Math.PI);
-    const followThrough=Math.sin(Math.min(1,attackProgress*1.35)*Math.PI);
-    const rightPunch=P.meleeSide>0;
-    if(rightPunch){
-      armRRot.x=-0.82-strike*0.72;
-      armRRot.z=-0.08-strike*0.06;
-      armLRot.x=-0.92;
-      armLRot.z=-0.16;
-      torsoRot.y=-followThrough*0.18;
-    } else {
-      armLRot.x=-0.82-strike*0.72;
-      armLRot.z=0.08+strike*0.06;
-      armRRot.x=-0.92;
-      armRRot.z=0.16;
-      torsoRot.y=followThrough*0.18;
-    }
-    torsoRot.x=-0.12*strike;
+    const hit=Math.sin(clamp(1-P.meleeT/0.34,0,1)*Math.PI);
+    const right=P.meleeSide>0;
+    pose[right?'rightArm':'leftArm'].x=-0.95-hit*0.65;
+    pose[right?'leftArm':'rightArm'].x=-0.72;
+    pose[right?'rightElbow':'leftElbow']=0.95-hit*0.62;
+    pose.torso.y=(right?-1:1)*hit*0.22;
   }
-
   if(P.webshotPoseT>0 && P.state!=='downed' && P.state!=='defeated'){
-    const shot=Math.sin((1-P.webshotPoseT/0.34)*Math.PI);
-    armRRot.x=-1.58-shot*0.5; armRRot.z=-0.12;
-    armLRot.x=-0.5; armLRot.z=-0.42;
-    torsoRot.y=-0.2*shot; headRot.y=0.12*shot;
+    const shot=Math.sin(clamp(1-P.webshotPoseT/0.34,0,1)*Math.PI);
+    pose.rightArm.x=-1.3-shot*0.32;pose.rightElbow=0.14;
+    pose.leftArm.x=-0.42;pose.torso.y=-0.16*shot;
   }
-
   if(P.pullPoseT>0 && P.state!=='downed' && P.state!=='defeated'){
-    const pull=Math.sin((1-P.pullPoseT/0.5)*Math.PI);
-    armLRot.x=-2.25+pull*1.05; armRRot.x=-2.25+pull*1.05;
-    armLRot.z=-0.2; armRRot.z=0.2;
-    torsoRot.x=0.22*pull; torsoPos.z=-0.12*pull;
-    legLRot.x=-0.28*pull; legRRot.x=0.28*pull;
+    const pull=Math.sin(clamp(1-P.pullPoseT/0.5,0,1)*Math.PI);
+    pose.leftArm.x=pose.rightArm.x=-1.48+pull*0.55;
+    pose.leftElbow=pose.rightElbow=0.75;
+    pose.torso.x=0.18*pull;
   }
-
-  if(P.state==='defeated'){
-    torsoRot.z=-1.45;
-    headRot.z=-0.35;
-    armLRot.z=1.25;
-    armRRot.z=-1.25;
-    legLRot.z=0.45;
-    legRRot.z=-0.45;
-    torsoPos.y=-0.22;
-  }
-
   if(P.blocking){
-    // Compact boxing guard: shoulders narrow, elbows bent and hands at face
-    // height instead of both arms opening into a hug.
-    armLRot.x = -0.82; armRRot.x = -0.82;
-    armLRot.z = -0.18; armRRot.z = 0.18;
-    torsoRot.x=-0.15;
+    pose.leftArm.x=pose.rightArm.x=-0.82;
+    pose.leftArm.z=-0.18;pose.rightArm.z=0.18;
+    pose.leftElbow=pose.rightElbow=1.35;
   }
-
-  blendPart(torso, basePose.torso, torsoRot, torsoPos, amt);
-  blendPart(head, basePose.head, headRot, headPos, amt);
-  blendPart(armL, basePose.armL, armLRot, {x:0,y:bob,z:0}, amt);
-  blendPart(armR, basePose.armR, armRRot, {x:0,y:bob,z:0}, amt);
-  blendPart(legL, basePose.legL, legLRot, {x:0,y:bob*0.2,z:0}, amt);
-  blendPart(legR, basePose.legR, legRRot, {x:0,y:bob*0.2,z:0}, amt);
-
-  if(r15Ready){
-    // Drive the authored R15 joints from the same state poses. Elbows and knees
-    // receive secondary bends so the imported model does not move as four rigid rods.
-    applyR15Bone('UpperTorso',{x:-(torsoRot.x||0),y:torsoRot.y||0,z:torsoRot.z||0},amt);
-    applyR15Bone('Head',{x:-(headRot.x||0),y:headRot.y||0,z:headRot.z||0},amt);
-    applyR15VisualBone(r15VisualBone.leftUpperArm,armLRot,amt);
-    applyR15VisualBone(r15VisualBone.rightUpperArm,armRRot,amt);
-    applyR15VisualBone(r15VisualBone.leftUpperLeg,legLRot,amt);
-    applyR15VisualBone(r15VisualBone.rightUpperLeg,legRRot,amt);
-    const groundMoving=P.state==='ground' && speedFlat>0.8;
-    const falling=P.state==='air'&&!P.gliding&&!P.diving&&P.vel.y<=1.5&&P.swingReleaseT<=0;
-    let leftElbow=P.state==='swing'?0.58:P.state==='zip'?0.52:P.diving?0.18:falling?0.62:
-      P.jumpCharging?0.92:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:groundMoving?0.54:0.12;
-    let rightElbow=leftElbow;
-    if(P.state==='swing'){
-      const swingReachElbow=0.08;
-      const swingFreeElbow=0.78;
-      leftElbow=P.swingWebs.left.anchor?swingReachElbow:swingFreeElbow;
-      rightElbow=P.swingWebs.right.anchor?swingReachElbow:swingFreeElbow;
-      if(P.swingGroundPullT>0) leftElbow=rightElbow=0.16;
-    }
-    if(P.state==='climb'){
-      const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
-      leftElbow=rightElbow=wallMoving?0.3:0.56;
-    }
-    if(P.meleeT>0){
-      const attackProgress=1-P.meleeT/0.34;
-      const strike=Math.sin(attackProgress*Math.PI);
-      // Keep the striking elbow slightly bent at full extension. Straightening
-      // it completely was what made the old punch resemble a rigid salute.
-      const strikingElbow=THREE.MathUtils.lerp(1.12,0.28,strike);
-      if(P.meleeSide>0){ rightElbow=strikingElbow; leftElbow=1.18; }
-      else { leftElbow=strikingElbow; rightElbow=1.18; }
-    }
-    if(P.blocking) leftElbow=rightElbow=1.42;
-    let kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
-    let kneeR=THREE.MathUtils.clamp(Math.max(0,legRRot.x)*0.7+(P.state==='ground'?Math.max(0,step)*0.32:0),0,1.05);
-    if(P.state==='climb'){
-      const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
-      kneeL=kneeR=wallMoving?0.42:0.68;
-    }
-    if(P.jumpCharging){
-      const charge=THREE.MathUtils.clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
-      kneeL=0.62+charge*0.4;
-      kneeR=0.56+charge*0.4;
-    }
-    if(P.diving){ kneeL=0.18; kneeR=0.12; }
-    applyR15VisualBone(r15VisualBone.leftLowerArm,{x:-leftElbow,y:0,z:P.blocking?0.12:0},amt);
-    applyR15VisualBone(r15VisualBone.rightLowerArm,{x:-rightElbow,y:0,z:P.blocking?-0.12:0},amt);
-    applyR15VisualBone(r15VisualBone.leftHand,{x:0,y:0,z:P.state==='swing'?-0.18:0},amt);
-    applyR15VisualBone(r15VisualBone.rightHand,{x:0,y:0,z:P.state==='swing'?0.18:0},amt);
-    applyR15VisualBone(r15VisualBone.leftLowerLeg,{x:kneeL,y:0,z:0},amt);
-    applyR15VisualBone(r15VisualBone.rightLowerLeg,{x:kneeR,y:0,z:0},amt);
-    applyR15VisualBone(r15VisualBone.leftFoot,{x:-kneeL*0.35,y:0,z:0},amt);
-    applyR15VisualBone(r15VisualBone.rightFoot,{x:-kneeR*0.35,y:0,z:0},amt);
+  // Smooth the root and each joint toward one complete pose. The web shoulder
+  // is then aimed at the anchor; the strand starts at that animated hand.
+  playerRig.position.z=THREE.MathUtils.lerp(playerRig.position.z,pose.rootZ,blend);
+  playerRig.rotation.x=THREE.MathUtils.lerp(playerRig.rotation.x,pose.rootPitch,blend);
+  const rollDelta=Math.atan2(Math.sin(pose.rootRoll-playerRig.rotation.z),Math.cos(pose.rootRoll-playerRig.rotation.z));
+  playerRig.rotation.z+=rollDelta*blend;
+  const zero={x:0,y:0,z:0};
+  blendPart(torso,basePose.torso,pose.torso,{x:0,y:pose.rootY,z:0},blend);
+  blendPart(head,basePose.head,pose.head,zero,blend);
+  blendPart(armL,basePose.armL,pose.leftArm,zero,blend);
+  blendPart(armR,basePose.armR,pose.rightArm,zero,blend);
+  blendPart(legL,basePose.legL,pose.leftLeg,zero,blend);
+  blendPart(legR,basePose.legR,pose.rightLeg,zero,blend);
+  if(!r15Ready)return;
+  applyR15Bone('UpperTorso',{x:-pose.torso.x,y:pose.torso.y,z:pose.torso.z},blend);
+  applyR15Bone('Head',{x:-pose.head.x,y:pose.head.y,z:pose.head.z},blend);
+  for(const hand of ['left','right']){
+    if(P.state!=='swing' || !P.swingWebs[hand].anchor)
+      applyR15VisualBone(r15VisualBone[hand+'UpperArm'],pose[hand+'Arm'],blend);
+    applyR15VisualBone(r15VisualBone[hand+'LowerArm'],{x:-pose[hand+'Elbow'],y:0,z:0},blend);
+    applyR15VisualBone(r15VisualBone[hand+'Hand'],{x:0,y:0,z:0},blend);
+    applyR15VisualBone(r15VisualBone[hand+'UpperLeg'],pose[hand+'Leg'],blend);
+    applyR15VisualBone(r15VisualBone[hand+'LowerLeg'],{x:pose[hand+'Knee'],y:0,z:0},blend);
+    applyR15VisualBone(r15VisualBone[hand+'Foot'],{x:-pose[hand+'Knee']*0.33,y:0,z:0},blend);
+  }
+  if(P.state==='swing'){
+    aimR15SwingArm('left',dt);
+    aimR15SwingArm('right',dt);
   }
 }
 
@@ -3402,6 +3427,13 @@ function launchChargedJump(){
   const charge=THREE.MathUtils.clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
   const jumpingFromWall=P.state==='climb';
   const wallNormal=jumpingFromWall&&P.climbNormal?P.climbNormal.clone():null;
+  if(jumpingFromWall){
+    // A jump leaves the wall independently of its old strand. Clear the
+    // occupied hand before changing state so held Swing can catch again.
+    if(P.wallRunFromSwing) releaseSwing(null,false);
+    P.traversalSwingStarted=false;
+    P.wallRunAutoT=0;
+  }
   P.vel.y=Math.max(P.vel.y,JUMP_SPEED+charge*CHARGED_JUMP_BONUS)*(jumpingFromWall?0.9:1);
   playSfx('jump');
   if(wallNormal){
@@ -3469,7 +3501,17 @@ document.addEventListener('visibilitychange', ()=>{
   if(document.hidden) clearHeldInputs();
 });
 
+// Bound physics steps independently of display refresh. Input edges are consumed
+// by the first step; the expensive rig pose is updated only once per render.
 function updatePlayer(dt){
+  const elapsed=Math.min(Math.max(dt,0),0.05);
+  if(!elapsed || paused) return;
+  const steps=Math.ceil(elapsed/(1/120));
+  const step=elapsed/steps;
+  for(let i=0;i<steps;i++) stepPlayer(step,i===steps-1?elapsed:0);
+}
+
+function stepPlayer(dt,visualDt=dt){
   if(paused) return;
 
   const keyboardLookSpeed=1.85*dt;
@@ -3549,8 +3591,17 @@ function updatePlayer(dt){
   if(traversalDown&&!lastTraversal){
     P.traversalSearchAttempted=true;
     P.traversalSwingStarted=trySmartSwing();
+    P.swingWebs.left.retry=P.swingWebs.right.retry=0.1;
   }
   if(traversalDown){
+    // A quick re-press during cooldown or just outside anchor range stays queued.
+    // Retry at 10 Hz rather than raycasting the city every simulation step.
+    if(!P.traversalSwingStarted && P.cooldowns.swing<=0 &&
+       P.swingWebs.left.retry<=0 && P.swingWebs.right.retry<=0 &&
+       (P.state==='air' || P.state==='ground')){
+      P.traversalSwingStarted=trySmartSwing();
+      P.swingWebs.left.retry=P.swingWebs.right.retry=0.1;
+    }
     P.traversalHoldT+=dt;
   }
   if(!traversalDown&&lastTraversal){
@@ -3639,7 +3690,11 @@ function updatePlayer(dt){
   }
   else if(P.state==='swing'){
     progress.swingDistance+=P.vel.length()*dt;
-    if((progress.swingDistance|0)%25===0) updateMissionUI();
+    const missionBucket=Math.floor(progress.swingDistance/25);
+    if(missionBucket!==lastSwingMissionBucket){
+      lastSwingMissionBucket=missionBucket;
+      updateMissionUI();
+    }
     P.swingHistoryT=1;
     P.swingAge+=dt;
     P.swingPhaseT+=dt;
@@ -3668,6 +3723,12 @@ function updatePlayer(dt){
     const forwardTangent=cameraForwardFlat();
     forwardTangent.addScaledVector(radial,-forwardTangent.dot(radial));
 
+    // Take up at most the limited attachment slack at the native build's rate.
+    activeWebs.forEach(web=>{
+      if(web.length>web.targetLength) web.length=Math.max(web.targetLength,web.length-SWING_ATTACH_REEL_RATE*dt);
+    });
+    constraint=swingConstraint(activeWebs);
+
     // One short launch impulse is the only assisted part of a ground start.
     // Once airborne, gravity plus the rope constraint form an ordinary
     // pendulum: no lane spring, automatic pumping, lift or continuous reeling.
@@ -3692,29 +3753,11 @@ function updatePlayer(dt){
       P.swingPeakRise=Math.max(P.swingPeakRise,P.vel.y);
     }
 
-    // Camera and WASD rotate the existing horizontal momentum instead of adding
-    // thrust. This gives deliberate steering without creating free speed.
-    const flatSpeed=Math.hypot(P.vel.x,P.vel.z);
-    if(flatSpeed>0.25){
-      const steerIntent=cameraForwardFlat();
-      if(mv.lengthSq()>0.001) steerIntent.multiplyScalar(0.35).addScaledVector(mv,0.9).normalize();
-      steerIntent.addScaledVector(radial,-steerIntent.dot(radial));
-      const desiredFlat=new THREE.Vector3(steerIntent.x,0,steerIntent.z);
-      if(desiredFlat.lengthSq()>0.001){
-        const powering=!!keys[bindings.forward];
-        const phasePower=P.swingPhase==='descent'?1:0.55;
-        const steeredSpeed=powering
-          ? Math.min(SWING_POWERED_SPEED,flatSpeed+SWING_FORWARD_ACCEL*phasePower*dt)
-          : flatSpeed;
-        desiredFlat.normalize().multiplyScalar(steeredSpeed);
-        const currentFlat=new THREE.Vector3(P.vel.x,0,P.vel.z);
-        const turnRate=mv.lengthSq()>0.001?SWING_INPUT_TURN_RATE:SWING_LOOK_TURN_RATE;
-        currentFlat.lerp(desiredFlat,1-Math.exp(-turnRate*dt));
-        if(currentFlat.lengthSq()>0.001) currentFlat.setLength(steeredSpeed);
-        P.vel.x=currentFlat.x;
-        P.vel.z=currentFlat.z;
-      }
-    }
+    // A slack strand cannot redirect falling momentum. Use ordinary air input
+    // until the next step reaches the rope radius, then steer along the arc.
+    const nextRopeDistance=P.pos.clone().addScaledVector(P.vel,dt).distanceTo(constraint.anchor);
+    if(nextRopeDistance>=constraint.length-0.05) steerSwingVelocity(radial,mv,dt);
+    else if(mv.lengthSq()>0.001) P.vel.addScaledVector(mv,AIR_CONTROL*dt);
 
     // As the bottom of the arc approaches a surface, reel the strand in
     // gradually. The shorter radius pulls the player upward through the rope
@@ -3729,21 +3772,32 @@ function updatePlayer(dt){
       );
       const reelAmount=SWING_GROUND_REEL_RATE*(0.25+reelDanger*0.75)*dt;
       activeWebs.forEach(web=>{
-        web.length=Math.max(SWING_MIN_RANGE,web.length-reelAmount);
+        // Slack carries no tension. Take it up to the predicted position before
+        // applying the bounded safety reel, rather than winding empty rope
+        // while the player slides along the ground under a distant anchor.
+        const distance=predictedSwingPos.distanceTo(web.physicsPivot||web.anchor);
+        web.length=Math.max(SWING_MIN_RANGE,Math.min(web.length,distance)-reelAmount);
         web.targetLength=Math.min(web.targetLength,web.length);
       });
       constraint=swingConstraint(activeWebs);
     }
     const beforeSwingMove = P.pos.clone();
-    const swingImpactVelocity=P.vel.clone();
     P.pos.addScaledVector(P.vel, dt);
     const constrainedWebs=[P.swingWebs.left,P.swingWebs.right].filter(web=>web.anchor);
     enforceSwingConstraint(constrainedWebs);
+    const swingImpactVelocity=P.vel.clone();
     const swingWall=resolveWallCollision(P.pos,beforeSwingMove);
     if(swingWall){
-      // Keep the arc moving past the facade instead of snapping into a wall-run.
-      // The collision resolver has already removed inward speed.
-      P.pos.addScaledVector(swingWall.normal,.08);
+      if(P.wallDetachT<=0 && mv.dot(swingWall.normal)<-0.35){
+        // Deliberately steering into a facade enters wall movement. The old
+        // strand is released so a later jump can queue a fresh visible catch.
+        releaseSwing(null,false);
+        P.traversalSwingStarted=false;
+        beginTraversalWallRun(swingWall.normal,swingWall.building,swingImpactVelocity);
+      } else {
+        // A glancing hit keeps sliding instead of forcing an unwanted wall run.
+        P.pos.addScaledVector(swingWall.normal,.08);
+      }
     }
     // Numerical fallback only. Normal ground avoidance happens by reeling above;
     // this catches a large frame or a terrain edge without restoring the old
@@ -3777,7 +3831,7 @@ function updatePlayer(dt){
         // release, so the player can let go at any point in the arc.
       }
       P.swingLastVy=P.vel.y;
-      if(P.swingTelemetry){
+      if(P.swingTelemetry && visualDt>0){
         P.swingTelemetry.phase=P.swingPhase;
         const samples=P.swingTelemetry.samples;
         samples.push({t:P.swingAge,phase:P.swingPhase,y:P.pos.y,vy:P.vel.y,
@@ -3855,9 +3909,10 @@ function updatePlayer(dt){
     const right = new THREE.Vector3().crossVectors(P.climbNormal, new THREE.Vector3(0,1,0)).normalize();
     const wallTravel=right.clone().multiplyScalar(climbMove.x);
     wallTravel.y=climbMove.y;
-    P.pos.addScaledVector(right,climbMove.x*wallSpeed*dt);
-    P.pos.y+=climbMove.y*wallSpeed*dt;
-    P.vel.set(0,0,0);
+    // Keep velocity consistent with wall travel so jumps, releases and the
+    // animation cycle inherit the motion the player actually sees.
+    P.vel.copy(wallTravel).multiplyScalar(wallSpeed);
+    P.pos.addScaledVector(P.vel,dt);
 
     const b=P.climbBuilding;
     const n=P.climbNormal;
@@ -4031,8 +4086,20 @@ function updatePlayer(dt){
   constrainToIsland(P.pos,P.vel);
   if(P.state!=='downed') P.downedT = 0;
 
-  animatePlayer(dt, mv);
-  updateWebWings();
+  if(visualDt>0){
+    animatePlayer(visualDt, mv);
+    updateWebWings();
+    if(P.state==='swing' && P.activeSwingHand){
+      const hand=P.activeSwingHand,web=P.swingWebs[hand];
+      const origin=visibleWebHandWorld(hand,hand==='left'?handL:handR);
+      if(swingWebObstructed(origin,web.anchor)){
+        // Break an obstructed strand without redirecting momentum. A held
+        // traversal input queues the next visible catch through the normal retry.
+        releaseSwing(null,false);
+        P.traversalSwingStarted=false;
+      }
+    }
+  }
 
   // health regen (slow) when not in combat
   if(P.hp>0 && P.state!=='defeated' && !playerInCombat()) P.hp = Math.min(P.maxHp, P.hp + dt*0.6);
@@ -4123,15 +4190,21 @@ function updateCamera(dt=1/60){
     Math.cos(yaw) * Math.cos(pitch)
   ).normalize();
   const focus = new THREE.Vector3(P.pos.x, P.pos.y + 1.45, P.pos.z);
+  cameraLeadTarget.set(0,0,0);
   if(!firstPerson && traversalSpeed>12){
-    const lead=new THREE.Vector3(P.vel.x,0,P.vel.z);
-    if(lead.lengthSq()>0.001) focus.addScaledVector(lead.normalize(),Math.min(1.8,(traversalSpeed-12)*0.035));
+    cameraLeadTarget.set(P.vel.x,0,P.vel.z);
+    if(cameraLeadTarget.lengthSq()>0.001)
+      cameraLeadTarget.normalize().multiplyScalar(Math.min(1.8,(traversalSpeed-12)*0.035));
   }
+  // Blend only the automatic lookahead. Mouse orbit remains immediate, while
+  // a catch or wall transition cannot whip the framing to a new velocity axis.
+  cameraLead.lerp(cameraLeadTarget,1-Math.exp(-9*dt));
+  if(!firstPerson) focus.add(cameraLead);
 
   if(firstPerson){
     cameraCollisionDistance=null;
     const eye = new THREE.Vector3(P.pos.x, P.pos.y + 1.62, P.pos.z);
-    camera.position.lerp(eye, 0.35);
+    camera.position.lerp(eye, 1-Math.exp(-26*dt));
     camera.lookAt(eye.clone().addScaledVector(lookDir, 12));
     return;
   }
@@ -4180,9 +4253,11 @@ function updateCamera(dt=1/60){
   }
 
   if(cameraCollisionDistance===null) cameraCollisionDistance=clearDistance;
-  const response=clearDistance<cameraCollisionDistance ? 30 : 7;
-  const blend=1-Math.exp(-response*dt);
-  cameraCollisionDistance=THREE.MathUtils.lerp(cameraCollisionDistance,clearDistance,blend);
+  // An obstruction is a hard limit, not a smoothing target. Easing inward
+  // leaves the camera inside a facade for several frames during fast turns.
+  // Only the return to the requested distance is eased.
+  cameraCollisionDistance=Math.min(clearDistance,
+    THREE.MathUtils.lerp(cameraCollisionDistance,clearDistance,1-Math.exp(-7*dt)));
   camera.position.copy(focus).addScaledVector(cameraRay,cameraCollisionDistance);
   camera.lookAt(shiftLocked?camera.position.clone().addScaledVector(lookDir,30):focus);
 }
@@ -4409,8 +4484,47 @@ function tick(){
     updateDebugPanel();
   }
   if((hudFrame%20)===0) updateRenderVisibility();
-  updateAbilityCooldownUI();
+  if((hudFrame&1)===0) updateAbilityCooldownUI();
 
   renderer.render(scene, camera);
+}
+if(new URLSearchParams(location.search).has('qa')){
+  window.__webWeaversQA={
+    start:startGame,
+    syntheticSwing(){
+      startGame();
+      P.pos.copy(PLAYER_SPAWN).add(new THREE.Vector3(0,28,0));
+      cameraLead.set(0,0,0);
+      P.vel.set(0,-3,-20);
+      P.state='swing';
+      P.activeSwingHand='left';
+      const web=P.swingWebs.left;
+      web.anchor=P.pos.clone().add(new THREE.Vector3(-8,30,-24));
+      web.physicsPivot=web.anchor.clone();
+      web.length=P.pos.distanceTo(web.anchor);
+      web.targetLength=web.length-7;
+      web.fallCatch=false;
+      P.swingAssisted=true;
+      P.swingPhase='descent';
+      P.swingHasDescended=true;
+      P.swingAge=P.swingPhaseT=0;
+      P.swingPeakFlat=Math.hypot(P.vel.x,P.vel.z);
+      P.swingBottomSpeed=0;
+      return this.snapshot();
+    },
+    setInput(code,on){keys[code]=on;},
+    release(){releaseSwing(null,true);},
+    step(seconds){
+      const wasPaused=paused;paused=false;
+      for(let remaining=seconds;remaining>0;remaining-=1/120)updatePlayer(Math.min(1/120,remaining));
+      paused=wasPaused;
+      return this.snapshot();
+    },
+    snapshot(){
+      const web=P.activeSwingHand?P.swingWebs[P.activeSwingHand]:null;
+      return {state:P.state,phase:P.swingPhase,pos:P.pos.toArray(),vel:P.vel.toArray(),speed:P.vel.length(),
+        ropeLength:web?.length||0,anchorDistance:web?.anchor?P.pos.distanceTo(web.anchor):0,activeHand:P.activeSwingHand};
+    }
+  };
 }
 tick();
