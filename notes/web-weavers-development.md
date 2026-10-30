@@ -177,3 +177,8 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 ## Valid long-drop route audit
 - Replayed the six existing eight-second high-drop routes with wall-contact instrumentation. The largest loss in the 180 m, reverse-heading route came from a head-on building collision: inward wall velocity was removed at the contact. Holding Forward on the same route entered the existing climb/wall-run transition. This is a navigation consequence, not evidence that the rope deleted speed.
 - Earlier nine-route aimed-fall exploratory data mixed valid and inside-building starts; use the corrected browser fixture and physically valid starts for future swing conclusions. No new game behavior was changed in this audit. Next priority is actual camera/animation feel at high traversal speed rather than further tuning based on synthetic collisions.
+
+## v32 wall animation and camera pass
+- Preserved traversal physics, keybinds and the existing R15 rig. Deliberate side-aimed webs now choose the nearer shooting hand; central aimed catches still alternate when both sides are available. The just-released hand remains extended briefly in the airborne pose.
+- Added alternating wall-run and wall-crawl knee motion, side-run visual clearance, a fall pose that prepares near landing, and smoothed automatic camera velocity lookahead. Mouse orbit is unchanged.
+- One integrated Chrome pass after the code pass: browser fixture, focused traversal checks, 24 low-swing routes and six high-catch routes passed. The fixture measures alternating side-run knees, feet clear of the facade and unchanged physics position/velocity. A rendered side-run frame was inspected. Native WebKit verification and installed-app delivery remain to do.

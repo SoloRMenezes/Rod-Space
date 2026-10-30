@@ -536,6 +536,7 @@ document.getElementById('btnDeathMainMenu').onclick=showStartScreen;
 function resetDefeatedPlayer(){
   P.pos.copy(PLAYER_SPAWN);
   P.vel.set(0,0,0);
+  cameraLead.set(0,0,0);
   P.hp=P.maxHp;
   P.invuln=1.5;
   P.state='ground';
@@ -563,6 +564,7 @@ function resetDefeatedPlayer(){
   P.jumpCharging=false;
   P.diving=false;
   P.swingHistoryT=0;
+  P.swingReleaseHand=null;
   P.quickRecoveryT=0;
   P.recoveryRollT=0;
   P.recoveryLaunchPending=false;
@@ -678,6 +680,8 @@ scene.background = new THREE.Color(0x8fd3ff);
 scene.fog = new THREE.Fog(0x8fd3ff, renderDistance*0.58, renderDistance);
 
 const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, renderDistance);
+const cameraLead = new THREE.Vector3();
+const cameraLeadTarget = new THREE.Vector3();
 function applyRenderDistance(){
   if(typeof camera==='undefined'||typeof scene==='undefined') return;
   camera.far=renderDistance;
@@ -1532,6 +1536,7 @@ const P = {
   swingPeakFlat:0,
   swingRequireRelease:false,
   swingReleaseT:0,
+  swingReleaseHand:null,
   climbNormal: null,
   climbBuilding: null,
   climbVisualAngle:0,
@@ -2612,6 +2617,7 @@ function trySwing(hand,abilId,chosenOverride=null){
     P.swingGroundPullAnchors.left=null;
     P.swingGroundPullAnchors.right=null;
     P.activeSwingHand=hand;
+    P.swingReleaseHand=null;
     // Prefer the opposite hand next time. The chooser only honours this when
     // both sides have a valid anchor, so a blocked side never prevents swinging.
     P.nextSwingHand=otherHand;
@@ -2664,10 +2670,12 @@ function trySmartSwing(){
     }
     const toAim=aimed.point.clone().sub(P.pos);
     const cameraRight=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
-    let hand=toAim.dot(cameraRight)>=0?'left':'right';
-    if(left&&right)hand=P.nextSwingHand;
-    else if(left)hand='left';
-    else if(right)hand='right';
+    const aimSide=toAim.dot(cameraRight);
+    // Alternate near the reticle centre, but let a deliberate side aim use
+    // the hand already nearest that surface. Crossing the body with the
+    // opposite strand makes the shot read as attached to the wrong building.
+    let hand=aimSide>=0?'left':'right';
+    if(Math.abs(aimSide)<6 && left&&right)hand=P.nextSwingHand;
     return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',aimed);
   }
   if(!left && !right) return false;
@@ -2760,6 +2768,7 @@ function releaseSwing(hand=null,boost=true){
   const wallSwing=P.state==='climb' && P.wallRunFromSwing;
   if(P.state!=='swing' && !wallSwing) return;
   if(hand && P.activeSwingHand!==hand) return;
+  P.swingReleaseHand=P.activeSwingHand;
   P.swingWebs.left.anchor=null;
   P.swingWebs.right.anchor=null;
   P.swingWebs.left.physicsPivot=null;
@@ -3175,7 +3184,8 @@ function animatePlayer(dt, moveVec){
   // disappearing into it; collision and traversal positions stay unchanged.
   const wallCrawling=P.state==='climb' && !running && P.wallRunAutoT<=0;
   const verticalWallRunning=P.state==='climb' && wallMoving && (running || P.wallRunAutoT>0) && Math.abs(P.wallRunDirection.y)>=Math.abs(P.wallRunDirection.x)*0.72;
-  playerRig.position.z=THREE.MathUtils.lerp(playerRig.position.z,wallCrawling?-0.4:verticalWallRunning?-0.2:0,amt);
+  const sideWallRunning=P.state==='climb' && wallMoving && (running || P.wallRunAutoT>0) && !verticalWallRunning;
+  playerRig.position.z=THREE.MathUtils.lerp(playerRig.position.z,wallCrawling?-0.4:verticalWallRunning?-0.2:sideWallRunning?-0.12:0,amt);
   const wingPose=P.state==='air' && P.gliding;
   // The physics root stays upright; only the visual rig rolls and pitches.
   let rigPitch=wingPose?Math.PI/2+P.glidePitch*0.55:0;
@@ -3279,11 +3289,14 @@ function animatePlayer(dt, moveVec){
       torsoRot.x=-0.28;
       headRot.x=0.28;
     } else if(P.swingReleaseT>0 && !P.gliding){
-      const release=Math.sin((P.swingReleaseT/0.35)*Math.PI);
-      armLRot.x=-0.75-release*0.45;
-      armRRot.x=-0.75-release*0.45;
-      armLRot.z=0.7+release*0.25;
-      armRRot.z=-0.7-release*0.25;
+      const release=Math.sin(THREE.MathUtils.clamp(P.swingReleaseT/0.35,0,1)*Math.PI);
+      const releasedLeft=P.swingReleaseHand==='left';
+      const releasedRight=P.swingReleaseHand==='right';
+      // The web hand finishes its reach while the free arm balances the turn.
+      armLRot.x=-0.62-release*0.35-(releasedLeft?0.28:0);
+      armRRot.x=-0.62-release*0.35-(releasedRight?0.28:0);
+      armLRot.z=-0.48-(releasedLeft?0.3:0)-release*0.08;
+      armRRot.z=0.48+(releasedRight?0.3:0)+release*0.08;
       legLRot.x=0.65;
       legRRot.x=0.25;
       legLRot.z=0.18;
@@ -3313,9 +3326,12 @@ function animatePlayer(dt, moveVec){
       // A compact controlled fall: elbows stay bent beside the torso and the
       // legs trail unevenly. The old near-horizontal arms read as a rigid T-pose.
       const fall=THREE.MathUtils.clamp(-P.vel.y/18,0,1);
+      const groundClearance=P.pos.y-heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+      const landingPrep=THREE.MathUtils.clamp((8-groundClearance)/6,0,1)*fall;
       armLRot.x=0.28+fall*0.34; armRRot.x=0.18+fall*0.28;
       armLRot.z=-0.34-fall*0.08; armRRot.z=0.34+fall*0.08;
-      legLRot.x=0.42+fall*0.18; legRRot.x=-0.08+fall*0.1;
+      legLRot.x=0.42+fall*0.18+landingPrep*0.36;
+      legRRot.x=-0.08+fall*0.1+landingPrep*0.5;
       legLRot.z=-0.16; legRRot.z=0.12;
       torsoRot.x=-0.1-fall*0.12;
       headRot.x=0.1+fall*0.08;
@@ -3507,7 +3523,19 @@ function animatePlayer(dt, moveVec){
     let kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
     let kneeR=THREE.MathUtils.clamp(Math.max(0,legRRot.x)*0.7+(P.state==='ground'?Math.max(0,step)*0.32:0),0,1.05);
     if(P.state==='climb'){
-      kneeL=kneeR=wallMoving?0.42:0.68;
+      const wallRunning=running || P.wallRunAutoT>0;
+      if(wallMoving && wallRunning){
+        // Opposing knee flex makes the feet follow the wall-run stride rather
+        // than keeping both R15 legs in the same permanently bent shape.
+        const direction=Math.abs(P.wallRunDirection.y)>Math.abs(P.wallRunDirection.x)*0.72
+          ? Math.sign(P.wallRunDirection.y)||1 : 1;
+        const runStep=step*direction;
+        kneeL=0.18+Math.max(0,-runStep)*0.62;
+        kneeR=0.18+Math.max(0,runStep)*0.62;
+      } else if(wallMoving){
+        kneeL=0.38+Math.max(0,-step)*0.3;
+        kneeR=0.38+Math.max(0,step)*0.3;
+      } else kneeL=kneeR=0.68;
     }
     if(P.jumpCharging){
       const charge=THREE.MathUtils.clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
@@ -4303,10 +4331,16 @@ function updateCamera(dt=1/60){
     Math.cos(yaw) * Math.cos(pitch)
   ).normalize();
   const focus = new THREE.Vector3(P.pos.x, P.pos.y + 1.45, P.pos.z);
+  cameraLeadTarget.set(0,0,0);
   if(!firstPerson && traversalSpeed>12){
-    const lead=new THREE.Vector3(P.vel.x,0,P.vel.z);
-    if(lead.lengthSq()>0.001) focus.addScaledVector(lead.normalize(),Math.min(1.8,(traversalSpeed-12)*0.035));
+    cameraLeadTarget.set(P.vel.x,0,P.vel.z);
+    if(cameraLeadTarget.lengthSq()>0.001)
+      cameraLeadTarget.normalize().multiplyScalar(Math.min(1.8,(traversalSpeed-12)*0.035));
   }
+  // Blend only the automatic lookahead. Mouse orbit remains immediate, while
+  // a catch or wall transition cannot whip the framing to a new velocity axis.
+  cameraLead.lerp(cameraLeadTarget,1-Math.exp(-9*dt));
+  if(!firstPerson) focus.add(cameraLead);
 
   if(firstPerson){
     cameraCollisionDistance=null;
@@ -4601,6 +4635,7 @@ if(new URLSearchParams(location.search).has('qa')){
     syntheticSwing(){
       startGame();
       P.pos.copy(PLAYER_SPAWN).add(new THREE.Vector3(0,28,0));
+      cameraLead.set(0,0,0);
       P.vel.set(0,-3,-20);
       P.state='swing';
       P.activeSwingHand='left';
