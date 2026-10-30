@@ -183,10 +183,14 @@ const result=await page.evaluate(()=>{
  const crawlVisualOnly=P.pos.equals(crawlPosition)&&P.vel.equals(crawlVelocity);
  P.state='air';for(let i=0;i<60;i++)animatePlayer(1/60,new THREE.Vector3());
  const crawlOffsetCleared=Math.abs(playerRig.position.z)<.001;
+ const clearAimedDropStart=()=>!nearbyBuildings(P.pos,PLAYER_RADIUS+2).some(other=>
+  other.h>P.pos.y+1 && P.pos.x>other.hitMinX-PLAYER_RADIUS && P.pos.x<other.hitMaxX+PLAYER_RADIUS &&
+  P.pos.z>other.hitMinZ-PLAYER_RADIUS && P.pos.z<other.hitMaxZ+PLAYER_RADIUS);
  const aimedFallChecks=[];
  for(const facade of buildingMeshes.filter(item=>item.h>50&&item.h<100).slice(0,50)){
   P.pos.set((facade.minX+facade.maxX)/2,facade.h+45,facade.maxZ+42);
   P.vel.set(0,-45,-12);P.state='air';
+  if(!clearAimedDropStart())continue;
   camera.position.copy(P.pos).add(new THREE.Vector3(0,1.35,0));
   camera.lookAt((facade.minX+facade.maxX)/2,facade.h-3,facade.maxZ);camera.updateMatrixWorld(true);
   const chosen=findLookSwingAnchor();
@@ -197,6 +201,7 @@ const result=await page.evaluate(()=>{
   releaseSwing();Object.keys(keys).forEach(k=>delete keys[k]);
   P.pos.set((facade.minX+facade.maxX)/2,facade.h+45,facade.maxZ+42);
   P.vel.set(0,-45,-12);P.state='air';P.cooldowns.swing=0;P.activeSwingHand=null;yaw=0;pitch=0;
+  if(!clearAimedDropStart())continue;
   camera.position.copy(P.pos).add(new THREE.Vector3(0,1.35,0));
   camera.lookAt((facade.minX+facade.maxX)/2,facade.h-3,facade.maxZ);camera.updateMatrixWorld(true);
   const aimed=findLookSwingAnchor(),roof=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
