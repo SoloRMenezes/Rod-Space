@@ -3155,7 +3155,8 @@ function animatePlayer(dt, moveVec){
   // Ease the visual rig back so wrists and feet meet the facade instead of
   // disappearing into it; collision and traversal positions stay unchanged.
   const wallCrawling=P.state==='climb' && !running && P.wallRunAutoT<=0;
-  playerRig.position.z=THREE.MathUtils.lerp(playerRig.position.z,wallCrawling?-0.4:0,amt);
+  const verticalWallRunning=P.state==='climb' && wallMoving && (running || P.wallRunAutoT>0) && Math.abs(P.wallRunDirection.y)>=Math.abs(P.wallRunDirection.x)*0.72;
+  playerRig.position.z=THREE.MathUtils.lerp(playerRig.position.z,wallCrawling?-0.4:verticalWallRunning?-0.2:0,amt);
   const wingPose=P.state==='air' && P.gliding;
   // The physics root stays upright; only the visual rig rolls and pitches.
   let rigPitch=wingPose?Math.PI/2+P.glidePitch*0.55:0;
@@ -3346,8 +3347,8 @@ function animatePlayer(dt, moveVec){
       applyRunCycle(true);
       if(Math.abs(P.wallRunDirection.y)>=Math.abs(P.wallRunDirection.x)*0.72){
         const verticalStep=step*(Math.sign(P.wallRunDirection.y)||1);
-        armLRot.x=verticalStep*0.78;
-        armRRot.x=-verticalStep*0.78;
+        armLRot.x=verticalStep*0.38;
+        armRRot.x=-verticalStep*0.38;
         legLRot.x=-verticalStep*1.02;
         legRRot.x=verticalStep*1.02;
         torsoRot.x=-0.28;

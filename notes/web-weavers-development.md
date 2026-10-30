@@ -136,3 +136,8 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - After settling, sampled crawl wrists remain at least ~0.05 m outside the plane and feet ~0.088 m outside. Regression checks confirm no physics changes and removal of the offset in air. Chrome/native traversal checks and Node tests pass; native crawl snapshot inspected.
 - This measures joint clearance, not every skinned vertex. Vertical wall-run wrists still penetrate by ~0.145 m at part of their cycle; wall-running contact and pose quality remain open work. Side-run feet were outside the wall plane in the measured cycle.
 - Branch v28 includes the crawl visual correction; installed app/native source remain v27, DMG v23.
+
+## v28 delivery and vertical wall-run hands
+- v28 is installed in the native source and local app. The installed-origin WKWebView traversal suite passes, including crawl joint clearance, and the app serves the same game JS as the branch. The app bundle retains newer speed-line CSS/assets already present locally; those files are not part of this branch.
+- Added a Chrome measurement for real R15 wrist joints during a vertical wall run. Before adjustment, a wrist entered the facade by 0.334 m. Reduced the arm swing arc and moved only the visual rig 0.2 m away during vertical wall runs; the minimum tested wrist clearance is now 0.109 m. Physical position and velocity remain unchanged.
+- v29 regression: focused traversal checks and full Chrome scenario pass. The 24-route low-swing and six-route high-drop Chrome matrices pass. Next assess the full hand/foot contact pose and side-run spacing visually.
