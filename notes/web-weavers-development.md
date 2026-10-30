@@ -145,3 +145,8 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 ## v29 native delivery
 - Commit 373b7bf was pushed to the draft PR. Native source, signed installed app, app-served JS and refreshed DMG now share the v29 Web Weavers code hash edf98360adf48fe76ecb16f37aa3e31812cc35b5cd163f73a68e4c13a3e7cd9f.
 - Installed-origin WKWebView checks pass: crawl contact clearance, wall catch, no blocked strands, no page errors. App and mounted DMG signatures pass; DMG checksum verifies. Preserved newer local speed-line CSS/assets outside this branch. Remaining priority: side wall-run arm spacing and extended hands-on feel/performance review.
+
+## v30 lower-facade aimed catches
+- Close visual inspection of a side wall run showed the feet near the facade and the arms swinging outward as expected; no side-run pose change made.
+- Found the aimed lower-facade catch path applying the overhead street-clearance rope cap during a fast fall. In one real city route the requested rope was 19% of the visible attachment distance, causing aggressive reeling after the fall. Falling aimed catches now use a near-full rope, matching assisted fall behavior.
+- Added a Chrome regression across nine real lower-facade aimed catches: shortest requested-length/distance ratio improved from 0.188 to 0.975. Full browser scenario, focused traversal checks, 24 low-swing routes and six high-drop routes pass. Installed app and DMG remain v29 until the delivery below.

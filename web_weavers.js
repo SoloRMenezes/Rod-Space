@@ -2051,7 +2051,12 @@ function findLookSwingAnchor(){
   raycaster.far=Infinity;
   if(!visible || visible.object!==b.mesh || Math.abs(visible.distance-distance)>0.15)return null;
   const ground=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
-  const safeLength=Math.max(SWING_MIN_RANGE,Math.min(distance*0.96,point.y-ground-9));
+  // A lower aimed catch needs the same near-full rope as an assisted fall.
+  // The street-clearance cap is for overhead arcs; here it can collapse the
+  // requested radius and reel away the speed the player gained while diving.
+  const safeLength=fallingCatch
+    ? Math.max(SWING_MIN_RANGE,distance*0.96)
+    : Math.max(SWING_MIN_RANGE,Math.min(distance*0.96,point.y-ground-9));
   return {point,length:safeLength,score:Infinity,targeted:true};
 }
 
