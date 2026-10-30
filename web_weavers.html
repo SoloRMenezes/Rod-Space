@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>WEB WEAVERS — Manhattan Patrol</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="./web_weavers.css?v=9">
+<link rel="stylesheet" href="./web_weavers.css?v=10">
 </head>
 <body>
 
@@ -45,30 +45,8 @@
 
 <div id="hud">
   <div id="speedLines" aria-hidden="true">
-    <div class="speedEdge top">
-      <span class="speedStreak" style="--p:5%;--len:42px;--delay:-.08s"></span><span class="speedStreak" style="--p:17%;--len:68px;--delay:-.41s"></span>
-      <span class="speedStreak" style="--p:31%;--len:34px;--delay:-.22s"></span><span class="speedStreak" style="--p:44%;--len:82px;--delay:-.57s"></span>
-      <span class="speedStreak" style="--p:58%;--len:51px;--delay:-.34s"></span><span class="speedStreak" style="--p:70%;--len:74px;--delay:-.67s"></span>
-      <span class="speedStreak" style="--p:83%;--len:38px;--delay:-.15s"></span><span class="speedStreak" style="--p:94%;--len:59px;--delay:-.49s"></span>
-    </div>
-    <div class="speedEdge right">
-      <span class="speedStreak" style="--p:6%;--len:54px;--delay:-.31s"></span><span class="speedStreak" style="--p:18%;--len:37px;--delay:-.04s"></span>
-      <span class="speedStreak" style="--p:30%;--len:79px;--delay:-.53s"></span><span class="speedStreak" style="--p:43%;--len:46px;--delay:-.19s"></span>
-      <span class="speedStreak" style="--p:57%;--len:67px;--delay:-.64s"></span><span class="speedStreak" style="--p:69%;--len:33px;--delay:-.27s"></span>
-      <span class="speedStreak" style="--p:82%;--len:72px;--delay:-.46s"></span><span class="speedStreak" style="--p:95%;--len:44px;--delay:-.11s"></span>
-    </div>
-    <div class="speedEdge bottom">
-      <span class="speedStreak" style="--p:4%;--len:63px;--delay:-.48s"></span><span class="speedStreak" style="--p:16%;--len:36px;--delay:-.17s"></span>
-      <span class="speedStreak" style="--p:29%;--len:76px;--delay:-.61s"></span><span class="speedStreak" style="--p:42%;--len:48px;--delay:-.29s"></span>
-      <span class="speedStreak" style="--p:56%;--len:84px;--delay:-.69s"></span><span class="speedStreak" style="--p:68%;--len:40px;--delay:-.06s"></span>
-      <span class="speedStreak" style="--p:81%;--len:57px;--delay:-.38s"></span><span class="speedStreak" style="--p:93%;--len:70px;--delay:-.55s"></span>
-    </div>
-    <div class="speedEdge left">
-      <span class="speedStreak" style="--p:7%;--len:45px;--delay:-.12s"></span><span class="speedStreak" style="--p:19%;--len:73px;--delay:-.51s"></span>
-      <span class="speedStreak" style="--p:32%;--len:39px;--delay:-.25s"></span><span class="speedStreak" style="--p:45%;--len:81px;--delay:-.66s"></span>
-      <span class="speedStreak" style="--p:58%;--len:52px;--delay:-.36s"></span><span class="speedStreak" style="--p:71%;--len:65px;--delay:-.58s"></span>
-      <span class="speedStreak" style="--p:84%;--len:35px;--delay:-.02s"></span><span class="speedStreak" style="--p:96%;--len:60px;--delay:-.43s"></span>
-    </div>
+    <img class="speedLineLayer clean" src="./assets/effects/web-weavers-speed-lines-clean.png?v=1" alt="">
+    <img class="speedLineLayer dense" src="./assets/effects/web-weavers-speed-lines-dense.png?v=1" alt="">
   </div>
   <div id="healthWrap">
     <div id="healthLabel">SPIDEY HP</div>
@@ -168,7 +146,7 @@
 
 <script src="./assets/vendor/offline-25023b521d77.js"></script>
 <script src="./assets/vendor/GLTFLoader-r128.js"></script>
-<script src="./web_weavers.js?v=29"></script>
+<script src="./web_weavers.js?v=30"></script>
 <script src="./mobile-landscape-resize.js"></script>
   <script src="rod-space-app-menu.js"></script>
 </body>

@@ -4286,8 +4286,10 @@ function updateSpeedLines(dt=1/60){
     speedLineVisualIntensity=THREE.MathUtils.lerp(speedLineVisualIntensity,target,1-Math.exp(-9*safeDt));
   }
   const intensity=THREE.MathUtils.clamp(speedLineVisualIntensity,0,1);
-  speedLineOverlay.style.setProperty('--speed-line-opacity',(intensity*0.88).toFixed(3));
-  speedLineOverlay.style.setProperty('--speed-line-scale',(0.7+intensity*0.95).toFixed(3));
+  const burst=THREE.MathUtils.smoothstep(intensity,0.72,1);
+  speedLineOverlay.style.setProperty('--speed-line-base-opacity',(intensity*0.82).toFixed(3));
+  speedLineOverlay.style.setProperty('--speed-line-burst-opacity',(burst*0.92).toFixed(3));
+  speedLineOverlay.style.setProperty('--speed-line-scale',(1+intensity*0.06).toFixed(3));
 }
 
 function updateCamera(dt=1/60){
