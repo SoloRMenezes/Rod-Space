@@ -159,3 +159,8 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 ## v30 post-delivery arc trace
 - Traced nine aimed lower-facade catches for three seconds in Chrome with the follow camera updated. Seven developed upward motion; two did not. One reached ground after 91 attached frames; two others lost about 47 and 30 m/s during the arc, with the web still attached. The near-full rope resolves the immediate length error, but does not prove all aimed falling routes feel good.
 - Next investigate those large mid-arc losses against building collision and rope constraint separately before changing targeting or steering. The side-run screenshot confirms feet near the wall and outward arm pumping; no side-run adjustment needed.
+
+## v31 unsafe aimed rooftop catch
+- Instrumented the prior nine aimed falling routes: the large speed losses had different causes. One was a wall collision; one was the rooftop-clearance fallback setting downward velocity to zero because the aimed anchor sat below the rooftop beneath the player.
+- When a falling aimed anchor is below that rooftop and a visible assisted anchor clears it, smart swing now uses the higher anchor. Open-space aimed catches keep their reticle target.
+- Fixed-seed Chrome route against the committed v30 script: v30 aimed below the rooftop and lost 47.2 m/s in one frame; v31 chose the visible high anchor and lost at most 2.3 m/s across three seconds, with 164/180 frames attached and an ascending arc. The full browser fixture, focused traversal checks, 24 low-swing routes and six high-drop routes pass. The other wall-collision route remains a separate priority.

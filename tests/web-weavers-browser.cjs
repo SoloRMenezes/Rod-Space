@@ -7,7 +7,7 @@ const assert=require('node:assert/strict');
 const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true});
 const page=await browser.newPage({viewport:{width:1280,height:800}});const errors=[];
 page.on('pageerror',e=>errors.push(e.message));
-await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
+await page.addInitScript(()=>{let seed=0x12345678;Math.random=()=>{seed=(seed+0x6D2B79F5)|0;let t=Math.imul(seed^(seed>>>15),1|seed);t^=t+Math.imul(t^(t>>>7),61|t);return ((t^(t>>>14))>>>0)/4294967296;};window.requestAnimationFrame=()=>0;});
 if(process.env.BASELINE_SOURCE) await page.route('**/web_weavers.js?*',r=>r.fulfill({body:fs.readFileSync(process.env.BASELINE_SOURCE,'utf8'),contentType:'application/javascript'}));
 await page.goto((process.env.GAME_URL || 'http://127.0.0.1:8765/web_weavers.html'));await page.waitForFunction(()=>typeof r15Ready!=='undefined'&&r15Ready);await page.click('#btnPlay');
 const result=await page.evaluate(()=>{
@@ -192,6 +192,27 @@ const result=await page.evaluate(()=>{
   const chosen=findLookSwingAnchor();
   if(chosen && chosen.point.y<P.pos.y-2)aimedFallChecks.push({distance:P.pos.distanceTo(chosen.point),length:chosen.length});
  }
+ let aimedRoofRecovery=null;
+ for(const facade of buildingMeshes.filter(item=>item.h>50&&item.h<100).slice(0,50)){
+  releaseSwing();Object.keys(keys).forEach(k=>delete keys[k]);
+  P.pos.set((facade.minX+facade.maxX)/2,facade.h+45,facade.maxZ+42);
+  P.vel.set(0,-45,-12);P.state='air';P.cooldowns.swing=0;P.activeSwingHand=null;yaw=0;pitch=0;
+  camera.position.copy(P.pos).add(new THREE.Vector3(0,1.35,0));
+  camera.lookAt((facade.minX+facade.maxX)/2,facade.h-3,facade.maxZ);camera.updateMatrixWorld(true);
+  const aimed=findLookSwingAnchor(),roof=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+  const safe=[findAssistedSwingAnchor('left'),findAssistedSwingAnchor('right')]
+    .filter(candidate=>candidate && candidate.point.y>=roof+SWING_GROUND_REEL_START);
+  if(!aimed || aimed.point.y>=roof+SWING_GROUND_REEL_START || !safe.length)continue;
+  const attached=trySmartSwing();
+  aimedRoofRecovery={attached,roof,start:P.pos.toArray(),aimed:aimed.point.toArray(),safe:safe.map(c=>({point:c.point.toArray(),score:c.score})),anchor:P.swingWebs[P.activeSwingHand]?.anchor?.toArray(),anchorY:P.swingWebs[P.activeSwingHand]?.anchor?.y??-Infinity,maxLoss:0,ascended:false,attachedFrames:0};
+  keys[bindings.traversal]=true;lastTraversal=true;P.traversalSwingStarted=true;
+  for(let i=0;i<180;i++){
+   const oldSpeed=P.vel.length();updatePlayer(1/60);updateCamera(1/60);
+   if(P.state==='swing'){aimedRoofRecovery.attachedFrames++;aimedRoofRecovery.ascended ||= P.vel.y>5;}
+   aimedRoofRecovery.maxLoss=Math.max(aimedRoofRecovery.maxLoss,oldSpeed-P.vel.length());
+  }
+  break;
+ }
  P.pos.set((b.minX+b.maxX)/2,10,b.maxZ+1);P.vel.set(0,0,0);yaw=0;pitch=0;cameraDistance=7.5;shiftLocked=false;
  cameraCollisionDistance=7.5;updateCamera(1/60);
  const focus=P.pos.clone().add(new THREE.Vector3(0,1.45,0));
@@ -199,7 +220,7 @@ const result=await page.evaluate(()=>{
  raycaster.set(focus,offset.clone().normalize());raycaster.far=offset.length();
  const cameraBlocked=raycaster.intersectObjects(nearbyBuildingMeshes(focus,10),false).length>0;
  raycaster.far=Infinity;
- return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallContactChecks,wallEntryChecks,crawlJointClearance,crawlVisualOnly,crawlOffsetCleared,verticalRunHandClearance,verticalRunVisualOnly,aimedFallChecks,cosmeticSkins,independentSkeleton,rig:r15Ready};
+ return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallContactChecks,wallEntryChecks,crawlJointClearance,crawlVisualOnly,crawlOffsetCleared,verticalRunHandClearance,verticalRunVisualOnly,aimedFallChecks,aimedRoofRecovery,cosmeticSkins,independentSkeleton,rig:r15Ready};
 });
 if(process.env.SCREENSHOT_PATH) await page.screenshot({path:process.env.SCREENSHOT_PATH});
 console.log(JSON.stringify({result,errors},null,2));await browser.close();
@@ -219,6 +240,7 @@ if(!process.env.BASELINE_SOURCE){
  assert.ok(result.crawlJointClearance>0 && result.crawlVisualOnly && result.crawlOffsetCleared,'crawl joints stay outside the wall without changing physics or retaining an airborne offset');
  assert.ok(result.verticalRunHandClearance>0 && result.verticalRunVisualOnly,'vertical wall-run hand joints stay outside the facade without changing physics');
  assert.ok(result.aimedFallChecks.length>0 && result.aimedFallChecks.every(c=>c.length>=c.distance*.9),'aimed catches below a falling player retain enough rope for the incoming arc');
+ assert.ok(result.aimedRoofRecovery?.attached && result.aimedRoofRecovery.anchorY>=result.aimedRoofRecovery.roof+13 && result.aimedRoofRecovery.maxLoss<6 && result.aimedRoofRecovery.attachedFrames>120 && result.aimedRoofRecovery.ascended,'unsafe aimed catch above a rooftop uses a visible higher anchor and retains an ascending arc');
  assert.ok(result.cosmeticSkins && result.independentSkeleton,'cosmetic skins and independent avatar bones');
  for(const alignment of result.armChecks) assert.ok(alignment>.98,'both R15 shoulders reach toward their web');
  for(const release of result.releases){assert.deepEqual(release.immediate,release.before);assert.deepEqual(release.afterClamp,release.before);}

@@ -2648,6 +2648,20 @@ function trySmartSwing(){
   const left=findAssistedSwingAnchor('left',null);
   const right=findAssistedSwingAnchor('right',null);
   if(aimed){
+    // A lower reticle hit can sit below the rooftop directly under a dive.
+    // That rope cannot clear the roof, even at full length. If a visible
+    // assisted anchor rises above it, catch there so the fall can become an arc.
+    if(P.vel.y<-10 && aimed.point.y<P.pos.y-2){
+      const roof=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+      if(aimed.point.y<roof+SWING_GROUND_REEL_START){
+        const safeLeft=left && left.point.y>=roof+SWING_GROUND_REEL_START ? left : null;
+        const safeRight=right && right.point.y>=roof+SWING_GROUND_REEL_START ? right : null;
+        if(safeLeft || safeRight){
+          const hand=safeLeft && (!safeRight || safeLeft.score>=safeRight.score) ? 'left' : 'right';
+          return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',hand==='left'?safeLeft:safeRight);
+        }
+      }
+    }
     const toAim=aimed.point.clone().sub(P.pos);
     const cameraRight=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
     let hand=toAim.dot(cameraRight)>=0?'left':'right';
