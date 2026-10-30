@@ -3,8 +3,8 @@
 ## Evidence
 
 - Source visual truth: `/var/folders/gl/yylbjr2j5q149yxwknz8s2140000gn/T/codex-clipboard-4354e435-113d-465f-8dd0-b71148b1f2ca.png`
-- Implementation, clean high-speed state: `/private/tmp/web-weavers-reference-size-80.png`
-- Implementation, maximum-speed state: `/private/tmp/web-weavers-reference-size-100.png`
+- Implementation, clean high-speed state: `/private/tmp/web-weavers-reference-size-80-final.png`
+- Implementation, maximum-speed state: `/private/tmp/web-weavers-reference-size-100-final.png`
 - Responsive evidence: `/private/tmp/web-weavers-mobile-80.png` and `/private/tmp/web-weavers-mobile-100.png`
 - Source pixels: 1306 × 735. Implementation comparison pixels/CSS viewport: 1306 × 735 at device scale 1. Mobile-landscape pixels/CSS viewport: 844 × 390 at device scale 1.
 - State: active gameplay with forced traversal speeds of 80 and 100. The source and implementation show different in-game camera positions, so comparison is limited to the approved speed-line overlay and preservation of player/HUD clarity.
@@ -39,7 +39,8 @@ No actionable P0, P1, or P2 differences remain for the requested overlay. The sp
 
 ## Comparison history
 
-- Pass 1: no actionable P0/P1/P2 findings; no visual fixes required after the normalized comparison.
+- Pass 1: no actionable static-composition P0/P1/P2 findings after the normalized comparison.
+- Pass 2: code review found a loop-boundary motion snap; both layers now fade below 0.007 opacity across their reset, and final speed-80/100 captures retain the approved composition.
 
 ## Follow-up polish
 
