@@ -150,3 +150,8 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Close visual inspection of a side wall run showed the feet near the facade and the arms swinging outward as expected; no side-run pose change made.
 - Found the aimed lower-facade catch path applying the overhead street-clearance rope cap during a fast fall. In one real city route the requested rope was 19% of the visible attachment distance, causing aggressive reeling after the fall. Falling aimed catches now use a near-full rope, matching assisted fall behavior.
 - Added a Chrome regression across nine real lower-facade aimed catches: shortest requested-length/distance ratio improved from 0.188 to 0.975. Full browser scenario, focused traversal checks, 24 low-swing routes and six high-drop routes pass. Installed app and DMG remain v29 until the delivery below.
+
+## v30 native delivery
+- Commit 5813966 was pushed to draft PR #4. Native source, installed app, live app server and mounted DMG share game JS SHA-256 88b394fcb7ff003f97ab14733bba87a9cb1c561a2218a0f3a422b5a08216fd89.
+- Signed app and mounted DMG verify; the DMG checksum is valid. Installed-origin WKWebView traversal checks passed with zero blocked strands and no page errors. The nine aimed falling catches were checked in Chrome; this specific new scenario has not yet been duplicated in native WebKit.
+- Next: test how long aimed lower-facade catches retain speed once the rope becomes taut, and continue hands-on swing/camera assessment.
