@@ -191,15 +191,30 @@ const result=await page.evaluate(()=>{
  for(let i=0;i<60;i++)updateSpeedLines(1/60);
  const midBaseOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-base-opacity'));
  const midBurstOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-burst-opacity'));
+ const midScale=Number(speedLineOverlay.style.getPropertyValue('--speed-line-scale'));
  P.vel.set(100,0,0);for(let i=0;i<60;i++)updateSpeedLines(1/60);
  const maxBaseOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-base-opacity'));
  const maxBurstOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-burst-opacity'));
- const agedLayer=speedLineOverlay.querySelector('.speedLineLayer.clean');
- const agedAnimation=agedLayer?.getAnimations()[0];
- if(agedAnimation)agedAnimation.currentTime=60000;
- const agedTranslationBefore=agedLayer?new DOMMatrixReadOnly(getComputedStyle(agedLayer).transform).m42:null;
+ const maxScale=Number(speedLineOverlay.style.getPropertyValue('--speed-line-scale'));
+ const speedLineLayers=[...speedLineOverlay.querySelectorAll('.speedLineLayer')];
+ const agedScalesBefore=speedLineLayers.map(layer=>{
+   const animation=layer.getAnimations()[0];
+   if(animation)animation.currentTime=60000;
+   return animation?new DOMMatrixReadOnly(getComputedStyle(layer).transform).m11:null;
+ });
  P.vel.set(99,0,0);updateSpeedLines(1/60);
- const agedTranslationAfter=agedLayer?new DOMMatrixReadOnly(getComputedStyle(agedLayer).transform).m42:null;
+ const agedScalesAfter=speedLineLayers.map(layer=>layer.getAnimations()[0]?new DOMMatrixReadOnly(getComputedStyle(layer).transform).m11:null);
+ const loopBoundaryOpacity=speedLineLayers.map(layer=>{
+   const animation=layer.getAnimations()[0];
+   if(!animation)return [null,null];
+   const timing=animation.effect.getTiming();
+   const boundary=Number(timing.duration)+Number(timing.delay||0);
+   animation.currentTime=boundary-0.5;
+   const before=Number(getComputedStyle(layer).opacity);
+   animation.currentTime=boundary+0.5;
+   const after=Number(getComputedStyle(layer).opacity);
+   return [before,after];
+ });
  gameActive=false;updateSpeedLines(1/60);gameActive=true;
  const thresholdSamples=[];
  for(const speed of [47.5,48.5,47.5,48.5,47.5,48.5]){
@@ -210,16 +225,15 @@ const result=await page.evaluate(()=>{
  const pausedBaseOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-base-opacity'));
  const pausedBurstOpacity=Number(speedLineOverlay.style.getPropertyValue('--speed-line-burst-opacity'));
  gameActive=savedActive;paused=savedPaused;P.vel.copy(savedVelocity);
- const speedLineLayers=[...speedLineOverlay.querySelectorAll('.speedLineLayer')];
  const speedLines={
    edges:speedLineOverlay.querySelectorAll('.speedEdge').length,
    streaks:speedLineOverlay.querySelectorAll('.speedStreak').length,
    curve:speedLineCurve,
    layers:speedLineLayers.length,
    assetsLoaded:speedLineLayers.every(layer=>layer.complete&&layer.naturalWidth>0),
-   inactiveBaseOpacity,inactiveBurstOpacity,midBaseOpacity,midBurstOpacity,maxBaseOpacity,maxBurstOpacity,
+   inactiveBaseOpacity,inactiveBurstOpacity,midBaseOpacity,midBurstOpacity,maxBaseOpacity,maxBurstOpacity,midScale,maxScale,
    pausedBaseOpacity,pausedBurstOpacity,
-   agedTranslationBefore,agedTranslationAfter,thresholdSamples
+   agedScalesBefore,agedScalesAfter,loopBoundaryOpacity,thresholdSamples
  };
  return {blockedStrands,attachedFrames,releases,spot,chain,rates,cameraBlocked,anchorChecks,aimedOnWall,lowAimRejected,armChecks,zipStarted,zipState,zipMoved,zipClearedSwing,swingAfterZip,wallRunning,wallJump,wallJumpCarriesSpeed,wallVelocityMatchesMotion,wallJumpClearsWeb,swingAfterWallJump,wallContactChecks,wallEntryChecks,crawlJointClearance,crawlVisualOnly,crawlOffsetCleared,cosmeticSkins,independentSkeleton,speedLines,rig:r15Ready};
 });
@@ -258,7 +272,9 @@ if(!process.env.BASELINE_SOURCE){
  assert.ok(result.speedLines.midBurstOpacity>=0 && result.speedLines.midBurstOpacity<result.speedLines.midBaseOpacity,'dense burst stays secondary at ordinary high speed');
  assert.ok(result.speedLines.maxBaseOpacity>=result.speedLines.midBaseOpacity,'clean layer remains strong at maximum speed');
  assert.ok(result.speedLines.maxBurstOpacity>result.speedLines.midBurstOpacity && result.speedLines.maxBurstOpacity>0.5,'dense anime burst dominates near maximum speed');
- assert.ok(result.speedLines.agedTranslationBefore!==null && Math.abs(result.speedLines.agedTranslationAfter-result.speedLines.agedTranslationBefore)<0.1,'small speed changes preserve the phase of aged line animations');
+ assert.ok(result.speedLines.maxScale>result.speedLines.midScale,'maximum speed increases the radial overlay scale');
+ assert.ok(result.speedLines.agedScalesBefore.length===2 && result.speedLines.agedScalesBefore.every((value,index)=>value!==null&&Math.abs(value-result.speedLines.agedScalesAfter[index])<0.001),'small speed changes preserve both aged layer animation phases');
+ assert.ok(result.speedLines.loopBoundaryOpacity.every(pair=>pair.every(value=>value!==null&&value<0.02)),'both layers fade out across animation loop resets');
  assert.ok(result.speedLines.thresholdSamples.every((value,index,samples)=>index===0||Math.abs(value-samples[index-1])<0.08),'speed lines remain subdued across repeated threshold crossings');
  assert.equal(result.speedLines.pausedBaseOpacity,0,'clean speed lines disappear while paused');
  assert.equal(result.speedLines.pausedBurstOpacity,0,'dense speed lines disappear while paused');

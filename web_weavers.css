@@ -117,9 +117,14 @@ html,body{margin:0;padding:0;overflow:hidden;background:#0a0f1e;font-family:Aria
     animation:speedLineRush .7s linear infinite;
     will-change:transform,opacity;
   }
-  .speedLineLayer.clean{opacity:var(--speed-line-base-opacity);}
-  .speedLineLayer.dense{opacity:var(--speed-line-burst-opacity);animation-duration:.58s;animation-delay:-.29s;}
-  @keyframes speedLineRush{from{transform:scale(.9)}to{transform:scale(1.06)}}
+  .speedLineLayer.clean{--speed-line-layer-opacity:var(--speed-line-base-opacity);}
+  .speedLineLayer.dense{--speed-line-layer-opacity:var(--speed-line-burst-opacity);animation-duration:.58s;animation-delay:-.29s;}
+  @keyframes speedLineRush{
+    0%{transform:scale(.9);opacity:0}
+    12%{opacity:var(--speed-line-layer-opacity)}
+    82%{opacity:var(--speed-line-layer-opacity)}
+    100%{transform:scale(1.06);opacity:0}
+  }
   @media(prefers-reduced-motion:reduce){.speedLineLayer{animation-play-state:paused;}}
 
   #healthWrap{position:absolute;top:16px;left:16px;width:280px;}
