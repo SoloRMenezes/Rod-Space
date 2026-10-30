@@ -182,3 +182,8 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Preserved traversal physics, keybinds and the existing R15 rig. Deliberate side-aimed webs now choose the nearer shooting hand; central aimed catches still alternate when both sides are available. The just-released hand remains extended briefly in the airborne pose.
 - Added alternating wall-run and wall-crawl knee motion, side-run visual clearance, a fall pose that prepares near landing, and smoothed automatic camera velocity lookahead. Mouse orbit is unchanged.
 - One integrated Chrome pass after the code pass: browser fixture, focused traversal checks, 24 low-swing routes and six high-catch routes passed. The fixture measures alternating side-run knees, feet clear of the facade and unchanged physics position/velocity. A rendered side-run frame was inspected. Native WebKit verification and installed-app delivery remain to do.
+
+## v32 native delivery
+- Commit 2f00ef0 was pushed to draft PR #4. Native source, installed app and mounted DMG share Web Weavers JS SHA-256 56d194e419e6272e71d152b54df451a1058fe67296aa954b925e2af6f4b255be.
+- The installed app and mounted DMG signatures pass; DMG checksum verifies. Installed-origin WKWebView traversal checks pass, including wall recatch, crawl clearance, cosmetic skin and independent skeleton checks.
+- Remaining: visual inspection of more release, landing and wall-run poses during real input sequences; a full subjective swinging feel assessment. Momentum retention and city layout are being handled in another chat and were not changed here.
