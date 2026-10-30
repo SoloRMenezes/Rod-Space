@@ -155,3 +155,7 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Commit 5813966 was pushed to draft PR #4. Native source, installed app, live app server and mounted DMG share game JS SHA-256 88b394fcb7ff003f97ab14733bba87a9cb1c561a2218a0f3a422b5a08216fd89.
 - Signed app and mounted DMG verify; the DMG checksum is valid. Installed-origin WKWebView traversal checks passed with zero blocked strands and no page errors. The nine aimed falling catches were checked in Chrome; this specific new scenario has not yet been duplicated in native WebKit.
 - Next: test how long aimed lower-facade catches retain speed once the rope becomes taut, and continue hands-on swing/camera assessment.
+
+## v30 post-delivery arc trace
+- Traced nine aimed lower-facade catches for three seconds in Chrome with the follow camera updated. Seven developed upward motion; two did not. One reached ground after 91 attached frames; two others lost about 47 and 30 m/s during the arc, with the web still attached. The near-full rope resolves the immediate length error, but does not prove all aimed falling routes feel good.
+- Next investigate those large mid-arc losses against building collision and rope constraint separately before changing targeting or steering. The side-run screenshot confirms feet near the wall and outward arm pumping; no side-run adjustment needed.
