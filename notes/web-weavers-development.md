@@ -187,3 +187,8 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Commit 2f00ef0 was pushed to draft PR #4. Native source, installed app and mounted DMG share Web Weavers JS SHA-256 56d194e419e6272e71d152b54df451a1058fe67296aa954b925e2af6f4b255be.
 - The installed app and mounted DMG signatures pass; DMG checksum verifies. Installed-origin WKWebView traversal checks pass, including wall recatch, crawl clearance, cosmetic skin and independent skeleton checks.
 - Remaining: visual inspection of more release, landing and wall-run poses during real input sequences; a full subjective swinging feel assessment. Momentum retention and city layout are being handled in another chat and were not changed here.
+
+## v33 R15 player animation replacement
+- Replaced the old per-state player pose block with a complete procedural target pose for each ground, swing, airborne, zip, wall and downed state. The R15 model, skeleton, hand-to-anchor aiming, controls, movement physics and independent NPC rigs remain intact. Combat, webshot, pull and guard poses are applied as overlays.
+- Swinging now uses a visibly asymmetric tucked/trailing leg silhouette, velocity-sensitive torso and root lean, and an animated web hand. Ground gait, jump charge, landing, rising/falling, dive, glide, wall run and crawl use the same blended pose path.
+- Integrated Chrome browser fixture, focused traversal checks, 24 low-swing routes and six high-catch routes passed after replacement. Measured wall joint clearance and hand-to-anchor alignment remain valid; inspected rendered swing and wall-run frames. Long-form subjective playtesting is still needed; visual poses remain stylized by the blocky source rig.
