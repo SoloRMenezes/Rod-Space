@@ -164,3 +164,8 @@ Browser checks use isolated test storage. No claim about a player's existing sav
 - Instrumented the prior nine aimed falling routes: the large speed losses had different causes. One was a wall collision; one was the rooftop-clearance fallback setting downward velocity to zero because the aimed anchor sat below the rooftop beneath the player.
 - When a falling aimed anchor is below that rooftop and a visible assisted anchor clears it, smart swing now uses the higher anchor. Open-space aimed catches keep their reticle target.
 - Fixed-seed Chrome route against the committed v30 script: v30 aimed below the rooftop and lost 47.2 m/s in one frame; v31 chose the visible high anchor and lost at most 2.3 m/s across three seconds, with 164/180 frames attached and an ascending arc. The full browser fixture, focused traversal checks, 24 low-swing routes and six high-drop routes pass. The other wall-collision route remains a separate priority.
+
+## v31 native delivery
+- Commit b4626c8 was pushed to draft PR #4. Native source, installed app, live app server and mounted DMG share Web Weavers JS SHA-256 6e10ee3997917acf7c167a9bd3fcf69a21efc6ad8b0ab71d897b393547666d47.
+- Installed app and mounted DMG signatures pass; the DMG checksum verifies. Installed-origin WKWebView traversal checks pass with zero blocked strands, a working wall recatch, crawl joint clearance and no page errors.
+- Fixed-seed comparison was rerun against the committed v30 JS after controlling camera heading. The v31 aimed-rooftop scenario is checked in Chrome; native WebKit's general traversal suite does not yet cover that exact route. Next investigate the separate high-speed wall collision loss during aimed falling catches.
