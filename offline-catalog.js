@@ -5445,8 +5445,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 61790,
-        "hash": "a0d17e9e72d7387b6015182b14fe4481a91d055b57306332fa25abe2f7d84d58"
+        "bytes": 61760,
+        "hash": "20d4623cf5bb36e52187239fb6dd54b745faf2cbf16f8aa1914c3072bc35c10f"
       },
       {
         "path": "maths-content.js",
@@ -5854,8 +5854,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363210801,
-    "version": "8a8b36ddac714e5d"
+    "bytes": 363210771,
+    "version": "6461b5c8bc95ad83"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -11451,8 +11451,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 61790,
-        "hash": "a0d17e9e72d7387b6015182b14fe4481a91d055b57306332fa25abe2f7d84d58"
+        "bytes": 61760,
+        "hash": "20d4623cf5bb36e52187239fb6dd54b745faf2cbf16f8aa1914c3072bc35c10f"
       },
       {
         "path": "maths-content.js",
@@ -11760,8 +11760,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360195943,
-    "version": "0a0b8eec2ffc44c6"
+    "bytes": 360195913,
+    "version": "1271cab9ad23773e"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -22833,8 +22833,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 61790,
-        "hash": "a0d17e9e72d7387b6015182b14fe4481a91d055b57306332fa25abe2f7d84d58"
+        "bytes": 61760,
+        "hash": "20d4623cf5bb36e52187239fb6dd54b745faf2cbf16f8aa1914c3072bc35c10f"
       },
       {
         "path": "maths-content.js",
@@ -23142,8 +23142,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360195943,
-    "version": "b36cac09af11bb72"
+    "bytes": 360195913,
+    "version": "1d51ffd949027b13"
   },
   "backrooms": {
     "name": "The Backrooms",
