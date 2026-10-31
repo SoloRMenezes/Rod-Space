@@ -177,3 +177,45 @@ body{padding:clamp(8px,2.5vw,20px)!important;min-height:100svh!important;
 @media(prefers-reduced-motion:reduce){
   .lever-stick{transition:none!important}
 }
+
+/* Lever is now truly outside the wooden cabinet. */
+.machine-rig {
+  width:min(740px,100%); display:grid;
+  grid-template-columns:minmax(0,1fr) 72px;
+  align-items:center;gap:0;
+}
+.machine-rig .cabinet{
+  min-width:0;width:100%!important;
+}
+.machine-rig .playfield{
+  display:block!important;
+  width:100%!important;
+}
+.machine-rig .lever-arm{
+  width:72px!important;height:190px!important;
+  position:relative!important;
+  align-self:center!important;
+  margin-left:0!important;
+}
+.machine-rig .lever-mount{
+  left:-5px!important;top:57%!important;
+  width:45px!important;height:45px!important;
+}
+.machine-rig .lever-track{left:30px!important}
+.machine-rig .lever-stick{left:24px!important}
+.machine-rig .lever-head{left:-16px!important}
+.machine-rig .lever-label{display:none!important}
+.machine-rig .casino-icon{width:min(98%,145px)!important;height:min(98%,145px)!important}
+@media(max-width:560px){
+ .machine-rig{grid-template-columns:minmax(0,1fr) 44px!important;width:100%}
+ .machine-rig .lever-arm{width:44px!important;height:142px!important}
+ .machine-rig .lever-mount{left:-5px!important;top:56%!important;width:35px!important;height:35px!important}
+ .machine-rig .lever-track{left:20px!important}
+ .machine-rig .lever-stick{left:16px!important}
+ .machine-rig .lever-head{left:-11px!important}
+ .machine-rig .casino-icon{width:99%!important;height:99%!important}
+}
+@media(max-height:500px) and (orientation:landscape){
+ .machine-rig{width:min(630px,100%)!important;grid-template-columns:minmax(0,1fr) 54px!important}
+ .machine-rig .lever-arm{width:54px!important;height:112px!important}
+}

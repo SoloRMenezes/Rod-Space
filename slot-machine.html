@@ -274,11 +274,11 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="./slot-mobile.css?v=1">
+    <link rel="stylesheet" href="./slot-mobile.css?v=2">
 </head>
 <body>
 
-    <div class="cabinet" id="machine">
+    <div class="machine-rig"><div class="cabinet" id="machine">
         <h1>
             <span class="word">G<span data-secret="r">r</span>an<span data-secret="d">d</span></span>
             <span class="word">Sl<span data-secret="o">o</span><span data-secret="t">t</span><span data-secret="s">s</span></span>
@@ -298,27 +298,28 @@
                     <div class="reel"><div id="reel3" class="symbol-container"></div></div>
                 </div>
             </div>
-            <div class="lever-arm" id="lever" role="button" tabindex="0"
-                aria-label="Pull the lever downward to spin" aria-describedby="lever-help">
-                <div class="lever-mount" aria-hidden="true"></div>
-                <div class="lever-track" aria-hidden="true"></div>
-                <div class="lever-stick" aria-hidden="true"><div class="lever-head"></div></div>
-                <span id="lever-help" class="lever-label">PULL ↓</span>
-            </div>
         </div>
         <div class="controls">
             <button id="spin-btn" type="button">SPIN ($100)</button>
         </div>
     </div>
+    <div class="lever-arm" id="lever" role="button" tabindex="0"
+         aria-label="Drag lever down to spin">
+        <div class="lever-mount" aria-hidden="true"></div>
+        <div class="lever-track" aria-hidden="true"></div>
+        <div class="lever-stick" aria-hidden="true"><div class="lever-head"></div></div>
+    </div>
+    </div>
 
     <script>
-        const symbols = ['cherries', 'lemon', 'grapes', 'bell', 'diamond', 'seven', 'clover'];
-        const iconFor = name => '<img class="casino-icon" src="./slot-icons/' + name + '.svg" alt="' + name + '" draggable="false" decoding="async">';
+        const symbols = ['cherries', 'lemon', 'grapes', 'bell', 'diamond', 'seven', 'clover', 'bar'];
+        const iconFor = name => '<img class="casino-icon" src="./slot-icons/' + name + '.png" alt="' + name + '" draggable="false" decoding="async">';
         const balanceDisplay = document.getElementById('balance');
         const statusDisplay = document.getElementById('status');
         const spinBtn = document.getElementById('spin-btn');
         const lever = document.getElementById('lever');
         const machine = document.getElementById('machine');
+        const rig = document.querySelector('.machine-rig');
         
         const secretLetters = document.querySelectorAll('[data-secret]');
         
@@ -406,8 +407,8 @@
             spinBtn.disabled = true;
             statusDisplay.textContent = "SPINNING...";
             
-            machine.classList.add('lever-active');
-            setTimeout(() => machine.classList.remove('lever-active'), 380);
+            rig.classList.add('lever-active');
+            setTimeout(() => rig.classList.remove('lever-active'), 380);
 
             const finalPicks = [];
             const jackpotSymbol = symbols[Math.floor(Math.random() * symbols.length)];

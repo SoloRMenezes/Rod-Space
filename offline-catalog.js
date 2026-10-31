@@ -445,13 +445,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms-level1.html",
-        "bytes": 28776,
-        "hash": "93646ce1f1d6d943816b1c4905dcbb243cc93526230aac084ecaa2ccad50317d"
+        "bytes": 28551,
+        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
       },
       {
         "path": "backrooms-level10.html",
-        "bytes": 18434,
-        "hash": "e070dac9e8344a79f36e2c0eec8518104982d96db5148c7aa62385184738355d"
+        "bytes": 18341,
+        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
       },
       {
         "path": "backrooms-level2.html",
@@ -5585,8 +5585,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "piano.html",
-        "bytes": 7476,
-        "hash": "8eebdb15c174a8a12d656f682ccd8fd755278125ed707ff2e4b95afff5d7112e"
+        "bytes": 6709,
+        "hash": "7d57f3157645d9823815f012f169bbcd622de1a176a8957798043d7b87c0788f"
       },
       {
         "path": "planet_architect.css",
@@ -5659,9 +5659,19 @@ self.OFFLINE_CATALOG = {
         "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
       },
       {
+        "path": "slot-icons/bar.png",
+        "bytes": 7574,
+        "hash": "f8af6d8cfba48bedd7857bd6a16201ab6690fa24a30dd510e8ac18647e51e3a1"
+      },
+      {
         "path": "slot-icons/bar.svg",
         "bytes": 1768,
         "hash": "9b16c4017c3f1025c972af7138711dc3cb9e0b897f6dbf76df251edc40597471"
+      },
+      {
+        "path": "slot-icons/bell.png",
+        "bytes": 17976,
+        "hash": "9c287e0e73eee9155dc7c1ab26b4b3cc8b5e586763a6bb4daa129b6780e9851b"
       },
       {
         "path": "slot-icons/bell.svg",
@@ -5669,9 +5679,19 @@ self.OFFLINE_CATALOG = {
         "hash": "eb63dff6f34294b225cac3109b42a119ef4564fca296f8ac4bda96875f29aff7"
       },
       {
+        "path": "slot-icons/cherries.png",
+        "bytes": 22945,
+        "hash": "9186754b616616f16683cc5ae36ef403aab847102d7bd3411ed1a9e0fe9bdbf7"
+      },
+      {
         "path": "slot-icons/cherries.svg",
         "bytes": 2094,
         "hash": "164eb77016c60702fe1ca71d52100371c7de9ccb14f87de1731e8d94cac2c03a"
+      },
+      {
+        "path": "slot-icons/clover.png",
+        "bytes": 19935,
+        "hash": "68a2306727143f83aaae4ee5746d76a34b4461896da680e454ecee16e12c8544"
       },
       {
         "path": "slot-icons/clover.svg",
@@ -5679,9 +5699,19 @@ self.OFFLINE_CATALOG = {
         "hash": "d6c412d3e0a4eb1002c4873b0581ff9a53e3e382f2b118903d9efa918cea6445"
       },
       {
+        "path": "slot-icons/diamond.png",
+        "bytes": 15637,
+        "hash": "adc8006e6b74ccecb6571332fa0557e043e2b8bc5418218585555739e7b1dcf1"
+      },
+      {
         "path": "slot-icons/diamond.svg",
         "bytes": 1923,
         "hash": "9836e42baa76714bfcc592caef37237af02fe920d689ccdf6ac5c9e649948118"
+      },
+      {
+        "path": "slot-icons/grapes.png",
+        "bytes": 23175,
+        "hash": "3192c9eaab2717e96118f99b358432d4479ccb5d14920065d1029918ba217e1f"
       },
       {
         "path": "slot-icons/grapes.svg",
@@ -5689,9 +5719,19 @@ self.OFFLINE_CATALOG = {
         "hash": "7fc1aabca3d74e02d899c4b069367b690b4849af76272f1484c01cbf3276d17f"
       },
       {
+        "path": "slot-icons/lemon.png",
+        "bytes": 21289,
+        "hash": "24e9d5894d9edfa11beef017cef51e3f044c7a87f9e329bc220008b34ffb941c"
+      },
+      {
         "path": "slot-icons/lemon.svg",
         "bytes": 1869,
         "hash": "680e1f0f589864b4dc167372863c5bab4157d5f0fe9430f59005c31f90394fa6"
+      },
+      {
+        "path": "slot-icons/seven.png",
+        "bytes": 13350,
+        "hash": "99ca13f29bc86d1ec3a5565858416fbb940b6a322893b11c038e05246e9d1e9a"
       },
       {
         "path": "slot-icons/seven.svg",
@@ -5700,13 +5740,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "slot-machine.html",
-        "bytes": 18828,
-        "hash": "e6eda3a2458662009e62b41b4fd4d053bfdcd684b103149a4ad04c32e7928dcb"
+        "bytes": 18764,
+        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
       },
       {
         "path": "slot-mobile.css",
-        "bytes": 7141,
-        "hash": "cea46b61eca1575f92ac4b6dbd3e3b276a89c28f79aaf26fb58866e91c906aad"
+        "bytes": 8742,
+        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
       },
       {
         "path": "solos_rng.html",
@@ -5814,8 +5854,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363065239,
-    "version": "f9b8bba3aaad81ea"
+    "bytes": 363207572,
+    "version": "b9f479158346e326"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -5960,8 +6000,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "piano.html",
-        "bytes": 7476,
-        "hash": "8eebdb15c174a8a12d656f682ccd8fd755278125ed707ff2e4b95afff5d7112e"
+        "bytes": 6709,
+        "hash": "7d57f3157645d9823815f012f169bbcd622de1a176a8957798043d7b87c0788f"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -5969,8 +6009,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 12697,
-    "version": "f30ad7f6b36b4b24"
+    "bytes": 11930,
+    "version": "09002138e23266fa"
   },
   "counter": {
     "name": "Counter",
@@ -6431,13 +6471,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms-level1.html",
-        "bytes": 28776,
-        "hash": "93646ce1f1d6d943816b1c4905dcbb243cc93526230aac084ecaa2ccad50317d"
+        "bytes": 28551,
+        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
       },
       {
         "path": "backrooms-level10.html",
-        "bytes": 18434,
-        "hash": "e070dac9e8344a79f36e2c0eec8518104982d96db5148c7aa62385184738355d"
+        "bytes": 18341,
+        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
       },
       {
         "path": "backrooms-level2.html",
@@ -11536,8 +11576,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "piano.html",
-        "bytes": 7476,
-        "hash": "8eebdb15c174a8a12d656f682ccd8fd755278125ed707ff2e4b95afff5d7112e"
+        "bytes": 6709,
+        "hash": "7d57f3157645d9823815f012f169bbcd622de1a176a8957798043d7b87c0788f"
       },
       {
         "path": "planet_architect.css",
@@ -11611,8 +11651,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "slot-machine.html",
-        "bytes": 18828,
-        "hash": "e6eda3a2458662009e62b41b4fd4d053bfdcd684b103149a4ad04c32e7928dcb"
+        "bytes": 18764,
+        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
       },
       {
         "path": "solos_rng.html",
@@ -11720,8 +11760,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360194379,
-    "version": "29e3377441777a2d"
+    "bytes": 360193230,
+    "version": "8839d042b9fab908"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -17813,13 +17853,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms-level1.html",
-        "bytes": 28776,
-        "hash": "93646ce1f1d6d943816b1c4905dcbb243cc93526230aac084ecaa2ccad50317d"
+        "bytes": 28551,
+        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
       },
       {
         "path": "backrooms-level10.html",
-        "bytes": 18434,
-        "hash": "e070dac9e8344a79f36e2c0eec8518104982d96db5148c7aa62385184738355d"
+        "bytes": 18341,
+        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
       },
       {
         "path": "backrooms-level2.html",
@@ -22918,8 +22958,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "piano.html",
-        "bytes": 7476,
-        "hash": "8eebdb15c174a8a12d656f682ccd8fd755278125ed707ff2e4b95afff5d7112e"
+        "bytes": 6709,
+        "hash": "7d57f3157645d9823815f012f169bbcd622de1a176a8957798043d7b87c0788f"
       },
       {
         "path": "planet_architect.css",
@@ -22993,8 +23033,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "slot-machine.html",
-        "bytes": 18828,
-        "hash": "e6eda3a2458662009e62b41b4fd4d053bfdcd684b103149a4ad04c32e7928dcb"
+        "bytes": 18764,
+        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
       },
       {
         "path": "solos_rng.html",
@@ -23102,8 +23142,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360194379,
-    "version": "a8f58feaf572c51b"
+    "bytes": 360193230,
+    "version": "9a35a73c82ee0481"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -23116,13 +23156,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms-level1.html",
-        "bytes": 28776,
-        "hash": "93646ce1f1d6d943816b1c4905dcbb243cc93526230aac084ecaa2ccad50317d"
+        "bytes": 28551,
+        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
       },
       {
         "path": "backrooms-level10.html",
-        "bytes": 18434,
-        "hash": "e070dac9e8344a79f36e2c0eec8518104982d96db5148c7aa62385184738355d"
+        "bytes": 18341,
+        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
       },
       {
         "path": "backrooms-level2.html",
@@ -23180,8 +23220,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 761259,
-    "version": "d9233b68f58b3420"
+    "bytes": 760941,
+    "version": "6255093f458da73e"
   },
   "sling-champ": {
     "name": "Sling Champ",
@@ -23269,9 +23309,19 @@ self.OFFLINE_CATALOG = {
         "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
+        "path": "slot-icons/bar.png",
+        "bytes": 7574,
+        "hash": "f8af6d8cfba48bedd7857bd6a16201ab6690fa24a30dd510e8ac18647e51e3a1"
+      },
+      {
         "path": "slot-icons/bar.svg",
         "bytes": 1768,
         "hash": "9b16c4017c3f1025c972af7138711dc3cb9e0b897f6dbf76df251edc40597471"
+      },
+      {
+        "path": "slot-icons/bell.png",
+        "bytes": 17976,
+        "hash": "9c287e0e73eee9155dc7c1ab26b4b3cc8b5e586763a6bb4daa129b6780e9851b"
       },
       {
         "path": "slot-icons/bell.svg",
@@ -23279,9 +23329,19 @@ self.OFFLINE_CATALOG = {
         "hash": "eb63dff6f34294b225cac3109b42a119ef4564fca296f8ac4bda96875f29aff7"
       },
       {
+        "path": "slot-icons/cherries.png",
+        "bytes": 22945,
+        "hash": "9186754b616616f16683cc5ae36ef403aab847102d7bd3411ed1a9e0fe9bdbf7"
+      },
+      {
         "path": "slot-icons/cherries.svg",
         "bytes": 2094,
         "hash": "164eb77016c60702fe1ca71d52100371c7de9ccb14f87de1731e8d94cac2c03a"
+      },
+      {
+        "path": "slot-icons/clover.png",
+        "bytes": 19935,
+        "hash": "68a2306727143f83aaae4ee5746d76a34b4461896da680e454ecee16e12c8544"
       },
       {
         "path": "slot-icons/clover.svg",
@@ -23289,9 +23349,19 @@ self.OFFLINE_CATALOG = {
         "hash": "d6c412d3e0a4eb1002c4873b0581ff9a53e3e382f2b118903d9efa918cea6445"
       },
       {
+        "path": "slot-icons/diamond.png",
+        "bytes": 15637,
+        "hash": "adc8006e6b74ccecb6571332fa0557e043e2b8bc5418218585555739e7b1dcf1"
+      },
+      {
         "path": "slot-icons/diamond.svg",
         "bytes": 1923,
         "hash": "9836e42baa76714bfcc592caef37237af02fe920d689ccdf6ac5c9e649948118"
+      },
+      {
+        "path": "slot-icons/grapes.png",
+        "bytes": 23175,
+        "hash": "3192c9eaab2717e96118f99b358432d4479ccb5d14920065d1029918ba217e1f"
       },
       {
         "path": "slot-icons/grapes.svg",
@@ -23299,9 +23369,19 @@ self.OFFLINE_CATALOG = {
         "hash": "7fc1aabca3d74e02d899c4b069367b690b4849af76272f1484c01cbf3276d17f"
       },
       {
+        "path": "slot-icons/lemon.png",
+        "bytes": 21289,
+        "hash": "24e9d5894d9edfa11beef017cef51e3f044c7a87f9e329bc220008b34ffb941c"
+      },
+      {
         "path": "slot-icons/lemon.svg",
         "bytes": 1869,
         "hash": "680e1f0f589864b4dc167372863c5bab4157d5f0fe9430f59005c31f90394fa6"
+      },
+      {
+        "path": "slot-icons/seven.png",
+        "bytes": 13350,
+        "hash": "99ca13f29bc86d1ec3a5565858416fbb940b6a322893b11c038e05246e9d1e9a"
       },
       {
         "path": "slot-icons/seven.svg",
@@ -23310,17 +23390,17 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "slot-machine.html",
-        "bytes": 18828,
-        "hash": "e6eda3a2458662009e62b41b4fd4d053bfdcd684b103149a4ad04c32e7928dcb"
+        "bytes": 18764,
+        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
       },
       {
         "path": "slot-mobile.css",
-        "bytes": 7141,
-        "hash": "cea46b61eca1575f92ac4b6dbd3e3b276a89c28f79aaf26fb58866e91c906aad"
+        "bytes": 8742,
+        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
       }
     ],
-    "bytes": 46327,
-    "version": "826b7e9482362444"
+    "bytes": 189745,
+    "version": "03dee45fa5c4e76c"
   },
   "fidget-roulette": {
     "name": "Fidget Roulette",
