@@ -5495,8 +5495,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 62025,
-        "hash": "027093f416969ea467ce236c302adaac8db0ae9febbd4aee259aff3c6595b7ce"
+        "bytes": 62118,
+        "hash": "25176871b66e56c4ca4be6b6dbd4258e00fc58659ecb903adc283247b3966e7b"
       },
       {
         "path": "maths-content.js",
@@ -5505,8 +5505,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-curriculum-ui.js",
-        "bytes": 6175,
-        "hash": "7d5ef5aa8d1dbee1b886d6c6bcf61646c5f9c8504323d057bf9d373b78259626"
+        "bytes": 10773,
+        "hash": "74bb32b96400ec09f3577b1bbd65a973991fe82447f485bc1fcc8cbbc9d88703"
       },
       {
         "path": "maths-curriculum.js",
@@ -5519,9 +5519,19 @@ self.OFFLINE_CATALOG = {
         "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
       },
       {
+        "path": "maths-extra-exercises.js",
+        "bytes": 17544,
+        "hash": "8eaa9b28909225cf5f465602da972518e2ba0ac44dc60aff1df0406ad3845874"
+      },
+      {
         "path": "maths-indices-working.js",
         "bytes": 8616,
         "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
+      },
+      {
+        "path": "maths-mixed-exercises.js",
+        "bytes": 1459,
+        "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
       },
       {
         "path": "maths-question-bank.js",
@@ -5580,8 +5590,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 887969,
-        "hash": "2015ee345f8a8eac47afa12f0808cd11abb7a40069efeb6d0a854a55c748d643"
+        "bytes": 894945,
+        "hash": "5dd8402c0ddc34523c7d069054e7078972d00adec32df943afe28209fcdbf846"
       },
       {
         "path": "offline.js",
@@ -5785,8 +5795,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sw.js",
-        "bytes": 5981,
-        "hash": "58612b50d2b7ae655d51f2a938d133befd36bf28135ad9330d5e32e8ecd5c854"
+        "bytes": 5970,
+        "hash": "ee314ef9d71a89dc38a12ea5ace245d2bb38cf0a1a9d11583ba186b1ab822d61"
       },
       {
         "path": "terraria.html",
@@ -5864,8 +5874,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363249138,
-    "version": "0cefd783da5ca38c"
+    "bytes": 363279797,
+    "version": "9a9abbe4af2f59d9"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -11541,8 +11551,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 62025,
-        "hash": "027093f416969ea467ce236c302adaac8db0ae9febbd4aee259aff3c6595b7ce"
+        "bytes": 62118,
+        "hash": "25176871b66e56c4ca4be6b6dbd4258e00fc58659ecb903adc283247b3966e7b"
       },
       {
         "path": "maths-content.js",
@@ -11551,8 +11561,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-curriculum-ui.js",
-        "bytes": 6175,
-        "hash": "7d5ef5aa8d1dbee1b886d6c6bcf61646c5f9c8504323d057bf9d373b78259626"
+        "bytes": 10773,
+        "hash": "74bb32b96400ec09f3577b1bbd65a973991fe82447f485bc1fcc8cbbc9d88703"
       },
       {
         "path": "maths-curriculum.js",
@@ -11565,9 +11575,19 @@ self.OFFLINE_CATALOG = {
         "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
       },
       {
+        "path": "maths-extra-exercises.js",
+        "bytes": 17544,
+        "hash": "8eaa9b28909225cf5f465602da972518e2ba0ac44dc60aff1df0406ad3845874"
+      },
+      {
         "path": "maths-indices-working.js",
         "bytes": 8616,
         "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
+      },
+      {
+        "path": "maths-mixed-exercises.js",
+        "bytes": 1459,
+        "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
       },
       {
         "path": "maths-question-bank.js",
@@ -11626,8 +11646,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 887969,
-        "hash": "2015ee345f8a8eac47afa12f0808cd11abb7a40069efeb6d0a854a55c748d643"
+        "bytes": 894945,
+        "hash": "5dd8402c0ddc34523c7d069054e7078972d00adec32df943afe28209fcdbf846"
       },
       {
         "path": "offline.js",
@@ -11831,8 +11851,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sw.js",
-        "bytes": 5981,
-        "hash": "58612b50d2b7ae655d51f2a938d133befd36bf28135ad9330d5e32e8ecd5c854"
+        "bytes": 5970,
+        "hash": "ee314ef9d71a89dc38a12ea5ace245d2bb38cf0a1a9d11583ba186b1ab822d61"
       },
       {
         "path": "terraria.html",
@@ -11910,8 +11930,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363249138,
-    "version": "b4d4f94515ac3ab6"
+    "bytes": 363279797,
+    "version": "6a8473387af8ca11"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -23063,8 +23083,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 62025,
-        "hash": "027093f416969ea467ce236c302adaac8db0ae9febbd4aee259aff3c6595b7ce"
+        "bytes": 62118,
+        "hash": "25176871b66e56c4ca4be6b6dbd4258e00fc58659ecb903adc283247b3966e7b"
       },
       {
         "path": "maths-content.js",
@@ -23073,8 +23093,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-curriculum-ui.js",
-        "bytes": 6175,
-        "hash": "7d5ef5aa8d1dbee1b886d6c6bcf61646c5f9c8504323d057bf9d373b78259626"
+        "bytes": 10773,
+        "hash": "74bb32b96400ec09f3577b1bbd65a973991fe82447f485bc1fcc8cbbc9d88703"
       },
       {
         "path": "maths-curriculum.js",
@@ -23087,9 +23107,19 @@ self.OFFLINE_CATALOG = {
         "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
       },
       {
+        "path": "maths-extra-exercises.js",
+        "bytes": 17544,
+        "hash": "8eaa9b28909225cf5f465602da972518e2ba0ac44dc60aff1df0406ad3845874"
+      },
+      {
         "path": "maths-indices-working.js",
         "bytes": 8616,
         "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
+      },
+      {
+        "path": "maths-mixed-exercises.js",
+        "bytes": 1459,
+        "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
       },
       {
         "path": "maths-question-bank.js",
@@ -23148,8 +23178,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 887969,
-        "hash": "2015ee345f8a8eac47afa12f0808cd11abb7a40069efeb6d0a854a55c748d643"
+        "bytes": 894945,
+        "hash": "5dd8402c0ddc34523c7d069054e7078972d00adec32df943afe28209fcdbf846"
       },
       {
         "path": "offline.js",
@@ -23353,8 +23383,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sw.js",
-        "bytes": 5981,
-        "hash": "58612b50d2b7ae655d51f2a938d133befd36bf28135ad9330d5e32e8ecd5c854"
+        "bytes": 5970,
+        "hash": "ee314ef9d71a89dc38a12ea5ace245d2bb38cf0a1a9d11583ba186b1ab822d61"
       },
       {
         "path": "terraria.html",
@@ -23432,8 +23462,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363249138,
-    "version": "b5782cfe8e1874c3"
+    "bytes": 363279797,
+    "version": "c6cbf9102c50a645"
   },
   "backrooms": {
     "name": "The Backrooms",
