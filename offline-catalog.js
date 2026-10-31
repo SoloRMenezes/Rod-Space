@@ -24,156 +24,6 @@ self.OFFLINE_CATALOG = {
         "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
       },
       {
-        "path": "Blackjack.html",
-        "bytes": 21486,
-        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
-      },
-      {
-        "path": "DND.html",
-        "bytes": 735,
-        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
-      },
-      {
-        "path": "DNDC.html",
-        "bytes": 22362,
-        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
-      },
-      {
-        "path": "KaraokeApp/Videos/ABBA - Dancing Queen (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8283855,
-        "hash": "33bb2090635bc3f146f312b8a925e47bd3739f5954514d7339bbc402734d6ae5"
-      },
-      {
-        "path": "KaraokeApp/Videos/ABBA - Mamma Mia (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 7428600,
-        "hash": "a82575a41855818edb39dbd09a1c354e74e57df6771f7654266941b77842d235"
-      },
-      {
-        "path": "KaraokeApp/Videos/Frank Sinatra - Fly Me To The Moon (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 5354546,
-        "hash": "6a6cc1a818a6298fe98ccd1c2b37cbf0036b6ac1df25314f98141dba670b2dc9"
-      },
-      {
-        "path": "KaraokeApp/Videos/Frank Sinatra - My Way (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 9105226,
-        "hash": "1a6337a6d998bef07651b1a3164f93f1e0476003de40f036b7a1b3627e8896d3"
-      },
-      {
-        "path": "KaraokeApp/Videos/Hozier - Take Me To Church (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8889324,
-        "hash": "315abf5247b84a119646f7a3c4a82b0f949add2194e7448d6900dd188d56039c"
-      },
-      {
-        "path": "KaraokeApp/Videos/Justin Bieber ft. Ludacris - Baby (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8189603,
-        "hash": "2e018adc226e1d5f8e643ee89f0bace3f4d47d05dfa8758fe80468b949ee04ce"
-      },
-      {
-        "path": "KaraokeApp/Videos/Katy Perry ft. Snoop Dogg - California Gurls (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8873580,
-        "hash": "6677ec309d827004f99a9bebebcb528156fa18c59e866596cf7836e8c7d16631"
-      },
-      {
-        "path": "KaraokeApp/Videos/Laufey - From The Start (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 5470022,
-        "hash": "27539f05131b9507f4e1ecc1d715e1af0a345dfb03888c1541cc48be204a038f"
-      },
-      {
-        "path": "KaraokeApp/Videos/Mark Ronson ft. Amy Winehouse - Valerie (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 7612008,
-        "hash": "880a4abdd9803727abfec97f2368c3a0679d362e8be78d13beeeaca1ed046fd5"
-      },
-      {
-        "path": "KaraokeApp/Videos/Michael Jackson - Billie Jean (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 11467859,
-        "hash": "afc2050faa54e9e4227a6f8c89278b6c1a6690a4bcbe85dbcd8611a816b7508d"
-      },
-      {
-        "path": "KaraokeApp/Videos/Miley Cyrus - Flowers (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 6700872,
-        "hash": "738d4a42c76f9edf59383f33726d41f1ca2b07dcf5e6668d2b4af4ce33e4f4ab"
-      },
-      {
-        "path": "KaraokeApp/Videos/Miley Cyrus - Party In The USA (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 9010838,
-        "hash": "47b9f47997d999055ef2e4c1ac5da363b8c565ce974b164cd6fdb46e3bea975e"
-      },
-      {
-        "path": "KaraokeApp/Videos/Queen - Bohemian Rhapsody (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 11699752,
-        "hash": "4cabe10f30a9b7eeaefd88ed30e37a7e244937eb83900dc7e0134afee67ca2d6"
-      },
-      {
-        "path": "KaraokeApp/Videos/Stephen Sanchez - Until I Found You (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 4809738,
-        "hash": "b0db551a35de757aee0a84e778b5978e6e947d80667248632f09910658de98ec"
-      },
-      {
-        "path": "KaraokeApp/Videos/Whitney Houston - I Wanna Dance With Somebody (Who Loves Me) (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 10815398,
-        "hash": "1d546d7db4a86d79c538d39ecc624e8ea32869388f71819dedad10f086317836"
-      },
-      {
-        "path": "KaraokeApp/index.html",
-        "bytes": 12750,
-        "hash": "c3a7304441250a6aee410233651d13c30dcb030a36d77a01d0d118f246192db2"
-      },
-      {
-        "path": "KaraokeApp/library.json",
-        "bytes": 3281,
-        "hash": "e46e389b0b1084f34f9ab830c2ba0b0c18a4773d7c42131590d2a1a391ad1219"
-      },
-      {
-        "path": "NextUp/app.js",
-        "bytes": 56225,
-        "hash": "aa7e0fed6e6cfa0b575b1454d4667d0bf8d9919d54c0e54dd1f009724e76771f"
-      },
-      {
-        "path": "NextUp/index.html",
-        "bytes": 978,
-        "hash": "e82356a9fc79259befdf9b873eaaa80546c29e3a0656da4763a97b682e8c68f8"
-      },
-      {
-        "path": "NextUp/style.css",
-        "bytes": 25644,
-        "hash": "bbb6e0298646982b1d9723cb20230688b23f54000baeeeb4dbaaac2786d98f94"
-      },
-      {
-        "path": "Relic Rush/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "Relic Rush/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "Relic Rush/index.html",
-        "bytes": 511,
-        "hash": "e8709b99d0ff62855b1ef7494848d2a43ffee9a22f03fb70d55e2392d122816e"
-      },
-      {
-        "path": "Terraria/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "Terraria/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "Terraria/index.html",
-        "bytes": 442,
-        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
-      },
-      {
-        "path": "Who Wants to be a Millionaire.html",
-        "bytes": 44281,
-        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
-      },
-      {
         "path": "assets/chronos/era-0-pre-void.png",
         "bytes": 1246208,
         "hash": "c2a16ac35ff4f7898efbfd0fdd83eef8639c121a6dbb4a495ca0bc5600e5bba9"
@@ -214,14 +64,24 @@ self.OFFLINE_CATALOG = {
         "hash": "30207dbc964b063b7473fde80707f2b3fb0bba1683a361734d562be2611746f6"
       },
       {
+        "path": "assets/effects/web-weavers-speed-lines-clean.png",
+        "bytes": 1011237,
+        "hash": "637d069679de8bb81dedc1cce7972b71da6873bcf60455dd0b1d9cd9d7bd851b"
+      },
+      {
+        "path": "assets/effects/web-weavers-speed-lines-dense.png",
+        "bytes": 1787463,
+        "hash": "b73f80d43b1e63cb4104cd572750dbb3cf09a333fae82cc2a178e1133e4fea49"
+      },
+      {
         "path": "assets/models/skateboard-free-model.glb",
         "bytes": 35359456,
         "hash": "069071dde7b10e22810dc56e4844b3e7947fd7f05a8894361d7fbba4cc99974b"
       },
       {
         "path": "assets/models/web-weavers-r15.glb",
-        "bytes": 172216,
-        "hash": "62e52e6027b5c864e5bacc88c509b043e30954c47b516d1fb3e33b80b7492421"
+        "bytes": 2162008,
+        "hash": "9a51608346c0134249b7f95f32d60cf16d240fe235f2dfe3f567c88b06f80616"
       },
       {
         "path": "assets/nextbot-chaser.png",
@@ -585,23 +445,43 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms-level1.html",
-        "bytes": 24881,
-        "hash": "618f8add09580cb5d9ac1eb56583dd90094f94f91f48f8d572b0a4186ba7d9e7"
+        "bytes": 28776,
+        "hash": "93646ce1f1d6d943816b1c4905dcbb243cc93526230aac084ecaa2ccad50317d"
       },
       {
         "path": "backrooms-level10.html",
-        "bytes": 16960,
-        "hash": "ac859545e9e2f9355811e0aa673aa95498d3f2f32685b30b748152cfefb2ef4e"
+        "bytes": 18434,
+        "hash": "e070dac9e8344a79f36e2c0eec8518104982d96db5148c7aa62385184738355d"
       },
       {
         "path": "backrooms-level2.html",
-        "bytes": 18803,
-        "hash": "fb5bad24a170a7e33d066dd97e3847e4e10464e9f4d8aa9f55be84f2f1ef80f0"
+        "bytes": 22592,
+        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
       },
       {
         "path": "backrooms-level7.html",
-        "bytes": 16179,
-        "hash": "edbed6abde8a1122390ae962fa995c3e491e39fd5e35ee8716eb4aea1f62100f"
+        "bytes": 18976,
+        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
+      },
+      {
+        "path": "backrooms-polish.css",
+        "bytes": 9857,
+        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
+      },
+      {
+        "path": "backrooms-ui.js",
+        "bytes": 3639,
+        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
+      },
+      {
+        "path": "backrooms-upgrade.css",
+        "bytes": 4027,
+        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
+      },
+      {
+        "path": "backrooms-upgrade.js",
+        "bytes": 12444,
+        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
       },
       {
         "path": "backrooms.css",
@@ -610,13 +490,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms.html",
-        "bytes": 1776,
-        "hash": "3b6d9f7716f38dedd0144472229999b04fec4238e8ddfecd7eb07732a8b677fd"
+        "bytes": 2011,
+        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
       },
       {
         "path": "backrooms.js",
-        "bytes": 24146,
-        "hash": "0f48ea8197974587c3eda5ee268eb3dceaa26ddc247a6cc10bb11e20f2251f00"
+        "bytes": 27538,
+        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
+      },
+      {
+        "path": "Blackjack.html",
+        "bytes": 21486,
+        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
       },
       {
         "path": "card-wars/app.js",
@@ -787,11 +672,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Axolotl.png",
         "bytes": 156537,
         "hash": "671ae7b5b31e56ea79913e8cb11708593ff36491ccba2a36d49d5782b19f28f8"
-      },
-      {
-        "path": "card-wars/assets/cards/database/BMO.png",
-        "bytes": 143048,
-        "hash": "9d6875feccea35b5534492824393e934dd72819f4e5fbbc19b354360d7b584f2"
       },
       {
         "path": "card-wars/assets/cards/database/Baby_Finn_&_Jake.png",
@@ -974,6 +854,11 @@ self.OFFLINE_CATALOG = {
         "hash": "9c2bbfe86dd1f353321b9521b590bce0e92adea9cc28b1e0452a576e47fdfe26"
       },
       {
+        "path": "card-wars/assets/cards/database/Blue_Plains_Drifter.png",
+        "bytes": 150575,
+        "hash": "d1278107ec8c659da10b0beac1ea0b24dda0a1ea6e6a34c74b8aa29000518271"
+      },
+      {
         "path": "card-wars/assets/cards/database/Blue_Plains1.png",
         "bytes": 122272,
         "hash": "2805cc61fb88e545addcd7a744464d8babb95be14960f9573c67c2f9898e8fb9"
@@ -994,11 +879,6 @@ self.OFFLINE_CATALOG = {
         "hash": "05226f34ec39dff90d078adfb6176493cdc01faf934ef52467f5ac6ff3ca7996"
       },
       {
-        "path": "card-wars/assets/cards/database/Blue_Plains_Drifter.png",
-        "bytes": 150575,
-        "hash": "d1278107ec8c659da10b0beac1ea0b24dda0a1ea6e6a34c74b8aa29000518271"
-      },
-      {
         "path": "card-wars/assets/cards/database/Blue_Slimey.png",
         "bytes": 162974,
         "hash": "2b95ed55a1894cb842e52b7bc13193bd5af839d5a1df6e5854b54dafbdf805f3"
@@ -1012,6 +892,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Blueberry_Pieclops.png",
         "bytes": 167438,
         "hash": "f10d1153361fd83fcdd3d81ea324fb10d8ad2bfe2c14939b9e13ff3aebc22b75"
+      },
+      {
+        "path": "card-wars/assets/cards/database/BMO.png",
+        "bytes": 143048,
+        "hash": "9d6875feccea35b5534492824393e934dd72819f4e5fbbc19b354360d7b584f2"
       },
       {
         "path": "card-wars/assets/cards/database/Boarder_Collie.png",
@@ -1594,14 +1479,14 @@ self.OFFLINE_CATALOG = {
         "hash": "b6e89f8c309d12ea1d74864da396314c2c14baae39dd2a411f78aee37d872e49"
       },
       {
-        "path": "card-wars/assets/cards/database/Cutie.png",
-        "bytes": 149384,
-        "hash": "ae233b8faf4d05b7e291f50cd66467037c074d6a2561b0d1389947693bf0be84"
-      },
-      {
         "path": "card-wars/assets/cards/database/Cutie_Koala.png",
         "bytes": 160269,
         "hash": "e16329759e5978bfca5071f2657463af2d4785f95484d67f1704f3822430311c"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Cutie.png",
+        "bytes": 149384,
+        "hash": "ae233b8faf4d05b7e291f50cd66467037c074d6a2561b0d1389947693bf0be84"
       },
       {
         "path": "card-wars/assets/cards/database/Cyclone.png",
@@ -1689,6 +1574,11 @@ self.OFFLINE_CATALOG = {
         "hash": "8c572c8eb344dad0567bc8e086cac86a64473044f7bfde50da9045465ec188bc"
       },
       {
+        "path": "card-wars/assets/cards/database/Dr_Death.png",
+        "bytes": 155009,
+        "hash": "ab0a2539e4eaaedc68e8ea3f31bd4dcc0da66d02cd0ffffa13675fd778dc6ce4"
+      },
+      {
         "path": "card-wars/assets/cards/database/Dr._Pieclops.png",
         "bytes": 166151,
         "hash": "81e5fdbd980114f0f805147f7e360ce750bd99b5464ccd61fc7e640f02bee659"
@@ -1697,11 +1587,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Dr._Stuffenstein.png",
         "bytes": 162908,
         "hash": "e6a918fe44935f1d506bc9e53c13ac5a4effded06ee9b2ede2dc8e9164a19689"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Dr_Death.png",
-        "bytes": 155009,
-        "hash": "ab0a2539e4eaaedc68e8ea3f31bd4dcc0da66d02cd0ffffa13675fd778dc6ce4"
       },
       {
         "path": "card-wars/assets/cards/database/Dragon_Claw.png",
@@ -1939,6 +1824,11 @@ self.OFFLINE_CATALOG = {
         "hash": "7c1d921765048584e793c60e2245a1a210c59255b25dae0f2cb42f8a9c1d0de4"
       },
       {
+        "path": "card-wars/assets/cards/database/Field_of_Nightmares.png",
+        "bytes": 153108,
+        "hash": "2dc7cbd9769c3d1d36707bda6828f2919477873971046cccf3a5799890026844"
+      },
+      {
         "path": "card-wars/assets/cards/database/Field_Reaper.png",
         "bytes": 157225,
         "hash": "f22a72b92a251417abfeae3b9b8659862058fdc9b855c9c1259a48922ec20923"
@@ -1947,11 +1837,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Field_Stalker.png",
         "bytes": 152737,
         "hash": "00f321e39823d22d627086dd4d847fb8eed787af2aa6c6e87304089c1946ad04"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Field_of_Nightmares.png",
-        "bytes": 153108,
-        "hash": "2dc7cbd9769c3d1d36707bda6828f2919477873971046cccf3a5799890026844"
       },
       {
         "path": "card-wars/assets/cards/database/Filthflinger.png",
@@ -2254,11 +2139,6 @@ self.OFFLINE_CATALOG = {
         "hash": "09fdfd72e794a147d8738bbf63d970ca22d4efbe270454acf97496d0c2f71d16"
       },
       {
-        "path": "card-wars/assets/cards/database/Ghost.png",
-        "bytes": 149019,
-        "hash": "12d2a8e49f7804a5a2537e1cbbca82939c6ce2d2d92848d6a6ef41682c6e4ac9"
-      },
-      {
         "path": "card-wars/assets/cards/database/Ghost_Chest_Burster.png",
         "bytes": 169830,
         "hash": "d07f954a8b2830c00c5a2d656745cdd535458ff270d9aef6f034f0f157c640c6"
@@ -2282,6 +2162,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Ghost_Tree.png",
         "bytes": 159637,
         "hash": "834d40d6ef5faca0f06cef2402eb27fe61a079d15bfa7ce27da488a8f0e46b91"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Ghost.png",
+        "bytes": 149019,
+        "hash": "12d2a8e49f7804a5a2537e1cbbca82939c6ce2d2d92848d6a6ef41682c6e4ac9"
       },
       {
         "path": "card-wars/assets/cards/database/Ghostly_Sorceress.png",
@@ -2319,14 +2204,14 @@ self.OFFLINE_CATALOG = {
         "hash": "d7b95311aec42fb86ea727ac3c9afc2b465841105f4162c7cf1b79ff87ebcdb5"
       },
       {
-        "path": "card-wars/assets/cards/database/Gnome_Snot.png",
-        "bytes": 150440,
-        "hash": "957074aee8691caefb98f7c4c5ef3ea446daa6b9ebb66f31069dad2465af30a8"
-      },
-      {
         "path": "card-wars/assets/cards/database/Gnome_Snot_Manufacturing_Facility.webp",
         "bytes": 290956,
         "hash": "2fec97e2aaa4989e3fcd9166f3d9227530114fb4c2e0883be28f35988cfe8241"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Gnome_Snot.png",
+        "bytes": 150440,
+        "hash": "957074aee8691caefb98f7c4c5ef3ea446daa6b9ebb66f31069dad2465af30a8"
       },
       {
         "path": "card-wars/assets/cards/database/Goat.png",
@@ -2644,11 +2529,6 @@ self.OFFLINE_CATALOG = {
         "hash": "848f29d01f4ef757cd62ab61d8678cd624103898e94d9fad637de378f6c1c198"
       },
       {
-        "path": "card-wars/assets/cards/database/Ice-olation_Cell.png",
-        "bytes": 158636,
-        "hash": "c404756255b85a3b07321b129a15f1176360d88282adae5e94bc72b674360df6"
-      },
-      {
         "path": "card-wars/assets/cards/database/Ice_Base.png",
         "bytes": 162318,
         "hash": "7ec31e60836b0de0f889fe022b3964c0ec0c2ef990c9763e5060f903ac70a123"
@@ -2679,6 +2559,11 @@ self.OFFLINE_CATALOG = {
         "hash": "f9454b7e54c345926842ac72b3606f9e9d8697c06e1cac7a3f7b9de28a030a2e"
       },
       {
+        "path": "card-wars/assets/cards/database/Ice-olation_Cell.png",
+        "bytes": 158636,
+        "hash": "c404756255b85a3b07321b129a15f1176360d88282adae5e94bc72b674360df6"
+      },
+      {
         "path": "card-wars/assets/cards/database/Icefang_Avalancheetah.png",
         "bytes": 155880,
         "hash": "acba2458a2907a9b0d5d3490680b315554076a89d961d4dd68e2c561d203e1cc"
@@ -2699,26 +2584,6 @@ self.OFFLINE_CATALOG = {
         "hash": "5c20d13edbb29c9618911bd8b6d28bf645cf69bba195d7a0d7d504c19cc99bf7"
       },
       {
-        "path": "card-wars/assets/cards/database/IcyLands1.png",
-        "bytes": 133751,
-        "hash": "e5730ea29932a6f622aaebfc969903f791301a524d797e57918b9083c032477a"
-      },
-      {
-        "path": "card-wars/assets/cards/database/IcyLands2.png",
-        "bytes": 146135,
-        "hash": "edbb2e32addb571cda6f68f501a0b120fb1320bb07624f6caa94afb5f7744608"
-      },
-      {
-        "path": "card-wars/assets/cards/database/IcyLands3.png",
-        "bytes": 146122,
-        "hash": "58fe098a78c9e40ba6137d0377e46b86ff5c45ae2e16f3421cf81ffed2208d76"
-      },
-      {
-        "path": "card-wars/assets/cards/database/IcyLands4.png",
-        "bytes": 151469,
-        "hash": "5764b76def265b813665efda3c158fd70963e39ccb8f7d3430602e6cd83e55fb"
-      },
-      {
         "path": "card-wars/assets/cards/database/Icy_Commando.png",
         "bytes": 153047,
         "hash": "80f24e9069d7584eb03278dae91aca8766a8b3bd07a01ba3d2587a456a3bd45e"
@@ -2737,6 +2602,26 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Icy_Intruder.png",
         "bytes": 168475,
         "hash": "f2daa0384cb345e3942171952dddae8af1c90bc62c786ce7488b16dd49c9b308"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands1.png",
+        "bytes": 133751,
+        "hash": "e5730ea29932a6f622aaebfc969903f791301a524d797e57918b9083c032477a"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands2.png",
+        "bytes": 146135,
+        "hash": "edbb2e32addb571cda6f68f501a0b120fb1320bb07624f6caa94afb5f7744608"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands3.png",
+        "bytes": 146122,
+        "hash": "58fe098a78c9e40ba6137d0377e46b86ff5c45ae2e16f3421cf81ffed2208d76"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands4.png",
+        "bytes": 151469,
+        "hash": "5764b76def265b813665efda3c158fd70963e39ccb8f7d3430602e6cd83e55fb"
       },
       {
         "path": "card-wars/assets/cards/database/Igloo_of_Sanctuary.png",
@@ -2914,6 +2799,21 @@ self.OFFLINE_CATALOG = {
         "hash": "915e8b3d8531fd07fb4d1085979f55930729f160b0bc84e080446fa5c3a40174"
       },
       {
+        "path": "card-wars/assets/cards/database/Lava_Ants.png",
+        "bytes": 160157,
+        "hash": "54fc4cb83b6accb9c07d42be486bde13adf11c75942c79413ab5e1e2fb1e891f"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Lava_Lamprey_Eels.png",
+        "bytes": 152860,
+        "hash": "8ffe253260bc7d3e7c0f22ab46258816b919e0b0a3bcde6f884d9569a6f481ff"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Lavafall_Retreat.png",
+        "bytes": 161092,
+        "hash": "b2f28214fe44dd71ede653000d2a219cda3d9c1d3d2705205a8053a71b3bc130"
+      },
+      {
         "path": "card-wars/assets/cards/database/LavaFlats1.png",
         "bytes": 133229,
         "hash": "d19997061dc8e7ab1ff209fee572a4802dba9273eb3432cf19d12daa4cd4e2ef"
@@ -2932,21 +2832,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/LavaFlats4.png",
         "bytes": 126239,
         "hash": "6124b477670fcb6682a2ea0a99599ce27da8048bf726adba4a0d0989e83ddc46"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Lava_Ants.png",
-        "bytes": 160157,
-        "hash": "54fc4cb83b6accb9c07d42be486bde13adf11c75942c79413ab5e1e2fb1e891f"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Lava_Lamprey_Eels.png",
-        "bytes": 152860,
-        "hash": "8ffe253260bc7d3e7c0f22ab46258816b919e0b0a3bcde6f884d9569a6f481ff"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Lavafall_Retreat.png",
-        "bytes": 161092,
-        "hash": "b2f28214fe44dd71ede653000d2a219cda3d9c1d3d2705205a8053a71b3bc130"
       },
       {
         "path": "card-wars/assets/cards/database/Learning_Center.png",
@@ -3069,14 +2954,14 @@ self.OFFLINE_CATALOG = {
         "hash": "3aa22ddc7b421150fd2506d614871c7e0347e117719f9ba281679dc41c3e998d"
       },
       {
-        "path": "card-wars/assets/cards/database/Magic_Man.png",
-        "bytes": 149714,
-        "hash": "d242a764a5cfe3181fefd2fc2a2542b5cb8e754a1fdd5257269a2de3aabd4e7f"
-      },
-      {
         "path": "card-wars/assets/cards/database/Magic_Man_KS2.png",
         "bytes": 147884,
         "hash": "7acd426c5653f305943a09f37b36db6fea7c49d2b5dfe6c6c6b8b4277ef38ae7"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Magic_Man.png",
+        "bytes": 149714,
+        "hash": "d242a764a5cfe3181fefd2fc2a2542b5cb8e754a1fdd5257269a2de3aabd4e7f"
       },
       {
         "path": "card-wars/assets/cards/database/Magic_Ring_Ding.png",
@@ -3274,6 +3159,21 @@ self.OFFLINE_CATALOG = {
         "hash": "f9cde0780a29c22001cfcaf3e67152e0c462788494ed278df432a3eef4a08909"
       },
       {
+        "path": "card-wars/assets/cards/database/Nice_Ice_Baby.png",
+        "bytes": 148787,
+        "hash": "e9a1b58cf4bc2bbbbf3aa3a4cb5ea925d3d76375049a44d70fecfc6e608a9f43"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Nice_Windmill.png",
+        "bytes": 162040,
+        "hash": "2c22267334a42de5ef508823b9fb872db5732793018465f8a77f11ff3a422a08"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Niceasaurus_Rex.png",
+        "bytes": 158223,
+        "hash": "93d8077f01ee481d99dcb99ce83da5af8797423e0cde8603b161a2ab7a6f2b55"
+      },
+      {
         "path": "card-wars/assets/cards/database/NiceLands1.png",
         "bytes": 134962,
         "hash": "0debb8a19e9ecd63dad2690c95ae0dc55d9f3cd92b1eb934b3ac80031bc861ee"
@@ -3292,21 +3192,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/NiceLands4.png",
         "bytes": 151422,
         "hash": "e7f3306472238c0068b204cfa469dc9d07a6e2309ae25298b7d13c9fa5d7b4fb"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Nice_Ice_Baby.png",
-        "bytes": 148787,
-        "hash": "e9a1b58cf4bc2bbbbf3aa3a4cb5ea925d3d76375049a44d70fecfc6e608a9f43"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Nice_Windmill.png",
-        "bytes": 162040,
-        "hash": "2c22267334a42de5ef508823b9fb872db5732793018465f8a77f11ff3a422a08"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Niceasaurus_Rex.png",
-        "bytes": 158223,
-        "hash": "93d8077f01ee481d99dcb99ce83da5af8797423e0cde8603b161a2ab7a6f2b55"
       },
       {
         "path": "card-wars/assets/cards/database/Night_Owl.png",
@@ -3439,14 +3324,14 @@ self.OFFLINE_CATALOG = {
         "hash": "6fb0adf6e5a5b6ee9b6da142b31ac4deb67e89ddee7e3ef9f753a2b1bf05af32"
       },
       {
-        "path": "card-wars/assets/cards/database/Peppermint_Butler.png",
-        "bytes": 130358,
-        "hash": "57baa82c36ceda7744c3e38a78f4d384967c52b90d53599b6efc1df45849dd38"
-      },
-      {
         "path": "card-wars/assets/cards/database/Peppermint_Butler_KS1.png",
         "bytes": 147224,
         "hash": "07ad4d0d217bc6171d43599dcc9ae55faca02f8f2fd2c0bd0d26cda38acff642"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Peppermint_Butler.png",
+        "bytes": 130358,
+        "hash": "57baa82c36ceda7744c3e38a78f4d384967c52b90d53599b6efc1df45849dd38"
       },
       {
         "path": "card-wars/assets/cards/database/Persuasive_Armourdillo.png",
@@ -3584,14 +3469,14 @@ self.OFFLINE_CATALOG = {
         "hash": "73294d65004a645a27c6c43c83305fea1e020d2e5d17149d8a14f148c5bf6873"
       },
       {
-        "path": "card-wars/assets/cards/database/Prismo.png",
-        "bytes": 127239,
-        "hash": "58cb05f00fa84316e030f2f02dd0ae6cef77c71b88a6b48ea22149429e0c6cc8"
-      },
-      {
         "path": "card-wars/assets/cards/database/Prismo_KS2.png",
         "bytes": 131192,
         "hash": "70497a21b30a471d1cb6bf9b24e7c6ea997aa1e48aca92f93509df2ed4d60c55"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Prismo.png",
+        "bytes": 127239,
+        "hash": "58cb05f00fa84316e030f2f02dd0ae6cef77c71b88a6b48ea22149429e0c6cc8"
       },
       {
         "path": "card-wars/assets/cards/database/Probably_Too_Many_Unicorns.jpg",
@@ -3809,14 +3694,14 @@ self.OFFLINE_CATALOG = {
         "hash": "71a1f6b7ff230766da58ff94e12417799ab1ebc3fecb457a80d2bbef8bb7ebd7"
       },
       {
-        "path": "card-wars/assets/cards/database/Rock_Out!.png",
-        "bytes": 152252,
-        "hash": "ae6e2c2f812b650472b00a0e3735a28d524d9766c0165c7dc5f5f1d302cc2ea8"
-      },
-      {
         "path": "card-wars/assets/cards/database/Rock_n_Roller.png",
         "bytes": 171544,
         "hash": "8a8c88913871996ca66352370264f5e9cb4f30e99a4013f571e9471e642f117a"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Rock_Out!.png",
+        "bytes": 152252,
+        "hash": "ae6e2c2f812b650472b00a0e3735a28d524d9766c0165c7dc5f5f1d302cc2ea8"
       },
       {
         "path": "card-wars/assets/cards/database/Rocktopus.png",
@@ -3857,11 +3742,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Sailing_Sand_Crab.png",
         "bytes": 169135,
         "hash": "13cbdf98560017d61f8286a5e9eea9cb8260c498bd66f914f38e1b5eaa440abc"
-      },
-      {
-        "path": "card-wars/assets/cards/database/SandWitch.png",
-        "bytes": 154801,
-        "hash": "37378b9128f1dc72b1613572010f3eb9665d5a1aa7d1ee834258382dcc235652"
       },
       {
         "path": "card-wars/assets/cards/database/Sand_Angel.png",
@@ -3922,6 +3802,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Sandsnake.png",
         "bytes": 154640,
         "hash": "830650c303928fa386cff8415880f7d16cdad20e57153640d9a3a73de26a20ff"
+      },
+      {
+        "path": "card-wars/assets/cards/database/SandWitch.png",
+        "bytes": 154801,
+        "hash": "37378b9128f1dc72b1613572010f3eb9665d5a1aa7d1ee834258382dcc235652"
       },
       {
         "path": "card-wars/assets/cards/database/SandyLands1.png",
@@ -4394,11 +4279,6 @@ self.OFFLINE_CATALOG = {
         "hash": "79b4775cfea0dd07ca9ce3739735ccbf3916b7f4d62eb67ab7d237841bbace8b"
       },
       {
-        "path": "card-wars/assets/cards/database/TNTimmy.png",
-        "bytes": 154785,
-        "hash": "dac018e29b8459a7a5cdf71beb81bdd4fd260bf97b60a3759a2b89cca4f09124"
-      },
-      {
         "path": "card-wars/assets/cards/database/Tailgator.png",
         "bytes": 166526,
         "hash": "3979dc841c977c8b31a6d47291e38cfbd0af66e84c098c31ab579846105a688e"
@@ -4494,24 +4374,19 @@ self.OFFLINE_CATALOG = {
         "hash": "bda3b452e85e582ff8d71f3b67e52d459c2afe68c5aa36cddfd6bc9fbe201e1f"
       },
       {
-        "path": "card-wars/assets/cards/database/The_Lich.png",
-        "bytes": 98405,
-        "hash": "b62bff7561a5064aba4a264b5e1b0d618a130037b47009b43753f045c5761013"
-      },
-      {
         "path": "card-wars/assets/cards/database/The_Lich_KS1.png",
         "bytes": 125588,
         "hash": "728c50d7ee22f310d8e848fa4634774e59593cf83e32d3188d7c2f754aca7224"
       },
       {
+        "path": "card-wars/assets/cards/database/The_Lich.png",
+        "bytes": 98405,
+        "hash": "b62bff7561a5064aba4a264b5e1b0d618a130037b47009b43753f045c5761013"
+      },
+      {
         "path": "card-wars/assets/cards/database/The_Mariachi.png",
         "bytes": 160189,
         "hash": "2617bbddfbd41dd82b721e5fd2059ecf0e2a453dd14a592fa11cd9d4bebf8aa5"
-      },
-      {
-        "path": "card-wars/assets/cards/database/The_Pig.png",
-        "bytes": 146775,
-        "hash": "e789b91d00cd7f1955a36f88119b3b7097a5b579a5ce88f0750c7c579acc727b"
       },
       {
         "path": "card-wars/assets/cards/database/The_Pig_-_Kickstarter.png",
@@ -4522,6 +4397,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/The_Pig_Promo.png",
         "bytes": 133205,
         "hash": "224132ee4334201a38bcf898da44c1132c61921e17afbcae36fd98d8fcf543e0"
+      },
+      {
+        "path": "card-wars/assets/cards/database/The_Pig.png",
+        "bytes": 146775,
+        "hash": "e789b91d00cd7f1955a36f88119b3b7097a5b579a5ce88f0750c7c579acc727b"
       },
       {
         "path": "card-wars/assets/cards/database/The_Pigs.png",
@@ -4582,6 +4462,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Titanbane_Amulet.png",
         "bytes": 156603,
         "hash": "a40de7858e0b3c3b4e1496aa51043db7a23f94fdfc2fcc94eafa25113ec55af4"
+      },
+      {
+        "path": "card-wars/assets/cards/database/TNTimmy.png",
+        "bytes": 154785,
+        "hash": "dac018e29b8459a7a5cdf71beb81bdd4fd260bf97b60a3759a2b89cca4f09124"
       },
       {
         "path": "card-wars/assets/cards/database/Toddler_Scholar.png",
@@ -4749,11 +4634,6 @@ self.OFFLINE_CATALOG = {
         "hash": "c7318c5d242f31aa10bcf59b34eef019d1ffdc52a1c40f1db04a119aaa084e1b"
       },
       {
-        "path": "card-wars/assets/cards/database/Wall_Of_Sand.png",
-        "bytes": 155951,
-        "hash": "c7e751e657d55442a29ae47fee6d521f05ada09311bd8ce26f696ac39e9dd309"
-      },
-      {
         "path": "card-wars/assets/cards/database/Wall_of_Chocolate.png",
         "bytes": 151244,
         "hash": "e0830762973176cf0b7bfbc1059348b0ad77179fe40a891f23d5676f409ca337"
@@ -4762,6 +4642,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Wall_of_Ears.png",
         "bytes": 158703,
         "hash": "193b4442e48552362dc8e0aa38ef68fcdf7230eff50c86074d647f16dfa80f32"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Wall_Of_Sand.png",
+        "bytes": 155951,
+        "hash": "c7e751e657d55442a29ae47fee6d521f05ada09311bd8ce26f696ac39e9dd309"
       },
       {
         "path": "card-wars/assets/cards/database/Wand_of_Hexcraft.png",
@@ -5399,6 +5284,16 @@ self.OFFLINE_CATALOG = {
         "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
       },
       {
+        "path": "DND.html",
+        "bytes": 735,
+        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
+      },
+      {
+        "path": "DNDC.html",
+        "bytes": 22362,
+        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
+      },
+      {
         "path": "dots&boxes.html",
         "bytes": 12293,
         "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
@@ -5429,14 +5324,14 @@ self.OFFLINE_CATALOG = {
         "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
-        "path": "hood-brawlers.js",
-        "bytes": 47955,
-        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
-      },
-      {
         "path": "hood_brawlers.html",
         "bytes": 63377,
         "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
+      },
+      {
+        "path": "hood-brawlers.js",
+        "bytes": 47955,
+        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
       },
       {
         "path": "impostor.html",
@@ -5462,6 +5357,91 @@ self.OFFLINE_CATALOG = {
         "path": "jp_srs_cards.html",
         "bytes": 37649,
         "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
+      },
+      {
+        "path": "KaraokeApp/index.html",
+        "bytes": 12750,
+        "hash": "c3a7304441250a6aee410233651d13c30dcb030a36d77a01d0d118f246192db2"
+      },
+      {
+        "path": "KaraokeApp/library.json",
+        "bytes": 3281,
+        "hash": "e46e389b0b1084f34f9ab830c2ba0b0c18a4773d7c42131590d2a1a391ad1219"
+      },
+      {
+        "path": "KaraokeApp/Videos/ABBA - Dancing Queen (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8283855,
+        "hash": "33bb2090635bc3f146f312b8a925e47bd3739f5954514d7339bbc402734d6ae5"
+      },
+      {
+        "path": "KaraokeApp/Videos/ABBA - Mamma Mia (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 7428600,
+        "hash": "a82575a41855818edb39dbd09a1c354e74e57df6771f7654266941b77842d235"
+      },
+      {
+        "path": "KaraokeApp/Videos/Frank Sinatra - Fly Me To The Moon (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 5354546,
+        "hash": "6a6cc1a818a6298fe98ccd1c2b37cbf0036b6ac1df25314f98141dba670b2dc9"
+      },
+      {
+        "path": "KaraokeApp/Videos/Frank Sinatra - My Way (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 9105226,
+        "hash": "1a6337a6d998bef07651b1a3164f93f1e0476003de40f036b7a1b3627e8896d3"
+      },
+      {
+        "path": "KaraokeApp/Videos/Hozier - Take Me To Church (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8889324,
+        "hash": "315abf5247b84a119646f7a3c4a82b0f949add2194e7448d6900dd188d56039c"
+      },
+      {
+        "path": "KaraokeApp/Videos/Justin Bieber ft. Ludacris - Baby (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8189603,
+        "hash": "2e018adc226e1d5f8e643ee89f0bace3f4d47d05dfa8758fe80468b949ee04ce"
+      },
+      {
+        "path": "KaraokeApp/Videos/Katy Perry ft. Snoop Dogg - California Gurls (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8873580,
+        "hash": "6677ec309d827004f99a9bebebcb528156fa18c59e866596cf7836e8c7d16631"
+      },
+      {
+        "path": "KaraokeApp/Videos/Laufey - From The Start (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 5470022,
+        "hash": "27539f05131b9507f4e1ecc1d715e1af0a345dfb03888c1541cc48be204a038f"
+      },
+      {
+        "path": "KaraokeApp/Videos/Mark Ronson ft. Amy Winehouse - Valerie (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 7612008,
+        "hash": "880a4abdd9803727abfec97f2368c3a0679d362e8be78d13beeeaca1ed046fd5"
+      },
+      {
+        "path": "KaraokeApp/Videos/Michael Jackson - Billie Jean (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 11467859,
+        "hash": "afc2050faa54e9e4227a6f8c89278b6c1a6690a4bcbe85dbcd8611a816b7508d"
+      },
+      {
+        "path": "KaraokeApp/Videos/Miley Cyrus - Flowers (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 6700872,
+        "hash": "738d4a42c76f9edf59383f33726d41f1ca2b07dcf5e6668d2b4af4ce33e4f4ab"
+      },
+      {
+        "path": "KaraokeApp/Videos/Miley Cyrus - Party In The USA (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 9010838,
+        "hash": "47b9f47997d999055ef2e4c1ac5da363b8c565ce974b164cd6fdb46e3bea975e"
+      },
+      {
+        "path": "KaraokeApp/Videos/Queen - Bohemian Rhapsody (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 11699752,
+        "hash": "4cabe10f30a9b7eeaefd88ed30e37a7e244937eb83900dc7e0134afee67ca2d6"
+      },
+      {
+        "path": "KaraokeApp/Videos/Stephen Sanchez - Until I Found You (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 4809738,
+        "hash": "b0db551a35de757aee0a84e778b5978e6e947d80667248632f09910658de98ec"
+      },
+      {
+        "path": "KaraokeApp/Videos/Whitney Houston - I Wanna Dance With Somebody (Who Loves Me) (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 10815398,
+        "hash": "1d546d7db4a86d79c538d39ecc624e8ea32869388f71819dedad10f086317836"
       },
       {
         "path": "maths-book.html",
@@ -5505,11 +5485,16 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "multiplayer.html",
-        "bytes": 74738,
-        "hash": "35738bf04ab84c98cc685138e0b132da36f184002dd0d6bc28e0da277297c5a0"
+        "bytes": 75653,
+        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
       },
       {
         "path": "nextup/app.js",
+        "bytes": 56225,
+        "hash": "aa7e0fed6e6cfa0b575b1454d4667d0bf8d9919d54c0e54dd1f009724e76771f"
+      },
+      {
+        "path": "NextUp/app.js",
         "bytes": 56225,
         "hash": "aa7e0fed6e6cfa0b575b1454d4667d0bf8d9919d54c0e54dd1f009724e76771f"
       },
@@ -5519,7 +5504,17 @@ self.OFFLINE_CATALOG = {
         "hash": "e82356a9fc79259befdf9b873eaaa80546c29e3a0656da4763a97b682e8c68f8"
       },
       {
+        "path": "NextUp/index.html",
+        "bytes": 978,
+        "hash": "e82356a9fc79259befdf9b873eaaa80546c29e3a0656da4763a97b682e8c68f8"
+      },
+      {
         "path": "nextup/style.css",
+        "bytes": 25644,
+        "hash": "bbb6e0298646982b1d9723cb20230688b23f54000baeeeb4dbaaac2786d98f94"
+      },
+      {
+        "path": "NextUp/style.css",
         "bytes": 25644,
         "hash": "bbb6e0298646982b1d9723cb20230688b23f54000baeeeb4dbaaac2786d98f94"
       },
@@ -5555,8 +5550,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50734,
-        "hash": "194233984f90c6fdd7c97f56bdb8c1b8d8439581696f4d95d29a0e2c11d19396"
+        "bytes": 57011,
+        "hash": "5035b2be46faaa19dc07de2cb52b117b6722f81a5cac370c9f62199cf96bb4f0"
+      },
+      {
+        "path": "pacman-clean-hud.css",
+        "bytes": 6204,
+        "hash": "b804451b12e13cc52e49728dc2556cb7824be1a3d12fa89612e2396ea9b53d91"
+      },
+      {
+        "path": "pacman-minimal-menu.css",
+        "bytes": 2717,
+        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
+      },
+      {
+        "path": "pacman-polish.css",
+        "bytes": 10994,
+        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
       },
       {
         "path": "party-lan.js",
@@ -5599,6 +5609,21 @@ self.OFFLINE_CATALOG = {
         "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
       },
       {
+        "path": "Relic Rush/assets/index-CIulLFM7.css",
+        "bytes": 38057,
+        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
+      },
+      {
+        "path": "Relic Rush/assets/index-CoIklmgF.js",
+        "bytes": 295614,
+        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
+      },
+      {
+        "path": "Relic Rush/index.html",
+        "bytes": 511,
+        "hash": "e8709b99d0ff62855b1ef7494848d2a43ffee9a22f03fb70d55e2392d122816e"
+      },
+      {
         "path": "relic_rush.css",
         "bytes": 5962,
         "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
@@ -5634,9 +5659,54 @@ self.OFFLINE_CATALOG = {
         "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
       },
       {
+        "path": "slot-icons/bar.svg",
+        "bytes": 1768,
+        "hash": "9b16c4017c3f1025c972af7138711dc3cb9e0b897f6dbf76df251edc40597471"
+      },
+      {
+        "path": "slot-icons/bell.svg",
+        "bytes": 1883,
+        "hash": "eb63dff6f34294b225cac3109b42a119ef4564fca296f8ac4bda96875f29aff7"
+      },
+      {
+        "path": "slot-icons/cherries.svg",
+        "bytes": 2094,
+        "hash": "164eb77016c60702fe1ca71d52100371c7de9ccb14f87de1731e8d94cac2c03a"
+      },
+      {
+        "path": "slot-icons/clover.svg",
+        "bytes": 1869,
+        "hash": "d6c412d3e0a4eb1002c4873b0581ff9a53e3e382f2b118903d9efa918cea6445"
+      },
+      {
+        "path": "slot-icons/diamond.svg",
+        "bytes": 1923,
+        "hash": "9836e42baa76714bfcc592caef37237af02fe920d689ccdf6ac5c9e649948118"
+      },
+      {
+        "path": "slot-icons/grapes.svg",
+        "bytes": 1990,
+        "hash": "7fc1aabca3d74e02d899c4b069367b690b4849af76272f1484c01cbf3276d17f"
+      },
+      {
+        "path": "slot-icons/lemon.svg",
+        "bytes": 1869,
+        "hash": "680e1f0f589864b4dc167372863c5bab4157d5f0fe9430f59005c31f90394fa6"
+      },
+      {
+        "path": "slot-icons/seven.svg",
+        "bytes": 1741,
+        "hash": "7a02cae38ebf7dbec050aee2aa131e453a7df0f7012b242f420537377542d149"
+      },
+      {
         "path": "slot-machine.html",
-        "bytes": 15745,
-        "hash": "115f9de9122a314f603f90cac639f6bd26a787283feabaea789b29a2c4a02a5e"
+        "bytes": 18828,
+        "hash": "e6eda3a2458662009e62b41b4fd4d053bfdcd684b103149a4ad04c32e7928dcb"
+      },
+      {
+        "path": "slot-mobile.css",
+        "bytes": 7141,
+        "hash": "cea46b61eca1575f92ac4b6dbd3e3b276a89c28f79aaf26fb58866e91c906aad"
       },
       {
         "path": "solos_rng.html",
@@ -5659,12 +5729,27 @@ self.OFFLINE_CATALOG = {
         "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
       },
       {
+        "path": "Terraria/assets/index-CIulLFM7.css",
+        "bytes": 38057,
+        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
+      },
+      {
         "path": "terraria/assets/index-CoIklmgF.js",
         "bytes": 295614,
         "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
       },
       {
+        "path": "Terraria/assets/index-CoIklmgF.js",
+        "bytes": 295614,
+        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
+      },
+      {
         "path": "terraria/index.html",
+        "bytes": 442,
+        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
+      },
+      {
+        "path": "Terraria/index.html",
         "bytes": 442,
         "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
       },
@@ -5700,18 +5785,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "web_weavers.css",
-        "bytes": 12940,
-        "hash": "7f50b7aea1dfef4bc764e0dc231d48140bf38b66bd0bece6572b5a27d626a850"
+        "bytes": 15634,
+        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 8599,
-        "hash": "eb12c04c5579a9c909a1e3db93923dae833ad69febdd09025d6a201ab092dca0"
+        "bytes": 9566,
+        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 179306,
-        "hash": "7c139934f706c6d4d3854d4cdd2b332959c3d6810e54322a16024a6727b017a9"
+        "bytes": 221420,
+        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
+      },
+      {
+        "path": "Who Wants to be a Millionaire.html",
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "whos-more-likely.html",
@@ -5724,8 +5814,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358132955,
-    "version": "21d1103feaffea41"
+    "bytes": 363065239,
+    "version": "f9b8bba3aaad81ea"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -5930,156 +6020,6 @@ self.OFFLINE_CATALOG = {
         "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
       },
       {
-        "path": "Blackjack.html",
-        "bytes": 21486,
-        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
-      },
-      {
-        "path": "DND.html",
-        "bytes": 735,
-        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
-      },
-      {
-        "path": "DNDC.html",
-        "bytes": 22362,
-        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
-      },
-      {
-        "path": "KaraokeApp/Videos/ABBA - Dancing Queen (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8283855,
-        "hash": "33bb2090635bc3f146f312b8a925e47bd3739f5954514d7339bbc402734d6ae5"
-      },
-      {
-        "path": "KaraokeApp/Videos/ABBA - Mamma Mia (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 7428600,
-        "hash": "a82575a41855818edb39dbd09a1c354e74e57df6771f7654266941b77842d235"
-      },
-      {
-        "path": "KaraokeApp/Videos/Frank Sinatra - Fly Me To The Moon (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 5354546,
-        "hash": "6a6cc1a818a6298fe98ccd1c2b37cbf0036b6ac1df25314f98141dba670b2dc9"
-      },
-      {
-        "path": "KaraokeApp/Videos/Frank Sinatra - My Way (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 9105226,
-        "hash": "1a6337a6d998bef07651b1a3164f93f1e0476003de40f036b7a1b3627e8896d3"
-      },
-      {
-        "path": "KaraokeApp/Videos/Hozier - Take Me To Church (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8889324,
-        "hash": "315abf5247b84a119646f7a3c4a82b0f949add2194e7448d6900dd188d56039c"
-      },
-      {
-        "path": "KaraokeApp/Videos/Justin Bieber ft. Ludacris - Baby (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8189603,
-        "hash": "2e018adc226e1d5f8e643ee89f0bace3f4d47d05dfa8758fe80468b949ee04ce"
-      },
-      {
-        "path": "KaraokeApp/Videos/Katy Perry ft. Snoop Dogg - California Gurls (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8873580,
-        "hash": "6677ec309d827004f99a9bebebcb528156fa18c59e866596cf7836e8c7d16631"
-      },
-      {
-        "path": "KaraokeApp/Videos/Laufey - From The Start (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 5470022,
-        "hash": "27539f05131b9507f4e1ecc1d715e1af0a345dfb03888c1541cc48be204a038f"
-      },
-      {
-        "path": "KaraokeApp/Videos/Mark Ronson ft. Amy Winehouse - Valerie (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 7612008,
-        "hash": "880a4abdd9803727abfec97f2368c3a0679d362e8be78d13beeeaca1ed046fd5"
-      },
-      {
-        "path": "KaraokeApp/Videos/Michael Jackson - Billie Jean (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 11467859,
-        "hash": "afc2050faa54e9e4227a6f8c89278b6c1a6690a4bcbe85dbcd8611a816b7508d"
-      },
-      {
-        "path": "KaraokeApp/Videos/Miley Cyrus - Flowers (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 6700872,
-        "hash": "738d4a42c76f9edf59383f33726d41f1ca2b07dcf5e6668d2b4af4ce33e4f4ab"
-      },
-      {
-        "path": "KaraokeApp/Videos/Miley Cyrus - Party In The USA (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 9010838,
-        "hash": "47b9f47997d999055ef2e4c1ac5da363b8c565ce974b164cd6fdb46e3bea975e"
-      },
-      {
-        "path": "KaraokeApp/Videos/Queen - Bohemian Rhapsody (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 11699752,
-        "hash": "4cabe10f30a9b7eeaefd88ed30e37a7e244937eb83900dc7e0134afee67ca2d6"
-      },
-      {
-        "path": "KaraokeApp/Videos/Stephen Sanchez - Until I Found You (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 4809738,
-        "hash": "b0db551a35de757aee0a84e778b5978e6e947d80667248632f09910658de98ec"
-      },
-      {
-        "path": "KaraokeApp/Videos/Whitney Houston - I Wanna Dance With Somebody (Who Loves Me) (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 10815398,
-        "hash": "1d546d7db4a86d79c538d39ecc624e8ea32869388f71819dedad10f086317836"
-      },
-      {
-        "path": "KaraokeApp/index.html",
-        "bytes": 12750,
-        "hash": "c3a7304441250a6aee410233651d13c30dcb030a36d77a01d0d118f246192db2"
-      },
-      {
-        "path": "KaraokeApp/library.json",
-        "bytes": 3281,
-        "hash": "e46e389b0b1084f34f9ab830c2ba0b0c18a4773d7c42131590d2a1a391ad1219"
-      },
-      {
-        "path": "NextUp/app.js",
-        "bytes": 56225,
-        "hash": "aa7e0fed6e6cfa0b575b1454d4667d0bf8d9919d54c0e54dd1f009724e76771f"
-      },
-      {
-        "path": "NextUp/index.html",
-        "bytes": 978,
-        "hash": "e82356a9fc79259befdf9b873eaaa80546c29e3a0656da4763a97b682e8c68f8"
-      },
-      {
-        "path": "NextUp/style.css",
-        "bytes": 25644,
-        "hash": "bbb6e0298646982b1d9723cb20230688b23f54000baeeeb4dbaaac2786d98f94"
-      },
-      {
-        "path": "Relic Rush/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "Relic Rush/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "Relic Rush/index.html",
-        "bytes": 511,
-        "hash": "e8709b99d0ff62855b1ef7494848d2a43ffee9a22f03fb70d55e2392d122816e"
-      },
-      {
-        "path": "Terraria/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "Terraria/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "Terraria/index.html",
-        "bytes": 442,
-        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
-      },
-      {
-        "path": "Who Wants to be a Millionaire.html",
-        "bytes": 44281,
-        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
-      },
-      {
         "path": "assets/chronos/era-0-pre-void.png",
         "bytes": 1246208,
         "hash": "c2a16ac35ff4f7898efbfd0fdd83eef8639c121a6dbb4a495ca0bc5600e5bba9"
@@ -6126,8 +6066,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "assets/models/web-weavers-r15.glb",
-        "bytes": 172216,
-        "hash": "62e52e6027b5c864e5bacc88c509b043e30954c47b516d1fb3e33b80b7492421"
+        "bytes": 2162008,
+        "hash": "9a51608346c0134249b7f95f32d60cf16d240fe235f2dfe3f567c88b06f80616"
       },
       {
         "path": "assets/nextbot-chaser.png",
@@ -6491,23 +6431,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms-level1.html",
-        "bytes": 24881,
-        "hash": "618f8add09580cb5d9ac1eb56583dd90094f94f91f48f8d572b0a4186ba7d9e7"
+        "bytes": 28776,
+        "hash": "93646ce1f1d6d943816b1c4905dcbb243cc93526230aac084ecaa2ccad50317d"
       },
       {
         "path": "backrooms-level10.html",
-        "bytes": 16960,
-        "hash": "ac859545e9e2f9355811e0aa673aa95498d3f2f32685b30b748152cfefb2ef4e"
+        "bytes": 18434,
+        "hash": "e070dac9e8344a79f36e2c0eec8518104982d96db5148c7aa62385184738355d"
       },
       {
         "path": "backrooms-level2.html",
-        "bytes": 18803,
-        "hash": "fb5bad24a170a7e33d066dd97e3847e4e10464e9f4d8aa9f55be84f2f1ef80f0"
+        "bytes": 22592,
+        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
       },
       {
         "path": "backrooms-level7.html",
-        "bytes": 16179,
-        "hash": "edbed6abde8a1122390ae962fa995c3e491e39fd5e35ee8716eb4aea1f62100f"
+        "bytes": 18976,
+        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
       },
       {
         "path": "backrooms.css",
@@ -6516,13 +6456,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms.html",
-        "bytes": 1776,
-        "hash": "3b6d9f7716f38dedd0144472229999b04fec4238e8ddfecd7eb07732a8b677fd"
+        "bytes": 2011,
+        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
       },
       {
         "path": "backrooms.js",
-        "bytes": 24146,
-        "hash": "0f48ea8197974587c3eda5ee268eb3dceaa26ddc247a6cc10bb11e20f2251f00"
+        "bytes": 27538,
+        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
+      },
+      {
+        "path": "Blackjack.html",
+        "bytes": 21486,
+        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
       },
       {
         "path": "card-wars/app.js",
@@ -6693,11 +6638,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Axolotl.png",
         "bytes": 156537,
         "hash": "671ae7b5b31e56ea79913e8cb11708593ff36491ccba2a36d49d5782b19f28f8"
-      },
-      {
-        "path": "card-wars/assets/cards/database/BMO.png",
-        "bytes": 143048,
-        "hash": "9d6875feccea35b5534492824393e934dd72819f4e5fbbc19b354360d7b584f2"
       },
       {
         "path": "card-wars/assets/cards/database/Baby_Finn_&_Jake.png",
@@ -6880,6 +6820,11 @@ self.OFFLINE_CATALOG = {
         "hash": "9c2bbfe86dd1f353321b9521b590bce0e92adea9cc28b1e0452a576e47fdfe26"
       },
       {
+        "path": "card-wars/assets/cards/database/Blue_Plains_Drifter.png",
+        "bytes": 150575,
+        "hash": "d1278107ec8c659da10b0beac1ea0b24dda0a1ea6e6a34c74b8aa29000518271"
+      },
+      {
         "path": "card-wars/assets/cards/database/Blue_Plains1.png",
         "bytes": 122272,
         "hash": "2805cc61fb88e545addcd7a744464d8babb95be14960f9573c67c2f9898e8fb9"
@@ -6900,11 +6845,6 @@ self.OFFLINE_CATALOG = {
         "hash": "05226f34ec39dff90d078adfb6176493cdc01faf934ef52467f5ac6ff3ca7996"
       },
       {
-        "path": "card-wars/assets/cards/database/Blue_Plains_Drifter.png",
-        "bytes": 150575,
-        "hash": "d1278107ec8c659da10b0beac1ea0b24dda0a1ea6e6a34c74b8aa29000518271"
-      },
-      {
         "path": "card-wars/assets/cards/database/Blue_Slimey.png",
         "bytes": 162974,
         "hash": "2b95ed55a1894cb842e52b7bc13193bd5af839d5a1df6e5854b54dafbdf805f3"
@@ -6918,6 +6858,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Blueberry_Pieclops.png",
         "bytes": 167438,
         "hash": "f10d1153361fd83fcdd3d81ea324fb10d8ad2bfe2c14939b9e13ff3aebc22b75"
+      },
+      {
+        "path": "card-wars/assets/cards/database/BMO.png",
+        "bytes": 143048,
+        "hash": "9d6875feccea35b5534492824393e934dd72819f4e5fbbc19b354360d7b584f2"
       },
       {
         "path": "card-wars/assets/cards/database/Boarder_Collie.png",
@@ -7500,14 +7445,14 @@ self.OFFLINE_CATALOG = {
         "hash": "b6e89f8c309d12ea1d74864da396314c2c14baae39dd2a411f78aee37d872e49"
       },
       {
-        "path": "card-wars/assets/cards/database/Cutie.png",
-        "bytes": 149384,
-        "hash": "ae233b8faf4d05b7e291f50cd66467037c074d6a2561b0d1389947693bf0be84"
-      },
-      {
         "path": "card-wars/assets/cards/database/Cutie_Koala.png",
         "bytes": 160269,
         "hash": "e16329759e5978bfca5071f2657463af2d4785f95484d67f1704f3822430311c"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Cutie.png",
+        "bytes": 149384,
+        "hash": "ae233b8faf4d05b7e291f50cd66467037c074d6a2561b0d1389947693bf0be84"
       },
       {
         "path": "card-wars/assets/cards/database/Cyclone.png",
@@ -7595,6 +7540,11 @@ self.OFFLINE_CATALOG = {
         "hash": "8c572c8eb344dad0567bc8e086cac86a64473044f7bfde50da9045465ec188bc"
       },
       {
+        "path": "card-wars/assets/cards/database/Dr_Death.png",
+        "bytes": 155009,
+        "hash": "ab0a2539e4eaaedc68e8ea3f31bd4dcc0da66d02cd0ffffa13675fd778dc6ce4"
+      },
+      {
         "path": "card-wars/assets/cards/database/Dr._Pieclops.png",
         "bytes": 166151,
         "hash": "81e5fdbd980114f0f805147f7e360ce750bd99b5464ccd61fc7e640f02bee659"
@@ -7603,11 +7553,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Dr._Stuffenstein.png",
         "bytes": 162908,
         "hash": "e6a918fe44935f1d506bc9e53c13ac5a4effded06ee9b2ede2dc8e9164a19689"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Dr_Death.png",
-        "bytes": 155009,
-        "hash": "ab0a2539e4eaaedc68e8ea3f31bd4dcc0da66d02cd0ffffa13675fd778dc6ce4"
       },
       {
         "path": "card-wars/assets/cards/database/Dragon_Claw.png",
@@ -7845,6 +7790,11 @@ self.OFFLINE_CATALOG = {
         "hash": "7c1d921765048584e793c60e2245a1a210c59255b25dae0f2cb42f8a9c1d0de4"
       },
       {
+        "path": "card-wars/assets/cards/database/Field_of_Nightmares.png",
+        "bytes": 153108,
+        "hash": "2dc7cbd9769c3d1d36707bda6828f2919477873971046cccf3a5799890026844"
+      },
+      {
         "path": "card-wars/assets/cards/database/Field_Reaper.png",
         "bytes": 157225,
         "hash": "f22a72b92a251417abfeae3b9b8659862058fdc9b855c9c1259a48922ec20923"
@@ -7853,11 +7803,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Field_Stalker.png",
         "bytes": 152737,
         "hash": "00f321e39823d22d627086dd4d847fb8eed787af2aa6c6e87304089c1946ad04"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Field_of_Nightmares.png",
-        "bytes": 153108,
-        "hash": "2dc7cbd9769c3d1d36707bda6828f2919477873971046cccf3a5799890026844"
       },
       {
         "path": "card-wars/assets/cards/database/Filthflinger.png",
@@ -8160,11 +8105,6 @@ self.OFFLINE_CATALOG = {
         "hash": "09fdfd72e794a147d8738bbf63d970ca22d4efbe270454acf97496d0c2f71d16"
       },
       {
-        "path": "card-wars/assets/cards/database/Ghost.png",
-        "bytes": 149019,
-        "hash": "12d2a8e49f7804a5a2537e1cbbca82939c6ce2d2d92848d6a6ef41682c6e4ac9"
-      },
-      {
         "path": "card-wars/assets/cards/database/Ghost_Chest_Burster.png",
         "bytes": 169830,
         "hash": "d07f954a8b2830c00c5a2d656745cdd535458ff270d9aef6f034f0f157c640c6"
@@ -8188,6 +8128,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Ghost_Tree.png",
         "bytes": 159637,
         "hash": "834d40d6ef5faca0f06cef2402eb27fe61a079d15bfa7ce27da488a8f0e46b91"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Ghost.png",
+        "bytes": 149019,
+        "hash": "12d2a8e49f7804a5a2537e1cbbca82939c6ce2d2d92848d6a6ef41682c6e4ac9"
       },
       {
         "path": "card-wars/assets/cards/database/Ghostly_Sorceress.png",
@@ -8225,14 +8170,14 @@ self.OFFLINE_CATALOG = {
         "hash": "d7b95311aec42fb86ea727ac3c9afc2b465841105f4162c7cf1b79ff87ebcdb5"
       },
       {
-        "path": "card-wars/assets/cards/database/Gnome_Snot.png",
-        "bytes": 150440,
-        "hash": "957074aee8691caefb98f7c4c5ef3ea446daa6b9ebb66f31069dad2465af30a8"
-      },
-      {
         "path": "card-wars/assets/cards/database/Gnome_Snot_Manufacturing_Facility.webp",
         "bytes": 290956,
         "hash": "2fec97e2aaa4989e3fcd9166f3d9227530114fb4c2e0883be28f35988cfe8241"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Gnome_Snot.png",
+        "bytes": 150440,
+        "hash": "957074aee8691caefb98f7c4c5ef3ea446daa6b9ebb66f31069dad2465af30a8"
       },
       {
         "path": "card-wars/assets/cards/database/Goat.png",
@@ -8550,11 +8495,6 @@ self.OFFLINE_CATALOG = {
         "hash": "848f29d01f4ef757cd62ab61d8678cd624103898e94d9fad637de378f6c1c198"
       },
       {
-        "path": "card-wars/assets/cards/database/Ice-olation_Cell.png",
-        "bytes": 158636,
-        "hash": "c404756255b85a3b07321b129a15f1176360d88282adae5e94bc72b674360df6"
-      },
-      {
         "path": "card-wars/assets/cards/database/Ice_Base.png",
         "bytes": 162318,
         "hash": "7ec31e60836b0de0f889fe022b3964c0ec0c2ef990c9763e5060f903ac70a123"
@@ -8585,6 +8525,11 @@ self.OFFLINE_CATALOG = {
         "hash": "f9454b7e54c345926842ac72b3606f9e9d8697c06e1cac7a3f7b9de28a030a2e"
       },
       {
+        "path": "card-wars/assets/cards/database/Ice-olation_Cell.png",
+        "bytes": 158636,
+        "hash": "c404756255b85a3b07321b129a15f1176360d88282adae5e94bc72b674360df6"
+      },
+      {
         "path": "card-wars/assets/cards/database/Icefang_Avalancheetah.png",
         "bytes": 155880,
         "hash": "acba2458a2907a9b0d5d3490680b315554076a89d961d4dd68e2c561d203e1cc"
@@ -8605,26 +8550,6 @@ self.OFFLINE_CATALOG = {
         "hash": "5c20d13edbb29c9618911bd8b6d28bf645cf69bba195d7a0d7d504c19cc99bf7"
       },
       {
-        "path": "card-wars/assets/cards/database/IcyLands1.png",
-        "bytes": 133751,
-        "hash": "e5730ea29932a6f622aaebfc969903f791301a524d797e57918b9083c032477a"
-      },
-      {
-        "path": "card-wars/assets/cards/database/IcyLands2.png",
-        "bytes": 146135,
-        "hash": "edbb2e32addb571cda6f68f501a0b120fb1320bb07624f6caa94afb5f7744608"
-      },
-      {
-        "path": "card-wars/assets/cards/database/IcyLands3.png",
-        "bytes": 146122,
-        "hash": "58fe098a78c9e40ba6137d0377e46b86ff5c45ae2e16f3421cf81ffed2208d76"
-      },
-      {
-        "path": "card-wars/assets/cards/database/IcyLands4.png",
-        "bytes": 151469,
-        "hash": "5764b76def265b813665efda3c158fd70963e39ccb8f7d3430602e6cd83e55fb"
-      },
-      {
         "path": "card-wars/assets/cards/database/Icy_Commando.png",
         "bytes": 153047,
         "hash": "80f24e9069d7584eb03278dae91aca8766a8b3bd07a01ba3d2587a456a3bd45e"
@@ -8643,6 +8568,26 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Icy_Intruder.png",
         "bytes": 168475,
         "hash": "f2daa0384cb345e3942171952dddae8af1c90bc62c786ce7488b16dd49c9b308"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands1.png",
+        "bytes": 133751,
+        "hash": "e5730ea29932a6f622aaebfc969903f791301a524d797e57918b9083c032477a"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands2.png",
+        "bytes": 146135,
+        "hash": "edbb2e32addb571cda6f68f501a0b120fb1320bb07624f6caa94afb5f7744608"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands3.png",
+        "bytes": 146122,
+        "hash": "58fe098a78c9e40ba6137d0377e46b86ff5c45ae2e16f3421cf81ffed2208d76"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands4.png",
+        "bytes": 151469,
+        "hash": "5764b76def265b813665efda3c158fd70963e39ccb8f7d3430602e6cd83e55fb"
       },
       {
         "path": "card-wars/assets/cards/database/Igloo_of_Sanctuary.png",
@@ -8820,6 +8765,21 @@ self.OFFLINE_CATALOG = {
         "hash": "915e8b3d8531fd07fb4d1085979f55930729f160b0bc84e080446fa5c3a40174"
       },
       {
+        "path": "card-wars/assets/cards/database/Lava_Ants.png",
+        "bytes": 160157,
+        "hash": "54fc4cb83b6accb9c07d42be486bde13adf11c75942c79413ab5e1e2fb1e891f"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Lava_Lamprey_Eels.png",
+        "bytes": 152860,
+        "hash": "8ffe253260bc7d3e7c0f22ab46258816b919e0b0a3bcde6f884d9569a6f481ff"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Lavafall_Retreat.png",
+        "bytes": 161092,
+        "hash": "b2f28214fe44dd71ede653000d2a219cda3d9c1d3d2705205a8053a71b3bc130"
+      },
+      {
         "path": "card-wars/assets/cards/database/LavaFlats1.png",
         "bytes": 133229,
         "hash": "d19997061dc8e7ab1ff209fee572a4802dba9273eb3432cf19d12daa4cd4e2ef"
@@ -8838,21 +8798,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/LavaFlats4.png",
         "bytes": 126239,
         "hash": "6124b477670fcb6682a2ea0a99599ce27da8048bf726adba4a0d0989e83ddc46"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Lava_Ants.png",
-        "bytes": 160157,
-        "hash": "54fc4cb83b6accb9c07d42be486bde13adf11c75942c79413ab5e1e2fb1e891f"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Lava_Lamprey_Eels.png",
-        "bytes": 152860,
-        "hash": "8ffe253260bc7d3e7c0f22ab46258816b919e0b0a3bcde6f884d9569a6f481ff"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Lavafall_Retreat.png",
-        "bytes": 161092,
-        "hash": "b2f28214fe44dd71ede653000d2a219cda3d9c1d3d2705205a8053a71b3bc130"
       },
       {
         "path": "card-wars/assets/cards/database/Learning_Center.png",
@@ -8975,14 +8920,14 @@ self.OFFLINE_CATALOG = {
         "hash": "3aa22ddc7b421150fd2506d614871c7e0347e117719f9ba281679dc41c3e998d"
       },
       {
-        "path": "card-wars/assets/cards/database/Magic_Man.png",
-        "bytes": 149714,
-        "hash": "d242a764a5cfe3181fefd2fc2a2542b5cb8e754a1fdd5257269a2de3aabd4e7f"
-      },
-      {
         "path": "card-wars/assets/cards/database/Magic_Man_KS2.png",
         "bytes": 147884,
         "hash": "7acd426c5653f305943a09f37b36db6fea7c49d2b5dfe6c6c6b8b4277ef38ae7"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Magic_Man.png",
+        "bytes": 149714,
+        "hash": "d242a764a5cfe3181fefd2fc2a2542b5cb8e754a1fdd5257269a2de3aabd4e7f"
       },
       {
         "path": "card-wars/assets/cards/database/Magic_Ring_Ding.png",
@@ -9180,6 +9125,21 @@ self.OFFLINE_CATALOG = {
         "hash": "f9cde0780a29c22001cfcaf3e67152e0c462788494ed278df432a3eef4a08909"
       },
       {
+        "path": "card-wars/assets/cards/database/Nice_Ice_Baby.png",
+        "bytes": 148787,
+        "hash": "e9a1b58cf4bc2bbbbf3aa3a4cb5ea925d3d76375049a44d70fecfc6e608a9f43"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Nice_Windmill.png",
+        "bytes": 162040,
+        "hash": "2c22267334a42de5ef508823b9fb872db5732793018465f8a77f11ff3a422a08"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Niceasaurus_Rex.png",
+        "bytes": 158223,
+        "hash": "93d8077f01ee481d99dcb99ce83da5af8797423e0cde8603b161a2ab7a6f2b55"
+      },
+      {
         "path": "card-wars/assets/cards/database/NiceLands1.png",
         "bytes": 134962,
         "hash": "0debb8a19e9ecd63dad2690c95ae0dc55d9f3cd92b1eb934b3ac80031bc861ee"
@@ -9198,21 +9158,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/NiceLands4.png",
         "bytes": 151422,
         "hash": "e7f3306472238c0068b204cfa469dc9d07a6e2309ae25298b7d13c9fa5d7b4fb"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Nice_Ice_Baby.png",
-        "bytes": 148787,
-        "hash": "e9a1b58cf4bc2bbbbf3aa3a4cb5ea925d3d76375049a44d70fecfc6e608a9f43"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Nice_Windmill.png",
-        "bytes": 162040,
-        "hash": "2c22267334a42de5ef508823b9fb872db5732793018465f8a77f11ff3a422a08"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Niceasaurus_Rex.png",
-        "bytes": 158223,
-        "hash": "93d8077f01ee481d99dcb99ce83da5af8797423e0cde8603b161a2ab7a6f2b55"
       },
       {
         "path": "card-wars/assets/cards/database/Night_Owl.png",
@@ -9345,14 +9290,14 @@ self.OFFLINE_CATALOG = {
         "hash": "6fb0adf6e5a5b6ee9b6da142b31ac4deb67e89ddee7e3ef9f753a2b1bf05af32"
       },
       {
-        "path": "card-wars/assets/cards/database/Peppermint_Butler.png",
-        "bytes": 130358,
-        "hash": "57baa82c36ceda7744c3e38a78f4d384967c52b90d53599b6efc1df45849dd38"
-      },
-      {
         "path": "card-wars/assets/cards/database/Peppermint_Butler_KS1.png",
         "bytes": 147224,
         "hash": "07ad4d0d217bc6171d43599dcc9ae55faca02f8f2fd2c0bd0d26cda38acff642"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Peppermint_Butler.png",
+        "bytes": 130358,
+        "hash": "57baa82c36ceda7744c3e38a78f4d384967c52b90d53599b6efc1df45849dd38"
       },
       {
         "path": "card-wars/assets/cards/database/Persuasive_Armourdillo.png",
@@ -9490,14 +9435,14 @@ self.OFFLINE_CATALOG = {
         "hash": "73294d65004a645a27c6c43c83305fea1e020d2e5d17149d8a14f148c5bf6873"
       },
       {
-        "path": "card-wars/assets/cards/database/Prismo.png",
-        "bytes": 127239,
-        "hash": "58cb05f00fa84316e030f2f02dd0ae6cef77c71b88a6b48ea22149429e0c6cc8"
-      },
-      {
         "path": "card-wars/assets/cards/database/Prismo_KS2.png",
         "bytes": 131192,
         "hash": "70497a21b30a471d1cb6bf9b24e7c6ea997aa1e48aca92f93509df2ed4d60c55"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Prismo.png",
+        "bytes": 127239,
+        "hash": "58cb05f00fa84316e030f2f02dd0ae6cef77c71b88a6b48ea22149429e0c6cc8"
       },
       {
         "path": "card-wars/assets/cards/database/Probably_Too_Many_Unicorns.jpg",
@@ -9715,14 +9660,14 @@ self.OFFLINE_CATALOG = {
         "hash": "71a1f6b7ff230766da58ff94e12417799ab1ebc3fecb457a80d2bbef8bb7ebd7"
       },
       {
-        "path": "card-wars/assets/cards/database/Rock_Out!.png",
-        "bytes": 152252,
-        "hash": "ae6e2c2f812b650472b00a0e3735a28d524d9766c0165c7dc5f5f1d302cc2ea8"
-      },
-      {
         "path": "card-wars/assets/cards/database/Rock_n_Roller.png",
         "bytes": 171544,
         "hash": "8a8c88913871996ca66352370264f5e9cb4f30e99a4013f571e9471e642f117a"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Rock_Out!.png",
+        "bytes": 152252,
+        "hash": "ae6e2c2f812b650472b00a0e3735a28d524d9766c0165c7dc5f5f1d302cc2ea8"
       },
       {
         "path": "card-wars/assets/cards/database/Rocktopus.png",
@@ -9763,11 +9708,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Sailing_Sand_Crab.png",
         "bytes": 169135,
         "hash": "13cbdf98560017d61f8286a5e9eea9cb8260c498bd66f914f38e1b5eaa440abc"
-      },
-      {
-        "path": "card-wars/assets/cards/database/SandWitch.png",
-        "bytes": 154801,
-        "hash": "37378b9128f1dc72b1613572010f3eb9665d5a1aa7d1ee834258382dcc235652"
       },
       {
         "path": "card-wars/assets/cards/database/Sand_Angel.png",
@@ -9828,6 +9768,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Sandsnake.png",
         "bytes": 154640,
         "hash": "830650c303928fa386cff8415880f7d16cdad20e57153640d9a3a73de26a20ff"
+      },
+      {
+        "path": "card-wars/assets/cards/database/SandWitch.png",
+        "bytes": 154801,
+        "hash": "37378b9128f1dc72b1613572010f3eb9665d5a1aa7d1ee834258382dcc235652"
       },
       {
         "path": "card-wars/assets/cards/database/SandyLands1.png",
@@ -10300,11 +10245,6 @@ self.OFFLINE_CATALOG = {
         "hash": "79b4775cfea0dd07ca9ce3739735ccbf3916b7f4d62eb67ab7d237841bbace8b"
       },
       {
-        "path": "card-wars/assets/cards/database/TNTimmy.png",
-        "bytes": 154785,
-        "hash": "dac018e29b8459a7a5cdf71beb81bdd4fd260bf97b60a3759a2b89cca4f09124"
-      },
-      {
         "path": "card-wars/assets/cards/database/Tailgator.png",
         "bytes": 166526,
         "hash": "3979dc841c977c8b31a6d47291e38cfbd0af66e84c098c31ab579846105a688e"
@@ -10400,24 +10340,19 @@ self.OFFLINE_CATALOG = {
         "hash": "bda3b452e85e582ff8d71f3b67e52d459c2afe68c5aa36cddfd6bc9fbe201e1f"
       },
       {
-        "path": "card-wars/assets/cards/database/The_Lich.png",
-        "bytes": 98405,
-        "hash": "b62bff7561a5064aba4a264b5e1b0d618a130037b47009b43753f045c5761013"
-      },
-      {
         "path": "card-wars/assets/cards/database/The_Lich_KS1.png",
         "bytes": 125588,
         "hash": "728c50d7ee22f310d8e848fa4634774e59593cf83e32d3188d7c2f754aca7224"
       },
       {
+        "path": "card-wars/assets/cards/database/The_Lich.png",
+        "bytes": 98405,
+        "hash": "b62bff7561a5064aba4a264b5e1b0d618a130037b47009b43753f045c5761013"
+      },
+      {
         "path": "card-wars/assets/cards/database/The_Mariachi.png",
         "bytes": 160189,
         "hash": "2617bbddfbd41dd82b721e5fd2059ecf0e2a453dd14a592fa11cd9d4bebf8aa5"
-      },
-      {
-        "path": "card-wars/assets/cards/database/The_Pig.png",
-        "bytes": 146775,
-        "hash": "e789b91d00cd7f1955a36f88119b3b7097a5b579a5ce88f0750c7c579acc727b"
       },
       {
         "path": "card-wars/assets/cards/database/The_Pig_-_Kickstarter.png",
@@ -10428,6 +10363,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/The_Pig_Promo.png",
         "bytes": 133205,
         "hash": "224132ee4334201a38bcf898da44c1132c61921e17afbcae36fd98d8fcf543e0"
+      },
+      {
+        "path": "card-wars/assets/cards/database/The_Pig.png",
+        "bytes": 146775,
+        "hash": "e789b91d00cd7f1955a36f88119b3b7097a5b579a5ce88f0750c7c579acc727b"
       },
       {
         "path": "card-wars/assets/cards/database/The_Pigs.png",
@@ -10488,6 +10428,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Titanbane_Amulet.png",
         "bytes": 156603,
         "hash": "a40de7858e0b3c3b4e1496aa51043db7a23f94fdfc2fcc94eafa25113ec55af4"
+      },
+      {
+        "path": "card-wars/assets/cards/database/TNTimmy.png",
+        "bytes": 154785,
+        "hash": "dac018e29b8459a7a5cdf71beb81bdd4fd260bf97b60a3759a2b89cca4f09124"
       },
       {
         "path": "card-wars/assets/cards/database/Toddler_Scholar.png",
@@ -10655,11 +10600,6 @@ self.OFFLINE_CATALOG = {
         "hash": "c7318c5d242f31aa10bcf59b34eef019d1ffdc52a1c40f1db04a119aaa084e1b"
       },
       {
-        "path": "card-wars/assets/cards/database/Wall_Of_Sand.png",
-        "bytes": 155951,
-        "hash": "c7e751e657d55442a29ae47fee6d521f05ada09311bd8ce26f696ac39e9dd309"
-      },
-      {
         "path": "card-wars/assets/cards/database/Wall_of_Chocolate.png",
         "bytes": 151244,
         "hash": "e0830762973176cf0b7bfbc1059348b0ad77179fe40a891f23d5676f409ca337"
@@ -10668,6 +10608,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Wall_of_Ears.png",
         "bytes": 158703,
         "hash": "193b4442e48552362dc8e0aa38ef68fcdf7230eff50c86074d647f16dfa80f32"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Wall_Of_Sand.png",
+        "bytes": 155951,
+        "hash": "c7e751e657d55442a29ae47fee6d521f05ada09311bd8ce26f696ac39e9dd309"
       },
       {
         "path": "card-wars/assets/cards/database/Wand_of_Hexcraft.png",
@@ -11305,6 +11250,16 @@ self.OFFLINE_CATALOG = {
         "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
       },
       {
+        "path": "DND.html",
+        "bytes": 735,
+        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
+      },
+      {
+        "path": "DNDC.html",
+        "bytes": 22362,
+        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
+      },
+      {
         "path": "dots&boxes.html",
         "bytes": 12293,
         "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
@@ -11335,14 +11290,14 @@ self.OFFLINE_CATALOG = {
         "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
-        "path": "hood-brawlers.js",
-        "bytes": 47955,
-        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
-      },
-      {
         "path": "hood_brawlers.html",
         "bytes": 63377,
         "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
+      },
+      {
+        "path": "hood-brawlers.js",
+        "bytes": 47955,
+        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
       },
       {
         "path": "impostor.html",
@@ -11368,6 +11323,91 @@ self.OFFLINE_CATALOG = {
         "path": "jp_srs_cards.html",
         "bytes": 37649,
         "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
+      },
+      {
+        "path": "KaraokeApp/index.html",
+        "bytes": 12750,
+        "hash": "c3a7304441250a6aee410233651d13c30dcb030a36d77a01d0d118f246192db2"
+      },
+      {
+        "path": "KaraokeApp/library.json",
+        "bytes": 3281,
+        "hash": "e46e389b0b1084f34f9ab830c2ba0b0c18a4773d7c42131590d2a1a391ad1219"
+      },
+      {
+        "path": "KaraokeApp/Videos/ABBA - Dancing Queen (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8283855,
+        "hash": "33bb2090635bc3f146f312b8a925e47bd3739f5954514d7339bbc402734d6ae5"
+      },
+      {
+        "path": "KaraokeApp/Videos/ABBA - Mamma Mia (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 7428600,
+        "hash": "a82575a41855818edb39dbd09a1c354e74e57df6771f7654266941b77842d235"
+      },
+      {
+        "path": "KaraokeApp/Videos/Frank Sinatra - Fly Me To The Moon (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 5354546,
+        "hash": "6a6cc1a818a6298fe98ccd1c2b37cbf0036b6ac1df25314f98141dba670b2dc9"
+      },
+      {
+        "path": "KaraokeApp/Videos/Frank Sinatra - My Way (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 9105226,
+        "hash": "1a6337a6d998bef07651b1a3164f93f1e0476003de40f036b7a1b3627e8896d3"
+      },
+      {
+        "path": "KaraokeApp/Videos/Hozier - Take Me To Church (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8889324,
+        "hash": "315abf5247b84a119646f7a3c4a82b0f949add2194e7448d6900dd188d56039c"
+      },
+      {
+        "path": "KaraokeApp/Videos/Justin Bieber ft. Ludacris - Baby (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8189603,
+        "hash": "2e018adc226e1d5f8e643ee89f0bace3f4d47d05dfa8758fe80468b949ee04ce"
+      },
+      {
+        "path": "KaraokeApp/Videos/Katy Perry ft. Snoop Dogg - California Gurls (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8873580,
+        "hash": "6677ec309d827004f99a9bebebcb528156fa18c59e866596cf7836e8c7d16631"
+      },
+      {
+        "path": "KaraokeApp/Videos/Laufey - From The Start (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 5470022,
+        "hash": "27539f05131b9507f4e1ecc1d715e1af0a345dfb03888c1541cc48be204a038f"
+      },
+      {
+        "path": "KaraokeApp/Videos/Mark Ronson ft. Amy Winehouse - Valerie (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 7612008,
+        "hash": "880a4abdd9803727abfec97f2368c3a0679d362e8be78d13beeeaca1ed046fd5"
+      },
+      {
+        "path": "KaraokeApp/Videos/Michael Jackson - Billie Jean (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 11467859,
+        "hash": "afc2050faa54e9e4227a6f8c89278b6c1a6690a4bcbe85dbcd8611a816b7508d"
+      },
+      {
+        "path": "KaraokeApp/Videos/Miley Cyrus - Flowers (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 6700872,
+        "hash": "738d4a42c76f9edf59383f33726d41f1ca2b07dcf5e6668d2b4af4ce33e4f4ab"
+      },
+      {
+        "path": "KaraokeApp/Videos/Miley Cyrus - Party In The USA (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 9010838,
+        "hash": "47b9f47997d999055ef2e4c1ac5da363b8c565ce974b164cd6fdb46e3bea975e"
+      },
+      {
+        "path": "KaraokeApp/Videos/Queen - Bohemian Rhapsody (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 11699752,
+        "hash": "4cabe10f30a9b7eeaefd88ed30e37a7e244937eb83900dc7e0134afee67ca2d6"
+      },
+      {
+        "path": "KaraokeApp/Videos/Stephen Sanchez - Until I Found You (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 4809738,
+        "hash": "b0db551a35de757aee0a84e778b5978e6e947d80667248632f09910658de98ec"
+      },
+      {
+        "path": "KaraokeApp/Videos/Whitney Houston - I Wanna Dance With Somebody (Who Loves Me) (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 10815398,
+        "hash": "1d546d7db4a86d79c538d39ecc624e8ea32869388f71819dedad10f086317836"
       },
       {
         "path": "maths-book.html",
@@ -11411,11 +11451,16 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "multiplayer.html",
-        "bytes": 74738,
-        "hash": "35738bf04ab84c98cc685138e0b132da36f184002dd0d6bc28e0da277297c5a0"
+        "bytes": 75653,
+        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
       },
       {
         "path": "nextup/app.js",
+        "bytes": 56225,
+        "hash": "aa7e0fed6e6cfa0b575b1454d4667d0bf8d9919d54c0e54dd1f009724e76771f"
+      },
+      {
+        "path": "NextUp/app.js",
         "bytes": 56225,
         "hash": "aa7e0fed6e6cfa0b575b1454d4667d0bf8d9919d54c0e54dd1f009724e76771f"
       },
@@ -11425,7 +11470,17 @@ self.OFFLINE_CATALOG = {
         "hash": "e82356a9fc79259befdf9b873eaaa80546c29e3a0656da4763a97b682e8c68f8"
       },
       {
+        "path": "NextUp/index.html",
+        "bytes": 978,
+        "hash": "e82356a9fc79259befdf9b873eaaa80546c29e3a0656da4763a97b682e8c68f8"
+      },
+      {
         "path": "nextup/style.css",
+        "bytes": 25644,
+        "hash": "bbb6e0298646982b1d9723cb20230688b23f54000baeeeb4dbaaac2786d98f94"
+      },
+      {
+        "path": "NextUp/style.css",
         "bytes": 25644,
         "hash": "bbb6e0298646982b1d9723cb20230688b23f54000baeeeb4dbaaac2786d98f94"
       },
@@ -11461,8 +11516,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50734,
-        "hash": "194233984f90c6fdd7c97f56bdb8c1b8d8439581696f4d95d29a0e2c11d19396"
+        "bytes": 57011,
+        "hash": "5035b2be46faaa19dc07de2cb52b117b6722f81a5cac370c9f62199cf96bb4f0"
       },
       {
         "path": "party-lan.js",
@@ -11505,6 +11560,21 @@ self.OFFLINE_CATALOG = {
         "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
       },
       {
+        "path": "Relic Rush/assets/index-CIulLFM7.css",
+        "bytes": 38057,
+        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
+      },
+      {
+        "path": "Relic Rush/assets/index-CoIklmgF.js",
+        "bytes": 295614,
+        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
+      },
+      {
+        "path": "Relic Rush/index.html",
+        "bytes": 511,
+        "hash": "e8709b99d0ff62855b1ef7494848d2a43ffee9a22f03fb70d55e2392d122816e"
+      },
+      {
         "path": "relic_rush.css",
         "bytes": 5962,
         "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
@@ -11541,8 +11611,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "slot-machine.html",
-        "bytes": 15745,
-        "hash": "115f9de9122a314f603f90cac639f6bd26a787283feabaea789b29a2c4a02a5e"
+        "bytes": 18828,
+        "hash": "e6eda3a2458662009e62b41b4fd4d053bfdcd684b103149a4ad04c32e7928dcb"
       },
       {
         "path": "solos_rng.html",
@@ -11565,12 +11635,27 @@ self.OFFLINE_CATALOG = {
         "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
       },
       {
+        "path": "Terraria/assets/index-CIulLFM7.css",
+        "bytes": 38057,
+        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
+      },
+      {
         "path": "terraria/assets/index-CoIklmgF.js",
         "bytes": 295614,
         "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
       },
       {
+        "path": "Terraria/assets/index-CoIklmgF.js",
+        "bytes": 295614,
+        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
+      },
+      {
         "path": "terraria/index.html",
+        "bytes": 442,
+        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
+      },
+      {
+        "path": "Terraria/index.html",
         "bytes": 442,
         "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
       },
@@ -11606,18 +11691,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "web_weavers.css",
-        "bytes": 12940,
-        "hash": "7f50b7aea1dfef4bc764e0dc231d48140bf38b66bd0bece6572b5a27d626a850"
+        "bytes": 15634,
+        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 8599,
-        "hash": "eb12c04c5579a9c909a1e3db93923dae833ad69febdd09025d6a201ab092dca0"
+        "bytes": 9566,
+        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 179306,
-        "hash": "7c139934f706c6d4d3854d4cdd2b332959c3d6810e54322a16024a6727b017a9"
+        "bytes": 221420,
+        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
+      },
+      {
+        "path": "Who Wants to be a Millionaire.html",
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "whos-more-likely.html",
@@ -11630,8 +11720,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358132955,
-    "version": "a718c78908172a07"
+    "bytes": 360194379,
+    "version": "29e3377441777a2d"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -17067,9 +17157,19 @@ self.OFFLINE_CATALOG = {
     "page": "web_weavers.html",
     "files": [
       {
+        "path": "assets/effects/web-weavers-speed-lines-clean.png",
+        "bytes": 1011237,
+        "hash": "637d069679de8bb81dedc1cce7972b71da6873bcf60455dd0b1d9cd9d7bd851b"
+      },
+      {
+        "path": "assets/effects/web-weavers-speed-lines-dense.png",
+        "bytes": 1787463,
+        "hash": "b73f80d43b1e63cb4104cd572750dbb3cf09a333fae82cc2a178e1133e4fea49"
+      },
+      {
         "path": "assets/models/web-weavers-r15.glb",
-        "bytes": 172216,
-        "hash": "62e52e6027b5c864e5bacc88c509b043e30954c47b516d1fb3e33b80b7492421"
+        "bytes": 2162008,
+        "hash": "9a51608346c0134249b7f95f32d60cf16d240fe235f2dfe3f567c88b06f80616"
       },
       {
         "path": "assets/vendor/GLTFLoader-r128.js",
@@ -17093,22 +17193,22 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "web_weavers.css",
-        "bytes": 12940,
-        "hash": "7f50b7aea1dfef4bc764e0dc231d48140bf38b66bd0bece6572b5a27d626a850"
+        "bytes": 15634,
+        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 8599,
-        "hash": "eb12c04c5579a9c909a1e3db93923dae833ad69febdd09025d6a201ab092dca0"
+        "bytes": 9566,
+        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 179306,
-        "hash": "7c139934f706c6d4d3854d4cdd2b332959c3d6810e54322a16024a6727b017a9"
+        "bytes": 221420,
+        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
       }
     ],
-    "bytes": 1079735,
-    "version": "dd3f856a3ece5744"
+    "bytes": 5914002,
+    "version": "4cd416cc41a9de39"
   },
   "hood-brawlers": {
     "name": "Hood Brawlers",
@@ -17250,8 +17350,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50734,
-        "hash": "194233984f90c6fdd7c97f56bdb8c1b8d8439581696f4d95d29a0e2c11d19396"
+        "bytes": 57011,
+        "hash": "5035b2be46faaa19dc07de2cb52b117b6722f81a5cac370c9f62199cf96bb4f0"
+      },
+      {
+        "path": "pacman-clean-hud.css",
+        "bytes": 6204,
+        "hash": "b804451b12e13cc52e49728dc2556cb7824be1a3d12fa89612e2396ea9b53d91"
+      },
+      {
+        "path": "pacman-minimal-menu.css",
+        "bytes": 2717,
+        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
+      },
+      {
+        "path": "pacman-polish.css",
+        "bytes": 10994,
+        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -17259,8 +17374,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 1330384,
-    "version": "d2dda544c7c9145f"
+    "bytes": 1356576,
+    "version": "b20434da4e73b8fc"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",
@@ -17285,156 +17400,6 @@ self.OFFLINE_CATALOG = {
         "path": "3d_drift_racer.js",
         "bytes": 126035,
         "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
-      },
-      {
-        "path": "Blackjack.html",
-        "bytes": 21486,
-        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
-      },
-      {
-        "path": "DND.html",
-        "bytes": 735,
-        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
-      },
-      {
-        "path": "DNDC.html",
-        "bytes": 22362,
-        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
-      },
-      {
-        "path": "KaraokeApp/Videos/ABBA - Dancing Queen (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8283855,
-        "hash": "33bb2090635bc3f146f312b8a925e47bd3739f5954514d7339bbc402734d6ae5"
-      },
-      {
-        "path": "KaraokeApp/Videos/ABBA - Mamma Mia (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 7428600,
-        "hash": "a82575a41855818edb39dbd09a1c354e74e57df6771f7654266941b77842d235"
-      },
-      {
-        "path": "KaraokeApp/Videos/Frank Sinatra - Fly Me To The Moon (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 5354546,
-        "hash": "6a6cc1a818a6298fe98ccd1c2b37cbf0036b6ac1df25314f98141dba670b2dc9"
-      },
-      {
-        "path": "KaraokeApp/Videos/Frank Sinatra - My Way (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 9105226,
-        "hash": "1a6337a6d998bef07651b1a3164f93f1e0476003de40f036b7a1b3627e8896d3"
-      },
-      {
-        "path": "KaraokeApp/Videos/Hozier - Take Me To Church (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8889324,
-        "hash": "315abf5247b84a119646f7a3c4a82b0f949add2194e7448d6900dd188d56039c"
-      },
-      {
-        "path": "KaraokeApp/Videos/Justin Bieber ft. Ludacris - Baby (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8189603,
-        "hash": "2e018adc226e1d5f8e643ee89f0bace3f4d47d05dfa8758fe80468b949ee04ce"
-      },
-      {
-        "path": "KaraokeApp/Videos/Katy Perry ft. Snoop Dogg - California Gurls (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 8873580,
-        "hash": "6677ec309d827004f99a9bebebcb528156fa18c59e866596cf7836e8c7d16631"
-      },
-      {
-        "path": "KaraokeApp/Videos/Laufey - From The Start (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 5470022,
-        "hash": "27539f05131b9507f4e1ecc1d715e1af0a345dfb03888c1541cc48be204a038f"
-      },
-      {
-        "path": "KaraokeApp/Videos/Mark Ronson ft. Amy Winehouse - Valerie (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 7612008,
-        "hash": "880a4abdd9803727abfec97f2368c3a0679d362e8be78d13beeeaca1ed046fd5"
-      },
-      {
-        "path": "KaraokeApp/Videos/Michael Jackson - Billie Jean (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 11467859,
-        "hash": "afc2050faa54e9e4227a6f8c89278b6c1a6690a4bcbe85dbcd8611a816b7508d"
-      },
-      {
-        "path": "KaraokeApp/Videos/Miley Cyrus - Flowers (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 6700872,
-        "hash": "738d4a42c76f9edf59383f33726d41f1ca2b07dcf5e6668d2b4af4ce33e4f4ab"
-      },
-      {
-        "path": "KaraokeApp/Videos/Miley Cyrus - Party In The USA (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 9010838,
-        "hash": "47b9f47997d999055ef2e4c1ac5da363b8c565ce974b164cd6fdb46e3bea975e"
-      },
-      {
-        "path": "KaraokeApp/Videos/Queen - Bohemian Rhapsody (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 11699752,
-        "hash": "4cabe10f30a9b7eeaefd88ed30e37a7e244937eb83900dc7e0134afee67ca2d6"
-      },
-      {
-        "path": "KaraokeApp/Videos/Stephen Sanchez - Until I Found You (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 4809738,
-        "hash": "b0db551a35de757aee0a84e778b5978e6e947d80667248632f09910658de98ec"
-      },
-      {
-        "path": "KaraokeApp/Videos/Whitney Houston - I Wanna Dance With Somebody (Who Loves Me) (Karaoke Version) - Sing King (1080p, h264).mp4",
-        "bytes": 10815398,
-        "hash": "1d546d7db4a86d79c538d39ecc624e8ea32869388f71819dedad10f086317836"
-      },
-      {
-        "path": "KaraokeApp/index.html",
-        "bytes": 12750,
-        "hash": "c3a7304441250a6aee410233651d13c30dcb030a36d77a01d0d118f246192db2"
-      },
-      {
-        "path": "KaraokeApp/library.json",
-        "bytes": 3281,
-        "hash": "e46e389b0b1084f34f9ab830c2ba0b0c18a4773d7c42131590d2a1a391ad1219"
-      },
-      {
-        "path": "NextUp/app.js",
-        "bytes": 56225,
-        "hash": "aa7e0fed6e6cfa0b575b1454d4667d0bf8d9919d54c0e54dd1f009724e76771f"
-      },
-      {
-        "path": "NextUp/index.html",
-        "bytes": 978,
-        "hash": "e82356a9fc79259befdf9b873eaaa80546c29e3a0656da4763a97b682e8c68f8"
-      },
-      {
-        "path": "NextUp/style.css",
-        "bytes": 25644,
-        "hash": "bbb6e0298646982b1d9723cb20230688b23f54000baeeeb4dbaaac2786d98f94"
-      },
-      {
-        "path": "Relic Rush/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "Relic Rush/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "Relic Rush/index.html",
-        "bytes": 511,
-        "hash": "e8709b99d0ff62855b1ef7494848d2a43ffee9a22f03fb70d55e2392d122816e"
-      },
-      {
-        "path": "Terraria/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "Terraria/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "Terraria/index.html",
-        "bytes": 442,
-        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
-      },
-      {
-        "path": "Who Wants to be a Millionaire.html",
-        "bytes": 44281,
-        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "assets/chronos/era-0-pre-void.png",
@@ -17483,8 +17448,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "assets/models/web-weavers-r15.glb",
-        "bytes": 172216,
-        "hash": "62e52e6027b5c864e5bacc88c509b043e30954c47b516d1fb3e33b80b7492421"
+        "bytes": 2162008,
+        "hash": "9a51608346c0134249b7f95f32d60cf16d240fe235f2dfe3f567c88b06f80616"
       },
       {
         "path": "assets/nextbot-chaser.png",
@@ -17848,23 +17813,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms-level1.html",
-        "bytes": 24881,
-        "hash": "618f8add09580cb5d9ac1eb56583dd90094f94f91f48f8d572b0a4186ba7d9e7"
+        "bytes": 28776,
+        "hash": "93646ce1f1d6d943816b1c4905dcbb243cc93526230aac084ecaa2ccad50317d"
       },
       {
         "path": "backrooms-level10.html",
-        "bytes": 16960,
-        "hash": "ac859545e9e2f9355811e0aa673aa95498d3f2f32685b30b748152cfefb2ef4e"
+        "bytes": 18434,
+        "hash": "e070dac9e8344a79f36e2c0eec8518104982d96db5148c7aa62385184738355d"
       },
       {
         "path": "backrooms-level2.html",
-        "bytes": 18803,
-        "hash": "fb5bad24a170a7e33d066dd97e3847e4e10464e9f4d8aa9f55be84f2f1ef80f0"
+        "bytes": 22592,
+        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
       },
       {
         "path": "backrooms-level7.html",
-        "bytes": 16179,
-        "hash": "edbed6abde8a1122390ae962fa995c3e491e39fd5e35ee8716eb4aea1f62100f"
+        "bytes": 18976,
+        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
       },
       {
         "path": "backrooms.css",
@@ -17873,13 +17838,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms.html",
-        "bytes": 1776,
-        "hash": "3b6d9f7716f38dedd0144472229999b04fec4238e8ddfecd7eb07732a8b677fd"
+        "bytes": 2011,
+        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
       },
       {
         "path": "backrooms.js",
-        "bytes": 24146,
-        "hash": "0f48ea8197974587c3eda5ee268eb3dceaa26ddc247a6cc10bb11e20f2251f00"
+        "bytes": 27538,
+        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
+      },
+      {
+        "path": "Blackjack.html",
+        "bytes": 21486,
+        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
       },
       {
         "path": "card-wars/app.js",
@@ -18050,11 +18020,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Axolotl.png",
         "bytes": 156537,
         "hash": "671ae7b5b31e56ea79913e8cb11708593ff36491ccba2a36d49d5782b19f28f8"
-      },
-      {
-        "path": "card-wars/assets/cards/database/BMO.png",
-        "bytes": 143048,
-        "hash": "9d6875feccea35b5534492824393e934dd72819f4e5fbbc19b354360d7b584f2"
       },
       {
         "path": "card-wars/assets/cards/database/Baby_Finn_&_Jake.png",
@@ -18237,6 +18202,11 @@ self.OFFLINE_CATALOG = {
         "hash": "9c2bbfe86dd1f353321b9521b590bce0e92adea9cc28b1e0452a576e47fdfe26"
       },
       {
+        "path": "card-wars/assets/cards/database/Blue_Plains_Drifter.png",
+        "bytes": 150575,
+        "hash": "d1278107ec8c659da10b0beac1ea0b24dda0a1ea6e6a34c74b8aa29000518271"
+      },
+      {
         "path": "card-wars/assets/cards/database/Blue_Plains1.png",
         "bytes": 122272,
         "hash": "2805cc61fb88e545addcd7a744464d8babb95be14960f9573c67c2f9898e8fb9"
@@ -18257,11 +18227,6 @@ self.OFFLINE_CATALOG = {
         "hash": "05226f34ec39dff90d078adfb6176493cdc01faf934ef52467f5ac6ff3ca7996"
       },
       {
-        "path": "card-wars/assets/cards/database/Blue_Plains_Drifter.png",
-        "bytes": 150575,
-        "hash": "d1278107ec8c659da10b0beac1ea0b24dda0a1ea6e6a34c74b8aa29000518271"
-      },
-      {
         "path": "card-wars/assets/cards/database/Blue_Slimey.png",
         "bytes": 162974,
         "hash": "2b95ed55a1894cb842e52b7bc13193bd5af839d5a1df6e5854b54dafbdf805f3"
@@ -18275,6 +18240,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Blueberry_Pieclops.png",
         "bytes": 167438,
         "hash": "f10d1153361fd83fcdd3d81ea324fb10d8ad2bfe2c14939b9e13ff3aebc22b75"
+      },
+      {
+        "path": "card-wars/assets/cards/database/BMO.png",
+        "bytes": 143048,
+        "hash": "9d6875feccea35b5534492824393e934dd72819f4e5fbbc19b354360d7b584f2"
       },
       {
         "path": "card-wars/assets/cards/database/Boarder_Collie.png",
@@ -18857,14 +18827,14 @@ self.OFFLINE_CATALOG = {
         "hash": "b6e89f8c309d12ea1d74864da396314c2c14baae39dd2a411f78aee37d872e49"
       },
       {
-        "path": "card-wars/assets/cards/database/Cutie.png",
-        "bytes": 149384,
-        "hash": "ae233b8faf4d05b7e291f50cd66467037c074d6a2561b0d1389947693bf0be84"
-      },
-      {
         "path": "card-wars/assets/cards/database/Cutie_Koala.png",
         "bytes": 160269,
         "hash": "e16329759e5978bfca5071f2657463af2d4785f95484d67f1704f3822430311c"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Cutie.png",
+        "bytes": 149384,
+        "hash": "ae233b8faf4d05b7e291f50cd66467037c074d6a2561b0d1389947693bf0be84"
       },
       {
         "path": "card-wars/assets/cards/database/Cyclone.png",
@@ -18952,6 +18922,11 @@ self.OFFLINE_CATALOG = {
         "hash": "8c572c8eb344dad0567bc8e086cac86a64473044f7bfde50da9045465ec188bc"
       },
       {
+        "path": "card-wars/assets/cards/database/Dr_Death.png",
+        "bytes": 155009,
+        "hash": "ab0a2539e4eaaedc68e8ea3f31bd4dcc0da66d02cd0ffffa13675fd778dc6ce4"
+      },
+      {
         "path": "card-wars/assets/cards/database/Dr._Pieclops.png",
         "bytes": 166151,
         "hash": "81e5fdbd980114f0f805147f7e360ce750bd99b5464ccd61fc7e640f02bee659"
@@ -18960,11 +18935,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Dr._Stuffenstein.png",
         "bytes": 162908,
         "hash": "e6a918fe44935f1d506bc9e53c13ac5a4effded06ee9b2ede2dc8e9164a19689"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Dr_Death.png",
-        "bytes": 155009,
-        "hash": "ab0a2539e4eaaedc68e8ea3f31bd4dcc0da66d02cd0ffffa13675fd778dc6ce4"
       },
       {
         "path": "card-wars/assets/cards/database/Dragon_Claw.png",
@@ -19202,6 +19172,11 @@ self.OFFLINE_CATALOG = {
         "hash": "7c1d921765048584e793c60e2245a1a210c59255b25dae0f2cb42f8a9c1d0de4"
       },
       {
+        "path": "card-wars/assets/cards/database/Field_of_Nightmares.png",
+        "bytes": 153108,
+        "hash": "2dc7cbd9769c3d1d36707bda6828f2919477873971046cccf3a5799890026844"
+      },
+      {
         "path": "card-wars/assets/cards/database/Field_Reaper.png",
         "bytes": 157225,
         "hash": "f22a72b92a251417abfeae3b9b8659862058fdc9b855c9c1259a48922ec20923"
@@ -19210,11 +19185,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Field_Stalker.png",
         "bytes": 152737,
         "hash": "00f321e39823d22d627086dd4d847fb8eed787af2aa6c6e87304089c1946ad04"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Field_of_Nightmares.png",
-        "bytes": 153108,
-        "hash": "2dc7cbd9769c3d1d36707bda6828f2919477873971046cccf3a5799890026844"
       },
       {
         "path": "card-wars/assets/cards/database/Filthflinger.png",
@@ -19517,11 +19487,6 @@ self.OFFLINE_CATALOG = {
         "hash": "09fdfd72e794a147d8738bbf63d970ca22d4efbe270454acf97496d0c2f71d16"
       },
       {
-        "path": "card-wars/assets/cards/database/Ghost.png",
-        "bytes": 149019,
-        "hash": "12d2a8e49f7804a5a2537e1cbbca82939c6ce2d2d92848d6a6ef41682c6e4ac9"
-      },
-      {
         "path": "card-wars/assets/cards/database/Ghost_Chest_Burster.png",
         "bytes": 169830,
         "hash": "d07f954a8b2830c00c5a2d656745cdd535458ff270d9aef6f034f0f157c640c6"
@@ -19545,6 +19510,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Ghost_Tree.png",
         "bytes": 159637,
         "hash": "834d40d6ef5faca0f06cef2402eb27fe61a079d15bfa7ce27da488a8f0e46b91"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Ghost.png",
+        "bytes": 149019,
+        "hash": "12d2a8e49f7804a5a2537e1cbbca82939c6ce2d2d92848d6a6ef41682c6e4ac9"
       },
       {
         "path": "card-wars/assets/cards/database/Ghostly_Sorceress.png",
@@ -19582,14 +19552,14 @@ self.OFFLINE_CATALOG = {
         "hash": "d7b95311aec42fb86ea727ac3c9afc2b465841105f4162c7cf1b79ff87ebcdb5"
       },
       {
-        "path": "card-wars/assets/cards/database/Gnome_Snot.png",
-        "bytes": 150440,
-        "hash": "957074aee8691caefb98f7c4c5ef3ea446daa6b9ebb66f31069dad2465af30a8"
-      },
-      {
         "path": "card-wars/assets/cards/database/Gnome_Snot_Manufacturing_Facility.webp",
         "bytes": 290956,
         "hash": "2fec97e2aaa4989e3fcd9166f3d9227530114fb4c2e0883be28f35988cfe8241"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Gnome_Snot.png",
+        "bytes": 150440,
+        "hash": "957074aee8691caefb98f7c4c5ef3ea446daa6b9ebb66f31069dad2465af30a8"
       },
       {
         "path": "card-wars/assets/cards/database/Goat.png",
@@ -19907,11 +19877,6 @@ self.OFFLINE_CATALOG = {
         "hash": "848f29d01f4ef757cd62ab61d8678cd624103898e94d9fad637de378f6c1c198"
       },
       {
-        "path": "card-wars/assets/cards/database/Ice-olation_Cell.png",
-        "bytes": 158636,
-        "hash": "c404756255b85a3b07321b129a15f1176360d88282adae5e94bc72b674360df6"
-      },
-      {
         "path": "card-wars/assets/cards/database/Ice_Base.png",
         "bytes": 162318,
         "hash": "7ec31e60836b0de0f889fe022b3964c0ec0c2ef990c9763e5060f903ac70a123"
@@ -19942,6 +19907,11 @@ self.OFFLINE_CATALOG = {
         "hash": "f9454b7e54c345926842ac72b3606f9e9d8697c06e1cac7a3f7b9de28a030a2e"
       },
       {
+        "path": "card-wars/assets/cards/database/Ice-olation_Cell.png",
+        "bytes": 158636,
+        "hash": "c404756255b85a3b07321b129a15f1176360d88282adae5e94bc72b674360df6"
+      },
+      {
         "path": "card-wars/assets/cards/database/Icefang_Avalancheetah.png",
         "bytes": 155880,
         "hash": "acba2458a2907a9b0d5d3490680b315554076a89d961d4dd68e2c561d203e1cc"
@@ -19962,26 +19932,6 @@ self.OFFLINE_CATALOG = {
         "hash": "5c20d13edbb29c9618911bd8b6d28bf645cf69bba195d7a0d7d504c19cc99bf7"
       },
       {
-        "path": "card-wars/assets/cards/database/IcyLands1.png",
-        "bytes": 133751,
-        "hash": "e5730ea29932a6f622aaebfc969903f791301a524d797e57918b9083c032477a"
-      },
-      {
-        "path": "card-wars/assets/cards/database/IcyLands2.png",
-        "bytes": 146135,
-        "hash": "edbb2e32addb571cda6f68f501a0b120fb1320bb07624f6caa94afb5f7744608"
-      },
-      {
-        "path": "card-wars/assets/cards/database/IcyLands3.png",
-        "bytes": 146122,
-        "hash": "58fe098a78c9e40ba6137d0377e46b86ff5c45ae2e16f3421cf81ffed2208d76"
-      },
-      {
-        "path": "card-wars/assets/cards/database/IcyLands4.png",
-        "bytes": 151469,
-        "hash": "5764b76def265b813665efda3c158fd70963e39ccb8f7d3430602e6cd83e55fb"
-      },
-      {
         "path": "card-wars/assets/cards/database/Icy_Commando.png",
         "bytes": 153047,
         "hash": "80f24e9069d7584eb03278dae91aca8766a8b3bd07a01ba3d2587a456a3bd45e"
@@ -20000,6 +19950,26 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Icy_Intruder.png",
         "bytes": 168475,
         "hash": "f2daa0384cb345e3942171952dddae8af1c90bc62c786ce7488b16dd49c9b308"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands1.png",
+        "bytes": 133751,
+        "hash": "e5730ea29932a6f622aaebfc969903f791301a524d797e57918b9083c032477a"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands2.png",
+        "bytes": 146135,
+        "hash": "edbb2e32addb571cda6f68f501a0b120fb1320bb07624f6caa94afb5f7744608"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands3.png",
+        "bytes": 146122,
+        "hash": "58fe098a78c9e40ba6137d0377e46b86ff5c45ae2e16f3421cf81ffed2208d76"
+      },
+      {
+        "path": "card-wars/assets/cards/database/IcyLands4.png",
+        "bytes": 151469,
+        "hash": "5764b76def265b813665efda3c158fd70963e39ccb8f7d3430602e6cd83e55fb"
       },
       {
         "path": "card-wars/assets/cards/database/Igloo_of_Sanctuary.png",
@@ -20177,6 +20147,21 @@ self.OFFLINE_CATALOG = {
         "hash": "915e8b3d8531fd07fb4d1085979f55930729f160b0bc84e080446fa5c3a40174"
       },
       {
+        "path": "card-wars/assets/cards/database/Lava_Ants.png",
+        "bytes": 160157,
+        "hash": "54fc4cb83b6accb9c07d42be486bde13adf11c75942c79413ab5e1e2fb1e891f"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Lava_Lamprey_Eels.png",
+        "bytes": 152860,
+        "hash": "8ffe253260bc7d3e7c0f22ab46258816b919e0b0a3bcde6f884d9569a6f481ff"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Lavafall_Retreat.png",
+        "bytes": 161092,
+        "hash": "b2f28214fe44dd71ede653000d2a219cda3d9c1d3d2705205a8053a71b3bc130"
+      },
+      {
         "path": "card-wars/assets/cards/database/LavaFlats1.png",
         "bytes": 133229,
         "hash": "d19997061dc8e7ab1ff209fee572a4802dba9273eb3432cf19d12daa4cd4e2ef"
@@ -20195,21 +20180,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/LavaFlats4.png",
         "bytes": 126239,
         "hash": "6124b477670fcb6682a2ea0a99599ce27da8048bf726adba4a0d0989e83ddc46"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Lava_Ants.png",
-        "bytes": 160157,
-        "hash": "54fc4cb83b6accb9c07d42be486bde13adf11c75942c79413ab5e1e2fb1e891f"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Lava_Lamprey_Eels.png",
-        "bytes": 152860,
-        "hash": "8ffe253260bc7d3e7c0f22ab46258816b919e0b0a3bcde6f884d9569a6f481ff"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Lavafall_Retreat.png",
-        "bytes": 161092,
-        "hash": "b2f28214fe44dd71ede653000d2a219cda3d9c1d3d2705205a8053a71b3bc130"
       },
       {
         "path": "card-wars/assets/cards/database/Learning_Center.png",
@@ -20332,14 +20302,14 @@ self.OFFLINE_CATALOG = {
         "hash": "3aa22ddc7b421150fd2506d614871c7e0347e117719f9ba281679dc41c3e998d"
       },
       {
-        "path": "card-wars/assets/cards/database/Magic_Man.png",
-        "bytes": 149714,
-        "hash": "d242a764a5cfe3181fefd2fc2a2542b5cb8e754a1fdd5257269a2de3aabd4e7f"
-      },
-      {
         "path": "card-wars/assets/cards/database/Magic_Man_KS2.png",
         "bytes": 147884,
         "hash": "7acd426c5653f305943a09f37b36db6fea7c49d2b5dfe6c6c6b8b4277ef38ae7"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Magic_Man.png",
+        "bytes": 149714,
+        "hash": "d242a764a5cfe3181fefd2fc2a2542b5cb8e754a1fdd5257269a2de3aabd4e7f"
       },
       {
         "path": "card-wars/assets/cards/database/Magic_Ring_Ding.png",
@@ -20537,6 +20507,21 @@ self.OFFLINE_CATALOG = {
         "hash": "f9cde0780a29c22001cfcaf3e67152e0c462788494ed278df432a3eef4a08909"
       },
       {
+        "path": "card-wars/assets/cards/database/Nice_Ice_Baby.png",
+        "bytes": 148787,
+        "hash": "e9a1b58cf4bc2bbbbf3aa3a4cb5ea925d3d76375049a44d70fecfc6e608a9f43"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Nice_Windmill.png",
+        "bytes": 162040,
+        "hash": "2c22267334a42de5ef508823b9fb872db5732793018465f8a77f11ff3a422a08"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Niceasaurus_Rex.png",
+        "bytes": 158223,
+        "hash": "93d8077f01ee481d99dcb99ce83da5af8797423e0cde8603b161a2ab7a6f2b55"
+      },
+      {
         "path": "card-wars/assets/cards/database/NiceLands1.png",
         "bytes": 134962,
         "hash": "0debb8a19e9ecd63dad2690c95ae0dc55d9f3cd92b1eb934b3ac80031bc861ee"
@@ -20555,21 +20540,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/NiceLands4.png",
         "bytes": 151422,
         "hash": "e7f3306472238c0068b204cfa469dc9d07a6e2309ae25298b7d13c9fa5d7b4fb"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Nice_Ice_Baby.png",
-        "bytes": 148787,
-        "hash": "e9a1b58cf4bc2bbbbf3aa3a4cb5ea925d3d76375049a44d70fecfc6e608a9f43"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Nice_Windmill.png",
-        "bytes": 162040,
-        "hash": "2c22267334a42de5ef508823b9fb872db5732793018465f8a77f11ff3a422a08"
-      },
-      {
-        "path": "card-wars/assets/cards/database/Niceasaurus_Rex.png",
-        "bytes": 158223,
-        "hash": "93d8077f01ee481d99dcb99ce83da5af8797423e0cde8603b161a2ab7a6f2b55"
       },
       {
         "path": "card-wars/assets/cards/database/Night_Owl.png",
@@ -20702,14 +20672,14 @@ self.OFFLINE_CATALOG = {
         "hash": "6fb0adf6e5a5b6ee9b6da142b31ac4deb67e89ddee7e3ef9f753a2b1bf05af32"
       },
       {
-        "path": "card-wars/assets/cards/database/Peppermint_Butler.png",
-        "bytes": 130358,
-        "hash": "57baa82c36ceda7744c3e38a78f4d384967c52b90d53599b6efc1df45849dd38"
-      },
-      {
         "path": "card-wars/assets/cards/database/Peppermint_Butler_KS1.png",
         "bytes": 147224,
         "hash": "07ad4d0d217bc6171d43599dcc9ae55faca02f8f2fd2c0bd0d26cda38acff642"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Peppermint_Butler.png",
+        "bytes": 130358,
+        "hash": "57baa82c36ceda7744c3e38a78f4d384967c52b90d53599b6efc1df45849dd38"
       },
       {
         "path": "card-wars/assets/cards/database/Persuasive_Armourdillo.png",
@@ -20847,14 +20817,14 @@ self.OFFLINE_CATALOG = {
         "hash": "73294d65004a645a27c6c43c83305fea1e020d2e5d17149d8a14f148c5bf6873"
       },
       {
-        "path": "card-wars/assets/cards/database/Prismo.png",
-        "bytes": 127239,
-        "hash": "58cb05f00fa84316e030f2f02dd0ae6cef77c71b88a6b48ea22149429e0c6cc8"
-      },
-      {
         "path": "card-wars/assets/cards/database/Prismo_KS2.png",
         "bytes": 131192,
         "hash": "70497a21b30a471d1cb6bf9b24e7c6ea997aa1e48aca92f93509df2ed4d60c55"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Prismo.png",
+        "bytes": 127239,
+        "hash": "58cb05f00fa84316e030f2f02dd0ae6cef77c71b88a6b48ea22149429e0c6cc8"
       },
       {
         "path": "card-wars/assets/cards/database/Probably_Too_Many_Unicorns.jpg",
@@ -21072,14 +21042,14 @@ self.OFFLINE_CATALOG = {
         "hash": "71a1f6b7ff230766da58ff94e12417799ab1ebc3fecb457a80d2bbef8bb7ebd7"
       },
       {
-        "path": "card-wars/assets/cards/database/Rock_Out!.png",
-        "bytes": 152252,
-        "hash": "ae6e2c2f812b650472b00a0e3735a28d524d9766c0165c7dc5f5f1d302cc2ea8"
-      },
-      {
         "path": "card-wars/assets/cards/database/Rock_n_Roller.png",
         "bytes": 171544,
         "hash": "8a8c88913871996ca66352370264f5e9cb4f30e99a4013f571e9471e642f117a"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Rock_Out!.png",
+        "bytes": 152252,
+        "hash": "ae6e2c2f812b650472b00a0e3735a28d524d9766c0165c7dc5f5f1d302cc2ea8"
       },
       {
         "path": "card-wars/assets/cards/database/Rocktopus.png",
@@ -21120,11 +21090,6 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Sailing_Sand_Crab.png",
         "bytes": 169135,
         "hash": "13cbdf98560017d61f8286a5e9eea9cb8260c498bd66f914f38e1b5eaa440abc"
-      },
-      {
-        "path": "card-wars/assets/cards/database/SandWitch.png",
-        "bytes": 154801,
-        "hash": "37378b9128f1dc72b1613572010f3eb9665d5a1aa7d1ee834258382dcc235652"
       },
       {
         "path": "card-wars/assets/cards/database/Sand_Angel.png",
@@ -21185,6 +21150,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Sandsnake.png",
         "bytes": 154640,
         "hash": "830650c303928fa386cff8415880f7d16cdad20e57153640d9a3a73de26a20ff"
+      },
+      {
+        "path": "card-wars/assets/cards/database/SandWitch.png",
+        "bytes": 154801,
+        "hash": "37378b9128f1dc72b1613572010f3eb9665d5a1aa7d1ee834258382dcc235652"
       },
       {
         "path": "card-wars/assets/cards/database/SandyLands1.png",
@@ -21657,11 +21627,6 @@ self.OFFLINE_CATALOG = {
         "hash": "79b4775cfea0dd07ca9ce3739735ccbf3916b7f4d62eb67ab7d237841bbace8b"
       },
       {
-        "path": "card-wars/assets/cards/database/TNTimmy.png",
-        "bytes": 154785,
-        "hash": "dac018e29b8459a7a5cdf71beb81bdd4fd260bf97b60a3759a2b89cca4f09124"
-      },
-      {
         "path": "card-wars/assets/cards/database/Tailgator.png",
         "bytes": 166526,
         "hash": "3979dc841c977c8b31a6d47291e38cfbd0af66e84c098c31ab579846105a688e"
@@ -21757,24 +21722,19 @@ self.OFFLINE_CATALOG = {
         "hash": "bda3b452e85e582ff8d71f3b67e52d459c2afe68c5aa36cddfd6bc9fbe201e1f"
       },
       {
-        "path": "card-wars/assets/cards/database/The_Lich.png",
-        "bytes": 98405,
-        "hash": "b62bff7561a5064aba4a264b5e1b0d618a130037b47009b43753f045c5761013"
-      },
-      {
         "path": "card-wars/assets/cards/database/The_Lich_KS1.png",
         "bytes": 125588,
         "hash": "728c50d7ee22f310d8e848fa4634774e59593cf83e32d3188d7c2f754aca7224"
       },
       {
+        "path": "card-wars/assets/cards/database/The_Lich.png",
+        "bytes": 98405,
+        "hash": "b62bff7561a5064aba4a264b5e1b0d618a130037b47009b43753f045c5761013"
+      },
+      {
         "path": "card-wars/assets/cards/database/The_Mariachi.png",
         "bytes": 160189,
         "hash": "2617bbddfbd41dd82b721e5fd2059ecf0e2a453dd14a592fa11cd9d4bebf8aa5"
-      },
-      {
-        "path": "card-wars/assets/cards/database/The_Pig.png",
-        "bytes": 146775,
-        "hash": "e789b91d00cd7f1955a36f88119b3b7097a5b579a5ce88f0750c7c579acc727b"
       },
       {
         "path": "card-wars/assets/cards/database/The_Pig_-_Kickstarter.png",
@@ -21785,6 +21745,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/The_Pig_Promo.png",
         "bytes": 133205,
         "hash": "224132ee4334201a38bcf898da44c1132c61921e17afbcae36fd98d8fcf543e0"
+      },
+      {
+        "path": "card-wars/assets/cards/database/The_Pig.png",
+        "bytes": 146775,
+        "hash": "e789b91d00cd7f1955a36f88119b3b7097a5b579a5ce88f0750c7c579acc727b"
       },
       {
         "path": "card-wars/assets/cards/database/The_Pigs.png",
@@ -21845,6 +21810,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Titanbane_Amulet.png",
         "bytes": 156603,
         "hash": "a40de7858e0b3c3b4e1496aa51043db7a23f94fdfc2fcc94eafa25113ec55af4"
+      },
+      {
+        "path": "card-wars/assets/cards/database/TNTimmy.png",
+        "bytes": 154785,
+        "hash": "dac018e29b8459a7a5cdf71beb81bdd4fd260bf97b60a3759a2b89cca4f09124"
       },
       {
         "path": "card-wars/assets/cards/database/Toddler_Scholar.png",
@@ -22012,11 +21982,6 @@ self.OFFLINE_CATALOG = {
         "hash": "c7318c5d242f31aa10bcf59b34eef019d1ffdc52a1c40f1db04a119aaa084e1b"
       },
       {
-        "path": "card-wars/assets/cards/database/Wall_Of_Sand.png",
-        "bytes": 155951,
-        "hash": "c7e751e657d55442a29ae47fee6d521f05ada09311bd8ce26f696ac39e9dd309"
-      },
-      {
         "path": "card-wars/assets/cards/database/Wall_of_Chocolate.png",
         "bytes": 151244,
         "hash": "e0830762973176cf0b7bfbc1059348b0ad77179fe40a891f23d5676f409ca337"
@@ -22025,6 +21990,11 @@ self.OFFLINE_CATALOG = {
         "path": "card-wars/assets/cards/database/Wall_of_Ears.png",
         "bytes": 158703,
         "hash": "193b4442e48552362dc8e0aa38ef68fcdf7230eff50c86074d647f16dfa80f32"
+      },
+      {
+        "path": "card-wars/assets/cards/database/Wall_Of_Sand.png",
+        "bytes": 155951,
+        "hash": "c7e751e657d55442a29ae47fee6d521f05ada09311bd8ce26f696ac39e9dd309"
       },
       {
         "path": "card-wars/assets/cards/database/Wand_of_Hexcraft.png",
@@ -22662,6 +22632,16 @@ self.OFFLINE_CATALOG = {
         "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
       },
       {
+        "path": "DND.html",
+        "bytes": 735,
+        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
+      },
+      {
+        "path": "DNDC.html",
+        "bytes": 22362,
+        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
+      },
+      {
         "path": "dots&boxes.html",
         "bytes": 12293,
         "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
@@ -22692,14 +22672,14 @@ self.OFFLINE_CATALOG = {
         "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
-        "path": "hood-brawlers.js",
-        "bytes": 47955,
-        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
-      },
-      {
         "path": "hood_brawlers.html",
         "bytes": 63377,
         "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
+      },
+      {
+        "path": "hood-brawlers.js",
+        "bytes": 47955,
+        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
       },
       {
         "path": "impostor.html",
@@ -22725,6 +22705,91 @@ self.OFFLINE_CATALOG = {
         "path": "jp_srs_cards.html",
         "bytes": 37649,
         "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
+      },
+      {
+        "path": "KaraokeApp/index.html",
+        "bytes": 12750,
+        "hash": "c3a7304441250a6aee410233651d13c30dcb030a36d77a01d0d118f246192db2"
+      },
+      {
+        "path": "KaraokeApp/library.json",
+        "bytes": 3281,
+        "hash": "e46e389b0b1084f34f9ab830c2ba0b0c18a4773d7c42131590d2a1a391ad1219"
+      },
+      {
+        "path": "KaraokeApp/Videos/ABBA - Dancing Queen (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8283855,
+        "hash": "33bb2090635bc3f146f312b8a925e47bd3739f5954514d7339bbc402734d6ae5"
+      },
+      {
+        "path": "KaraokeApp/Videos/ABBA - Mamma Mia (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 7428600,
+        "hash": "a82575a41855818edb39dbd09a1c354e74e57df6771f7654266941b77842d235"
+      },
+      {
+        "path": "KaraokeApp/Videos/Frank Sinatra - Fly Me To The Moon (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 5354546,
+        "hash": "6a6cc1a818a6298fe98ccd1c2b37cbf0036b6ac1df25314f98141dba670b2dc9"
+      },
+      {
+        "path": "KaraokeApp/Videos/Frank Sinatra - My Way (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 9105226,
+        "hash": "1a6337a6d998bef07651b1a3164f93f1e0476003de40f036b7a1b3627e8896d3"
+      },
+      {
+        "path": "KaraokeApp/Videos/Hozier - Take Me To Church (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8889324,
+        "hash": "315abf5247b84a119646f7a3c4a82b0f949add2194e7448d6900dd188d56039c"
+      },
+      {
+        "path": "KaraokeApp/Videos/Justin Bieber ft. Ludacris - Baby (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8189603,
+        "hash": "2e018adc226e1d5f8e643ee89f0bace3f4d47d05dfa8758fe80468b949ee04ce"
+      },
+      {
+        "path": "KaraokeApp/Videos/Katy Perry ft. Snoop Dogg - California Gurls (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 8873580,
+        "hash": "6677ec309d827004f99a9bebebcb528156fa18c59e866596cf7836e8c7d16631"
+      },
+      {
+        "path": "KaraokeApp/Videos/Laufey - From The Start (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 5470022,
+        "hash": "27539f05131b9507f4e1ecc1d715e1af0a345dfb03888c1541cc48be204a038f"
+      },
+      {
+        "path": "KaraokeApp/Videos/Mark Ronson ft. Amy Winehouse - Valerie (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 7612008,
+        "hash": "880a4abdd9803727abfec97f2368c3a0679d362e8be78d13beeeaca1ed046fd5"
+      },
+      {
+        "path": "KaraokeApp/Videos/Michael Jackson - Billie Jean (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 11467859,
+        "hash": "afc2050faa54e9e4227a6f8c89278b6c1a6690a4bcbe85dbcd8611a816b7508d"
+      },
+      {
+        "path": "KaraokeApp/Videos/Miley Cyrus - Flowers (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 6700872,
+        "hash": "738d4a42c76f9edf59383f33726d41f1ca2b07dcf5e6668d2b4af4ce33e4f4ab"
+      },
+      {
+        "path": "KaraokeApp/Videos/Miley Cyrus - Party In The USA (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 9010838,
+        "hash": "47b9f47997d999055ef2e4c1ac5da363b8c565ce974b164cd6fdb46e3bea975e"
+      },
+      {
+        "path": "KaraokeApp/Videos/Queen - Bohemian Rhapsody (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 11699752,
+        "hash": "4cabe10f30a9b7eeaefd88ed30e37a7e244937eb83900dc7e0134afee67ca2d6"
+      },
+      {
+        "path": "KaraokeApp/Videos/Stephen Sanchez - Until I Found You (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 4809738,
+        "hash": "b0db551a35de757aee0a84e778b5978e6e947d80667248632f09910658de98ec"
+      },
+      {
+        "path": "KaraokeApp/Videos/Whitney Houston - I Wanna Dance With Somebody (Who Loves Me) (Karaoke Version) - Sing King (1080p, h264).mp4",
+        "bytes": 10815398,
+        "hash": "1d546d7db4a86d79c538d39ecc624e8ea32869388f71819dedad10f086317836"
       },
       {
         "path": "maths-book.html",
@@ -22768,11 +22833,16 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "multiplayer.html",
-        "bytes": 74738,
-        "hash": "35738bf04ab84c98cc685138e0b132da36f184002dd0d6bc28e0da277297c5a0"
+        "bytes": 75653,
+        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
       },
       {
         "path": "nextup/app.js",
+        "bytes": 56225,
+        "hash": "aa7e0fed6e6cfa0b575b1454d4667d0bf8d9919d54c0e54dd1f009724e76771f"
+      },
+      {
+        "path": "NextUp/app.js",
         "bytes": 56225,
         "hash": "aa7e0fed6e6cfa0b575b1454d4667d0bf8d9919d54c0e54dd1f009724e76771f"
       },
@@ -22782,7 +22852,17 @@ self.OFFLINE_CATALOG = {
         "hash": "e82356a9fc79259befdf9b873eaaa80546c29e3a0656da4763a97b682e8c68f8"
       },
       {
+        "path": "NextUp/index.html",
+        "bytes": 978,
+        "hash": "e82356a9fc79259befdf9b873eaaa80546c29e3a0656da4763a97b682e8c68f8"
+      },
+      {
         "path": "nextup/style.css",
+        "bytes": 25644,
+        "hash": "bbb6e0298646982b1d9723cb20230688b23f54000baeeeb4dbaaac2786d98f94"
+      },
+      {
+        "path": "NextUp/style.css",
         "bytes": 25644,
         "hash": "bbb6e0298646982b1d9723cb20230688b23f54000baeeeb4dbaaac2786d98f94"
       },
@@ -22818,8 +22898,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 50734,
-        "hash": "194233984f90c6fdd7c97f56bdb8c1b8d8439581696f4d95d29a0e2c11d19396"
+        "bytes": 57011,
+        "hash": "5035b2be46faaa19dc07de2cb52b117b6722f81a5cac370c9f62199cf96bb4f0"
       },
       {
         "path": "party-lan.js",
@@ -22862,6 +22942,21 @@ self.OFFLINE_CATALOG = {
         "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
       },
       {
+        "path": "Relic Rush/assets/index-CIulLFM7.css",
+        "bytes": 38057,
+        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
+      },
+      {
+        "path": "Relic Rush/assets/index-CoIklmgF.js",
+        "bytes": 295614,
+        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
+      },
+      {
+        "path": "Relic Rush/index.html",
+        "bytes": 511,
+        "hash": "e8709b99d0ff62855b1ef7494848d2a43ffee9a22f03fb70d55e2392d122816e"
+      },
+      {
         "path": "relic_rush.css",
         "bytes": 5962,
         "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
@@ -22898,8 +22993,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "slot-machine.html",
-        "bytes": 15745,
-        "hash": "115f9de9122a314f603f90cac639f6bd26a787283feabaea789b29a2c4a02a5e"
+        "bytes": 18828,
+        "hash": "e6eda3a2458662009e62b41b4fd4d053bfdcd684b103149a4ad04c32e7928dcb"
       },
       {
         "path": "solos_rng.html",
@@ -22922,12 +23017,27 @@ self.OFFLINE_CATALOG = {
         "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
       },
       {
+        "path": "Terraria/assets/index-CIulLFM7.css",
+        "bytes": 38057,
+        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
+      },
+      {
         "path": "terraria/assets/index-CoIklmgF.js",
         "bytes": 295614,
         "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
       },
       {
+        "path": "Terraria/assets/index-CoIklmgF.js",
+        "bytes": 295614,
+        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
+      },
+      {
         "path": "terraria/index.html",
+        "bytes": 442,
+        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
+      },
+      {
+        "path": "Terraria/index.html",
         "bytes": 442,
         "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
       },
@@ -22963,18 +23073,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "web_weavers.css",
-        "bytes": 12940,
-        "hash": "7f50b7aea1dfef4bc764e0dc231d48140bf38b66bd0bece6572b5a27d626a850"
+        "bytes": 15634,
+        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 8599,
-        "hash": "eb12c04c5579a9c909a1e3db93923dae833ad69febdd09025d6a201ab092dca0"
+        "bytes": 9566,
+        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 179306,
-        "hash": "7c139934f706c6d4d3854d4cdd2b332959c3d6810e54322a16024a6727b017a9"
+        "bytes": 221420,
+        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
+      },
+      {
+        "path": "Who Wants to be a Millionaire.html",
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "whos-more-likely.html",
@@ -22987,8 +23102,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 358132955,
-    "version": "3efdab2cbe9513f1"
+    "bytes": 360194379,
+    "version": "a8f58feaf572c51b"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -23001,23 +23116,43 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms-level1.html",
-        "bytes": 24881,
-        "hash": "618f8add09580cb5d9ac1eb56583dd90094f94f91f48f8d572b0a4186ba7d9e7"
+        "bytes": 28776,
+        "hash": "93646ce1f1d6d943816b1c4905dcbb243cc93526230aac084ecaa2ccad50317d"
       },
       {
         "path": "backrooms-level10.html",
-        "bytes": 16960,
-        "hash": "ac859545e9e2f9355811e0aa673aa95498d3f2f32685b30b748152cfefb2ef4e"
+        "bytes": 18434,
+        "hash": "e070dac9e8344a79f36e2c0eec8518104982d96db5148c7aa62385184738355d"
       },
       {
         "path": "backrooms-level2.html",
-        "bytes": 18803,
-        "hash": "fb5bad24a170a7e33d066dd97e3847e4e10464e9f4d8aa9f55be84f2f1ef80f0"
+        "bytes": 22592,
+        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
       },
       {
         "path": "backrooms-level7.html",
-        "bytes": 16179,
-        "hash": "edbed6abde8a1122390ae962fa995c3e491e39fd5e35ee8716eb4aea1f62100f"
+        "bytes": 18976,
+        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
+      },
+      {
+        "path": "backrooms-polish.css",
+        "bytes": 9857,
+        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
+      },
+      {
+        "path": "backrooms-ui.js",
+        "bytes": 3639,
+        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
+      },
+      {
+        "path": "backrooms-upgrade.css",
+        "bytes": 4027,
+        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
+      },
+      {
+        "path": "backrooms-upgrade.js",
+        "bytes": 12444,
+        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
       },
       {
         "path": "backrooms.css",
@@ -23026,13 +23161,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "backrooms.html",
-        "bytes": 1776,
-        "hash": "3b6d9f7716f38dedd0144472229999b04fec4238e8ddfecd7eb07732a8b677fd"
+        "bytes": 2011,
+        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
       },
       {
         "path": "backrooms.js",
-        "bytes": 24146,
-        "hash": "0f48ea8197974587c3eda5ee268eb3dceaa26ddc247a6cc10bb11e20f2251f00"
+        "bytes": 27538,
+        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
       },
       {
         "path": "mobile-landscape-resize.js",
@@ -23045,8 +23180,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 715710,
-    "version": "07eceaecdb77e068"
+    "bytes": 761259,
+    "version": "d9233b68f58b3420"
   },
   "sling-champ": {
     "name": "Sling Champ",
@@ -23134,13 +23269,58 @@ self.OFFLINE_CATALOG = {
         "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       },
       {
+        "path": "slot-icons/bar.svg",
+        "bytes": 1768,
+        "hash": "9b16c4017c3f1025c972af7138711dc3cb9e0b897f6dbf76df251edc40597471"
+      },
+      {
+        "path": "slot-icons/bell.svg",
+        "bytes": 1883,
+        "hash": "eb63dff6f34294b225cac3109b42a119ef4564fca296f8ac4bda96875f29aff7"
+      },
+      {
+        "path": "slot-icons/cherries.svg",
+        "bytes": 2094,
+        "hash": "164eb77016c60702fe1ca71d52100371c7de9ccb14f87de1731e8d94cac2c03a"
+      },
+      {
+        "path": "slot-icons/clover.svg",
+        "bytes": 1869,
+        "hash": "d6c412d3e0a4eb1002c4873b0581ff9a53e3e382f2b118903d9efa918cea6445"
+      },
+      {
+        "path": "slot-icons/diamond.svg",
+        "bytes": 1923,
+        "hash": "9836e42baa76714bfcc592caef37237af02fe920d689ccdf6ac5c9e649948118"
+      },
+      {
+        "path": "slot-icons/grapes.svg",
+        "bytes": 1990,
+        "hash": "7fc1aabca3d74e02d899c4b069367b690b4849af76272f1484c01cbf3276d17f"
+      },
+      {
+        "path": "slot-icons/lemon.svg",
+        "bytes": 1869,
+        "hash": "680e1f0f589864b4dc167372863c5bab4157d5f0fe9430f59005c31f90394fa6"
+      },
+      {
+        "path": "slot-icons/seven.svg",
+        "bytes": 1741,
+        "hash": "7a02cae38ebf7dbec050aee2aa131e453a7df0f7012b242f420537377542d149"
+      },
+      {
         "path": "slot-machine.html",
-        "bytes": 15745,
-        "hash": "115f9de9122a314f603f90cac639f6bd26a787283feabaea789b29a2c4a02a5e"
+        "bytes": 18828,
+        "hash": "e6eda3a2458662009e62b41b4fd4d053bfdcd684b103149a4ad04c32e7928dcb"
+      },
+      {
+        "path": "slot-mobile.css",
+        "bytes": 7141,
+        "hash": "cea46b61eca1575f92ac4b6dbd3e3b276a89c28f79aaf26fb58866e91c906aad"
       }
     ],
-    "bytes": 20966,
-    "version": "a39dcd7d11d78794"
+    "bytes": 46327,
+    "version": "826b7e9482362444"
   },
   "fidget-roulette": {
     "name": "Fidget Roulette",
@@ -23199,8 +23379,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "assets/models/web-weavers-r15.glb",
-        "bytes": 172216,
-        "hash": "62e52e6027b5c864e5bacc88c509b043e30954c47b516d1fb3e33b80b7492421"
+        "bytes": 2162008,
+        "hash": "9a51608346c0134249b7f95f32d60cf16d240fe235f2dfe3f567c88b06f80616"
       },
       {
         "path": "assets/vendor/tailwind.js",
@@ -23234,8 +23414,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "multiplayer.html",
-        "bytes": 74738,
-        "hash": "35738bf04ab84c98cc685138e0b132da36f184002dd0d6bc28e0da277297c5a0"
+        "bytes": 75653,
+        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -23243,7 +23423,7 @@ self.OFFLINE_CATALOG = {
         "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 2077684,
-    "version": "e36259eb5787e6d9"
+    "bytes": 4068391,
+    "version": "31fecd6c868127d6"
   }
 };

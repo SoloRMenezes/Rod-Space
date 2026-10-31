@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 100 100" role="img" aria-label="bell"><defs>
+<linearGradient id="red" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#ff9082"/><stop offset=".45" stop-color="#ed2724"/><stop offset="1" stop-color="#a00014"/></linearGradient>
+<linearGradient id="gold" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#fff5b3"/><stop offset=".36" stop-color="#f6cd3d"/><stop offset=".75" stop-color="#d48c10"/><stop offset="1" stop-color="#9c620a"/></linearGradient>
+<linearGradient id="green" x1=".1" y1=".1" x2=".95" y2=".8"><stop stop-color="#d4fa78"/><stop offset=".55" stop-color="#58a633"/><stop offset="1" stop-color="#1b5621"/></linearGradient>
+<linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ecfaff"/><stop offset=".4" stop-color="#67dfff"/><stop offset=".75" stop-color="#2389ea"/><stop offset="1" stop-color="#1954ac"/></linearGradient>
+<linearGradient id="purple" x1=".12" y1=".08" x2=".75" y2="1"><stop stop-color="#f1b3fc"/><stop offset=".48" stop-color="#ae48dc"/><stop offset="1" stop-color="#631582"/></linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="1" dy="3" stdDeviation="1.7" flood-color="#201811" flood-opacity=".33"/></filter>
+</defs><g filter="url(#shadow)" stroke-linejoin="round">
+<path d="M43 18 Q42 9 50 9 Q58 9 57 18" fill="url(#gold)" stroke="#9a6c16" stroke-width="3"/>
+<path d="M49 18 Q73 17 74 48 Q74 63 85 72 Q88 79 78 80 H21 Q12 79 15 72 Q26 63 26 48 Q26 18 49 18Z" fill="url(#gold)" stroke="#8e6216" stroke-width="3"/>
+<path d="M26 73 H75" stroke="#fff4aa" stroke-width="4" stroke-linecap="round"/>
+<circle cx="50" cy="81" r="9" fill="#9c6111" stroke="#69420c" stroke-width="2.5"/>
+<path d="M37 29 Q31 44 35 62" stroke="#fff9cd" stroke-width="5" stroke-linecap="round" opacity=".58" fill="none"/>
+</g></svg>

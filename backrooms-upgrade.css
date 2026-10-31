@@ -1,0 +1,79 @@
+/* Backrooms V2. Unified HUD with individual level colour accents. */
+:root {--br-accent:#e1d38c;--br-panel:rgba(18,18,19,.80);}
+html[data-br-level="1"]{--br-accent:#8ad9e5}
+html[data-br-level="2"]{--br-accent:#f4a36e}
+html[data-br-level="7"]{--br-accent:#7bccdf}
+html[data-br-level="10"]{--br-accent:#c7e39c}
+#ui {
+  box-sizing:border-box!important;
+  top:18px!important;left:20px!important;
+  width:min(240px,calc(100vw - 36px));
+  padding:14px 16px 13px!important;
+  color:#e7e8dc!important;
+  font:600 12px/1.5 system-ui,-apple-system,sans-serif!important;
+  letter-spacing:.035em;
+  background:var(--br-panel)!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  border-left:3px solid var(--br-accent)!important;
+  border-radius:10px!important;
+  box-shadow:0 9px 32px rgba(0,0,0,.26)!important;
+  text-shadow:0 1px 2px black!important;
+  backdrop-filter:blur(12px);
+}
+#ui .bar-container{
+  width:100%!important;height:7px!important;margin:5px 0 13px!important;
+  border:0!important;border-radius:6px!important;
+  background:rgba(255,255,255,.13)!important;overflow:hidden;
+}
+#sanity-bar,#stamina-bar {border-radius:6px!important}
+#sanity-bar{background:var(--br-accent)!important}
+#stamina-bar{background:#e8ece6!important}
+#timer{font:700 11px system-ui,sans-serif!important;letter-spacing:.08em;opacity:.78}
+#br-objective{
+ position:fixed;top:18px;left:50%;transform:translateX(-50%);
+ z-index:12;pointer-events:none;
+ display:flex;flex-direction:column;align-items:center;gap:4px;
+ padding:11px 24px 12px;max-width:58vw;
+ background:rgba(14,16,19,.70);border:1px solid rgba(255,255,255,.14);
+ border-radius:10px;backdrop-filter:blur(10px);
+ color:#e8eee9;font:500 12px/1.35 system-ui,sans-serif;text-align:center;
+ box-shadow:0 7px 25px rgba(0,0,0,.24)
+}
+#br-objective .br-chapter{font:800 10px/1.2 system-ui,sans-serif;color:var(--br-accent);letter-spacing:.15em}
+#br-objective strong{font-size:13px;font-weight:620}
+#br-lower{
+ position:fixed;bottom:18px;left:20px;z-index:12;
+ padding:8px 12px;background:rgba(10,13,16,.65);
+ border:1px solid rgba(255,255,255,.13);border-radius:8px;
+ color:#cbd1cb;font:700 10px/1.5 system-ui,sans-serif;letter-spacing:.065em;
+ display:flex;flex-direction:column;gap:3px;pointer-events:none;
+ backdrop-filter:blur(10px);
+}
+#br-lower #br-state{opacity:.60;font-size:9px}
+#br-threat{position:fixed;top:115px;left:50%;transform:translateX(-50%);
+ padding:9px 15px;z-index:12;border:1px solid #e87973;border-radius:7px;
+ background:rgba(50,12,12,.82);color:#ffbeb3;
+ font:800 11px/1.4 system-ui,sans-serif;letter-spacing:.13em;
+ opacity:0;transition:opacity .24s;pointer-events:none}
+#br-threat.visible{opacity:1}
+#interaction-prompt{bottom:14%!important;top:auto!important;
+ left:50%;transform:translateX(-50%);width:fit-content!important;
+ padding:10px 16px;border-radius:7px;background:rgba(10,13,16,.75);
+ border:1px solid rgba(255,255,255,.20);
+ font:700 12px system-ui,sans-serif!important}
+#message{font:800 12px/1.5 system-ui,sans-serif!important;letter-spacing:.11em}
+#instructions{font-family:system-ui,-apple-system,sans-serif!important}
+#instructions h1{font-weight:800;letter-spacing:.2em;font-size:clamp(26px,4vw,44px)}
+#instructions p{max-width:500px;line-height:1.7;font-size:13px}
+#instructions button,#start-btn{border:1px solid var(--br-accent)!important;
+ border-radius:6px!important;background:var(--br-accent)!important;color:#181a1c!important;
+ font:800 12px system-ui,sans-serif!important;letter-spacing:.12em!important;
+ box-shadow:0 7px 24px #0006;transition:transform .16s,filter .16s}
+#instructions button:hover,#start-btn:hover{transform:translateY(-2px);filter:brightness(1.09)}
+@media(max-width:800px){
+ #ui{top:12px!important;left:12px!important;width:168px;padding:9px!important}
+ #br-objective{top:12px;left:auto;right:12px;transform:none;max-width:calc(100vw - 200px);padding:8px 9px}
+ #br-objective strong{font-size:10px}
+ #br-lower{left:12px;bottom:12px;padding:6px 8px}
+}
+\nhtml[data-br-level="10"] #objective{display:none!important}\n

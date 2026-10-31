@@ -274,6 +274,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="./slot-mobile.css?v=1">
 </head>
 <body>
 
@@ -288,28 +289,31 @@
             <span id="status">LOADING...</span>
         </div>
 
-        <div class="slot-window-outer">
-            <div class="slot-window">
-                <div class="glass-overlay"></div>
-                <div class="reel"><div id="reel1" class="symbol-container"></div></div>
-                <div class="reel"><div id="reel2" class="symbol-container"></div></div>
-                <div class="reel"><div id="reel3" class="symbol-container"></div></div>
+        <div class="playfield">
+            <div class="slot-window-outer">
+                <div class="slot-window">
+                    <div class="glass-overlay"></div>
+                    <div class="reel"><div id="reel1" class="symbol-container"></div></div>
+                    <div class="reel"><div id="reel2" class="symbol-container"></div></div>
+                    <div class="reel"><div id="reel3" class="symbol-container"></div></div>
+                </div>
+            </div>
+            <div class="lever-arm" id="lever" role="button" tabindex="0"
+                aria-label="Pull the lever downward to spin" aria-describedby="lever-help">
+                <div class="lever-mount" aria-hidden="true"></div>
+                <div class="lever-track" aria-hidden="true"></div>
+                <div class="lever-stick" aria-hidden="true"><div class="lever-head"></div></div>
+                <span id="lever-help" class="lever-label">PULL ↓</span>
             </div>
         </div>
-
         <div class="controls">
-            <button id="spin-btn">SPIN ($100)</button>
-        </div>
-
-        <div class="lever-arm" id="lever">
-            <div class="lever-stick">
-                <div class="lever-head"></div>
-            </div>
+            <button id="spin-btn" type="button">SPIN ($100)</button>
         </div>
     </div>
 
     <script>
-        const symbols = ['🍒', '🍋', '🍇', '🔔', '💎', '7️⃣', '🍀'];
+        const symbols = ['cherries', 'lemon', 'grapes', 'bell', 'diamond', 'seven', 'clover'];
+        const iconFor = name => '<img class="casino-icon" src="./slot-icons/' + name + '.svg" alt="' + name + '" draggable="false" decoding="async">';
         const balanceDisplay = document.getElementById('balance');
         const statusDisplay = document.getElementById('status');
         const spinBtn = document.getElementById('spin-btn');
@@ -385,7 +389,7 @@
                 for (let i = 0; i < 40; i++) {
                     const el = document.createElement('div');
                     el.className = 'symbol';
-                    el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    el.innerHTML = iconFor(symbols[Math.floor(Math.random() * symbols.length)]);
                     container.appendChild(el);
                 }
             });
@@ -403,7 +407,7 @@
             statusDisplay.textContent = "SPINNING...";
             
             machine.classList.add('lever-active');
-            setTimeout(() => machine.classList.remove('lever-active'), 500);
+            setTimeout(() => machine.classList.remove('lever-active'), 380);
 
             const finalPicks = [];
             const jackpotSymbol = symbols[Math.floor(Math.random() * symbols.length)];
@@ -413,7 +417,7 @@
                     const result = forceJackpot ? jackpotSymbol : symbols[Math.floor(Math.random() * symbols.length)];
                     finalPicks.push(result);
 
-                    container.children[container.children.length - 1].textContent = result;
+                    container.children[container.children.length - 1].innerHTML = iconFor(result);
                     
                     const time = 2 + (i * 0.6);
                     container.style.transition = `top ${time}s cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
@@ -423,7 +427,7 @@
                     setTimeout(() => {
                         container.style.transition = 'none';
                         container.style.top = '0px';
-                        container.children[0].textContent = result;
+                        container.children[0].innerHTML = iconFor(result);
                         resolve();
                     }, time * 1000);
                 });
@@ -470,7 +474,54 @@
         }
 
         spinBtn.addEventListener('click', handleSpin);
-        lever.addEventListener('click', handleSpin);
+
+        // Lever: a real downward pull, not a click. Pointer capture keeps
+        // the gesture working if the finger leaves the handle during dragging.
+        let leverGesture = null;
+        const leverTravel = () => Math.max(34, Math.min(74, lever.clientHeight * .35));
+        function leverPosition(pixels) {
+            lever.style.setProperty('--lever-pull-px', pixels.toFixed(1) + 'px');
+            lever.style.setProperty('--lever-tilt', (pixels / leverTravel() * 6).toFixed(1) + 'deg');
+        }
+        function finishLever(event, cancelled = false) {
+            if (!leverGesture || event.pointerId !== leverGesture.id) return;
+            const amount = leverGesture.pulled;
+            leverGesture = null;
+            lever.classList.remove('dragging');
+            leverPosition(0);
+            try { if (lever.hasPointerCapture(event.pointerId)) lever.releasePointerCapture(event.pointerId); } catch (_) {}
+            if (!cancelled && amount >= leverTravel() * .73 && !spinning && money >= 100) {
+                handleSpin();
+            }
+        }
+        lever.addEventListener('pointerdown', event => {
+            if (spinning || money < 100 || (event.pointerType === 'mouse' && event.button !== 0)) return;
+            event.preventDefault();
+            leverGesture = { id: event.pointerId, y: event.clientY, pulled: 0 };
+            lever.classList.add('dragging');
+            lever.setPointerCapture(event.pointerId);
+        });
+        lever.addEventListener('pointermove', event => {
+            if (!leverGesture || event.pointerId !== leverGesture.id) return;
+            const distance = Math.max(0, Math.min(leverTravel(), event.clientY - leverGesture.y));
+            leverGesture.pulled = distance;
+            leverPosition(distance);
+        });
+        lever.addEventListener('pointerup', event => finishLever(event));
+        lever.addEventListener('pointercancel', event => finishLever(event, true));
+        lever.addEventListener('lostpointercapture', event => {
+            if (leverGesture && leverGesture.id === event.pointerId) {
+                leverGesture = null;
+                lever.classList.remove('dragging');
+                leverPosition(0);
+            }
+        });
+        lever.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                if (!spinning && money >= 100) handleSpin();
+            }
+        });
         init();
     </script>
   <script src="rod-space-app-menu.js"></script>

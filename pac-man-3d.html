@@ -140,6 +140,9 @@
   @media (max-height:480px) { #mapFrame, #mapFrame.show { width:105px; } #hudMini { top:145px; } }
 }
 </style>
+<link rel="stylesheet" href="./pacman-polish.css?v=2">
+<link rel="stylesheet" href="./pacman-minimal-menu.css?v=1">
+<link rel="stylesheet" href="./pacman-clean-hud.css?v=1">
 </head>
 <body>
 <div id="touchControls" hidden>
@@ -148,19 +151,25 @@
 </div>
   <canvas id="game"></canvas>
 
-  <!-- Compact HUD above minimap -->
-  <div id="hudMini">
-    <div id="livesHUD" style="position:fixed; right:12px; bottom:12px; font-size:22px;">
-      <span id="livesHearts">💛💛💛</span>
-    </div>
+  <div id="arcadeTop" aria-label="Current level">
+    <span>LVL <strong id="levelNumber">01</strong></span>
+    <span id="pelletRemaining" hidden aria-hidden="true">0</span>
   </div>
+  <div id="ghostThreatBanner" role="status" aria-live="polite"></div>
+  <div id="livesHUD" aria-label="Lives remaining">
+    <div id="livesHearts" role="img" aria-label="3 lives remaining"></div>
+  </div>
+  <aside id="ghostPanel" aria-label="Ghost radar">
+    <div class="ghost-panel-title">GHOST TRACKER <span>LIVE</span></div>
+    <div id="ghostRoster"></div>
+  </aside>
+  <div id="hudMini"></div>
 
   <!-- Minimap -->
-  <div id="mapFrame">
-    <div id="mapTopBar">
-      <strong id="mapScoreValue" style="font-weight:900;color:#e7f3ff;margin:0 auto;margin-top:0px;">0</strong>
-    </div>
-    <canvas id="map" width="230" height="230" aria-label="Minimap"></canvas>
+  <div id="mapFrame" class="show">
+    <div id="mapTopBar"><strong id="mapScoreValue">0</strong></div>
+    <canvas id="map" width="230" height="230" aria-label="Local maze map"></canvas>
+    <div class="radar-foot" aria-hidden="true"></div>
   </div>
 
   <!-- Crosshair -->
@@ -169,15 +178,18 @@
   <!-- Lives popup -->
   <div id="lifePopup"><div class="box fade" id="lifeText">Lives: 3</div></div>
 
-  <!-- Start / Pause Screen -->
+  <!-- Clean single-column arcade menu; preserve existing gameplay button IDs. -->
   <div id="startScreen">
-    <div class="menu">
-      <h1 class="title">PAC-MAN 3D</h1>
-      <div class="subtitle" id="menuSubtitle">Arcade maze in first-person</div>
-      <button id="btnStart" class="btn">Start Game</button>
-      <button id="btnKeys" class="btn secondary">Keybinds</button>
-      <button id="btnCredits" class="btn secondary">Credits</button>
-      <!-- <div class="credits">© Rod Space</div> -->
+    <div class="arcade-menu arcade-menu-simple">
+      <div class="menu-story">
+        <h1 class="menu-heading">PAC-MAN <span>3D</span></h1>
+        <p id="menuSubtitle" class="subtitle">First-person arcade</p>
+        <div class="menu-buttons">
+          <button id="btnStart" class="btn btn-primary">START GAME</button>
+          <button id="btnKeys" class="btn secondary">KEYBINDS</button>
+          <button id="btnCredits" class="btn secondary">CREDITS</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -188,10 +200,10 @@
       <table style="width:100%; text-align:left; margin-top:10px; margin-bottom:18px; font-size:15px; border-spacing: 0 10px;">
         <tr><td style="padding-right:20px;"><span class="kbd">WASD</span></td><td>Move</td></tr>
         <tr><td style="padding-right:20px;"><span class="kbd">Mouse</span></td><td>Look</td></tr>
-        <tr><td style="padding-right:20px;"><span class="kbd">Space</span></td><td>Hold minimap</td></tr>
+        <tr><td style="padding-right:20px;"><span class="kbd">Space</span></td><td>Toggle minimap</td></tr>
         <tr><td style="padding-right:20px;"><span class="kbd">P</span></td><td>Pause</td></tr>
         <tr><td style="padding-right:20px;"><span class="kbd">R</span></td><td>Reset</td></tr>
-        <tr><td style="padding-right:20px;"><span class="kbd">Shift</span></td><td>Cursor‑lock</td></tr>
+        <tr><td style="padding-right:20px;"><span class="kbd">Shift</span></td><td>Toggle camera lock (drag to look if unavailable)</td></tr>
         <tr><td style="padding-right:20px;"><span class="kbd">Esc</span></td><td>Menu</td></tr>
       </table>
       <label>Sensitivity: <span id="sensVal">5.00x</span></label><br>
@@ -322,33 +334,40 @@ brickCanvas.width = 256;
 brickCanvas.height = 256;
 const bctx = brickCanvas.getContext('2d');
 
-// BASE wall color
-bctx.fillStyle = '#0b0f2a';  
-bctx.fillRect(0, 0, 256, 256);
-
-// Draw subtle brick pattern (no glow)
-bctx.fillStyle = '#1a2750';
-const BW = 60, BH = 32;
-for (let y = 0; y < 256; y += BH) {
-  const offset = (Math.floor(y / BH) % 2) * (BW / 2);
-  for (let x = 0; x < 256; x += BW) {
-    bctx.fillRect(x + offset, y, BW - 8, BH - 8);
+// Subtle midnight-blue glazed brick, inset mortar and occasional reflections.
+const masonryPalette=['#0c1431','#111c40','#152348','#1b2a50','#0f1938'];
+bctx.fillStyle='#04091c';bctx.fillRect(0,0,256,256);
+let masonrySeed=117722;
+const masonryRand=()=>{masonrySeed=(Math.imul(1664525,masonrySeed)+1013904223)>>>0;return masonrySeed/4294967296;};
+for(let r=0;r<9;r++){
+  const h=28,y=r*h+2,offset=(r%2)*31;
+  for(let x=-65+offset;x<256;x+=64){
+    bctx.fillStyle='#02081f';bctx.fillRect(x-1,y-1,62,25);
+    bctx.fillStyle=masonryPalette[(masonryRand()*masonryPalette.length)|0];
+    bctx.fillRect(x+1,y+1,58,21);
+    bctx.fillStyle='rgba(113,145,214,.11)';
+    bctx.fillRect(x+2,y+2,56,2);
+    bctx.fillStyle='rgba(0,0,0,.24)';
+    bctx.fillRect(x+2,y+19,56,3);
+    // The faint vertical joint and small worn marks look richer up close.
+    if(masonryRand()>.65){
+      bctx.fillStyle='rgba(95,126,190,.10)';
+      bctx.fillRect(x+4+masonryRand()*35,y+4,8,1);
+    }
   }
 }
-
-
-const wallTexture = new THREE.CanvasTexture(brickCanvas);
-wallTexture.wrapS = THREE.RepeatWrapping;
-wallTexture.wrapT = THREE.RepeatWrapping;
-wallTexture.repeat.set(1, 1);
-
-const wallMat = new THREE.MeshStandardMaterial({
-  map: wallTexture,
-  emissive: 0x000000,
-  emissiveIntensity: 0.0,
-  metalness: 0.4,
-  roughness: 0.35
+const wallTexture=new THREE.CanvasTexture(brickCanvas);
+wallTexture.wrapS=THREE.RepeatWrapping;
+wallTexture.wrapT=THREE.RepeatWrapping;
+wallTexture.colorSpace=THREE.SRGBColorSpace;
+wallTexture.anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),8);
+const wallMat=new THREE.MeshStandardMaterial({
+ map:wallTexture,color:0xd3dcff,metalness:.12,roughness:.78,
+ emissive:0x071337,emissiveIntensity:.30
 });
+const trimMat=new THREE.MeshBasicMaterial({color:0x193f9c});
+const ledgeMat=new THREE.MeshStandardMaterial({color:0x111d42,metalness:.25,roughness:.47});
+
 const pelletGeom = new THREE.SphereGeometry(0.35, 10, 10);
 const powerGeom  = new THREE.SphereGeometry(0.7, 12, 12);
 const pelletMat  = new THREE.MeshStandardMaterial({ color:0xffe800, emissive:0xffd700, emissiveIntensity:1.75 });
@@ -368,7 +387,7 @@ function buildWorld() {
   floor.rotation.x = -Math.PI/2;
   scene.add(floor);
 
-  const wallGeo = new THREE.BoxGeometry(TILE, 3, TILE);
+  const wallGeo = new THREE.BoxGeometry(TILE, 6, TILE);
   wallTexture.repeat.set(1, 1);
 
   for (let r = 0; r < rows; r++) {
@@ -378,10 +397,15 @@ function buildWorld() {
 
       if (ch === '#') {
         const wall = new THREE.Mesh(wallGeo, wallMat);
-        wall.position.set(x, 1.5, z);
+        wall.position.set(x,3,z);
         wall.castShadow = true;
         wall.receiveShadow = true;
         scene.add(wall);
+        // Wall base and top molding: subtle dark-blue arcade depth, no glow flood.
+        const trim=new THREE.Mesh(new THREE.BoxGeometry(TILE+.012,.12,TILE+.012),trimMat);
+        trim.position.set(0,-2.85,0);wall.add(trim);
+        const crown=new THREE.Mesh(new THREE.BoxGeometry(TILE+.025,.11,TILE+.025),ledgeMat);
+        crown.position.y=2.94;wall.add(crown);
       }
 
       if (ch === '.' || ch === 'o') {
@@ -413,93 +437,77 @@ function buildWorld() {
     }
   }
 
-  /* Ghosts */
-  ghostSpawns.forEach((spawn, i) => {
-    const bodyGeo = new THREE.CapsuleGeometry(1.1, 0.6, 12, 16);
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: ghostColors[i % ghostColors.length],
-      emissive: 0x111111,
-      emissiveIntensity: 0.6
+  /* Distinct original arcade ghosts; fully colored silhouettes and eyes. */
+  const ghostNames=['BLINKY','PINKY','INKY','CLYDE'];
+  ghostSpawns.forEach((spawn,i)=>{
+    const color=ghostColors[i%ghostColors.length];
+    const bodyMat=new THREE.MeshStandardMaterial({
+      color,emissive:color,emissiveIntensity:.19,roughness:.40,metalness:.07
     });
-    const ghostMesh = new THREE.Mesh(bodyGeo, bodyMat);
-    ghostMesh.position.set(spawn.x, spawn.y + 0.4, spawn.z);
-
-    // ----- Improved Ghost Skirt (3D scalloped, visible, proper shape) -----
-    const skirtPoints = [];
-    const skirtHeightTop = -0.1;   // where it starts under body
-    const skirtHeightBottom = 1.6; // hangs lower to form ghost silhouette
-    const radiusTop = 1.1;
-    const radiusBottom = 1.1;
-    const scallops = 12;
-
-    for (let j = 0; j <= scallops; j++) {
-        const a = (j / scallops) * Math.PI * 2;
-        const wave = -Math.sin(a * 6) * 0.22; // inverted bump amplitude
-        skirtPoints.push(new THREE.Vector2(radiusTop, skirtHeightTop));
-        skirtPoints.push(new THREE.Vector2(radiusBottom + wave, skirtHeightBottom));
+    // A round head with a short wavy skirt, both using the SAME material.
+    const bodyGeo=new THREE.SphereGeometry(.89,20,14,0,Math.PI*2,0,Math.PI*.70);
+    const ghostMesh=new THREE.Mesh(bodyGeo,bodyMat);
+    ghostMesh.position.copy(spawn);
+    ghostMesh.position.y=1.72;
+    ghostMesh.castShadow=true;
+    const parts=16,verts=[],indices=[];
+    for(let j=0;j<=parts;j++){
+      const a=j/parts*Math.PI*2,c=Math.cos(a),ss=Math.sin(a);
+      const r=.88;
+      verts.push(c*r,-.31,ss*r);
+      verts.push(c*r, -1.26+.18*Math.cos(j/parts*Math.PI*8),ss*r);
+      if(j<parts){const k=j*2;indices.push(k,k+1,k+2,k+1,k+3,k+2);}
     }
-
-    const skirtGeo = new THREE.LatheGeometry(skirtPoints, 64);
-    const skirtMat = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        emissive: 0x000000,
-        emissiveIntensity: 0.0,
-        metalness: 0.25,
-        roughness: 0.65
-    });
-
-    const skirtMesh = new THREE.Mesh(skirtGeo, skirtMat);
-    skirtMesh.position.y = -1;
-    ghostMesh.add(skirtMesh);
-
-    // Eyes
-    const eyeGeo = new THREE.SphereGeometry(0.35, 12, 12);
-    const pupilGeo = new THREE.SphereGeometry(0.18, 12, 12);
-    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const blackMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
-
-    const eyeL = new THREE.Mesh(eyeGeo, whiteMat);
-    const eyeR = new THREE.Mesh(eyeGeo, whiteMat);
-    const pupilL = new THREE.Mesh(pupilGeo, blackMat);
-    const pupilR = new THREE.Mesh(pupilGeo, blackMat);
-
-    eyeL.position.set(0.45, 0.4, 1);
-    eyeR.position.set(-0.45, 0.4, 1);
-    pupilL.position.set(0.45, 0.4, 1.2);
-    pupilR.position.set(-0.45, 0.4, 1.2);
-
-    ghostMesh.add(eyeL);
-    ghostMesh.add(eyeR);
-    ghostMesh.add(pupilL);
-    ghostMesh.add(pupilR);
-    // Store eye meshes for later rotation
-    const eyeMeshes = [eyeL, eyeR, pupilL, pupilR];
+    const skirtGeo=new THREE.BufferGeometry();
+    skirtGeo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+    skirtGeo.setIndex(indices);skirtGeo.computeVertexNormals();
+    const skirtMat=bodyMat.clone();skirtMat.side=THREE.DoubleSide;
+    const skirt=new THREE.Mesh(skirtGeo,skirtMat);
+    ghostMesh.add(skirt);
+    const eyeWhite=new THREE.MeshBasicMaterial({color:0xf5ffff});
+    const pupilMat=new THREE.MeshBasicMaterial({color:0x11284e});
+    const eyeMeshes=[];
+    for(const dx of [-.29,.29]){
+      const white=new THREE.Mesh(new THREE.SphereGeometry(1,12,10),eyeWhite);
+      white.scale.set(.23,.31,.13);white.position.set(dx,.22,.78);
+      ghostMesh.add(white);eyeMeshes.push(white);
+      const pupil=new THREE.Mesh(new THREE.SphereGeometry(1,10,8),pupilMat);
+      pupil.scale.set(.10,.15,.065);pupil.position.set(dx,.17,.904);
+      ghostMesh.add(pupil);eyeMeshes.push(pupil);
+    }
+    const spawnCell=worldToCell(spawn.x,spawn.z);
     scene.add(ghostMesh);
-
-    const spawnCell = worldToCell(spawn.x, spawn.z);
     ghosts.push({
-      mesh: ghostMesh,
-      color: ghostColors[i % ghostColors.length],
-      spawn: spawn.clone(),
-      spawnCell,
-      target: spawn.clone(),
-      eyes: false,
-      respawnTimer: 0,
-      baseSpeed: 3 + i * 0.3,
-      path: [],
-      currentMode: null,
-      nextCell: null,
-      speedMult: 1,
-      lastTargetRow: null,
-      lastTargetCol: null,
-      eyeMeshes,
-      offset: Math.random() * Math.PI * 2,
+      mesh:ghostMesh,color,spawn:spawn.clone(),spawnCell,
+      name:ghostNames[i%ghostNames.length],
+      target:spawn.clone(),eyes:false,respawnTimer:0,
+      baseSpeed:6.15+i*.12,path:[],currentMode:null,nextCell:null,
+      speedMult:1,lastTargetRow:null,lastTargetCol:null,
+      eyeMeshes,skirt,bodyMat,skirtMat,offset:Math.random()*Math.PI*2
     });
   });
 }
 
 buildWorld();
-
+function setGhostAppearance(g,color){
+  g.mesh.material.color.setHex(color);
+  if(g.skirtMat)g.skirtMat.color.setHex(color);
+  if(g.bodyMat)g.bodyMat.emissive.setHex(color);
+  if(g.skirtMat)g.skirtMat.emissive.setHex(color);
+}
+function ghostStatus(){
+  const root=document.getElementById('ghostRoster');
+  if(!root)return;
+  root.innerHTML=ghosts.map(g=>{
+    const col='#'+g.color.toString(16).padStart(6,'0');
+    const dist=Math.hypot(g.mesh.position.x-playerPos.x,g.mesh.position.z-playerPos.z);
+    const mode=g.eyes?'RETURNING':state.fright>0?'VULNERABLE':ghostAlert.active?'HUNTING':dist<14?'SCOUTING':'PATROLLING';
+    return '<div class="ghost-chip '+(dist<14&&!g.eyes?'danger':'')+'">'+
+       '<span class="ghost-face" style="--ghost:'+col+'"><i></i><i></i></span>'+
+       '<span class="ghost-data"><strong>'+g.name+'</strong><small>'+mode+'</small></span>'+
+       '</div>';
+  }).join('');
+}
 /* ========= PLAYER / STATE ========= */
 const playerPos = playerSpawn.clone();
 let yaw = Math.PI;     // looking “down” the maze
@@ -524,6 +532,7 @@ function resetPellets() {
 }
 
 function resetPlayerAndGhosts() {
+  resetGhostAlert();
   playerPos.copy(playerSpawn);
   yaw = Math.PI;
   pitch = 0;
@@ -532,14 +541,14 @@ function resetPlayerAndGhosts() {
 
   ghosts.forEach((g, i) => {
     g.mesh.position.copy(g.spawn);
-    g.mesh.material.color.setHex(g.color);
+    setGhostAppearance(g,g.color);
     g.eyes = false;
   });
 }
 
 function resetGame(full = true) {
   if (full) {
-    state.score = 233; // remaining pellets (added +4)
+    state.score = pellets.length;
     state.level = 1;
     state.lives = 3;
   }
@@ -553,8 +562,13 @@ function resetGame(full = true) {
 
 /* ========= INPUT / POINTER LOCK ========= */
 const keys = {};
-let pointerLocked = false;
-let mapVisible = false;
+let pointerLocked=false;
+let nativeLocked=false;
+let desiredLock=true;
+const nativeMouseHandler=window.webkit?.messageHandlers?.rodSpaceControls;
+const hasNativeMouse=Boolean(window.__rodSpaceMacApp&&nativeMouseHandler);
+let mouseDragging=false,dragX=0,dragY=0;
+let mapVisible = true;
 const touchControls = document.getElementById('touchControls');
 const moveStick = document.getElementById('moveStick');
 const stickThumb = document.getElementById('stickThumb');
@@ -602,19 +616,58 @@ canvas.addEventListener('pointermove', e => {
   pitch = Math.max(-Math.PI/2+0.2, Math.min(Math.PI/2-0.2, pitch-(e.clientY-lookY)*mouseSensitivity*2));
   lookX=e.clientX; lookY=e.clientY;
 });
-window.addEventListener('blur', () => { clearTouch(); for (const key in keys) keys[key]=false; });
+window.addEventListener('blur',()=>{clearTouch();for(const key in keys)keys[key]=false;releaseMouseLock();});
+window.addEventListener('pagehide',()=>releaseMouseLock());
 document.getElementById('touchMap').addEventListener('click', () => {
-  mapVisible = !mapVisible;
-  document.getElementById('mapFrame').classList.toggle('show', mapVisible);
+  mapVisible=true;
+  document.getElementById('mapFrame').classList.add('show');
 });
 document.getElementById('touchPause').addEventListener('click', () => {
-  clearTouch(); state.paused=true; menuSubtitle.textContent='Paused'; btnStart.textContent='Resume'; startScreen.style.display='grid';
+  clearTouch(); state.paused=true; menuSubtitle.textContent='Paused'; btnStart.innerHTML='RESUME GAME <span>↗</span>'; startScreen.style.display='grid';
 });
-function requestMouseLock() {
-  if (matchMedia('(pointer:coarse)').matches || !canvas.requestPointerLock) return;
-  const request = canvas.requestPointerLock();
-  if (request?.catch) request.catch(() => {});
+function requestMouseLock(){
+  if(!desiredLock||!state.playing||state.paused)return;
+  if(hasNativeMouse){
+    // macOS WKWebView does not grant regular browser Pointer Lock reliably.
+    // The Rod Space wrapper supplies raw mouse deltas while capturing the cursor.
+    nativeMouseHandler.postMessage({type:'mouseLock',enabled:true});
+    nativeLocked=true;updateMouseMode();return;
+  }
+  if(matchMedia('(pointer:coarse)').matches||!canvas.requestPointerLock)return;
+  try{
+    const promise=canvas.requestPointerLock();
+    promise?.catch?.(()=>console.info('Browser pointer lock blocked: drag-to-look available'));
+  }catch(e){console.info('Browser pointer lock unavailable: drag-to-look available');}
 }
+function releaseMouseLock(){
+  if(hasNativeMouse){
+    nativeMouseHandler.postMessage({type:'mouseLock',enabled:false});
+    nativeLocked=false;
+  }else if(document.pointerLockElement)document.exitPointerLock?.();
+  updateMouseMode();
+}
+// The native Mac wrapper calls this when it captures relative mouse movement.
+window.__rodSpaceNativeMouse={move(dx,dy){
+  if(!nativeLocked||!state.playing||state.paused)return;
+  yaw-=dx*mouseSensitivity;
+  pitch=Math.max(-Math.PI/2+.2,Math.min(Math.PI/2-.2,pitch-dy*mouseSensitivity));
+}};
+canvas.addEventListener('click',()=>{
+  if(state.playing&&!state.paused&&!pointerLocked&&!nativeLocked&&desiredLock)requestMouseLock();
+});
+canvas.addEventListener('mousedown',e=>{
+  if(e.button===0&&state.playing&&!state.paused&&!pointerLocked&&!nativeLocked){
+    mouseDragging=true;dragX=e.clientX;dragY=e.clientY;
+  }
+});
+window.addEventListener('mouseup',()=>{mouseDragging=false;});
+canvas.addEventListener('mousemove',e=>{
+  if(!mouseDragging||pointerLocked||nativeLocked||!state.playing||state.paused)return;
+  yaw-=(e.clientX-dragX)*mouseSensitivity;
+  pitch=Math.max(-Math.PI/2+.2,Math.min(Math.PI/2-.2,
+    pitch-(e.clientY-dragY)*mouseSensitivity));
+  dragX=e.clientX;dragY=e.clientY;
+});
 
 
 const mouseBase = 0.0025;
@@ -635,9 +688,9 @@ document.addEventListener('keydown', e => {
       state.paused = !state.paused;
       if (state.paused) {
         menuSubtitle.textContent = 'Paused';
-        btnStart.textContent = 'Resume';
+        btnStart.innerHTML = 'RESUME GAME <span>↗</span>';
         startScreen.style.display = 'grid';
-        document.exitPointerLock();
+        releaseMouseLock();
       } else {
         startScreen.style.display = 'none';
         requestMouseLock();
@@ -649,13 +702,11 @@ document.addEventListener('keydown', e => {
     resetGame(true);
   }
 
-  if (e.code === 'Space') {
-    mapVisible = !mapVisible;
-    if (mapVisible) {
-      document.getElementById("mapFrame").classList.add("show");
-    } else {
-      document.getElementById("mapFrame").classList.remove("show");
-    }
+  if(e.code==='Space'){
+    e.preventDefault();
+    // The small radar remains visible at all times.
+    mapVisible=true;
+    document.getElementById('mapFrame').classList.add('show');
   }
 
   if (e.code === 'Escape') {
@@ -663,18 +714,20 @@ document.addEventListener('keydown', e => {
     if (state.playing) {
       state.paused = true;
       menuSubtitle.textContent = 'Paused';
-      btnStart.textContent = 'Resume';
+      btnStart.innerHTML = 'RESUME GAME <span>↗</span>';
       startScreen.style.display = 'grid';
-      document.exitPointerLock();
+      releaseMouseLock();
     }
   }
 
-  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
-    if (pointerLocked) {
-      document.exitPointerLock();
-    } else if (state.playing && !state.paused) {
-      requestMouseLock();
+  if((e.code==='ShiftLeft'||e.code==='ShiftRight')&&!e.repeat){
+    e.preventDefault();
+    if(pointerLocked||nativeLocked){
+      desiredLock=false;releaseMouseLock();
+    }else{
+      desiredLock=true;requestMouseLock();
     }
+    updateMouseMode();
   }
 });
 
@@ -683,18 +736,21 @@ document.addEventListener('keyup', e => {
 });
 
 document.addEventListener('pointerlockchange', () => {
-  pointerLocked = (document.pointerLockElement === canvas);
-  crosshair.style.display = (pointerLocked && state.playing && !state.paused) ? 'block' : 'none';
+  pointerLocked=(document.pointerLockElement===canvas);
+  updateMouseMode();
 });
 
 document.addEventListener('mousemove', e => {
-  if (!pointerLocked || !state.playing || state.paused) return;
+  if (!pointerLocked || nativeLocked || !state.playing || state.paused) return;
   yaw   -= e.movementX * mouseSensitivity;
   pitch -= e.movementY * mouseSensitivity;
   const maxPitch = Math.PI/2 - 0.2;
   pitch = Math.max(-maxPitch, Math.min(maxPitch, pitch));
 });
 
+function updateMouseMode(){
+  crosshair.style.display=state.playing&&!state.paused?'block':'none';
+}
 sensSlider.addEventListener('input', () => {
   mouseSensitivityFactor = parseFloat(sensSlider.value);
   mouseSensitivity = 0.0005 * mouseSensitivityFactor;
@@ -707,8 +763,9 @@ btnStart.addEventListener('click', () => {
   state.playing = true;
   state.paused = false;
   menuSubtitle.textContent = 'Arcade maze in first-person';
-  btnStart.textContent = 'Start Game';
+  btnStart.innerHTML = 'START GAME <span>↗</span>';
   requestMouseLock();
+  updateMouseMode();
 });
 
 btnKeys.addEventListener('click', () => {
@@ -736,11 +793,19 @@ function isWallAt(x, z) {
 }
 
 function canMoveTo(x, z) {
-  const r = 1.05;
-  if (isWallAt(x + r, z)) return false;
-  if (isWallAt(x - r, z)) return false;
-  if (isWallAt(x, z + r)) return false;
-  if (isWallAt(x, z - r)) return false;
+  // Circle-to-wall AABB test, including diagonal corners. The old four
+  // cardinal samples could let the camera penetrate a diagonal tile.
+  const radius=.75;
+  const cell=worldToCell(x,z);
+  for(let row=cell.row-1;row<=cell.row+1;row++)
+    for(let col=cell.col-1;col<=cell.col+1;col++){
+      if(row<0||col<0||row>=rows||col>=cols)return false;
+      if(MAZE[row][col]!=='#')continue;
+      const center=cellToWorld(col,row);
+      const cx=Math.max(center.x-TILE*.5,Math.min(x,center.x+TILE*.5));
+      const cz=Math.max(center.z-TILE*.5,Math.min(z,center.z+TILE*.5));
+      if((x-cx)*(x-cx)+(z-cz)*(z-cz)<radius*radius)return false;
+    }
   return true;
 }
 
@@ -765,23 +830,9 @@ function movePlayer(dt) {
     const nx = playerPos.x + dx;
     const nz = playerPos.z + dz;
 
-    // --- BLOCK PLAYER IF TOO CLOSE TO A GHOST (bigger hitbox) ---
-    let blockedByGhost = false;
-    for (const g of ghosts) {
-      const gx = g.mesh.position.x;
-      const gz = g.mesh.position.z;
-      // Enlarged hitbox WITHOUT scaling the ghost model
-      const hitboxRadius = 1.2; 
-      const dxg = nx - gx;
-      const dzg = nz - gz;
-      const d2 = dxg * dxg + dzg * dzg;
-
-      if (d2 < hitboxRadius * hitboxRadius) {
-        blockedByGhost = true;
-        break;
-      }
-    }
-
+    // Ghosts can touch the player and cause damage but do not physically
+    // trap the camera in a wall. Collision damage is handled in checkDeaths().
+    const blockedByGhost=false;
     if (blockedByGhost) return; // stop movement if ghost blocks corridor
 
     // Sliding-collision logic
@@ -802,200 +853,184 @@ function movePlayer(dt) {
   camera.rotation.set(pitch, yaw, 0);
 }
 
-/* ========= GHOSTS / AI ========= */
-function ghostAI(g) {
-  // === Eyes mode: return to spawn ===
-  if (g.eyes) {
-    const gCell = worldToCell(g.mesh.position.x, g.mesh.position.z);
-    const sCell = g.spawnCell;
-
-    // Pathfind back to spawn
-    const path = bfsShortestPath(gCell.row, gCell.col, sCell.row, sCell.col);
-    if (path && path.length > 0) {
-      g.nextCell = path[0];
-      const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
-      g.target.set(x, 1.7, z);
-    }
-
-    return; // IMPORTANT: do not chase player
+/* ========= COORDINATED GHOST AI ========= */
+const ghostAlert={active:false,remaining:0,lastSeen:null,source:null,searchTime:0};
+// A ghost can actually see along its current uninterrupted corridor.
+// It doesn't immediately learn the player's position through walls.
+function clearCorridor(a,b){
+  if(a.row<0||a.col<0||b.row<0||b.col<0||
+     a.row>=rows||b.row>=rows||a.col>=cols||b.col>=cols)return false;
+  if(a.row===b.row){
+    const first=Math.min(a.col,b.col),last=Math.max(a.col,b.col);
+    for(let c=first;c<=last;c++)if(MAZE[a.row][c]==='#')return false;
+    return true;
   }
-  // === Power Pellet: run away from the player ===
-  if (state.fright > 0 && !g.eyes) {
-    const gx = g.mesh.position.x;
-    const gz = g.mesh.position.z;
-
-    const gCell = worldToCell(gx, gz);
-    const pCell = worldToCell(playerPos.x, playerPos.z);
-
-    // Clamp inside bounds
-    gCell.col = Math.max(0, Math.min(cols - 1, gCell.col));
-    gCell.row = Math.max(0, Math.min(rows - 1, gCell.row));
-
-    // Pick a far cell (already provided in your code)
-    const far = pickRandomFarCell(pCell, 5);
-    if (far) {
-      const path = bfsShortestPath(gCell.row, gCell.col, far.row, far.col);
-      if (path && path.length > 0) {
-        g.nextCell = path[0];
-        const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
-        g.target.set(x, 1.7, z);
-        return; // STOP — do not chase
-      }
-    }
+  if(a.col===b.col){
+    const first=Math.min(a.row,b.row),last=Math.max(a.row,b.row);
+    for(let r=first;r<=last;r++)if(MAZE[r][a.col]==='#')return false;
+    return true;
   }
-
-  // === Clyde coward logic (index 3) ===
-  const gx = g.mesh.position.x;
-  const gz = g.mesh.position.z;
-  const gCell = worldToCell(gx, gz);
-  const pCell = worldToCell(playerPos.x, playerPos.z);
-  // Clamp inside bounds
-  gCell.col = Math.max(0, Math.min(cols - 1, gCell.col));
-  gCell.row = Math.max(0, Math.min(rows - 1, gCell.row));
-  if (g === ghosts[3] && state.fright <= 0 && !g.eyes && state.mode === 'chase') {
-    const distR = Math.abs(gCell.row - pCell.row);
-    const distC = Math.abs(gCell.col - pCell.col);
-    const tileDistance = Math.sqrt(distR*distR + distC*distC);
-    if (tileDistance < 8) {
-      const far = pickRandomFarCell(pCell, 6);
-      if (far) {
-        const path = bfsShortestPath(gCell.row, gCell.col, far.row, far.col);
-        if (path && path.length > 0) {
-          g.nextCell = path[0];
-          const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
-          g.target.set(x, 1.7, z);
-          g.speedMult = 1.3; // 30% faster escape
-          return;
-        }
+  return false;
+}
+function resetGhostAlert(){
+  ghostAlert.active=false;ghostAlert.remaining=0;
+  ghostAlert.lastSeen=null;ghostAlert.source=null;ghostAlert.searchTime=0;
+  ghostAlert.lastSpotTime=0;ghostAlert._freshAlert=false;
+  for(const g of ghosts){
+    g.corridorBoost=0;g.pathClock=0;g.patrolDestination=null;
+    g.nextCell=null;g._stuckTime=0;
+  }
+}
+function updateGhostAlert(dt){
+  const playerCell=worldToCell(playerPos.x,playerPos.z);
+  let spotter=null;
+  if(state.fright<=0){
+    for(const g of ghosts){
+      if(g.eyes)continue;
+      const a=worldToCell(g.mesh.position.x,g.mesh.position.z);
+      const distance=Math.abs(a.col-playerCell.col)+Math.abs(a.row-playerCell.row);
+      if(distance<=9&&clearCorridor(a,playerCell)){
+        spotter=g;break;
       }
     }
   }
-
-  // === Scatter Mode: Patrol hunter roaming ===
-  if (state.mode === 'scatter' && !g.eyes && state.fright <= 0) {
-    // gCell and pCell already defined above
-    // If ghost accidentally sees player in same corridor, switch to chase logic
-    let seesPlayer = false;
-    if (gCell.row === pCell.row) {
-      seesPlayer = true;
-      const step = (pCell.col > gCell.col) ? 1 : -1;
-      for (let c = gCell.col + step; c !== pCell.col; c += step) {
-        if (MAZE[gCell.row][c] === '#') { seesPlayer = false; break; }
-      }
-    } else if (gCell.col === pCell.col) {
-      seesPlayer = true;
-      const step = (pCell.row > gCell.row) ? 1 : -1;
-      for (let r = gCell.row + step; r !== pCell.row; r += step) {
-        if (MAZE[r][gCell.col] === '#') { seesPlayer = false; break; }
-      }
-    }
-
-    // If accidental line-of-sight → go into chase
-    if (seesPlayer) {
-      // continue to chase logic (skip scatter move)
-    } else {
-      // Random target roaming
-      const far = pickRandomWalkableCell();
-      if (far) {
-        const path = bfsShortestPath(gCell.row, gCell.col, far.row, far.col);
-        if (path && path.length > 0) {
-          g.nextCell = path[0];
-          const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
-          g.target.set(x, 1.7, z);
-          return; // stay in wander mode instead of chase
-        }
-      }
+  if(spotter){
+    if(!ghostAlert.active){ghostAlert._freshAlert=true;}
+    ghostAlert.active=true;
+    ghostAlert.remaining=14;
+    ghostAlert.lastSeen={row:playerCell.row,col:playerCell.col};
+    ghostAlert.source=spotter.name;
+    if(!ghostAlert.lastSpotTime||ghostAlert._freshAlert)ghostAlert.lastSpotTime=performance.now();
+    ghostAlert._freshAlert=false;
+  }else if(ghostAlert.active){
+    ghostAlert.remaining-=dt;
+    if(ghostAlert.remaining<=0){
+      ghostAlert.active=false;ghostAlert.lastSeen=null;
     }
   }
-
-  // === Simple AI: always compute BFS shortest path to the player ===
-  // gCell and pCell already defined above
-  // Compute shortest path using BFS every frame
-  const path = bfsShortestPath(gCell.row, gCell.col, pCell.row, pCell.col);
-
-  // No valid path? Stop here.
-  if (!path || path.length === 0) {
-    g.nextCell = null;
+  const banner=document.getElementById('ghostThreatBanner');
+  if(banner){
+    banner.classList.toggle('active',ghostAlert.active&&state.fright<=0);
+    banner.textContent=ghostAlert.active?
+      'ALL GHOSTS ALERTED · '+ghostAlert.source+' SPOTTED YOU':'';
+  }
+}
+// Patrol until spotted; then coordinate through BFS around bends and corners.
+function ghostAI(g,dt){
+  g.pathClock=(g.pathClock||0)-dt;
+  if(g.pathClock>0&&g.nextCell)return;
+  const here=worldToCell(g.mesh.position.x,g.mesh.position.z);
+  const player=worldToCell(playerPos.x,playerPos.z);
+  if(g.eyes){
+    setPathTarget(g,here,g.spawnCell);
+    g.pathClock=.28;
     return;
   }
-
-  // Path's first cell is the next tile to walk to
-  g.nextCell = path[0];
-
-  // Convert next cell into world coordinates
-  const { x, z } = cellToWorld(g.nextCell.col, g.nextCell.row);
-  g.target.set(x, 1.7, z);
+  if(state.fright>0){
+    const far=pickRandomFarCell(player,7);
+    if(far)setPathTarget(g,here,far);
+    g.pathClock=.48;
+    return;
+  }
+  if(ghostAlert.active){
+    const target=player;
+    // Shared alert broadcasts position. Each ghost keeps pathfinding after
+    // line-of-sight is broken, so the player can't hide around one corner.
+    setPathTarget(g,here,target);
+    g.pathClock=.20;
+    return;
+  }
+  // A faint attraction during patrol, not an exact player lock-on.
+  // Wandering remains dominant until a ghost has actual sight of the player.
+  const home=g.patrolDestination;
+  if(!home||(home.row===here.row&&home.col===here.col)||
+    (g.patrolClock||0)<=0){
+    const candidates=[];
+    for(let i=0;i<12;i++){
+      const candidate=pickRandomWalkableCell();
+      const distance=Math.abs(candidate.row-here.row)+Math.abs(candidate.col-here.col);
+      if(distance>=3&&distance<=15)candidates.push(candidate);
+    }
+    if(Math.random()<.35){
+      const nearPlayer=candidates
+        .slice().sort((a,b)=>(
+          Math.abs(a.row-player.row)+Math.abs(a.col-player.col))-
+          (Math.abs(b.row-player.row)+Math.abs(b.col-player.col)))[0];
+      g.patrolDestination=nearPlayer||candidates[0]||pickRandomWalkableCell();
+    }else{
+      g.patrolDestination=candidates[Math.floor(Math.random()*candidates.length)]||
+        pickRandomWalkableCell();
+    }
+    g.patrolClock=9+Math.random()*6;
+  }
+  setPathTarget(g,here,g.patrolDestination);
+  g.pathClock=.45;
+}
+function setPathTarget(g,start,destination){
+  if(!destination)return;
+  const path=bfsShortestPath(start.row,start.col,destination.row,destination.col);
+  if(!path||!path.length){
+    g.nextCell=null;
+    if(!ghostAlert.active)g.patrolClock=0;
+    return;
+  }
+  g.nextCell=path[0];
+  const dest=cellToWorld(g.nextCell.col,g.nextCell.row);
+  g.target.set(dest.x,1.7,dest.z);
 }
 
 function moveGhost(g, dt) {
-  // --- CUSTOM SPEED SYSTEM ---
-  let speed = g.baseSpeed;   // default "normal" speed
-
-  // corridor check: same row or same col AND clear LOS
-  const gCell = worldToCell(g.mesh.position.x, g.mesh.position.z);
-  const pCell = worldToCell(playerPos.x, playerPos.z);
-  let sameCorridor = false;
-
-  if (gCell.row === pCell.row) {
-    sameCorridor = true;
-    const step = (pCell.col > gCell.col) ? 1 : -1;
-    for (let c = gCell.col + step; c !== pCell.col; c += step) {
-      if (MAZE[gCell.row][c] === '#') { sameCorridor = false; break; }
+  const gCell=worldToCell(g.mesh.position.x,g.mesh.position.z);
+  const pCell=worldToCell(playerPos.x,playerPos.z);
+  // Speed increases continuously with unobstructed shared corridor sight.
+  // On turns the boost decays smoothly, while the hunt itself continues.
+  const lineOfSight=clearCorridor(gCell,pCell);
+  if(!g.eyes&&ghostAlert.active&&state.fright<=0&&lineOfSight){
+    // A sustained unobstructed chase becomes dangerous after ~10-14 sec.
+    // No instant sprinting just because the ghost spotted the player.
+    g.corridorBoost=Math.min(1,(g.corridorBoost||0)+dt/8);
+  }else{
+    // Taking a corner quickly resets the pursuit advantage.
+    g.corridorBoost=Math.max(0,(g.corridorBoost||0)-dt/1.1);
+  }
+  // Roaming ghosts are only slightly slower than the player (7 units/s).
+  // When alerted, their speed grows gradually over a sustained straight.
+  const base=Math.min(g.baseSpeed,6.55);
+  let speed=g.eyes?11:state.fright>0?3.3:
+    ghostAlert.active?base+.07+(g.corridorBoost||0)*1.78:
+    base;
+  // In a long straight, all four ghosts can eventually outrun the player
+  // (player speed 7); cornering restores the opportunity to escape.
+  speed=Math.min(speed,8.3);
+  if(g.eyes&&gCell.row===g.spawnCell.row&&gCell.col===g.spawnCell.col){
+    g.respawnTimer+=dt;
+    if(g.respawnTimer>=3){
+      g.eyes=false;setGhostAppearance(g,g.color);
+      g.respawnTimer=0;g.corridorBoost=0;
     }
-  } else if (gCell.col === pCell.col) {
-    sameCorridor = true;
-    const step = (pCell.row > gCell.row) ? 1 : -1;
-    for (let r = gCell.row + step; r !== pCell.row; r += step) {
-      if (MAZE[r][gCell.col] === '#') { sameCorridor = false; break; }
-    }
+    return;
   }
-  // If eyes reached spawn: wait 3 seconds, then revive
-  if (g.eyes &&
-      gCell.row === g.spawnCell.row &&
-      gCell.col === g.spawnCell.col) {
-
-    g.respawnTimer += dt;
-    if (g.respawnTimer >= 3) {
-      g.eyes = false;
-      g.mesh.material.color.setHex(g.color);
-      g.respawnTimer = 0;
-    }
-    return; // ghost stays still during wait
-  }
-
-  // 1. Eyes mode (returning to spawn)
-  if (g.eyes) {
-    speed = 21;
-  }
-  // 2. Frightened (blue) mode
-  else if (state.fright > 0) {
-    speed = 5;
-  }
-  // 3. Corridor chase (same corridor & LOS)
-  else if (sameCorridor) {
-    speed = 7;
-  }
-  // 4. Normal mode (not aligned)
-  else {
-    speed = g.baseSpeed;
-  }
-
   // === Apply speed multiplier if set ===
   if (g.speedMult) {
     speed *= g.speedMult;
     g.speedMult = 1; // reset after applying
   }
 
-  // Direction to target
-  const dir = new THREE.Vector3().subVectors(g.target, g.mesh.position);
-  dir.y = 0;
-  const dist = dir.length();
+  // While sharing a clear corridor, follow the player's actual position.
+  // Pursuing only the center of the next grid cell makes a fast ghost
+  // oscillate behind the player, regardless of its nominal speed.
+  const directPursuit=ghostAlert.active&&!g.eyes&&state.fright<=0&&lineOfSight;
+  if(directPursuit)g.target.set(playerPos.x,g.mesh.position.y,playerPos.z);
+  else if(g.wasDirectPursuit)g.pathClock=0;
+  g.wasDirectPursuit=directPursuit;
 
-  // If extremely close, let AI pick next tile
-  if (dist < 0.05) return;
-
+  const dir = new THREE.Vector3().subVectors(g.target,g.mesh.position);
+  dir.y=0;
+  const dist=dir.length();
+  if(dist<.025)return;
   dir.normalize();
-  const step = speed * dt;
+  // Do not overshoot and bounce back around the target at high speed.
+  const step=Math.min(speed*dt,dist);
 
   const nextX = g.mesh.position.x + dir.x * step;
   const nextZ = g.mesh.position.z + dir.z * step;
@@ -1141,15 +1176,19 @@ function eat() {
     if (p.eaten) continue;
     const dx = playerPos.x - p.mesh.position.x;
     const dz = playerPos.z - p.mesh.position.z;
-    if (dx*dx + dz*dz < 1.2) {
+    const distance2=dx*dx+dz*dz;
+    const midX=(playerPos.x+p.mesh.position.x)*.5;
+    const midZ=(playerPos.z+p.mesh.position.z)*.5;
+    if(distance2<4.84 && !isWallAt(midX,midZ)){
       p.eaten = true;
       p.mesh.visible = false;
       state.score -= 1; // reduce remaining pellet count
 
       if (p.power) {
+        resetGhostAlert();
         state.fright = 8;
         ghosts.forEach(g => {
-          if (!g.eyes) g.mesh.material.color.setHex(0x3333ff);
+          if (!g.eyes) setGhostAppearance(g,0x3333ff);
         });
       }
 
@@ -1168,11 +1207,11 @@ function checkDeaths() {
     const dx = playerPos.x - g.mesh.position.x;
     const dz = playerPos.z - g.mesh.position.z;
     const d2 = dx*dx + dz*dz;
-    if (d2 < 1.6) {
+    if(d2<1.30 && (performance.now()-(ghostAlert.lastSpotTime||0)>850 || state.fright>0)){
       if (state.fright > 0 && !g.eyes) {
         // Eat ghost
         g.eyes = true;
-        g.mesh.material.color.setHex(0xffffff);
+        setGhostAppearance(g,0xffffff);
         g.respawnTimer = 0;
         updateHUD();
       } else if (!g.eyes) {
@@ -1204,9 +1243,9 @@ function gameOver() {
   state.playing = false;
   state.paused  = false;
   menuSubtitle.textContent = 'Game Over';
-  btnStart.textContent = 'Restart';
+  btnStart.innerHTML = 'RESTART GAME <span>↗</span>';
   startScreen.style.display = 'grid';
-  document.exitPointerLock();
+  releaseMouseLock();
   // Reset for next start
   resetGame(true);
 }
@@ -1214,8 +1253,16 @@ function gameOver() {
 /* ========= HUD / UI HELPERS ========= */
 function updateHUD() {
   mapScoreValue.textContent = state.score;
-  const hearts = "💛".repeat(state.lives);
-  document.getElementById("livesHearts").textContent = hearts;
+  document.getElementById("livesHearts").innerHTML=Array.from({length:3},(_,i)=>
+    '<span class="arcade-heart '+(i<state.lives?'on':'off')+'" aria-hidden="true">'+
+    '<svg viewBox="0 0 32 30"><path d="M16 27C13 24 2 15 2 9A7.6 7.6 0 0 1 16 6 7.6 7.6 0 0 1 30 9C30 15 19 24 16 27Z"/></svg></span>'
+  ).join('');
+  document.getElementById("livesHearts").setAttribute('aria-label',
+    state.lives+' lives remaining');
+  const remaining=document.getElementById('pelletRemaining');
+  if(remaining)remaining.textContent=state.score;
+  const level=document.getElementById('levelNumber');
+  if(level)level.textContent=String(state.level).padStart(2,'0');
 }
 
 function showLifePopup() {
@@ -1522,7 +1569,7 @@ function drawMap() {
 
 /* ========= MAIN LOOP ========= */
 let prev = performance.now();
-let lastMapDraw = 0;
+let lastMapDraw = 0, lastGhostHUD=0;
 
 function loop(now) {
   const dt = Math.min(0.033, (now - prev) / 1000);
@@ -1544,7 +1591,11 @@ function loop(now) {
 
   if (state.playing && !state.paused) {
     movePlayer(dt);
-    ghosts.forEach(g => { ghostAI(g); moveGhost(g, dt); });
+    updateGhostAlert(dt);
+    ghosts.forEach(g=>{
+      g.patrolClock=Math.max(0,(g.patrolClock||0)-dt);
+      ghostAI(g,dt);moveGhost(g,dt);
+    });
     eat();
     checkDeaths();
 
@@ -1553,7 +1604,7 @@ function loop(now) {
       state.fright -= dt;
       if (state.fright <= 0) {
         state.fright = 0;
-        ghosts.forEach(g => { if (!g.eyes) g.mesh.material.color.setHex(g.color); });
+        ghosts.forEach(g => { if (!g.eyes) setGhostAppearance(g,g.color); });
       }
     } else if (state.mode === 'scatter' && state.modeTime > 7) {
       state.mode = 'chase';
@@ -1582,11 +1633,14 @@ function loop(now) {
     const dz = tz - gz;
 
     if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
-      const angle = Math.atan2(dz, dx);
+      const angle = Math.atan2(dx, dz);
       g.mesh.rotation.y = angle;
     }
   });
 
+  if(state.playing&&now-lastGhostHUD>380){
+    ghostStatus();lastGhostHUD=now;
+  }
   if (mapVisible && now - lastMapDraw >= 66) {
     drawMap();
     lastMapDraw = now;

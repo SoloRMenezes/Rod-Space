@@ -27,13 +27,14 @@ const SETTINGS_KEY = 'webSlingerPrototypeSettings';
 const keys = {};
 let listeningFor = null;
 let running = true;       // Ctrl toggles this
-let shiftLocked = false;  // Shift toggles this
+let shiftLocked = false;
 let paused = true;
 let gameActive = false;
 let debugOn = false;
 let mouseSensitivity = 1;
 let cameraDistance = 7.5;
 let renderDistance = 520;
+const MAX_CITY_RENDER_DISTANCE=5600;
 let traversalHoldDelay=0.28;
 let combinedTraversal=false;
 let resolutionScale=1;
@@ -74,6 +75,7 @@ const missions=[
   {name:'CLEAR THE BLOCKS',text:'Clear 2 gangs',stat:'gangs',step:2,reward:100},
 ];
 let missionStart=0;
+let lastSwingMissionBucket=-1;
 function currentMission(){return missions[Math.floor(progress.missionIndex)%missions.length];}
 function updateMissionUI(){
   const m=currentMission(),value=Math.max(0,progress[m.stat]-missionStart),ratio=Math.min(1,value/m.step);
@@ -112,6 +114,13 @@ updateCashUI();
 
 window.addEventListener('keydown', e=>{
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code))e.preventDefault();
+  if(!listeningFor && gameActive && !e.repeat && e.code==='KeyM'){
+    e.preventDefault();setFullMapOpen(!fullMapOpen);return;
+  }
+  if(fullMapOpen){
+    if(e.code==='Escape')setFullMapOpen(false);
+    e.preventDefault();return;
+  }
   if(listeningFor){
     bindings[listeningFor] = e.code;
     document.querySelector(`.keybtn[data-action="${listeningFor}"]`).textContent = prettyKey(e.code);
@@ -175,7 +184,7 @@ function setShiftLock(on){
   if(cameraDistance<=0.6){
     shiftLocked=false;
     firstPersonAutoLock=true;
-    if(gameActive && !paused && document.pointerLockElement!==canvas) canvas.requestPointerLock();
+    if(gameActive && !paused) requestMouseLock();
     return;
   }
   firstPersonAutoLock=false;
@@ -183,21 +192,21 @@ function setShiftLock(on){
   cameraCollisionDistance=null;
   if(on){
     pitch=THREE.MathUtils.clamp(pitch,-0.55,0.65);
-    canvas.requestPointerLock();
+    requestMouseLock();
     document.getElementById('lockHint').style.display='none';
   }
-  else if(document.pointerLockElement===canvas) document.exitPointerLock();
+  else releaseMouseLock();
 }
 function togglePause(){
   if(!gameActive) return;
   if(document.getElementById('deathOverlay').style.display==='flex') return;
   paused = !paused;
   document.getElementById('pauseOverlay').style.display = paused?'flex':'none';
-  if(paused && document.pointerLockElement===canvas) document.exitPointerLock();
+  if(paused) releaseMouseLock();
   if(paused) clearHeldInputs();
   else if(cameraDistance<=0.6){
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   }
 }
 function adjustCameraZoom(delta, persist=false){
@@ -207,10 +216,10 @@ function adjustCameraZoom(delta, persist=false){
   if(gameActive && !paused && isFirstPerson && !wasFirstPerson){
     shiftLocked=false;
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   } else if(wasFirstPerson && !isFirstPerson && firstPersonAutoLock){
     firstPersonAutoLock=false;
-    if(document.pointerLockElement===canvas) document.exitPointerLock();
+    releaseMouseLock();
   }
   if(persist) saveSettings();
 }
@@ -245,7 +254,7 @@ function loadSettings(){
     if(typeof saved.debugOn === 'boolean') debugOn = saved.debugOn;
     if(Number.isFinite(saved.mouseSensitivity)) mouseSensitivity = THREE.MathUtils.clamp(saved.mouseSensitivity, 0.5, 1.8);
     if(Number.isFinite(saved.cameraDistance)) cameraDistance = THREE.MathUtils.clamp(saved.cameraDistance, 0.15, 18);
-    if(Number.isFinite(saved.renderDistance)) renderDistance = THREE.MathUtils.clamp(saved.renderDistance,220,900);
+    if(Number.isFinite(saved.renderDistance)) renderDistance = THREE.MathUtils.clamp(saved.renderDistance,220,MAX_CITY_RENDER_DISTANCE);
     if(Number.isFinite(saved.traversalHoldDelay)) traversalHoldDelay=THREE.MathUtils.clamp(saved.traversalHoldDelay,0.12,0.42);
     if(Number.isFinite(saved.resolutionScale)) resolutionScale=THREE.MathUtils.clamp(saved.resolutionScale,0.6,1);
     if(typeof saved.animatedWater==='boolean') animatedWater=saved.animatedWater;
@@ -298,10 +307,10 @@ function syncRenderDistanceUI(){
   const label=document.getElementById('renderDistanceValue');
   if(!slider||!label)return;
   slider.value=Math.round(renderDistance);
-  label.textContent=Math.round(renderDistance);
+  label.textContent=renderDistance>=MAX_CITY_RENDER_DISTANCE?'WHOLE MAP':Math.round(renderDistance);
 }
 document.getElementById('renderDistanceSlider').addEventListener('input',e=>{
-  renderDistance=THREE.MathUtils.clamp(Number(e.target.value),220,900);
+  renderDistance=THREE.MathUtils.clamp(Number(e.target.value),220,MAX_CITY_RENDER_DISTANCE);
   syncRenderDistanceUI();
   applyRenderDistance();
   saveSettings();
@@ -358,7 +367,7 @@ window.addEventListener('mouseup', e=>{
 });
 window.addEventListener('contextmenu', e=>e.preventDefault());
 window.addEventListener('wheel', e=>{
-  if(e.target.closest && e.target.closest('#bindPanel')) return;
+  if(fullMapOpen || (e.target.closest && e.target.closest('#bindPanel'))) return;
   e.preventDefault();
   const pinchMultiplier = e.ctrlKey ? 0.027 : 0.009;
   adjustCameraZoom(e.deltaY * pinchMultiplier, true);
@@ -507,7 +516,7 @@ function startGame(){
   clearHeldInputs();
   if(cameraDistance<=0.6){
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   }
 }
 
@@ -522,7 +531,7 @@ function showStartScreen(){
   document.getElementById('gameCanvas').style.visibility='hidden';
   document.getElementById('startScreen').style.display='flex';
   closeSkins();
-  if(document.pointerLockElement===canvas) document.exitPointerLock();
+  releaseMouseLock();
   firstPersonAutoLock=false;
   shiftLocked=false;
   clearHeldInputs();
@@ -535,6 +544,7 @@ document.getElementById('btnDeathMainMenu').onclick=showStartScreen;
 function resetDefeatedPlayer(){
   P.pos.copy(PLAYER_SPAWN);
   P.vel.set(0,0,0);
+  cameraLead.set(0,0,0);
   P.hp=P.maxHp;
   P.invuln=1.5;
   P.state='ground';
@@ -562,6 +572,7 @@ function resetDefeatedPlayer(){
   P.jumpCharging=false;
   P.diving=false;
   P.swingHistoryT=0;
+  P.swingReleaseHand=null;
   P.quickRecoveryT=0;
   P.recoveryRollT=0;
   P.recoveryLaunchPending=false;
@@ -608,14 +619,14 @@ function respawnPlayer(){
   flashMsg('BACK ON PATROL');
   if(cameraDistance<=0.6){
     firstPersonAutoLock=true;
-    canvas.requestPointerLock();
+    requestMouseLock();
   }
 }
 
 function showDeathScreen(){
   paused=true;
   document.getElementById('deathOverlay').style.display='flex';
-  if(document.pointerLockElement===canvas) document.exitPointerLock();
+  releaseMouseLock();
   shiftLocked=false;
   firstPersonAutoLock=false;
   clearHeldInputs();
@@ -630,6 +641,25 @@ document.getElementById('btnRespawn').onclick=respawnPlayer;
 const canvas = document.getElementById('gameCanvas');
 let yaw = 0, pitch = -0.15;
 let cursorClientX=innerWidth*0.5, cursorClientY=innerHeight*0.5;
+const nativeMouseHandler=window.webkit?.messageHandlers?.rodSpaceControls;
+const hasNativeMouse=Boolean(window.__rodSpaceMacApp&&nativeMouseHandler);
+function requestMouseLock(){
+  if(hasNativeMouse)nativeMouseHandler.postMessage({type:'mouseLock',enabled:true});
+  else if(document.pointerLockElement!==canvas)canvas.requestPointerLock?.().catch?.(()=>{});
+}
+function releaseMouseLock(){
+  if(hasNativeMouse)nativeMouseHandler.postMessage({type:'mouseLock',enabled:false});
+  else if(document.pointerLockElement===canvas)document.exitPointerLock?.();
+}
+function applyLookDelta(dx,dy){
+  if(!gameActive||paused)return;
+  const firstPersonLook=cameraDistance<=0.6;
+  if(!mouseDown[2]&&!shiftLocked&&!firstPersonLook)return;
+  const lookRate=0.0028*mouseSensitivity;
+  yaw-=dx*lookRate;
+  pitch=THREE.MathUtils.clamp(pitch-dy*lookRate,-1.52,1.52);
+}
+window.__rodSpaceNativeMouse={move:applyLookDelta};
 
 function aimScreenPoint(){
   // Every aimed action follows the over-shoulder reticle. The old free-cursor
@@ -637,27 +667,19 @@ function aimScreenPoint(){
   return {x:0,y:0};
 }
 document.addEventListener('pointerlockchange', ()=>{
-  if(document.pointerLockElement!==canvas) shiftLocked = false;
+  if(!hasNativeMouse&&document.pointerLockElement!==canvas) shiftLocked = false;
 });
 document.addEventListener('mousemove', e=>{
   cursorClientX=e.clientX;
   cursorClientY=e.clientY;
-  if(!gameActive || paused) return;
-  const firstPersonLook=cameraDistance<=0.6;
-  if(!mouseDown[2] && !shiftLocked && !firstPersonLook) return;
-  const lookRate = 0.0028 * mouseSensitivity;
-  yaw -= e.movementX*lookRate;
-  pitch -= e.movementY*lookRate;
-  // Nearly full vertical look: stop just short of straight up/down to avoid
-  // the camera flipping at the poles.
-  pitch = THREE.MathUtils.clamp(pitch,-1.52,1.52);
+  if(!hasNativeMouse)applyLookDelta(e.movementX,e.movementY);
 });
 
 // ---------------------------------------------------------------------------------------
 // THREE SCENE
 // ---------------------------------------------------------------------------------------
-const MAX_PIXEL_RATIO = 1.5;
-const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+const MAX_PIXEL_RATIO = window.__rodSpaceMacApp ? 0.9 : 1.5; // reduce WebKit GPU fill cost; HUD unaffected
+const renderer = new THREE.WebGLRenderer({canvas, antialias:!window.__rodSpaceMacApp,powerPreference:'high-performance'});
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio,MAX_PIXEL_RATIO)*resolutionScale);
 
@@ -666,12 +688,15 @@ scene.background = new THREE.Color(0x8fd3ff);
 scene.fog = new THREE.Fog(0x8fd3ff, renderDistance*0.58, renderDistance);
 
 const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, renderDistance);
+const cameraLead = new THREE.Vector3();
+const cameraLeadTarget = new THREE.Vector3();
 function applyRenderDistance(){
   if(typeof camera==='undefined'||typeof scene==='undefined') return;
   camera.far=renderDistance;
   camera.updateProjectionMatrix();
-  scene.fog.near=renderDistance*0.58;
-  scene.fog.far=renderDistance;
+  scene.fog.near=renderDistance>=MAX_CITY_RENDER_DISTANCE?renderDistance*1.02:renderDistance*.58;
+  scene.fog.far=renderDistance>=MAX_CITY_RENDER_DISTANCE?renderDistance*1.25:renderDistance;
+  if(window.__wwCityReady) updateRenderVisibility();
 }
 function resizeRenderer(){
   const w = Math.max(1, window.innerWidth);
@@ -691,20 +716,11 @@ sun.position.set(120,180,80);
 scene.add(sun);
 scene.add(new THREE.AmbientLight(0xffffff,0.25));
 
-// simple comic clouds
-for(let i=0;i<14;i++){
-  const cloud = new THREE.Sprite(new THREE.SpriteMaterial({color:0xffffff, transparent:true, opacity:0.9}));
-  cloud.position.set((Math.random()-0.5)*700,120+Math.random()*90,(Math.random()-0.5)*700);
-  const s = 40+Math.random()*60;
-  cloud.scale.set(s,s*0.5,1);
-  scene.add(cloud);
-}
-
 // ---------------------------------------------------------------------------------------
 // CITY GENERATION  (long Manhattan-style island with unequal avenues/blocks)
 // ---------------------------------------------------------------------------------------
-const BLOCKS_X = 8;
-const BLOCKS_Z = 12;
+const BLOCKS_X = 20;
+const BLOCKS_Z = 75;           // 2.5× wider and longer than the 8 × 30 island
 const BLOCK_X = 64;             // long east/west blocks
 const BLOCK_Z = 42;             // shorter north/south blocks
 const STREET_X = 28;            // broad avenues with room for traversal and traffic
@@ -720,26 +736,43 @@ const ISLAND_RADIUS_Z = HALF_CITY_Z + 52;
 const WATER_LEVEL = -3.2;
 const OCEAN_FLOOR = -24;
 
+// Higher clouds: above the highest rooftops, distributed across the entire
+// island, with feathered alpha rather than opaque white square sprites.
+const cloudCanvas=document.createElement('canvas');
+cloudCanvas.width=256;cloudCanvas.height=128;
+const cloudCtx=cloudCanvas.getContext('2d');
+for(const [x,y,rx,ry,opacity] of [
+  [76,66,56,31,.78],[128,46,63,35,.92],[180,68,55,28,.82],
+  [126,81,81,29,.65]
+]){
+  cloudCtx.save();
+  cloudCtx.translate(x,y);cloudCtx.scale(rx,ry);
+  const glow=cloudCtx.createRadialGradient(0,0,.12,0,0,1);
+  glow.addColorStop(0,'rgba(255,255,255,'+opacity+')');
+  glow.addColorStop(.58,'rgba(255,255,255,'+(opacity*.72)+')');
+  glow.addColorStop(1,'rgba(255,255,255,0)');
+  cloudCtx.fillStyle=glow;cloudCtx.beginPath();cloudCtx.arc(0,0,1,0,Math.PI*2);cloudCtx.fill();
+  cloudCtx.restore();
+}
+const cloudTexture=new THREE.CanvasTexture(cloudCanvas);
+const skyClouds=[];
+for(let i=0;i<24;i++){
+  const cloud=new THREE.Sprite(new THREE.SpriteMaterial({
+    map:cloudTexture,transparent:true,opacity:.76,depthWrite:false
+  }));
+  cloud.position.set(
+    (Math.random()-.5)*(HALF_CITY_X*2+260),
+    540+Math.random()*190,
+    (Math.random()-.5)*(HALF_CITY_Z*2+260)
+  );
+  const size=155+Math.random()*130;
+  cloud.scale.set(size,size*.5,1);
+  scene.add(cloud);skyClouds.push(cloud);
+}
+
 function isOverIsland(x,z, extra=0){
   const rx=ISLAND_RADIUS_X+extra, rz=ISLAND_RADIUS_Z+extra;
   return Math.pow(Math.abs(x)/rx,6)+Math.pow(Math.abs(z)/rz,6) <= 1;
-}
-
-function constrainToIsland(pos,vel){
-  const rx=ISLAND_RADIUS_X-1.2, rz=ISLAND_RADIUS_Z-1.2;
-  const q=Math.pow(Math.abs(pos.x)/rx,6)+Math.pow(Math.abs(pos.z)/rz,6);
-  if(q<=1) return false;
-  const scale=Math.pow(q,-1/6)*0.998;
-  pos.x*=scale;
-  pos.z*=scale;
-  const normal=new THREE.Vector3(
-    Math.sign(pos.x)*Math.pow(Math.abs(pos.x),5)/Math.pow(rx,6),
-    0,
-    Math.sign(pos.z)*Math.pow(Math.abs(pos.z),5)/Math.pow(rz,6)
-  ).normalize();
-  const outward=vel.dot(normal);
-  if(outward>0) vel.addScaledVector(normal,-outward);
-  return true;
 }
 
 function makeIslandShape(rx,rz){
@@ -763,6 +796,33 @@ const parkAreas = [];
 const anchorEdges = [];         // continuous upper perimeters for swing debug viz
 const anchorMarkers = [];
 const colorPalette = [0xc9564f,0xe0a458,0x6a8caf,0xc7b198,0x8fae6b,0xb46a5a,0x9aa5b1];
+const dockPiers=[];
+const shoreFenceColliders=[];
+const districtStats={
+  skyscrapers:{blocks:0,buildings:0,minHeight:Infinity,maxHeight:0},
+  centralPark:{blocks:0,trees:0},
+  lowerClass:{blocks:0,buildings:0,minHeight:Infinity,maxHeight:0},
+  docks:{blocks:0,warehouses:0}
+};
+
+// One connected inland park, high-rise north/west, lower-rise south/east,
+// and a separate working waterfront at the south-east shoreline.
+const PARK_BOUNDS={
+  minX:-HALF_CITY_X+7*TILE_X,
+  maxX:-HALF_CITY_X+13*TILE_X-STREET_X,
+  minZ:-HALF_CITY_Z+27*TILE_Z,
+  maxZ:-HALF_CITY_Z+48*TILE_Z-STREET_Z
+};
+function districtForBlock(ix,iz){
+  // Waterfront warehouses are confined to the south-east bank. Three rows
+  // of lower-rise neighborhood separate the docks from the park.
+  if(ix>=BLOCKS_X-2 && iz>=59 && iz<=70) return 'docks';
+  // One contiguous 6-by-21-block park, with three or more full blocks of
+  // neighborhood between it and the working waterfront.
+  if(ix>=7 && ix<=12 && iz>=27 && iz<=47) return 'centralPark';
+  if(iz<=26 || (ix<=4 && iz<=49)) return 'skyscrapers';
+  return 'lowerClass';
+}
 
 const cityGroup = new THREE.Group();
 scene.add(cityGroup);
@@ -770,7 +830,7 @@ scene.add(cityGroup);
 // A rounded island and shoreline replace the old square map border.
 const oceanUniforms={time:{value:0}};
 const ocean = new THREE.Mesh(
-  new THREE.PlaneGeometry(1800,1800,100,100),
+  new THREE.PlaneGeometry(7300,7300,112,112),
   new THREE.ShaderMaterial({
     uniforms:oceanUniforms,
     vertexShader:`
@@ -865,7 +925,7 @@ const skylineTexture=makeSkylineTexture(7);
 skylineTexture.wrapS=THREE.RepeatWrapping;
 skylineTexture.repeat.set(4,1);
 const distantSkyline=new THREE.Mesh(
-  new THREE.CylinderGeometry(690,690,210,96,1,true),
+  new THREE.CylinderGeometry(ISLAND_RADIUS_Z+500,ISLAND_RADIUS_Z+500,210,96,1,true),
   new THREE.MeshBasicMaterial({
     map:skylineTexture,
     transparent:true,
@@ -878,8 +938,8 @@ distantSkyline.renderOrder=-2;
 scene.add(distantSkyline);
 
 // sidewalks/lots (lighter tint under each block so streets read as darker grid lines)
-const lotMat = new THREE.MeshLambertMaterial({color:0x55575e});
-const parkMat = new THREE.MeshLambertMaterial({color:0x587747});
+const lotMat = new THREE.MeshLambertMaterial({color:0x55575e,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
+const parkMat = new THREE.MeshLambertMaterial({color:0x587747,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
 const trunkMat = new THREE.MeshLambertMaterial({color:0x594332});
 const leavesMat = new THREE.MeshLambertMaterial({color:0x4d7d49});
 const treeTrunkGeo=new THREE.CylinderGeometry(0.42,0.55,3.4,6);
@@ -889,36 +949,50 @@ const rooftopDarkMat=new THREE.MeshLambertMaterial({color:0x333b43});
 const lampMat=new THREE.MeshLambertMaterial({color:0x20252b});
 const lampGlowMat=new THREE.MeshBasicMaterial({color:0xffe39a});
 
-const windowCanvas=document.createElement('canvas');
-windowCanvas.width=96; windowCanvas.height=160;
-const windowCtx=windowCanvas.getContext('2d');
-windowCtx.fillStyle='#707782';windowCtx.fillRect(0,0,96,160);
-for(let wy=8;wy<154;wy+=18){
-  for(let wx=7;wx<92;wx+=17){
-    windowCtx.fillStyle=((wx+wy)/17)%3<1?'#f3d994':'#263544';
-    windowCtx.fillRect(wx,wy,9,10);
+const facadeTextures=Array.from({length:4},(_,style)=>{
+  const canvas=document.createElement('canvas');
+  canvas.width=128;canvas.height=256;
+  const ctx=canvas.getContext('2d');
+  const bases=['#b4b7ba','#b6a392','#93a0ae','#aeb5a6'];
+  ctx.fillStyle=bases[style];ctx.fillRect(0,0,128,256);
+  // Brick mortar / stone floor courses prevent the flat checkerboard look.
+  for(let y=0;y<256;y+=16){
+    ctx.fillStyle=style===1?'#8a7d73':'#87919b';ctx.fillRect(0,y,128,1);
+    if(style===1)for(let x=(y%32===0?0:12);x<128;x+=24)
+      ctx.fillRect(x,y,1,16);
   }
-}
-const windowTexture=new THREE.CanvasTexture(windowCanvas);
-windowTexture.colorSpace=THREE.SRGBColorSpace;
-windowTexture.minFilter=THREE.LinearMipMapLinearFilter;
-windowTexture.wrapS=windowTexture.wrapT=THREE.RepeatWrapping;
-windowTexture.repeat.set(2,3);
-const buildingMaterialSets=colorPalette.map(color=>{
-  const wall=new THREE.MeshLambertMaterial({color,map:windowTexture});
-  const roof=new THREE.MeshLambertMaterial({color:new THREE.Color(color).multiplyScalar(0.72)});
+  for(let row=0;row<14;row++){
+    const y=row*18+4;
+    for(let col=0;col<5;col++){
+      const x=col*25+5;
+      // Lintels, sill shadows, frames and reflective split-pane glass.
+      ctx.fillStyle='#535c64';ctx.fillRect(x-2,y-2,19,16);
+      const lit=((row*11+col*7+style*3)%13)<4;
+      ctx.fillStyle=lit?'#d5b77c':'#223b52';
+      ctx.fillRect(x,y,15,11);
+      ctx.fillStyle=lit?'#efdbaf':'#638296';
+      ctx.fillRect(x+1,y+1,6,3);
+      ctx.fillStyle='#81919b';ctx.fillRect(x+7,y,1,11);
+      ctx.fillStyle='#5d6670';ctx.fillRect(x-3,y+12,21,2);
+    }
+  }
+  const tex=new THREE.CanvasTexture(canvas);
+  tex.encoding=THREE.sRGBEncoding;
+  tex.minFilter=THREE.LinearMipmapLinearFilter;
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+  tex.repeat.set(2,3);
+  return tex;
+});
+const buildingMaterialSets=colorPalette.map((color,i)=>{
+  const wall=new THREE.MeshLambertMaterial({
+    color,map:facadeTextures[i%facadeTextures.length],
+    emissive:new THREE.Color(color),emissiveIntensity:.18
+  });
+  const roof=new THREE.MeshLambertMaterial({color:new THREE.Color(color).multiplyScalar(.62)});
   return [wall,wall,roof,roof,wall,wall];
 });
 
-// A Broadway-like diagonal breaks the rigid orthogonal grid and creates a long,
-// readable traversal route through the middle of the borough.
-const diagonalAvenue=new THREE.Mesh(
-  new THREE.PlaneGeometry(30,Math.hypot(HALF_CITY_X,HALF_CITY_Z)*2.25),
-  new THREE.MeshLambertMaterial({color:0x34363c})
-);
-diagonalAvenue.rotation.set(-Math.PI/2,0,-0.57);
-diagonalAvenue.position.y=0.035;
-scene.add(diagonalAvenue);
+// Grid-only Manhattan: no giant diagonal avenue through Central Park.
 
 function addEdges(mesh, color=0x111111){
   const eg = new THREE.EdgesGeometry(mesh.geometry, 20);
@@ -929,8 +1003,21 @@ function addEdges(mesh, color=0x111111){
 function makeBuilding(cx, cz, w, d, h, colorIdx){
   const geo = new THREE.BoxGeometry(w, h, d);
   const mat = buildingMaterialSets[colorIdx % buildingMaterialSets.length];
-  const mesh = new THREE.Mesh(geo, mat);
+  // Six material groups caused six draw calls per tower. Use one facade
+  // material and a separate roof cap, reducing it to two while preserving
+  // the original wall tint, windows, and roof colour.
+  const mesh = new THREE.Mesh(geo, mat[0]);
+  const roofCap=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat[2]);
+  roofCap.rotation.x=-Math.PI/2;
+  roofCap.position.y=h/2+0.025;
+  mesh.add(roofCap);
   mesh.position.set(cx, h/2, cz);
+  // Narrow roofline coping gives the silhouette a recognizable cornice.
+  if(h>38){
+    const coping=new THREE.Mesh(
+      new THREE.BoxGeometry(w+.55,.5,d+.55),rooftopMetalMat);
+    coping.position.set(0,h/2+.26,0);mesh.add(coping);
+  }
   addEdges(mesh);
   // Street-facing entrances and lightweight fire escapes add scale without
   // joining the physics mesh, so traversal collision stays predictable.
@@ -966,6 +1053,7 @@ function makeBuilding(cx, cz, w, d, h, colorIdx){
   const minX = cx-w/2, maxX = cx+w/2, minZ = cz-d/2, maxZ = cz+d/2;
   const rec = {
     mesh, minX, maxX, minZ, maxZ, h,
+    materialVariant:colorIdx%colorPalette.length,proxyIndex:-1,
     hitMinX:minX, hitMaxX:maxX,
     hitMinZ:minZ, hitMaxZ:maxZ
   };
@@ -991,31 +1079,124 @@ function makeBuilding(cx, cz, w, d, h, colorIdx){
   return rec;
 }
 
+// Low world geometry participates in movement collision and height queries but
+// deliberately has no buildingRecord userData, so it cannot become a web anchor.
+function registerWorldCollider(mesh,minX,maxX,minZ,maxZ,h){
+  const rec={mesh,minX,maxX,minZ,maxZ,h,hitMinX:minX,hitMaxX:maxX,hitMinZ:minZ,hitMaxZ:maxZ,worldOnly:true};
+  buildingMeshes.push(rec);
+  const minGX=Math.floor(minX/BUILDING_GRID_CELL),maxGX=Math.floor(maxX/BUILDING_GRID_CELL);
+  const minGZ=Math.floor(minZ/BUILDING_GRID_CELL),maxGZ=Math.floor(maxZ/BUILDING_GRID_CELL);
+  for(let gx=minGX;gx<=maxGX;gx++)for(let gz=minGZ;gz<=maxGZ;gz++){
+    const key=`${gx},${gz}`;
+    if(!buildingSpatialGrid.has(key))buildingSpatialGrid.set(key,[]);
+    buildingSpatialGrid.get(key).push(rec);
+  }
+  return rec;
+}
+
+function addCentralPark(){
+  // One green surface across all former block boundaries.
+  const b=PARK_BOUNDS;
+  const w=b.maxX-b.minX,d=b.maxZ-b.minZ;
+  const cx=(b.minX+b.maxX)/2,cz=(b.minZ+b.maxZ)/2;
+  const grass=new THREE.Mesh(new THREE.PlaneGeometry(w,d),parkMat);
+  grass.rotation.x=-Math.PI/2;
+  grass.position.set(cx,0.40,cz);
+  scene.add(grass);
+  parkAreas.push({minX:b.minX,maxX:b.maxX,minZ:b.minZ,maxZ:b.maxZ});
+  const pathMat=new THREE.MeshLambertMaterial({color:0xc1ae87,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
+  function parkPath(x,z,width,depth){
+    const path=new THREE.Mesh(new THREE.PlaneGeometry(width,depth),pathMat);
+    path.rotation.x=-Math.PI/2;
+    path.position.set(x,.48,z);
+    scene.add(path);
+  }
+  parkPath(cx,cz,5.5,d*.94);
+  parkPath(cx,cz,w*.93,5.5);
+  const pond=new THREE.Mesh(
+    new THREE.CircleGeometry(22,40),
+    new THREE.MeshLambertMaterial({color:0x438eaf,emissive:0x15394e,emissiveIntensity:.28,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4})
+  );
+  pond.rotation.x=-Math.PI/2;
+  pond.scale.set(1.38,.82,1);
+  pond.position.set(cx-w*.27,.56,cz+d*.27);
+  scene.add(pond);
+  const treeCount=300; // trees are instanced: constant two draw calls
+  const trunks=new THREE.InstancedMesh(treeTrunkGeo,trunkMat,treeCount);
+  const crowns=new THREE.InstancedMesh(treeCrownGeo,leavesMat,treeCount);
+  const dummy=new THREE.Object3D();
+  let count=0,attempts=0;
+  while(count<treeCount && attempts<treeCount*20){
+    attempts++;
+    const x=b.minX+9+cityRandom()*(w-18);
+    const z=b.minZ+9+cityRandom()*(d-18);
+    if(Math.abs(x-cx)<9 || Math.abs(z-cz)<9)continue;
+    if(Math.pow((x-(cx-w*.27))/(22*1.38+7),2)+Math.pow((z-(cz+d*.27))/(22*.82+7),2)<1)continue;
+    const scale=.76+cityRandom()*.66;
+    dummy.rotation.set(0,0,0);
+    dummy.scale.setScalar(scale);
+    dummy.position.set(x,1.7*scale,z);dummy.updateMatrix();
+    trunks.setMatrixAt(count,dummy.matrix);
+    dummy.position.y=4.5*scale;dummy.updateMatrix();
+    crowns.setMatrixAt(count,dummy.matrix);
+    count++;
+  }
+  trunks.count=crowns.count=count;
+  trunks.instanceMatrix.needsUpdate=crowns.instanceMatrix.needsUpdate=true;
+  trunks.frustumCulled=crowns.frustumCulled=false;
+  scene.add(trunks,crowns);
+  districtStats.centralPark.trees=count;
+}
+
+function recordDistrictBuilding(district,rec){
+  const stats=districtStats[district];
+  stats.buildings++;
+  stats.minHeight=Math.min(stats.minHeight,rec.h);
+  stats.maxHeight=Math.max(stats.maxHeight,rec.h);
+  return rec;
+}
+
 function addStreetFurniture(){
+  // Static geometry: only three draw calls instead of one for each lamp/stripe.
+  const lampCount=Math.floor(BLOCKS_X/2)*Math.floor(BLOCKS_Z/2);
   const poleGeo=new THREE.CylinderGeometry(.18,.22,5.6,6);
   const bulbGeo=new THREE.SphereGeometry(.42,8,6);
+  const stripeGeo=new THREE.PlaneGeometry(1.25,STREET_Z*.68);
+  const stripeMat=new THREE.MeshBasicMaterial({color:0xd8d5c9});
+  const poles=new THREE.InstancedMesh(poleGeo,lampMat,lampCount);
+  const bulbs=new THREE.InstancedMesh(bulbGeo,lampGlowMat,lampCount);
+  const crossings=new THREE.InstancedMesh(stripeGeo,stripeMat,lampCount*5);
+  poles.frustumCulled=bulbs.frustumCulled=crossings.frustumCulled=false;
+  const dummy=new THREE.Object3D();
+  let lampIndex=0,stripeIndex=0;
   for(let ix=1;ix<BLOCKS_X;ix+=2){
     for(let iz=1;iz<BLOCKS_Z;iz+=2){
       const x=-HALF_CITY_X+ix*TILE_X+STREET_X*.28;
       const z=-HALF_CITY_Z+iz*TILE_Z+STREET_Z*.28;
-      const lamp=new THREE.Group();
-      const pole=new THREE.Mesh(poleGeo,lampMat);pole.position.y=2.8;
-      const bulb=new THREE.Mesh(bulbGeo,lampGlowMat);bulb.position.y=5.65;
-      lamp.add(pole,bulb);lamp.position.set(x,0,z);scene.add(lamp);
-      // Compact zebra crossing at selected intersections.
+      if(x>PARK_BOUNDS.minX && x<PARK_BOUNDS.maxX &&
+         z>PARK_BOUNDS.minZ && z<PARK_BOUNDS.maxZ)continue;
+      dummy.rotation.set(0,0,0);
+      dummy.position.set(x,2.8,z);
+      dummy.updateMatrix();
+      poles.setMatrixAt(lampIndex,dummy.matrix);
+      dummy.position.y=5.65;
+      dummy.updateMatrix();
+      bulbs.setMatrixAt(lampIndex++,dummy.matrix);
       for(let stripe=0;stripe<5;stripe++){
-        const crossing=new THREE.Mesh(
-          new THREE.PlaneGeometry(1.25,STREET_Z*.68),
-          new THREE.MeshBasicMaterial({color:0xd8d5c9})
-        );
-        crossing.rotation.x=-Math.PI/2;
-        crossing.position.set(x-STREET_X*.55+stripe*2.4,0.052,z-STREET_Z*.28);
-        scene.add(crossing);
+        dummy.rotation.set(-Math.PI/2,0,0);
+        dummy.position.set(x-STREET_X*.55+stripe*2.4,0.075,z-STREET_Z*.28);
+        dummy.updateMatrix();
+        crossings.setMatrixAt(stripeIndex++,dummy.matrix);
       }
     }
   }
+  poles.count=bulbs.count=lampIndex;
+  crossings.count=stripeIndex;
+  poles.instanceMatrix.needsUpdate=true;
+  bulbs.instanceMatrix.needsUpdate=true;
+  crossings.instanceMatrix.needsUpdate=true;
+  scene.add(poles,bulbs,crossings);
 }
-
 const streetPeople=[];
 function addStreetLife(){
   const carColors=[0xd33b32,0x2767a8,0xe7b62f,0xe9ecef,0x252a33];
@@ -1041,60 +1222,87 @@ function addStreetLife(){
 
 let citySeed=0x5f3759df;
 const cityRandom=()=>{citySeed=(citySeed*1664525+1013904223)>>>0;return citySeed/4294967296;};
+const lotPositions=[];
 for(let ix=0; ix<BLOCKS_X; ix++){
   for(let iz=0; iz<BLOCKS_Z; iz++){
-    // Small block offsets, parks and mixed footprints prevent the old copy-paste grid.
+    const district=districtForBlock(ix,iz);
+    districtStats[district].blocks++;
     const bx = -HALF_CITY_X + ix*TILE_X + TILE_X/2 + (cityRandom()-0.5)*5;
     const bz = -HALF_CITY_Z + iz*TILE_Z + TILE_Z/2 + (cityRandom()-0.5)*4;
 
-    // lot ground tint
-    const lot = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK_X, BLOCK_Z), lotMat);
-    lot.rotation.x = -Math.PI/2; lot.position.set(bx, 0.02, bz);
-    scene.add(lot);
+    if(district!=='centralPark')lotPositions.push([bx,bz]);
 
-    const nearCenter = (Math.abs(ix-(BLOCKS_X-1)/2)<1.7 && Math.abs(iz-(BLOCKS_Z-1)/2)<2.3);
-    const isLandmark = cityRandom() < (nearCenter?0.7:0.2);
-    const isDiagonalAvenue=Math.abs(bz+bx*0.64)<20;
-    const isPark = !nearCenter && cityRandom()<0.08;
-    if(isPark){
-      const park=new THREE.Mesh(new THREE.PlaneGeometry(BLOCK_X*.86,BLOCK_Z*.86),parkMat);
-      park.rotation.x=-Math.PI/2;park.position.set(bx,0.045,bz);scene.add(park);
-      parkAreas.push({minX:bx-BLOCK_X*.43,maxX:bx+BLOCK_X*.43,minZ:bz-BLOCK_Z*.43,maxZ:bz+BLOCK_Z*.43});
-      for(const horizontal of [true,false]){
-        const path=new THREE.Mesh(new THREE.PlaneGeometry(horizontal?BLOCK_X*.82:3.2,horizontal?3.2:BLOCK_Z*.82),new THREE.MeshLambertMaterial({color:0xb7aa8e}));
-        path.rotation.x=-Math.PI/2;path.position.set(bx,.052,bz);scene.add(path);
-      }
-      for(let treeIndex=0;treeIndex<6;treeIndex++){
-        const angle=(treeIndex/6)*Math.PI*2+cityRandom()*.4;
-        const radius=Math.min(BLOCK_X,BLOCK_Z)*(.19+cityRandom()*.17);
-        const tree=new THREE.Group();
-        const trunk=new THREE.Mesh(treeTrunkGeo,trunkMat);trunk.position.y=1.7;
-        const crown=new THREE.Mesh(treeCrownGeo,leavesMat);crown.position.y=4.5;
-        tree.add(trunk,crown);
-        tree.position.set(bx+Math.cos(angle)*radius,0,bz+Math.sin(angle)*radius);
-        scene.add(tree);
-      }
+    if(district==='centralPark')continue; // one continuous green surface
+    if(district==='docks'){
+      const warehouse=makeBuilding(bx,bz,BLOCK_X*.82,BLOCK_Z*.78,24+cityRandom()*14,ix+iz+3);
+      districtStats.docks.warehouses++;
+      warehouse.mesh.material=warehouse.mesh.material.clone();
+      warehouse.mesh.material.color.multiplyScalar(.72);
+      warehouse.mesh.material.emissive.multiplyScalar(.72);
       continue;
     }
-    if(isDiagonalAvenue) continue;
-    // Broad towers, paired apartment slabs and occasional three-building blocks
-    // create a varied skyline while preserving reliable box collisions.
-    const layout=cityRandom();
-    if(layout<0.46){
-      const h = isLandmark ? 190+cityRandom()*150 : 95+cityRandom()*125;
-      makeBuilding(bx,bz, BLOCK_X*(0.84+cityRandom()*.1), BLOCK_Z*(0.82+cityRandom()*.12), h, (ix+iz));
-    } else if(layout<0.86) {
-      const h1 = isLandmark? 170+cityRandom()*145 : 100+cityRandom()*120;
-      const h2 = 85+cityRandom()*115;
-      makeBuilding(bx-BLOCK_X*0.245, bz, BLOCK_X*0.46, BLOCK_Z*0.9, h1, ix);
-      makeBuilding(bx+BLOCK_X*0.245, bz, BLOCK_X*0.46, BLOCK_Z*0.9, h2, iz+3);
-    } else {
-      const d=BLOCK_Z*0.43;
-      makeBuilding(bx-BLOCK_X*.25,bz-BLOCK_Z*.23,BLOCK_X*.44,d,100+cityRandom()*145,ix);
-      makeBuilding(bx+BLOCK_X*.25,bz-BLOCK_Z*.23,BLOCK_X*.44,d,90+cityRandom()*130,iz+2);
-      makeBuilding(bx,bz+BLOCK_Z*.24,BLOCK_X*.92,d,115+cityRandom()*155,ix+iz+4);
+    if(district==='skyscrapers'){
+      recordDistrictBuilding(district,makeBuilding(
+        bx,bz,BLOCK_X*(.62+cityRandom()*.1),BLOCK_Z*(.76+cityRandom()*.1),185+cityRandom()*165,ix+iz
+      ));
+    }else{
+      const layout=cityRandom();
+      if(layout<.55){
+        recordDistrictBuilding(district,makeBuilding(bx-BLOCK_X*.24,bz,BLOCK_X*.46,BLOCK_Z*.88,72+cityRandom()*68,ix));
+        recordDistrictBuilding(district,makeBuilding(bx+BLOCK_X*.24,bz,BLOCK_X*.46,BLOCK_Z*.88,68+cityRandom()*76,iz+2));
+      }else{
+        const d=BLOCK_Z*.42;
+        recordDistrictBuilding(district,makeBuilding(bx-BLOCK_X*.25,bz-BLOCK_Z*.23,BLOCK_X*.43,d,65+cityRandom()*72,ix));
+        recordDistrictBuilding(district,makeBuilding(bx+BLOCK_X*.25,bz-BLOCK_Z*.23,BLOCK_X*.43,d,72+cityRandom()*73,iz+2));
+        recordDistrictBuilding(district,makeBuilding(bx,bz+BLOCK_Z*.24,BLOCK_X*.9,d,78+cityRandom()*72,ix+iz+4));
+      }
     }
   }
+}
+// One instanced ground mesh rather than a separate Three.js object per lot.
+const lotMesh=new THREE.InstancedMesh(
+  new THREE.PlaneGeometry(BLOCK_X,BLOCK_Z),lotMat,lotPositions.length
+);
+const lotDummy=new THREE.Object3D();
+lotDummy.rotation.x=-Math.PI/2;
+for(let i=0;i<lotPositions.length;i++){
+  lotDummy.position.set(lotPositions[i][0],0.20,lotPositions[i][1]);
+  lotDummy.updateMatrix();
+  lotMesh.setMatrixAt(i,lotDummy.matrix);
+}
+lotMesh.instanceMatrix.needsUpdate=true;
+lotMesh.frustumCulled=false;
+scene.add(lotMesh);
+addCentralPark();
+
+const dockDeckMat=new THREE.MeshLambertMaterial({color:0x8b6a46});
+for(const z of [60,64,68].map(iz=>-HALF_CITY_Z+iz*TILE_Z)){
+  for(const [x,length] of [[HALF_CITY_X+30,80],[ISLAND_RADIUS_X+18,58]]){
+    const pier=new THREE.Mesh(new THREE.BoxGeometry(length,1.1,11),dockDeckMat);
+    pier.position.set(x,.55,z);addEdges(pier,0x2f2419);scene.add(pier);dockPiers.push(pier);
+    registerWorldCollider(pier,x-length/2,x+length/2,z-5.5,z+5.5,1.1);
+  }
+}
+
+const fenceMat=new THREE.MeshLambertMaterial({color:0x6e7980});
+const fencePostMat=new THREE.MeshLambertMaterial({color:0x343b40});
+const fencePoints=[];
+for(let i=0;i<72;i++){
+  const t=(i/72)*Math.PI*2,c=Math.cos(t),s=Math.sin(t),power=2/6;
+  fencePoints.push(new THREE.Vector3(
+    (ISLAND_RADIUS_X-2)*Math.sign(c)*Math.pow(Math.abs(c),power),0,
+    (ISLAND_RADIUS_Z-2)*Math.sign(s)*Math.pow(Math.abs(s),power)
+  ));
+}
+for(let i=0;i<fencePoints.length;i++){
+  const a=fencePoints[i],b=fencePoints[(i+1)%fencePoints.length];
+  const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);
+  const rail=new THREE.Mesh(new THREE.BoxGeometry(length,1.25,.22),fenceMat);
+  rail.position.set((a.x+b.x)/2,.72,(a.z+b.z)/2);
+  rail.rotation.y=Math.atan2(-dz,dx);
+  const post=new THREE.Mesh(new THREE.BoxGeometry(.28,1.45,.28),fencePostMat);
+  post.position.set(a.x,.725,a.z);scene.add(rail,post);
+  shoreFenceColliders.push({mesh:rail,a:a.clone(),b:b.clone(),h:1.45});
 }
 addStreetFurniture();
 addStreetLife();
@@ -1102,19 +1310,23 @@ addStreetLife();
 // Start above the central avenue instead of at street level. Pick a broad,
 // central roof so the first input can immediately flow into traversal.
 const spawnRoof=buildingMeshes
-  .filter(b=>Math.abs((b.minX+b.maxX)*.5)<TILE_X*1.5&&Math.abs((b.minZ+b.maxZ)*.5)<TILE_Z*2.5)
-  .sort((a,b)=>b.h-a.h)[0]||buildingMeshes[0];
+  .filter(b=>!b.worldOnly&&b.h>35)
+  .sort((a,b)=>{
+    const ax=(a.minX+a.maxX)*.5,az=(a.minZ+a.maxZ)*.5;
+    const bx=(b.minX+b.maxX)*.5,bz=(b.minZ+b.maxZ)*.5;
+    // Find a nearby, accessible tall roof beside the park, not an arbitrary
+    // building at the far north tip when all central blocks are parkland.
+    return Math.hypot(ax,az)-Math.hypot(bx,bz)+.03*(b.h-a.h);
+  })[0];
 if(spawnRoof)PLAYER_SPAWN.set((spawnRoof.minX+spawnRoof.maxX)*.5,spawnRoof.h+.08,(spawnRoof.minZ+spawnRoof.maxZ)*.5);
 
 // Debug mode shows the actual continuous target surface instead of implying
 // that the web can only grab four discrete rooftop corners.
 const anchorMat = new THREE.LineBasicMaterial({color:0xffe600});
-anchorEdges.forEach(points=>{
-  const marker=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points),anchorMat);
-  marker.visible=false;
-  scene.add(marker);
-  anchorMarkers.push(marker);
-});
+// Anchor outlines are optional diagnostics; spatial collision records and
+// swing anchor selection still cover the entire island. Avoid thousands of
+// hidden LineLoop meshes on the much larger map.
+anchorEdges.length=0;
 
 // ---------------------------------------------------------------------------------------
 // PLAYER
@@ -1372,6 +1584,79 @@ const r15Bones={};
 const r15Rest={};
 let r15Ready=false;
 let r15EnemyTemplate=null;
+// R15 motion library authored for this exact Blender / Roblox skeleton.
+let r15Mixer=null;
+const r15Actions=new Map();
+let r15CurrentClip='';
+let r15LastState='ground';
+let r15TakeoffT=0;
+let r15LandingT=0;
+let r15GlideDeployT=0;
+let r15WasGliding=false;
+
+function selectR15Clip(name,fade=0.13){
+  const next=r15Actions.get('WW_'+name);
+  if(!next || r15CurrentClip==='WW_'+name) return;
+  const previous=r15Actions.get(r15CurrentClip);
+  next.reset();
+  next.enabled=true;
+  next.setEffectiveWeight(1);
+  next.setEffectiveTimeScale(1);
+  if(previous && previous!==next){
+    previous.fadeOut(fade);
+    next.fadeIn(fade);
+  }
+  next.play();
+  r15CurrentClip='WW_'+name;
+}
+function tickR15Clips(dt,moveVec,flatSpeed){
+  if(!r15Mixer) return false;
+  const state=P.state;
+  const nowGliding=state==='air' && P.gliding;
+  if(nowGliding&&!r15WasGliding)r15GlideDeployT=.64;
+  r15WasGliding=nowGliding;
+  r15GlideDeployT=Math.max(0,r15GlideDeployT-dt);
+  if(state==='air' && r15LastState==='ground' && P.vel.y>3) r15TakeoffT=0.23;
+  if(state==='ground' && r15LastState==='air') r15LandingT=0.20;
+  r15LastState=state;
+  r15TakeoffT=Math.max(0,r15TakeoffT-dt);
+  r15LandingT=Math.max(0,r15LandingT-dt);
+  const movement=moveVec.lengthSq()>0.04||flatSpeed>0.9;
+  let clip='Idle';
+  if(state==='ground'){
+    if(P.recoveryRollT>0) clip='Air_Flip';
+    else if(P.jumpCharging) clip='Jump_Takeoff';
+    else if(P.landPoseT>0||r15LandingT>0) clip='Jump_Land';
+    else if(movement) clip=(running||flatSpeed>9)?'Run':'Walk';
+  }else if(state==='climb'){
+    const crawling=moveVec.lengthSq()>0.04||P.wallRunAutoT>0;
+    clip=crawling?(running||P.wallRunAutoT>0?'Wall_Run':'Wall_Crawl'):'Wall_Cling';
+  }else if(state==='swing'){
+    if(P.swingPhase==='entry'&&P.swingAge<0.46) clip='Swing_Attach';
+    else clip=P.vel.length()>14?'Swing_Pump':'Swing_Hang';
+  }else if(state==='zip'){
+    clip='Swing_Hang';
+  }else if(state==='air'){
+    if(P.wallFlipT>0.02) clip='Air_Flip';
+    else if(P.swingReleaseT>0.05) clip='Swing_Release';
+    else if(P.gliding){
+      clip=r15GlideDeployT>0?'Air_Glide_Deploy'
+        :P.glidePitch>0.28?'Air_Glide_Dive'
+        :P.glidePitch<-.24?'Air_Glide_Brake'
+        :P.glideBank>.27?'Air_Glide_Right'
+        :P.glideBank<-.27?'Air_Glide_Left'
+        :'Air_Glide';
+    }
+    else if(P.diving || P.vel.y<-2) clip='Air_Fall';
+    else if(r15TakeoffT>0 || P.jumpPoseT>0.2) clip='Jump_Takeoff';
+    else clip='Jump_Air';
+  }else if(state==='downed'||state==='defeated'){
+    clip='Jump_Land';
+  }
+  selectR15Clip(clip);
+  r15Mixer.update(dt);
+  return true;
+}
 
 function r15Bone(name){ return r15Bones[name]||null; }
 
@@ -1403,10 +1688,55 @@ function applyR15VisualBone(name,rot,amount){
   applyR15Bone(name,{x:-(rot.x||0),y:-(rot.y||0),z:-(rot.z||0)},amount);
 }
 
+function swingWebObstructed(from,to){
+  const midpoint=from.clone().add(to).multiplyScalar(0.5);
+  const radius=Math.hypot(to.x-from.x,to.z-from.z)*0.5+1;
+  const length=from.distanceTo(to);
+  if(length<0.2) return false;
+  // Segment/box tests use the same building bounds as targeting and collision.
+  // Exclude the endpoint margin so the attached face is not an obstruction.
+  for(const b of nearbyBuildings(midpoint,radius)){
+    let enter=0,exit=1-0.12/length;
+    for(const [start,delta,min,max] of [
+      [from.x,to.x-from.x,b.minX,b.maxX],
+      [from.y,to.y-from.y,0,b.h],
+      [from.z,to.z-from.z,b.minZ,b.maxZ]
+    ]){
+      if(Math.abs(delta)<1e-8){if(start<min || start>max){exit=-1;break;}continue;}
+      let near=(min-start)/delta,far=(max-start)/delta;
+      if(near>far)[near,far]=[far,near];
+      enter=Math.max(enter,near);exit=Math.min(exit,far);
+      if(enter>exit)break;
+    }
+    if(enter<=exit && exit>=0)return true;
+  }
+  return false;
+}
+
 function visibleWebHandWorld(gameHand,fallback){
   const exportedName=gameHand==='left'?r15VisualBone.leftHand:r15VisualBone.rightHand;
   const bone=r15Ready&&r15Bone(exportedName);
   return bone?bone.getWorldPosition(new THREE.Vector3()):fallback.getWorldPosition(new THREE.Vector3());
+}
+
+// Aim the authored shoulder/hand chain in its parent's coordinate system.
+// Using the actual joints avoids assumptions about this export's mirrored axes.
+const swingArmAim={from:new THREE.Vector3(),to:new THREE.Vector3(),rotation:new THREE.Quaternion()};
+function aimR15SwingArm(hand,dt){
+  const anchor=P.swingWebs[hand].anchor;
+  const shoulder=r15Bone(r15VisualBone[hand+'UpperArm']);
+  const wrist=r15Bone(r15VisualBone[hand+'Hand']);
+  if(!anchor || !shoulder || !wrist) return;
+  shoulder.updateWorldMatrix(true,true);
+  wrist.getWorldPosition(swingArmAim.from);
+  shoulder.parent.worldToLocal(swingArmAim.from).sub(shoulder.position);
+  swingArmAim.to.copy(anchor);
+  shoulder.parent.worldToLocal(swingArmAim.to).sub(shoulder.position);
+  if(swingArmAim.from.lengthSq()<1e-6 || swingArmAim.to.lengthSq()<1e-6) return;
+  swingArmAim.rotation.setFromUnitVectors(swingArmAim.from.normalize(),swingArmAim.to.normalize());
+  swingArmAim.rotation.multiply(shoulder.quaternion);
+  shoulder.quaternion.slerp(swingArmAim.rotation,1-Math.exp(-18*dt));
+  shoulder.updateMatrixWorld(true);
 }
 
 new THREE.GLTFLoader().load(
@@ -1420,6 +1750,13 @@ new THREE.GLTFLoader().load(
       }
       if(node.isMesh){
         node.material=node.material.clone();
+        // The downloaded rig's checker/FRONT UV guide is not a finished suit.
+        node.material.map=null;
+        node.material.emissiveMap=null;
+        node.material.transparent=false;
+        node.material.opacity=1;
+        node.material.depthWrite=true;
+        node.material.needsUpdate=true;
         node.userData.skinRegion=r15SkinRegion(node.name);
         r15SkinMeshes.push(node);
         node.material.roughness=.82;
@@ -1427,13 +1764,25 @@ new THREE.GLTFLoader().load(
         node.receiveShadow=true;
       }
     });
+    if(gltf.animations && gltf.animations.length){
+      r15Mixer=new THREE.AnimationMixer(gltf.scene);
+      gltf.animations.forEach(clip=>{
+        const action=r15Mixer.clipAction(clip);
+        const once=/^WW_(Jump_Takeoff|Jump_Land|Swing_Attach|Swing_Release|Air_Flip|Air_Twist)$/.test(clip.name);
+        action.setLoop(once?THREE.LoopOnce:THREE.LoopRepeat,once?1:Infinity);
+        action.clampWhenFinished=once;
+        r15Actions.set(clip.name,action);
+      });
+      if(r15Actions.has('WW_Idle'))selectR15Clip('Idle',0);
+      console.info('Web Weavers R15 clips loaded:',r15Actions.size);
+    }
     generateSkinThumbnails(gltf.scene);
     torso.visible=head.visible=armL.visible=armR.visible=legL.visible=legR.visible=false;
     r15Ready=true;
     applyPlayerSkin(skinSave.selected);
     r15EnemyTemplate=gltf.scene;
-    setTimeout(()=>enemies.forEach(attachEnemyAvatar),0);
-    setTimeout(()=>streetPeople.forEach(attachStreetAvatar),0);
+    // Reserve costly R15 models for nearby actors, not the entire city.
+    updateActorLOD();
     document.getElementById('startLoadStatus').textContent='READY';
     document.getElementById('btnPlay').disabled=false;
     document.getElementById('btnSkins').disabled=false;
@@ -1475,6 +1824,7 @@ const P = {
   swingPeakFlat:0,
   swingRequireRelease:false,
   swingReleaseT:0,
+  swingReleaseHand:null,
   climbNormal: null,
   climbBuilding: null,
   climbVisualAngle:0,
@@ -1522,6 +1872,7 @@ const RUN_SPEED = 13;
 const JUMP_SPEED = 13.5;
 const SWING_MAX_RANGE = 300;
 const SWING_MIN_RANGE = 12;
+const MIN_SWING_ANCHOR_RISE = 4; // world units above the player's feet, even during a dive
 const ZIP_RANGE = 240;
 const ZIP_SPEED = 72;
 const PULL_RANGE = 26;
@@ -1535,23 +1886,26 @@ const PLAYER_RADIUS = 0.55;
 const CLIMB_WALL_OFFSET = 0.3;
 const AIR_CONTROL = 18;
 const AIR_DRAG = 0.997;
-const AIR_MAX_SPEED = 50;
+// Air and swing share the traversal envelope: releasing must not brake a fast arc.
+const AIR_MAX_SPEED = 60;
 const GLIDE_MIN_SPEED = 11;
 const GLIDE_MAX_SPEED = 40;
 const GLIDE_TURN_RATE = 3.25;
 const GLIDE_MAX_SINK = 11;
 const SWING_MAX_SPEED = 72;
 const SWING_RELEASE_MAX_SPEED = 66;
-const SWING_RELEASE_CARRY = .99;
-const SWING_MAX_RISE_SPEED = 30;
+const SWING_RELEASE_APEX_VY = 4.5;
+const SWING_RELEASE_WINDOW = 3.5;
+const SWING_SHORT_ARC_MAX_AGE = 1.15;
 const SWING_ENTRY_MAX_TIME = 0.55;
 const SWING_MIN_GROUND_CLEARANCE = 2.8;
 const SWING_GROUND_REEL_START = 13;
 const SWING_GROUND_REEL_RATE = 12;
-const SWING_LOOK_TURN_RATE = 0.9;
-const SWING_INPUT_TURN_RATE = 2.8;
-const SWING_FORWARD_ACCEL = 11;
-const SWING_POWERED_SPEED = 64;
+const SWING_LOOK_TURN_RATE = 1.7;
+const SWING_INPUT_TURN_RATE = 4.8;
+const SWING_FORWARD_ACCEL = 7;
+const SWING_POWERED_SPEED = 58;
+const SWING_ATTACH_REEL_RATE = 9;
 const SWING_GROUND_PULL_TIME = 0.2;
 const MAX_JUMP_CHARGE = 0.85;
 const CHARGED_JUMP_BONUS = 10;
@@ -1561,15 +1915,30 @@ const QUICK_RECOVERY_WINDOW = 0.85;
 const QUICK_RECOVERY_ROLL_TIME = 0.28;
 const MAX_TRAVERSAL_SPEED = 60;
 const MAX_FALL_SPEED = -58;
-const MAX_RISE_SPEED = 34;
 const KEY_ZOOM_SPEED = 8.5;
 const WING_MIN_CLEARANCE = 5;
+
+// Orient the whole R15 rig to the wall plane, not merely its torso.
+// Local Y points along travel and local Z faces the wall; yaw/pitch of the
+// camera are deliberately unaffected. Handles up, down and all diagonals.
+function orientPlayerToWall(normal,travel,dt){
+  const forward=normal.clone().negate().normalize();
+  // Remove any motion into the wall; the pose is always tangent to its plane.
+  const along=travel.clone().addScaledVector(normal,-travel.dot(normal));
+  if(along.lengthSq()<0.02)along.set(0,1,0);
+  along.normalize();
+  const right=new THREE.Vector3().crossVectors(along,forward).normalize();
+  const up=new THREE.Vector3().crossVectors(forward,right).normalize();
+  const basis=new THREE.Matrix4().makeBasis(right,up,forward);
+  const target=new THREE.Quaternion().setFromRotationMatrix(basis);
+  player.quaternion.slerp(target,1-Math.exp(-12*dt));
+}
 
 // ---------------------------------------------------------------------------------------
 // RAYCASTING HELPERS (ground height, wall proximity, crosshair target)
 // ---------------------------------------------------------------------------------------
 const raycaster = new THREE.Raycaster();
-const buildingCollidables=buildingMeshes.map(b=>b.mesh);
+const buildingCollidables=buildingMeshes.filter(b=>!b.worldOnly).map(b=>b.mesh);
 const collidables = () => buildingCollidables;
 
 function nearbyBuildings(point,radius){
@@ -1614,7 +1983,7 @@ function enemyForObject(object){
 
 function heightAt(x,z, ignoreAboveY=Infinity){
   // returns highest surface (rooftop or ground) at x,z that's at/under ignoreAboveY+0.1
-  let best = isOverIsland(x,z) ? 0 : OCEAN_FLOOR;
+  let best = isOverIsland(x,z) ? 0 : -Infinity;
   for(const b of nearbyBuildings({x,z},1)){
     if(x>b.hitMinX && x<b.hitMaxX && z>b.hitMinZ && z<b.hitMaxZ){
       if(b.h <= ignoreAboveY+0.15 && b.h>best) best = b.h;
@@ -1674,9 +2043,59 @@ function segmentAabbEntry(from,to,minX,maxX,minZ,maxZ){
   return normal&&entry>=0&&entry<=1?{t:entry,normal}:null;
 }
 
+function resolveShoreFenceCollision(pos,previousPos=null){
+  const clearance=PLAYER_RADIUS+.12;
+  const from=previousPos||pos;
+  const travel=new THREE.Vector2(pos.x-from.x,pos.z-from.z);
+  const cross=(a,b)=>a.x*b.y-a.y*b.x;
+  for(const fence of shoreFenceColliders){
+    if(fence.h<=pos.y+1)continue;
+    const a=new THREE.Vector2(fence.a.x,fence.a.z),b=new THREE.Vector2(fence.b.x,fence.b.z);
+    const edge=b.clone().sub(a);
+    const current=new THREE.Vector2(pos.x,pos.z);
+    const edgeLengthSq=edge.lengthSq();
+    const along=THREE.MathUtils.clamp(current.clone().sub(a).dot(edge)/edgeLengthSq,0,1);
+    const nearest=a.clone().addScaledVector(edge,along);
+    const separation=current.clone().sub(nearest);
+    let normal=null;
+    if(separation.length()<clearance){
+      normal=separation.lengthSq()>.0001
+        ? new THREE.Vector3(separation.x,0,separation.y).normalize()
+        : new THREE.Vector3(-edge.y,0,edge.x).normalize();
+      pos.x=nearest.x+normal.x*clearance;
+      pos.z=nearest.y+normal.z*clearance;
+    }else if(previousPos&&travel.lengthSq()>.0001){
+      const offset=a.clone().sub(new THREE.Vector2(from.x,from.z));
+      const denominator=cross(travel,edge);
+      if(Math.abs(denominator)>.000001){
+        const t=cross(offset,edge)/denominator;
+        const u=cross(offset,travel)/denominator;
+        if(t>=0&&t<=1&&u>=0&&u<=1){
+          const side=new THREE.Vector2(from.x,from.z).sub(a);
+          normal=new THREE.Vector3(-edge.y,0,edge.x).normalize();
+          if(normal.x*side.x+normal.z*side.y<0)normal.multiplyScalar(-1);
+          const intersection=new THREE.Vector2(from.x,from.z).addScaledVector(travel,Math.max(0,t-.001));
+          pos.x=intersection.x+normal.x*clearance;
+          pos.z=intersection.y+normal.z*clearance;
+        }
+      }
+    }
+    if(normal){
+      if(pos===P.pos){
+        const inward=P.vel.dot(normal);
+        if(inward<0)P.vel.addScaledVector(normal,-inward);
+      }
+      return {normal,fence};
+    }
+  }
+  return null;
+}
+
 function resolveWallCollision(pos, previousPos=null){
   let hitNormal = null;
   let hitBuilding = null;
+  const fenceHit=resolveShoreFenceCollision(pos,previousPos);
+  if(fenceHit)hitNormal=fenceHit.normal;
   const midpoint=previousPos?pos.clone().add(previousPos).multiplyScalar(0.5):pos;
   const travelRadius=previousPos?Math.hypot(pos.x-previousPos.x,pos.z-previousPos.z)*0.5+PLAYER_RADIUS+1:PLAYER_RADIUS+1;
   for(const b of nearbyBuildings(midpoint,travelRadius)){
@@ -1876,6 +2295,7 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
   let best=null;
   let bestScore=-Infinity;
   const candidateBuildings=nearbyBuildings(playerEye,SWING_MAX_RANGE)
+    .filter(building=>!building.worldOnly && building.h>=P.pos.y+MIN_SWING_ANCHOR_RISE)
     .map(building=>{
       const dx=Math.max(building.hitMinX-playerEye.x,0,playerEye.x-building.hitMaxX);
       const dz=Math.max(building.hitMinZ-playerEye.z,0,playerEye.z-building.hitMaxZ);
@@ -1902,27 +2322,20 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       addUniqueAnchorCandidates(candidates,upperBuildingEdgeRayPoints(b,corridorOrigin,momentumForward));
     }
 
-    const fallingCatch=highFalling && P.pos.y>b.h+5;
-    if(fallingCatch){
-      addUniqueAnchorCandidates(candidates,upperBuildingEdgePoints(b,fallSearchPoint));
-      const fallDirection=fallSearchPoint.clone().sub(playerEye).setY(0).normalize();
-      addUniqueAnchorCandidates(candidates,upperBuildingEdgeRayPoints(b,playerEye,fallDirection));
-    }
-
-    for(const point of candidates){
+    for(const candidate of candidates){
+      const point=candidate.clone();
+      if(point.y<P.pos.y+MIN_SWING_ANCHOR_RISE) continue;
       if(excludePoint && point.distanceTo(excludePoint)<12) continue;
       const to=point.clone().sub(playerEye);
       const dist=to.length();
       if(dist<SWING_MIN_RANGE || dist>SWING_MAX_RANGE) continue;
       const horizontal=new THREE.Vector3(to.x,0,to.z);
       const horizontalDist=horizontal.length();
-      const belowCatch=point.y<playerEye.y-2 && fallingCatch;
-      if(horizontalDist<(belowCatch?7:14)) continue;
+      if(horizontalDist<14) continue;
       horizontal.normalize();
       const forwardDot=horizontal.dot(momentumForward);
       const sideDot=horizontal.dot(right)*sideSign;
-      if(belowCatch && (horizontalDist<28 || forwardDot<0.35)) continue;
-      if(!belowCatch && forwardDot<-0.28) continue;
+      if(forwardDot<-0.28) continue;
       // From street level, choose a roof edge ahead of the player rather than
       // the nearest side wall. A mostly lateral anchor turns the rope into a
       // winch and drags the character into the facade.
@@ -1930,7 +2343,7 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       // A side candidate must actually live on that side of the travel corridor.
       // This makes hand choice deterministic instead of allowing both searches to
       // return the same building with slightly different scores.
-      if(!belowCatch && sideDot<0.02) continue;
+      if(sideDot<0.02) continue;
 
       // Reject anchors hidden behind another building or on a far-facing wall.
       raycaster.set(playerEye,to.clone().normalize());
@@ -1938,22 +2351,37 @@ function findAssistedSwingAnchor(hand='center',excludePoint=null){
       const rayMidpoint=playerEye.clone().addScaledVector(to,0.5);
       const sightHits=raycaster.intersectObjects(nearbyBuildingMeshes(rayMidpoint,dist*0.5+8),false);
       raycaster.far=Infinity;
-      if(!belowCatch && (!sightHits.length || sightHits[0].object!==b.mesh || Math.abs(sightHits[0].distance-dist)>6)) continue;
+      if(!sightHits.length || sightHits[0].object!==b.mesh || Math.abs(sightHits[0].distance-dist)>6) continue;
+      // Roof candidates are slightly inset. From below, their sightline hits
+      // the facade first: attach there rather than drawing through the roof.
+      // Falling catches must pass the same visibility test as every other web.
+      point.copy(sightHits[0].point);
+      point.addScaledVector(to,-0.03/dist);
+      // Candidate height alone is not enough: a ray can intersect a much lower
+      // facade on its way to a high roof. Validate the ACTUAL visible hit.
+      if(point.y<P.pos.y+MIN_SWING_ANCHOR_RISE) continue;
 
       // Keep the bottom of an assisted arc comfortably above the surface instead
       // of allowing a nearly ground-level rope that turns swinging into fast walking.
       const maxClearRope=point.y-playerGround-12;
-      if(!belowCatch && maxClearRope<SWING_MIN_RANGE) continue;
-      const idealLength=belowCatch?dist*0.96:Math.min(dist*0.96,maxClearRope);
+      if(maxClearRope<SWING_MIN_RANGE) continue;
+      const idealLength=Math.min(dist*0.96,maxClearRope);
       const ropeLength=Math.max(SWING_MIN_RANGE,idealLength);
       const roofInterior=Math.min(point.x-b.minX,b.maxX-point.x,point.z-b.minZ,b.maxZ-point.z);
       const interiorBonus=Math.min(26,Math.max(0,roofInterior)*1.8);
-      // Once an anchor is safe and visible, distance dominates: Q/E should
-      // attach to the closest usable building on that side, not a taller but
-      // much farther building selected by a cinematic scoring bonus.
-      const score=belowCatch
-        ? 310-Math.abs(horizontalDist-fallSearchDistance)*3.2+forwardDot*190+Math.max(0,sideDot)*28+interiorBonus
-        : 1200-dist*9+forwardDot*(groundStart?240:110)+Math.max(0,sideDot)*3+interiorBonus;
+      // Favor nearby visible anchors for ordinary traversal. Fast-fall catches
+      // additionally account for the speed the rope constraint would discard.
+      // During a fast fall, a nearby overhead anchor can discard nearly all
+      // descending speed at the first taut frame. Prefer geometry that carries
+      // the incoming trajectory into the arc instead of ranking distance alone.
+      const catchRadial=P.pos.clone().sub(point).normalize();
+      const outwardSpeed=Math.max(0,P.vel.dot(catchRadial));
+      const catchLoss=highFalling?outwardSpeed*outwardSpeed/Math.max(1,P.vel.lengthSq()):0;
+      // Prefer higher real attachment points, but retain distance/forward
+      // scoring so the rope does not snap to a faraway tower unnecessarily.
+      const heightBonus=Math.min(180,Math.max(0,point.y-P.pos.y-MIN_SWING_ANCHOR_RISE)*2.5);
+      const score=1200-dist*9+forwardDot*(groundStart?240:110)+
+        Math.max(0,sideDot)*3+interiorBonus+heightBonus-catchLoss*2000;
       if(score>bestScore){ bestScore=score; best={point:point.clone(),length:ropeLength,score}; }
     }
   }
@@ -1968,14 +2396,19 @@ function findLookSwingAnchor(){
   if(!hit)return null;
   const b=hit.object.userData.buildingRecord;
   if(!b)return null;
-  const inset=0.7;
-  const point=new THREE.Vector3(
-    THREE.MathUtils.clamp(hit.point.x,b.minX+inset,b.maxX-inset),
-    b.h+0.08,
-    THREE.MathUtils.clamp(hit.point.z,b.minZ+inset,b.maxZ-inset)
-  );
-  const distance=P.pos.clone().add(new THREE.Vector3(0,1.35,0)).distanceTo(point);
+  // Aimed webs use the actual surface under the reticle. Promoting a wall
+  // hit to an inset rooftop could put the strand straight through the building.
+  const point=hit.point.clone();
+  if(hit.face) point.addScaledVector(hit.face.normal.clone().transformDirection(hit.object.matrixWorld),0.03);
+  const eye=P.pos.clone().add(new THREE.Vector3(0,1.35,0));
+  const to=point.clone().sub(eye),distance=to.length();
   if(distance<SWING_MIN_RANGE||distance>SWING_MAX_RANGE)return null;
+  if(point.y<P.pos.y+MIN_SWING_ANCHOR_RISE || to.y/distance<0.35)return null;
+  raycaster.set(eye,to.multiplyScalar(1/distance));
+  raycaster.far=distance+0.1;
+  const visible=raycaster.intersectObjects(nearbyBuildingMeshes(eye,distance+2),false)[0];
+  raycaster.far=Infinity;
+  if(!visible || visible.object!==b.mesh || Math.abs(visible.distance-distance)>0.15)return null;
   const ground=heightAt(P.pos.x,P.pos.z,P.pos.y+2);
   const safeLength=Math.max(SWING_MIN_RANGE,Math.min(distance*0.96,point.y-ground-9));
   return {point,length:safeLength,score:Infinity,targeted:true};
@@ -1985,10 +2418,11 @@ function findLookSwingAnchor(){
 // ENEMIES + SPAWN GROUPS
 // ---------------------------------------------------------------------------------------
 const spawnPoints = [];
-for(let i=0;i<10;i++){
-  // Street intersections remain clear even when a block contains two buildings.
-  const ix = 1+((Math.random()*(BLOCKS_X-1))|0);
-  const iz = 1+((Math.random()*(BLOCKS_Z-1))|0);
+for(let i=0;i<36;i++){
+  // More patrol points, systematically distributed from north to south.
+  // Every spawn stays on an intersection instead of appearing inside buildings.
+  const ix = 1+((i*7+3)%(BLOCKS_X-2));
+  const iz = 1+((i*13+5)%(BLOCKS_Z-2));
   const x = -HALF_CITY_X + ix*TILE_X;
   const z = -HALF_CITY_Z + iz*TILE_Z;
   spawnPoints.push(new THREE.Vector3(x,0,z));
@@ -2171,7 +2605,7 @@ function makeEnemy(pos, groupId, kind='brawler'){
   document.getElementById('enemyHpLayer').appendChild(hpEl);
   e.hpEl = hpEl;
   enemies.push(e);
-  attachEnemyAvatar(e);
+  // Full-detail R15 created lazily when the actor is nearby.
   return e;
 }
 
@@ -2186,8 +2620,9 @@ function spawnGroup(spawnIdx){
   }
   groups.push(g);
 }
-// Three spread-out gangs keep combat occasional; traversal remains the main loop.
-[0,4,8].forEach(i=>spawnGroup(i));
+// Nine active gangs across the larger island; distance-based NPC LOD keeps
+// only nearby enemies fully animated. Cleared gangs respawn normally.
+[0,3,7,11,15,19,23,28,33].forEach(i=>spawnGroup(i));
 
 // A five-minute empty map killed the patrol loop. Cleared groups now regroup quickly.
 const RESPAWN_TIME = 30;
@@ -2335,12 +2770,13 @@ function enemyRouteDirection(e,desired){
   if(desired.lengthSq()<0.001)return desired;
   const base=Math.atan2(desired.x,desired.z);
   const choices=[0,.42,-.42,.82,-.82,1.25,-1.25,Math.PI];
+  const localBuildings=nearbyBuildings(e.mesh.position,9).filter(b=>b.h>1.6);
   let best=null,bestScore=-Infinity;
   for(const offset of choices){
     const dir=new THREE.Vector3(Math.sin(base+offset),0,Math.cos(base+offset));
     const probe=e.mesh.position.clone().addScaledVector(dir,3.2);
-    const blocked=buildingMeshes.some(b=>
-      b.h>1.6 && probe.x>b.hitMinX-.75&&probe.x<b.hitMaxX+.75&&probe.z>b.hitMinZ-.75&&probe.z<b.hitMaxZ+.75
+    const blocked=localBuildings.some(b=>
+      probe.x>b.hitMinX-.75&&probe.x<b.hitMaxX+.75&&probe.z>b.hitMinZ-.75&&probe.z<b.hitMaxZ+.75
     );
     if(blocked||!isOverIsland(probe.x,probe.z,-1))continue;
     const score=dir.dot(desired)-Math.abs(offset)*.08;
@@ -2502,7 +2938,9 @@ function trySwing(hand,abilId,chosenOverride=null){
   if(P.state==='downed' || P.state==='defeated') return;
   if(P.activeSwingHand || P.cooldowns.swing>0) return false;
   const chosen=chosenOverride || findAssistedSwingAnchor(hand,null);
-  if(!chosen)return false;
+  // Final safeguard: no swing may attach below player height, even if a
+  // previously selected target became invalid while the player was moving.
+  if(!chosen || chosen.point.y<P.pos.y+MIN_SWING_ANCHOR_RISE)return false;
   const otherHand=hand==='left'?'right':'left';
   const web=P.swingWebs[hand];
   if(chosen){
@@ -2518,12 +2956,14 @@ function trySwing(hand,abilId,chosenOverride=null){
     P.swingWebs[otherHand].physicsPivot=null;
     P.swingWebs[otherHand].auto=false;
     web.anchor=chosen.point.clone();
-    web.fallCatch=P.vel.y<-10 && web.anchor.y<P.pos.y-2;
+    web.momentumCatch=P.vel.y<-10;
+    web.fallCatch=web.momentumCatch && web.anchor.y<P.pos.y-2;
     // Swing around the point the strand visibly touches. The previous hidden
     // corridor pivot made the body move around a different centre than the web.
     web.physicsPivot=web.anchor.clone();
     web.length=P.pos.distanceTo(web.physicsPivot);
-    web.targetLength=Math.min(web.length,chosen.length);
+    // Retain the native build's limited slack take-up, never a radius snap.
+    web.targetLength=Math.min(web.length,Math.max(chosen.length,web.length-10,SWING_MIN_RANGE));
     web.auto=false;
     P.swingGroundPullT=groundPull?SWING_GROUND_PULL_TIME:0;
     // One input creates one strand, including from the ground. A second fake
@@ -2532,6 +2972,7 @@ function trySwing(hand,abilId,chosenOverride=null){
     P.swingGroundPullAnchors.left=null;
     P.swingGroundPullAnchors.right=null;
     P.activeSwingHand=hand;
+    P.swingReleaseHand=null;
     // Prefer the opposite hand next time. The chooser only honours this when
     // both sides have a valid anchor, so a blocked side never prevents swinging.
     P.nextSwingHand=otherHand;
@@ -2570,16 +3011,22 @@ function trySmartSwing(){
   if(aimed){
     const toAim=aimed.point.clone().sub(P.pos);
     const cameraRight=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),cameraForwardFlat()).normalize();
-    let hand=toAim.dot(cameraRight)>=0?'left':'right';
-    if(left&&right)hand=P.nextSwingHand;
-    else if(left)hand='left';
-    else if(right)hand='right';
+    const aimSide=toAim.dot(cameraRight);
+    // Alternate near the reticle centre, but let a deliberate side aim use
+    // the hand already nearest that surface. Crossing the body with the
+    // opposite strand makes the shot read as attached to the wrong building.
+    let hand=aimSide>=0?'left':'right';
+    if(Math.abs(aimSide)<6 && left&&right)hand=P.nextSwingHand;
     return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',aimed);
   }
   if(!left && !right) return false;
   let hand=P.nextSwingHand;
   if(!left)hand='right';
   else if(!right)hand='left';
+  else if(P.vel.y<-10 && Math.abs(left.score-right.score)>20){
+    // Alternate hands only when both catches are comparably useful.
+    hand=left.score>right.score?'left':'right';
+  }
   const chosen=hand==='left'?left:right;
   return trySwing(hand,hand==='left'?'abSwingLeft':'abSwingRight',chosen);
 }
@@ -2603,9 +3050,9 @@ function cameraForward3D(){
 function giveSwingEntryMomentum(fromGround=false,groundClearance=Infinity){
   const forward = cameraForwardFlat();
   const flatSpeed = Math.hypot(P.vel.x,P.vel.z);
-  // Keep every incoming component. Low-speed starts get an additive nudge instead
-  // of having their velocity replaced, so diagonal momentum survives attachment.
-  if(flatSpeed<15){
+  // Only street-level starts need launch assistance. Mid-air catches preserve
+  // incoming velocity, including slow motion opposite the camera direction.
+  if(flatSpeed<15 && (fromGround || groundClearance<1.5)){
     const assist=15-flatSpeed;
     P.vel.x += forward.x*assist;
     P.vel.z += forward.z*assist;
@@ -2620,6 +3067,32 @@ function swingConstraint(activeWebs){
   return {anchor:web.physicsPivot||web.anchor,length:web.length};
 }
 
+function steerSwingVelocity(radial,mv,dt){
+  // Steer within the rope's tangent plane. Rotating only X/Z creates
+  // outward velocity that the constraint immediately deletes, braking turns.
+  const radialSpeed=P.vel.dot(radial);
+  const tangent=P.vel.clone().addScaledVector(radial,-radialSpeed);
+  const tangentSpeed=tangent.length();
+  if(tangentSpeed>0.25){
+    const steerIntent=cameraForwardFlat();
+    if(mv.lengthSq()>0.001) steerIntent.multiplyScalar(0.35).addScaledVector(mv,0.9).normalize();
+    steerIntent.addScaledVector(radial,-steerIntent.dot(radial));
+    if(steerIntent.lengthSq()>0.001){
+      steerIntent.normalize();
+      tangent.multiplyScalar(1/tangentSpeed);
+      const angle=Math.atan2(radial.dot(tangent.clone().cross(steerIntent)),
+        THREE.MathUtils.clamp(tangent.dot(steerIntent),-1,1));
+      const turnRate=mv.lengthSq()>0.001?SWING_INPUT_TURN_RATE:SWING_LOOK_TURN_RATE;
+      tangent.applyAxisAngle(radial,angle*(1-Math.exp(-turnRate*dt)));
+      const phasePower=P.swingPhase==='descent'?THREE.MathUtils.clamp(-P.vel.y/18,0,1):0;
+      const pumpedSpeed=keys[bindings.forward] && tangentSpeed<SWING_POWERED_SPEED
+        ? Math.min(SWING_POWERED_SPEED,tangentSpeed+SWING_FORWARD_ACCEL*phasePower*dt)
+        : tangentSpeed;
+      P.vel.copy(tangent).multiplyScalar(pumpedSpeed).addScaledVector(radial,radialSpeed);
+    }
+  }
+}
+
 function enforceSwingConstraint(activeWebs){
   if(!activeWebs.length) return;
   const constraint=swingConstraint(activeWebs);
@@ -2629,13 +3102,41 @@ function enforceSwingConstraint(activeWebs){
   const radial=offset.multiplyScalar(1/distance);
   P.pos.copy(constraint.anchor).addScaledVector(radial,constraint.length);
   const outwardSpeed=P.vel.dot(radial);
-  if(outwardSpeed>0) P.vel.addScaledVector(radial,-outwardSpeed);
+  if(outwardSpeed>0){
+    const catchSpeed=P.vel.length();
+    P.vel.addScaledVector(radial,-outwardSpeed);
+    // On the first taut frame of a high fall, redirect the catch impulse into
+    // the rope tangent instead of deleting it. Later constraint corrections do
+    // not receive this assist, so ordinary pendulum motion cannot gain energy.
+    if(activeWebs[0].momentumCatch && P.swingAge<.16 && P.vel.lengthSq()>.001){
+      P.vel.setLength(Math.min(catchSpeed,SWING_MAX_SPEED));
+    }
+  }
 }
 
-function releaseSwing(hand=null,boost=true){
+function swingReleaseAssist(age,phase,verticalSpeed,flatSpeed){
+  if(phase!=='ascent' || verticalSpeed<=1 || verticalSpeed>=SWING_RELEASE_APEX_VY+SWING_RELEASE_WINDOW){
+    return {quality:0,hop:0,speedBonus:0};
+  }
+  const quality=THREE.MathUtils.clamp(
+    1-Math.abs(verticalSpeed-SWING_RELEASE_APEX_VY)/SWING_RELEASE_WINDOW,
+    0,1
+  );
+  if(quality<=0) return {quality:0,hop:0,speedBonus:0};
+  const hop=quality*(1.35+Math.min(Math.max(flatSpeed,0),60)*0.025);
+  const shortArc=Math.max(0,1-age/SWING_SHORT_ARC_MAX_AGE);
+  return {quality,hop,speedBonus:quality*shortArc*5.5};
+}
+
+function releaseSwing(hand=null,applyTimingAssist=true){
   const wallSwing=P.state==='climb' && P.wallRunFromSwing;
   if(P.state!=='swing' && !wallSwing) return;
   if(hand && P.activeSwingHand!==hand) return;
+  const flatSpeed=Math.hypot(P.vel.x,P.vel.z);
+  const assist=applyTimingAssist
+    ? swingReleaseAssist(P.swingAge,P.swingPhase,P.vel.y,flatSpeed)
+    : {quality:0,hop:0,speedBonus:0};
+  P.swingReleaseHand=P.activeSwingHand;
   P.swingWebs.left.anchor=null;
   P.swingWebs.right.anchor=null;
   P.swingWebs.left.physicsPivot=null;
@@ -2644,6 +3145,8 @@ function releaseSwing(hand=null,boost=true){
   P.swingWebs.right.auto=false;
   P.swingWebs.left.fallCatch=false;
   P.swingWebs.right.fallCatch=false;
+  P.swingWebs.left.momentumCatch=false;
+  P.swingWebs.right.momentumCatch=false;
   P.swingGroundPullT=0;
   P.swingGroundPullAnchor=null;
   P.swingGroundPullAnchors.left=null;
@@ -2658,15 +3161,15 @@ function releaseSwing(hand=null,boost=true){
     P.swingRequireRelease=true;
     return;
   }
-  if(boost && P.swingAssisted){
-    // Manual release is immediate and momentum-preserving. A tiny upward carry
-    // keeps the animation readable without redirecting the player toward camera.
-    if(P.vel.y>-2) P.vel.y=Math.min(SWING_MAX_RISE_SPEED,P.vel.y+1.25);
-    P.vel.x*=SWING_RELEASE_CARRY;
-    P.vel.z*=SWING_RELEASE_CARRY;
-    limitHorizontalSpeed(SWING_RELEASE_MAX_SPEED);
-  }
+  // Releasing is the skill gate: velocity is never replaced, but a short arc
+  // released late in the ascent earns a small hop and tangential carry.
   P.state='air';
+  if(assist.speedBonus>0 && flatSpeed>0.001){
+    const boostedFlat=Math.min(SWING_RELEASE_MAX_SPEED,flatSpeed+assist.speedBonus);
+    P.vel.x*=boostedFlat/flatSpeed;
+    P.vel.z*=boostedFlat/flatSpeed;
+  }
+  P.vel.y+=assist.hop;
   P.swingAssisted=false;
   P.swingPhase='release';
   P.swingReleaseT=0.35;
@@ -2680,23 +3183,6 @@ function setSwingPhase(phase){
   P.swingPhaseT=0;
 }
 
-function autoReleaseSwing(){
-  const flatSpeed=Math.hypot(P.vel.x,P.vel.z);
-  const storedSpeed=Math.max(flatSpeed,P.swingBottomSpeed,P.swingPeakFlat);
-  const launchY=THREE.MathUtils.clamp(7+storedSpeed*0.18,9,16);
-  P.swingPhase='release';
-  releaseSwing(null,false);
-  // Keep the exact horizontal travel direction and speed. The automatic assist
-  // spends part of the stored arc energy vertically instead of firing forward.
-  P.vel.x*=SWING_RELEASE_CARRY;
-  P.vel.z*=SWING_RELEASE_CARRY;
-  limitHorizontalSpeed(SWING_RELEASE_MAX_SPEED);
-  P.vel.y=Math.max(P.vel.y,launchY);
-  P.swingRequireRelease=true;
-  P.swingWebs.left.retry=0.3;
-  P.swingWebs.right.retry=0.3;
-}
-
 function limitHorizontalSpeed(maxSpeed){
   const flat = Math.hypot(P.vel.x, P.vel.z);
   if(flat > maxSpeed){
@@ -2707,8 +3193,10 @@ function limitHorizontalSpeed(maxSpeed){
 }
 
 function clampPlayerVelocity(){
-  const riseCap=P.state==='swing'?SWING_MAX_RISE_SPEED:MAX_RISE_SPEED;
-  P.vel.y = THREE.MathUtils.clamp(P.vel.y, MAX_FALL_SPEED, riseCap);
+  // Upward travel shares the total speed envelope with horizontal motion.
+  // A separate rise cap deleted momentum gained through the downswing and
+  // changed the release direction even when total speed was already legal.
+  P.vel.y = Math.max(P.vel.y, MAX_FALL_SPEED);
   if(P.state === 'swing') limitHorizontalSpeed(SWING_MAX_SPEED);
   else if(P.state !== 'zip') limitHorizontalSpeed(AIR_MAX_SPEED);
   if(P.state!=='zip' && P.vel.length()>MAX_TRAVERSAL_SPEED) P.vel.setLength(MAX_TRAVERSAL_SPEED);
@@ -2721,6 +3209,7 @@ function tryZip(){
   comboChainTarget=null;
   comboChainMode=null;
   zipEnemyTarget=enemyForObject(hit.object);
+  if(!zipEnemyTarget && hit.point.y<P.pos.y+MIN_SWING_ANCHOR_RISE) return false;
   if(zipEnemyTarget){
     combatTarget=zipEnemyTarget;
     if(P.state==='ground'){
@@ -2730,6 +3219,12 @@ function tryZip(){
       pulse('abSwingRight');
       return true;
     }
+  }
+  // A zip replaces the current strand. Leaving its hand occupied prevented
+  // the next swing after an airborne zip or a cancelled zip.
+  if(P.state==='swing' || (P.state==='climb' && P.wallRunFromSwing)){
+    releaseSwing(null,false);
+    P.traversalSwingStarted=false;
   }
   zipTarget = zipEnemyTarget
     ? zipEnemyTarget.mesh.position.clone().add(new THREE.Vector3(0,0.8,0))
@@ -2771,19 +3266,21 @@ function beginTraversalWallRun(normal,building,incoming){
   comboChainMode=null;
 
   const wallRight=new THREE.Vector3().crossVectors(normal,new THREE.Vector3(0,1,0)).normalize();
-  let across=entryVelocity.dot(wallRight);
-  if(Math.abs(across)<3){
-    const cameraAcross=cameraForwardFlat().dot(wallRight);
-    across=(Math.abs(cameraAcross)>0.12?Math.sign(cameraAcross):1)*Math.max(7,Math.hypot(entryVelocity.x,entryVelocity.z)*0.45);
-  }
-  const entrySpeed=THREE.MathUtils.clamp(Math.max(11,entryVelocity.length()*0.72),11,22);
-  const upward=THREE.MathUtils.clamp(entryVelocity.y/Math.max(entrySpeed,1),0.18,0.72);
+  const across=entryVelocity.dot(wallRight);
+  const wallMotion=new THREE.Vector2(across,entryVelocity.y);
+  // Preserve the direction along the facade, including vertical and descending
+  // approaches. A head-on approach has no usable tangent: run upward instead
+  // of inventing an arbitrary left/right turn.
+  const tangentSpeed=wallMotion.length();
+  if(tangentSpeed<3) wallMotion.set(0,1);
+  else wallMotion.multiplyScalar(1/tangentSpeed);
+  const entrySpeed=THREE.MathUtils.clamp(tangentSpeed,11,22);
   P.state='climb';
   P.gliding=false;
   P.climbNormal=normal.clone();
   P.climbBuilding=building;
   P.wallRunAutoT=4;
-  P.wallRunDirection.set(Math.sign(across)||1,upward).normalize();
+  P.wallRunDirection.copy(wallMotion);
   P.wallRunEntrySpeed=entrySpeed;
   P.wallRunFromSwing=fromSwing;
   P.swingGroundPullT=0;
@@ -2791,8 +3288,9 @@ function beginTraversalWallRun(normal,building,incoming){
   P.swingGroundPullAnchors.left=null;
   P.swingGroundPullAnchors.right=null;
   P.wallRunMomentum=fromSwing?Math.max(entryVelocity.length(),P.swingPeakFlat,entrySpeed):0;
-  P.climbVisualAngle=Math.atan2(-P.wallRunDirection.x,P.wallRunDirection.y);
-  P.vel.set(0,0,0);
+  P.climbVisualAngle=-Math.atan2(wallMotion.x,Math.abs(wallMotion.y));
+  P.vel.copy(wallRight).multiplyScalar(wallMotion.x*entrySpeed);
+  P.vel.y=wallMotion.y*entrySpeed;
 }
 
 function resumeSwingFromWall(jumpBoost=false){
@@ -3022,373 +3520,285 @@ function blendPart(part, base, rot, posOffset, amt){
   part.position.z = THREE.MathUtils.lerp(part.position.z, base.pos.z + (posOffset.z||0), amt);
 }
 
+// Every player state supplies a complete target pose to the same R15 joints.
+// Root motion remains owned by physics; this only changes the visible rig.
 function animatePlayer(dt, moveVec){
-  const speedFlat = Math.hypot(P.vel.x, P.vel.z);
-  // Drive locomotion from real horizontal speed as well as input. This avoids
-  // a walk cycle continuing while stationary, or freezing during carried
-  // momentum after the player releases a key.
-  const moving = speedFlat > 0.8 && (P.state==='ground' || P.state==='air');
-  const wallMoving=P.state==='climb' && (moveVec.lengthSq()>0.04 || P.wallRunAutoT>0);
-  const locomoting=moving || wallMoving;
-  const locomotionSpeed=wallMoving
-    ? Math.max(running || P.wallRunAutoT>0 ? WALL_RUN_SPEED : WALL_CRAWL_SPEED,4)
-    : speedFlat;
-  // Walking used to cycle too slowly for the distance covered. Keep its feet
-  // moving briskly, while a sprint gets a slightly quicker, longer stride.
-  animClock += locomoting
-    ? dt*THREE.MathUtils.clamp(locomotionSpeed*(running?.94:.96),5.8,12.8)
-    : dt*.55;
-  const step = Math.sin(animClock);
-  const bob = moving ? Math.abs(step) * (running ? 0.08 : 0.045) : 0;
-  const amt = 1 - Math.pow(0.001, dt);
-  const wingPose=P.state==='air' && P.gliding;
-  // The physics root stays upright; only the visual rig rolls and pitches.
-  let rigPitch=wingPose?Math.PI/2+P.glidePitch*0.55:0;
-  if(P.diving) rigPitch=Math.PI/2.35;
-  if(P.state==='zip') rigPitch=-0.38;
-  if(P.recoveryRollT>0){
-    const rollProgress=1-P.recoveryRollT/QUICK_RECOVERY_ROLL_TIME;
-    rigPitch=-rollProgress*Math.PI*2;
-  }
-  if(P.state==='swing'){
-    const swingSpeed=Math.max(1,P.vel.length());
-    const fastSwing=THREE.MathUtils.clamp((swingSpeed-10)/28,0,1);
-    const riseRatio=THREE.MathUtils.clamp(P.vel.y/swingSpeed,-1,1);
-    // The reference keeps the torso visibly in the travel arc: almost horizontal
-    // at speed, nose-up on ascent and nose-down on descent.
-    rigPitch=-0.08-fastSwing*0.24-riseRatio*0.14;
-  }
-  if(P.wallFlipT>0) rigPitch=-(1-P.wallFlipT/0.65)*Math.PI*2;
-  playerRig.rotation.x=(P.wallFlipT>0||P.recoveryRollT>0) ? rigPitch : THREE.MathUtils.lerp(playerRig.rotation.x,rigPitch,amt);
-  // On a wall, rotate the whole visual rig so its head points along travel.
-  // Horizontal and swing-carried runs therefore read as a sideways sprint,
-  // while vertical runs treat the wall exactly like the floor.
-  let targetRigRoll=P.state==='climb'?(wallMoving?P.climbVisualAngle:0):(wingPose?-P.glideBank*0.72:0);
-  if(P.state==='swing'){
-    const visualRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
-    targetRigRoll=THREE.MathUtils.clamp(-P.vel.dot(visualRight)*0.014,-0.25,0.25);
-  }
-  const rollDelta=Math.atan2(Math.sin(targetRigRoll-playerRig.rotation.z),Math.cos(targetRigRoll-playerRig.rotation.z));
-  playerRig.rotation.z+=rollDelta*(1-Math.exp(-14*dt));
-
-  let torsoRot = {x:0, y:0, z:0};
-  let headRot = {x:0, y:0, z:0};
-  let armLRot = {x:0, y:0, z:0};
-  let armRRot = {x:0, y:0, z:0};
-  let legLRot = {x:0, y:0, z:0};
-  let legRRot = {x:0, y:0, z:0};
-  let torsoPos = {x:0, y:bob, z:0};
-  let headPos = {x:0, y:bob * 0.55, z:0};
-
-  const applyRunCycle=(isRunning)=>{
-    const stride=isRunning?0.9:0.5;
-    armLRot.x=step*stride*0.72;
-    armRRot.x=-step*stride*0.72;
-    legLRot.x=-step*stride;
-    legRRot.x=step*stride;
-    torsoRot.x=isRunning?-0.22:-0.07;
-    headRot.x=isRunning?0.07:0.025;
-    torsoRot.y=step*(isRunning?0.09:0.025);
-    torsoRot.z=THREE.MathUtils.clamp(step*(isRunning?0.105:0.04),-0.115,0.115);
-    headRot.z=-torsoRot.z*0.32;
-    torsoPos.x=isRunning?step*0.045:step*0.012;
-    // The arms still oppose the legs, but also move laterally with the torso
-    // instead of looking pinned to two perfectly straight rails.
-    armLRot.z=-0.045-step*(isRunning?0.12:0.035);
-    armRRot.z=0.045-step*(isRunning?0.12:0.035);
-  };
-
+  const clamp=THREE.MathUtils.clamp;
+  const flatSpeed=Math.hypot(P.vel.x,P.vel.z);
+  const speed=P.vel.length();
+  const onWall=P.state==='climb';
+  const wallRun=onWall && (running || P.wallRunAutoT>0);
+  const moving=P.state==='ground' ? flatSpeed>0.8 : onWall ? speed>0.2 : false;
+  const gaitSpeed=onWall?speed:flatSpeed;
+  animClock+=dt*(moving?clamp(gaitSpeed*0.82,4.2,15):0.8);
+  const step=Math.sin(animClock), otherStep=-step;
+  const blend=1-Math.exp(-13*dt);
+  const pose={torso:{x:0,y:0,z:0},head:{x:0,y:0,z:0},
+    leftArm:{x:0,y:0,z:-0.08},rightArm:{x:0,y:0,z:0.08},
+    leftLeg:{x:0,y:0,z:0},rightLeg:{x:0,y:0,z:0},
+    leftElbow:0.18,rightElbow:0.18,leftKnee:0.08,rightKnee:0.08,
+    rootY:0,rootZ:0,rootPitch:0,rootRoll:0};
+  const velRight=P.vel.x*Math.cos(P.facing)-P.vel.z*Math.sin(P.facing);
+  const lateral=clamp(velRight/28,-1,1);
+  const diagonalStrafe=moveVec.lengthSq()>0.04
+    ? clamp((moveVec.x*Math.cos(P.facing)-moveVec.z*Math.sin(P.facing)),-1,1)
+    : 0;
+  const vertical=clamp(P.vel.y/24,-1,1);
+  const sway=Math.sin(animClock*1.7);
   if(P.state==='ground'){
     if(P.recoveryRollT>0){
-      torsoRot.x=0.55;
-      torsoPos.y=-0.28;
-      armLRot.x=armRRot.x=-0.85;
-      armLRot.z=-0.45; armRRot.z=0.45;
-      legLRot.x=legRRot.x=1.05;
-    } else if(P.jumpCharging){
-      const charge=THREE.MathUtils.clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
-      torsoPos.y=-0.08-charge*0.3;
-      torsoRot.x=0.08+charge*0.24;
-      headRot.x=-charge*0.08;
-      armLRot.x=armRRot.x=-0.58-charge*0.24;
-      armLRot.z=-0.42; armRRot.z=0.42;
-      legLRot.x=0.48+charge*0.72;
-      legRRot.x=0.32+charge*0.58;
-      legLRot.z=-0.18; legRRot.z=0.18;
-    } else if(P.landPoseT>0){
-      const land=P.landPoseT/0.22;
-      torsoPos.y=-0.2*land;
-      torsoRot.x=0.16*land;
-      armLRot.x=armRRot.x=-0.45*land;
-      legLRot.x=legRRot.x=0.58*land;
-      legLRot.z=-0.18*land; legRRot.z=0.18*land;
-    } else if(moving || speedFlat > 1){
-      applyRunCycle(running);
-    } else {
-      // Idle breathes as one balanced pose. Never alternate the limbs here;
-      // that reads as walking even when the physics body is stationary.
-      const breath=Math.sin(animClock*1.8);
-      torsoPos.y=breath*0.012;
-      headPos.y=breath*0.006;
-      armLRot.x=-0.025-breath*0.008;
-      armRRot.x=-0.025-breath*0.008;
-      armLRot.z=0;
-      armRRot.z=0;
+      const progress=1-P.recoveryRollT/QUICK_RECOVERY_ROLL_TIME;
+      pose.rootPitch=-progress*Math.PI*2;
+      pose.torso.x=0.3;pose.rootY=-0.23;
+      pose.leftArm.x=pose.rightArm.x=-0.8;
+      pose.leftLeg.x=pose.rightLeg.x=0.8;
+      pose.leftKnee=pose.rightKnee=0.85;
+    }else if(P.jumpCharging){
+      const charge=clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
+      pose.rootY=-0.12-charge*0.22;
+      pose.torso.x=0.13+charge*0.14;
+      pose.leftArm.x=pose.rightArm.x=-0.35-charge*0.2;
+      pose.leftArm.z=-0.24;pose.rightArm.z=0.24;
+      pose.leftLeg.x=pose.rightLeg.x=0.32+charge*0.22;
+      pose.leftKnee=pose.rightKnee=0.48+charge*0.4;
+    }else if(P.landPoseT>0){
+      const impact=clamp(P.landPoseT/0.22,0,1);
+      pose.rootY=-0.22*impact;pose.torso.x=0.27*impact;
+      pose.leftArm.x=-0.48*impact;pose.rightArm.x=-0.38*impact;
+      pose.leftLeg.x=pose.rightLeg.x=0.42*impact;
+      pose.leftKnee=pose.rightKnee=0.7*impact;
+    }else if(moving){
+      const sprint=running?1:0;
+      const stride=(0.48+sprint*0.36)*clamp(flatSpeed/(running?12:7),0.55,1.12);
+      pose.rootY=Math.abs(step)*(0.025+sprint*0.045);
+      pose.torso.x=-0.05-sprint*0.16;
+      pose.torso.y=step*(0.025+sprint*0.07);
+      pose.torso.z=step*(0.025+sprint*0.055)-lateral*0.08;
+      pose.head.y=-pose.torso.y*0.4;
+      pose.leftArm.x=step*stride*0.72;
+      pose.rightArm.x=otherStep*stride*0.72;
+      pose.leftElbow=0.38+sprint*0.18;
+      pose.rightElbow=pose.leftElbow;
+      pose.leftLeg.x=otherStep*stride;
+      pose.rightLeg.x=step*stride;
+      pose.leftKnee=0.1+Math.max(0,step)*0.55;
+      pose.rightKnee=0.1+Math.max(0,otherStep)*0.55;
+      pose.rootRoll=-lateral*0.08-diagonalStrafe*0.09;
+      pose.torso.y+=diagonalStrafe*0.11;
+      pose.head.y-=diagonalStrafe*0.055;
+    }else{
+      pose.rootY=sway*0.012;
+      pose.leftArm.x=pose.rightArm.x=-0.03+sway*0.012;
+      pose.head.x=-sway*0.012;
     }
-  } else if(P.state==='air'){
+  }else if(P.state==='swing'){
+    const entry=P.swingPhase==='entry';
+    const fast=clamp((speed-8)/38,0,1);
+    const pull=P.swingGroundPullT>0;
+    pose.rootPitch=-0.08-fast*0.23-vertical*0.2;
+    pose.rootRoll=clamp(-lateral*0.28,-0.28,0.28);
+    pose.torso.x=-0.1-vertical*0.18;
+    pose.torso.z=-lateral*0.28;
+    pose.head.x=0.1+vertical*0.08;
+    pose.leftArm.x=P.swingWebs.left.anchor||pull?-1.05:-0.2;
+    pose.rightArm.x=P.swingWebs.right.anchor||pull?-1.05:-0.2;
+    pose.leftArm.z=P.swingWebs.left.anchor||pull?-0.8:-0.32;
+    pose.rightArm.z=P.swingWebs.right.anchor||pull?0.8:0.32;
+    pose.leftElbow=P.swingWebs.left.anchor||pull?0.1:0.72;
+    pose.rightElbow=P.swingWebs.right.anchor||pull?0.1:0.72;
+    // A long, asymmetric trail reads as velocity; climbing the arc folds the knees.
+    const tuck=clamp((vertical+0.15)*0.75,0,0.8);
+    pose.leftLeg.x=(entry?0.58:0.38)+fast*0.18+tuck*0.3;
+    pose.rightLeg.x=(entry?-0.18:-0.32)+fast*0.12+tuck*0.16;
+    pose.leftLeg.z=-0.25-lateral*0.12;
+    pose.rightLeg.z=0.19-lateral*0.12;
+    pose.leftKnee=0.58+tuck*0.34;
+    pose.rightKnee=0.2+tuck*0.24;
+    pose.torso.y=P.activeSwingHand==='left'?-0.1:0.1;
+  }else if(P.state==='air'){
     if(P.diving){
-      armLRot.x=armRRot.x=0.82;
-      armLRot.z=-0.2; armRRot.z=0.2;
-      legLRot.x=-0.2; legRRot.x=0.12;
-      legLRot.z=-0.08; legRRot.z=0.08;
-      torsoRot.x=-0.28;
-      headRot.x=0.28;
-    } else if(P.swingReleaseT>0 && !P.gliding){
-      const release=Math.sin((P.swingReleaseT/0.35)*Math.PI);
-      armLRot.x=-0.75-release*0.45;
-      armRRot.x=-0.75-release*0.45;
-      armLRot.z=0.7+release*0.25;
-      armRRot.z=-0.7-release*0.25;
-      legLRot.x=0.65;
-      legRRot.x=0.25;
-      legLRot.z=0.18;
-      legRRot.z=-0.18;
-      torsoRot.x=-0.18;
-    } else if(P.gliding){
-      const flutter=Math.sin(animClock*9)*0.04;
-      armLRot.x=0.38+P.glidePitch*0.12;
-      armRRot.x=0.38+P.glidePitch*0.12;
-      armLRot.z=-0.38+flutter;
-      armRRot.z=0.38-flutter;
-      legLRot.x=-0.08-P.glidePitch*0.12;
-      legRRot.x=0.08-P.glidePitch*0.12;
-      legLRot.z=-0.5; legRRot.z=0.5;
-      torsoRot.x=-0.1;
-      headRot.x=0.18;
-    } else if(P.vel.y>1.5 || P.jumpPoseT>0){
-      // Compact superhero rise from the reference: both arms balance the body
-      // while one knee leads, rather than a stiff one-arm salute.
-      const rise=THREE.MathUtils.clamp(P.vel.y/13.5,0,1);
-      armLRot.x=-0.24-rise*0.18; armRRot.x=-0.1-rise*0.12;
-      armLRot.z=-0.62; armRRot.z=0.62;
-      legLRot.x=0.9; legRRot.x=0.2;
-      legLRot.z=-0.18; legRRot.z=0.14;
-      torsoRot.x=-0.18;
-    } else {
-      // A compact controlled fall: elbows stay bent beside the torso and the
-      // legs trail unevenly. The old near-horizontal arms read as a rigid T-pose.
-      const fall=THREE.MathUtils.clamp(-P.vel.y/18,0,1);
-      armLRot.x=0.28+fall*0.34; armRRot.x=0.18+fall*0.28;
-      armLRot.z=-0.34-fall*0.08; armRRot.z=0.34+fall*0.08;
-      legLRot.x=0.42+fall*0.18; legRRot.x=-0.08+fall*0.1;
-      legLRot.z=-0.16; legRRot.z=0.12;
-      torsoRot.x=-0.1-fall*0.12;
-      headRot.x=0.1+fall*0.08;
+      pose.rootPitch=1.13;pose.rootRoll=-lateral*0.12;
+      pose.torso.x=-0.16;pose.head.x=0.19;
+      pose.leftArm.x=pose.rightArm.x=0.72;
+      pose.leftArm.z=-0.18;pose.rightArm.z=0.18;
+      pose.leftElbow=pose.rightElbow=0.12;
+      pose.leftLeg.x=-0.1;pose.rightLeg.x=0.08;
+      pose.leftKnee=pose.rightKnee=0.07;
+    }else if(P.gliding){
+      pose.rootPitch=Math.PI/2+P.glidePitch*0.48;
+      pose.rootRoll=-P.glideBank*0.6;
+      pose.torso.x=-0.08;pose.head.x=0.13;
+      pose.leftArm.x=pose.rightArm.x=0.27;
+      pose.leftArm.z=-0.5;pose.rightArm.z=0.5;
+      pose.leftElbow=pose.rightElbow=0.2;
+      pose.leftLeg.x=-0.08;pose.rightLeg.x=0.08;
+      pose.leftLeg.z=-0.25;pose.rightLeg.z=0.25;
+    }else if(P.swingReleaseT>0){
+      const fade=clamp(P.swingReleaseT/0.35,0,1);
+      const left=P.swingReleaseHand==='left';
+      pose.rootPitch=-0.17-vertical*0.18;
+      pose.rootRoll=-lateral*0.17;
+      pose.torso.x=-0.15;pose.torso.y=left?-0.12:0.12;
+      pose.leftArm.x=left?-1.2*fade:-0.2;
+      pose.rightArm.x=left?-0.2:-1.2*fade;
+      pose.leftArm.z=left?-0.65:-0.27;
+      pose.rightArm.z=left?0.27:0.65;
+      pose.leftElbow=left?0.16:0.55;
+      pose.rightElbow=left?0.55:0.16;
+      pose.leftLeg.x=0.22+vertical*0.13;
+      pose.rightLeg.x=-0.12;
+      pose.leftKnee=0.34;pose.rightKnee=0.18;
+    }else if(P.vel.y>1.5 || P.jumpPoseT>0){
+      const rise=clamp(P.vel.y/20,0,1);
+      pose.rootPitch=-0.16-rise*0.1;
+      pose.torso.x=-0.12;pose.head.x=0.07;
+      pose.leftArm.x=-0.25-rise*0.18;
+      pose.rightArm.x=-0.12-rise*0.12;
+      pose.leftArm.z=-0.38;pose.rightArm.z=0.34;
+      pose.leftElbow=0.35;pose.rightElbow=0.42;
+      pose.leftLeg.x=0.45;pose.rightLeg.x=-0.04;
+      pose.leftKnee=0.72;pose.rightKnee=0.23;
+    }else{
+      const fall=clamp(-P.vel.y/28,0,1);
+      const clearance=P.pos.y-heightAt(P.pos.x,P.pos.z,P.pos.y+2);
+      const prepare=clamp((9-clearance)/7,0,1)*fall;
+      pose.rootPitch=fall*0.18;pose.rootRoll=-lateral*0.12;
+      pose.torso.x=-0.1;pose.head.x=0.13;
+      pose.leftArm.x=0.18+fall*0.18;
+      pose.rightArm.x=0.12+fall*0.22;
+      pose.leftArm.z=-0.24;pose.rightArm.z=0.24;
+      pose.leftElbow=0.48+fall*0.18;
+      pose.rightElbow=0.48+fall*0.18;
+      pose.leftLeg.x=0.05+prepare*0.32;
+      pose.rightLeg.x=-0.1+prepare*0.28;
+      pose.leftKnee=0.16+prepare*0.72;
+      pose.rightKnee=0.2+prepare*0.65;
     }
-  } else if(P.state==='swing'){
-    const leftAttached=!!P.swingWebs.left.anchor;
-    const rightAttached=!!P.swingWebs.right.anchor;
-    const groundPullPose=P.swingGroundPullT>0;
-    const entryPose=P.swingPhase==='entry';
-    const pullBack=Math.sin((1-P.swingGroundPullT/SWING_GROUND_PULL_TIME)*Math.PI)*0.65;
-    // The reference hangs from one shoulder with a bent reaching arm. Values
-    // beyond PI/2 made the imported R15 shoulder wrap behind the torso.
-    armLRot.x = groundPullPose ? -1.28+pullBack*.24 : (leftAttached ? -1.12 : -0.22);
-    armRRot.x = groundPullPose ? -1.28+pullBack*.24 : (rightAttached ? -1.12 : -0.22);
-    armLRot.z = groundPullPose ? -0.58 : (leftAttached ? -1.38 : -0.72);
-    armRRot.z = groundPullPose ? 0.58 : (rightAttached ? 1.38 : 0.72);
-    const swingKick=Math.sin(P.swingAge*5.5);
-    legLRot.x = entryPose ? 0.72 : 0.62+swingKick*0.16;
-    legRRot.x = entryPose ? 0.18 : 0.08-swingKick*0.18;
-    const facingRight=new THREE.Vector3(Math.cos(P.facing),0,-Math.sin(P.facing));
-    const lateralSpeed=P.vel.dot(facingRight);
-    const swingSideLean=THREE.MathUtils.clamp(-lateralSpeed*0.03,-0.52,0.52);
-    legLRot.z = (entryPose ? 0.18 : 0.08)+swingSideLean*0.9;
-    legRRot.z = (entryPose ? -0.18 : -0.08)+swingSideLean*0.9;
-    torsoRot.x = entryPose ? -0.18 : THREE.MathUtils.clamp(-P.vel.y*0.012,-0.28,0.2);
-    torsoRot.z = swingSideLean;
-    if(leftAttached!==rightAttached){
-      torsoRot.y=leftAttached?-0.16:0.16;
-      headRot.y=-torsoRot.y*0.45;
+  }else if(P.state==='zip'){
+    pose.rootPitch=-0.33;pose.rootRoll=-lateral*0.11;
+    pose.torso.x=-0.18;pose.head.x=0.12;
+    pose.leftArm.x=pose.rightArm.x=-1.1;
+    pose.leftArm.z=-0.28;pose.rightArm.z=0.28;
+    pose.leftElbow=pose.rightElbow=0.28;
+    pose.leftLeg.x=0.25;pose.rightLeg.x=-0.05;
+    pose.leftKnee=0.48;pose.rightKnee=0.32;
+  }else if(onWall){
+    const verticalRun=wallRun && Math.abs(P.wallRunDirection.y)>=Math.abs(P.wallRunDirection.x)*0.72;
+    // Wall orientation is handled by a full body quaternion in the movement
+    // state; do not apply a second pitch/roll or the limbs appear inside-out.
+    pose.rootRoll=0;
+    pose.rootPitch=0;
+    pose.rootZ=0;
+    if(wallRun && moving){
+      const stride=verticalRun?0.78:0.68;
+      const cycle=step*(verticalRun?(Math.sign(P.wallRunDirection.y)||1):1);
+      pose.torso.x=-0.16;
+      pose.torso.y=cycle*0.045;
+      pose.head.x=0.1;
+      pose.leftArm.x=cycle*stride*0.65;
+      pose.rightArm.x=-cycle*stride*0.65;
+      pose.leftElbow=pose.rightElbow=0.52;
+      pose.leftLeg.x=-cycle*stride;
+      pose.rightLeg.x=cycle*stride;
+      pose.leftKnee=0.2+Math.max(0,-cycle)*0.58;
+      pose.rightKnee=0.2+Math.max(0,cycle)*0.58;
+    }else if(moving){
+      pose.torso.x=-0.1;
+      pose.leftArm.x=-1.13+step*0.34;
+      pose.rightArm.x=-1.13-step*0.34;
+      pose.leftArm.z=-0.42;pose.rightArm.z=0.42;
+      pose.leftElbow=pose.rightElbow=0.42;
+      pose.leftLeg.x=-0.58-step*0.29;
+      pose.rightLeg.x=-0.58+step*0.29;
+      pose.leftLeg.z=-0.25;pose.rightLeg.z=0.25;
+      pose.leftKnee=0.4+Math.max(0,-step)*0.27;
+      pose.rightKnee=0.4+Math.max(0,step)*0.27;
+    }else{
+      pose.rootY=-0.05+sway*0.01;
+      pose.torso.x=-0.1;
+      pose.leftArm.x=-1.36;pose.rightArm.x=-1.3;
+      pose.leftArm.z=-0.25;pose.rightArm.z=0.25;
+      pose.leftElbow=pose.rightElbow=0.55;
+      pose.leftLeg.x=0.48;pose.rightLeg.x=0.55;
+      pose.leftKnee=pose.rightKnee=0.68;
     }
-  } else if(P.state==='zip'){
-    const zipFlutter=Math.sin(animClock*13)*0.12;
-    armLRot.x = -1.15;
-    armRRot.x = -1.08;
-    armLRot.z=-0.34; armRRot.z=0.34;
-    legLRot.x = 0.48+zipFlutter;
-    legRRot.x = 0.18-zipFlutter;
-    legLRot.z=-0.16; legRRot.z=0.16;
-    torsoRot.x = -0.28;
-    headRot.x=0.12;
-  } else if(P.state==='climb'){
-    const wallRunning=running || P.wallRunAutoT>0;
-    if(wallMoving && wallRunning){
-      // Wall-running uses the exact sprint cycle. The root faces along the
-      // wall and the complete rig is rolled onto it, so it reads as running on
-      // a sideways floor rather than pushing head-first into the facade.
-      applyRunCycle(true);
-      if(Math.abs(P.wallRunDirection.y)>=Math.abs(P.wallRunDirection.x)*0.72){
-        const verticalStep=step*(Math.sign(P.wallRunDirection.y)||1);
-        armLRot.x=verticalStep*0.78;
-        armRRot.x=-verticalStep*0.78;
-        legLRot.x=-verticalStep*1.02;
-        legRRot.x=verticalStep*1.02;
-        torsoRot.x=-0.28;
-        torsoRot.z=verticalStep*0.055;
-        headRot.x=0.11;
-      }
-    } else if(wallMoving){
-      const climb=Math.sin(animClock*(wallRunning?12:7));
-      const reach=wallRunning?0.58:0.38;
-      armLRot.x=-1.28+climb*reach;
-      armRRot.x=-1.28-climb*reach;
-      legLRot.x=-0.72-climb*reach;
-      legRRot.x=-0.72+climb*reach;
-      armLRot.z=-0.58; armRRot.z=0.58;
-      legLRot.z=-0.42; legRRot.z=0.42;
-      torsoRot.x=-0.14;
-    } else {
-      // Upright, relaxed four-point cling. Resetting the rig roll above keeps
-      // this pose from inheriting the last sideways run angle.
-      const clingBreath=Math.sin(animClock*1.6)*0.025;
-      armLRot.x=-1.42+clingBreath; armRRot.x=-1.32-clingBreath;
-      armLRot.z=-0.3; armRRot.z=0.3;
-      legLRot.x=0.64; legRRot.x=0.52;
-      legLRot.z=-0.26; legRRot.z=0.26;
-      torsoRot.x=-0.1;
-      torsoPos.y=-0.06+clingBreath;
-    }
-  } else if(P.state==='downed'){
-    torsoRot.x = 0.38;
-    headRot.x = -0.18;
-    armLRot.x = -0.85;
-    armRRot.x = -0.85;
-    armLRot.z = 0.32;
-    armRRot.z = -0.32;
-    legLRot.x = 1.0;
-    legRRot.x = 1.0;
-    legLRot.z = 0.2;
-    legRRot.z = -0.2;
-    torsoPos.y = -0.25;
+  }else if(P.state==='downed' || P.state==='defeated'){
+    pose.rootY=-0.22;
+    pose.torso.x=0.32;pose.torso.z=P.state==='defeated'?-1.4:0;
+    pose.leftArm.x=pose.rightArm.x=-0.75;
+    pose.leftLeg.x=pose.rightLeg.x=0.9;
+    pose.leftKnee=pose.rightKnee=0.72;
   }
-
+  if(P.wallFlipT>0)pose.rootPitch=-(1-P.wallFlipT/0.65)*Math.PI*2;
   if(P.meleeT>0 && P.state!=='downed' && P.state!=='defeated'){
-    const attackProgress=1-P.meleeT/0.34;
-    const strike=Math.sin(attackProgress*Math.PI);
-    const followThrough=Math.sin(Math.min(1,attackProgress*1.35)*Math.PI);
-    const rightPunch=P.meleeSide>0;
-    if(rightPunch){
-      armRRot.x=-0.82-strike*0.72;
-      armRRot.z=-0.08-strike*0.06;
-      armLRot.x=-0.92;
-      armLRot.z=-0.16;
-      torsoRot.y=-followThrough*0.18;
-    } else {
-      armLRot.x=-0.82-strike*0.72;
-      armLRot.z=0.08+strike*0.06;
-      armRRot.x=-0.92;
-      armRRot.z=0.16;
-      torsoRot.y=followThrough*0.18;
-    }
-    torsoRot.x=-0.12*strike;
+    const hit=Math.sin(clamp(1-P.meleeT/0.34,0,1)*Math.PI);
+    const right=P.meleeSide>0;
+    pose[right?'rightArm':'leftArm'].x=-0.95-hit*0.65;
+    pose[right?'leftArm':'rightArm'].x=-0.72;
+    pose[right?'rightElbow':'leftElbow']=0.95-hit*0.62;
+    pose.torso.y=(right?-1:1)*hit*0.22;
   }
-
   if(P.webshotPoseT>0 && P.state!=='downed' && P.state!=='defeated'){
-    const shot=Math.sin((1-P.webshotPoseT/0.34)*Math.PI);
-    armRRot.x=-1.58-shot*0.5; armRRot.z=-0.12;
-    armLRot.x=-0.5; armLRot.z=-0.42;
-    torsoRot.y=-0.2*shot; headRot.y=0.12*shot;
+    const shot=Math.sin(clamp(1-P.webshotPoseT/0.34,0,1)*Math.PI);
+    pose.rightArm.x=-1.3-shot*0.32;pose.rightElbow=0.14;
+    pose.leftArm.x=-0.42;pose.torso.y=-0.16*shot;
   }
-
   if(P.pullPoseT>0 && P.state!=='downed' && P.state!=='defeated'){
-    const pull=Math.sin((1-P.pullPoseT/0.5)*Math.PI);
-    armLRot.x=-2.25+pull*1.05; armRRot.x=-2.25+pull*1.05;
-    armLRot.z=-0.2; armRRot.z=0.2;
-    torsoRot.x=0.22*pull; torsoPos.z=-0.12*pull;
-    legLRot.x=-0.28*pull; legRRot.x=0.28*pull;
+    const pull=Math.sin(clamp(1-P.pullPoseT/0.5,0,1)*Math.PI);
+    pose.leftArm.x=pose.rightArm.x=-1.48+pull*0.55;
+    pose.leftElbow=pose.rightElbow=0.75;
+    pose.torso.x=0.18*pull;
   }
-
-  if(P.state==='defeated'){
-    torsoRot.z=-1.45;
-    headRot.z=-0.35;
-    armLRot.z=1.25;
-    armRRot.z=-1.25;
-    legLRot.z=0.45;
-    legRRot.z=-0.45;
-    torsoPos.y=-0.22;
-  }
-
   if(P.blocking){
-    // Compact boxing guard: shoulders narrow, elbows bent and hands at face
-    // height instead of both arms opening into a hug.
-    armLRot.x = -0.82; armRRot.x = -0.82;
-    armLRot.z = -0.18; armRRot.z = 0.18;
-    torsoRot.x=-0.15;
+    pose.leftArm.x=pose.rightArm.x=-0.82;
+    pose.leftArm.z=-0.18;pose.rightArm.z=0.18;
+    pose.leftElbow=pose.rightElbow=1.35;
   }
-
-  blendPart(torso, basePose.torso, torsoRot, torsoPos, amt);
-  blendPart(head, basePose.head, headRot, headPos, amt);
-  blendPart(armL, basePose.armL, armLRot, {x:0,y:bob,z:0}, amt);
-  blendPart(armR, basePose.armR, armRRot, {x:0,y:bob,z:0}, amt);
-  blendPart(legL, basePose.legL, legLRot, {x:0,y:bob*0.2,z:0}, amt);
-  blendPart(legR, basePose.legR, legRRot, {x:0,y:bob*0.2,z:0}, amt);
-
-  if(r15Ready){
-    // Drive the authored R15 joints from the same state poses. Elbows and knees
-    // receive secondary bends so the imported model does not move as four rigid rods.
-    applyR15Bone('UpperTorso',{x:-(torsoRot.x||0),y:torsoRot.y||0,z:torsoRot.z||0},amt);
-    applyR15Bone('Head',{x:-(headRot.x||0),y:headRot.y||0,z:headRot.z||0},amt);
-    applyR15VisualBone(r15VisualBone.leftUpperArm,armLRot,amt);
-    applyR15VisualBone(r15VisualBone.rightUpperArm,armRRot,amt);
-    applyR15VisualBone(r15VisualBone.leftUpperLeg,legLRot,amt);
-    applyR15VisualBone(r15VisualBone.rightUpperLeg,legRRot,amt);
-    const groundMoving=P.state==='ground' && speedFlat>0.8;
-    const falling=P.state==='air'&&!P.gliding&&!P.diving&&P.vel.y<=1.5&&P.swingReleaseT<=0;
-    let leftElbow=P.state==='swing'?0.58:P.state==='zip'?0.52:P.diving?0.18:falling?0.62:
-      P.jumpCharging?0.92:P.pullPoseT>0?0.92:P.webshotPoseT>0?0.42:groundMoving?0.54:0.12;
-    let rightElbow=leftElbow;
+  // Smooth the root and each joint toward one complete pose. The web shoulder
+  // is then aimed at the anchor; the strand starts at that animated hand.
+  playerRig.position.z=THREE.MathUtils.lerp(playerRig.position.z,pose.rootZ,blend);
+  playerRig.rotation.x=THREE.MathUtils.lerp(playerRig.rotation.x,pose.rootPitch,blend);
+  const rollDelta=Math.atan2(Math.sin(pose.rootRoll-playerRig.rotation.z),Math.cos(pose.rootRoll-playerRig.rotation.z));
+  playerRig.rotation.z+=rollDelta*blend;
+  const zero={x:0,y:0,z:0};
+  blendPart(torso,basePose.torso,pose.torso,{x:0,y:pose.rootY,z:0},blend);
+  blendPart(head,basePose.head,pose.head,zero,blend);
+  blendPart(armL,basePose.armL,pose.leftArm,zero,blend);
+  blendPart(armR,basePose.armR,pose.rightArm,zero,blend);
+  blendPart(legL,basePose.legL,pose.leftLeg,zero,blend);
+  blendPart(legR,basePose.legR,pose.rightLeg,zero,blend);
+  if(!r15Ready)return;
+  if(tickR15Clips(dt,moveVec,flatSpeed)){
+    // Advanced traversal effects and combat remain procedural overlays so
+    // swinging attaches to the correct hand and combat still responds instantly.
+    const upperBodyOverride=P.meleeT>0||P.webshotPoseT>0||P.pullPoseT>0||P.blocking;
+    if(upperBodyOverride){
+      applyR15Bone('UpperTorso',{x:-pose.torso.x,y:pose.torso.y,z:pose.torso.z},blend);
+      for(const hand of ['left','right']){
+        applyR15VisualBone(r15VisualBone[hand+'UpperArm'],pose[hand+'Arm'],blend);
+        applyR15VisualBone(r15VisualBone[hand+'LowerArm'],{x:-pose[hand+'Elbow'],y:0,z:0},blend);
+      }
+    }
     if(P.state==='swing'){
-      const swingReachElbow=0.08;
-      const swingFreeElbow=0.78;
-      leftElbow=P.swingWebs.left.anchor?swingReachElbow:swingFreeElbow;
-      rightElbow=P.swingWebs.right.anchor?swingReachElbow:swingFreeElbow;
-      if(P.swingGroundPullT>0) leftElbow=rightElbow=0.16;
+      aimR15SwingArm('left',dt);
+      aimR15SwingArm('right',dt);
     }
-    if(P.state==='climb'){
-      const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
-      leftElbow=rightElbow=wallMoving?0.3:0.56;
-    }
-    if(P.meleeT>0){
-      const attackProgress=1-P.meleeT/0.34;
-      const strike=Math.sin(attackProgress*Math.PI);
-      // Keep the striking elbow slightly bent at full extension. Straightening
-      // it completely was what made the old punch resemble a rigid salute.
-      const strikingElbow=THREE.MathUtils.lerp(1.12,0.28,strike);
-      if(P.meleeSide>0){ rightElbow=strikingElbow; leftElbow=1.18; }
-      else { leftElbow=strikingElbow; rightElbow=1.18; }
-    }
-    if(P.blocking) leftElbow=rightElbow=1.42;
-    let kneeL=THREE.MathUtils.clamp(Math.max(0,legLRot.x)*0.7+(P.state==='ground'?Math.max(0,-step)*0.32:0),0,1.05);
-    let kneeR=THREE.MathUtils.clamp(Math.max(0,legRRot.x)*0.7+(P.state==='ground'?Math.max(0,step)*0.32:0),0,1.05);
-    if(P.state==='climb'){
-      const wallMoving=moveVec.lengthSq()>0.04 || P.wallRunAutoT>0;
-      kneeL=kneeR=wallMoving?0.42:0.68;
-    }
-    if(P.jumpCharging){
-      const charge=THREE.MathUtils.clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
-      kneeL=0.62+charge*0.4;
-      kneeR=0.56+charge*0.4;
-    }
-    if(P.diving){ kneeL=0.18; kneeR=0.12; }
-    applyR15VisualBone(r15VisualBone.leftLowerArm,{x:-leftElbow,y:0,z:P.blocking?0.12:0},amt);
-    applyR15VisualBone(r15VisualBone.rightLowerArm,{x:-rightElbow,y:0,z:P.blocking?-0.12:0},amt);
-    applyR15VisualBone(r15VisualBone.leftHand,{x:0,y:0,z:P.state==='swing'?-0.18:0},amt);
-    applyR15VisualBone(r15VisualBone.rightHand,{x:0,y:0,z:P.state==='swing'?0.18:0},amt);
-    applyR15VisualBone(r15VisualBone.leftLowerLeg,{x:kneeL,y:0,z:0},amt);
-    applyR15VisualBone(r15VisualBone.rightLowerLeg,{x:kneeR,y:0,z:0},amt);
-    applyR15VisualBone(r15VisualBone.leftFoot,{x:-kneeL*0.35,y:0,z:0},amt);
-    applyR15VisualBone(r15VisualBone.rightFoot,{x:-kneeR*0.35,y:0,z:0},amt);
+    return;
+  }
+  applyR15Bone('UpperTorso',{x:-pose.torso.x,y:pose.torso.y,z:pose.torso.z},blend);
+  applyR15Bone('Head',{x:-pose.head.x,y:pose.head.y,z:pose.head.z},blend);
+  for(const hand of ['left','right']){
+    if(P.state!=='swing' || !P.swingWebs[hand].anchor)
+      applyR15VisualBone(r15VisualBone[hand+'UpperArm'],pose[hand+'Arm'],blend);
+    applyR15VisualBone(r15VisualBone[hand+'LowerArm'],{x:-pose[hand+'Elbow'],y:0,z:0},blend);
+    applyR15VisualBone(r15VisualBone[hand+'Hand'],{x:0,y:0,z:0},blend);
+    applyR15VisualBone(r15VisualBone[hand+'UpperLeg'],pose[hand+'Leg'],blend);
+    applyR15VisualBone(r15VisualBone[hand+'LowerLeg'],{x:pose[hand+'Knee'],y:0,z:0},blend);
+    applyR15VisualBone(r15VisualBone[hand+'Foot'],{x:-pose[hand+'Knee']*0.33,y:0,z:0},blend);
+  }
+  if(P.state==='swing'){
+    aimR15SwingArm('left',dt);
+    aimR15SwingArm('right',dt);
   }
 }
 
@@ -3402,6 +3812,13 @@ function launchChargedJump(){
   const charge=THREE.MathUtils.clamp(P.jumpChargeT/MAX_JUMP_CHARGE,0,1);
   const jumpingFromWall=P.state==='climb';
   const wallNormal=jumpingFromWall&&P.climbNormal?P.climbNormal.clone():null;
+  if(jumpingFromWall){
+    // A jump leaves the wall independently of its old strand. Clear the
+    // occupied hand before changing state so held Swing can catch again.
+    if(P.wallRunFromSwing) releaseSwing(null,false);
+    P.traversalSwingStarted=false;
+    P.wallRunAutoT=0;
+  }
   P.vel.y=Math.max(P.vel.y,JUMP_SPEED+charge*CHARGED_JUMP_BONUS)*(jumpingFromWall?0.9:1);
   playSfx('jump');
   if(wallNormal){
@@ -3469,8 +3886,25 @@ document.addEventListener('visibilitychange', ()=>{
   if(document.hidden) clearHeldInputs();
 });
 
+// Bound physics steps independently of display refresh. Input edges are consumed
+// by the first step; the expensive rig pose is updated only once per render.
 function updatePlayer(dt){
+  const elapsed=Math.min(Math.max(dt,0),0.05);
+  if(!elapsed || paused) return;
+  const steps=Math.ceil(elapsed/(1/120));
+  const step=elapsed/steps;
+  for(let i=0;i<steps;i++) stepPlayer(step,i===steps-1?elapsed:0);
+}
+
+function stepPlayer(dt,visualDt=dt){
   if(paused) return;
+
+  // The ocean surface has no collision. Crossing the low fence is allowed;
+  // falling far below it uses the normal defeat/respawn flow.
+  if(P.state!=='defeated' && !isOverIsland(P.pos.x,P.pos.z) && P.pos.y<OCEAN_FLOOR-8){
+    damagePlayer(P.maxHp,0,true);
+    return;
+  }
 
   const keyboardLookSpeed=1.85*dt;
   if(keys.ArrowLeft)yaw+=keyboardLookSpeed;
@@ -3549,8 +3983,17 @@ function updatePlayer(dt){
   if(traversalDown&&!lastTraversal){
     P.traversalSearchAttempted=true;
     P.traversalSwingStarted=trySmartSwing();
+    P.swingWebs.left.retry=P.swingWebs.right.retry=0.1;
   }
   if(traversalDown){
+    // A quick re-press during cooldown or just outside anchor range stays queued.
+    // Retry at 10 Hz rather than raycasting the city every simulation step.
+    if(!P.traversalSwingStarted && P.cooldowns.swing<=0 &&
+       P.swingWebs.left.retry<=0 && P.swingWebs.right.retry<=0 &&
+       (P.state==='air' || P.state==='ground')){
+      P.traversalSwingStarted=trySmartSwing();
+      P.swingWebs.left.retry=P.swingWebs.right.retry=0.1;
+    }
     P.traversalHoldT+=dt;
   }
   if(!traversalDown&&lastTraversal){
@@ -3625,9 +4068,18 @@ function updatePlayer(dt){
   } else if(mv.lengthSq()>0.01 && (P.state==='ground'||P.state==='air') && !P.gliding){
     const targetFacing=Math.atan2(mv.x,mv.z);
     const turnDelta=Math.atan2(Math.sin(targetFacing-P.facing),Math.cos(targetFacing-P.facing));
-    P.facing+=turnDelta*(1-Math.exp(-18*dt));
+    P.facing+=turnDelta*(1-Math.exp(-8.5*dt));
   }
-  player.rotation.y=P.facing;
+  // Smooth only the character rotation; yaw and the camera remain input-driven.
+  // In shift-lock, P.facing stays aligned with the aim/camera, but the visible
+  // body can face a diagonal WASD direction. This is an animation choice only.
+  const visualFacing=P.state==='ground' && mv.lengthSq()>0.01
+    ? Math.atan2(mv.x,mv.z) : P.facing;
+  if(P.state!=='climb'){
+    const target=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),visualFacing);
+    // Eases out of wall orientation as well as smoothing diagonal turns.
+    player.quaternion.slerp(target,1-Math.exp(-10*dt));
+  }
 
   // ---------------- STATE MACHINE ----------------
   if(P.state==='defeated'){
@@ -3639,7 +4091,11 @@ function updatePlayer(dt){
   }
   else if(P.state==='swing'){
     progress.swingDistance+=P.vel.length()*dt;
-    if((progress.swingDistance|0)%25===0) updateMissionUI();
+    const missionBucket=Math.floor(progress.swingDistance/25);
+    if(missionBucket!==lastSwingMissionBucket){
+      lastSwingMissionBucket=missionBucket;
+      updateMissionUI();
+    }
     P.swingHistoryT=1;
     P.swingAge+=dt;
     P.swingPhaseT+=dt;
@@ -3668,6 +4124,12 @@ function updatePlayer(dt){
     const forwardTangent=cameraForwardFlat();
     forwardTangent.addScaledVector(radial,-forwardTangent.dot(radial));
 
+    // Take up at most the limited attachment slack at the native build's rate.
+    activeWebs.forEach(web=>{
+      if(web.length>web.targetLength) web.length=Math.max(web.targetLength,web.length-SWING_ATTACH_REEL_RATE*dt);
+    });
+    constraint=swingConstraint(activeWebs);
+
     // One short launch impulse is the only assisted part of a ground start.
     // Once airborne, gravity plus the rope constraint form an ordinary
     // pendulum: no lane spring, automatic pumping, lift or continuous reeling.
@@ -3692,29 +4154,11 @@ function updatePlayer(dt){
       P.swingPeakRise=Math.max(P.swingPeakRise,P.vel.y);
     }
 
-    // Camera and WASD rotate the existing horizontal momentum instead of adding
-    // thrust. This gives deliberate steering without creating free speed.
-    const flatSpeed=Math.hypot(P.vel.x,P.vel.z);
-    if(flatSpeed>0.25){
-      const steerIntent=cameraForwardFlat();
-      if(mv.lengthSq()>0.001) steerIntent.multiplyScalar(0.35).addScaledVector(mv,0.9).normalize();
-      steerIntent.addScaledVector(radial,-steerIntent.dot(radial));
-      const desiredFlat=new THREE.Vector3(steerIntent.x,0,steerIntent.z);
-      if(desiredFlat.lengthSq()>0.001){
-        const powering=!!keys[bindings.forward];
-        const phasePower=P.swingPhase==='descent'?1:0.55;
-        const steeredSpeed=powering
-          ? Math.min(SWING_POWERED_SPEED,flatSpeed+SWING_FORWARD_ACCEL*phasePower*dt)
-          : flatSpeed;
-        desiredFlat.normalize().multiplyScalar(steeredSpeed);
-        const currentFlat=new THREE.Vector3(P.vel.x,0,P.vel.z);
-        const turnRate=mv.lengthSq()>0.001?SWING_INPUT_TURN_RATE:SWING_LOOK_TURN_RATE;
-        currentFlat.lerp(desiredFlat,1-Math.exp(-turnRate*dt));
-        if(currentFlat.lengthSq()>0.001) currentFlat.setLength(steeredSpeed);
-        P.vel.x=currentFlat.x;
-        P.vel.z=currentFlat.z;
-      }
-    }
+    // A slack strand cannot redirect falling momentum. Use ordinary air input
+    // until the next step reaches the rope radius, then steer along the arc.
+    const nextRopeDistance=P.pos.clone().addScaledVector(P.vel,dt).distanceTo(constraint.anchor);
+    if(nextRopeDistance>=constraint.length-0.05) steerSwingVelocity(radial,mv,dt);
+    else if(mv.lengthSq()>0.001) P.vel.addScaledVector(mv,AIR_CONTROL*dt);
 
     // As the bottom of the arc approaches a surface, reel the strand in
     // gradually. The shorter radius pulls the player upward through the rope
@@ -3729,21 +4173,32 @@ function updatePlayer(dt){
       );
       const reelAmount=SWING_GROUND_REEL_RATE*(0.25+reelDanger*0.75)*dt;
       activeWebs.forEach(web=>{
-        web.length=Math.max(SWING_MIN_RANGE,web.length-reelAmount);
+        // Slack carries no tension. Take it up to the predicted position before
+        // applying the bounded safety reel, rather than winding empty rope
+        // while the player slides along the ground under a distant anchor.
+        const distance=predictedSwingPos.distanceTo(web.physicsPivot||web.anchor);
+        web.length=Math.max(SWING_MIN_RANGE,Math.min(web.length,distance)-reelAmount);
         web.targetLength=Math.min(web.targetLength,web.length);
       });
       constraint=swingConstraint(activeWebs);
     }
     const beforeSwingMove = P.pos.clone();
-    const swingImpactVelocity=P.vel.clone();
     P.pos.addScaledVector(P.vel, dt);
     const constrainedWebs=[P.swingWebs.left,P.swingWebs.right].filter(web=>web.anchor);
     enforceSwingConstraint(constrainedWebs);
+    const swingImpactVelocity=P.vel.clone();
     const swingWall=resolveWallCollision(P.pos,beforeSwingMove);
     if(swingWall){
-      // Keep the arc moving past the facade instead of snapping into a wall-run.
-      // The collision resolver has already removed inward speed.
-      P.pos.addScaledVector(swingWall.normal,.08);
+      if(P.wallDetachT<=0 && mv.dot(swingWall.normal)<-0.35){
+        // Deliberately steering into a facade enters wall movement. The old
+        // strand is released so a later jump can queue a fresh visible catch.
+        releaseSwing(null,false);
+        P.traversalSwingStarted=false;
+        beginTraversalWallRun(swingWall.normal,swingWall.building,swingImpactVelocity);
+      } else {
+        // A glancing hit keeps sliding instead of forcing an unwanted wall run.
+        P.pos.addScaledVector(swingWall.normal,.08);
+      }
     }
     // Numerical fallback only. Normal ground avoidance happens by reeling above;
     // this catches a large frame or a terrain edge without restoring the old
@@ -3777,7 +4232,7 @@ function updatePlayer(dt){
         // release, so the player can let go at any point in the arc.
       }
       P.swingLastVy=P.vel.y;
-      if(P.swingTelemetry){
+      if(P.swingTelemetry && visualDt>0){
         P.swingTelemetry.phase=P.swingPhase;
         const samples=P.swingTelemetry.samples;
         samples.push({t:P.swingAge,phase:P.swingPhase,y:P.pos.y,vy:P.vel.y,
@@ -3842,11 +4297,9 @@ function updatePlayer(dt){
       : manualClimbMove;
     if(climbMove.lengthSq()>1) climbMove.normalize();
     if(climbMove.lengthSq()>0.01){
-      // Side runs roll the whole ordinary sprint cycle onto the wall. Vertical
-      // movement stays upright instead of flipping upside-down when descending.
-      P.climbVisualAngle=Math.abs(climbMove.x)>Math.abs(climbMove.y)*0.72
-        ? -Math.sign(climbMove.x)*Math.PI/2
-        : 0;
+      // Continuous tangent angle: vertical, horizontal, and all diagonals
+      // share one smoothly interpolated wall-facing animation.
+      P.climbVisualAngle=-Math.atan2(climbMove.x,Math.abs(climbMove.y));
       P.wallRunDirection.set(climbMove.x,climbMove.y).normalize();
     }
     const wallRunning=running || autoWallRunning;
@@ -3855,9 +4308,10 @@ function updatePlayer(dt){
     const right = new THREE.Vector3().crossVectors(P.climbNormal, new THREE.Vector3(0,1,0)).normalize();
     const wallTravel=right.clone().multiplyScalar(climbMove.x);
     wallTravel.y=climbMove.y;
-    P.pos.addScaledVector(right,climbMove.x*wallSpeed*dt);
-    P.pos.y+=climbMove.y*wallSpeed*dt;
-    P.vel.set(0,0,0);
+    // Keep velocity consistent with wall travel so jumps, releases and the
+    // animation cycle inherit the motion the player actually sees.
+    P.vel.copy(wallTravel).multiplyScalar(wallSpeed);
+    P.pos.addScaledVector(P.vel,dt);
 
     const b=P.climbBuilding;
     const n=P.climbNormal;
@@ -3872,7 +4326,7 @@ function updatePlayer(dt){
     P.facing=sidewaysWallRun && wallTravel.lengthSq()>0.01
       ? Math.atan2(wallTravel.x,wallTravel.z)
       : Math.atan2(-n.x,-n.z);
-    player.rotation.y=P.facing;
+    orientPlayerToWall(n,wallTravel,dt);
 
     // The collision normal points away from the wall, so sample and step in the
     // opposite direction to mantle onto the actual rooftop.
@@ -4027,12 +4481,22 @@ function updatePlayer(dt){
     }
   }
 
-  // Water is scenery only. The rounded shoreline silently blocks outward motion.
-  constrainToIsland(P.pos,P.vel);
   if(P.state!=='downed') P.downedT = 0;
 
-  animatePlayer(dt, mv);
-  updateWebWings();
+  if(visualDt>0){
+    animatePlayer(visualDt, mv);
+    updateWebWings();
+    if(P.state==='swing' && P.activeSwingHand){
+      const hand=P.activeSwingHand,web=P.swingWebs[hand];
+      const origin=visibleWebHandWorld(hand,hand==='left'?handL:handR);
+      if(swingWebObstructed(origin,web.anchor)){
+        // Break an obstructed strand without redirecting momentum. A held
+        // traversal input queues the next visible catch through the normal retry.
+        releaseSwing(null,false);
+        P.traversalSwingStarted=false;
+      }
+    }
+  }
 
   // health regen (slow) when not in combat
   if(P.hp>0 && P.state!=='defeated' && !playerInCombat()) P.hp = Math.min(P.maxHp, P.hp + dt*0.6);
@@ -4105,6 +4569,33 @@ function pushPointOutOfBuildingVolume(point, clearance=0.45){
   return point;
 }
 
+const speedLineOverlay=document.getElementById('speedLines');
+let speedLineVisualIntensity=0;
+
+function speedLineIntensityForSpeed(speed){
+  if(!Number.isFinite(speed)||speed<=48)return 0;
+  const handoff=THREE.MathUtils.smoothstep(speed,48,58)*0.5;
+  const overdrive=THREE.MathUtils.clamp((speed-58)/42,0,1)*0.5;
+  return THREE.MathUtils.clamp(handoff+overdrive,0,1);
+}
+
+function updateSpeedLines(dt=1/60){
+  if(!speedLineOverlay)return;
+  const active=gameActive&&!paused;
+  if(!active){
+    speedLineVisualIntensity=0;
+  }else{
+    const safeDt=THREE.MathUtils.clamp(Number.isFinite(dt)?dt:1/60,0,0.1);
+    const target=speedLineIntensityForSpeed(P.vel.length());
+    speedLineVisualIntensity=THREE.MathUtils.lerp(speedLineVisualIntensity,target,1-Math.exp(-9*safeDt));
+  }
+  const intensity=THREE.MathUtils.clamp(speedLineVisualIntensity,0,1);
+  const burst=THREE.MathUtils.smoothstep(intensity,0.72,1);
+  speedLineOverlay.style.setProperty('--speed-line-base-opacity',(intensity*0.82).toFixed(3));
+  speedLineOverlay.style.setProperty('--speed-line-burst-opacity',(burst*0.92).toFixed(3));
+  speedLineOverlay.style.setProperty('--speed-line-scale',(1+intensity*0.06).toFixed(3));
+}
+
 function updateCamera(dt=1/60){
   const firstPerson = cameraDistance <= 0.6;
   player.visible = !firstPerson;
@@ -4123,15 +4614,21 @@ function updateCamera(dt=1/60){
     Math.cos(yaw) * Math.cos(pitch)
   ).normalize();
   const focus = new THREE.Vector3(P.pos.x, P.pos.y + 1.45, P.pos.z);
+  cameraLeadTarget.set(0,0,0);
   if(!firstPerson && traversalSpeed>12){
-    const lead=new THREE.Vector3(P.vel.x,0,P.vel.z);
-    if(lead.lengthSq()>0.001) focus.addScaledVector(lead.normalize(),Math.min(1.8,(traversalSpeed-12)*0.035));
+    cameraLeadTarget.set(P.vel.x,0,P.vel.z);
+    if(cameraLeadTarget.lengthSq()>0.001)
+      cameraLeadTarget.normalize().multiplyScalar(Math.min(1.8,(traversalSpeed-12)*0.035));
   }
+  // Blend only the automatic lookahead. Mouse orbit remains immediate, while
+  // a catch or wall transition cannot whip the framing to a new velocity axis.
+  cameraLead.lerp(cameraLeadTarget,1-Math.exp(-9*dt));
+  if(!firstPerson) focus.add(cameraLead);
 
   if(firstPerson){
     cameraCollisionDistance=null;
     const eye = new THREE.Vector3(P.pos.x, P.pos.y + 1.62, P.pos.z);
-    camera.position.lerp(eye, 0.35);
+    camera.position.lerp(eye, 1-Math.exp(-26*dt));
     camera.lookAt(eye.clone().addScaledVector(lookDir, 12));
     return;
   }
@@ -4159,6 +4656,11 @@ function updateCamera(dt=1/60){
     );
     desired=P.pos.clone().add(camOffset);
   }
+  // Preserve mouse camera direction but give the third-person view some room
+  // outside the wall so its texture doesn't fill the entire screen.
+  if(P.state==='climb' && P.climbNormal && dist>1.5){
+    desired.addScaledVector(P.climbNormal,Math.min(3.2,dist*.42));
+  }
   const fromFocus = desired.clone().sub(focus);
   const desiredDist = fromFocus.length();
   const cameraRay = fromFocus.clone().normalize();
@@ -4180,9 +4682,11 @@ function updateCamera(dt=1/60){
   }
 
   if(cameraCollisionDistance===null) cameraCollisionDistance=clearDistance;
-  const response=clearDistance<cameraCollisionDistance ? 30 : 7;
-  const blend=1-Math.exp(-response*dt);
-  cameraCollisionDistance=THREE.MathUtils.lerp(cameraCollisionDistance,clearDistance,blend);
+  // An obstruction is a hard limit, not a smoothing target. Easing inward
+  // leaves the camera inside a facade for several frames during fast turns.
+  // Only the return to the requested distance is eased.
+  cameraCollisionDistance=Math.min(clearDistance,
+    THREE.MathUtils.lerp(cameraCollisionDistance,clearDistance,1-Math.exp(-7*dt)));
   camera.position.copy(focus).addScaledVector(cameraRay,cameraCollisionDistance);
   camera.lookAt(shiftLocked?camera.position.clone().addScaledVector(lookDir,30):focus);
 }
@@ -4199,65 +4703,383 @@ function updateZoomInput(dt){
 // ---------------------------------------------------------------------------------------
 const mmCanvas = document.getElementById('minimap');
 const mmCtx = mmCanvas.getContext('2d');
+let fullMapOpen=false;
+let fullMapWasPaused=false;
+let fullMapHadShiftLock=false;
+const fullMapOverlay=document.getElementById('fullMapOverlay');
+const fullMapPanel=document.getElementById('fullMapPanel');
+const fullMapCanvas=document.getElementById('fullMapCanvas');
+let fullMapAnimation=null;
+let fullMapBackdropAnimation=null;
+let fullMapFinishTimer=null;
+let fullMapMotionId=0;
+// An independent map canvas: the minimap's zoom, pixels and viewport are never
+// reused. The minimap is only the visual origin for the opening transition.
+function animateFullMapPanel(opening){
+  const sequence=++fullMapMotionId;
+  if(fullMapAnimation){
+    fullMapAnimation.cancel();
+    fullMapAnimation=null;
+  }
+  if(fullMapBackdropAnimation){
+    fullMapBackdropAnimation.cancel();
+    fullMapBackdropAnimation=null;
+  }
+  if(fullMapFinishTimer!==null){
+    clearTimeout(fullMapFinishTimer);
+    fullMapFinishTimer=null;
+  }
+  const mini=document.getElementById('minimapWrap').getBoundingClientRect();
+  const expanded=fullMapPanel.getBoundingClientRect();
+  const miniCX=mini.left+mini.width/2;
+  const miniCY=mini.top+mini.height/2;
+  const expandedCX=expanded.left+expanded.width/2;
+  const expandedCY=expanded.top+expanded.height/2;
+  const sx=Math.max(.05,mini.width/expanded.width);
+  const sy=Math.max(.05,mini.height/expanded.height);
+  const collapsed='translate('+(miniCX-expandedCX)+'px,'+
+    (miniCY-expandedCY)+'px) scale('+sx+','+sy+')';
+  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const duration=reduced?0:340;
+  const frames=opening
+    ?[{transform:collapsed,opacity:.65},{transform:'none',opacity:1}]
+    :[{transform:'none',opacity:1},{transform:collapsed,opacity:.65}];
+  if(!duration || typeof fullMapPanel.animate!=='function'){
+    if(!opening){fullMapOverlay.hidden=true;}
+    return;
+  }
+  fullMapAnimation=fullMapPanel.animate(frames,{
+    duration,easing:'cubic-bezier(.22,.85,.27,1)',fill:'both'
+  });
+  const backdrop=opening
+    ?[{backgroundColor:'rgba(8,15,30,0)'},{backgroundColor:'rgba(8,15,30,.9)'}]
+    :[{backgroundColor:'rgba(8,15,30,.9)'},{backgroundColor:'rgba(8,15,30,0)'}];
+  fullMapBackdropAnimation=fullMapOverlay.animate(backdrop,{
+    duration,easing:'ease-out',fill:'both'
+  });
+  const finish=()=>{
+    if(sequence!==fullMapMotionId)return;
+    if(fullMapFinishTimer!==null)clearTimeout(fullMapFinishTimer);
+    fullMapFinishTimer=null;
+    if(fullMapAnimation){fullMapAnimation.cancel();fullMapAnimation=null;}
+    if(fullMapBackdropAnimation){fullMapBackdropAnimation.cancel();fullMapBackdropAnimation=null;}
+    if(!opening)fullMapOverlay.hidden=true;
+  };
+  fullMapAnimation.onfinish=finish;
+  // WebKit can delay animation-finish callbacks when the GPU is saturated.
+  // A timed fallback ensures the full-map overlay never blocks the game.
+  fullMapFinishTimer=setTimeout(finish,duration+180);
+}
+
+const fullMapContext=fullMapCanvas.getContext('2d');
+const fullMapView={
+  zoom:1,baseScale:1,scale:1,
+  centerX:0,centerZ:0,
+  width:800,height:600,
+  dragging:false,pointerX:0,pointerY:0
+};
+function resizeFullMap(){
+  if(!fullMapOpen)return;
+  const rect=fullMapCanvas.getBoundingClientRect();
+  const ratio=Math.min(1.5,window.devicePixelRatio||1);
+  fullMapView.width=Math.max(1,rect.width);
+  fullMapView.height=Math.max(1,rect.height);
+  fullMapCanvas.width=Math.round(fullMapView.width*ratio);
+  fullMapCanvas.height=Math.round(fullMapView.height*ratio);
+  fullMapContext.setTransform(ratio,0,0,ratio,0,0);
+  fullMapView.baseScale=Math.min(
+    (fullMapView.width-36)/(ISLAND_RADIUS_Z*2),
+    (fullMapView.height-36)/(ISLAND_RADIUS_X*2)
+  );
+  fullMapView.scale=fullMapView.baseScale*fullMapView.zoom;
+  clampFullMapCenter();
+  drawFullMap();
+}
+function clampFullMapCenter(){
+  const map=fullMapView;
+  const limitX=Math.max(0,ISLAND_RADIUS_X-(map.height/2-18)/map.scale);
+  const limitZ=Math.max(0,ISLAND_RADIUS_Z-(map.width/2-18)/map.scale);
+  map.centerX=THREE.MathUtils.clamp(map.centerX,-limitX,limitX);
+  map.centerZ=THREE.MathUtils.clamp(map.centerZ,-limitZ,limitZ);
+  if(map.zoom<=1.00001){
+    map.centerX=0;map.centerZ=0;
+  }
+}
+function fullMapToScreen(x,z){
+  const m=fullMapView;
+  return [m.width/2+(z-m.centerZ)*m.scale,
+          m.height/2+(x-m.centerX)*m.scale];
+}
+const fullMapMarkers=[];
+function drawFullMap(){
+  if(!fullMapOpen)return;
+  const m=fullMapView,ctx=fullMapContext,w=m.width,h=m.height;
+  fullMapMarkers.length=0;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#10253c';ctx.fillRect(0,0,w,h);
+  ctx.save();ctx.beginPath();ctx.rect(0,0,w,h);ctx.clip();
+  const minX=m.centerX-h/(2*m.scale),maxX=m.centerX+h/(2*m.scale);
+  const minZ=m.centerZ-w/(2*m.scale),maxZ=m.centerZ+w/(2*m.scale);
+  ctx.beginPath();
+  for(let i=0;i<=160;i++){
+    const t=i/160*Math.PI*2,c=Math.cos(t),v=Math.sin(t),power=1/3;
+    const [px,py]=fullMapToScreen(
+      ISLAND_RADIUS_X*Math.sign(c)*Math.pow(Math.abs(c),power),
+      ISLAND_RADIUS_Z*Math.sign(v)*Math.pow(Math.abs(v),power));
+    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  }
+  ctx.closePath();ctx.fillStyle='#263a49';ctx.fill();
+  ctx.strokeStyle='#9fb2c3';ctx.lineWidth=2;ctx.stroke();
+  ctx.clip();
+  ctx.strokeStyle='#697887';
+  const firstX=Math.max(0,Math.floor((minX+HALF_CITY_X)/TILE_X));
+  const lastX=Math.min(BLOCKS_X,Math.ceil((maxX+HALF_CITY_X)/TILE_X));
+  ctx.lineWidth=Math.max(1.3,STREET_X*m.scale*.55);
+  for(let ix=firstX;ix<=lastX;ix++){
+    const [,py]=fullMapToScreen(-HALF_CITY_X+ix*TILE_X,0);
+    ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(w,py);ctx.stroke();
+  }
+  const firstZ=Math.max(0,Math.floor((minZ+HALF_CITY_Z)/TILE_Z));
+  const lastZ=Math.min(BLOCKS_Z,Math.ceil((maxZ+HALF_CITY_Z)/TILE_Z));
+  ctx.lineWidth=Math.max(1.3,STREET_Z*m.scale*.55);
+  for(let iz=firstZ;iz<=lastZ;iz++){
+    const [px]=fullMapToScreen(0,-HALF_CITY_Z+iz*TILE_Z);
+    ctx.beginPath();ctx.moveTo(px,0);ctx.lineTo(px,h);ctx.stroke();
+  }
+  for(const park of parkAreas){
+    const [x1,y1]=fullMapToScreen(park.minX,park.minZ);
+    const [x2,y2]=fullMapToScreen(park.maxX,park.maxZ);
+    ctx.fillStyle='#548d59';ctx.fillRect(x1,y1,x2-x1,y2-y1);
+  }
+  for(const b of buildingMeshes){
+    if(b.worldOnly||b.maxX<minX||b.minX>maxX||b.maxZ<minZ||b.minZ>maxZ)continue;
+    const [x1,y1]=fullMapToScreen(b.minX,b.minZ);
+    const [x2,y2]=fullMapToScreen(b.maxX,b.maxZ);
+    const shade=Math.round(64+Math.min(88,b.h*.26));
+    ctx.fillStyle='rgb('+shade+','+(shade+8)+','+(shade+18)+')';
+    ctx.fillRect(x1,y1,x2-x1,y2-y1);
+  }
+  function marker(x,z,color,label,radius=4,ring=false){
+    const [px,py]=fullMapToScreen(x,z);
+    if(px<-14||px>w+14||py<-14||py>h+14)return;
+    ctx.beginPath();ctx.arc(px,py,radius,0,Math.PI*2);
+    ctx.lineWidth=2;ctx.strokeStyle=ring?color:'#122132';
+    if(ring)ctx.stroke();else{ctx.fillStyle=color;ctx.fill();ctx.stroke();}
+    fullMapMarkers.push({px,py,label,x,z});
+  }
+  for(let i=0;i<spawnPoints.length;i++){
+    const p=spawnPoints[i];marker(p.x,p.z,'#04d4ec','Bandit patrol spawn '+(i+1),3);
+  }
+  for(const [i,g] of groups.entries()){
+    if(g.defeatedAt!==null)continue;
+    const p=spawnPoints[g.spawnIdx];if(!p)continue;
+    const alive=g.members.filter(e=>e.alive).length;
+    marker(p.x,p.z,'#ffcb39','Active gang '+(i+1)+' · '+alive+' members',7,true);
+  }
+  for(const [i,p] of dockPiers.entries()){
+    marker(p.position.x,p.position.z,'#dbb38a','Dock pier '+(i+1),4);
+  }
+  if(parkAreas[0]){
+    const p=parkAreas[0];
+    marker((p.minX+p.maxX)/2,(p.minZ+p.maxZ)/2,'#88f2a3','Central Park',5);
+  }
+  marker(P.pos.x,P.pos.z,'#ee3243','You are here',4);
+  const [px,py]=fullMapToScreen(P.pos.x,P.pos.z);
+  ctx.translate(px,py);ctx.rotate(Math.PI/2+yaw);
+  ctx.beginPath();ctx.moveTo(0,-11);ctx.lineTo(7,9);ctx.lineTo(-7,9);ctx.closePath();
+  ctx.fillStyle='#ef303e';ctx.strokeStyle='#141923';ctx.lineWidth=2;ctx.fill();ctx.stroke();
+  ctx.restore();
+}
+function fullMapSelectPoint(px,py){
+  const info=document.getElementById('fullMapInfo');
+  let nearest=null,best=18;
+  for(let i=fullMapMarkers.length-1;i>=0;i--){
+    const p=fullMapMarkers[i],distance=Math.hypot(px-p.px,py-p.py);
+    if(distance<best){best=distance;nearest=p;}
+  }
+  if(nearest){info.textContent=nearest.label;return info.textContent;}
+  const x=fullMapView.centerX+(py-fullMapView.height/2)/fullMapView.scale;
+  const z=fullMapView.centerZ+(px-fullMapView.width/2)/fullMapView.scale;
+  if(!isOverIsland(x,z)){info.textContent='Waterfront · surrounding river';return info.textContent;}
+  const ix=Math.floor((x+HALF_CITY_X)/TILE_X),iz=Math.floor((z+HALF_CITY_Z)/TILE_Z);
+  const names={skyscrapers:'Skyscraper district',centralPark:'Central Park',
+    lowerClass:'Residential neighborhood',docks:'Industrial docks'};
+  const b=nearbyBuildings(new THREE.Vector3(x,0,z),4)
+    .find(t=>x>=t.minX&&x<=t.maxX&&z>=t.minZ&&z<=t.maxZ);
+  info.textContent=(names[districtForBlock(ix,iz)]||'City street')+
+    (b?' · '+Math.round(b.h)+'-unit building':'');
+  return info.textContent;
+}
+
+function setFullMapOpen(on){
+  if(!gameActive)return;
+  if(fullMapOpen===on)return;
+  fullMapOpen=!!on;
+  fullMapOverlay.setAttribute('aria-hidden',fullMapOpen?'false':'true');
+  if(fullMapOpen){
+    fullMapOverlay.hidden=false;
+    fullMapWasPaused=paused;
+    fullMapHadShiftLock=shiftLocked;
+    paused=true;
+    clearHeldInputs();
+    releaseMouseLock();
+    fullMapView.zoom=1;
+    fullMapView.centerX=0;fullMapView.centerZ=0;
+    resizeFullMap();
+    animateFullMapPanel(true);
+  }else{
+    fullMapView.dragging=false;
+    animateFullMapPanel(false);
+    paused=fullMapWasPaused;
+    if(!paused && fullMapHadShiftLock)requestMouseLock();
+  }
+}
+function zoomFullMap(factor,localX,localY){
+  const m=fullMapView;
+  const oldScale=m.scale;
+  const previousX=m.centerX+(localY-m.height/2)/oldScale;
+  const previousZ=m.centerZ+(localX-m.width/2)/oldScale;
+  m.zoom=THREE.MathUtils.clamp(m.zoom*factor,1,14);
+  m.scale=m.baseScale*m.zoom;
+  m.centerX=previousX-(localY-m.height/2)/m.scale;
+  m.centerZ=previousZ-(localX-m.width/2)/m.scale;
+  clampFullMapCenter();drawFullMap();
+}
+fullMapCanvas.addEventListener('wheel',e=>{
+  e.preventDefault();e.stopPropagation();
+  const bounds=fullMapCanvas.getBoundingClientRect();
+  zoomFullMap(Math.exp(-e.deltaY*.00135),e.clientX-bounds.left,e.clientY-bounds.top);
+},{passive:false});
+fullMapCanvas.addEventListener('pointerdown',e=>{
+  if(e.button!==0)return;
+  e.preventDefault();e.stopPropagation();
+  fullMapView.dragging=true;
+  fullMapView.pointerX=e.clientX;
+  fullMapView.pointerY=e.clientY;
+  fullMapView.downX=e.clientX;
+  fullMapView.downY=e.clientY;
+  fullMapView.moved=false;
+  fullMapCanvas.setPointerCapture(e.pointerId);
+});
+fullMapCanvas.addEventListener('pointermove',e=>{
+  if(!fullMapView.dragging)return;
+  const m=fullMapView;
+  if(Math.hypot(e.clientX-m.downX,e.clientY-m.downY)>6)m.moved=true;
+  m.centerX-=(e.clientY-m.pointerY)/m.scale;
+  m.centerZ-=(e.clientX-m.pointerX)/m.scale;
+  m.pointerX=e.clientX;m.pointerY=e.clientY;
+  clampFullMapCenter();drawFullMap();
+});
+fullMapCanvas.addEventListener('pointerup',e=>{
+  if(fullMapView.dragging&&!fullMapView.moved){
+    const rect=fullMapCanvas.getBoundingClientRect();
+    fullMapSelectPoint(e.clientX-rect.left,e.clientY-rect.top);
+  }
+  fullMapView.dragging=false;
+  if(fullMapCanvas.hasPointerCapture(e.pointerId))
+    fullMapCanvas.releasePointerCapture(e.pointerId);
+});
+fullMapCanvas.addEventListener('pointercancel',()=>{fullMapView.dragging=false;});
+document.getElementById('fullMapClose').addEventListener('click',()=>{
+  setFullMapOpen(false);
+});
+document.getElementById('fullMapCenter').addEventListener('click',()=>{
+  fullMapView.centerX=P.pos.x;fullMapView.centerZ=P.pos.z;
+  if(fullMapView.zoom<=1)fullMapView.zoom=Math.min(4,14);
+  fullMapView.scale=fullMapView.baseScale*fullMapView.zoom;
+  clampFullMapCenter();drawFullMap();
+});
+window.addEventListener('resize',()=>{if(fullMapOpen)resizeFullMap();});
+
+// Player-centred 8-by-8 block window. The island can grow without shrinking
+// the minimap to an unreadable full-city thumbnail.
 function drawMinimap(){
-  const S=190, scale=Math.min((S-18)/(ISLAND_RADIUS_X*2),(S-18)/(ISLAND_RADIUS_Z*2));
+  const S=190;
+  const viewBlocks=8;
+  const scaleX=S/(viewBlocks*TILE_X);
+  const scaleZ=S/(viewBlocks*TILE_Z);
+  const centerX=P.pos.x, centerZ=P.pos.z;
+  const rangeX=S/(2*scaleX),rangeZ=S/(2*scaleZ);
+  const toMM=(x,z)=>[S/2+(x-centerX)*scaleX,S/2+(z-centerZ)*scaleZ];
   mmCtx.clearRect(0,0,S,S);
-  mmCtx.fillStyle='#12233a'; mmCtx.fillRect(0,0,S,S);
-  function toMM(x,z){ return [S/2 + x*scale, S/2 + z*scale]; }
-  // Street network and Broadway-like diagonal make the map navigable rather
-  // than a collection of anonymous rectangles.
-  mmCtx.strokeStyle='#758091';mmCtx.lineWidth=Math.max(1,STREET_Z*scale*.55);
-  for(let ix=0;ix<=BLOCKS_X;ix++){
-    const x=-HALF_CITY_X+ix*TILE_X;
-    const [mx1,mz1]=toMM(x,-HALF_CITY_Z);const [mx2,mz2]=toMM(x,HALF_CITY_Z);
-    mmCtx.beginPath();mmCtx.moveTo(mx1,mz1);mmCtx.lineTo(mx2,mz2);mmCtx.stroke();
-  }
-  mmCtx.lineWidth=Math.max(1,STREET_X*scale*.42);
-  for(let iz=0;iz<=BLOCKS_Z;iz++){
-    const z=-HALF_CITY_Z+iz*TILE_Z;
-    const [mx1,mz1]=toMM(-HALF_CITY_X,z);const [mx2,mz2]=toMM(HALF_CITY_X,z);
-    mmCtx.beginPath();mmCtx.moveTo(mx1,mz1);mmCtx.lineTo(mx2,mz2);mmCtx.stroke();
-  }
-  mmCtx.strokeStyle='#949dad';mmCtx.lineWidth=Math.max(2,30*scale*.7);
-  const avenueLength=Math.hypot(HALF_CITY_X,HALF_CITY_Z)*1.2;
-  const ax=Math.sin(-0.57)*avenueLength,az=Math.cos(-0.57)*avenueLength;
-  const [a1x,a1z]=toMM(-ax,-az),[a2x,a2z]=toMM(ax,az);
-  mmCtx.beginPath();mmCtx.moveTo(a1x,a1z);mmCtx.lineTo(a2x,a2z);mmCtx.stroke();
-  parkAreas.forEach(p=>{
-    const [x1,y1]=toMM(p.minX,p.minZ),[x2,y2]=toMM(p.maxX,p.maxZ);
-    mmCtx.fillStyle='#4d8b53';mmCtx.fillRect(x1,y1,x2-x1,y2-y1);
-  });
-  buildingMeshes.forEach(b=>{
-    const [x1,y1]=toMM(b.minX,b.minZ); const [x2,y2]=toMM(b.maxX,b.maxZ);
-    const shade=Math.round(58+Math.min(90,b.h*.28));
-    mmCtx.fillStyle=`rgb(${shade},${shade+7},${shade+18})`;
-    mmCtx.fillRect(x1,y1,x2-x1,y2-y1);
-  });
-  groups.forEach(g=>{
-    if(g.defeatedAt!==null)return;
-    const home=spawnPoints[g.spawnIdx];if(!home)return;
-    const [x,y]=toMM(home.x,home.z);
-    mmCtx.strokeStyle='#ffcf33';mmCtx.lineWidth=1.5;
-    mmCtx.beginPath();mmCtx.arc(x,y,6,0,Math.PI*2);mmCtx.stroke();
-  });
-  // spawn points (waypoints)
-  spawnPoints.forEach(sp=>{
-    const [x,y]=toMM(sp.x,sp.z);
-    mmCtx.fillStyle='#00e5ff'; mmCtx.beginPath(); mmCtx.arc(x,y,3,0,7); mmCtx.fill();
-  });
-  // enemies
-  enemies.forEach(e=>{
-    if(!e.alive) return;
-    const [x,y]=toMM(e.mesh.position.x,e.mesh.position.z);
-    mmCtx.fillStyle = e.state==='idle'?'#888': e.state==='alert'?'#ffcc00': e.stunT>0?'#3355ff':'#ff3030';
-    mmCtx.beginPath(); mmCtx.arc(x,y,2.6,0,7); mmCtx.fill();
-  });
-  // player
-  const [px,py]=toMM(P.pos.x,P.pos.z);
+  mmCtx.fillStyle='#102740';mmCtx.fillRect(0,0,S,S);
   mmCtx.save();
-  mmCtx.translate(px,py); mmCtx.rotate(yaw);
-  mmCtx.fillStyle='#e8232a';
-  mmCtx.beginPath(); mmCtx.moveTo(0,-6); mmCtx.lineTo(4,5); mmCtx.lineTo(-4,5); mmCtx.closePath(); mmCtx.fill();
+  mmCtx.beginPath();mmCtx.rect(0,0,S,S);mmCtx.clip();
+
+  // Coastline appears only when the player is near the waterfront.
+  mmCtx.beginPath();
+  for(let i=0;i<=128;i++){
+    const t=i/128*Math.PI*2,c=Math.cos(t),v=Math.sin(t),power=2/6;
+    const x=ISLAND_RADIUS_X*Math.sign(c)*Math.pow(Math.abs(c),power);
+    const z=ISLAND_RADIUS_Z*Math.sign(v)*Math.pow(Math.abs(v),power);
+    const [mx,mz]=toMM(x,z);
+    if(i===0)mmCtx.moveTo(mx,mz);else mmCtx.lineTo(mx,mz);
+  }
+  mmCtx.closePath();mmCtx.fillStyle='#293d51';mmCtx.fill();
+  mmCtx.strokeStyle='#8c9caa';mmCtx.lineWidth=1;mmCtx.stroke();
+
+  // Draw only streets intersecting the 8x8-block viewport.
+  mmCtx.strokeStyle='#758391';
+  mmCtx.lineWidth=Math.max(3,STREET_X*scaleX*.52);
+  const firstX=Math.max(0,Math.floor((centerX-rangeX+HALF_CITY_X)/TILE_X));
+  const lastX=Math.min(BLOCKS_X,Math.ceil((centerX+rangeX+HALF_CITY_X)/TILE_X));
+  for(let ix=firstX;ix<=lastX;ix++){
+    const x=-HALF_CITY_X+ix*TILE_X;
+    const [px]=toMM(x,centerZ);
+    mmCtx.beginPath();mmCtx.moveTo(px,0);mmCtx.lineTo(px,S);mmCtx.stroke();
+  }
+  mmCtx.lineWidth=Math.max(3,STREET_Z*scaleZ*.52);
+  const firstZ=Math.max(0,Math.floor((centerZ-rangeZ+HALF_CITY_Z)/TILE_Z));
+  const lastZ=Math.min(BLOCKS_Z,Math.ceil((centerZ+rangeZ+HALF_CITY_Z)/TILE_Z));
+  for(let iz=firstZ;iz<=lastZ;iz++){
+    const z=-HALF_CITY_Z+iz*TILE_Z;
+    const [,pz]=toMM(centerX,z);
+    mmCtx.beginPath();mmCtx.moveTo(0,pz);mmCtx.lineTo(S,pz);mmCtx.stroke();
+  }
+  parkAreas.forEach(park=>{
+    if(park.maxX<centerX-rangeX||park.minX>centerX+rangeX ||
+       park.maxZ<centerZ-rangeZ||park.minZ>centerZ+rangeZ)return;
+    const [x1,z1]=toMM(park.minX,park.minZ);
+    const [x2,z2]=toMM(park.maxX,park.maxZ);
+    mmCtx.fillStyle='#538d57';mmCtx.fillRect(x1,z1,x2-x1,z2-z1);
+  });
+  nearbyBuildings(P.pos,Math.max(rangeX,rangeZ)+100).forEach(building=>{
+    if(building.worldOnly || building.maxX<centerX-rangeX ||
+       building.minX>centerX+rangeX || building.maxZ<centerZ-rangeZ ||
+       building.minZ>centerZ+rangeZ)return;
+    const [x1,z1]=toMM(building.minX,building.minZ);
+    const [x2,z2]=toMM(building.maxX,building.maxZ);
+    const shade=Math.round(58+Math.min(90,building.h*.28));
+    mmCtx.fillStyle='rgb('+shade+','+(shade+7)+','+(shade+18)+')';
+    mmCtx.fillRect(x1,z1,x2-x1,z2-z1);
+  });
+  groups.forEach(group=>{
+    if(group.defeatedAt!==null)return;
+    const home=spawnPoints[group.spawnIdx];if(!home)return;
+    const [x,z]=toMM(home.x,home.z);
+    if(x<0||x>S||z<0||z>S)return;
+    mmCtx.strokeStyle='#ffcf33';mmCtx.lineWidth=1.5;
+    mmCtx.beginPath();mmCtx.arc(x,z,5,0,2*Math.PI);mmCtx.stroke();
+  });
+  spawnPoints.forEach(point=>{
+    const [x,z]=toMM(point.x,point.z);
+    if(x<0||x>S||z<0||z>S)return;
+    mmCtx.fillStyle='#00e5ff';mmCtx.beginPath();mmCtx.arc(x,z,2.7,0,2*Math.PI);mmCtx.fill();
+  });
+  enemies.forEach(enemy=>{
+    if(!enemy.alive)return;
+    const [x,z]=toMM(enemy.mesh.position.x,enemy.mesh.position.z);
+    if(x<0||x>S||z<0||z>S)return;
+    mmCtx.fillStyle=enemy.state==='idle'?'#888':enemy.state==='alert'?'#ffcc00':
+      enemy.stunT>0?'#3355ff':'#ff3030';
+    mmCtx.beginPath();mmCtx.arc(x,z,2.6,0,2*Math.PI);mmCtx.fill();
+  });
+
+  // The player stays centred; only the direction arrow rotates.
+  mmCtx.translate(S/2,S/2);mmCtx.rotate(Math.PI-yaw);
+  mmCtx.fillStyle='#ef303e';mmCtx.strokeStyle='#161b29';mmCtx.lineWidth=1.5;
+  mmCtx.beginPath();mmCtx.moveTo(0,-7);mmCtx.lineTo(5,6);
+  mmCtx.lineTo(-5,6);mmCtx.closePath();mmCtx.fill();mmCtx.stroke();
   mmCtx.restore();
 }
 
@@ -4272,13 +5094,85 @@ function updateCrosshair(){
   el.className='zip';
 }
 
+// Close actors retain animated R15 bodies; far actors use existing low-poly
+// bodies. Hysteresis avoids constant swaps during high-speed swinging.
+function updateActorLOD(){
+  const nearEnemy2=38*38, farEnemy2=48*48;
+  const nearPed2=27*27, farPed2=35*35;
+  for(const e of enemies){
+    if(!e.alive) continue;
+    const dx=e.mesh.position.x-P.pos.x,dy=e.mesh.position.y-P.pos.y,dz=e.mesh.position.z-P.pos.z;
+    const distance2=dx*dx+dy*dy+dz*dz;
+    const detailed=e.avatarHighDetail ? distance2<farEnemy2 : distance2<nearEnemy2;
+    if(detailed && r15EnemyTemplate && !e.avatar) attachEnemyAvatar(e);
+    if(!e.avatar || e.avatarHighDetail===detailed) continue;
+    e.avatarHighDetail=detailed;
+    e.avatar.visible=detailed;
+    for(const part of e.mesh.children){
+      if(part!==e.avatar)part.visible=!detailed;
+    }
+    e.mat.transparent=detailed;
+    e.mat.opacity=detailed?0:1;
+    e.mat.depthWrite=!detailed;
+    e.mat.needsUpdate=true;
+  }
+  for(const person of streetPeople){
+    const dx=person.root.position.x-P.pos.x,dy=person.root.position.y-P.pos.y,dz=person.root.position.z-P.pos.z;
+    const distance2=dx*dx+dy*dy+dz*dz;
+    const detailed=person.avatarHighDetail ? distance2<farPed2 : distance2<nearPed2;
+    if(detailed && r15EnemyTemplate && !person.avatar) attachStreetAvatar(person);
+    if(!person.avatar || person.avatarHighDetail===detailed) continue;
+    person.avatarHighDetail=detailed;
+    person.avatar.visible=detailed;
+    person.placeholder.forEach(part=>part.visible=!detailed);
+  }
+}
+
+const cityProxyBatches=[];
+function buildCityProxyBatches(){
+  if(cityProxyBatches.length)return;
+  const records=buildingMeshes.filter(b=>!b.worldOnly && b.materialVariant!==undefined);
+  const bucket=Array.from({length:colorPalette.length},()=>[]);
+  for(const b of records)bucket[b.materialVariant].push(b);
+  for(let i=0;i<bucket.length;i++){
+    const mesh=new THREE.InstancedMesh(
+      new THREE.BoxGeometry(1,1,1),buildingMaterialSets[i][0],bucket[i].length);
+    mesh.frustumCulled=false;
+    mesh.count=bucket[i].length;
+    for(let j=0;j<bucket[i].length;j++)bucket[i][j].proxyIndex=j;
+    cityProxyBatches.push({mesh,buildings:bucket[i]});
+    scene.add(mesh);
+  }
+}
+const proxyDummy=new THREE.Object3D();
 function updateRenderVisibility(){
-  const limitSq=Math.pow(renderDistance+80,2);
+  window.__wwCityReady=true;
+  updateActorLOD();
+  buildCityProxyBatches();
+  const wholeCity=renderDistance>=MAX_CITY_RENDER_DISTANCE;
+  const detailLimitSq=Math.pow(wholeCity?700:renderDistance+80,2);
+  const fullLimitSq=Math.pow(renderDistance+80,2);
   buildingMeshes.forEach(b=>{
-    const dx=(b.minX+b.maxX)*0.5-P.pos.x;
-    const dz=(b.minZ+b.maxZ)*0.5-P.pos.z;
-    b.mesh.visible=dx*dx+dz*dz<=limitSq;
+    const dx=(b.minX+b.maxX)*.5-P.pos.x,dz=(b.minZ+b.maxZ)*.5-P.pos.z;
+    const dist2=dx*dx+dz*dz;
+    b.mesh.visible=dist2<=detailLimitSq;
   });
+  for(const batch of cityProxyBatches){
+    const {mesh,buildings}=batch;
+    for(const b of buildings){
+      const dx=(b.minX+b.maxX)*.5-P.pos.x,dz=(b.minZ+b.maxZ)*.5-P.pos.z;
+      const dist2=dx*dx+dz*dz;
+      const distant=wholeCity&&dist2>detailLimitSq&&dist2<=fullLimitSq;
+      proxyDummy.position.copy(b.mesh.position);
+      proxyDummy.rotation.set(0,0,0);
+      proxyDummy.scale.set(distant?b.maxX-b.minX:0,
+                           distant?b.h:0,distant?b.maxZ-b.minZ:0);
+      proxyDummy.updateMatrix();
+      mesh.setMatrixAt(b.proxyIndex,proxyDummy.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate=true;
+    mesh.visible=wholeCity;
+  }
   const actorLimitSq=Math.pow(Math.min(renderDistance+35,260),2);
   enemies.forEach(e=>{
     const dx=e.mesh.position.x-P.pos.x,dz=e.mesh.position.z-P.pos.z;
@@ -4368,6 +5262,7 @@ function tick(){
     updateGroups(dt);
     updateProjectiles(dt);
   }
+  updateSpeedLines(dt);
   updateCamera(dt);
   if(cameraShakeT>0){
     cameraShakeT=Math.max(0,cameraShakeT-dt);
@@ -4404,13 +5299,55 @@ function tick(){
   // Ability activation still performs its own immediate accurate raycast.
   if((hudFrame&1)===0) updateCrosshair();
   if((hudFrame++&3)===0){
-    drawMinimap();
+    // Player-local map needn't redraw 15×/second on this much larger world.
+    if((hudFrame&7)===1)drawMinimap();
     updateEnemyHpBars();
     updateDebugPanel();
   }
-  if((hudFrame%20)===0) updateRenderVisibility();
-  updateAbilityCooldownUI();
+  if((hudFrame%16)===0) updateRenderVisibility();
+  if((hudFrame&1)===0) updateAbilityCooldownUI();
 
   renderer.render(scene, camera);
 }
+if(new URLSearchParams(location.search).has('qa')){
+  window.__webWeaversQA={
+    start:startGame,
+    syntheticSwing(){
+      startGame();
+      P.pos.copy(PLAYER_SPAWN).add(new THREE.Vector3(0,28,0));
+      cameraLead.set(0,0,0);
+      P.vel.set(0,-3,-20);
+      P.state='swing';
+      P.activeSwingHand='left';
+      const web=P.swingWebs.left;
+      web.anchor=P.pos.clone().add(new THREE.Vector3(-8,30,-24));
+      web.physicsPivot=web.anchor.clone();
+      web.length=P.pos.distanceTo(web.anchor);
+      web.targetLength=web.length-7;
+      web.fallCatch=false;
+      P.swingAssisted=true;
+      P.swingPhase='descent';
+      P.swingHasDescended=true;
+      P.swingAge=P.swingPhaseT=0;
+      P.swingPeakFlat=Math.hypot(P.vel.x,P.vel.z);
+      P.swingBottomSpeed=0;
+      return this.snapshot();
+    },
+    setInput(code,on){keys[code]=on;},
+    release(){releaseSwing(null,true);},
+    step(seconds){
+      const wasPaused=paused;paused=false;
+      for(let remaining=seconds;remaining>0;remaining-=1/120)updatePlayer(Math.min(1/120,remaining));
+      paused=wasPaused;
+      return this.snapshot();
+    },
+    snapshot(){
+      const web=P.activeSwingHand?P.swingWebs[P.activeSwingHand]:null;
+      return {state:P.state,phase:P.swingPhase,pos:P.pos.toArray(),vel:P.vel.toArray(),speed:P.vel.length(),
+        ropeLength:web?.length||0,anchorDistance:web?.anchor?P.pos.distanceTo(web.anchor):0,activeHand:P.activeSwingHand};
+    }
+  };
+}
+// Cull distant city buildings before the FIRST render of the expanded island.
+updateRenderVisibility();
 tick();

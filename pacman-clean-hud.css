@@ -1,0 +1,172 @@
+/* PAC-MAN 3D / compact classic HUD and borderless start screen */
+#arcadeTop{
+ position:fixed!important;
+ z-index:10!important;
+ top:16px!important;left:16px!important;right:auto!important;bottom:auto!important;
+ min-height:0!important;display:flex!important;align-items:center!important;
+ margin:0!important;padding:0!important;
+ pointer-events:none!important;
+}
+#arcadeTop>span:first-child{
+ display:flex;align-items:center;gap:9px;
+ padding:8px 13px;min-height:30px;box-sizing:border-box;
+ background:rgba(5,12,31,.78);
+ border:1px solid rgba(110,153,225,.38);
+ border-radius:8px;
+ color:#dceaff;font:800 13px/1 system-ui,-apple-system,sans-serif;
+ letter-spacing:.04em;
+}
+#arcadeTop strong{font:850 17px/1 system-ui,sans-serif;color:#a9ccff}
+#arcadeTop #pelletRemaining{display:none!important}
+#ghostPanel{display:none!important}
+#ghostThreatBanner{
+ top:19px!important;
+ max-width:65vw!important;
+ padding:7px 11px!important;
+ font-size:10px!important;
+}
+/* Fixed compact minimap, never slides out when space is pressed. */
+#mapFrame,#mapFrame.show{
+ display:flex!important;
+ position:fixed!important;
+ z-index:8!important;
+ left:15px!important;
+ bottom:15px!important;
+ top:auto!important;right:auto!important;
+ width:188px!important;
+ height:206px!important;
+ padding:7px!important;
+ box-sizing:border-box!important;
+ border:1px solid rgba(102,142,223,.42)!important;
+ border-radius:9px!important;
+ background:rgba(5,11,29,.85)!important;
+ box-shadow:0 6px 22px #0005!important;
+ opacity:1!important;
+ transform:none!important;
+ transition:none!important;
+ pointer-events:none!important;
+ gap:4px!important;
+ justify-content:flex-start!important;
+ overflow:hidden!important;
+}
+#mapFrame #mapTopBar{
+ display:flex!important;
+ justify-content:flex-end!important;
+ height:19px!important;min-height:19px!important;
+ width:100%!important;margin:0!important;
+ padding:0 5px!important;
+ box-sizing:border-box!important;
+ background:transparent!important;
+}
+#mapFrame #mapScoreValue{
+ font:800 12px/1 system-ui,sans-serif!important;
+ color:#bdcdf2!important;
+}
+#mapFrame #map{
+ width:172px!important;
+ height:172px!important;
+ min-height:172px!important;
+ box-sizing:border-box!important;
+ border:1px solid rgba(55,104,216,.6)!important;
+ border-radius:4px!important;
+ background:#020615!important;
+}
+#mapFrame .radar-foot{display:none!important}
+/* Simple arcade menu directly over the gradient, without another card. */
+#startScreen{background:radial-gradient(ellipse 75% 78% at 50% 42%,#122246,#050918 82%)!important}
+#startScreen .arcade-menu.arcade-menu-simple{
+ width:min(440px,92vw)!important;
+ background:transparent!important;
+ border:none!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+ padding:24px 12px!important;
+ overflow:visible!important;
+}
+#startScreen .arcade-menu-simple .menu-heading{font-size:clamp(39px,5.4vw,61px)!important}
+#startScreen .arcade-menu-simple .menu-buttons .btn{border-radius:7px!important}
+@media(max-width:600px){
+ #arcadeTop{top:9px!important;left:9px!important}
+ #mapFrame,#mapFrame.show{left:9px!important;bottom:9px!important;
+ width:144px!important;height:161px!important;padding:5px!important}
+ #mapFrame #map{width:132px!important;height:132px!important;min-height:132px!important}
+ #livesHUD{top:12px!important;right:9px!important}
+ #ghostThreatBanner{top:70px!important;font-size:9px!important}
+}
+
+/* Three unframed hearts, aligned with the small LVL indicator at the top. */
+#livesHUD{
+ top:15px!important;right:18px!important;left:auto!important;bottom:auto!important;
+ width:auto!important;min-width:0!important;min-height:0!important;
+ padding:0!important;margin:0!important;
+ display:flex!important;align-items:center!important;justify-content:flex-end!important;
+ background:transparent!important;border:none!important;border-radius:0!important;
+ box-shadow:none!important;backdrop-filter:none!important;
+}
+#livesHUD .lives-label{display:none!important}
+#livesHUD #livesHearts{
+ display:flex!important;align-items:center!important;justify-content:flex-end!important;
+ gap:7px!important;
+ min-height:35px!important;
+}
+#livesHUD .arcade-heart{
+ width:31px!important;height:30px!important;
+ filter:drop-shadow(0 2px 2px #000a)!important;
+}
+#livesHUD .arcade-heart svg{width:30px!important;height:29px!important}
+#livesHUD .arcade-heart.off{opacity:.35;filter:none!important}
+@media(max-width:600px){
+ #livesHUD{top:8px!important;right:10px!important}
+ #livesHUD #livesHearts{gap:3px!important}
+ #livesHUD .arcade-heart{width:27px!important;height:27px!important}
+ #livesHUD .arcade-heart svg{width:26px!important;height:25px!important}
+}
+
+/* Classic minimap counter: large white count in a centered dark cap. */
+#mapFrame,#mapFrame.show{
+  width:196px!important;
+  height:244px!important;
+  padding:7px!important;
+  gap:6px!important;
+  background:rgba(4,7,18,.95)!important;
+  border:4px solid #080a12!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+}
+#mapFrame #mapTopBar{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex:0 0 43px!important;
+  width:100%!important;
+  height:43px!important;
+  min-height:43px!important;
+  margin:0!important;
+  padding:0!important;
+  border-radius:8px!important;
+  background:#19191c!important;
+  border:1px solid #050508!important;
+  box-sizing:border-box!important;
+}
+#mapFrame #mapScoreValue{
+  display:block!important;
+  margin:0 auto!important;
+  color:#f5f6ff!important;
+  text-align:center!important;
+  font:800 30px/1 system-ui,-apple-system,sans-serif!important;
+  letter-spacing:.01em!important;
+  font-variant-numeric:tabular-nums!important;
+}
+#mapFrame #map{
+  width:174px!important;
+  height:174px!important;
+  min-height:174px!important;
+  flex:0 0 174px!important;
+  border-radius:5px!important;
+}
+@media(max-width:600px){
+  #mapFrame,#mapFrame.show{width:156px!important;height:196px!important;padding:5px!important;gap:5px!important}
+  #mapFrame #mapTopBar{height:35px!important;min-height:35px!important;flex-basis:35px!important}
+  #mapFrame #mapScoreValue{font-size:25px!important}
+  #mapFrame #map{width:136px!important;height:136px!important;min-height:136px!important;flex-basis:136px!important}
+}

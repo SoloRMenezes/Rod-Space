@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 100 100" role="img" aria-label="cherries"><defs>
+<linearGradient id="red" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#ff9082"/><stop offset=".45" stop-color="#ed2724"/><stop offset="1" stop-color="#a00014"/></linearGradient>
+<linearGradient id="gold" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#fff5b3"/><stop offset=".36" stop-color="#f6cd3d"/><stop offset=".75" stop-color="#d48c10"/><stop offset="1" stop-color="#9c620a"/></linearGradient>
+<linearGradient id="green" x1=".1" y1=".1" x2=".95" y2=".8"><stop stop-color="#d4fa78"/><stop offset=".55" stop-color="#58a633"/><stop offset="1" stop-color="#1b5621"/></linearGradient>
+<linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ecfaff"/><stop offset=".4" stop-color="#67dfff"/><stop offset=".75" stop-color="#2389ea"/><stop offset="1" stop-color="#1954ac"/></linearGradient>
+<linearGradient id="purple" x1=".12" y1=".08" x2=".75" y2="1"><stop stop-color="#f1b3fc"/><stop offset=".48" stop-color="#ae48dc"/><stop offset="1" stop-color="#631582"/></linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="1" dy="3" stdDeviation="1.7" flood-color="#201811" flood-opacity=".33"/></filter>
+</defs><g filter="url(#shadow)" stroke-linejoin="round">
+<path d="M46 29 Q31 45 27 65 M48 29 Q66 43 73 64" stroke="#516326" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M45 28 Q41 10 20 19 Q24 34 45 28 M46 26 Q65 11 83 21 Q68 35 46 26" fill="url(#green)" stroke="#204b24" stroke-width="2.4"/>
+<path d="M22 19 Q37 24 46 28 M83 21 Q64 22 46 26" stroke="#e7f9af" stroke-width="1.8" fill="none" opacity=".65"/>
+<circle cx="26" cy="70" r="21" fill="url(#red)" stroke="#83121a" stroke-width="3"/>
+<circle cx="70" cy="71" r="21" fill="url(#red)" stroke="#83121a" stroke-width="3"/>
+<ellipse cx="18" cy="60" rx="6" ry="9" transform="rotate(28 18 60)" fill="#ffe4c8" opacity=".62"/>
+<ellipse cx="64" cy="61" rx="6" ry="9" transform="rotate(28 64 61)" fill="#ffe4c8" opacity=".58"/></g></svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 100 100" role="img" aria-label="bar"><defs>
+<linearGradient id="red" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#ff9082"/><stop offset=".45" stop-color="#ed2724"/><stop offset="1" stop-color="#a00014"/></linearGradient>
+<linearGradient id="gold" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#fff5b3"/><stop offset=".36" stop-color="#f6cd3d"/><stop offset=".75" stop-color="#d48c10"/><stop offset="1" stop-color="#9c620a"/></linearGradient>
+<linearGradient id="green" x1=".1" y1=".1" x2=".95" y2=".8"><stop stop-color="#d4fa78"/><stop offset=".55" stop-color="#58a633"/><stop offset="1" stop-color="#1b5621"/></linearGradient>
+<linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ecfaff"/><stop offset=".4" stop-color="#67dfff"/><stop offset=".75" stop-color="#2389ea"/><stop offset="1" stop-color="#1954ac"/></linearGradient>
+<linearGradient id="purple" x1=".12" y1=".08" x2=".75" y2="1"><stop stop-color="#f1b3fc"/><stop offset=".48" stop-color="#ae48dc"/><stop offset="1" stop-color="#631582"/></linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="1" dy="3" stdDeviation="1.7" flood-color="#201811" flood-opacity=".33"/></filter>
+</defs><g filter="url(#shadow)">
+<rect x="8" y="28" width="84" height="43" rx="5" fill="#131116" stroke="#c8a253" stroke-width="4"/>
+<rect x="12" y="32" width="76" height="35" rx="2" fill="#191619" stroke="#5a4e42" stroke-width="1"/>
+<text x="50" y="59" font-family="Georgia,serif" font-weight="900" font-size="31" fill="#fff0d5" stroke="#caa76a" stroke-width=".6" text-anchor="middle">BAR</text>
+<path d="M17 36 H81" stroke="#ffffff" stroke-width="1.5" opacity=".35"/></g></svg>

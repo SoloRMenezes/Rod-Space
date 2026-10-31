@@ -9,13 +9,13 @@
         body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
         #ui { position: absolute; top: 20px; left: 20px; color: #ffffff; text-shadow: 2px 2px 4px #000; pointer-events: none; user-select: none; z-index: 10; }
         #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255, 255, 255, 0.5); border-radius: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(0,0,0,0.5); }
-        
+
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.3) 100%); pointer-events: none; }
         #vhs-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='); opacity: 0.04; pointer-events: none; animation: noise 0.2s infinite; }
         #glitch-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 100, 255, 0.05); mix-blend-mode: screen; display: none; pointer-events: none; z-index: 5; }
-        
+
         @keyframes noise { 0% { transform: translate(0,0) } 10% { transform: translate(-1%,-0.5%) } 20% { transform: translate(0.5%,1%) } 100% { transform: translate(0,0) } }
-        
+
         #instructions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(20, 20, 20, 0.95); color: #aaaaaa; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; z-index: 100; }
         .bar-container { width: 200px; height: 10px; background: #222; margin-top: 5px; border: 1px solid #666; }
         #sanity-bar { width: 100%; height: 100%; background: #00ccff; transition: width 0.3s; }
@@ -23,13 +23,15 @@
         #footer { position: absolute; bottom: 20px; right: 20px; color: #444; font-size: 12px; }
         #message { position: absolute; bottom: 15%; width: 100%; text-align: center; color: #00ccff; font-weight: bold; opacity: 0; transition: opacity 0.5s; text-shadow: 2px 2px 2px #000; z-index: 10; }
         #interaction-prompt { position: absolute; top: 60%; width: 100%; text-align: center; color: #fff; font-size: 14px; display: none; text-shadow: 1px 1px 2px #000; font-weight: bold; }
-        
+
         #fade-out { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; opacity: 0; pointer-events: none; z-index: 1000; transition: opacity 2s ease-in; }
 
         .glitch-active { filter: contrast(1.2) brightness(1.1); }
         button { background: #333; color: #00ccff; border: 1px solid #00ccff; padding: 15px 30px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: inherit; }
         button:hover { background: #00ccff; color: #000; }
     </style>
+<link rel="stylesheet" href="./backrooms-upgrade.css">
+<link rel="stylesheet" href="./backrooms-polish.css">
 </head>
 <body>
 
@@ -58,12 +60,14 @@
         <p>Stay hydrated. Watch the shadows.</p>
         <p><strong>W, A, S, D</strong> to move | <strong>SHIFT</strong> to sprint | <strong>MOUSE</strong> to look</p>
         <p><strong>E</strong> to interact with items</p>
-        <p style="color: #00ccff; margin-top: 20px;">The exit will manifest after 5 minutes.</p>
+        <p style="color: #00ccff; margin-top: 20px;">Explore the industrial corridors. C crouches · F toggles your light.</p>
         <button id="start-btn">DESCEND FURTHER</button>
     </div>
 
     <div id="footer">REC [•] </div>
 
+    <script src="./backrooms-upgrade.js"></script>
+<script src="./backrooms-ui.js"></script>
     <script>
         let camera, scene, renderer, clock, audioCtx;
         let keys = { w: false, a: false, s: false, d: false, e: false, shift: false };
@@ -73,7 +77,9 @@
         let stamina = 100;
         let startTime = Date.now();
         let gameActive = false;
-        
+        let brDirector=null;
+        let crouching=false;
+
         let glitchTimer = 0;
         let isGlitching = false;
         let exitSpawned = false;
@@ -85,30 +91,32 @@
         let lastScreech = 0;
         let entityCooldown = 0; // Cooldown timer in seconds
 
-        const CHUNK_SIZE = 40; 
-        const RENDER_DISTANCE = 1; 
+        const CHUNK_SIZE = 40;
+        const RENDER_DISTANCE = 1;
         const CELL_SIZE = 8;
-        const chunks = new Map(); 
-        
+        const chunks = new Map();
+
         let wallMat, floorMat, ceilMat, pipeMat;
         let stepCounter = 0, stateTime = 0;
 
         function init() {
             scene = new THREE.Scene();
+            BackroomsUpgrade.markRun(1);
+            yaw=(BackroomsUpgrade.hash(0,0,31)-.5)*Math.PI*2;
             scene.background = new THREE.Color(0x1a1a1a);
-            scene.fog = new THREE.FogExp2(0x1a1a1a, 0.04); 
+            scene.fog = new THREE.FogExp2(0x1a1a1a, 0.028);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
-            camera.position.set(0, 1.7, 0); 
-            
+            camera.position.set(0, 1.7, 0);
+
             renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1,1.5));
             document.body.appendChild(renderer.domElement);
 
             clock = new THREE.Clock();
-            
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.50);
             scene.add(ambientLight);
 
             const pointLight = new THREE.PointLight(0xffffff, 1.4, 25);
@@ -120,6 +128,10 @@
             wallMat = new THREE.MeshLambertMaterial({ map: createConcreteTexture('#666') });
 
             updateProceduralWorld();
+            brDirector=BackroomsUpgrade.director(scene,camera,1,damage=>{
+              sanity=Math.max(0,sanity-damage);
+              showMessage('CONTACT · SANITY -'+damage);
+            },checkCollision);
             setupControls();
             window.addEventListener('resize', onWindowResize, false);
             animate();
@@ -168,7 +180,7 @@
             const bodyMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             group.add(body);
-            
+
             for(let i=0; i<6; i++) {
                 const limb = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 6), bodyMat);
                 limb.rotation.z = (Math.random() * Math.PI);
@@ -202,52 +214,66 @@
             document.getElementById('entity-status').style.display = 'none';
         }
 
-        function generateChunk(cx, cz) {
-            const chunkKey = `${cx},${cz}`;
-            if (chunks.has(chunkKey)) return;
-
-            const chunkGroup = new THREE.Group();
-            chunkGroup.position.set(cx * CHUNK_SIZE, 0, cz * CHUNK_SIZE);
-
-            const floor = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), floorMat);
-            floor.rotation.x = -Math.PI / 2;
-            chunkGroup.add(floor);
-
-            const ceil = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), ceilMat);
-            ceil.rotation.x = Math.PI / 2; ceil.position.y = 4;
-            chunkGroup.add(ceil);
-
-            const boxGeo = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
-            const innerCells = Math.floor(CHUNK_SIZE / CELL_SIZE);
-
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const canSpawnExit = gameActive && elapsed > 300 && !exitSpawned;
-
-            for(let x = 0; x < innerCells; x++) {
-                for(let z = 0; z < innerCells; z++) {
-                    const localPosX = (x * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
-                    const localPosZ = (z * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
-                    const worldX = (cx * CHUNK_SIZE) + localPosX;
-                    const worldZ = (cz * CHUNK_SIZE) + localPosZ;
-                    
-                    if (Math.abs(worldX) < 8 && Math.abs(worldZ) < 8) continue;
-                    
-                    const seed = Math.abs(Math.sin(worldX * 0.1 + worldZ * 0.5) * 100);
-                    const val = seed - Math.floor(seed);
-                    
-                    if (val > 0.85) {
-                        const wall = new THREE.Mesh(boxGeo, wallMat);
-                        wall.position.set(localPosX, 2, localPosZ);
-                        chunkGroup.add(wall);
-                    } else if (val < 0.01 && canSpawnExit) {
-                        spawnExit(chunkGroup, localPosX, localPosZ);
-                    } else if (val < 0.005) { 
-                        spawnAlmondWater(chunkGroup, localPosX, localPosZ);
-                    }
-                }
+        const visitedChunks=new Set();
+        const collectedBottles=new Set();
+        function generateChunk(cx,cz){
+          const key=cx+','+cz;
+          if(chunks.has(key))return;
+          visitedChunks.add(key);
+          const group=new THREE.Group();
+          group.position.set(cx*CHUNK_SIZE,0,cz*CHUNK_SIZE);
+          const floor=new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE,CHUNK_SIZE),floorMat);
+          floor.rotation.x=-Math.PI/2;group.add(floor);
+          const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE,CHUNK_SIZE),ceilMat);
+          ceiling.rotation.x=Math.PI/2;ceiling.position.y=4;group.add(ceiling);
+          const cells=CHUNK_SIZE/CELL_SIZE,blocks=[];
+          for(let x=0;x<cells;x++)for(let z=0;z<cells;z++){
+            const gx=cx*cells+x,gz=cz*cells+z;
+            const posX=(x+.5)*CELL_SIZE-CHUNK_SIZE/2;
+            const posZ=(z+.5)*CELL_SIZE-CHUNK_SIZE/2;
+            const worldX=cx*CHUNK_SIZE+posX,worldZ=cz*CHUNK_SIZE+posZ;
+            if(Math.abs(worldX)<8&&Math.abs(worldZ)<8)continue;
+            const tile=BackroomsUpgrade.cell(gx,gz,1);
+            if(tile.wall)blocks.push([posX,posZ]);
+            else{
+              const pick=BackroomsUpgrade.hash(gx,gz,1*17+17);
+              const eligibleExit=gameActive&&!exitSpawned&&
+                (Date.now()-startTime)>95000&&visitedChunks.size>=16&&
+                Math.abs(cx)+Math.abs(cz)>1;
+              if(eligibleExit&&tile.feature==='main-corridor'&&pick<.44){
+                spawnExit(group,posX,posZ);
+              }else if(pick<.025 && !collectedBottles.has(gx+','+gz)){
+                spawnAlmondWater(group,posX,posZ,gx+','+gz);
+              }else if(pick>.935&&pick<.989){
+                BackroomsUpgrade.addProp(group,posX,posZ,1,pick);
+              }
             }
-            scene.add(chunkGroup);
-            chunks.set(chunkKey, chunkGroup);
+          }
+          const walls=new THREE.InstancedMesh(
+            new THREE.BoxGeometry(CELL_SIZE,4,CELL_SIZE),wallMat,blocks.length);
+          const dummy=new THREE.Object3D();
+          blocks.forEach(([x,z],i)=>{
+            dummy.position.set(x,2,z);dummy.updateMatrix();
+            walls.setMatrixAt(i,dummy.matrix);
+          });
+          walls.instanceMatrix.needsUpdate=true;
+          walls.frustumCulled=false;
+          group.add(walls);
+          group.userData.region=BackroomsUpgrade.roomType(cx,cz,1);
+          const tileVariant=Math.floor(BackroomsUpgrade.hash(cx,cz,54)*4);
+          const palette=[0xc4cbce,0xb5c0bb,0xb9b4ac,0x9baab2];
+          floor.material=floorMat.clone();
+          floor.userData.uniqueMaterial=true;
+          floor.material.color.setHex(palette[tileVariant]);
+          const lightBox=new THREE.Mesh(
+            new THREE.BoxGeometry(1.65,.09,.55),
+            new THREE.MeshBasicMaterial({color:0xd5e4ef}));
+          lightBox.position.set(0,3.95,0);group.add(lightBox);
+          if(BackroomsUpgrade.hash(cx,cz,79)>.82){
+            const lamp=new THREE.PointLight(0xffe9b0,.58,14);
+            lamp.position.set(0,3.65,0);group.add(lamp);
+          }
+          scene.add(group);chunks.set(key,group);
         }
 
         function spawnExit(group, x, z) {
@@ -269,7 +295,7 @@
             showMessage("AN EXIT HAS MANIFESTED");
         }
 
-        function spawnAlmondWater(group, x, z) {
+        function spawnAlmondWater(group, x, z, pickupId) {
             const bottleGroup = new THREE.Group();
             const bottle = new THREE.Mesh(
                 new THREE.CylinderGeometry(0.08, 0.08, 0.4),
@@ -278,44 +304,86 @@
             bottleGroup.add(bottle);
             bottleGroup.position.set(x, 0.2, z);
             bottleGroup.name = "ALMOND_WATER";
+            bottleGroup.userData.pickupId=pickupId;
             group.add(bottleGroup);
         }
 
         function updateProceduralWorld() {
             const pX = Math.floor(camera.position.x / CHUNK_SIZE);
             const pZ = Math.floor(camera.position.z / CHUNK_SIZE);
-            for (let x = -RENDER_DISTANCE; x <= RENDER_DISTANCE; x++) {
-                for (let z = -RENDER_DISTANCE; z <= RENDER_DISTANCE; z++) {
-                    generateChunk(pX + x, pZ + z);
-                }
+            for(let x=-RENDER_DISTANCE;x<=RENDER_DISTANCE;x++)
+              for(let z=-RENDER_DISTANCE;z<=RENDER_DISTANCE;z++)
+                generateChunk(pX+x,pZ+z);
+            for(const [key,chunk] of chunks){
+              const [x,z]=key.split(',').map(Number);
+              if(Math.abs(x-pX)>RENDER_DISTANCE+1||Math.abs(z-pZ)>RENDER_DISTANCE+1){
+                BackroomsUpgrade.disposeChunk(chunk);
+                scene.remove(chunk);chunks.delete(key);
+              }
             }
         }
 
         function setupControls() {
-            const inst = document.getElementById('instructions');
-            const startBtn = document.getElementById('start-btn');
-            startBtn.addEventListener('click', () => { 
-                document.body.requestPointerLock();
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                startTime = Date.now();
-                gameActive = true;
+            const inst=document.getElementById('instructions');
+            const startBtn=document.getElementById('start-btn');
+            let everLocked=false,dragLook=false,lastX=0,lastY=0;
+            const launch=()=>{
+              // Pointer lock is optional in the macOS app. Starting the game
+              // must not depend on whether WebKit grants pointer capture.
+              startTime=Date.now();
+              gameActive=true;
+              inst.style.display='none';
+              if(typeof audioCtx!=='undefined'&&!audioCtx){
+                try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}
+                catch(err){console.warn('Audio unavailable:',err.message);}
+              }
+              try{
+                const target=renderer?.domElement||document.body;
+                const request=target.requestPointerLock?.();
+                if(request&&typeof request.catch==='function')
+                  request.catch(()=>{console.info('Mouse: drag-to-look fallback enabled');});
+              }catch(err){console.info('Pointer lock unavailable: using drag-to-look');}
+            };
+            startBtn.addEventListener('click',launch);
+            document.addEventListener('pointerlockchange',()=>{
+              const locked=!!document.pointerLockElement;
+              if(locked){everLocked=true;inst.style.display='none';gameActive=true;}
+              else if(everLocked&&gameActive){
+                gameActive=false;
+                inst.style.display='flex';
+                Object.keys(keys).forEach(k=>keys[k]=false);
+              }
             });
-            document.addEventListener('pointerlockchange', () => {
-                const locked=document.pointerLockElement === document.body;
-                inst.style.display = locked ? 'none' : 'flex';
-                gameActive = locked;
-                if(!locked)Object.keys(keys).forEach(key=>keys[key]=false);
+            document.addEventListener('mousedown',e=>{
+              if(gameActive&&!document.pointerLockElement&&e.button===0){
+                dragLook=true;lastX=e.clientX;lastY=e.clientY;
+              }
+            });
+            document.addEventListener('mouseup',()=>{dragLook=false;});
+            document.addEventListener('mousemove',e=>{
+              if(!gameActive||document.pointerLockElement||!dragLook)return;
+              yaw-=(e.clientX-lastX)*.003;
+              pitch=Math.max(-Math.PI/2.3,Math.min(Math.PI/2.3,pitch-(e.clientY-lastY)*.003));
+              lastX=e.clientX;lastY=e.clientY;
+            });
+            document.addEventListener('keydown',e=>{
+              if(e.code==='Escape'&&gameActive&&!document.pointerLockElement){
+                gameActive=false;inst.style.display='flex';dragLook=false;
+              }
             });
             document.addEventListener('mousemove', (e) => {
-                if (document.pointerLockElement === document.body) {
+                if (gameActive && document.pointerLockElement) {
                     yaw -= e.movementX * 0.0025;
                     pitch -= e.movementY * 0.0025;
                     pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
                 }
             });
             document.addEventListener('keydown', (e) => {
-                const key = e.key.toLowerCase();
-                if (keys.hasOwnProperty(key)) keys[key] = true;
+                const key=e.key.toLowerCase();
+                if(key==='c'&&!e.repeat)crouching=!crouching;
+                if(key==='f'&&!e.repeat&&camera.children[0])
+                  camera.children[0].visible=!camera.children[0].visible;
+                if(keys.hasOwnProperty(key))keys[key]=true;
             });
             document.addEventListener('keyup', (e) => {
                 const key = e.key.toLowerCase();
@@ -332,12 +400,13 @@
                     const worldPos = new THREE.Vector3();
                     child.getWorldPosition(worldPos);
                     const dist = camera.position.distanceTo(worldPos);
-                    
+
                     if (child.name === "ALMOND_WATER" && dist < 2.5) {
                         prompt.innerText = "PRESS [E] TO TAKE ALMOND WATER";
                         prompt.style.display = 'block';
                         if (keys.e) {
-                            sanity = Math.min(100, sanity + 35); 
+                            sanity = Math.min(100, sanity + 35);
+                            collectedBottles.add(child.userData.pickupId);
                             chunk.remove(child);
                             showMessage("DRANK PURIFIED ALMOND WATER");
                             keys.e = false;
@@ -357,7 +426,7 @@
             document.getElementById('fade-out').style.opacity = '1';
             setTimeout(() => {
                 // Future Level 2 logic
-                window.location.href = "backrooms-level2.html"; 
+                window.location.href = "backrooms-level2.html";
             }, 2000);
         }
 
@@ -368,7 +437,7 @@
             showMessage("SANITY DEPLETED - FADING AWAY...");
             setTimeout(() => {
                 // Navigate back to Level 0
-                window.location.href = "backrooms.html"; 
+                window.location.href = "backrooms.html";
             }, 2500);
         }
 
@@ -378,19 +447,19 @@
             setTimeout(() => { msg.style.opacity = '0'; }, 3000);
         }
 
-        function checkCollision(pos) {
-            const r = 0.4;
-            for (const chunk of chunks.values()) {
-                for (const obj of chunk.children) {
-                    if (obj.geometry && obj.geometry.type === "BoxGeometry" && obj.position.y === 2) {
-                        const wx = chunk.position.x + obj.position.x;
-                        const wz = chunk.position.z + obj.position.z;
-                        if (pos.x > wx - CELL_SIZE/2 - r && pos.x < wx + CELL_SIZE/2 + r &&
-                            pos.z > wz - CELL_SIZE/2 - r && pos.z < wz + CELL_SIZE/2 + r) return true;
-                    }
-                }
-            }
-            return false;
+        function checkCollision(pos){
+          const radius=.42;
+          const center=n=>Math.floor((n+CHUNK_SIZE/2)/CELL_SIZE);
+          const gx=center(pos.x),gz=center(pos.z);
+          for(let x=gx-1;x<=gx+1;x++)for(let z=gz-1;z<=gz+1;z++){
+            const tile=BackroomsUpgrade.cell(x,z,1);
+            if(!tile.wall)continue;
+            const wx=x*CELL_SIZE-CHUNK_SIZE/2+CELL_SIZE/2;
+            const wz=z*CELL_SIZE-CHUNK_SIZE/2+CELL_SIZE/2;
+            if(Math.abs(pos.x-wx)<CELL_SIZE/2+radius &&
+               Math.abs(pos.z-wz)<CELL_SIZE/2+radius)return true;
+          }
+          return false;
         }
 
         function moveWithCollision(object, displacement) {
@@ -442,11 +511,11 @@
             if (entity && entityChasing) {
                 entityTimer -= delta;
                 const dir = camera.position.clone().sub(entity.position).normalize();
-                const speed = 5.2; 
+                const speed = 5.2;
                 moveWithCollision(entity,dir.multiplyScalar(speed * delta));
                 entity.lookAt(camera.position.x, 1.75, camera.position.z);
                 entity.userData.limbs.forEach((limb,index)=>{limb.rotation.x=Math.sin(stateTime*11+index*Math.PI)*.8;});
-                
+
                 const dist = entity.position.distanceTo(camera.position);
                 if (Date.now() - lastScreech > 2500) {
                     playScreech();
@@ -474,32 +543,34 @@
                 const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
                 forward.y = 0; right.y = 0;
                 forward.normalize(); right.normalize();
-                
+
                 const moveDir = new THREE.Vector3(0, 0, 0);
                 if (keys.w) moveDir.add(forward);
                 if (keys.s) moveDir.sub(forward);
                 if (keys.a) moveDir.sub(right);
                 if (keys.d) moveDir.add(right);
-                
+
                 if (moveDir.length() > 0) {
-                    const sprinting=keys.shift&&stamina>0;
+                    const sprinting=keys.shift&&!crouching&&stamina>0;
                     stamina=Math.max(0,stamina-(sprinting?36:0)*delta);
-                    moveDir.normalize().multiplyScalar((sprinting?7.4:5.0)*delta);
+                    moveDir.normalize().multiplyScalar((crouching?2.6:sprinting?7.5:5.0)*delta);
                     moveWithCollision(camera,moveDir);
                     stepCounter += delta * 11;
-                    camera.position.y = 1.7 + Math.sin(stepCounter) * 0.06;
+                    camera.position.y = (crouching?1.2:1.7)+Math.sin(stepCounter)*.04;
                 } else {
                     stamina=Math.min(100,stamina+24*delta);
-                    camera.position.y = 1.7 + Math.sin(Date.now() * 0.001) * 0.015;
+                    camera.position.y = (crouching?1.2:1.7)+Math.sin(Date.now()*.001)*.012;
                 }
-                
+
                 camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
-                
-                handleEntity(delta);
+
+                if(brDirector)brDirector.update(delta,keys.shift&&!crouching,crouching);
+                window.brGameElapsed=(Date.now()-startTime)/1000;
+                BackroomsUpgrade.updateZone(camera.position,1,visitedChunks.size);
                 handleGlitches(delta);
                 updateProceduralWorld();
                 handleInteractions();
-                
+
                 // Flicker effect
                 if (Math.random() < 0.005) {
                     camera.children[0].intensity = Math.random() > 0.5 ? 1.4 : 0.8;
@@ -512,7 +583,7 @@
                 sanity -= delta*.48;
                 document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
                 document.getElementById('stamina-bar').style.width = stamina + '%';
-                
+
                 // Fallback to Level 0 if sanity hits 0
                 if (sanity <= 0) {
                     triggerLevel0Fallback();

@@ -7,11 +7,11 @@
     <script src="./assets/vendor/offline-25023b521d77.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Courier New', Courier, monospace; }
-        
+
         /* UI/Stat-box removed as requested */
-        
+
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, transparent 40%, rgba(255, 255, 255, 0.1) 100%); pointer-events: none; z-index: 5; }
-        
+
         #vhs-effect {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.005), rgba(0, 255, 0, 0.005), rgba(0, 0, 255, 0.005));
@@ -26,6 +26,7 @@
         #prompt{position:fixed;left:0;right:0;bottom:18%;z-index:10;color:#fff;text-align:center;text-shadow:0 2px 6px #000;opacity:0;transition:opacity .2s}
         #ending{position:fixed;inset:0;z-index:30;display:none;place-items:center;background:#000;color:#fff;text-align:center;font-size:clamp(1.2rem,3vw,2rem);letter-spacing:.12em;cursor:pointer}
     </style>
+<link rel="stylesheet" href="./backrooms-upgrade.css">
 </head>
 <body>
     <div id="objective">LEVEL 10 · FIND THE BLACK BARN DOOR</div>
@@ -35,35 +36,37 @@
     <div id="overlay"></div>
     <div id="vhs-effect"></div>
 
+    <script src="./backrooms-upgrade.js"></script>
     <script>
         let scene, camera, renderer, clock;
         let wheatInstances1, wheatInstances2, wheatMaterial;
         let clouds = [];
-        let worldObjects = []; 
-        
-        const STALK_COUNT = 120000; 
+        let worldObjects = [];
+
+        const STALK_COUNT = 65000; // reduce overdraw on Mac while retaining a dense field
         const FIELD_SIZE = 350;
-        const STALK_HEIGHT = 1.4; 
+        const STALK_HEIGHT = 1.4;
         const CLOUD_COUNT = 60;
         const TREE_COUNT = 45;
-        
+
         let moveSpeed = 5.2;
         let yaw = 0, pitch = 0;
         const keys = { w: false, a: false, s: false, d: false, e: false };
         let stepCounter = 0;
         let exitBarn = null, ended = false;
+        let brDirector=null;
 
         function createWheatTexture() {
             const canvas = document.createElement('canvas');
             canvas.width = 64; canvas.height = 128;
             const ctx = canvas.getContext('2d');
             const grad = ctx.createLinearGradient(0, 128, 0, 0);
-            grad.addColorStop(0, '#2a2410'); 
-            grad.addColorStop(0.3, '#9d842c'); 
-            grad.addColorStop(0.7, '#d4bc6a'); 
-            grad.addColorStop(1, '#fdf4d5'); 
+            grad.addColorStop(0, '#2a2410');
+            grad.addColorStop(0.3, '#9d842c');
+            grad.addColorStop(0.7, '#d4bc6a');
+            grad.addColorStop(1, '#fdf4d5');
             ctx.fillStyle = grad;
-            ctx.fillRect(24, 40, 16, 88); 
+            ctx.fillRect(24, 40, 16, 88);
             ctx.beginPath();
             ctx.ellipse(32, 35, 20, 30, 0, 0, Math.PI * 2);
             ctx.fill();
@@ -93,10 +96,11 @@
 
         function init() {
             scene = new THREE.Scene();
-            
-            const topSky = new THREE.Color(0x3498db); 
+            BackroomsUpgrade.markRun(10);
+
+            const topSky = new THREE.Color(0x3498db);
             const horizonSky = new THREE.Color(0xdff9fb);
-            
+
             scene.background = topSky;
             scene.fog = new THREE.Fog(horizonSky, 50, FIELD_SIZE * 0.6);
 
@@ -191,8 +195,14 @@
 
             const dummy = new THREE.Object3D();
             for (let i = 0; i < STALK_COUNT; i++) {
-                const rx = (Math.random() - 0.5) * FIELD_SIZE;
-                const rz = (Math.random() - 0.5) * FIELD_SIZE;
+                let rx=(BackroomsUpgrade.hash(i,0,12)-.5)*FIELD_SIZE;
+                let rz=(BackroomsUpgrade.hash(i,0,13)-.5)*FIELD_SIZE;
+                // Large curved clearing bands, different for each run, make
+                // navigable landmarks rather than endless repeated wheat.
+                const phase=BackroomsUpgrade.hash(0,0,20)*6.28;
+                if(Math.abs(rx-Math.sin(rz*.028+phase)*19)<8)
+                  rx+=Math.sign(rx||1)*13;
+                if(Math.hypot(rx,rz)<16)rz+=18;
                 dummy.position.set(rx, -0.05, rz);
                 dummy.rotation.y = Math.random() * Math.PI;
                 const s = 0.9 + Math.random() * 0.4;
@@ -253,22 +263,33 @@
                 const door=new THREE.Mesh(new THREE.BoxGeometry(2.8,4.2,.25),new THREE.MeshLambertMaterial({color:isExit?0x030303:0x542515,emissive:isExit?0x111111:0x000000}));
                 door.position.set(0,2,7.08);
                 barn.add(door);
-                
+
                 barn.position.set(x, 0, z);
                 scene.add(barn);
                 worldObjects.push(barn);
                 barn.userData.radius=7;
                 if(isExit)exitBarn=barn;
             }
-            createBarn(60, -80, true);
-            createBarn(-120, 100);
+            const exitX=45+BackroomsUpgrade.hash(1,0,7)*55;
+            const exitZ=-100+BackroomsUpgrade.hash(0,1,7)*45;
+            createBarn(exitX,exitZ,true);
+            for(let b=0;b<4;b++){
+              const x=(BackroomsUpgrade.hash(b,0,51)-.5)*260;
+              const z=(BackroomsUpgrade.hash(b,0,52)-.5)*260;
+              if(Math.hypot(x-exitX,z-exitZ)>20&&Math.hypot(x,z)>24)
+                createBarn(x,z,false);
+            }
+            brDirector=BackroomsUpgrade.director(scene,camera,10,damage=>{
+              moveSpeed=Math.max(3.4,moveSpeed-.45);
+              BackroomsUpgrade.status('FIELD MIMIC · KEEP MOVING');
+            });
 
             // Cloud Sprites
             const cloudTex = createCloudTexture();
             for(let i=0; i < CLOUD_COUNT; i++) {
-                const cloudMat = new THREE.SpriteMaterial({ 
-                    map: cloudTex, 
-                    transparent: true, 
+                const cloudMat = new THREE.SpriteMaterial({
+                    map: cloudTex,
+                    transparent: true,
                     opacity: 0.7 + Math.random() * 0.3,
                     depthWrite: false
                 });
@@ -331,13 +352,14 @@
             if (keys.d) moveDir.add(right);
 
             if (document.pointerLockElement && !ended && moveDir.length() > 0) {
-                const step=moveDir.normalize().multiplyScalar(moveSpeed*delta);
+                const running=!!keys.shift;
+                const step=moveDir.normalize().multiplyScalar(moveSpeed*(running?1.42:1)*delta);
                 const tryX=camera.position.clone();tryX.x+=step.x;
                 if(!hitsWorldObject(tryX))camera.position.x=tryX.x;
                 const tryZ=camera.position.clone();tryZ.z+=step.z;
                 if(!hitsWorldObject(tryZ))camera.position.z=tryZ.z;
                 stepCounter += delta * 8;
-                camera.position.y = 1.8 + Math.sin(stepCounter) * 0.06; 
+                camera.position.y = 1.8 + Math.sin(stepCounter) * 0.06;
             }
 
             // Infinity Loop Logic
@@ -357,6 +379,10 @@
             });
 
             worldObjects.forEach(obj => wrap(obj, limit + 50));
+            if(document.pointerLockElement&&!ended){
+              brDirector.update(delta,(keys.shift&&moveDir.lengthSq()>0)?1:0,false);
+              BackroomsUpgrade.updateZone(camera.position,10);
+            }
 
             if(exitBarn&&!ended){
                 const near=camera.position.distanceTo(exitBarn.position)<10;

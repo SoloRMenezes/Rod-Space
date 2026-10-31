@@ -6,6 +6,8 @@ let camera, scene, renderer, clock, audioCtx;
         let stamina = 100;
         let startTime = Date.now();
         let gameActive = false;
+        let brDirector=null;
+        let crouching=false;
 
         let glitchTimer = 0;
         let isGlitching = false;
@@ -30,8 +32,10 @@ let camera, scene, renderer, clock, audioCtx;
 
         function init() {
             scene = new THREE.Scene();
+            BackroomsUpgrade.markRun(0);
+            yaw=(BackroomsUpgrade.hash(0,0,31)-.5)*Math.PI*2;
             scene.background = new THREE.Color(0x1a1a00);
-            scene.fog = new THREE.FogExp2(0x1a1a00, 0.1);
+            scene.fog = new THREE.FogExp2(0x1a1a00, 0.052);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
             camera.position.set(0, 1.7, 0);
@@ -43,10 +47,10 @@ let camera, scene, renderer, clock, audioCtx;
 
             clock = new THREE.Clock();
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.41);
             scene.add(ambientLight);
 
-            const pointLight = new THREE.PointLight(0xffffcc, 0.8, 15);
+            const pointLight = new THREE.PointLight(0xffffcc, 1.25, 23);
             camera.add(pointLight);
             scene.add(camera);
 
@@ -56,6 +60,10 @@ let camera, scene, renderer, clock, audioCtx;
             drawingMat = createDrawingMaterial();
 
             updateProceduralWorld();
+            brDirector=BackroomsUpgrade.director(scene,camera,0,damage=>{
+              sanity=Math.max(0,sanity-damage);
+              showMessage('CONTACT · SANITY -'+damage);
+            },checkCollision);
             setupControls();
             window.addEventListener('resize', onWindowResize, false);
             animate();
@@ -229,57 +237,69 @@ let camera, scene, renderer, clock, audioCtx;
             showMessage("THE WAY OUT IS OPEN");
         }
 
-        function generateChunk(cx, cz) {
-            const chunkKey = `${cx},${cz}`;
-            if (chunks.has(chunkKey)) return;
-
-            const chunkGroup = new THREE.Group();
-            chunkGroup.position.set(cx * CHUNK_SIZE, 0, cz * CHUNK_SIZE);
-
-            const floor = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), floorMat);
-            floor.rotation.x = -Math.PI / 2;
-            chunkGroup.add(floor);
-
-            const ceil = new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE), ceilMat);
-            ceil.rotation.x = Math.PI / 2; ceil.position.y = 4;
-            chunkGroup.add(ceil);
-
-            const boxGeo = new THREE.BoxGeometry(CELL_SIZE, 4, CELL_SIZE);
-            const innerCells = Math.floor(CHUNK_SIZE / CELL_SIZE);
-
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const canSpawnExit = gameActive && elapsed > 300 && !exitSpawned;
-
-            for(let x = 0; x < innerCells; x++) {
-                for(let z = 0; z < innerCells; z++) {
-                    const localPosX = (x * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
-                    const localPosZ = (z * CELL_SIZE) - (CHUNK_SIZE / 2) + (CELL_SIZE / 2);
-                    const worldX = (cx * CHUNK_SIZE) + localPosX;
-                    const worldZ = (cz * CHUNK_SIZE) + localPosZ;
-
-                    if (Math.abs(worldX) < 8 && Math.abs(worldZ) < 8) continue;
-
-                    const seed = Math.abs(Math.sin(worldX * 0.1 + worldZ * 0.5) * 100);
-                    const val = seed - Math.floor(seed);
-
-                    if (val > 0.82) {
-                        const wall = new THREE.Mesh(boxGeo, wallMat);
-                        wall.position.set(localPosX, 2, localPosZ);
-                        chunkGroup.add(wall);
-                    } else if (val < 0.01 && canSpawnExit) {
-                        spawnExit(chunkGroup, localPosX, localPosZ);
-                    } else if (val < 0.005) {
-                        spawnAlmondWater(chunkGroup, localPosX, localPosZ);
-                    } else if (val > 0.4 && val < 0.43) {
-                        spawnDecor(chunkGroup, localPosX, localPosZ);
-                    }
-                }
+        const visitedChunks=new Set();
+        const collectedBottles=new Set();
+        function generateChunk(cx,cz){
+          const key=cx+','+cz;
+          if(chunks.has(key))return;
+          visitedChunks.add(key);
+          const group=new THREE.Group();
+          group.position.set(cx*CHUNK_SIZE,0,cz*CHUNK_SIZE);
+          const floor=new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE,CHUNK_SIZE),floorMat);
+          floor.rotation.x=-Math.PI/2;group.add(floor);
+          const ceiling=new THREE.Mesh(new THREE.PlaneGeometry(CHUNK_SIZE,CHUNK_SIZE),ceilMat);
+          ceiling.rotation.x=Math.PI/2;ceiling.position.y=4;group.add(ceiling);
+          const cells=CHUNK_SIZE/CELL_SIZE,blocks=[];
+          for(let x=0;x<cells;x++)for(let z=0;z<cells;z++){
+            const gx=cx*cells+x,gz=cz*cells+z;
+            const posX=(x+.5)*CELL_SIZE-CHUNK_SIZE/2;
+            const posZ=(z+.5)*CELL_SIZE-CHUNK_SIZE/2;
+            const worldX=cx*CHUNK_SIZE+posX,worldZ=cz*CHUNK_SIZE+posZ;
+            if(Math.abs(worldX)<8&&Math.abs(worldZ)<8)continue;
+            const tile=BackroomsUpgrade.cell(gx,gz,0);
+            if(tile.wall)blocks.push([posX,posZ]);
+            else{
+              const pick=BackroomsUpgrade.hash(gx,gz,0*17+17);
+              const eligibleExit=gameActive&&!exitSpawned&&
+                (Date.now()-startTime)>95000&&visitedChunks.size>=16&&
+                Math.abs(cx)+Math.abs(cz)>1;
+              if(eligibleExit&&tile.feature==='main-corridor'&&pick<.44){
+                spawnExit(group,posX,posZ);
+              }else if(pick<.025 && !collectedBottles.has(gx+','+gz)){
+                spawnAlmondWater(group,posX,posZ,gx+','+gz);
+              }else if(pick>.935&&pick<.989){
+                BackroomsUpgrade.addProp(group,posX,posZ,0,pick);
+              }
             }
-            scene.add(chunkGroup);
-            chunks.set(chunkKey, chunkGroup);
+          }
+          const walls=new THREE.InstancedMesh(
+            new THREE.BoxGeometry(CELL_SIZE,4,CELL_SIZE),wallMat,blocks.length);
+          const dummy=new THREE.Object3D();
+          blocks.forEach(([x,z],i)=>{
+            dummy.position.set(x,2,z);dummy.updateMatrix();
+            walls.setMatrixAt(i,dummy.matrix);
+          });
+          walls.instanceMatrix.needsUpdate=true;
+          walls.frustumCulled=false;
+          group.add(walls);
+          group.userData.region=BackroomsUpgrade.roomType(cx,cz,0);
+          const tileVariant=Math.floor(BackroomsUpgrade.hash(cx,cz,54)*4);
+          const palette=[0xffffe2,0xe2dcc4,0xe9e4c3,0xbec6ae];
+          floor.material=floorMat.clone();
+          floor.userData.uniqueMaterial=true;
+          floor.material.color.setHex(palette[tileVariant]);
+          const lightBox=new THREE.Mesh(
+            new THREE.BoxGeometry(1.65,.09,.55),
+            new THREE.MeshBasicMaterial({color:0xffedba}));
+          lightBox.position.set(0,3.95,0);group.add(lightBox);
+          if(BackroomsUpgrade.hash(cx,cz,79)>.82){
+            const lamp=new THREE.PointLight(0xffe9b0,.58,14);
+            lamp.position.set(0,3.65,0);group.add(lamp);
+          }
+          scene.add(group);chunks.set(key,group);
         }
 
-        function spawnAlmondWater(group, x, z) {
+        function spawnAlmondWater(group, x, z, pickupId) {
             const bottleGroup = new THREE.Group();
             const bottle = new THREE.Mesh(
                 new THREE.CylinderGeometry(0.08, 0.08, 0.4),
@@ -288,6 +308,7 @@ let camera, scene, renderer, clock, audioCtx;
             bottleGroup.add(bottle);
             bottleGroup.position.set(x, 0.2, z);
             bottleGroup.name = "ALMOND_WATER";
+            bottleGroup.userData.pickupId=pickupId;
             group.add(bottleGroup);
         }
 
@@ -302,6 +323,7 @@ let camera, scene, renderer, clock, audioCtx;
             for (const [key, chunk] of chunks) {
                 const [cx, cz] = key.split(',').map(Number);
                 if (Math.abs(cx - pX) > RENDER_DISTANCE + 1 || Math.abs(cz - pZ) > RENDER_DISTANCE + 1) {
+                    BackroomsUpgrade.disposeChunk(chunk);
                     scene.remove(chunk);
                     chunks.delete(key);
                 }
@@ -309,30 +331,66 @@ let camera, scene, renderer, clock, audioCtx;
         }
 
         function setupControls() {
-            const inst = document.getElementById('instructions');
-            const startBtn = document.getElementById('start-btn');
-            startBtn.addEventListener('click', () => {
-                document.body.requestPointerLock();
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                startTime = Date.now();
-                gameActive = true;
+            const inst=document.getElementById('instructions');
+            const startBtn=document.getElementById('start-btn');
+            let everLocked=false,dragLook=false,lastX=0,lastY=0;
+            const launch=()=>{
+              // Pointer lock is optional in the macOS app. Starting the game
+              // must not depend on whether WebKit grants pointer capture.
+              startTime=Date.now();
+              gameActive=true;
+              inst.style.display='none';
+              if(typeof audioCtx!=='undefined'&&!audioCtx){
+                try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}
+                catch(err){console.warn('Audio unavailable:',err.message);}
+              }
+              try{
+                const target=renderer?.domElement||document.body;
+                const request=target.requestPointerLock?.();
+                if(request&&typeof request.catch==='function')
+                  request.catch(()=>{console.info('Mouse: drag-to-look fallback enabled');});
+              }catch(err){console.info('Pointer lock unavailable: using drag-to-look');}
+            };
+            startBtn.addEventListener('click',launch);
+            document.addEventListener('pointerlockchange',()=>{
+              const locked=!!document.pointerLockElement;
+              if(locked){everLocked=true;inst.style.display='none';gameActive=true;}
+              else if(everLocked&&gameActive){
+                gameActive=false;
+                inst.style.display='flex';
+                Object.keys(keys).forEach(k=>keys[k]=false);
+              }
             });
-            document.addEventListener('pointerlockchange', () => {
-                const locked=document.pointerLockElement === document.body;
-                inst.style.display = locked ? 'none' : 'flex';
-                gameActive = locked;
-                if(!locked)Object.keys(keys).forEach(key=>keys[key]=false);
+            document.addEventListener('mousedown',e=>{
+              if(gameActive&&!document.pointerLockElement&&e.button===0){
+                dragLook=true;lastX=e.clientX;lastY=e.clientY;
+              }
+            });
+            document.addEventListener('mouseup',()=>{dragLook=false;});
+            document.addEventListener('mousemove',e=>{
+              if(!gameActive||document.pointerLockElement||!dragLook)return;
+              yaw-=(e.clientX-lastX)*.003;
+              pitch=Math.max(-Math.PI/2.3,Math.min(Math.PI/2.3,pitch-(e.clientY-lastY)*.003));
+              lastX=e.clientX;lastY=e.clientY;
+            });
+            document.addEventListener('keydown',e=>{
+              if(e.code==='Escape'&&gameActive&&!document.pointerLockElement){
+                gameActive=false;inst.style.display='flex';dragLook=false;
+              }
             });
             document.addEventListener('mousemove', (e) => {
-                if (document.pointerLockElement === document.body) {
+                if (gameActive && document.pointerLockElement) {
                     yaw -= e.movementX * 0.0025;
                     pitch -= e.movementY * 0.0025;
                     pitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, pitch));
                 }
             });
             document.addEventListener('keydown', (e) => {
-                const key = e.key.toLowerCase();
-                if (keys.hasOwnProperty(key)) keys[key] = true;
+                const key=e.key.toLowerCase();
+                if(key==='c'&&!e.repeat)crouching=!crouching;
+                if(key==='f'&&!e.repeat&&camera.children[0])
+                  camera.children[0].visible=!camera.children[0].visible;
+                if(keys.hasOwnProperty(key))keys[key]=true;
             });
             document.addEventListener('keyup', (e) => {
                 const key = e.key.toLowerCase();
@@ -357,7 +415,8 @@ let camera, scene, renderer, clock, audioCtx;
                                 prompt.style.display = 'block';
                                 if (keys.e) {
                                     sanity = Math.min(100, sanity + 35);
-                                    chunk.remove(child);
+                                    collectedBottles.add(child.userData.pickupId);
+                            chunk.remove(child);
                                     showMessage("DRANK ALMOND WATER");
                                     keys.e = false;
                                 }
@@ -408,19 +467,19 @@ let camera, scene, renderer, clock, audioCtx;
             setTimeout(() => { msg.style.opacity = '0'; }, 3000);
         }
 
-        function checkCollision(pos) {
-            const r = 0.4;
-            for (const chunk of chunks.values()) {
-                for (const obj of chunk.children) {
-                    if (obj.geometry && obj.geometry.type === "BoxGeometry" && obj.position.y === 2) {
-                        const wx = chunk.position.x + obj.position.x;
-                        const wz = chunk.position.z + obj.position.z;
-                        if (pos.x > wx - CELL_SIZE/2 - r && pos.x < wx + CELL_SIZE/2 + r &&
-                            pos.z > wz - CELL_SIZE/2 - r && pos.z < wz + CELL_SIZE/2 + r) return true;
-                    }
-                }
-            }
-            return false;
+        function checkCollision(pos){
+          const radius=.42;
+          const center=n=>Math.floor((n+CHUNK_SIZE/2)/CELL_SIZE);
+          const gx=center(pos.x),gz=center(pos.z);
+          for(let x=gx-1;x<=gx+1;x++)for(let z=gz-1;z<=gz+1;z++){
+            const tile=BackroomsUpgrade.cell(x,z,0);
+            if(!tile.wall)continue;
+            const wx=x*CELL_SIZE-CHUNK_SIZE/2+CELL_SIZE/2;
+            const wz=z*CELL_SIZE-CHUNK_SIZE/2+CELL_SIZE/2;
+            if(Math.abs(pos.x-wx)<CELL_SIZE/2+radius &&
+               Math.abs(pos.z-wz)<CELL_SIZE/2+radius)return true;
+          }
+          return false;
         }
 
         function moveWithCollision(object, displacement) {
@@ -505,18 +564,20 @@ let camera, scene, renderer, clock, audioCtx;
                 if (keys.a) moveDir.sub(right);
                 if (keys.d) moveDir.add(right);
                 if (moveDir.length() > 0) {
-                    const sprinting=keys.shift&&stamina>0;
+                    const sprinting=keys.shift&&!crouching&&stamina>0;
                     stamina=Math.max(0,stamina-(sprinting?34:0)*delta);
-                    moveDir.normalize().multiplyScalar((sprinting?7.6:5.0)*delta);
+                    moveDir.normalize().multiplyScalar((crouching?2.6:sprinting?7.5:5.0)*delta);
                     moveWithCollision(camera,moveDir);
                     stepCounter += delta * 11;
-                    camera.position.y = 1.7 + Math.sin(stepCounter) * 0.06;
+                    camera.position.y = (crouching?1.2:1.7)+Math.sin(stepCounter)*.04;
                 } else {
                     stamina=Math.min(100,stamina+24*delta);
-                    camera.position.y = 1.7 + Math.sin(Date.now() * 0.001) * 0.015;
+                    camera.position.y = (crouching?1.2:1.7)+Math.sin(Date.now()*.001)*.012;
                 }
                 camera.quaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
-                handleEntity(delta);
+                if(brDirector)brDirector.update(delta,keys.shift&&!crouching,crouching);
+                window.brGameElapsed=(Date.now()-startTime)/1000;
+                BackroomsUpgrade.updateZone(camera.position,0,visitedChunks.size);
                 handleGlitches(delta);
                 updateProceduralWorld();
                 handleInteractions();

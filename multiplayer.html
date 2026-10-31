@@ -406,9 +406,11 @@
         scene.add(playerBody);
         
         // Materials
-        const skinMat = new THREE.MeshStandardMaterial({ color: 0xf1c27d, roughness: 0.6, metalness: 0.1 });
-        const shirtMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.8, metalness: 0.1 });
-        const pantsMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.9, metalness: 0.0 });
+        // Original neutral, unbranded default avatar palette.
+        // Warm stone skin, off-white torso and light-grey legs.
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xd8c6ae, roughness: 0.82, metalness: 0 });
+        const shirtMat = new THREE.MeshStandardMaterial({ color: 0xe8e5de, roughness: 0.89, metalness: 0 });
+        const pantsMat = new THREE.MeshStandardMaterial({ color: 0xc8c9c3, roughness: 0.9, metalness: 0 });
         const faceMat = new THREE.MeshBasicMaterial({ color: 0x111827 }); // Dark eyes/mouth
 
         // Create Parts function
@@ -473,8 +475,8 @@
         rightLegGroup.add(rightLeg);
         playerBody.add(rightLegGroup);
 
-        shirtMat.color.setHex(0xe87945);
-        pantsMat.color.setHex(0x203543);
+        shirtMat.color.setHex(0xe8e5de);
+        pantsMat.color.setHex(0xc8c9c3);
         torso.scale.set(.85,1,1.05);
         leftArmGroup.position.x=-1.13; rightArmGroup.position.x=1.13;
         leftArm.scale.set(.55,1,.7); rightArm.scale.set(.55,1,.7);
@@ -494,12 +496,12 @@
 
         // Reuse Web Weavers' compact rounded character construction while
         // preserving Parkour's existing pivots, collision size and animations.
-        const webRed=new THREE.MeshStandardMaterial({color:0x9f263b,roughness:.72});
-        const webBlue=new THREE.MeshStandardMaterial({color:0x1d3555,roughness:.78});
-        torso.geometry.dispose();torso.geometry=new THREE.CylinderGeometry(.82,.68,2,8);torso.material=webRed;
-        head.geometry.dispose();head.geometry=new THREE.SphereGeometry(.68,16,12);head.scale.set(.9,1.04,.82);head.material=webRed;
-        for(const arm of [leftArm,rightArm]){arm.geometry.dispose();arm.geometry=new THREE.CylinderGeometry(.3,.26,2,8);arm.material=webRed;}
-        for(const leg of [leftLeg,rightLeg]){leg.geometry.dispose();leg.geometry=new THREE.CylinderGeometry(.38,.3,2,8);leg.material=webBlue;}
+        // Keep the existing avatar pivots and movement animations, but remove
+        // the red/black Web Weavers appearance from the fallback character.
+        torso.geometry.dispose();torso.geometry=new THREE.CylinderGeometry(.82,.68,2,8);torso.material=shirtMat;
+        head.geometry.dispose();head.geometry=new THREE.SphereGeometry(.68,16,12);head.scale.set(.9,1.04,.82);head.material=skinMat;
+        for(const arm of [leftArm,rightArm]){arm.geometry.dispose();arm.geometry=new THREE.CylinderGeometry(.3,.26,2,8);arm.material=skinMat;}
+        for(const leg of [leftLeg,rightLeg]){leg.geometry.dispose();leg.geometry=new THREE.CylinderGeometry(.38,.3,2,8);leg.material=pantsMat;}
         for(const root of [...leftArmGroup.children.slice(1),...rightArmGroup.children.slice(1),...leftLegGroup.children.slice(1),...rightLegGroup.children.slice(1)])root.visible=false;
         hair.visible=false;pack.visible=false;
         playerBody.children.filter(child=>child!==torso&&child!==headGroup&&child!==leftArmGroup&&child!==rightArmGroup&&child!==leftLegGroup&&child!==rightLegGroup).forEach(child=>child.visible=false);
@@ -516,9 +518,24 @@
                 if(node.isBone){robloxBones[node.name]=node;robloxRest[node.name]=node.quaternion.clone()}
                 if(node.isMesh){
                     node.material=node.material.clone();
+                    // The supplied R15 GLB contains a baked clothing texture.
+                    // Remove it so its original neutral body materials are shown
+                    // instead of the dark/red suit. Geometry and skeleton stay intact.
                     const part=node.name.toLowerCase();
-                    node.material.color.setHex(part.includes('leg')||part.includes('foot')?0x101827:0x9f263b);
-                    node.material.roughness=.8;
+                    const color=
+                      part.includes('head')||part.includes('hand')?0xd8c6ae:
+                      part.includes('foot')?0xe4e1d9:
+                      part.includes('leg')?0xc8c9c3:
+                      part.includes('torso')?0xe8e5de:0xe3dfd5;
+                    const materials=Array.isArray(node.material)?node.material:[node.material];
+                    for(const mat of materials){
+                        mat.map=null;
+                        mat.emissiveMap=null;
+                        mat.color.setHex(color);
+                        mat.roughness=.87;
+                        mat.metalness=0;
+                        mat.needsUpdate=true;
+                    }
                     node.castShadow=true;node.receiveShadow=true;
                 }
             });

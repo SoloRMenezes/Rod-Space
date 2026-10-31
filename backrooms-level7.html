@@ -27,6 +27,8 @@
 
         #fade-out { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; opacity: 0; pointer-events: none; transition: opacity 2s ease; z-index: 9999; }
     </style>
+<link rel="stylesheet" href="./backrooms-upgrade.css">
+<link rel="stylesheet" href="./backrooms-polish.css">
 </head>
 <body>
 
@@ -52,11 +54,14 @@
         <button id="start-btn">ENTER</button>
     </div>
 
+    <script src="./backrooms-upgrade.js"></script>
+<script src="./backrooms-ui.js"></script>
     <script>
         let camera, scene, renderer, clock;
         let keys = { w: false, s: false, a: false, d: false };
         let sanity = 100;
         let gameActive = false;
+        let brDirector=null;
         let exiting = false;
         let stepCounter = 0;
         let yaw = 0, pitch = 0;
@@ -126,6 +131,7 @@
 
         function init() {
             scene = new THREE.Scene();
+            BackroomsUpgrade.markRun(7);
             scene.background = new THREE.Color(0x020305);
             scene.fog = new THREE.FogExp2(0x03060a, 0.05); 
 
@@ -154,6 +160,10 @@
             scene.add(camera);
 
             setupControls();
+            brDirector=BackroomsUpgrade.director(scene,camera,7,damage=>{
+              sanity=Math.max(0,sanity-damage);
+              BackroomsUpgrade.status('THE DROWNED · SANITY -'+damage);
+            },checkCollision);
             window.addEventListener('resize', onWindowResize);
             animate();
         }
@@ -219,16 +229,29 @@
                 group.add(bz);
             }
 
-            // Deterministic but still procedural: exploration will always produce
-            // an exit candidate instead of depending on a roll that may never hit.
-            const distFromOrigin = Math.sqrt(cx*cx + cz*cz);
-            const hash = Math.abs(Math.sin(cx * 12.98 + cz * 78.23) * 43758) % 1;
-            if (distFromOrigin > 7 && hash > 0.9 && exits.length < 1) {
-                spawnExitDoor(worldX, worldZ);
+            const dist=Math.hypot(cx,cz);
+            const roll=BackroomsUpgrade.hash(cx,cz,77);
+            // Every flood chamber has a different navigable silhouette.
+            // Partial wall panels keep at least two lateral passages open.
+            if(dist>7&&roll>.88&&exits.length<1)spawnExitDoor(worldX,worldZ);
+            // The initial spawn chamber must not intersect the player.
+            if(dist>1 && roll>.70){
+              createWall(worldX-CHUNK_SIZE*.25,worldZ-CHUNK_SIZE*.12,
+                CHUNK_SIZE*.42,9,.6);
+            }else if(dist>1 && roll<.29){
+              createWall(worldX+CHUNK_SIZE*.17,worldZ-CHUNK_SIZE*.22,
+                .6,9,CHUNK_SIZE*.48);
+            }else if(dist>1 && roll<.48){
+              createWall(worldX,worldZ,CHUNK_SIZE*.38,9,.6);
+              createWall(worldX+CHUNK_SIZE*.27,worldZ+CHUNK_SIZE*.22,
+                .6,9,CHUNK_SIZE*.24);
             }
-
-            if (hash > 0.75) createWall(worldX, worldZ - CHUNK_SIZE/2, CHUNK_SIZE, 9, 0.6);
-            if (hash < 0.25) createWall(worldX + CHUNK_SIZE/2, worldZ, 0.6, 9, CHUNK_SIZE);
+            if(roll>.82){
+              const floodLight=new THREE.PointLight(0x76c8d9,.75,12);
+              floodLight.position.set(0,4.7,0);group.add(floodLight);
+            }
+            group.userData.region=roll>.7?'submerged gallery':
+              roll<.29?'collapsed hall':roll<.48?'flooded maze':'open basin';
 
             scene.add(group);
             chunks.set(key, group);
@@ -244,21 +267,51 @@
         }
 
         function setupControls() {
-            document.getElementById('start-btn').addEventListener('click', () => {
-                document.body.requestPointerLock();
+            const instructions=document.getElementById('instructions');
+            let everLocked=false,dragLook=false,lastX=0,lastY=0;
+            document.getElementById('start-btn').addEventListener('click',()=>{
+              gameActive=true;
+              instructions.style.display='none';
+              instructions.style.opacity='0';
+              instructions.style.pointerEvents='none';
+              try{
+                const request=renderer?.domElement?.requestPointerLock?.();
+                if(request?.catch)request.catch(()=>console.info('Mouse drag fallback'));
+              }catch(err){console.info('Mouse drag fallback');}
             });
-
-            document.addEventListener('pointerlockchange', () => {
-                const locked = document.pointerLockElement === document.body;
-                const instructions=document.getElementById('instructions');
-                instructions.style.opacity = locked ? '0' : '1';
-                instructions.style.pointerEvents=locked?'none':'auto';
-                gameActive = locked;
-                if(!locked)Object.keys(keys).forEach(key=>keys[key]=false);
+            document.addEventListener('pointerlockchange',()=>{
+              if(document.pointerLockElement){
+                everLocked=true;gameActive=true;
+                instructions.style.display='none';
+              }else if(everLocked&&gameActive){
+                gameActive=false;
+                instructions.style.display='flex';
+                instructions.style.opacity='1';
+                instructions.style.pointerEvents='auto';
+                Object.keys(keys).forEach(key=>keys[key]=false);
+              }
+            });
+            document.addEventListener('mousedown',e=>{
+              if(gameActive&&!document.pointerLockElement&&e.button===0){
+                dragLook=true;lastX=e.clientX;lastY=e.clientY;
+              }
+            });
+            document.addEventListener('mouseup',()=>{dragLook=false;});
+            document.addEventListener('mousemove',e=>{
+              if(!gameActive||document.pointerLockElement||!dragLook)return;
+              yaw-=(e.clientX-lastX)*.002;
+              pitch=Math.max(-Math.PI/2,Math.min(Math.PI/2,pitch-(e.clientY-lastY)*.002));
+              lastX=e.clientX;lastY=e.clientY;
+            });
+            document.addEventListener('keydown',e=>{
+              if(e.code==='Escape'&&gameActive&&!document.pointerLockElement){
+                gameActive=false;instructions.style.display='flex';
+                instructions.style.opacity='1';instructions.style.pointerEvents='auto';
+              }
             });
 
             document.addEventListener('mousemove', (e) => {
-                if (!gameActive || exiting) return;
+                if (!gameActive || exiting || !document.pointerLockElement) return;
                 yaw -= e.movementX * 0.0016;
                 pitch -= e.movementY * 0.0016;
                 pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
@@ -318,7 +371,9 @@
                     }
                 });
 
-                sanity -= delta * 0.08;
+                brDirector.update(delta,keys.w||keys.s||keys.a||keys.d?1:0,false);
+                BackroomsUpgrade.updateZone(camera.position,7);
+                sanity-=delta*.08;
                 document.getElementById('sanity-bar').style.width = Math.max(0, sanity) + '%';
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 document.getElementById('timer').innerText = `TIME: ${Math.floor(elapsed/60).toString().padStart(2, '0')}:${(elapsed%60).toString().padStart(2, '0')}`;

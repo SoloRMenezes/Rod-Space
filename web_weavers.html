@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>WEB WEAVERS — Manhattan Patrol</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="./web_weavers.css?v=8">
+<link rel="stylesheet" href="./web_weavers.css?v=10">
 </head>
 <body>
 
@@ -44,15 +44,30 @@
 </div>
 
 <div id="hud">
+  <div id="speedLines" aria-hidden="true">
+    <img class="speedLineLayer clean" src="./assets/effects/web-weavers-speed-lines-clean.png?v=1" alt="">
+    <img class="speedLineLayer dense" src="./assets/effects/web-weavers-speed-lines-dense.png?v=1" alt="">
+  </div>
   <div id="healthWrap">
     <div id="healthLabel">SPIDEY HP</div>
     <div id="healthBarOuter"><div id="healthBarInner"></div></div>
   </div>
   <div id="cashDisplay" class="comicPanel">$<span id="cashValue">0</span></div>
 
-  <div id="minimapWrap">
-    <div id="minimapLabel">MANHATTAN</div>
+  <div id="minimapWrap" title="Press M for the full city map">
     <canvas id="minimap" width="190" height="190"></canvas>
+  </div>
+  <div id="fullMapOverlay" role="dialog" aria-label="Manhattan map" aria-modal="true" hidden>
+    <div id="fullMapPanel">
+      <div id="fullMapHeader">
+        <strong>MANHATTAN MAP</strong>
+        <span>Drag to pan · Scroll to zoom · M or Esc to close</span>
+        <button id="fullMapCenter" type="button">CENTER</button>
+        <button id="fullMapClose" type="button" aria-label="Close map">✕</button>
+      </div>
+      <canvas id="fullMapCanvas" aria-label="Interactive Manhattan map"></canvas>
+      <div id="fullMapInfo" aria-live="polite">Click a marker to see its name</div>
+    </div>
   </div>
 
   <div id="topButtons">
@@ -104,9 +119,10 @@
   <div id="bindPanel" class="comicPanel">
     <h3>CONTROLS (click a key to rebind)</h3>
     <div class="row"><span>Move / climb (auto vs. walls)</span><span>WASD</span></div>
+    <div class="row"><span>Full city map (drag / scroll to zoom)</span><span>M</span></div>
     <div class="row"><span>Look</span><span>Mouse</span></div>
     <div class="row"><span>Mouse sensitivity</span><span><input id="sensitivitySlider" type="range" min="50" max="180" value="100"><span id="sensitivityValue">100%</span></span></div>
-    <div class="row"><span>Render distance</span><span><input id="renderDistanceSlider" type="range" min="220" max="900" step="20" value="520"><span id="renderDistanceValue">520</span></span></div>
+    <div class="row"><span>Render distance</span><span><input id="renderDistanceSlider" type="range" min="220" max="5600" step="20" value="520"><span id="renderDistanceValue">520</span></span></div>
     <div class="row"><span>Resolution</span><span><input id="resolutionSlider" type="range" min="60" max="100" step="5" value="100"><span id="resolutionValue">100%</span></span></div>
     <div class="row"><span>Animated water</span><span><label class="pillToggle" aria-label="Animated water"><input id="waterToggle" type="checkbox" checked><span class="pillTrack"></span></label></span></div>
     <div class="row"><span>Sound effects</span><span><label class="pillToggle" aria-label="Sound effects"><input id="soundToggle" type="checkbox" checked><span class="pillTrack"></span></label></span></div>
@@ -142,7 +158,7 @@
 
 <script src="./assets/vendor/offline-25023b521d77.js"></script>
 <script src="./assets/vendor/GLTFLoader-r128.js"></script>
-<script src="./web_weavers.js?v=15"></script>
+<script src="./web_weavers.js?v=43"></script>
 <script src="./mobile-landscape-resize.js"></script>
   <script src="rod-space-app-menu.js"></script>
 </body>

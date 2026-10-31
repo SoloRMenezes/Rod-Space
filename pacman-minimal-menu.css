@@ -1,0 +1,99 @@
+/* Minimal Pac-Man menu: one column, three equal stacked controls. */
+#startScreen {
+  background:radial-gradient(ellipse 70% 70% at 50% 43%,#101d44 0%,#060b21 72%,#030616 100%) !important;
+  padding:20px !important;
+}
+#startScreen .arcade-menu.arcade-menu-simple {
+  display:flex !important;
+  align-items:center;
+  justify-content:center;
+  width:min(490px,calc(100vw - 36px));
+  height:auto;
+  min-height:0;
+  max-height:calc(100vh - 36px);
+  box-sizing:border-box;
+  padding:clamp(28px,5vh,55px) clamp(24px,5vw,52px);
+  border:1px solid #293d72;
+  border-radius:14px;
+  background:linear-gradient(145deg,#0e1838,#080f28);
+  box-shadow:0 22px 64px rgba(0,0,0,.45);
+  overflow:auto;
+}
+#startScreen .arcade-menu-simple .menu-story {
+  display:flex;
+  width:100%;
+  padding:0;
+  min-width:0;
+  border:0;
+  align-items:stretch;
+  justify-content:center;
+  text-align:center;
+}
+#startScreen .arcade-menu-simple .menu-heading {
+  margin:0;
+  font-size:clamp(42px,6vw,65px);
+  line-height:1.05;
+  font-weight:860;
+  letter-spacing:-.055em;
+  color:#dcecff;
+  white-space:nowrap;
+}
+#startScreen .arcade-menu-simple .menu-heading span {
+  display:inline;
+  font-size:inherit;
+  color:#84b6ff;
+  letter-spacing:inherit;
+}
+#startScreen .arcade-menu-simple #menuSubtitle {
+  text-align:center;
+  margin:12px 0 29px;
+  font:500 14px/1.4 system-ui,-apple-system,sans-serif;
+  color:#93a9cc;
+}
+#startScreen .arcade-menu-simple .menu-buttons {
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  gap:11px;
+}
+#startScreen .arcade-menu-simple .menu-buttons .btn {
+  box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:49px;
+  margin:0 !important;
+  padding:12px 18px;
+  border-radius:8px;
+  font:750 13px/1.35 system-ui,-apple-system,sans-serif;
+  letter-spacing:.015em;
+  cursor:pointer;
+  transition:background .14s,border-color .14s;
+}
+#startScreen .arcade-menu-simple .menu-buttons #btnStart {
+  background:#315bd5;
+  border:1px solid #527eff;
+  color:#fff;
+}
+#startScreen .arcade-menu-simple .menu-buttons .secondary {
+  background:#101d40;
+  border:1px solid #334c7c;
+  color:#d9e7ff;
+}
+#startScreen .arcade-menu-simple .menu-buttons .btn:hover {
+  transform:none;
+  filter:none;
+  background:#24499f;
+  border-color:#89aaff;
+}
+#startScreen .arcade-menu-simple .menu-buttons .btn:focus-visible {
+  outline:2px solid #b8d8ff;
+  outline-offset:3px;
+}
+@media(max-height:550px){
+  #startScreen .arcade-menu.arcade-menu-simple{padding:22px 32px}
+  #startScreen .arcade-menu-simple .menu-heading{font-size:42px}
+  #startScreen .arcade-menu-simple #menuSubtitle{margin:7px 0 18px}
+  #startScreen .arcade-menu-simple .menu-buttons .btn{min-height:42px;padding:8px}
+}
