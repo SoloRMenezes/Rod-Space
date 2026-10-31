@@ -142,7 +142,7 @@
 </style>
 <link rel="stylesheet" href="./pacman-polish.css?v=2">
 <link rel="stylesheet" href="./pacman-minimal-menu.css?v=1">
-<link rel="stylesheet" href="./pacman-clean-hud.css?v=1">
+<link rel="stylesheet" href="./pacman-clean-hud.css?v=2">
 </head>
 <body>
 <div id="touchControls" hidden>
@@ -618,10 +618,16 @@ canvas.addEventListener('pointermove', e => {
 });
 window.addEventListener('blur',()=>{clearTouch();for(const key in keys)keys[key]=false;releaseMouseLock();});
 window.addEventListener('pagehide',()=>releaseMouseLock());
-document.getElementById('touchMap').addEventListener('click', () => {
-  mapVisible=true;
-  document.getElementById('mapFrame').classList.add('show');
-});
+function setMinimapVisible(visible) {
+  mapVisible = visible;
+  const frame = document.getElementById('mapFrame');
+  frame.classList.toggle('show', visible);
+  frame.setAttribute('aria-hidden', String(!visible));
+}
+function toggleMinimap() {
+  setMinimapVisible(!mapVisible);
+}
+document.getElementById('touchMap').addEventListener('click', toggleMinimap);
 document.getElementById('touchPause').addEventListener('click', () => {
   clearTouch(); state.paused=true; menuSubtitle.textContent='Paused'; btnStart.innerHTML='RESUME GAME <span>↗</span>'; startScreen.style.display='grid';
 });
@@ -702,11 +708,9 @@ document.addEventListener('keydown', e => {
     resetGame(true);
   }
 
-  if(e.code==='Space'){
+  if (e.code === 'Space' && state.playing && !state.paused) {
     e.preventDefault();
-    // The small radar remains visible at all times.
-    mapVisible=true;
-    document.getElementById('mapFrame').classList.add('show');
+    if (!e.repeat) toggleMinimap();
   }
 
   if (e.code === 'Escape') {

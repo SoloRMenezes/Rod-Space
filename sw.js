@@ -1,5 +1,5 @@
-importScripts('./offline-catalog.js?v=7');
-const SHELL = 'rod-shell-games-piano-20261031';
+importScripts('./offline-catalog.js?v=8');
+const SHELL = 'rod-shell-games-pacman-minimap-20261031';
 const PREFIX = 'rod-game-';
 const BASE = new URL('./', self.location.href);
 const absolute = p => new URL(p, BASE).href;

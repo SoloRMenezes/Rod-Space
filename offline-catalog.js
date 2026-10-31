@@ -5550,13 +5550,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 57011,
-        "hash": "5035b2be46faaa19dc07de2cb52b117b6722f81a5cac370c9f62199cf96bb4f0"
+        "bytes": 57150,
+        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
       },
       {
         "path": "pacman-clean-hud.css",
-        "bytes": 6204,
-        "hash": "b804451b12e13cc52e49728dc2556cb7824be1a3d12fa89612e2396ea9b53d91"
+        "bytes": 6720,
+        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
       },
       {
         "path": "pacman-minimal-menu.css",
@@ -5854,8 +5854,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363207584,
-    "version": "40cb0260686bf33d"
+    "bytes": 363208239,
+    "version": "5da5ea81e83760e4"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -11556,8 +11556,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 57011,
-        "hash": "5035b2be46faaa19dc07de2cb52b117b6722f81a5cac370c9f62199cf96bb4f0"
+        "bytes": 57150,
+        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
       },
       {
         "path": "party-lan.js",
@@ -11760,8 +11760,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360193242,
-    "version": "e5a8837159880865"
+    "bytes": 360193381,
+    "version": "84d231328a920ce3"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -17390,13 +17390,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 57011,
-        "hash": "5035b2be46faaa19dc07de2cb52b117b6722f81a5cac370c9f62199cf96bb4f0"
+        "bytes": 57150,
+        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
       },
       {
         "path": "pacman-clean-hud.css",
-        "bytes": 6204,
-        "hash": "b804451b12e13cc52e49728dc2556cb7824be1a3d12fa89612e2396ea9b53d91"
+        "bytes": 6720,
+        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
       },
       {
         "path": "pacman-minimal-menu.css",
@@ -17414,8 +17414,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 1356576,
-    "version": "b20434da4e73b8fc"
+    "bytes": 1357231,
+    "version": "16058e157b6b9cc9"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",
@@ -22938,8 +22938,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "pac-man-3d.html",
-        "bytes": 57011,
-        "hash": "5035b2be46faaa19dc07de2cb52b117b6722f81a5cac370c9f62199cf96bb4f0"
+        "bytes": 57150,
+        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
       },
       {
         "path": "party-lan.js",
@@ -23142,8 +23142,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360193242,
-    "version": "175aa87306f0bc6b"
+    "bytes": 360193381,
+    "version": "d9440bf1bd1a0476"
   },
   "backrooms": {
     "name": "The Backrooms",
