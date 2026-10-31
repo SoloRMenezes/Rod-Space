@@ -40,17 +40,17 @@ const p2=[
    'Expand: 3x + 4y = '+(3*x+4*y+25*t)+'.'],l);
  },
  (l,v)=>{
-  let n=3+v%4;
+  let n=3+v;
   if(l===0)return q('Logarithms','Evaluate log₂(2^'+n+').',
    n,['Use logₐ(a^k) = k.','Here the base and the power both use 2.','The answer is '+n+'.'],l);
-  let k=2+Math.floor(v/6),x=2**k,p=x/2,z=2*k-1;
-  return q('Logarithms','Solve log₂(x) + log₂(x − '+p+') = '+z+' for x > '+p+'.',
-   'x = '+x,['Combine logs: log₂(x(x − '+p+')) = '+z+'.',
-   'Therefore x(x − '+p+') = 2^'+z+' = '+2**z+'.',
-   'Solving the quadratic and keeping x > '+p+' gives x = '+x+'.'],l);
+  let k=2+v%8,base=2**k,p=base/2,z=2*k-1,shift=1+Math.floor(v/8),x=base+shift;
+  return q('Logarithms','Solve log₂(x − '+shift+') + log₂(x − '+(shift+p)+') = '+z+' for x > '+(shift+p)+'.',
+   'x = '+x,['Combine logs: log₂((x − '+shift+')(x − '+(shift+p)+')) = '+z+'.',
+   'Therefore (x − '+shift+')(x − '+(shift+p)+') = 2^'+z+' = '+2**z+'.',
+   'Solving the quadratic and keeping x > '+(shift+p)+' gives x = '+x+'.'],l);
  },
  (l,v)=>{
-  let a=1+v%5+l,n=4+l+v%3,k=l<2?2:3,coef=comb(n,k)*a**k;
+  let a=1+Math.floor(v/3)+l,n=4+l+v%3,k=l<2?2:3,coef=comb(n,k)*a**k;
   return q('Binomial expansion','Find the coefficient of x^'+k+' in (1 + '+a+'x)^'+n+'.',
    coef,['The general binomial term is C('+n+',k)('+a+'x)^k.',
    'Choose k = '+k+': coefficient = C('+n+','+k+') × '+a+'^'+k+'.',
@@ -91,7 +91,7 @@ const p2=[
    'The gradient is '+gradient+'.'],l);
  },
  (l,v)=>{
-  let a=1+l+v%4,b=1+v%5,t=1+v%4+l,result=a*t**3+b*t*t;
+  let a=1+l+v%4,b=1+v%5,t=1+Math.floor(v/4)+l,result=a*t**3+b*t*t;
   return q('Integration','Evaluate ∫₀^'+t+' ('+3*a+'x² + '+2*b+'x) dx.',
    result,['Integrate each term: an antiderivative is '+a+'x³ + '+b+'x².',
    'Apply the limits 0 and '+t+'.',
@@ -100,7 +100,7 @@ const p2=[
 ];
 const p3=[
  (l,v)=>{
-  let a=1+v%7,b=2+l+v%4;
+  let a=1+v,b=2+l+v%4;
   return q('Algebraic fractions','Simplify (x²'+sign(b-a)+'x − '+a*b+')/(x − '+a+'), for x ≠ '+a+'.',
    'x + '+b,['Find two numbers whose product is −'+a*b+' and whose sum is '+(b-a)+'.',
    'Factor the numerator as (x − '+a+')(x + '+b+').',
@@ -139,14 +139,14 @@ const p3=[
     'Multiply by '+factor+' and simplify to '+frac(factor*cosN,h1*h2)+'.'],l);
  },
  (l,v)=>{
-  let a=2+l+v%4,x=1+v%5,b=1+v%4,c=a*x+b;
+  let a=2+l+v%4,x=1+v%5,b=1+Math.floor(v/4),c=a*x+b;
   return q('Exponentials and logarithms','Solve e^('+a+'x + '+b+') = e^'+c+'.',
    'x = '+x,['Take natural logarithms on both sides: '+a+'x + '+b+' = '+c+'.',
     'Rearrange: '+a+'x = '+(c-b)+'.',
     'Divide by '+a+' to obtain x = '+x+'.'],l);
  },
  (l,v)=>{
-  let a=1+l+v%3,b=1+v%5,n=2+l+v%3,x=1+v%3,t=a*x+b,der=n*a*t**(n-1);
+  let a=1+l+v%3,b=1+Math.floor(v/3),n=2+l+v%3,x=1+v%3,t=a*x+b,der=n*a*t**(n-1);
   return q('Differentiation','Find dy/dx at x = '+x+' for y = ('+a+'x + '+b+')^'+n+'.',
    der,['Use the chain rule with u = '+a+'x + '+b+', so du/dx = '+a+'.',
     'Then dy/dx = '+n+'('+a+')('+a+'x + '+b+')^'+(n-1)+'.',
@@ -194,7 +194,7 @@ const p4=[
    'At t='+t+', the gradient is '+result+'.'],l);
  },
  (l,v)=>{
-  let a=1+l+v%3,n=1+l+v%4,k=l<2?2:3;
+  let a=1+l+Math.floor(v/4),n=1+l+v%4,k=l<2?2:3;
   let c=k===2?comb(n+1,2)*a*a:-comb(n+2,3)*a*a*a;
   return q('Binomial expansion','Find the coefficient of x^'+k+' in (1 + '+a+'x)^−'+n+'.',
    c,['For negative n, the coefficient of u^k is (−1)^k C(n+k−1,k)u^k.',
@@ -209,12 +209,12 @@ const p4=[
    'At ('+a+', '+b+'), the gradient is '+frac(-a,k*b)+'.'],l);
  },
  (l,v)=>{
-  let t=1+Math.floor(v/4)+l;
-  return q('Integration by parts','Evaluate ∫₀^'+t+' x eˣ dx exactly.',
-   '('+(t-1)+')e^'+t+' + 1',
-   ['Choose u=x and dv=eˣ dx; then du=dx and v=eˣ.',
-    'Integration by parts gives ∫xeˣ dx = xeˣ−eˣ+C = (x−1)eˣ+C.',
-    'Evaluate at '+t+' and 0: ('+(t-1)+')e^'+t+' − (−1) = ('+(t-1)+')e^'+t+' + 1.'],l);
+  let t=1+Math.floor(v/4)+l,k=1+v%4;
+  return q('Integration by parts','Evaluate ∫₀^'+t+' '+k+'x eˣ dx exactly.',
+   k+'[('+(t-1)+')e^'+t+' + 1]',
+   ['Choose u=x and dv='+k+'eˣ dx; then du=dx and v='+k+'eˣ.',
+    'Integration by parts gives ∫'+k+'xeˣ dx = '+k+'xeˣ−'+k+'eˣ+C = '+k+'(x−1)eˣ+C.',
+    'Evaluate at '+t+' and 0: '+k+'[('+(t-1)+')e^'+t+' + 1].'],l);
  },
  (l,v)=>{
   let u=1+v%5,a=1+l+v%4,b=2+v%6,c=1+v%3;
@@ -253,21 +253,21 @@ const s1=[
    'The bar height is '+density+'.'],l);
  },
  (l,v)=>{
-  let r=3+l+v%6,b=2+v%6,p=frac(r*(r-1),(r+b)*(r+b-1));
+  let r=3+l+v,b=2+v%6,p=frac(r*(r-1),(r+b)*(r+b-1));
   return q('Probability','A bag has '+r+' red and '+b+' blue counters. Two are drawn without replacement. Find P(both red).',
    p,['First red has probability '+r+'/'+(r+b)+'.',
     'After removing a red, second red has probability '+(r-1)+'/'+(r+b-1)+'.',
     'Multiply: '+r+'/'+(r+b)+' × '+(r-1)+'/'+(r+b-1)+' = '+p+'.'],l);
  },
  (l,v)=>{
-  let a=1+l+v%4,b=1+v%6;
+  let a=1+l+v%4,b=1+v;
   return q('Correlation and regression','Three points lie on a straight line: (0, '+b+'), (1, '+(a+b)+'), (2, '+(2*a+b)+'). Find its regression line equation.',
    'y = '+a+'x + '+b,['The data follow a perfect increasing line.',
    'Find the gradient: ('+(a+b)+'−'+b+')/(1−0) = '+a+'.',
    'The y-intercept is '+b+', giving y = '+a+'x + '+b+'.'],l);
  },
  (l,v)=>{
-  let m=2+v%7,d=1+l+v%4,varValue=frac(d*d,2);
+  let m=2+v,d=1+l+v%4,varValue=frac(d*d,2);
   return q('Discrete random variables','X takes '+(m-d)+', '+m+', '+(m+d)+' with probabilities 1/4, 1/2, 1/4. Find E(X) and Var(X).',
    'E(X) = '+m+', Var(X) = '+varValue,
    ['E(X) = ('+(m-d)+')/4 + '+m+'/2 + ('+(m+d)+')/4 = '+m+'.',
@@ -275,7 +275,7 @@ const s1=[
     'Var(X) = ('+d*d+'/4) + 0 + ('+d*d+'/4) = '+varValue+'.'],l);
  },
  (l,v)=>{
-  let mean=40+v%30,sigma=4+l+v%5,z=[-2,-1,0,1,2][v%5];
+  let mean=40+v,sigma=4+l+v%5,z=[-2,-1,0,1,2][v%5];
   const CDF={'-2':'0.0228','-1':'0.1587','0':'0.5000','1':'0.8413','2':'0.9772'};
   let bound=mean+z*sigma;
   if(l>=2&&v%2===0)
@@ -289,20 +289,21 @@ const s1=[
     'From a Z table, the probability is '+CDF[String(z)]+'.'],l);
  },
  (l,v)=>{
-  let original=35+v%20,shift=2+l+v%8,scale=2+v%4,coded=frac(original-shift,scale);
+  let original=35+v,shift=2+l+v%8,scale=2+v%4,coded=frac(original-shift,scale);
   return q('Statistical coding','Data are coded by y = (x − '+shift+')/'+scale+'. If the mean of x is '+original+', find the mean of y.',
    coded,['For a linear coding, mean(y) = (mean(x) − '+shift+')/'+scale+'.',
     'Substitute ('+original+' − '+shift+')/'+scale+'.',
     'The coded mean is '+coded+'.'],l);
  },
  (l,v)=>{
-  let a=2+v%6,b=3+l+v%7,m=1+v%4,total=a+b,ratio=frac(a,total);
+  let a=2+v,b=3+l+v%7,m=1+v%4,total=a+b,ratio=frac(a,total);
   return q('Probability modelling','A sample contains '+a+' items of type A and '+b+' of type B. Estimate P(A) from relative frequency.',
    ratio,['Use the relative frequency estimate P(A) ≈ frequency(A)/total.',
     'The total number observed is '+a+' + '+b+' = '+total+'.',
     'Therefore P(A) ≈ '+a+'/'+total+' = '+ratio+'.'],l);
  }
 ];
+window.mathsTopicGenerators={p2,p3,p4,s1,makeQuestion:q};
 for(const [course,gens] of Object.entries({p2,p3,p4,s1})){
  const result=[];
  for(const [level,count] of [10,10,20,10].entries()){

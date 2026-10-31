@@ -53,7 +53,9 @@ function chapterRow(id,title,num,finished,isActive){
  '<span class="chapter-title">'+safe(title)+'</span></button>';
 }
 function practiceTopics(c){
- return [['mixed','Full mixed practice']].concat(c.skills);
+ return [['mixed','Full mixed practice']]
+  .concat(c.chapters.filter(ch=>window.mathsFocusedExercises?.[ch.id]).map(ch=>[ch.id,ch.title]))
+  .concat(c.skills);
 }
 function currentTopics(c){
  return state.mode==='exercise'?practiceTopics(c):c.chapters.map(ch=>[ch.id,ch.title]).concat(c.skills);
@@ -80,8 +82,13 @@ renderContents=function(){
  ['A','B','C','D','E'].map(g=>'<div class="grade-boundary"><b>'+g+'</b><span>'+b[g]+'</span></div>').join('')+'</div>';
  if(state.mode==='exercise'){
   let html='<div class="part">MIXED EXERCISES</div>'+chapterRow('mixed','50 questions · all topics',1,finished.has('mixed'),state.topic==='mixed');
+  const focused=c.chapters.filter(ch=>window.mathsFocusedExercises?.[ch.id]);
+  if(focused.length){
+   html+='<div class="part">CHAPTER QUESTIONS · 50 EACH</div>';
+   focused.forEach((ch,i)=>{html+=chapterRow(ch.id,ch.title,i+1,finished.has(ch.id),state.topic===ch.id);});
+  }
   if(c.skills.length){
-   html+='<div class="part">FOCUSED EXERCISES · 50 EACH</div>';
+   html+='<div class="part">SKILL EXERCISES · 50 EACH</div>';
    c.skills.forEach(([id,title],i)=>{html+=chapterRow(id,title,i+1,finished.has(id),state.topic===id);});
   }
   chapterList.innerHTML=html;
@@ -109,8 +116,8 @@ function chapterSectionRows(ch){
   return '<section class="maths-lesson-section" id="'+sid(ch,i)+'">'+
     '<h3><span class="maths-section-id">'+safe(s.number)+'</span>'+safe(s.title)+'</h3>'+
     '<p>'+safe(note.summary)+'</p>'+
-    '<div class="maths-lesson-formula">'+safe(note.rule)+'</div>'+
-    '<div class="maths-worked"><strong>Worked example</strong><p>'+safe(note.example)+'</p></div>'+
+    '<div class="maths-lesson-formula">'+window.bookshelfFormulaRows(note.rule)+'</div>'+
+    '<div class="maths-worked"><strong>Worked example</strong>'+window.bookshelfWorkedSteps(note.example)+'</div>'+
     '</section>';
  }).join('');
 }
@@ -126,21 +133,26 @@ footer=function(i){
 };
 activeExercises=function(){
  if(state.topic==='mixed')return window.mathsMixedExercises?.[state.course]||[];
+ if(window.mathsFocusedExercises?.[state.topic])return window.mathsFocusedExercises[state.topic];
  return originalExercises();
 };
 exerciseQ=function(question,i,total){
  let html=originalExerciseQ(question,i,total);
+ if(!/<sup\b/i.test(question.q||'')){
+  const raw='<div class="q-text">'+question.q+'</div>';
+  html=html.replace(raw,'<div class="q-text">'+window.bookshelfMathHTML(question.q)+'</div>');
+ }
  if(question.topic)html=html.replace('<span class="marks">','<span class="maths-topic-tag">'+safe(question.topic)+'</span><span class="marks">');
  return html;
 };
 renderText=function(c,i){
  const ch=c.chapters.find(ch=>ch.id===state.topic);
- if(!ch)return originalText(c,i);
+ if(!ch){originalText(c,i);window.bookshelfPolishLegacy?.(lesson);return;}
  lesson.innerHTML='<h1>'+safe(ch.title)+'</h1><p class="lead">'+safe(ch.intro)+'</p>'+
  '<div class="rule"></div><p class="maths-chapter-guide-intro">Read each explanation, apply the formula or method, then follow the worked example. Select a subsection in the contents to jump to it.</p>'+
  chapterSectionRows(ch)+
  '<h2>Chapter recap</h2><ul class="maths-keypoints">'+ch.facts.map(f=>'<li>'+safe(f)+'</li>').join('')+'</ul>'+
- '<div class="formula">'+safe(ch.formula)+'</div>'+footer(i);
+ '<div class="formula bookshelf-formula-stack">'+window.bookshelfFormulaRows(ch.formula)+'</div>'+footer(i);
 };
 renderExercise=function(c,i){
  const items=activeExercises();
