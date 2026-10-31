@@ -10271,8 +10271,10 @@
   };
 
   // maths-shelf-3d.source.js
-  var shelfElement = document.querySelector("#shelfScreen > .library-shelf");
-  if (!shelfElement) throw new Error("Maths shelf element was not found");
+  var shelfElements = [...document.querySelectorAll("#shelfScreen > .library-shelf, #shelfScreen > .subject-scroll")];
+  if (!shelfElements.length) throw new Error("Bookshelf elements were not found");
+  shelfElements.forEach((shelfElement) => {
+  var shelfId = shelfElement.dataset.shelfId || "mathematics";
   var bookElements = [...shelfElement.querySelectorAll(".book")];
   var bookData = bookElements.map((element, index) => ({
     element,
@@ -10282,14 +10284,23 @@
     course: element.dataset.course,
     mode: element.dataset.mode,
     disabled: element.disabled,
-    color: ["#3159d8", "#2347af", "#d7653d", "#a94027", "#789591", "#566b67", "#85648e", "#694c70", "#ad6579", "#854d5b", "#7a895e", "#5c6748"][index],
+    href: element.dataset.href,
+    color: ({
+      art: ["#87566e", "#684052"],
+      "design-technology": ["#72784a", "#555b35"],
+      japanese: ["#3566c8", "#284b91", "#bf4b61", "#8c3647", "#688f62", "#4b6747"]
+    }[shelfId] || ["#3159d8", "#2347af", "#d7653d", "#a94027", "#789591", "#566b67", "#85648e", "#694c70", "#ad6579", "#854d5b", "#7a895e", "#5c6748"])[index % (({
+      art: 2,
+      "design-technology": 2,
+      japanese: 6
+    }[shelfId]) || 12)],
     width: index % 2 === 0 ? 0.96 : 0.86,
     height: index % 2 === 0 ? 4.12 : 3.8,
     depth: index % 2 === 0 ? 2.28 : 2.08
   }));
   var canvas = document.createElement("canvas");
   canvas.className = "maths-shelf-canvas";
-  canvas.setAttribute("aria-label", "Interactive three-dimensional maths bookshelf");
+  canvas.setAttribute("aria-label", `Interactive three-dimensional ${shelfId.replaceAll("-", " ")} bookshelf`);
   canvas.tabIndex = 0;
   shelfElement.prepend(canvas);
   shelfElement.classList.add("webgl-shelf");
@@ -10414,7 +10425,7 @@
   });
   var hitMaterial = new Ma({ transparent: true, opacity: 0, depthWrite: false, side: p });
   var hitPlane = new Ra(new Ol(totalWidth, 5.6), hitMaterial);
-  hitPlane.position.set(0, 2.68, 0.55);
+  hitPlane.position.set(-6.75 + totalWidth / 2, 2.68, 0.55);
   scene.add(hitPlane);
   var raycaster = new yd();
   var pointer = new _i();
@@ -10424,7 +10435,7 @@
   var dragStartOffset = 0;
   var didDrag = false;
   var openingIndex = -1;
-  var shelfPositionKey = "bookshelf:scroll:mathematics";
+  var shelfPositionKey = `bookshelf:scroll:${shelfId}`;
   var cameraX = Number(localStorage.getItem(shelfPositionKey)) || 0;
   var cameraTargetX = cameraX;
   var phoneView = window.matchMedia("(max-width: 650px)");
@@ -10484,12 +10495,14 @@
           model.userData.targetY = modelIndex === index ? 0.02 : 0;
         });
         window.setTimeout(() => {
-          window.openMathsBook?.(bookData[index].course, bookData[index].mode);
+          if (bookData[index].href) location.href = bookData[index].href;
+          else window.openMathsBook?.(bookData[index].course, bookData[index].mode);
           openingIndex = -1;
           setHovered(-1);
         }, 720);
       } else {
-        window.openMathsBook?.(bookData[index].course, bookData[index].mode);
+        if (bookData[index].href) location.href = bookData[index].href;
+        else window.openMathsBook?.(bookData[index].course, bookData[index].mode);
       }
     }
     if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
@@ -10512,12 +10525,16 @@
     const height = shelfElement.clientHeight;
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
-    const neededDistance = 7.9 / (Math.tan(Si.degToRad(camera.fov / 2)) * camera.aspect);
-    camera.position.z = phoneView.matches ? 13.2 : Math.max(15.8, neededDistance);
+    const neededDistance = 8.45 / (Math.tan(Si.degToRad(camera.fov / 2)) * camera.aspect);
+    camera.position.z = phoneView.matches ? 13.2 : Math.max(12.9, neededDistance);
     camera.updateProjectionMatrix();
   }
   new ResizeObserver(resize).observe(shelfElement);
   resize();
+  var isVisible = true;
+  new IntersectionObserver((entries) => {
+    isVisible = entries[0]?.isIntersecting ?? true;
+  }, { rootMargin: "180px 0px" }).observe(shelfElement);
   var previousFrame = performance.now();
   function animate() {
     const now = performance.now();
@@ -10534,11 +10551,12 @@
       model.position.z += (model.userData.targetZ - model.position.z) * modelEase;
       model.position.y += (model.userData.targetY - model.position.y) * modelEase;
     });
-    renderer.render(scene, camera);
+    if (isVisible) renderer.render(scene, camera);
     requestAnimationFrame(animate);
   }
   animate();
   window.addEventListener("beforeunload", () => renderer.dispose(), { once: true });
+  });
 })();
 /**
  * @license

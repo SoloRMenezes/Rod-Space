@@ -256,8 +256,8 @@ function resize() {
   const height = shelfElement.clientHeight;
   renderer.setSize(width, height, false);
   camera.aspect = width / height;
-  const neededDistance = 7.9 / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
-  camera.position.z = phoneView.matches ? 13.2 : Math.max(15.8, neededDistance);
+  const neededDistance = 8.45 / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
+  camera.position.z = phoneView.matches ? 13.2 : Math.max(12.9, neededDistance);
   camera.updateProjectionMatrix();
 }
 new ResizeObserver(resize).observe(shelfElement);

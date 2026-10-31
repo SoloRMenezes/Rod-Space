@@ -5445,8 +5445,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 60097,
-        "hash": "84a408b307d781071a411dd4eb887526cffb70390decfb65b4bd92548008854c"
+        "bytes": 61790,
+        "hash": "a0d17e9e72d7387b6015182b14fe4481a91d055b57306332fa25abe2f7d84d58"
       },
       {
         "path": "maths-content.js",
@@ -5470,8 +5470,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 770390,
-        "hash": "99e6ce2f79f27ef67e33cd3f411fb4bf6a93e0d06e3673bb0620b8bc8b2546ec"
+        "bytes": 771259,
+        "hash": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6"
       },
       {
         "path": "mobile-gesture-guard.js",
@@ -5854,8 +5854,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363208239,
-    "version": "5da5ea81e83760e4"
+    "bytes": 363210801,
+    "version": "8a8b36ddac714e5d"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -11451,8 +11451,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 60097,
-        "hash": "84a408b307d781071a411dd4eb887526cffb70390decfb65b4bd92548008854c"
+        "bytes": 61790,
+        "hash": "a0d17e9e72d7387b6015182b14fe4481a91d055b57306332fa25abe2f7d84d58"
       },
       {
         "path": "maths-content.js",
@@ -11476,8 +11476,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 770390,
-        "hash": "99e6ce2f79f27ef67e33cd3f411fb4bf6a93e0d06e3673bb0620b8bc8b2546ec"
+        "bytes": 771259,
+        "hash": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6"
       },
       {
         "path": "mobile-gesture-guard.js",
@@ -11760,8 +11760,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360193381,
-    "version": "84d231328a920ce3"
+    "bytes": 360195943,
+    "version": "0a0b8eec2ffc44c6"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -22833,8 +22833,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 60097,
-        "hash": "84a408b307d781071a411dd4eb887526cffb70390decfb65b4bd92548008854c"
+        "bytes": 61790,
+        "hash": "a0d17e9e72d7387b6015182b14fe4481a91d055b57306332fa25abe2f7d84d58"
       },
       {
         "path": "maths-content.js",
@@ -22858,8 +22858,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 770390,
-        "hash": "99e6ce2f79f27ef67e33cd3f411fb4bf6a93e0d06e3673bb0620b8bc8b2546ec"
+        "bytes": 771259,
+        "hash": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6"
       },
       {
         "path": "mobile-gesture-guard.js",
@@ -23142,8 +23142,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360193381,
-    "version": "d9440bf1bd1a0476"
+    "bytes": 360195943,
+    "version": "b36cac09af11bb72"
   },
   "backrooms": {
     "name": "The Backrooms",
