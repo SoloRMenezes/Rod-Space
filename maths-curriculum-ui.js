@@ -30,6 +30,16 @@ css.textContent=[
  '.maths-keypoints{padding-left:25px;margin:15px 0 22px}.maths-keypoints li{margin:8px 0}',
  '.maths-source-note{font-size:13px;color:#6d7481;margin:22px 0;padding:12px 15px;border-left:3px solid var(--book-color);background:#f3f5fa}',
  '.maths-page-number{color:#8791a1;font-size:10px}',
+ '.maths-lesson-section{scroll-margin-top:110px;margin:0 0 38px;padding:0 0 30px;border-bottom:2px dashed #c7d0e2}',
+ '.maths-lesson-section h3{font:800 clamp(21px,2.1vw,27px) "Comic Sans MS",cursive;color:#1e2948;line-height:1.3;margin:22px 0 14px}',
+ '.maths-lesson-section .maths-section-id{font:900 12px system-ui,sans-serif;color:var(--book-color);margin-right:12px}',
+ '.maths-lesson-section p{margin:13px 0 15px;line-height:1.8;max-width:78ch}',
+ '.maths-lesson-formula{margin:20px 0;padding:16px 20px;border-left:4px solid var(--book-color);background:#e9f1fc;font:600 clamp(16px,1.7vw,21px)/1.6 Georgia,serif;color:#24304a;overflow-wrap:anywhere}',
+ '.maths-worked{margin:19px 0 5px;padding:17px 21px;background:#fff5d7;border:1px solid #e2d3ab;box-shadow:2px 3px #d7c99d44}',
+ '.maths-worked strong{color:#7a4d12;font-size:10px;letter-spacing:.13em;text-transform:uppercase}',
+ '.maths-worked p{margin:7px 0 0;font-size:15px;line-height:1.75}',
+ '.maths-chapter-guide-intro{color:#697185;font-size:13px;padding:0 0 14px}',
+
  '.maths-topic-tag{font-size:9px;font-weight:800;letter-spacing:.04em;padding:3px 7px;background:#ecf1fc;color:#425377}',
  '.maths-practice-overview{display:flex;gap:9px;flex-wrap:wrap;margin:22px 0 28px}',
  '.maths-practice-overview span{background:#eaf0fa;padding:9px 12px;font-size:12px;font-weight:800;color:#485470}',
@@ -82,7 +92,7 @@ renderContents=function(){
   const active=ch.id===state.topic;
   html+=chapterRow(ch.id,ch.title,i+1,finished.has(ch.id),active);
   if(active)html+='<div class="maths-subsections">'+ch.sections.map((s,j)=>
-   '<a href="#'+sid(ch,j)+'"><span>'+safe(s.number)+' '+safe(s.title)+'</span><span class="maths-page-number">p.'+s.page+'</span></a>'
+   '<a href="#'+sid(ch,j)+'"><span>'+safe(s.number)+' '+safe(s.title)+'</span></a>'
   ).join('')+'</div>';
  });
  if(c.skills.length){
@@ -92,9 +102,17 @@ renderContents=function(){
  chapterList.innerHTML=html;
 };
 function chapterSectionRows(ch){
- return '<ul class="maths-section-list">'+ch.sections.map((s,i)=>
-  '<li id="'+sid(ch,i)+'"><b>'+safe(s.number)+'</b><span>'+safe(s.title)+'</span><small>p. '+s.page+'</small></li>'
- ).join('')+'</ul>';
+ const notes=window.mathsDetailedNotes?.[state.course]||{};
+ return ch.sections.map((s,i)=>{
+  const note=notes[s.number];
+  if(!note)throw Error('Missing textbook lesson '+state.course+' '+s.number);
+  return '<section class="maths-lesson-section" id="'+sid(ch,i)+'">'+
+    '<h3><span class="maths-section-id">'+safe(s.number)+'</span>'+safe(s.title)+'</h3>'+
+    '<p>'+safe(note.summary)+'</p>'+
+    '<div class="maths-lesson-formula">'+safe(note.rule)+'</div>'+
+    '<div class="maths-worked"><strong>Worked example</strong><p>'+safe(note.example)+'</p></div>'+
+    '</section>';
+ }).join('');
 }
 footer=function(i){
  const c=courses[state.course],topics=currentTopics(c),index=topics.findIndex(t=>t[0]===state.topic);
@@ -119,12 +137,10 @@ renderText=function(c,i){
  const ch=c.chapters.find(ch=>ch.id===state.topic);
  if(!ch)return originalText(c,i);
  lesson.innerHTML='<h1>'+safe(ch.title)+'</h1><p class="lead">'+safe(ch.intro)+'</p>'+
- '<div class="rule"></div><h2>Chapter contents</h2>'+chapterSectionRows(ch)+
- '<h2>Core facts</h2><ul class="maths-keypoints">'+ch.facts.map(f=>'<li>'+safe(f)+'</li>').join('')+'</ul>'+
- '<div class="formula">'+safe(ch.formula)+'</div>'+
- '<div class="maths-source-note"><b>Source:</b> Pearson Edexcel IAL '+safe(c.short)+
- ' student book, chapter '+ch.id.split('-c')[1]+', from printed page '+ch.page+
- '. These are original study notes, not a reproduction of the textbook PDF.</div>'+footer(i);
+ '<div class="rule"></div><p class="maths-chapter-guide-intro">Read each explanation, apply the formula or method, then follow the worked example. Select a subsection in the contents to jump to it.</p>'+
+ chapterSectionRows(ch)+
+ '<h2>Chapter recap</h2><ul class="maths-keypoints">'+ch.facts.map(f=>'<li>'+safe(f)+'</li>').join('')+'</ul>'+
+ '<div class="formula">'+safe(ch.formula)+'</div>'+footer(i);
 };
 renderExercise=function(c,i){
  const items=activeExercises();

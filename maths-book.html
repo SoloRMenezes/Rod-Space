@@ -143,4 +143,4 @@ if(japaneseShelf){
   }))
 }
 document.querySelectorAll('.subject-scroll').forEach(shelf=>{const key=`bookshelf:scroll:${shelf.dataset.shelfId}`;const saved=Number(localStorage.getItem(key));if(Number.isFinite(saved))shelf.scrollLeft=saved;shelf.addEventListener('scroll',()=>localStorage.setItem(key,String(shelf.scrollLeft)),{passive:true})});
-</script><script src="maths-mixed-exercises.js"></script><script src="maths-extra-exercises.js"></script><script src="maths-curriculum-ui.js"></script><script src="maths-shelf-3d.js?v=6"></script><script src="rod-space-app-menu.js"></script></body></html>
+</script><script src="maths-mixed-exercises.js"></script><script src="maths-extra-exercises.js"></script><script src="maths-lessons-p1.js"></script><script src="maths-lessons-p2.js"></script><script src="maths-lessons-p3.js"></script><script src="maths-lessons-p4.js"></script><script src="maths-lessons-s1.js"></script><script src="maths-lessons-d1.js"></script><script src="maths-curriculum-ui.js"></script><script src="maths-shelf-3d.js?v=6"></script><script src="rod-space-app-menu.js"></script></body></html>
