@@ -5585,8 +5585,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "piano.html",
-        "bytes": 6709,
-        "hash": "7d57f3157645d9823815f012f169bbcd622de1a176a8957798043d7b87c0788f"
+        "bytes": 6721,
+        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
       },
       {
         "path": "planet_architect.css",
@@ -5854,8 +5854,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363207572,
-    "version": "b9f479158346e326"
+    "bytes": 363207584,
+    "version": "40cb0260686bf33d"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -6000,8 +6000,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "piano.html",
-        "bytes": 6709,
-        "hash": "7d57f3157645d9823815f012f169bbcd622de1a176a8957798043d7b87c0788f"
+        "bytes": 6721,
+        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -6009,8 +6009,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
       }
     ],
-    "bytes": 11930,
-    "version": "09002138e23266fa"
+    "bytes": 11942,
+    "version": "6d11b707985ba2ad"
   },
   "counter": {
     "name": "Counter",
@@ -11576,8 +11576,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "piano.html",
-        "bytes": 6709,
-        "hash": "7d57f3157645d9823815f012f169bbcd622de1a176a8957798043d7b87c0788f"
+        "bytes": 6721,
+        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
       },
       {
         "path": "planet_architect.css",
@@ -11760,8 +11760,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360193230,
-    "version": "8839d042b9fab908"
+    "bytes": 360193242,
+    "version": "e5a8837159880865"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -22958,8 +22958,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "piano.html",
-        "bytes": 6709,
-        "hash": "7d57f3157645d9823815f012f169bbcd622de1a176a8957798043d7b87c0788f"
+        "bytes": 6721,
+        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
       },
       {
         "path": "planet_architect.css",
@@ -23142,8 +23142,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 360193230,
-    "version": "9a35a73c82ee0481"
+    "bytes": 360193242,
+    "version": "175aa87306f0bc6b"
   },
   "backrooms": {
     "name": "The Backrooms",

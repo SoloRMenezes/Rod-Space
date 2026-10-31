@@ -4,11 +4,37 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Piano</title>
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100svh;background:#111518;color:#edf0ed;font:15px system-ui,sans-serif;display:grid;place-items:center;padding:24px max(12px,env(safe-area-inset-left));touch-action:manipulation}main{width:min(100%,940px)}header{display:flex;align-items:center;justify-content:flex-start;gap:16px;margin-bottom:24px}h1{font-size:24px;margin:0}header p{color:#97a29e;margin:6px 0 0}.controls{display:flex;align-items:center;gap:16px;flex-wrap:wrap}button{font:inherit;color:inherit;background:#222a2b;border:1px solid #475453;border-radius:6px;padding:10px 14px;cursor:pointer}button[aria-pressed=true]{color:#17211d;background:#bbddcb}label{display:flex;align-items:center;gap:8px;color:#abb7b1}input{accent-color:#bbddcb;width:90px}.piano{position:relative;display:flex;width:100%;padding:12px 8px 8px;background:#080b0d;border-radius:8px;touch-action:none;user-select:none;-webkit-user-select:none}.key{flex:1;min-width:0;height:clamp(185px,32vw,310px);padding:0 0 16px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;border:1px solid #99a39f;border-radius:0 0 5px 5px;background:#eeeae0;color:#424b48;touch-action:none}.key.black{position:absolute;top:12px;width:6%;height:60%;z-index:2;background:#252c2c;color:#d4ddd8;border-color:#060909;box-shadow:0 5px 0 #080b0d}.key.active{background:#b4dcca;color:#162a21;box-shadow:inset 0 5px 8px #36483d55}.key.black.active{background:#638e7b;color:white;box-shadow:0 2px 0 #080b0d}.key small{opacity:.6;font-size:10px}.hint{text-align:center;color:#8c9992;line-height:1.7;margin-top:22px;font-size:13px}#status{color:#dbb583;min-height:18px;text-align:center}@media(max-width:600px){header{align-items:flex-start;flex-direction:row}.controls{width:100%;justify-content:space-between}.key{font-size:11px}.key small{display:none}.key.black{font-size:9px}header p{font-size:13px}}@media(max-height:440px){body{padding-top:10px;padding-bottom:10px}header{margin-bottom:10px;flex-direction:row}.key{height:175px}.hint{margin:8px 0}#status:empty{display:none}}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111518;color:#edf0ed;font:15px system-ui,sans-serif}
+body{height:100svh;min-height:0;display:flex;align-items:center;justify-content:center;padding:clamp(4px,1vw,12px) max(5px,env(safe-area-inset-right)) clamp(4px,1vw,12px) max(5px,env(safe-area-inset-left));touch-action:manipulation}
+main{width:100%;height:100%;min-width:0;display:flex;align-items:center;justify-content:center;position:relative}
+.piano{position:relative;display:flex;width:100%;max-width:none;height:min(76svh,660px);padding:clamp(4px,.75vw,10px);background:#080b0d;border-radius:9px;touch-action:none;user-select:none;-webkit-user-select:none}
+.key{flex:1;min-width:0;height:100%;padding:0 0 clamp(7px,1.5vh,16px);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;border:1px solid #99a39f;border-radius:0 0 5px 5px;background:#eeeae0;color:#424b48;touch-action:none;font:clamp(11px,1.5vw,18px) system-ui,sans-serif}
+.key.black{position:absolute;top:clamp(4px,.75vw,10px);width:6%;height:60%;z-index:2;background:#252c2c;color:#d4ddd8;border-color:#060909;box-shadow:0 5px 0 #080b0d}
+.key.active{background:#b4dcca;color:#162a21;box-shadow:inset 0 5px 8px #36483d55}
+.key.black.active{background:#638e7b;color:white;box-shadow:0 2px 0 #080b0d}
+.key small{opacity:.6;font-size:clamp(8px,.95vw,11px)}
+#status{position:absolute;bottom:2px;left:0;right:0;color:#dbb583;text-align:center;font-size:12px;pointer-events:none}
+#status:empty{display:none}
+@media(max-width:700px){
+ body{padding:3px max(3px,env(safe-area-inset-right)) 3px max(3px,env(safe-area-inset-left))}
+ .piano{height:83svh;padding:5px 3px 3px;border-radius:5px}
+ .key{font-size:clamp(9px,2.55vw,14px);padding-bottom:7px;gap:3px}
+ .key.black{top:5px;height:58%;font-size:clamp(8px,2.2vw,11px)}
+ .key small{display:none}
+}
+@media(orientation:landscape) and (max-height:600px){
+ .piano{height:94svh;padding:4px 3px 3px}
+ .key{padding-bottom:5px}
+ .key.black{top:4px;height:60%}
+}
+@media(max-width:350px){
+ .key{font-size:9px}
+ .key.black{font-size:8px}
+}
 </style>
 </head>
 <body><main>
-<header><h1>Piano</h1></header>
 <div class="piano" id="piano" aria-label="Piano keyboard"></div>
 <div id="status" role="status" aria-live="polite"></div>
 </main>
@@ -17,7 +43,7 @@ const notes=[['C4','a',60],['C♯','w',61],['D4','s',62],['D♯','e',63],['E4','
 const piano=document.getElementById('piano');
 const keyMap=new Map(), held=new Map(), voices=new Set();let audio,master,compressor,shift=false;
 let white=0;
-for(const [name,letter,midi] of notes){const black=name.includes('♯');const key=document.createElement('button');key.className='key'+(black?' black':'');key.dataset.midi=midi;key.setAttribute('aria-label',name+' ('+letter.toUpperCase()+')');key.innerHTML=name+'<small>'+letter.toUpperCase()+'</small>';if(black)key.style.left=`calc(8px + (100% - 16px) * ${white/10} - 3%)`;else white++;keyMap.set(letter,key);piano.append(key);}
+for(const [name,letter,midi] of notes){const black=name.includes('♯');const key=document.createElement('button');key.className='key'+(black?' black':'');key.dataset.midi=midi;key.setAttribute('aria-label',name+' ('+letter.toUpperCase()+')');key.innerHTML=name+'<small>'+letter.toUpperCase()+'</small>';if(black)key.style.left=`calc(3px + (100% - 6px) * ${white/10} - 3%)`;else white++;keyMap.set(letter,key);piano.append(key);}
 keyMap.set('ç',keyMap.get(';'));
 function ensureAudio(){if(!audio){audio=new (window.AudioContext||window.webkitAudioContext)();master=audio.createGain();master.gain.value=.65*.32;compressor=audio.createDynamicsCompressor();master.connect(compressor);compressor.connect(audio.destination);}if(audio.state==='suspended')audio.resume().catch(()=>{document.getElementById('status').textContent='Tap a key to enable sound.';});}
 function paint(key){key.classList.toggle('active',[...held.values()].some(v=>v.key===key));}
