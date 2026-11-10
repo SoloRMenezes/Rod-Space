@@ -214,6 +214,21 @@ self.OFFLINE_CATALOG = {
         "hash": "30207dbc964b063b7473fde80707f2b3fb0bba1683a361734d562be2611746f6"
       },
       {
+        "path": "assets/education/geometria-descritiva/php-pfp-quadrantes-wikimedia.png",
+        "bytes": 89385,
+        "hash": "ed39678b67d10b663c8e485a2ed73b8e15e01bf03f3cc2effdb0c8e829e8391c"
+      },
+      {
+        "path": "assets/education/geometria-descritiva/ponto-diedrica-dge.png",
+        "bytes": 3990,
+        "hash": "6cb1914699131129862f0707911e7c331ea18b1b5a435b80453d0530da5ed33b"
+      },
+      {
+        "path": "assets/education/geometria-descritiva/ponto-triedrica-dge.png",
+        "bytes": 9399,
+        "hash": "cc690de058fe00cf65723807130b7e26b0049517941e0d0562607aa1511b59fc"
+      },
+      {
         "path": "assets/effects/web-weavers-speed-lines-clean.png",
         "bytes": 1011237,
         "hash": "637d069679de8bb81dedc1cce7972b71da6873bcf60455dd0b1d9cd9d7bd851b"
@@ -5665,8 +5680,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 899874,
-        "hash": "5e914e6b4bf99853ada738449480a60950e746e46efbfc568eb064e3def0fb12"
+        "bytes": 903531,
+        "hash": "8678924042993e266b7cb98a7dda8998b65e80bdf6ef73476840b4946475429f"
       },
       {
         "path": "offline.js",
@@ -5871,7 +5886,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5970,
-        "hash": "6ec37e364a3e2cd19edc063850c3a98fd42e29687108381c221d9a2e2fbc578e"
+        "hash": "13b1683b18cffd2e3f561d85f31497738fcab20191b64c45cfe15cb22265a5f8"
       },
       {
         "path": "terraria.html",
@@ -5949,8 +5964,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363619717,
-    "version": "098b502eb367d9d8"
+    "bytes": 363726148,
+    "version": "48987021a9a85186"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -6345,6 +6360,21 @@ self.OFFLINE_CATALOG = {
         "hash": "30207dbc964b063b7473fde80707f2b3fb0bba1683a361734d562be2611746f6"
       },
       {
+        "path": "assets/education/geometria-descritiva/php-pfp-quadrantes-wikimedia.png",
+        "bytes": 89385,
+        "hash": "ed39678b67d10b663c8e485a2ed73b8e15e01bf03f3cc2effdb0c8e829e8391c"
+      },
+      {
+        "path": "assets/education/geometria-descritiva/ponto-diedrica-dge.png",
+        "bytes": 3990,
+        "hash": "6cb1914699131129862f0707911e7c331ea18b1b5a435b80453d0530da5ed33b"
+      },
+      {
+        "path": "assets/education/geometria-descritiva/ponto-triedrica-dge.png",
+        "bytes": 9399,
+        "hash": "cc690de058fe00cf65723807130b7e26b0049517941e0d0562607aa1511b59fc"
+      },
+      {
         "path": "assets/effects/web-weavers-speed-lines-clean.png",
         "bytes": 1011237,
         "hash": "637d069679de8bb81dedc1cce7972b71da6873bcf60455dd0b1d9cd9d7bd851b"
@@ -11796,8 +11826,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 899874,
-        "hash": "5e914e6b4bf99853ada738449480a60950e746e46efbfc568eb064e3def0fb12"
+        "bytes": 903531,
+        "hash": "8678924042993e266b7cb98a7dda8998b65e80bdf6ef73476840b4946475429f"
       },
       {
         "path": "offline.js",
@@ -12002,7 +12032,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5970,
-        "hash": "6ec37e364a3e2cd19edc063850c3a98fd42e29687108381c221d9a2e2fbc578e"
+        "hash": "13b1683b18cffd2e3f561d85f31497738fcab20191b64c45cfe15cb22265a5f8"
       },
       {
         "path": "terraria.html",
@@ -12080,8 +12110,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363619717,
-    "version": "b93f86f815c01705"
+    "bytes": 363726148,
+    "version": "eefb8184517d5738"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -17952,6 +17982,21 @@ self.OFFLINE_CATALOG = {
         "hash": "30207dbc964b063b7473fde80707f2b3fb0bba1683a361734d562be2611746f6"
       },
       {
+        "path": "assets/education/geometria-descritiva/php-pfp-quadrantes-wikimedia.png",
+        "bytes": 89385,
+        "hash": "ed39678b67d10b663c8e485a2ed73b8e15e01bf03f3cc2effdb0c8e829e8391c"
+      },
+      {
+        "path": "assets/education/geometria-descritiva/ponto-diedrica-dge.png",
+        "bytes": 3990,
+        "hash": "6cb1914699131129862f0707911e7c331ea18b1b5a435b80453d0530da5ed33b"
+      },
+      {
+        "path": "assets/education/geometria-descritiva/ponto-triedrica-dge.png",
+        "bytes": 9399,
+        "hash": "cc690de058fe00cf65723807130b7e26b0049517941e0d0562607aa1511b59fc"
+      },
+      {
         "path": "assets/effects/web-weavers-speed-lines-clean.png",
         "bytes": 1011237,
         "hash": "637d069679de8bb81dedc1cce7972b71da6873bcf60455dd0b1d9cd9d7bd851b"
@@ -23403,8 +23448,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 899874,
-        "hash": "5e914e6b4bf99853ada738449480a60950e746e46efbfc568eb064e3def0fb12"
+        "bytes": 903531,
+        "hash": "8678924042993e266b7cb98a7dda8998b65e80bdf6ef73476840b4946475429f"
       },
       {
         "path": "offline.js",
@@ -23609,7 +23654,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5970,
-        "hash": "6ec37e364a3e2cd19edc063850c3a98fd42e29687108381c221d9a2e2fbc578e"
+        "hash": "13b1683b18cffd2e3f561d85f31497738fcab20191b64c45cfe15cb22265a5f8"
       },
       {
         "path": "terraria.html",
@@ -23687,8 +23732,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363619717,
-    "version": "cf2e17e9dcc5a39d"
+    "bytes": 363726148,
+    "version": "b115d804974b69d8"
   },
   "backrooms": {
     "name": "The Backrooms",
