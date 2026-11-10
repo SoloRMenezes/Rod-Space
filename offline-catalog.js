@@ -5459,6 +5459,31 @@ self.OFFLINE_CATALOG = {
         "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
+        "path": "geometria-descritiva-coordenadas.html",
+        "bytes": 37550,
+        "hash": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039"
+      },
+      {
+        "path": "geometria-descritiva-epura.html",
+        "bytes": 36320,
+        "hash": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8"
+      },
+      {
+        "path": "geometria-descritiva-exemplo.html",
+        "bytes": 37110,
+        "hash": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7"
+      },
+      {
+        "path": "geometria-descritiva-pratica.html",
+        "bytes": 37455,
+        "hash": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b"
+      },
+      {
+        "path": "geometria-descritiva.html",
+        "bytes": 38307,
+        "hash": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78"
+      },
+      {
         "path": "hood-brawlers.js",
         "bytes": 47955,
         "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
@@ -5485,8 +5510,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "japanese-book.html",
-        "bytes": 17838,
-        "hash": "7e5a0ec74741c3bcc9dd494a67b2bbe1af004def58597f6b6b667d0e28f70ad5"
+        "bytes": 27610,
+        "hash": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43"
       },
       {
         "path": "jp_srs_cards.html",
@@ -5495,8 +5520,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 62467,
-        "hash": "ae64ffbe87b3b3ff2de1dbfbdd00e47d39542cb37d5675173a6feaac55a7b3eb"
+        "bytes": 62739,
+        "hash": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03"
       },
       {
         "path": "maths-content.js",
@@ -5569,6 +5594,16 @@ self.OFFLINE_CATALOG = {
         "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
       },
       {
+        "path": "maths-p1-additions-questions.js",
+        "bytes": 13474,
+        "hash": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c"
+      },
+      {
+        "path": "maths-p1-additions.js",
+        "bytes": 15127,
+        "hash": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f"
+      },
+      {
         "path": "maths-question-bank.js",
         "bytes": 18208,
         "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
@@ -5630,8 +5665,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 898887,
-        "hash": "91cf154952c4ea18149cc2ee0a89775e76daf0432762dac5601f1f23bea67bed"
+        "bytes": 899874,
+        "hash": "5e914e6b4bf99853ada738449480a60950e746e46efbfc568eb064e3def0fb12"
       },
       {
         "path": "offline.js",
@@ -5836,7 +5871,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5970,
-        "hash": "1164a270085466e1bf0528c61377f518a16582654a05122688a8e26c6b98e5eb"
+        "hash": "6ec37e364a3e2cd19edc063850c3a98fd42e29687108381c221d9a2e2fbc578e"
       },
       {
         "path": "terraria.html",
@@ -5914,8 +5949,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363393343,
-    "version": "d5fe149909fd0910"
+    "bytes": 363619717,
+    "version": "098b502eb367d9d8"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -11555,6 +11590,31 @@ self.OFFLINE_CATALOG = {
         "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
+        "path": "geometria-descritiva-coordenadas.html",
+        "bytes": 37550,
+        "hash": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039"
+      },
+      {
+        "path": "geometria-descritiva-epura.html",
+        "bytes": 36320,
+        "hash": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8"
+      },
+      {
+        "path": "geometria-descritiva-exemplo.html",
+        "bytes": 37110,
+        "hash": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7"
+      },
+      {
+        "path": "geometria-descritiva-pratica.html",
+        "bytes": 37455,
+        "hash": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b"
+      },
+      {
+        "path": "geometria-descritiva.html",
+        "bytes": 38307,
+        "hash": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78"
+      },
+      {
         "path": "hood-brawlers.js",
         "bytes": 47955,
         "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
@@ -11581,8 +11641,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "japanese-book.html",
-        "bytes": 17838,
-        "hash": "7e5a0ec74741c3bcc9dd494a67b2bbe1af004def58597f6b6b667d0e28f70ad5"
+        "bytes": 27610,
+        "hash": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43"
       },
       {
         "path": "jp_srs_cards.html",
@@ -11591,8 +11651,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 62467,
-        "hash": "ae64ffbe87b3b3ff2de1dbfbdd00e47d39542cb37d5675173a6feaac55a7b3eb"
+        "bytes": 62739,
+        "hash": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03"
       },
       {
         "path": "maths-content.js",
@@ -11665,6 +11725,16 @@ self.OFFLINE_CATALOG = {
         "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
       },
       {
+        "path": "maths-p1-additions-questions.js",
+        "bytes": 13474,
+        "hash": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c"
+      },
+      {
+        "path": "maths-p1-additions.js",
+        "bytes": 15127,
+        "hash": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f"
+      },
+      {
         "path": "maths-question-bank.js",
         "bytes": 18208,
         "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
@@ -11726,8 +11796,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 898887,
-        "hash": "91cf154952c4ea18149cc2ee0a89775e76daf0432762dac5601f1f23bea67bed"
+        "bytes": 899874,
+        "hash": "5e914e6b4bf99853ada738449480a60950e746e46efbfc568eb064e3def0fb12"
       },
       {
         "path": "offline.js",
@@ -11932,7 +12002,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5970,
-        "hash": "1164a270085466e1bf0528c61377f518a16582654a05122688a8e26c6b98e5eb"
+        "hash": "6ec37e364a3e2cd19edc063850c3a98fd42e29687108381c221d9a2e2fbc578e"
       },
       {
         "path": "terraria.html",
@@ -12010,8 +12080,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363393343,
-    "version": "5d9eb763d283ff51"
+    "bytes": 363619717,
+    "version": "b93f86f815c01705"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -23127,6 +23197,31 @@ self.OFFLINE_CATALOG = {
         "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
+        "path": "geometria-descritiva-coordenadas.html",
+        "bytes": 37550,
+        "hash": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039"
+      },
+      {
+        "path": "geometria-descritiva-epura.html",
+        "bytes": 36320,
+        "hash": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8"
+      },
+      {
+        "path": "geometria-descritiva-exemplo.html",
+        "bytes": 37110,
+        "hash": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7"
+      },
+      {
+        "path": "geometria-descritiva-pratica.html",
+        "bytes": 37455,
+        "hash": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b"
+      },
+      {
+        "path": "geometria-descritiva.html",
+        "bytes": 38307,
+        "hash": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78"
+      },
+      {
         "path": "hood-brawlers.js",
         "bytes": 47955,
         "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
@@ -23153,8 +23248,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "japanese-book.html",
-        "bytes": 17838,
-        "hash": "7e5a0ec74741c3bcc9dd494a67b2bbe1af004def58597f6b6b667d0e28f70ad5"
+        "bytes": 27610,
+        "hash": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43"
       },
       {
         "path": "jp_srs_cards.html",
@@ -23163,8 +23258,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 62467,
-        "hash": "ae64ffbe87b3b3ff2de1dbfbdd00e47d39542cb37d5675173a6feaac55a7b3eb"
+        "bytes": 62739,
+        "hash": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03"
       },
       {
         "path": "maths-content.js",
@@ -23237,6 +23332,16 @@ self.OFFLINE_CATALOG = {
         "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
       },
       {
+        "path": "maths-p1-additions-questions.js",
+        "bytes": 13474,
+        "hash": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c"
+      },
+      {
+        "path": "maths-p1-additions.js",
+        "bytes": 15127,
+        "hash": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f"
+      },
+      {
         "path": "maths-question-bank.js",
         "bytes": 18208,
         "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
@@ -23298,8 +23403,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 898887,
-        "hash": "91cf154952c4ea18149cc2ee0a89775e76daf0432762dac5601f1f23bea67bed"
+        "bytes": 899874,
+        "hash": "5e914e6b4bf99853ada738449480a60950e746e46efbfc568eb064e3def0fb12"
       },
       {
         "path": "offline.js",
@@ -23504,7 +23609,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 5970,
-        "hash": "1164a270085466e1bf0528c61377f518a16582654a05122688a8e26c6b98e5eb"
+        "hash": "6ec37e364a3e2cd19edc063850c3a98fd42e29687108381c221d9a2e2fbc578e"
       },
       {
         "path": "terraria.html",
@@ -23582,8 +23687,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363393343,
-    "version": "c15cd72665e8ff7f"
+    "bytes": 363619717,
+    "version": "cf2e17e9dcc5a39d"
   },
   "backrooms": {
     "name": "The Backrooms",
