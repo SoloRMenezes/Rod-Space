@@ -124,3 +124,6 @@
         .touch-button{position:absolute;right:24px;width:74px;height:74px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(0,0,0,.45);color:#fff;font-weight:900;pointer-events:auto}
         #touch-jump{bottom:30px}
         @media(pointer:coarse){#mobile-controls.active{display:block}.controls-strip{display:none}}
+
+/* Native Mac mouse capture: don't draw a second cursor while view is locked. */
+body.nico-mouse-locked #screen{cursor:none}

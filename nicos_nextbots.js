@@ -17,7 +17,7 @@
         const requestedMap=new URLSearchParams(location.search).get('map');
         const requestedDevice=new URLSearchParams(location.search).get('device');
         const IS_PHONE=requestedDevice==='phone'||(requestedDevice!=='host'&&(navigator.userAgentData?.mobile||/iPhone|iPod|Android.+Mobile|Windows Phone/i.test(navigator.userAgent)));
-        const LAN_GAME_KEY=`nicos-nextbots-lan:${location.host}`;
+        const LAN_GAME_KEY='nicos-nextbots-crossplatform-v1';
         const MAP_ID=['garage','annex','manhattan','tokyo','training'].includes(requestedMap)?requestedMap:'garage';
         const IS_GARAGE=MAP_ID==='garage',IS_DOCKS=MAP_ID==='annex';
         const MAP_NAMES={garage:'Central Garage',annex:'Container Terminal',manhattan:'Web Weavers — Manhattan',tokyo:'Tokyo Drift — Tokyo',training:'Tokyo Drift — Blank Map'};
@@ -107,7 +107,32 @@ const MAP = (() => {
             if(MAP_ID==='training')for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(Math.hypot(x-width/2,y-height/2)>280)map[y][x]=1;
             return map;
         })();
-        const sourceBuildingBlocked=(x,y,radius=.32)=>SCENERY_BOXES.some(box=>x+radius>box.x&&x-radius<box.x+box.w&&y+radius>box.y&&y-radius<box.y+box.d);
+        // Spatial index for building collision; exact dimensions match meshes.
+        // The old global scan ran for every movement candidate.
+        const BUILDING_BUCKET_SIZE=8,buildingBuckets=new Map();
+        for(const box of SCENERY_BOXES){
+            for(let bx=Math.floor(box.x/BUILDING_BUCKET_SIZE);bx<=Math.floor((box.x+box.w)/BUILDING_BUCKET_SIZE);bx++)
+            for(let by=Math.floor(box.y/BUILDING_BUCKET_SIZE);by<=Math.floor((box.y+box.d)/BUILDING_BUCKET_SIZE);by++){
+                const key=bx+','+by;
+                if(!buildingBuckets.has(key))buildingBuckets.set(key,[]);
+                buildingBuckets.get(key).push(box);
+            }
+        }
+        const sourceBuildingBlocked=(x,y,radius=.32)=>{
+            for(let bx=Math.floor((x-radius)/BUILDING_BUCKET_SIZE);bx<=Math.floor((x+radius)/BUILDING_BUCKET_SIZE);bx++)
+            for(let by=Math.floor((y-radius)/BUILDING_BUCKET_SIZE);by<=Math.floor((y+radius)/BUILDING_BUCKET_SIZE);by++){
+                if(buildingBuckets.get(bx+','+by)?.some(box=>x+radius>box.x&&x-radius<box.x+box.w&&y+radius>box.y&&y-radius<box.y+box.d))return true;
+            }
+            return false;
+        };
+        const navBlocked=(x,y,margin=.24)=>{
+            if(x<1||y<1||x>=MAP_SIZE_X-1||y>=MAP_SIZE_Y-1)return true;
+            for(const [dx,dy] of [[0,0],[-margin,0],[margin,0],[0,-margin],[0,margin]]){
+                const cell=MAP[Math.floor(y+dy)]?.[Math.floor(x+dx)];
+                if(cell===undefined||cell===1||cell===2)return true;
+            }
+            return SCENERY_BOXES.length>0&&sourceBuildingBlocked(x,y,margin);
+        };
         const MAP_SIZE_Y = MAP.length;
         const MAP_SIZE_X = MAP[0].length;
         const FLOOR_HEIGHT=8;
@@ -191,10 +216,21 @@ const MAP = (() => {
             const enteringHigh=target.reverse?player.x<=target.x1+.8:player.x>=target.x2-.8;
             return (enteringLow&&floorIndex<FLOOR_COUNT-1)||(enteringHigh&&floorIndex>0);
         }
+        // Only the lower-level retaining walls have collision. The former
+        // rampWallAt tested the upper-storey edge too, creating an invisible wall
+        // beside the landing even though the walkway was visibly unobstructed.
         function rampWallAt(x,y,current=0){
-            const floor=floorIndexAtHeight(current);return RAMPS.some(ramp=>(ramp.floor===floor||ramp.floor+1===floor)&&x>=ramp.x1&&x<=ramp.x2&&(
-                Math.abs(y-(ramp.y1-.125))<=.16||Math.abs(y-(ramp.y2+.125))<=.16
-            ));
+            const feet=floorBaseAtHeight(current);
+            return RAMPS.some(ramp=>{
+                if(feet!==ramp.floor*FLOOR_HEIGHT)return false;
+                if(x<ramp.x1||x>ramp.x2)return false;
+                if(Math.abs(y-ramp.y1)>.22&&Math.abs(y-ramp.y2)>.22)return false;
+                const t=(x-ramp.x1)/(ramp.x2-ramp.x1);
+                const height=ramp.reverse?(1-t)*FLOOR_HEIGHT:t*FLOOR_HEIGHT;
+                // The wall is triangular: near the low entry it is barely
+                // present, but under the high landing it is full height.
+                return height>1.25;
+            });
         }
         function rampSurfaceHeightAt(x,y,current=0){
             const ramp=rampAt(x,y,current);if(!ramp)return floorBaseAtHeight(current);
@@ -230,9 +266,40 @@ const MAP = (() => {
             return segments.some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-(x1+.5))<=.275&&y>=Math.min(y1,y2)&&y<=Math.max(y1,y2)+1:Math.abs(y-(y1+.5))<=.275&&x>=Math.min(x1,x2)&&x<=Math.max(x1,x2)+1);
         }
         const carsForFloor=floorY=>FLOOR_CAR_SPOTS[floorIndexAtHeight(floorY)]||[];
+        const CAR_SIZES=[[3.5,6.2],[3.55,7.1],[3.8,6.8],[3.9,7.5]];
+        const CAR_BUCKET_SIZE=8;
+        const CAR_HITBOXES=FLOOR_CAR_SPOTS.map((spots,floor)=>{
+            const buckets=new Map();
+            spots.forEach(([cx,cy,type])=>{
+                const dims=CAR_SIZES[type],box={
+                    minX:cx+(.5-dims[0]/4),maxX:cx+(.5+dims[0]/4),
+                    minY:cy+(.5-dims[1]/4),maxY:cy+(.5+dims[1]/4)
+                };
+                for(let x=Math.floor(box.minX/CAR_BUCKET_SIZE);x<=Math.floor(box.maxX/CAR_BUCKET_SIZE);x++)
+                for(let y=Math.floor(box.minY/CAR_BUCKET_SIZE);y<=Math.floor(box.maxY/CAR_BUCKET_SIZE);y++){
+                    const key=x+','+y;
+                    if(!buckets.has(key))buckets.set(key,[]);
+                    buckets.get(key).push(box);
+                }
+            });
+            return buckets;
+        });
+        const garageCarBlocked=(x,y,height)=>{
+            if(!IS_GARAGE||height>2.25)return false;
+            const buckets=CAR_HITBOXES[floorIndexAtHeight(player.floorY)];
+            const radius=.32;
+            for(let bx=Math.floor((x-radius)/CAR_BUCKET_SIZE);bx<=Math.floor((x+radius)/CAR_BUCKET_SIZE);bx++)
+            for(let by=Math.floor((y-radius)/CAR_BUCKET_SIZE);by<=Math.floor((y+radius)/CAR_BUCKET_SIZE);by++){
+                const list=buckets.get(bx+','+by);
+                if(list?.some(box=>x+radius>box.minX&&x-radius<box.maxX&&y+radius>box.minY&&y-radius<box.maxY))return true;
+            }
+            return false;
+        };
         const FLOOR_NAV_MAPS=FLOOR_LEVELS.map((floorY,floor)=>{
             const map=MAP.map(row=>row.slice());
-            for(let y=1;y<MAP_SIZE_Y-1;y++)for(let x=1;x<MAP_SIZE_X-1;x++)if(floorBarrierAt(x,y,floorY))map[y][x]=1;
+            for(let y=1;y<MAP_SIZE_Y-1;y++)for(let x=1;x<MAP_SIZE_X-1;x++)
+                if(floorBarrierAt(x,y,floorY)||navBlocked(x+.5,y+.5,.23))map[y][x]=1;
+                else if(map[y][x]===3)map[y][x]=0;
             FLOOR_CAR_SPOTS[floor].forEach(([cx,cy])=>{for(let y=Math.floor(cy-2);y<=Math.ceil(cy+2);y++)for(let x=Math.floor(cx-1);x<=Math.ceil(cx+1);x++)if(map[y])map[y][x]=1;});
             // Nextbots may climb container stacks directly, so the dock navigation
             // grid keeps them traversable. Player collision still uses their real height.
@@ -290,6 +357,32 @@ for(const floorY of FLOOR_LEVELS)for(let i=0;i<5;i++){
             Object.keys(bindingLabels).forEach(action=>{const row=document.createElement('div');row.className='keybind-row';const label=document.createElement('span');label.textContent=bindingLabels[action];const button=document.createElement('button');button.textContent=keyName(keyBindings[action]);button.onclick=()=>{button.textContent='PRESS KEY';button.classList.add('listening');const capture=event=>{event.preventDefault();event.stopImmediatePropagation();keyBindings[action]=event.key.toLowerCase();saveBindings();button.textContent=keyName(keyBindings[action]);button.classList.remove('listening')};addEventListener('keydown',capture,{once:true,capture:true})};row.append(label,button);list.append(row)});
         }
         let isLocked = false;
+        const nativeMouseHandler=window.webkit?.messageHandlers?.rodSpaceControls;
+        const hasNativeMouse=Boolean(window.__rodSpaceMacApp&&nativeMouseHandler);
+        function setNicoMouseLock(enabled) {
+            if(!enabled) {
+                isLocked=false;
+                if(hasNativeMouse)nativeMouseHandler.postMessage({type:'mouseLock',enabled:false});
+                else if(document.pointerLockElement===canvas)document.exitPointerLock?.();
+                document.body.classList.remove('nico-mouse-locked');
+                return;
+            }
+            if(!gameStarted || isGameOver || document.hidden) return;
+            if(hasNativeMouse) {
+                isLocked=true;
+                nativeMouseHandler.postMessage({type:'mouseLock',enabled:true});
+                document.body.classList.add('nico-mouse-locked');
+            } else {
+                canvas.requestPointerLock?.().catch?.(()=>setNicoMouseLock(false));
+            }
+        }
+        // The macOS wrapper reports relative movements while its cursor is decoupled.
+        // A WKWebView pointerLock request alone does not reliably work on macOS.
+        window.__rodSpaceReleaseMouse=()=>setNicoMouseLock(false);
+        window.__rodSpaceNativeMouse={move(dx,dy){
+            if(!hasNativeMouse||!isLocked||!gameStarted||isGameOver)return;
+            applyNicoLook(dx,dy);
+        }};
         let gameTimer = 0;
         let roundEndsAt=Infinity;
         const timerDisplay = document.getElementById('timer-display');
@@ -305,7 +398,7 @@ let botReleaseAt=Infinity;
 let invulnerableUntil=0;
 let respawnSpawns=[];
 const MOBILE_RENDERER=window.matchMedia('(pointer:coarse)').matches||Math.min(innerWidth,innerHeight)<700;
-let netRole='solo',roomSession=null,localPeerId=null,lastNetSend=0,roomsWatching=false,joiningLAN=false;
+let netRole='solo',roomSession=null,localPeerId=null,lastNetSend=0,roomsWatching=false,joiningLAN=false,homeSpectating=false;
 const lobbyPlayers=new Map();
 const skipVotes=new Set();let skipVoteSent=false,skipVoteCount=0,skipVoteRequired=1;
 const remotePlayers=new Map();
@@ -351,24 +444,36 @@ function applyPlayerPacket(id,data,name){
 }
 function networkTick(now){
     if(netRole==='solo'||!roomSession||now-lastNetSend<80)return;lastNetSend=now;
-    const state={x:player.x,y:player.y,floorY:player.floorY,dir:player.dir,alive:!isGameOver};
+    const state={x:player.x,y:player.y,floorY:player.floorY,dir:player.dir,alive:!isGameOver&&!homeSpectating&&!mapBallot.active};
     if(netRole==='host'){
         checkSkipVote();roomSession.lan.broadcast('world',{players:[{id:'host',name:document.getElementById('player-name').value||'Host',...state},...Array.from(remotePlayers.values()).map(p=>({id:p.id,name:p.name,x:p.x,y:p.y,floorY:p.floorY,dir:p.dir,alive:p.alive}))],bots:bots.map(bot=>({x:bot.mesh.position.x,z:bot.mesh.position.z,vx:bot.vx,vz:bot.vz,targetId:bot.targetId,floorY:bot.floorY})),releaseIn:Math.max(0,botReleaseAt-now),roundIn:Math.max(0,roundEndsAt-now),skipVotes:skipVoteCount,skipRequired:skipVoteRequired});
     }else roomSession.client.send('player',state);
 }
 function wireHostRoom(session){
-    session.lan.on('message',({peer,data})=>{if(data.type==='lobby-hello'){lobbyPlayers.set(peer.meta.id,data.payload.name||peer.meta.name||'Player');broadcastLobby()}else if(data.type==='player')applyPlayerPacket(peer.meta.id,data.payload,peer.meta.name);else if(data.type==='skip-vote'&&performance.now()<botReleaseAt){skipVotes.add(peer.meta.id);checkSkipVote()}});
-    session.lan.on('open',peer=>{lobbyPlayers.set(peer.meta.id,peer.meta.name||'Player');broadcastLobby()});
+    session.lan.on('message',({peer,data})=>{if(data.type==='lobby-hello'){lobbyPlayers.set(peer.meta.id,data.payload.name||peer.meta.name||'Player');broadcastLobby()}else if(data.type==='player')applyPlayerPacket(peer.meta.id,data.payload,peer.meta.name);else if(data.type==='skip-vote'&&performance.now()<botReleaseAt){skipVotes.add(peer.meta.id);checkSkipVote()}else if(data.type==='map-vote'&&mapBallot.active&&mapBallot.choices.includes(data.payload.id)){mapBallot.votes.set(peer.meta.id,data.payload.id)}});
+    session.lan.on('open',peer=>{lobbyPlayers.set(peer.meta.id,peer.meta.name||'Player');broadcastLobby();if(gameStarted)session.lan.send(peer,'start',{})});
     session.lan.on('close',peer=>{remotePlayers.get(peer.meta.id)?.mesh.removeFromParent();remotePlayers.delete(peer.meta.id);lobbyPlayers.delete(peer.meta.id);skipVotes.delete(peer.meta.id);broadcastLobby();checkSkipVote()});
 }
 function wireGuestRoom(session){
-    session.client.on('message',({data})=>{if(data.type==='lobby'){renderWaitingPlayers(data.payload.players);return}if(data.type==='start'){startGame();return}if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;roundEndsAt=performance.now()+world.roundIn;
+    session.client.on('message',({data})=>{if(data.type==='lobby'){renderWaitingPlayers(data.payload.players);return}if(data.type==='start'){startGame();return}
+        if(data.type==='map-vote-start'){beginMapBallot(data.payload.choices,data.payload.deadline);return}
+        if(data.type==='next-map'){moveToNextMap(data.payload.id);return}
+        if(data.type!=='world')return;const world=data.payload;botReleaseAt=performance.now()+world.releaseIn;roundEndsAt=performance.now()+world.roundIn;
         skipVoteCount=world.skipVotes||0;skipVoteRequired=world.skipRequired||1;updateSkipButton();
         world.players.filter(p=>p.id!=='host').forEach(p=>{if(p.id!==localPeerId)applyPlayerPacket(p.id,p,p.name)});
         const host=world.players.find(p=>p.id==='host');if(host)applyPlayerPacket('host',host,host.name);
         world.bots.forEach((state,i)=>{const bot=bots[i];if(!bot)return;bot.mesh.position.x=state.x;bot.mesh.position.z=state.z;bot.backing.position.x=state.x;bot.backing.position.z=state.z;bot.vx=state.vx;bot.vz=state.vz;bot.targetId=state.targetId;bot.floorY=state.floorY||0;bot.mesh.position.y=BOT_CENTER_Y+bot.floorY;bot.backing.position.y=BOT_CENTER_Y+bot.floorY;if(bot.label)bot.label.position.y=.55+bot.floorY;});
     });
     session.client.on('message',({data})=>{if(data.type==='death'&&data.payload.id===localPeerId)showGameOverOverlay();});
+    session.client.on('close',()=>{
+        if(sessionStorage.getItem('nicos-session-role')!=='guest')return;
+        if(roomSession!==session)return;
+        roomSession=null;joiningLAN=false;
+        lobbyStatus('Connection interrupted. Reconnecting to the room…');
+        // The Firestore watcher from setupRooms stays active and joins the
+        // replacement host advertisement once it becomes available.
+        if(!roomsWatching)setupRooms();
+    });
 }
 
         // --- Lighting ---
@@ -410,15 +515,46 @@ function wireGuestRoom(session){
                 if(lines){ctx.strokeStyle='rgba(10,12,15,.28)';ctx.lineWidth=3;ctx.strokeRect(1.5,1.5,253,253);ctx.beginPath();ctx.moveTo(0,128);ctx.lineTo(256,128);ctx.stroke()}
                 const texture=new THREE.CanvasTexture(tile);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(MAP_SIZE_X/7,MAP_SIZE_Y/7);texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());return texture;
             };
+            // Tileable, procedural surface textures (offline and reusable).
+            const patternTexture=(kind,base)=>{
+                const tile=document.createElement('canvas');tile.width=tile.height=256;
+                const c=tile.getContext('2d');c.fillStyle=base;c.fillRect(0,0,256,256);
+                let seed=kind.length*871782911+37;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
+                for(let i=0;i<1200;i++){c.fillStyle='rgba(200,205,212,.06)';c.fillRect(rand()*256,rand()*256,1+rand()*3,1+rand()*3)}
+                c.strokeStyle='rgba(20,24,29,.3)';c.lineWidth=2;
+                const grid=kind==='pavement'?64:kind==='concrete'?128:kind==='brick'?32:256;
+                if(kind==='brick'){
+                    for(let row=0;row<8;row++){
+                        const y=row*32;c.beginPath();c.moveTo(0,y);c.lineTo(256,y);c.stroke();
+                        for(let x=-64;x<320;x+=64){const xx=x+(row%2)*32;c.beginPath();c.moveTo(xx,y);c.lineTo(xx,y+32);c.stroke()}
+                    }
+                }else if(kind==='container'){
+                    c.lineWidth=3;for(let x=12;x<256;x+=19){c.beginPath();c.moveTo(x,0);c.lineTo(x,256);c.stroke()}
+                }else if(kind!=='asphalt'){
+                    for(let v=0;v<256;v+=grid){
+                        c.beginPath();c.moveTo(v,0);c.lineTo(v,256);c.stroke();
+                        c.beginPath();c.moveTo(0,v);c.lineTo(256,v);c.stroke()
+                    }
+                }
+                const texture=new THREE.CanvasTexture(tile);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;
+                texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+                return texture;
+            };
+            const asphaltTexture=patternTexture('asphalt','#343a41'),
+                  pavingTexture=patternTexture('pavement','#757978'),
+                  concreteTexture=patternTexture('concrete','#777b80'),
+                  masonryTexture=patternTexture('brick','#85756b'),
+                  containerTexture=patternTexture('container','#c7ced3');
             const groundBase=MAP_ID==='training'?'#ddd9cd':MAP_ID==='tokyo'?'#596069':MAP_ID==='manhattan'?'#3d3f46':IS_DOCKS?'#41484e':'#30343a';
-            const floorMat = new THREE.MeshPhongMaterial({map:makeConcreteTexture(groundBase,true),color:outdoor?0x9aa1a5:0xb8bcc1,shininess:7});
+            const floorMat = new THREE.MeshPhongMaterial({map:IS_GARAGE?makeConcreteTexture(groundBase,true):IS_DOCKS?concreteTexture:MAP_ID==='training'?pavingTexture:asphaltTexture,color:IS_GARAGE?0xb8bcc1:0xcbd0d3,shininess:7});
+            floorMat.map.repeat.set(MAP_SIZE_X/7,MAP_SIZE_Y/7);
             floorMesh = new THREE.Mesh(floorGeo, floorMat);
             floorMesh.rotation.x = -Math.PI / 2;
             floorMesh.position.set(MAP_SIZE_X, 0, MAP_SIZE_Y);
             scene.add(floorMesh);
 
             if(MAP_ID==='manhattan'){
-                const lotMat=new THREE.MeshPhongMaterial({color:0x55575e,shininess:2}),parkMat=new THREE.MeshPhongMaterial({color:0x587747,shininess:2}),pathMat=new THREE.MeshBasicMaterial({color:0xb7aa8e});
+                const lotMat=new THREE.MeshPhongMaterial({map:pavingTexture,color:0xbfc1c3,shininess:2}),parkMat=new THREE.MeshPhongMaterial({color:0x587747,shininess:2}),pathMat=new THREE.MeshBasicMaterial({color:0xb7aa8e});
                 // Copied from Web Weavers: the sixth-power island outline and its
                 // shore replace Nico's rectangular substitute at the exact source size.
                 const makeIslandShape=(rx,rz)=>{const shape=new THREE.Shape(),power=2/6;for(let i=0;i<=128;i++){const t=i/128*Math.PI*2,c=Math.cos(t),s=Math.sin(t),x=rx*Math.sign(c)*Math.pow(Math.abs(c),power),z=rz*Math.sign(s)*Math.pow(Math.abs(s),power);if(i===0)shape.moveTo(x,z);else shape.lineTo(x,z)}shape.closePath();return shape};
@@ -428,10 +564,30 @@ function wireGuestRoom(session){
                 for(const lot of SOURCE_LOTS){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(lot.w*2,lot.d*2),lotMat);mesh.rotation.x=-Math.PI/2;mesh.position.set((lot.x+lot.w/2)*2+1,.025,(lot.y+lot.d/2)*2+1);scene.add(mesh)}
                 for(const park of SOURCE_PARKS){const mesh=new THREE.Mesh(new THREE.PlaneGeometry(park.w*2,park.d*2),parkMat);mesh.rotation.x=-Math.PI/2;mesh.position.set((park.x+park.w/2)*2+1,.045,(park.y+park.d/2)*2+1);scene.add(mesh);for(const horizontal of [true,false]){const path=new THREE.Mesh(new THREE.PlaneGeometry(horizontal?park.w*1.9:1.6,horizontal?1.6:park.d*1.9),pathMat);path.rotation.x=-Math.PI/2;path.position.copy(mesh.position);path.position.y=.055;scene.add(path)}}
                 const trunkMat=new THREE.MeshPhongMaterial({color:0x5b3c2c}),leafMat=new THREE.MeshPhongMaterial({color:0x4c874d});for(const tree of SOURCE_TREES){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.38,.52,4.4,6),trunkMat);trunk.position.set(tree.x*2+1,2.2,tree.y*2+1);scene.add(trunk);const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(2.8*tree.s,1),leafMat);crown.scale.y=.85;crown.position.set(tree.x*2+1,5.3,tree.y*2+1);scene.add(crown)}
-                const diagonal=new THREE.Mesh(new THREE.PlaneGeometry(30,Math.hypot(MAP_SIZE_X*2,MAP_SIZE_Y*2)*1.12),new THREE.MeshBasicMaterial({color:0x34363c}));diagonal.rotation.set(-Math.PI/2,0,-.57);diagonal.position.set(MAP_SIZE_X,.06,MAP_SIZE_Y);scene.add(diagonal);
+                // Diagonal shortcut removed: it visually cut through solid buildings
+                // while collision still treated them as solid. Streets now follow lots.
+                const sidewalkEdgeMat=new THREE.MeshPhongMaterial({color:0xa4a8a4,shininess:2});
+                const curbMat=new THREE.MeshPhongMaterial({color:0x646c6d,shininess:2});
+                const curbGeo=new THREE.BoxGeometry(1,1,1);
+                const curbs=[];
+                for(const lot of SOURCE_LOTS){
+                    const x=(lot.x+lot.w/2)*2+1,z=(lot.y+lot.d/2)*2+1,
+                          w=lot.w*2,d=lot.d*2;
+                    curbs.push([x-w/2,.10,z,.32,.20,d]);
+                    curbs.push([x+w/2,.10,z,.32,.20,d]);
+                    curbs.push([x,.10,z-d/2,w,.20,.32]);
+                    curbs.push([x,.10,z+d/2,w,.20,.32]);
+                }
+                const curbBatch=new THREE.InstancedMesh(curbGeo,curbMat,curbs.length),
+                      curbMatrix=new THREE.Matrix4();
+                curbs.forEach(([x,y,z,w,h,d],i)=>{
+                    curbMatrix.compose(new THREE.Vector3(x,y,z),new THREE.Quaternion(),new THREE.Vector3(w,h,d));
+                    curbBatch.setMatrixAt(i,curbMatrix);
+                });
+                curbBatch.instanceMatrix.needsUpdate=true;scene.add(curbBatch);
             }
             if(MAP_ID==='tokyo'){
-                const roadMat=new THREE.MeshBasicMaterial({color:0x171e28}),roadWidth=16.4,centres=Array.from({length:15},(_,i)=>MAP_SIZE_X+(i-7)*60);
+                const roadMat=new THREE.MeshPhongMaterial({map:asphaltTexture,color:0xb7bec4,shininess:2}),roadWidth=16.4,centres=Array.from({length:15},(_,i)=>MAP_SIZE_X+(i-7)*60);
                 for(const center of centres){const horizontal=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE_X*2,roadWidth),roadMat);horizontal.rotation.x=-Math.PI/2;horizontal.position.set(MAP_SIZE_X,.04,center);scene.add(horizontal);const vertical=new THREE.Mesh(new THREE.PlaneGeometry(roadWidth,MAP_SIZE_Y*2),roadMat);vertical.rotation.x=-Math.PI/2;vertical.position.set(center,.041,MAP_SIZE_Y);scene.add(vertical)}
                 const outerRoad=new THREE.Mesh(new THREE.RingGeometry(438.8,455.2,192),roadMat);outerRoad.rotation.x=-Math.PI/2;outerRoad.position.set(MAP_SIZE_X,.045,MAP_SIZE_Y);scene.add(outerRoad);
                 const centreRoad=new THREE.Mesh(new THREE.RingGeometry(38,52,96),roadMat);centreRoad.rotation.x=-Math.PI/2;centreRoad.position.set(MAP_SIZE_X,.046,MAP_SIZE_Y);scene.add(centreRoad);
@@ -454,19 +610,88 @@ function wireGuestRoom(session){
                 }
             }
             if(MAP_ID==='training'){
-                const road=new THREE.Mesh(new THREE.RingGeometry(428,450,256),new THREE.MeshPhongMaterial({color:0x35383a,shininess:2}));road.rotation.x=-Math.PI/2;road.position.set(MAP_SIZE_X,.045,MAP_SIZE_Y);scene.add(road);
+                const road=new THREE.Mesh(new THREE.RingGeometry(428,450,256),new THREE.MeshPhongMaterial({map:asphaltTexture,color:0xc2c4c6,shininess:2}));road.rotation.x=-Math.PI/2;road.position.set(MAP_SIZE_X,.045,MAP_SIZE_Y);scene.add(road);
                 const positions=[],colors=[];for(const [inner,outer] of [[426,428],[450,452]])for(let i=0;i<256;i++){const a=i/256*Math.PI*2,b=(i+1)/256*Math.PI*2,color=new THREE.Color(i%2?0xf4efe5:0xc92f32);for(const [radius,angle] of [[inner,a],[outer,a],[outer,b],[inner,a],[outer,b],[inner,b]]){positions.push(MAP_SIZE_X+Math.cos(angle)*radius,.075,MAP_SIZE_Y+Math.sin(angle)*radius);colors.push(color.r,color.g,color.b)}}
                 const kerbGeometry=new THREE.BufferGeometry();kerbGeometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));kerbGeometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));kerbGeometry.computeVertexNormals();scene.add(new THREE.Mesh(kerbGeometry,new THREE.MeshPhongMaterial({vertexColors:true,side:THREE.DoubleSide})));
                 const shedMats=[0x74878d,0xa77e5c,0x829172].map(color=>new THREE.MeshPhongMaterial({color})),stone=new THREE.MeshPhongMaterial({color:0x9c9c90});for(let i=0;i<12;i++){const angle=i/12*Math.PI*2,station=new THREE.Group();station.position.set(MAP_SIZE_X+Math.cos(angle)*495,0,MAP_SIZE_Y+Math.sin(angle)*495);station.rotation.y=-angle;const shed=new THREE.Mesh(new THREE.BoxGeometry(12,5,8),shedMats[i%3]);shed.position.y=2.5;station.add(shed);const roof=new THREE.Mesh(new THREE.BoxGeometry(12.5,.36,8.5),stone);roof.position.y=5.2;station.add(roof);scene.add(station)}
             }
 
+            // Small instanced environmental details instead of large plain colour
+            // planes. They sit flush with roads and do not change collision.
+            if(MAP_ID==='manhattan'||MAP_ID==='tokyo'||MAP_ID==='training'){
+                const lineMat=new THREE.MeshBasicMaterial({color:MAP_ID==='tokyo'?0xe8dfb3:0xf1e6cc});
+                const whiteMat=new THREE.MeshBasicMaterial({color:0xe6e9e5});
+                const lineGeo=new THREE.BoxGeometry(1,.018,1),lines=[];
+                if(MAP_ID==='tokyo'){
+                    for(let i=0;i<15;i++){
+                        const center=MAP_SIZE_X+(i-7)*60;
+                        for(let p=16;p<MAP_SIZE_X*2-14;p+=23){
+                            lines.push([p,.10,center,9,.16]);
+                            lines.push([center,.10,p,.16,9]);
+                        }
+                    }
+                }else if(MAP_ID==='manhattan'){
+                    // Road axes come directly from the original 92x64 block pitch.
+                    // Previously decorative stripes were scattered on sidewalks.
+                    const verticalRoads=Array.from({length:7},(_,i)=>92*(i+1)),
+                          horizontalRoads=Array.from({length:11},(_,i)=>64*(i+1));
+                    for(const x of verticalRoads)for(let z=10;z<MAP_SIZE_Y*2-10;z+=17){
+                        if(horizontalRoads.some(road=>Math.abs(z-road)<16))continue;
+                        lines.push([x,.085,z,.20,7.5]);
+                    }
+                    for(const z of horizontalRoads)for(let x=10;x<MAP_SIZE_X*2-10;x+=17){
+                        if(verticalRoads.some(road=>Math.abs(x-road)<18))continue;
+                        lines.push([x,.085,z,7.5,.20]);
+                    }
+                }else{
+                    for(let i=0;i<180;i++){
+                        const theta=i/180*Math.PI*2;
+                        const r=438;
+                        lines.push([MAP_SIZE_X+Math.cos(theta)*r,.11,MAP_SIZE_Y+Math.sin(theta)*r,1.2,2.5,theta]);
+                    }
+                }
+                const paint=new THREE.InstancedMesh(lineGeo,lineMat,lines.length);
+                const m=new THREE.Matrix4(),q=new THREE.Quaternion(),axis=new THREE.Vector3(0,1,0);
+                lines.forEach(([x,y,z,w,d,angle],i)=>{
+                    q.setFromAxisAngle(axis,angle||0);
+                    m.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(w,1,d));
+                    paint.setMatrixAt(i,m);
+                });
+                paint.instanceMatrix.needsUpdate=true;scene.add(paint);
+                // Concrete pedestrian crossings make Tokyo intersections feel
+                // like streets rather than a uniformly coloured grid.
+                if(MAP_ID==='tokyo'){
+                    const crossings=[],crossing=new THREE.InstancedMesh(new THREE.BoxGeometry(1,.025,1),whiteMat,12*12*2);
+                    for(let ix=1;ix<13;ix++)for(let iz=1;iz<13;iz++)for(let stripe=0;stripe<2;stripe++){
+                        const cx=MAP_SIZE_X+(ix-7)*60,cz=MAP_SIZE_Y+(iz-7)*60;
+                        crossings.push([cx-12+stripe*3,.12,cz-14,1.8,5.5]);
+                    }
+                    crossings.forEach(([x,y,z,w,d],i)=>{
+                        m.compose(new THREE.Vector3(x,y,z),new THREE.Quaternion(),new THREE.Vector3(w,1,d));
+                        crossing.setMatrixAt(i,m)
+                    });
+                    crossing.instanceMatrix.needsUpdate=true;scene.add(crossing);
+                }
+            }
+            if(IS_DOCKS){
+                // Repeated hazard stripes and load-bay outlines unify the port's
+                // industrial look without adding geometry to the collision grid.
+                const stripeMat=new THREE.MeshBasicMaterial({color:0xe6ca69}),
+                      stripeGeo=new THREE.BoxGeometry(2.5,.022,.22),positions=[];
+                for(const x of [22,64,106,148,190,232,274,316])
+                    for(let z=16;z<MAP_SIZE_Y*2-18;z+=18)positions.push([x,.082,z]);
+                const stripes=new THREE.InstancedMesh(stripeGeo,stripeMat,positions.length),m=new THREE.Matrix4();
+                positions.forEach(([x,y,z],i)=>{m.makeTranslation(x,y,z);stripes.setMatrixAt(i,m)});
+                stripes.instanceMatrix.needsUpdate=true;scene.add(stripes);
+            }
+
             // Room dividers are continuous masonry walls; support columns are separate 1x1 posts.
             wallGroup = new THREE.Group();
-            const wallTexture = new THREE.TextureLoader().load('./assets/vendor/nextbot-brick.jpg');
+            const wallTexture = masonryTexture;
             wallTexture.wrapS=wallTexture.wrapT=THREE.RepeatWrapping;wallTexture.repeat.set(1,1);
             const brickMaterial=(repeatX,repeatY)=>{const map=wallTexture.clone();map.needsUpdate=true;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.repeat.set(repeatX,repeatY);return new THREE.MeshPhongMaterial({map,color:0x8f949a,shininess:3})};
             const wallGeo = new THREE.BoxGeometry(2, BUILDING_HEIGHT, 2);
-            const wallSideBrick=brickMaterial(.5,BUILDING_HEIGHT/2),wallTopBrick=brickMaterial(.5,.5);
+            const wallSideBrick=brickMaterial(.5,BUILDING_HEIGHT/3),wallTopBrick=brickMaterial(.5,.5);
             const wallMaterials=[wallSideBrick,wallSideBrick,wallTopBrick,wallTopBrick,wallSideBrick,wallSideBrick];
             let wallCount=0,pillarCount=0;for(let y=0;y<MAP_SIZE_Y;y++)for(let x=0;x<MAP_SIZE_X;x++){if((IS_GARAGE||IS_DOCKS)&&MAP[y][x]===1)wallCount++;else if(MAP[y][x]===2)pillarCount++}
             const walls=new THREE.InstancedMesh(wallGeo,wallMaterials,wallCount),pillars=new THREE.InstancedMesh(wallGeo,wallMaterials,pillarCount);
@@ -501,21 +726,78 @@ function wireGuestRoom(session){
                 ceiling.rotation.x=Math.PI/2;ceiling.position.set(MAP_SIZE_X,BUILDING_HEIGHT,MAP_SIZE_Y);scene.add(ceiling);
             }
 
-            const rampMaterial=new THREE.MeshPhongMaterial({map:makeConcreteTexture('#55575a',true),color:0xb7b8b4,shininess:3});
-            const railMat=new THREE.MeshPhongMaterial({color:0xd6d2c4,shininess:4});
+            const rampMaterial=new THREE.MeshPhongMaterial({map:concreteTexture,color:0xd4d6d5,side:THREE.DoubleSide,shininess:4});
+            const railMat=new THREE.MeshPhongMaterial({color:0x7f898b,shininess:9});
             const warningMat=new THREE.MeshBasicMaterial({color:0xe5c94f});
+            // True slopes meet both floor surfaces. Rotating a horizontal BoxGeometry
+            // shortens its projected x-range and leaves floating ramp ends.
+            function slopedDeck(x0,x1,z0,z1,y0,y1,thickness,material) {
+                const verts=[
+                    x0,y0,z0,x1,y1,z0,x1,y1,z1,x0,y0,z1,
+                    x0,y0-thickness,z0,x1,y1-thickness,z0,x1,y1-thickness,z1,x0,y0-thickness,z1
+                ];
+                const triangles=[[0,1,2,0,2,3],[4,6,5,4,7,6],
+                    [0,4,5,0,5,1],[3,2,6,3,6,7],[0,3,7,0,7,4],[1,5,6,1,6,2]];
+                const positions=[];
+                for(const faces of triangles)for(const i of faces)positions.push(...verts.slice(i*3,i*3+3));
+                const geometry=new THREE.BufferGeometry();
+                geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+                geometry.computeVertexNormals();
+                return new THREE.Mesh(geometry,material);
+            }
             for(const ramp of RAMPS){
-                const baseY=ramp.floor*FLOOR_HEIGHT;
-                const length=(ramp.x2-ramp.x1)*2,width=(ramp.y2-ramp.y1)*2,angle=Math.atan2(FLOOR_HEIGHT,length)*(ramp.reverse?-1:1),cx=ramp.x1+ramp.x2+1,cz=ramp.y1+ramp.y2+1;
-                // Keep the ramp as a thin suspended slab. A solid triangular
-                // support used to turn its entire underside into a huge dark wall.
-                const mesh=new THREE.Mesh(new THREE.BoxGeometry(length,.32,width),rampMaterial);mesh.position.set(cx,baseY+FLOOR_HEIGHT/2,cz);mesh.rotation.z=angle;scene.add(mesh);
-                // Low sloped safety rails keep the route readable and open. The
-                // former floor-to-ceiling walls hid the ramp and looked like two
-                // oversized brick wedges cutting through the garage.
-                for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(length,1.15,.38),railMat);guard.position.set(cx,baseY+FLOOR_HEIGHT/2+.72,cz+side*(width/2-.22));guard.rotation.z=angle;scene.add(guard)}
-                // Yellow entrance bars clearly mark both ways onto the ramp.
-                for(const end of [ramp.x1*2+1,ramp.x2*2+1]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.28,.18,width-1),warningMat);bar.position.set(end,baseY+(end===ramp.x1*2+1?(ramp.reverse?FLOOR_HEIGHT+.12:.12):(ramp.reverse?.12:FLOOR_HEIGHT+.12)),cz);scene.add(bar)}
+                const baseY=ramp.floor*FLOOR_HEIGHT,
+                    x0=ramp.x1*2+1,x1=ramp.x2*2+1,
+                    z0=ramp.y1*2+1,z1=ramp.y2*2+1,
+                    y0=baseY+(ramp.reverse?FLOOR_HEIGHT:0),
+                    y1=baseY+(ramp.reverse?0:FLOOR_HEIGHT);
+                scene.add(slopedDeck(x0,x1,z0,z1,y0,y1,.28,rampMaterial));
+                // Masonry retaining walls visibly close the space beneath each
+                // ramp. On the lower floor you must walk around these walls;
+                // the upper landing stays open, without invisible collision.
+                const bottom=baseY;
+                const faceVerts=(z,side)=>new Float32Array([
+                    x0,bottom,z, x1,bottom,z, x1,y1-.28,z,
+                    x0,bottom,z, x1,y1-.28,z, x0,y0-.28,z
+                ]);
+                const retainingMat=new THREE.MeshPhongMaterial({
+                    map:masonryTexture, color:0xa6a39d,
+                    side:THREE.DoubleSide,shininess:2
+                });
+                for(const z of [z0,z1]){
+                    const geometry=new THREE.BufferGeometry();
+                    geometry.setAttribute('position',new THREE.BufferAttribute(faceVerts(z),3));
+                    geometry.computeVertexNormals();
+                    const retaining=new THREE.Mesh(geometry,retainingMat);
+                    scene.add(retaining);
+                }
+                // Close the underside with a triangular volume rather than
+                // only an open face, so the lower passage has a clear barrier.
+                const lowX=ramp.reverse?x1:x0,highX=ramp.reverse?x0:x1;
+                const lowY=baseY,highY=baseY+FLOOR_HEIGHT-.28;
+                const baseWall=new THREE.Mesh(
+                    new THREE.BoxGeometry(.25,FLOOR_HEIGHT-.28,z1-z0),
+                    retainingMat
+                );
+                baseWall.position.set(highX,baseY+(FLOOR_HEIGHT-.28)/2,(z0+z1)/2);
+                scene.add(baseWall);
+                for(const z of [z0+.18,z1-.18]){
+                    const start=new THREE.Vector3(x0,y0+1.12,z);
+                    const finish=new THREE.Vector3(x1,y1+1.12,z);
+                    const delta=finish.clone().sub(start);
+                    const rail=new THREE.Mesh(new THREE.BoxGeometry(delta.length(),.14,.17),railMat);
+                    rail.position.copy(start).add(finish).multiplyScalar(.5);
+                    rail.rotation.z=Math.atan2(delta.y,delta.x);scene.add(rail);
+                    for(const x of [x0+1,x1-1]){
+                        const t=(x-x0)/(x1-x0);
+                        const post=new THREE.Mesh(new THREE.BoxGeometry(.13,1.1,.13),railMat);
+                        post.position.set(x,y0+(y1-y0)*t+.55,z);scene.add(post);
+                    }
+                }
+                for(const [x,y] of [[x0,y0],[x1,y1]]){
+                    const stripe=new THREE.Mesh(new THREE.BoxGeometry(.24,.035,z1-z0-.8),warningMat);
+                    stripe.position.set(x,y+.05,(z0+z1)/2);scene.add(stripe);
+                }
             }
 
             // Aligned parking bays stay inside rooms and never cut through walls,
@@ -546,7 +828,7 @@ function wireGuestRoom(session){
                     for(let level=0;level<levels;level++)containerGroups.get(c.c).push({...c,level});
                 }
                 for(const [color,items] of containerGroups){
-                    const material=new THREE.MeshPhongMaterial({color,shininess:18});
+                    const material=new THREE.MeshPhongMaterial({map:containerTexture,color,shininess:12});
                     const mesh=new THREE.InstancedMesh(containerGeo,material,items.length);
                     items.forEach((c,i)=>{
                         transform.compose(
@@ -557,7 +839,7 @@ function wireGuestRoom(session){
                     mesh.instanceMatrix.needsUpdate=true;scene.add(mesh);
                 }
                 for(const c of YARD_CONTAINERS.filter(container=>container.open)){
-                    const shell=new THREE.Group(),material=new THREE.MeshPhongMaterial({color:c.c,shininess:18}),horizontal=c.w>c.d;
+                    const shell=new THREE.Group(),material=new THREE.MeshPhongMaterial({map:containerTexture,color:c.c,shininess:12}),horizontal=c.w>c.d;
                     const roof=new THREE.Mesh(new THREE.BoxGeometry(c.w*2,.18,c.d*2),material);roof.position.y=CONTAINER_LEVEL_HEIGHT-.09;shell.add(roof);
                     for(const side of [-1,1]){
                         const wall=new THREE.Mesh(new THREE.BoxGeometry(horizontal?c.w*2:.18,CONTAINER_LEVEL_HEIGHT-.18,horizontal?.18:c.d*2),material);
@@ -615,13 +897,31 @@ function wireGuestRoom(session){
                     const rows=box.rural?2:8;for(let row=0;row<rows;row++){ctx.fillStyle='#303a42';ctx.fillRect(0,row*(box.rural?128:32)+(box.rural?124:30),128,2);for(let col=0;col<5;col++){ctx.fillStyle=(row+col+box.style)%3?'#c7b382':'#1d2b37';ctx.fillRect(7+col*24,(box.rural?28:6)+row*(box.rural?128:32),14,box.rural?50:18)}}
                     const texture=new THREE.CanvasTexture(canvas);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(1,box.h>55?3:1);const material=new THREE.MeshPhongMaterial({map:texture,emissiveMap:texture,emissive:0x343434,emissiveIntensity:.24,shininess:4});facadeMats.set(key,material);return material;
                 };
+                const manhattanFacade=box=>{
+                    const key='manhattan:'+box.c;
+                    if(facadeMats.has(key))return facadeMats.get(key);
+                    const tile=document.createElement('canvas');tile.width=128;tile.height=256;
+                    const ctx=tile.getContext('2d');ctx.fillStyle='#'+new THREE.Color(box.c).getHexString();ctx.fillRect(0,0,128,256);
+                    for(let row=0;row<8;row++){
+                        ctx.fillStyle='rgba(18,25,31,.33)';ctx.fillRect(0,row*32,128,4);
+                        for(let col=0;col<5;col++){
+                            ctx.fillStyle=(row+col+Math.round(box.h))%4===0?'#bfb18c':'#203949';
+                            ctx.fillRect(7+col*24,8+row*32,14,17);
+                            ctx.fillStyle='rgba(212,226,232,.22)';ctx.fillRect(7+col*24,8+row*32,14,2);
+                        }
+                    }
+                    const texture=new THREE.CanvasTexture(tile);texture.wrapS=texture.wrapT=THREE.RepeatWrapping;
+                    texture.repeat.set(2,Math.max(1,Math.round(box.h/38)));
+                    const material=new THREE.MeshPhongMaterial({map:texture,color:0xd3d6d8,shininess:8});
+                    facadeMats.set(key,material);return material;
+                };
                 for(const box of SCENERY_BOXES){
                     if(!facadeMats.has(box.c))facadeMats.set(box.c,new THREE.MeshPhongMaterial({color:box.c,shininess:8}));
-                    const material=box.kind==='tokyo'?tokyoFacade(box):facadeMats.get(box.c),lowerHeight=box.kind==='tokyo'&&box.h>55?box.h*.72:box.h;
+                    const material=box.kind==='tokyo'?tokyoFacade(box):box.kind==='manhattan'?manhattanFacade(box):facadeMats.get(box.c),lowerHeight=box.kind==='tokyo'&&box.h>55?box.h*.72:box.h;
                     const building=new THREE.Mesh(new THREE.BoxGeometry(box.w*2,lowerHeight,box.d*2),material);building.position.set((box.x+box.w/2)*2+1,lowerHeight/2,(box.y+box.d/2)*2+1);scene.add(building);
                     if(lowerHeight<box.h){const upper=new THREE.Mesh(new THREE.BoxGeometry(box.w*1.52,box.h-lowerHeight,box.d*1.52),material);upper.position.set(building.position.x,lowerHeight+(box.h-lowerHeight)/2,building.position.z);scene.add(upper)}
                     const roof=new THREE.Mesh(new THREE.BoxGeometry(box.w*2+.25,.35,box.d*2+.25),new THREE.MeshBasicMaterial({color:0x20262d}));roof.position.set(building.position.x,box.h+.18,building.position.z);scene.add(roof);
-                    if(box.kind!=='tokyo'&&box.h>12){const windows=new THREE.Mesh(new THREE.BoxGeometry(box.w*1.45,box.h*.72,.08),new THREE.MeshBasicMaterial({color:0xb8d5d8,transparent:true,opacity:.58}));windows.position.set(building.position.x,box.h*.52,building.position.z-box.d-0.05);scene.add(windows)}
+                    if(box.kind!=='tokyo'&&box.kind!=='manhattan'&&box.h>12){const windows=new THREE.Mesh(new THREE.BoxGeometry(box.w*1.45,box.h*.72,.08),new THREE.MeshBasicMaterial({color:0xb8d5d8,transparent:true,opacity:.58}));windows.position.set(building.position.x,box.h*.52,building.position.z-box.d-0.05);scene.add(windows)}
                     if(box.kind==='tokyo'&&box.rural){const ruralRoof=new THREE.Mesh(new THREE.ConeGeometry(1,1,4),new THREE.MeshPhongMaterial({color:0x26303c}));ruralRoof.scale.set(box.w*1.55,1.75,box.d*1.55);ruralRoof.rotation.y=Math.PI/4;ruralRoof.position.set(building.position.x,box.h+1,building.position.z);scene.add(ruralRoof)}
                 }
                 if(MAP_ID==='tokyo'){
@@ -637,24 +937,66 @@ function wireGuestRoom(session){
                 }
             }
 
-            // Varied low-poly hatchbacks, saloons, SUVs and vans fill the bays.
+            // Batched, shared-geometry parked vehicles. Previously every car
+            // allocated its own meshes/materials/geometries (body, cabin, glass
+            // and four wheels), causing many draw calls near the parking bays.
             const carColors=[0x9e2f32,0x315c83,0x44474b,0xb6b7b0,0x6d5132,0x284f43];
-            const makeCar=(type,color)=>{
-                const car=new THREE.Group(),bodyMat=new THREE.MeshPhongMaterial({color,shininess:38}),glassMat=new THREE.MeshPhongMaterial({color:0x14212a,shininess:85});
-                const dims=[[3.5,.72,6.2],[3.55,.78,7.1],[3.8,1.05,6.8],[3.9,1.25,7.5]][type];
-                const body=new THREE.Mesh(new THREE.BoxGeometry(...dims),bodyMat);body.position.y=dims[1]/2+.28;car.add(body);
-                const cabinDims=type===3?[3.35,1.45,4.4]:type===2?[3.25,1.2,3.8]:[3.05,.95,type===0?3.2:3.8];
-                const cabin=new THREE.Mesh(new THREE.BoxGeometry(...cabinDims),bodyMat);cabin.position.set(0,dims[1]+cabinDims[1]/2+.18,type===0?.15:-.25);car.add(cabin);
-                const windshield=new THREE.Mesh(new THREE.BoxGeometry(cabinDims[0]+.03,cabinDims[1]*.62,.12),glassMat);windshield.position.set(0,cabin.position.y+.04,cabin.position.z-cabinDims[2]/2-.065);car.add(windshield);
-                const rearGlass=windshield.clone();rearGlass.position.z=cabin.position.z+cabinDims[2]/2+.065;car.add(rearGlass);
-                const wheelMat=new THREE.MeshPhongMaterial({color:0x090a0c}),wheelGeo=new THREE.CylinderGeometry(.48,.48,.34,10);wheelGeo.rotateZ(Math.PI/2);
-                for(const wx of [-dims[0]/2-.08,dims[0]/2+.08])for(const wz of [-dims[2]*.31,dims[2]*.31]){const wheel=new THREE.Mesh(wheelGeo,wheelMat);wheel.position.set(wx,.45,wz);car.add(wheel)}
-                return car;
+            const CAR_SPECS=[
+                {w:3.5,l:6.2,hood:.75,roof:1.02,roofLength:3.05}, // hatchback
+                {w:3.55,l:7.1,hood:.8,roof:1.0,roofLength:3.75}, // saloon
+                {w:3.8,l:6.8,hood:1.04,roof:1.35,roofLength:3.9}, // SUV
+                {w:3.9,l:7.5,hood:1.22,roof:1.57,roofLength:4.65} // van
+            ];
+            const garageCars=FLOOR_CAR_SPOTS.flatMap((spots,floor)=>spots.map(([cx,cy,type],i)=>({
+                x:cx*2+1,y:FLOOR_LEVELS[floor],z:cy*2+1,
+                gridX:cx,gridY:cy,type,color:(i+floor*2)%carColors.length,
+                rotated:((i+floor)%2)!==0,floor
+            })));
+            // Geometry is shared by every car and each component is instanced.
+            const cube=new THREE.BoxGeometry(1,1,1);
+            const tire=new THREE.CylinderGeometry(.45,.45,.3,10);
+            tire.rotateZ(Math.PI/2);
+            const bodyMats=carColors.map(color=>new THREE.MeshPhongMaterial({color,shininess:32}));
+            const glassMat=new THREE.MeshPhongMaterial({color:0x223743,shininess:74});
+            const tireMat=new THREE.MeshPhongMaterial({color:0x131619,shininess:7});
+            const carHeadlampMat=new THREE.MeshBasicMaterial({color:0xe2e2cc});
+            const tailMat=new THREE.MeshBasicMaterial({color:0x971e1c});
+            const componentGroups=new Map();
+            const addPart=(geometry,material,pos,scale,car)=>{
+                const key=material.uuid+':'+geometry.uuid;
+                if(!componentGroups.has(key))componentGroups.set(key,{geometry,material,instances:[]});
+                componentGroups.get(key).instances.push({pos,scale,car});
             };
-            FLOOR_CAR_SPOTS.forEach((spots,floor)=>spots.forEach(([cx,cy,type],i)=>{
-                const car=makeCar(type,carColors[(i+floor*2)%carColors.length]);car.position.set(cx*2+1,FLOOR_LEVELS[floor],cy*2+1);if((i+floor)%2)car.rotation.y=Math.PI;scene.add(car);
-            }));
-
+            for(const car of garageCars){
+                const spec=CAR_SPECS[car.type],body=bodyMats[car.color],half=spec.l/2;
+                addPart(cube,body,[0,.42+spec.hood/2,0],[spec.w,spec.hood,spec.l],car);
+                // Raised cabin, separate windscreen, rear window and side glazing
+                // produce a recognizable silhouette at a fraction of the draw calls.
+                const cabinBottom=.42+spec.hood,cabinHeight=spec.roof;
+                const roofLength=spec.roofLength,roofOffset=car.type===0?.08:car.type===3?-.1:-.2;
+                addPart(cube,body,[0,cabinBottom+cabinHeight/2,roofOffset],[spec.w*.86,cabinHeight,roofLength],car);
+                addPart(cube,glassMat,[0,cabinBottom+cabinHeight*.52,roofOffset-roofLength/2-.035],[spec.w*.79,cabinHeight*.72,.085],car);
+                addPart(cube,glassMat,[0,cabinBottom+cabinHeight*.52,roofOffset+roofLength/2+.035],[spec.w*.79,cabinHeight*.68,.085],car);
+                for(const side of [-1,1]){
+                    addPart(cube,glassMat,[side*spec.w*.438,cabinBottom+cabinHeight*.55,roofOffset],[.052,cabinHeight*.57,roofLength*.76],car);
+                    for(const z of [-spec.l*.32,spec.l*.32])
+                        addPart(tire,tireMat,[side*(spec.w/2+.04),.45,z],[1,1,1],car);
+                    addPart(cube,carHeadlampMat,[side*spec.w*.28,.66,-half-.026],[.56,.24,.07],car);
+                    addPart(cube,tailMat,[side*spec.w*.28,.67,half+.026],[.58,.22,.07],car);
+                }
+            }
+            const instanceMatrix=new THREE.Matrix4(),q=new THREE.Quaternion(),rotationAxis=new THREE.Vector3(0,1,0);
+            for(const group of componentGroups.values()){
+                const batch=new THREE.InstancedMesh(group.geometry,group.material,group.instances.length);
+                batch.frustumCulled=false;
+                group.instances.forEach(({pos,scale,car},index)=>{
+                    q.setFromAxisAngle(rotationAxis,car.rotated?Math.PI:0);
+                    const p=new THREE.Vector3(...pos).applyQuaternion(q).add(new THREE.Vector3(car.x,car.y,car.z));
+                    instanceMatrix.compose(p,q,new THREE.Vector3(...scale));
+                    batch.setMatrixAt(index,instanceMatrix);
+                });
+                batch.instanceMatrix.needsUpdate=true;scene.add(batch);
+            }
             // Start away from the centre so every round opens differently.
             respawnSpawns=[];for(let y=5;y<MAP_SIZE_Y-5;y++)for(let x=5;x<MAP_SIZE_X-5;x++)if(MAP[y][x]===0&&!rampAt(x,y)&&!yardContainerAt(x+.5,y+.5)&&!yardRampAt(x+.5,y+.5)&&Math.hypot(x-MAP_SIZE_X/2,y-MAP_SIZE_Y/2)>27)respawnSpawns.push([x+.5,y+.5]);
             const authoredSpawns={annex:[7.25,26.5],manhattan:[184,192],tokyo:[234,174],training:[280,280]};
@@ -770,19 +1112,20 @@ for (let b = 0; b < botSpawns.length; b++) {
             const key = e.key.toLowerCase();
             keys[key] = true;
             if(e.key.startsWith('Arrow'))e.preventDefault();
-            if (key === keyBindings.pointer && !e.repeat) {
+            if ((key === keyBindings.pointer || key === 'shift') && !e.repeat && gameStarted && !isGameOver && !e.target?.closest?.('input, textarea, select, [contenteditable]')) {
                 e.preventDefault();
-                if (!isLocked) canvas.requestPointerLock();
-                else document.exitPointerLock();
+                setNicoMouseLock(!isLocked);
             }
+            if (key === 'escape' && isLocked) setNicoMouseLock(false);
             if (key === keyBindings.jump) e.preventDefault();
             if (key === keyBindings.jump && !e.repeat && !player.isJumping) {
                 player.isJumping = true;
                 player.zVel = 0.19;
             }
             // Toggle settings menu with "P"
-            if (key === 'p') {
+            if (key === 'p' && !e.repeat) {
                 settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+                if(settingsMenu.style.display==='flex')setNicoMouseLock(false);
             }
             // Handle cheat key sequence
             handleCheatSequence(e);
@@ -795,17 +1138,17 @@ for (let b = 0; b < botSpawns.length; b++) {
             const key = e.key.toLowerCase();
             keys[key] = false;
         }
+        function applyNicoLook(dx,dy) {
+            player.dir -= dx*player.rotSpeed*player.sensitivity;
+            player.pitch = Math.max(-Math.PI/2+.01,Math.min(Math.PI/2-.01,player.pitch-dy*player.rotSpeed*player.sensitivity));
+        }
         function handleMouseMove(e) {
-            if (isLocked) {
-                // Yaw (left/right) - movementX, Pitch (up/down) - movementY
-                player.dir -= e.movementX * player.rotSpeed * player.sensitivity;
-                player.pitch -= e.movementY * player.rotSpeed * player.sensitivity;
-                // Clamp pitch to avoid flipping
-                player.pitch = Math.max(-Math.PI/2 + 0.01, Math.min(Math.PI/2 - 0.01, player.pitch));
-            }
+            if(isLocked&&!hasNativeMouse)applyNicoLook(e.movementX,e.movementY);
         }
         function updateLockStatus() {
+            if(hasNativeMouse)return;
             isLocked = document.pointerLockElement === canvas;
+            document.body.classList.toggle('nico-mouse-locked',isLocked);
         }
 
         // --- Player and Bot Movement ---
@@ -821,10 +1164,107 @@ for (let b = 0; b < botSpawns.length; b++) {
             cheatsMenu.style.display = 'none';
         });
 
+        // The map ballot is displayed inside the game, not a full-screen
+        // GAME OVER screen. The host owns the countdown and the result.
+        const mapBallot={active:false,choices:[],votes:new Map(),selected:null,deadline:0,interval:null};
+        const mapPrettyName=id=>MAP_NAMES[id]||id;
+        function beginMapBallot(choices,deadline=Date.now()+30000) {
+            if(mapBallot.active)return;
+            mapBallot.active=true;
+            const previousGameOver=document.getElementById('game-over-overlay');
+            if(previousGameOver)previousGameOver.style.display='none';
+            mapBallot.choices=choices;
+            mapBallot.votes.clear();
+            mapBallot.selected=null;
+            mapBallot.deadline=deadline;
+            setNicoMouseLock(false);
+            let overlay=document.getElementById('map-vote-overlay');
+            if(!overlay){
+                overlay=document.createElement('div');overlay.id='map-vote-overlay';
+                overlay.style.cssText='position:fixed;inset:0;z-index:9800;display:flex;align-items:center;justify-content:center;background:rgba(8,11,14,.57);font:500 15px system-ui,sans-serif;color:#f5f5f5';
+                overlay.innerHTML='<div style="width:min(640px,92vw);border:1px solid #7a704d;border-radius:15px;background:#11171eea;padding:22px;box-shadow:0 20px 60px #0008"><div style="font-weight:750;font-size:16px;letter-spacing:.07em;color:#e9d17b">YOU SURVIVED</div><h2 style="margin:12px 0 3px;font-size:24px">Vote for the next map</h2><p id="vote-countdown" style="margin:0 0 16px;color:#aab3ba">30 seconds remaining</p><div id="vote-options" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px"></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:18px"><button id="vote-home" style="padding:9px 14px;background:#29313b;color:white;border:1px solid #5b6571;border-radius:8px">Home</button><button id="vote-close" style="padding:9px 14px;background:#222b34;color:white;border:1px solid #5b6571;border-radius:8px">Hide vote</button></div></div>';
+                document.body.append(overlay);
+                overlay.querySelector('#vote-home').onclick=returnToGameMenu;
+                overlay.querySelector('#vote-close').onclick=()=>{overlay.style.display='none';document.getElementById('vote-reopen').style.display='block'};
+            }
+            overlay.style.display='flex';
+            const reopen=document.getElementById('vote-reopen')||document.createElement('button');
+            if(!reopen.id){reopen.id='vote-reopen';reopen.textContent='NEXT MAP VOTE';reopen.style.cssText='position:fixed;right:14px;top:90px;z-index:9700;background:#18232f;color:#efdc99;padding:9px 14px;border:1px solid #9b8546;border-radius:8px;cursor:pointer';document.body.append(reopen);reopen.onclick=()=>{overlay.style.display='flex';reopen.style.display='none'}}
+            reopen.style.display='none';
+            const box=overlay.querySelector('#vote-options');box.replaceChildren();
+            for(const id of choices){
+                const button=document.createElement('button');
+                button.dataset.vote=id;
+                button.style.cssText='min-height:88px;padding:10px;border-radius:10px;border:1px solid #46515b;background:#232d37;color:#f4f1ea;font:600 14px system-ui;cursor:pointer';
+                button.textContent=mapPrettyName(id);
+                button.onclick=()=>castMapVote(id);
+                box.append(button);
+            }
+            const tick=()=>{
+                const remain=Math.max(0,Math.ceil((mapBallot.deadline-Date.now())/1000));
+                overlay.querySelector('#vote-countdown').textContent=remain+' seconds remaining';
+                for(const button of box.children){
+                    const id=button.dataset.vote;
+                    const votes=Array.from(mapBallot.votes.values()).filter(v=>v===id).length;
+                    button.textContent=mapPrettyName(id)+(netRole==='guest'?'':(' · '+votes+' vote'+(votes===1?'':'s')));
+                    button.style.borderColor=mapBallot.selected===id?'#f4d06b':'#46515b';
+                    button.style.background=mapBallot.selected===id?'#514527':'#232d37';
+                }
+                if(!remain&&netRole!=='guest')finalizeMapBallot();
+            };
+            clearInterval(mapBallot.interval);mapBallot.interval=setInterval(tick,250);tick();
+        }
+        function castMapVote(id){
+            if(!mapBallot.active||!mapBallot.choices.includes(id))return;
+            mapBallot.selected=id;
+            if(netRole==='guest'&&roomSession)roomSession.client.send('map-vote',{id});
+            else mapBallot.votes.set('host',id);
+        }
+        function finalizeMapBallot(){
+            if(!mapBallot.active)return;
+            const ordered=mapBallot.choices.map((id,index)=>({id,index,votes:Array.from(mapBallot.votes.values()).filter(v=>v===id).length}));
+            ordered.sort((a,b)=>b.votes-a.votes||a.index-b.index);
+            const winner=ordered[0].id;
+            if(netRole==='host'&&roomSession)roomSession.lan.broadcast('next-map',{id:winner});
+            moveToNextMap(winner);
+        }
+        function moveToNextMap(id){
+            if(!mapBallot.active)return;
+            mapBallot.active=false;clearInterval(mapBallot.interval);
+            // Reconnect to a new session after navigation. A real page load cannot
+            // preserve an existing WebRTC data channel.
+            const mode=netRole==='solo'?'solo':netRole==='host'?'host':'guest';
+            sessionStorage.setItem('nicos-random-game',mode);
+            if(mode==='host')sessionStorage.setItem('nicos-auto-start','1');
+            if(mode==='guest'&&roomSession?.room?.id)sessionStorage.setItem('nicos-pending-room',roomSession.room.id);
+            const url=new URL(location.href);url.searchParams.set('map',id);location.href=url.href;
+        }
+        function roundEndBallot(){
+            if(mapBallot.active)return;
+            const others=RANDOM_MAPS.filter(id=>id!==MAP_ID);
+            const choices=[...others].sort(()=>Math.random()-.5).slice(0,3);
+            if(netRole==='guest')return; // only the host may start a shared vote
+            beginMapBallot(choices);
+            if(netRole==='host'&&roomSession)roomSession.lan.broadcast('map-vote-start',{choices,deadline:mapBallot.deadline});
+        }
+
         // --- Round end overlay ---
         let isGameOver = false;
         let livesRemaining=2;
-        function returnToGameMenu(){ location.reload(); }
+        function returnToGameMenu(){
+            homeSpectating=true;
+            setNicoMouseLock(false);
+            document.getElementById('map-vote-overlay')?.setAttribute('hidden','');
+            const ballot=document.getElementById('map-vote-overlay');
+            if(ballot)ballot.style.display='none';
+            const gameOver=document.getElementById('game-over-overlay');
+            if(gameOver)gameOver.style.display='none';
+            document.getElementById('vote-reopen')?.setAttribute('style','position:fixed;right:14px;top:90px;z-index:9700;background:#18232f;color:#efdc99;padding:9px 14px;border:1px solid #9b8546;border-radius:8px;cursor:pointer');
+            document.getElementById('start-screen').style.display='flex';
+            showMenuPanel('menu-main');
+            if(netRole==='guest'&&roomSession)roomSession.client.send('player',{x:player.x,y:player.y,dir:player.dir,floorY:player.floorY,alive:false});
+            // Do not close a host or client when viewing the home menu.
+        }
         function respawnPlayer(){
             let best=respawnSpawns[0],bestDistance=-1;
             for(let i=0;i<Math.min(120,respawnSpawns.length);i++){
@@ -838,12 +1278,14 @@ for (let b = 0; b < botSpawns.length; b++) {
             hideGameOverOverlay();
             if(netRole==='guest'&&roomSession)roomSession.client.send('player',{x:player.x,y:player.y,floorY:SPAWN_FLOOR_Y,dir:player.dir,alive:true});
             requestAnimationFrame(gameLoop);
-            canvas.requestPointerLock?.();
+            // Respawn deliberately leaves cursor free until the player locks it again.
+            setNicoMouseLock(false);
         }
         function showGameOverOverlay(won=false) {
+            if(won){roundEndBallot();return;}
             if(isGameOver)return;
             if(!won)livesRemaining=Math.max(0,livesRemaining-1);
-            isGameOver=true; if(document.pointerLockElement)document.exitPointerLock();
+            isGameOver=true; setNicoMouseLock(false);
             let overlay=document.getElementById('game-over-overlay');
             if(!overlay){overlay=document.createElement('div');overlay.id='game-over-overlay';Object.assign(overlay.style,{position:'fixed',inset:'0',background:'rgba(0,0,0,.9)',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',zIndex:'9999',gap:'22px'});document.body.append(overlay)}
             overlay.innerHTML=`<div style="font:900 clamp(3rem,10vw,7rem) Impact,sans-serif;color:${won?'#f1d37e':'#ef3f3f'};letter-spacing:.06em">${won?'YOU SURVIVED':'GAME OVER'}</div><div style="display:flex;gap:12px">${won?'':`<button id="respawn-button" disabled style="padding:14px 24px;font:800 1rem inherit;background:#777;color:#bbb;border:0;cursor:not-allowed">${livesRemaining?'RESPAWN · 3':'RESPAWN'}</button>`}<button id="home-button" style="padding:14px 24px;font:800 1rem inherit;background:#222;color:#fff;border:1px solid #777;cursor:pointer">HOME</button></div>`;
@@ -873,11 +1315,11 @@ for (let b = 0; b < botSpawns.length; b++) {
             const nowTime=performance.now(),releaseRemaining=Math.max(0,botReleaseAt-nowTime);
             const hudSecond=Math.ceil((releaseRemaining>0?releaseRemaining:Math.max(0,roundEndsAt-nowTime))/1000);
             if(hudSecond!==lastHudSecond){lastHudSecond=hudSecond;if(releaseRemaining>0){timerDisplay.textContent=`GET READY · ${hudSecond}`;updateSkipButton()}else{skipCountdown.style.display='none';timerDisplay.textContent=formatClock(roundEndsAt-nowTime)}}
-            if(releaseRemaining<=0){gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000);if(nowTime>=roundEndsAt){showGameOverOverlay(true);return}}
-
-            // --- Stop update if game over ---
-            if (isGameOver) return;
-            networkTick(performance.now());
+            if(releaseRemaining<=0){gameTimer=Math.max(0,180-(roundEndsAt-nowTime)/1000);if(nowTime>=roundEndsAt){showGameOverOverlay(true);}}
+            networkTick(nowTime);
+            // Host sessions and the round timer continue while spectating or
+            // voting, but this player's controls and bot targeting are disabled.
+            if(isGameOver||homeSpectating||mapBallot.active)return;
 
             // 2D movement (X,Z on map; Y is up in 3D)
             // WASD: W = forward, S = backward, A = strafe left, D = strafe right (relative to camera yaw)
@@ -901,7 +1343,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             let moveY = (Math.cos(player.dir) * moveForward - Math.sin(player.dir) * moveRight) * currentSpeed;
 
             // Grid collision is constant-time; checking every rendered wall was the main frame-rate bottleneck.
-            const carBlocked=(x,y)=>player.z<1.55&&carsForFloor(player.floorY).some(([cx,cy])=>Math.abs(x-(cx+.5))<1.12&&Math.abs(y-(cy+.5))<2.05);
+            const carBlocked=(x,y)=>garageCarBlocked(x,y,player.z);
             const canStand=(x,y)=>{
                 const radius=.32;
                 const surface=surfaceHeightAt(x,y,player.floorY);
@@ -1065,7 +1507,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 // A bot locks onto the first player entering its detection radius. It keeps
                 // that target until they die or escape the larger lose-track radius.
                 const now=performance.now();
-                const localTarget={id:'local',x:player.x,y:player.y,floorY:player.floorY,alive:!isGameOver};
+                const localTarget={id:'local',x:player.x,y:player.y,floorY:player.floorY,alive:!isGameOver&&!homeSpectating&&!mapBallot.active};
                 const targets=[localTarget,...Array.from(remotePlayers.values())];
                 const verticalReach=IS_DOCKS?8:2.5;
                 let locked=targets.find(candidate=>candidate.id===bot.targetId&&candidate.alive&&Math.abs((candidate.floorY||0)-bot.floorY)<verticalReach);
@@ -1096,17 +1538,33 @@ for (let b = 0; b < botSpawns.length; b++) {
                 }
                 let targetX=Math.floor(locked?locked.x:bot.wanderX),targetY=Math.floor(locked?locked.y:bot.wanderY);
                 targetX=Math.max(1,Math.min(MAP_SIZE_X-2,targetX));targetY=Math.max(1,Math.min(MAP_SIZE_Y-2,targetY));
-                if(MAP[targetY][targetX]!==0||floorBarrierAt(targetX,targetY,bot.floorY)){targetX=botMapX;targetY=botMapY;}
+                const botNav=FLOOR_NAV_MAPS[floorIndexAtHeight(bot.floorY)];
+                // A blocked target is approached via the closest accessible cell.
+                if(botNav[targetY]?.[targetX]!==0){
+                    let best=null,bestD=Infinity;
+                    for(let radius=1;radius<=7&&!best;radius++)
+                        for(let oy=-radius;oy<=radius;oy++)for(let ox=-radius;ox<=radius;ox++){
+                            const tx=targetX+ox,ty=targetY+oy;
+                            if(botNav[ty]?.[tx]!==0)continue;
+                            const d=ox*ox+oy*oy;
+                            if(d<bestD){best=[tx,ty];bestD=d}
+                        }
+                    if(best)[targetX,targetY]=best;
+                    else{targetX=botMapX;targetY=botMapY;}
+                }
 
-                let needsPath = (!bot._path || !bot._path.length || bot._lastTargetX!==targetX || bot._lastTargetY!==targetY || bot._lastStartX!==botMapX || bot._lastStartY!==botMapY);
+                let needsPath = !bot._path || !bot._path.length || bot._pathStep>=bot._path.length ||
+                    (bot._lastTargetX!==targetX||bot._lastTargetY!==targetY)&&now-(bot._pathAt||0)>380 ||
+                    now-(bot._pathAt||0)>2600;
+                if(needsPath)bot._pathAt=now;
                 if(needsPath){
-                    const path=astar(botMapX,botMapY,targetX,targetY,FLOOR_NAV_MAPS[floorIndexAtHeight(bot.floorY)]);
+                    const path=astar(botMapX,botMapY,targetX,targetY,botNav);
                     bot._path=path&&path.length>1?path:null;bot._lastTargetX=targetX;bot._lastTargetY=targetY;bot._lastStartX=botMapX;bot._lastStartY=botMapY;bot._pathStep=1;
                 }
                 if(netRole==='guest')continue;
                 if(now<botReleaseAt){bot.vx=0;bot.vz=0;continue}
 
-                let steerX=targetX*2+1,steerZ=targetY*2+1;
+                let steerX=(botMapX+.5)*2+1,steerZ=(botMapY+.5)*2+1;
                 if(bot._path&&bot._pathStep<bot._path.length){
                     const [cellX,cellY]=bot._path[bot._pathStep];steerX=cellX*2+1;steerZ=cellY*2+1;
                     if(Math.hypot(steerX-bot.mesh.position.x,steerZ-bot.mesh.position.z)<.45)bot._pathStep++;
@@ -1119,9 +1577,15 @@ for (let b = 0; b < botSpawns.length; b++) {
                 // almost no friction and a wide carried slide through every turn.
                 bot.vx*=.998;bot.vz*=.998;
                 const tryX=bot.mesh.position.x+bot.vx,mapX=Math.floor((tryX-1)/2),mapY=Math.floor((bot.mesh.position.z-1)/2);
-                if(MAP[mapY]?.[mapX]===0&&!floorBarrierAt((tryX-1)/2,(bot.mesh.position.z-1)/2,bot.floorY))bot.mesh.position.x=tryX;else bot.vx*=-.28;
-                const tryZ=bot.mesh.position.z+bot.vz,nextMapX=Math.floor((bot.mesh.position.x-1)/2),nextMapY=Math.floor((tryZ-1)/2);
-                if(MAP[nextMapY]?.[nextMapX]===0&&!floorBarrierAt((bot.mesh.position.x-1)/2,(tryZ-1)/2,bot.floorY))bot.mesh.position.z=tryZ;else bot.vz*=-.28;
+                const nextX=(tryX-1)/2, currentY=(bot.mesh.position.z-1)/2;
+                const canBotOccupy=(x,y)=>{
+                    const radius=.26;
+                    if(navBlocked(x,y,radius)||floorBarrierAt(x,y,bot.floorY))return false;
+                    return !IS_GARAGE||!garageCarBlocked(x,y,0);
+                };
+                if(canBotOccupy(nextX,currentY))bot.mesh.position.x=tryX;else{bot.vx=0;bot._path=null;}
+                const tryZ=bot.mesh.position.z+bot.vz,nextX2=(bot.mesh.position.x-1)/2,nextY2=(tryZ-1)/2;
+                if(canBotOccupy(nextX2,nextY2))bot.mesh.position.z=tryZ;else{bot.vz=0;bot._path=null;}
                 const botSurface=surfaceHeightAt((bot.mesh.position.x-1)/2,(bot.mesh.position.z-1)/2,bot.floorY);bot.floorY=IS_DOCKS?THREE.MathUtils.lerp(bot.floorY,botSurface,.18):botSurface;bot.mesh.position.y=BOT_CENTER_Y+bot.floorY;bot.backing.position.set(bot.mesh.position.x,BOT_CENTER_Y+bot.floorY,bot.mesh.position.z);if(bot.label)bot.label.position.set(bot.mesh.position.x,.55+bot.floorY,bot.mesh.position.z);
             }
             // Gentle separation keeps overlapping chasers visually and tactically distinct.
@@ -1145,10 +1609,9 @@ for (let b = 0; b < botSpawns.length; b++) {
         }
 
         function gameLoop() {
-            if (isGameOver) return;
             update();
             render();
-            if (!isGameOver) requestAnimationFrame(gameLoop);
+            requestAnimationFrame(gameLoop);
         }
 
         // --- Settings and UI ---
@@ -1179,6 +1642,8 @@ for (let b = 0; b < botSpawns.length; b++) {
         function startGame() {
             if (gameStarted) return;
             gameStarted = true;
+            if(netRole!=='solo')sessionStorage.setItem('nicos-session-playing','1');
+            homeSpectating=false;
             document.body.classList.remove('menu-active');
             botReleaseAt=performance.now()+30000;roundEndsAt=botReleaseAt+180000;
             skipVotes.clear();skipVoteSent=false;skipVoteCount=0;skipVoteRequired=netRole==='host'?Math.ceil(connectedPlayerCount()*.75):1;updateSkipButton();
@@ -1196,7 +1661,13 @@ for (let b = 0; b < botSpawns.length; b++) {
 
         function lobbyStatus(message){document.getElementById('lobby-status').textContent=message||'';}
         function playerName(){return document.getElementById('player-name').value.trim()||'Player';}
-        async function openHostRoom(button){try{button.disabled=true;lobbyStatus('Opening LAN lobby…');roomSession=await PartyRooms.createHost({game:LAN_GAME_KEY,name:playerName(),metadata:{map:MAP_ID},onStatus:lobbyStatus});netRole='host';wireHostRoom(roomSession);enterWaitingRoom()}catch(error){lobbyStatus(error.message);button.disabled=false}}
+        async function openHostRoom(button){try{button.disabled=true;lobbyStatus('Opening LAN lobby…');roomSession=await PartyRooms.createHost({game:LAN_GAME_KEY,name:playerName(),metadata:{map:MAP_ID},onStatus:lobbyStatus});sessionStorage.setItem('nicos-session-role','host');netRole='host';wireHostRoom(roomSession);enterWaitingRoom();
+                if(sessionStorage.getItem('nicos-auto-start')==='1'||sessionStorage.getItem('nicos-session-playing')==='1'){
+                    sessionStorage.removeItem('nicos-auto-start');
+                    roomSession.lan.broadcast('start',{});
+                    startGame();
+                }
+            }catch(error){lobbyStatus(error.message);button.disabled=false}}
         function showMenuPanel(id){
             document.querySelectorAll('.menu-panel').forEach(panel=>panel.classList.toggle('active',panel.id===id));
             document.getElementById('waiting-panel').style.display=id==='waiting-panel'?'block':'none';
@@ -1218,12 +1689,17 @@ for (let b = 0; b < botSpawns.length; b++) {
             lobbyStatus('');
         }
         async function leaveWaitingRoom(){
+            sessionStorage.removeItem('nicos-session-role');
+            sessionStorage.removeItem('nicos-session-playing');
+            sessionStorage.removeItem('nicos-auto-start');
+            sessionStorage.removeItem('nicos-pending-room');
+            sessionStorage.removeItem('nicos-random-game');
             try{await roomSession?.stop?.();roomSession?.client?.close?.()}catch{}
             location.reload();
         }
         async function joinRoom(room,button){
             if(room.map&&room.map!==MAP_ID){sessionStorage.setItem('nicos-pending-room',room.id);const url=new URL(location.href);url.searchParams.set('map',room.map);location.href=url;return}
-            try{button.disabled=true;lobbyStatus('Connecting to the LAN game…');roomSession=await PartyRooms.join(room,{name:playerName(),onStatus:lobbyStatus});netRole='guest';localPeerId=roomSession.client.meta?.peerId||roomSession.peerRef?.id||null;remotePlayers.get(localPeerId)?.mesh.removeFromParent();remotePlayers.delete(localPeerId);wireGuestRoom(roomSession);sessionStorage.removeItem('nicos-pending-room');enterWaitingRoom()}catch(error){joiningLAN=false;lobbyStatus(error.message);button.disabled=false}
+            try{button.disabled=true;lobbyStatus('Connecting to the LAN game…');roomSession=await PartyRooms.join(room,{name:playerName(),onStatus:lobbyStatus});sessionStorage.setItem('nicos-session-role','guest');netRole='guest';localPeerId=roomSession.client.meta?.peerId||roomSession.peerRef?.id||null;remotePlayers.get(localPeerId)?.mesh.removeFromParent();remotePlayers.delete(localPeerId);wireGuestRoom(roomSession);sessionStorage.removeItem('nicos-pending-room');enterWaitingRoom()}catch(error){joiningLAN=false;lobbyStatus(error.message);button.disabled=false}
         }
         function setupRooms(){
             if(!globalThis.PartyRooms||roomsWatching)return;roomsWatching=true;
@@ -1241,6 +1717,9 @@ for (let b = 0; b < botSpawns.length; b++) {
         function init() {
             initThree();
             initUI();
+            window.addEventListener('blur',()=>{setNicoMouseLock(false);Object.keys(keys).forEach(k=>keys[k]=false)});
+            document.addEventListener('visibilitychange',()=>{if(document.hidden)setNicoMouseLock(false)});
+            window.addEventListener('pagehide',()=>setNicoMouseLock(false));
             initTouchControls();
             resize();
             window.addEventListener('resize', resize);
@@ -1253,6 +1732,13 @@ for (let b = 0; b < botSpawns.length; b++) {
             renderKeybinds();
             const menuSensitivity=document.getElementById('menu-sens-slider');menuSensitivity.value=player.sensitivity;menuSensitivity.oninput=event=>{player.sensitivity=parseFloat(event.target.value);sensSlider.value=event.target.value;sensValDisplay.textContent=player.sensitivity.toFixed(1);localStorage.setItem('sensitivity',player.sensitivity)};
             const restoredPanel=sessionStorage.getItem('nicos-menu-panel');if(restoredPanel){sessionStorage.removeItem('nicos-menu-panel');showMenuPanel(restoredPanel)}
+            const menuMain=document.getElementById('menu-main');
+            const disconnectButton=document.createElement('button');
+            disconnectButton.id='disconnect-room';disconnectButton.textContent='DISCONNECT';
+            disconnectButton.style.display='none';
+            disconnectButton.onclick=leaveWaitingRoom;
+            menuMain.querySelector('.menu-stack').append(disconnectButton);
+            setInterval(()=>{disconnectButton.style.display=roomSession&&netRole!=='solo'?'block':'none'},800);
             document.getElementById('open-solo').onclick=()=>showMenuPanel('menu-solo');
             document.getElementById('open-multi').onclick=()=>showMenuPanel('menu-multi');
             document.getElementById('open-menu-settings').onclick=()=>showMenuPanel('menu-settings');
@@ -1273,11 +1759,21 @@ for (let b = 0; b < botSpawns.length; b++) {
             if(pendingRandomGame){
                 sessionStorage.removeItem('nicos-random-game');
                 if(pendingRandomGame==='solo'){netRole='solo';startGame()}
-                else{
+                else if(pendingRandomGame==='guest'){
+                    showMenuPanel('menu-multi');
+                    if(globalThis.PartyRooms)setupRooms();else addEventListener('partyroomsready',setupRooms,{once:true});
+                }else{
                     showMenuPanel('menu-multi');
                     const launchHost=()=>openHostRoom(document.getElementById('lan-start'));
                     if(globalThis.PartyRooms)launchHost();else addEventListener('partyroomsready',launchHost,{once:true});
                 }
+            }else if(sessionStorage.getItem('nicos-session-role')==='host'){
+                showMenuPanel('menu-multi');
+                const reconnect=()=>openHostRoom(document.getElementById('lan-start'));
+                if(globalThis.PartyRooms)reconnect();else addEventListener('partyroomsready',reconnect,{once:true});
+            }else if(sessionStorage.getItem('nicos-session-role')==='guest'){
+                showMenuPanel('menu-multi');
+                if(globalThis.PartyRooms)setupRooms();else addEventListener('partyroomsready',setupRooms,{once:true});
             }else if(IS_PHONE){
                 showMenuPanel('menu-multi');
                 document.getElementById('lan-message').textContent='Looking for the game on this Wi-Fi. Keep this page open.';
