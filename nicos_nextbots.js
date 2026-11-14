@@ -195,8 +195,19 @@ const MAP = (() => {
         const FLOOR_CAR_SPOTS=FLOOR_LEVELS.map((_,floor)=>{
             if(!IS_GARAGE)return [];
             const rows=[[17,40,79],[15,38,62,81],[18,42,77],[14,36,60,83],[17,40,64,80]][floor],spots=[];
-            const hitsBarrier=(x,y)=>FLOOR_BARRIERS[floor].some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-x1)<3&&y>=Math.min(y1,y2)-3&&y<=Math.max(y1,y2)+3:Math.abs(y-y1)<3&&x>=Math.min(x1,x2)-3&&x<=Math.max(x1,x2)+3);
-            rows.forEach((cy,row)=>{for(let cx=10+(row%2)*8;cx<MAP_SIZE_X-9;cx+=13+((floor+row)%3))if(MAP[cy][cx]===0&&Math.abs(cx-70)>10&&!rampAt(cx,cy)&&!hitsBarrier(cx,cy))spots.push([cx,cy,(floor+row+cx)%4]);});
+            const hitsBarrier=(x,y)=>FLOOR_BARRIERS[floor].some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-x1)<3&&y>=Math.min(y1,y2)-5&&y<=Math.max(y1,y2)+5:Math.abs(y-y1)<5&&x>=Math.min(x1,x2)-3&&x<=Math.max(x1,x2)+3);
+            const clearCar=(x,y,type)=>{
+                const w=[3.5,3.55,3.8,3.9][type]/4+.45,l=[6.2,7.1,6.8,7.5][type]/4+.45;
+                for(let yy=Math.floor(y-l);yy<=Math.ceil(y+l);yy++)
+                  for(let xx=Math.floor(x-w);xx<=Math.ceil(x+w);xx++){
+                    if(MAP[yy]?.[xx]!==0||rampAt(xx,yy)||hitsBarrier(xx,yy))return false;
+                  }
+                return true;
+            };
+            rows.forEach((cy,row)=>{for(let cx=10+(row%2)*8;cx<MAP_SIZE_X-9;cx+=13+((floor+row)%3)){
+                const type=(floor+row+cx)%4;
+                if(Math.abs(cx-70)>10&&clearCar(cx,cy,type))spots.push([cx,cy,type]);
+            }});
             return spots;
         });
         // Clear only the ramp and its immediate approach. The old oversized
@@ -208,28 +219,30 @@ const MAP = (() => {
             const floor=floorIndexAtHeight(current);return candidates.find(r=>r.floor===floor||r.floor+1===floor);
         }
         function canEnterRamp(x,y){
-            const target=rampAt(x,y,player.floorY);if(!target||rampAt(player.x,player.y,player.floorY))return true;
-            const insideLane=player.y>=target.y1+.35&&player.y<=target.y2-.35;
-            if(!insideLane)return false;
-            const floorIndex=floorIndexAtHeight(player.floorY);
-            const enteringLow=target.reverse?player.x>=target.x2-.8:player.x<=target.x1+.8;
-            const enteringHigh=target.reverse?player.x<=target.x1+.8:player.x>=target.x2-.8;
-            return (enteringLow&&floorIndex<FLOOR_COUNT-1)||(enteringHigh&&floorIndex>0);
+            const target=rampAt(x,y,player.floorY);
+            if(!target)return true;
+            // A level-matched surface may be entered anywhere it is not
+            // physically separated by a guardrail. Remove the previous
+            // invisible x-end gate and use actual ramp-height continuity.
+            const desired=rampSurfaceHeightAt(x,y,player.floorY);
+            return Math.abs(desired-player.floorY)<=1.45||
+                !!rampAt(player.x,player.y,player.floorY);
         }
         // Only the lower-level retaining walls have collision. The former
         // rampWallAt tested the upper-storey edge too, creating an invisible wall
         // beside the landing even though the walkway was visibly unobstructed.
         function rampWallAt(x,y,current=0){
-            const feet=floorBaseAtHeight(current);
-            return RAMPS.some(ramp=>{
-                if(feet!==ramp.floor*FLOOR_HEIGHT)return false;
-                if(x<ramp.x1||x>ramp.x2)return false;
-                if(Math.abs(y-ramp.y1)>.22&&Math.abs(y-ramp.y2)>.22)return false;
-                const t=(x-ramp.x1)/(ramp.x2-ramp.x1);
-                const height=ramp.reverse?(1-t)*FLOOR_HEIGHT:t*FLOOR_HEIGHT;
-                // The wall is triangular: near the low entry it is barely
-                // present, but under the high landing it is full height.
-                return height>1.25;
+            // Physical masonry only: triangular side walls below a ramp,
+            // and its full-height high end. Never collide at the upper floor.
+            return RAMPS.some(r=>{
+                if(floorBaseAtHeight(current)!==r.floor*FLOOR_HEIGHT)return false;
+                if(x<r.x1-.14||x>r.x2+.14||y<r.y1-.14||y>r.y2+.14)return false;
+                const t=Math.max(0,Math.min(1,(x-r.x1)/(r.x2-r.x1)));
+                const clearance=(r.reverse?1-t:t)*FLOOR_HEIGHT-.28;
+                if(clearance<=1.4)return false;
+                const side=Math.abs(y-r.y1)<.32||Math.abs(y-r.y2)<.32;
+                const highEnd=Math.abs(x-(r.reverse?r.x1:r.x2))<.30;
+                return side||highEnd;
             });
         }
         function rampSurfaceHeightAt(x,y,current=0){
@@ -261,9 +274,26 @@ const MAP = (() => {
             return yardContainerAt(x,y)?.h||0;
         }
         function surfaceHeightAt(x,y,current=0){return IS_DOCKS?yardSurfaceHeightAt(x,y):rampSurfaceHeightAt(x,y,current)}
+        // Every floor-specific partition is clipped around ramp surfaces.
+        // The visible wall meshes and solid collision cells share this list.
+        const FLOOR_WALL_CELLS=FLOOR_BARRIERS.map((segments,floor)=>{
+            const cells=[];
+            for(const [x1,y1,x2,y2] of segments){
+                const len=Math.max(Math.abs(x2-x1),Math.abs(y2-y1));
+                for(let i=0;i<=len;i++){
+                    const x=x1+Math.sign(x2-x1)*i,y=y1+Math.sign(y2-y1)*i;
+                    const blocked=RAMPS.some(r=>{
+                        if(r.floor!==floor&&r.floor+1!==floor)return false;
+                        return x>=r.x1-1&&x<=r.x2+1&&y>=r.y1-1&&y<=r.y2+1;
+                    });
+                    if(!blocked)cells.push([x,y]);
+                }
+            }
+            return cells;
+        });
         function floorBarrierAt(x,y,floorY){
-            const segments=FLOOR_BARRIERS[floorIndexAtHeight(floorY)]||[];
-            return segments.some(([x1,y1,x2,y2])=>x1===x2?Math.abs(x-(x1+.5))<=.275&&y>=Math.min(y1,y2)&&y<=Math.max(y1,y2)+1:Math.abs(y-(y1+.5))<=.275&&x>=Math.min(x1,x2)&&x<=Math.max(x1,x2)+1);
+            return FLOOR_WALL_CELLS[floorIndexAtHeight(floorY)].some(([wx,wy])=>
+                Math.abs(x-(wx+.5))<=.275&&Math.abs(y-(wy+.5))<=.275);
         }
         const carsForFloor=floorY=>FLOOR_CAR_SPOTS[floorIndexAtHeight(floorY)]||[];
         const CAR_SIZES=[[3.5,6.2],[3.55,7.1],[3.8,6.8],[3.9,7.5]];
@@ -284,9 +314,9 @@ const MAP = (() => {
             });
             return buckets;
         });
-        const garageCarBlocked=(x,y,height)=>{
+        const garageCarBlocked=(x,y,height,floorY=player.floorY)=>{
             if(!IS_GARAGE||height>2.25)return false;
-            const buckets=CAR_HITBOXES[floorIndexAtHeight(player.floorY)];
+            const buckets=CAR_HITBOXES[floorIndexAtHeight(floorY)];
             const radius=.32;
             for(let bx=Math.floor((x-radius)/CAR_BUCKET_SIZE);bx<=Math.floor((x+radius)/CAR_BUCKET_SIZE);bx++)
             for(let by=Math.floor((y-radius)/CAR_BUCKET_SIZE);by<=Math.floor((y+radius)/CAR_BUCKET_SIZE);by++){
@@ -703,11 +733,18 @@ function wireGuestRoom(session){
 
             // Short, floor-specific partitions turn each storey into a different
             // small maze while keeping sightlines and multiple escape routes.
-            FLOOR_BARRIERS.forEach((segments,floor)=>segments.forEach(([x1,y1,x2,y2])=>{
-                const horizontal=y1===y2,length=(horizontal?Math.abs(x2-x1):Math.abs(y2-y1))*2+2;
-                const mazeWall=new THREE.Mesh(new THREE.BoxGeometry(horizontal?length:1.1,5.5,horizontal?1.1:length),wallMaterials);
-                mazeWall.position.set((x1+x2)+2,FLOOR_LEVELS[floor]+2.75,(y1+y2)+2);scene.add(mazeWall);
+            // One short masonry block per solid partition cell. This matches
+            // the exact per-floor collision footprint and clips ramp lanes.
+            const totalPartitionCells=FLOOR_WALL_CELLS.reduce((sum,list)=>sum+list.length,0);
+            const partitionGeo=new THREE.BoxGeometry(1.1,5.5,1.1);
+            const partitions=new THREE.InstancedMesh(partitionGeo,wallMaterials,totalPartitionCells);
+            let partitionIndex=0;
+            FLOOR_WALL_CELLS.forEach((cells,floor)=>cells.forEach(([x,y])=>{
+                transform.makeTranslation(x*2+2,FLOOR_LEVELS[floor]+2.75,y*2+2);
+                partitions.setMatrixAt(partitionIndex++,transform);
             }));
+            partitions.instanceMatrix.needsUpdate=true;
+            scene.add(partitions);
 
             // Only the upper landing needs an opening. Cutting the complete ramp
             // footprint made the upper floor look like it had large random holes.
@@ -716,7 +753,7 @@ function wireGuestRoom(session){
                 const deckShape=new THREE.Shape();deckShape.moveTo(-MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,-MAP_SIZE_Y);deckShape.lineTo(MAP_SIZE_X,MAP_SIZE_Y);deckShape.lineTo(-MAP_SIZE_X,MAP_SIZE_Y);deckShape.closePath();
                 for(const ramp of RAMPS.filter(r=>r.floor===floor-1)){
                     const riseStart=ramp.reverse?ramp.x1:ramp.x1+(ramp.x2-ramp.x1)*.1,riseEnd=ramp.reverse?ramp.x2-(ramp.x2-ramp.x1)*.1:ramp.x2;
-                    const left=Math.min(riseStart,riseEnd)*2+1-MAP_SIZE_X-.45,right=Math.max(riseStart,riseEnd)*2+1-MAP_SIZE_X+.45,near=ramp.y1*2+1-MAP_SIZE_Y-.45,far=ramp.y2*2+1-MAP_SIZE_Y+.45;
+                    const left=Math.min(riseStart,riseEnd)*2+1-MAP_SIZE_X-.06,right=Math.max(riseStart,riseEnd)*2+1-MAP_SIZE_X+.06,near=ramp.y1*2+1-MAP_SIZE_Y-.06,far=ramp.y2*2+1-MAP_SIZE_Y+.06;
                     const opening=new THREE.Path();opening.moveTo(left,near);opening.lineTo(right,near);opening.lineTo(right,far);opening.lineTo(left,far);opening.closePath();deckShape.holes.push(opening);
                 }
                 const deck=new THREE.Mesh(new THREE.ExtrudeGeometry(deckShape,{depth:.65,bevelEnabled:false}),deckMaterial);deck.rotation.x=Math.PI/2;deck.position.set(MAP_SIZE_X,FLOOR_LEVELS[floor]+.32,MAP_SIZE_Y);scene.add(deck);
@@ -948,7 +985,7 @@ function wireGuestRoom(session){
                 {w:3.9,l:7.5,hood:1.22,roof:1.57,roofLength:4.65} // van
             ];
             const garageCars=FLOOR_CAR_SPOTS.flatMap((spots,floor)=>spots.map(([cx,cy,type],i)=>({
-                x:cx*2+1,y:FLOOR_LEVELS[floor],z:cy*2+1,
+                x:cx*2+2,y:FLOOR_LEVELS[floor],z:cy*2+2,
                 gridX:cx,gridY:cy,type,color:(i+floor*2)%carColors.length,
                 rotated:((i+floor)%2)!==0,floor
             })));
@@ -1343,7 +1380,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             let moveY = (Math.cos(player.dir) * moveForward - Math.sin(player.dir) * moveRight) * currentSpeed;
 
             // Grid collision is constant-time; checking every rendered wall was the main frame-rate bottleneck.
-            const carBlocked=(x,y)=>garageCarBlocked(x,y,player.z);
+            const carBlocked=(x,y)=>garageCarBlocked(x,y,0);
             const canStand=(x,y)=>{
                 const radius=.32;
                 const surface=surfaceHeightAt(x,y,player.floorY);
@@ -1581,7 +1618,7 @@ for (let b = 0; b < botSpawns.length; b++) {
                 const canBotOccupy=(x,y)=>{
                     const radius=.26;
                     if(navBlocked(x,y,radius)||floorBarrierAt(x,y,bot.floorY))return false;
-                    return !IS_GARAGE||!garageCarBlocked(x,y,0);
+                    return !IS_GARAGE||!garageCarBlocked(x,y,0,bot.floorY);
                 };
                 if(canBotOccupy(nextX,currentY))bot.mesh.position.x=tryX;else{bot.vx=0;bot._path=null;}
                 const tryZ=bot.mesh.position.z+bot.vz,nextX2=(bot.mesh.position.x-1)/2,nextY2=(tryZ-1)/2;
