@@ -90,7 +90,7 @@ async function backToMenu(){clearTimeout(botTimer);clearInterval(heartbeatTimer)
 register("combat",function(root){
 let mode="menu",role="solo",localSeat=0,battle=null,roomHost=null,roomClient=null,roomWatcher=null,hostPeer=null,hostListener=null,hostReserved=false,roomName="Player";
 const menu=node("section",{class:"combat-menu"}),lanPanel=node("section",{class:"combat-lan"}),bar=node("div",{class:"toolbar battle-toolbar"}),scene=node("div",{class:"duel-scene","aria-label":"Turn-based battle"}),log=node("div",{class:"battle-dialogue",role:"log","aria-live":"polite"}),actions=node("div",{class:"choice-row battle-actions"}),msg=node("p",{class:"message",role:"status"});
-menu.append(node("h2",{},"Choose how to play"),node("p",{},"Battle a bot on this phone, or challenge a friend on another phone."),button("Solo · play vs bot",()=>startSolo()),button("Online · two phones",()=>showOnline(),"secondary"));
+menu.append(button("Single Player",()=>startSolo()),button("LAN Multiplayer",()=>showOnline(),"secondary"));
 const nameInput=node("input",{type:"text",maxlength:"18",placeholder:"Your name","aria-label":"Your player name"});nameInput.value="Player";window.RodSpaceAccounts?.bindNameInput(nameInput);
 const roomsList=node("div",{class:"combat-rooms","aria-live":"polite"}),lanStatus=node("p",{class:"message",role:"status"});
 lanPanel.append(node("h2",{},"Play a friend"),node("p",{},"Host a room on one phone, then join it from the other."),nameInput,button("Host a room",hostRoom),button("Find rooms",findRooms,"secondary"),roomsList,lanStatus,button("Back",backToMenu,"secondary"));

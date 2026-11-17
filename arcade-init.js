@@ -34,7 +34,7 @@ document.addEventListener("keydown",event=>{
 if(event.key!=="Escape")return;
 if(!intro.hidden)intro.hidden=true;
 });
-intro.hidden=mode!=="party"||id==="uno";
+intro.hidden=mode!=="party"||id==="uno"||id==="combat";
 if(!intro.hidden)byId("playGame").focus();
 else if(id==="snake")closeIntro();
 else game.querySelector("textarea")?.focus();

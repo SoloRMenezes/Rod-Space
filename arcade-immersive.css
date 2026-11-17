@@ -268,6 +268,7 @@ body[data-game="uno"] .uno-color-choice.yellow {background:#ca8a04}
 
 /* Turn-based battle layout inspired by classic creature-battle games. */
 body[data-game="combat"] {--glow:#edc478;--glow-rgb:237,196,120;--deep:#10201d;--mid:#1b332c;--surface:#203a31;--btn:#356d54}
+body[data-game="combat"] [hidden] {display:none!important}
 body[data-game="combat"] .game-heading h1 {font-size:clamp(30px,4vw,46px)}
 body[data-game="combat"] .game-panel {max-width:920px}
 body[data-game="combat"] .battle-toolbar {width:min(100%,880px);justify-content:space-between;margin:0 auto 10px}

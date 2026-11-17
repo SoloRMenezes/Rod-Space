@@ -320,13 +320,15 @@
   function bindNameInput(input) {
     if (!input) return;
     let lastApplied = "Player";
-    onChange(({ user, profile }) => {
+    const applyName = ({ user, profile }) => {
       const name = profile?.username || user?.displayName;
       if (name && (!input.value || input.value === "Player" || input.value === lastApplied)) {
         input.value = name;
         lastApplied = name;
       }
-    });
+    };
+    listeners.add(applyName);
+    applyName(state);
   }
 
   const api = {
