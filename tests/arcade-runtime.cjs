@@ -6,7 +6,7 @@ class FakeElement {
  append(...nodes){this.children.push(...nodes);}
  replaceChildren(...nodes){this.children=[...nodes];}
  addEventListener(name,fn){this.listeners[name]=fn;}
- focus(){}
+ focus(){this.focused=true}
  getBoundingClientRect(){return{left:0,top:0,width:600,height:480}}
  getContext(){return{fillRect(){},beginPath(){},arc(){},fill(){},stroke(){},moveTo(){},lineTo(){},fillText(){},clearRect(){},set fillStyle(v){},set globalAlpha(v){}};}
  }
@@ -28,4 +28,9 @@ for(const name of Object.keys(registered)){const rootEl=new FakeElement("section
 memory.clear();memory.set("rodspace.arcade.2048.score","2084");
 assert.doesNotThrow(()=>registered["2048"](new FakeElement("section")),"restore 2048 with a missing legacy board");
 assert.equal(JSON.parse(memory.get("rodspace.arcade.2048.save")).score,0,"discard orphaned legacy score when there is no matching saved board");
+const wordleRoot=new FakeElement("section");registered.wordle(wordleRoot);
+const nativeWordleInput=wordleRoot.children.find(el=>el.className==="wordle-native-input");
+assert.ok(nativeWordleInput?.focused,"focus native input so mobile can open its keyboard");
+nativeWordleInput.value="A";nativeWordleInput.listeners.input();
+assert.equal(wordleRoot.children[2].children[0].textContent,"A","native mobile keyboard letters update the Wordle board");
 console.log("PASS: All ten games initialise using DOM mocks without runtime exceptions.");
