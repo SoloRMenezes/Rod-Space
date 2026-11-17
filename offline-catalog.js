@@ -25,8 +25,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -49,8 +49,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "2181f3eab69fb584"
+    "bytes": 82333,
+    "version": "5eb23bedc024a20d"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -78,8 +78,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -102,8 +102,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "47d46daf03301adf"
+    "bytes": 82333,
+    "version": "78ff187e74796842"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -131,8 +131,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -155,8 +155,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "faee4991b58896bb"
+    "bytes": 82333,
+    "version": "53f8b0c19cf70c56"
   },
   "typing": {
     "name": "Fast Typing",
@@ -184,8 +184,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -208,8 +208,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "a28579c81352f889"
+    "bytes": 82333,
+    "version": "68ca62aeec24e45e"
   },
   "2048": {
     "name": "2048",
@@ -237,8 +237,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -261,8 +261,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "7e059b60a2f4f5b0"
+    "bytes": 82333,
+    "version": "c6319d1b3b6a7a56"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -290,8 +290,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -314,8 +314,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "5c7bdb937d63aa9b"
+    "bytes": 82333,
+    "version": "9d4d100a5938e19a"
   },
   "mines": {
     "name": "Minesweeper",
@@ -343,8 +343,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -367,8 +367,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "fba2efcab005a8af"
+    "bytes": 82333,
+    "version": "ed23edb478530477"
   },
   "pong": {
     "name": "Pong",
@@ -396,8 +396,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -420,8 +420,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "7cf281d822f3869d"
+    "bytes": 82333,
+    "version": "8cbf6d8dc6387a6b"
   },
   "snake": {
     "name": "Snake Arena",
@@ -449,8 +449,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -473,8 +473,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "8e1ea484601a945d"
+    "bytes": 82333,
+    "version": "75ae2bd4c7650f06"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -502,8 +502,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade-action.js",
@@ -526,8 +526,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 81975,
-    "version": "d07a58618f794dbf"
+    "bytes": 82333,
+    "version": "ebee1fe3d07cc6d6"
   },
   "maths-book": {
     "name": "Bookshelf",
@@ -730,8 +730,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade.css",
@@ -6326,7 +6326,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 934961,
-        "hash": "005414065c3b0b10bd1d2e31d1b1a10e4eb57a47197ddce45a4cabdc1de71445"
+        "hash": "c65d01f0b884a7d63ea081bc2d0821f36f548b3651db215281b316d6d979f0c3"
       },
       {
         "path": "offline.js",
@@ -6536,7 +6536,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 6127,
-        "hash": "1ec51be525e0ccd505b9a572ef2f69e07f89e4e54e2357ca21b6499e91e47eec"
+        "hash": "c7975942330deed524329b680f63a9903a19c56ca7fae03703b9638df6bccc9f"
       },
       {
         "path": "terraria.html",
@@ -6614,8 +6614,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 367272223,
-    "version": "5fc85becd9e71301"
+    "bytes": 367272581,
+    "version": "172af58134ad3918"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -6996,8 +6996,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade.css",
@@ -12592,7 +12592,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 934961,
-        "hash": "005414065c3b0b10bd1d2e31d1b1a10e4eb57a47197ddce45a4cabdc1de71445"
+        "hash": "c65d01f0b884a7d63ea081bc2d0821f36f548b3651db215281b316d6d979f0c3"
       },
       {
         "path": "offline.js",
@@ -12802,7 +12802,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 6127,
-        "hash": "1ec51be525e0ccd505b9a572ef2f69e07f89e4e54e2357ca21b6499e91e47eec"
+        "hash": "c7975942330deed524329b680f63a9903a19c56ca7fae03703b9638df6bccc9f"
       },
       {
         "path": "terraria.html",
@@ -12880,8 +12880,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 367272223,
-    "version": "08f2d77b122441f8"
+    "bytes": 367272581,
+    "version": "9a1cd22dfb528988"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -18778,8 +18778,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17742,
-        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
+        "bytes": 18100,
+        "hash": "e318a0620f7c5a5e8f25f448bd6e6aefce5ba43cd10bb1b7022102b1d7630924"
       },
       {
         "path": "arcade.css",
@@ -24374,7 +24374,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 934961,
-        "hash": "005414065c3b0b10bd1d2e31d1b1a10e4eb57a47197ddce45a4cabdc1de71445"
+        "hash": "c65d01f0b884a7d63ea081bc2d0821f36f548b3651db215281b316d6d979f0c3"
       },
       {
         "path": "offline.js",
@@ -24584,7 +24584,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 6127,
-        "hash": "1ec51be525e0ccd505b9a572ef2f69e07f89e4e54e2357ca21b6499e91e47eec"
+        "hash": "c7975942330deed524329b680f63a9903a19c56ca7fae03703b9638df6bccc9f"
       },
       {
         "path": "terraria.html",
@@ -24662,8 +24662,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 367272223,
-    "version": "e186d4436806c277"
+    "bytes": 367272581,
+    "version": "028fb9c7b3b18fef"
   },
   "backrooms": {
     "name": "The Backrooms",

@@ -25,4 +25,7 @@ for(const game of ["typing","2048","wordle","mines","pong","snake","headsup","un
 const registered={};ctx.window.Arcade.register=(name,fn)=>registered[name]=fn;
 for(const source of ["arcade-puzzles.js","arcade-action.js","arcade-party.js"])vm.runInContext(fs.readFileSync(path.join(root,source),"utf8"),ctx,{filename:source});
 for(const name of Object.keys(registered)){const rootEl=new FakeElement("section");assert.doesNotThrow(()=>registered[name](rootEl),"initialise "+name);assert.ok(rootEl.children.length>0,"render "+name)}
+memory.clear();memory.set("rodspace.arcade.2048.score","2084");
+assert.doesNotThrow(()=>registered["2048"](new FakeElement("section")),"restore 2048 with a missing legacy board");
+assert.equal(JSON.parse(memory.get("rodspace.arcade.2048.save")).score,0,"discard orphaned legacy score when there is no matching saved board");
 console.log("PASS: All ten games initialise using DOM mocks without runtime exceptions.");

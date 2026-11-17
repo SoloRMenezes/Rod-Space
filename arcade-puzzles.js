@@ -26,13 +26,15 @@ restart();
 // 2048
 register("2048",function(root){
 const toolbar=node("div",{class:"toolbar"}),scoreText=node("span",{class:"stat"}),bestText=node("span",{class:"stat"}),msg=node("p",{class:"message",role:"status"}),boardEl=node("div",{class:"board board-2048",role:"grid","aria-label":"2048 grid"}),pad=node("div",{class:"direction-pad"});
-let board=read("2048.board",null),score=Number(read("2048.score",0))||0,ended=false,won=false;
-if(!Array.isArray(board)||board.length!==16||board.some(n=>!Number.isInteger(n)||n<0))board=Array(16).fill(0);
+const validBoard=value=>Array.isArray(value)&&value.length===16&&value.every(n=>Number.isSafeInteger(n)&&n>=0);
+const saved=read("2048.save",null),legacyBoard=read("2048.board",null);
+let board=validBoard(saved?.board)?saved.board:validBoard(legacyBoard)?legacyBoard:Array(16).fill(0);
+let score=validBoard(saved?.board)?(Number.isSafeInteger(saved.score)&&saved.score>=0?saved.score:0):(validBoard(legacyBoard)?(Number.isSafeInteger(read("2048.score",0))&&read("2048.score",0)>=0?read("2048.score",0):0):0),ended=false,won=false;
 function spawn(){const cells=board.map((v,i)=>v===0?i:-1).filter(v=>v!==-1);if(!cells.length)return;board[cells[Math.floor(Math.random()*cells.length)]]=Math.random()<.9?2:4}
 function hasMoves(){return board.includes(0)||board.some((v,i)=>i%4<3&&v===board[i+1]||i<12&&v===board[i+4])}
 function reset(){board=Array(16).fill(0);score=0;ended=false;won=false;spawn();spawn();render()}
 let previouslyRendered=null;
-function render(){boardEl.replaceChildren(...board.map((v,i)=>node("div",{class:"tile tile-"+v+(previouslyRendered&&previouslyRendered[i]!==v?" changed":""),role:"gridcell","aria-label":v?String(v):"Empty"},v||"·")));previouslyRendered=[...board];scoreText.textContent="Score "+score;bestText.textContent="Best "+highScore("2048.best",score);store("2048.board",board);store("2048.score",score)}
+function render(){boardEl.replaceChildren(...board.map((v,i)=>node("div",{class:"tile tile-"+v+(previouslyRendered&&previouslyRendered[i]!==v?" changed":""),role:"gridcell","aria-label":v?String(v):"Empty"},v||"·")));previouslyRendered=[...board];scoreText.textContent="Score "+score;bestText.textContent="Best "+highScore("2048.best",score);store("2048.save",{board,score});store("2048.board",board);store("2048.score",score)}
 function move(dir){if(ended)return;let changed=false;for(let line=0;line<4;line++){let ids=[];for(let p=0;p<4;p++){const y=(dir==="up"||dir==="down")?(dir==="up"?p:3-p):line;const x=(dir==="left"||dir==="right")?(dir==="left"?p:3-p):line;ids.push(y*4+x)}let vals=ids.map(i=>board[i]).filter(Boolean),next=[];for(let j=0;j<vals.length;j++){if(vals[j]===vals[j+1]){const v=vals[j]*2;next.push(v);score+=v;if(v===2048&&!won){won=true;msg.textContent="2048 reached! Keep going."; }j++}else next.push(vals[j])}while(next.length<4)next.push(0);ids.forEach((id,k)=>{if(board[id]!==next[k])changed=true;board[id]=next[k]})}
 if(!changed)return;spawn();render();if(!hasMoves()){ended=true;msg.textContent="No more moves. Game over."}}
 toolbar.append(button("New game",()=>{msg.textContent="";reset()},"secondary"),scoreText,bestText);root.append(toolbar,boardEl,msg,pad);
