@@ -38,7 +38,8 @@ body.game-world:not([data-game=""])[data-theme="light"] {--text:#fff;--muted:#d5
   border-bottom:1px solid #ffffff1c; background:#03081065;backdrop-filter:blur(18px);
   position:relative;z-index:10;
 }
-.game-topbar .brand {display:inline-flex;align-items:center;gap:10px;font-size:13px;letter-spacing:.12em;font-weight:900;color:#eaf2ff;white-space:nowrap}
+.game-topbar .brand {display:inline-flex;align-items:center;gap:10px;min-width:0;max-width:calc(100% - 100px);font-size:13px;letter-spacing:.12em;font-weight:900;color:#eaf2ff;white-space:nowrap}
+.game-topbar .game-brand-title {min-width:0;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase}
 .brand-mark {display:grid;place-items:center;width:35px;height:35px;border-radius:10px;background:rgba(var(--glow-rgb),.16);border:1px solid rgba(var(--glow-rgb),.5);color:var(--glow);font-size:21px}
 .game-topbar .brand strong {color:var(--glow)}
 .game-topbar .rs-account-trigger {margin-left:auto}

@@ -27,6 +27,7 @@ const info=catalog.find(game=>game[0]===id);
 if(!info){location.replace(new URL("./",location.href).href);return null}
 document.body.dataset.game=id;
 byId("gameTitle").textContent=info[1];
+byId("gameBrandTitle").textContent=info[1];
 byId("gameDescription").textContent=info[2];
 document.title=info[1]+" — Rod Space";
 window.RodSpaceAccounts?.setActiveGame(id);

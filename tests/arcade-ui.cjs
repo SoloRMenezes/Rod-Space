@@ -2,7 +2,7 @@ const fs=require("node:fs"),vm=require("node:vm"),assert=require("node:assert/st
 const root=path.resolve(__dirname,"..");
 function setup(gameId){
  const nodes={},listeners={};const el=id=>nodes[id]||=({id,textContent:"",hidden:true,dataset:{},listeners:{},children:[],style:{},setAttribute(name,val){this[name]=val},addEventListener(name,fn){this.listeners[name]=fn},focus(){},querySelectorAll(){return this.buttons||[]},querySelector(){return this.textarea||null},replaceChildren(...children){this.children=children}});
- const ids=["gameTitle","gameDescription","gameLabel","game","introTitle","introDescription","introIcon","introCategory","introControls","menuControls","menuTitle","gameIntro","gameMenu","playGame","menuToggle","resumeGame","restartGame","menuParty","partyLink","themeToggle","fullscreenToggle"];
+ const ids=["gameTitle","gameBrandTitle","gameDescription","gameLabel","game","introTitle","introDescription","introIcon","introCategory","introControls","menuControls","menuTitle","gameIntro","gameMenu","playGame","menuToggle","resumeGame","restartGame","menuParty","partyLink","themeToggle","fullscreenToggle"];
  ids.forEach(el);
  const document={body:{dataset:{}},documentElement:{dataset:{}},getElementById:el,addEventListener(name,fn){listeners[name]=fn}};
  let redirect=null,reload=false;
@@ -22,9 +22,11 @@ assert.equal(blank.redirect,"https://example.test/Rod-Space/","arcade landing re
 const solo=setup("2048");
 assert.equal(solo.document.body.dataset.game,"2048");
 assert.equal(solo.nodes.gameTitle.textContent,"2048");
+assert.equal(solo.nodes.gameBrandTitle.textContent,"2048","game name replaces Rod Space in the game header");
 assert.equal(solo.nodes.gameDescription.textContent,"Merge matching numbers");
 assert.doesNotMatch(require("node:fs").readFileSync(path.join(root,"arcade.html"),"utf8"),/id="gameLabel"|ROD SPACE \/ PARTY GAME/,"remove the redundant Rod Space party label from game screens");
 assert.equal(setup("uno").nodes.gameDescription.textContent,"","remove the redundant Bots or Phones game label");
+assert.equal(setup("uno").nodes.gameBrandTitle.textContent,"UNO-style Cards","the active game's name is shown in the header");
 for(const page of ["index.html","party.html"])assert.doesNotMatch(require("node:fs").readFileSync(path.join(root,page),"utf8"),/Bots or phones/i,`remove Bots or phones from ${page}`);
 assert.equal(solo.nodes.game.children.length,1);
 assert.equal(solo.nodes.gameIntro.hidden,true,"solo game opens directly into play");
