@@ -98,7 +98,10 @@ body[data-game="uno"] .uno-menu h2,body[data-game="uno"] .uno-lobby h2 {margin:0
 body[data-game="uno"] .uno-menu p,body[data-game="uno"] .uno-lobby p {color:var(--muted,#c4d0c7);line-height:1.5}
 body[data-game="uno"] .uno-menu button,body[data-game="uno"] .uno-lobby>button {display:block;width:min(360px,100%);min-height:50px;margin:12px auto}
 body[data-game="uno"] .uno-lobby input,body[data-game="uno"] .uno-lobby select {display:block;width:min(360px,100%);min-height:46px;margin:12px auto;padding:9px 12px;border:1px solid #657b6a;border-radius:6px;background:#f6f2dc;color:#263a31;font:inherit}
-body[data-game="uno"] .uno-lobby input.uno-player-count {width:112px;padding:8px 10px;text-align:center}
+body[data-game="uno"] .uno-player-count-control {display:flex;align-items:center;justify-content:center;gap:14px;width:max-content;margin:14px auto}
+body[data-game="uno"] .uno-player-count-arrow {display:grid;place-items:center;width:44px;min-height:44px;margin:0;padding:0}
+body[data-game="uno"] .uno-player-count-arrow svg {display:block;width:22px;height:22px}
+body[data-game="uno"] .uno-player-count {min-width:30px;color:var(--text,#f4f2e8);font-size:20px;font-weight:750;text-align:center}
 body[data-game="uno"] .uno-rooms {display:grid;gap:8px;margin:14px auto}
 body[data-game="uno"] .uno-rooms button {width:min(420px,100%);min-height:46px;margin:auto}
 body[data-game="uno"] .uno-toolbar {width:min(100%,1000px);margin:0 auto 10px;gap:8px;flex-wrap:wrap}
