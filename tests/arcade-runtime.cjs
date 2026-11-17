@@ -1,5 +1,6 @@
 const fs=require("node:fs"),vm=require("node:vm"),path=require("node:path"),assert=require("node:assert/strict");
 const root=path.resolve(__dirname,"..");
+assert.match(fs.readFileSync(path.join(root,"arcade-immersive.css"),"utf8"),/\.game-panel\s+\[hidden\]\s*\{\s*display:\s*none\s*!important\s*\}/,"hidden game UI must stay hidden despite display rules on toolbars and panels");
 class FakeElement {
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(key,value){this[key]=value}};this.classList={toggle(){}};this.value="";this.textContent="";this.disabled=false;this.className="";}
  setAttribute(key,value){this.attributes[key]=value;}

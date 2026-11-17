@@ -49,6 +49,7 @@ body.game-world:not([data-game=""])[data-theme="light"] {--text:#fff;--muted:#d5
 .game-heading h1 {font-size:clamp(29px,4.3vw,55px);font-weight:1000;letter-spacing:-.055em;line-height:1.06;text-transform:uppercase;margin:4px 0 2px;color:#fff;text-shadow:0 5px 38px rgba(var(--glow-rgb),.34)}
 .game-tagline {font-size:13px;letter-spacing:.1em;font-weight:700;text-transform:uppercase;color:var(--muted);margin:0;}
 .game-panel {background:transparent;border:0;padding:0; width:100%;max-width:1280px;min-height:unset;display:flex;flex-direction:column;align-items:center;justify-content:center;isolation:isolate}
+.game-panel [hidden] {display:none!important}
 .game-panel > .toolbar,.game-panel > .message,.game-panel > .choice-row {align-self:center}
 .game-panel .toolbar {justify-content:center;gap:10px;margin-bottom:clamp(12px,2vh,20px)}
 .game-panel .stat {border:1px solid rgba(var(--glow-rgb),.23);background:rgba(3,8,21,.35);color:var(--text);border-radius:13px;padding:11px 16px;font-size:13px;letter-spacing:.02em;box-shadow:0 8px 26px #00000020;font-variant-numeric:tabular-nums}
@@ -277,7 +278,6 @@ body[data-game="uno"] .uno-color-choice.yellow {background:#ca8a04}
 
 /* Turn-based battle layout inspired by classic creature-battle games. */
 body[data-game="combat"] {--glow:#edc478;--glow-rgb:237,196,120;--deep:#10201d;--mid:#1b332c;--surface:#203a31;--btn:#356d54}
-body[data-game="combat"] [hidden] {display:none!important}
 body[data-game="combat"] .game-heading h1 {font-size:clamp(30px,4vw,46px)}
 body[data-game="combat"] .game-panel {max-width:920px}
 body[data-game="combat"] .battle-toolbar {width:min(100%,880px);justify-content:space-between;margin:0 auto 10px}
