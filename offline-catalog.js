@@ -15,8 +15,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -30,8 +30,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -49,8 +49,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "e5f92ab41f53f8bd"
+    "bytes": 85356,
+    "version": "25a8550889320e36"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -68,8 +68,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -83,8 +83,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -102,8 +102,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "a528f54640458bcd"
+    "bytes": 85356,
+    "version": "a6da8e8248b70b85"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -121,8 +121,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -136,8 +136,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -155,8 +155,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "f4ed04d989678891"
+    "bytes": 85356,
+    "version": "d233f22c8d3162ba"
   },
   "typing": {
     "name": "Fast Typing",
@@ -174,8 +174,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -189,8 +189,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -208,8 +208,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "bd83cbe6aaeea289"
+    "bytes": 85356,
+    "version": "8d075f7e5e0d536a"
   },
   "2048": {
     "name": "2048",
@@ -227,8 +227,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -242,8 +242,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -261,8 +261,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "ead81e0ee0c98b4d"
+    "bytes": 85356,
+    "version": "ae9c4faa5ff28d13"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -280,8 +280,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -295,8 +295,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -314,8 +314,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "e5ddf6d708f0578b"
+    "bytes": 85356,
+    "version": "b843f99c948c542b"
   },
   "mines": {
     "name": "Minesweeper",
@@ -333,8 +333,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -348,8 +348,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -367,8 +367,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "359f744b7e5bb35b"
+    "bytes": 85356,
+    "version": "4191b9d53c10a2e8"
   },
   "pong": {
     "name": "Pong",
@@ -386,8 +386,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -401,8 +401,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -420,8 +420,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "901e6adfa7083173"
+    "bytes": 85356,
+    "version": "aa432c72d9c50f99"
   },
   "snake": {
     "name": "Snake Arena",
@@ -439,8 +439,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -454,8 +454,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -473,8 +473,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "b880295457694067"
+    "bytes": 85356,
+    "version": "dc1e12f8ee3b15ef"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -492,8 +492,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-core.js",
@@ -507,8 +507,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-party.js",
@@ -526,8 +526,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 85360,
-    "version": "67da1ce752437033"
+    "bytes": 85356,
+    "version": "1fcd596e14e3e7b3"
   },
   "maths-book": {
     "name": "Bookshelf",
@@ -705,8 +705,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-core.js",
@@ -715,8 +715,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-init.js",
@@ -6326,7 +6326,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 934961,
-        "hash": "8d9e5a8ec191ae1edf65987a1cbf31b8e836f78d10331e5fd3b432990eb1be71"
+        "hash": "d2184227c222d8074234561edd9e2ea5ccd3ae7d412bc9e656a17a8bc5be388a"
       },
       {
         "path": "offline.js",
@@ -6536,7 +6536,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 6127,
-        "hash": "0702450a43978aebe0a8ec683cc7c656afb8831d10959648d194cb02d22f8c8e"
+        "hash": "a733ff3bc112ad4442c73eae2ab86c20b9336b670ca9d10102e1567bc2d69016"
       },
       {
         "path": "terraria.html",
@@ -6614,8 +6614,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 367275608,
-    "version": "f6e3c63c4bb16970"
+    "bytes": 367275604,
+    "version": "683e10ce2cd16eff"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -6971,8 +6971,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-core.js",
@@ -6981,8 +6981,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-init.js",
@@ -12592,7 +12592,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 934961,
-        "hash": "8d9e5a8ec191ae1edf65987a1cbf31b8e836f78d10331e5fd3b432990eb1be71"
+        "hash": "d2184227c222d8074234561edd9e2ea5ccd3ae7d412bc9e656a17a8bc5be388a"
       },
       {
         "path": "offline.js",
@@ -12802,7 +12802,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 6127,
-        "hash": "0702450a43978aebe0a8ec683cc7c656afb8831d10959648d194cb02d22f8c8e"
+        "hash": "a733ff3bc112ad4442c73eae2ab86c20b9336b670ca9d10102e1567bc2d69016"
       },
       {
         "path": "terraria.html",
@@ -12880,8 +12880,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 367275608,
-    "version": "ca4f9399d10b2494"
+    "bytes": 367275604,
+    "version": "4a5c06550a3beaa6"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -18753,8 +18753,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9092,
-        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
+        "bytes": 9049,
+        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
       },
       {
         "path": "arcade-core.js",
@@ -18763,8 +18763,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 22772,
-        "hash": "9e9d0f4742f83d438a66920f30c4f845ea1d4f9c7031b2e51327a0d34e5edc28"
+        "bytes": 22811,
+        "hash": "f57904663d05ee2be1f1d7b63ec38414932037c12d06af8c5bc1256fe2702c92"
       },
       {
         "path": "arcade-init.js",
@@ -24374,7 +24374,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "offline-catalog.js",
         "bytes": 934961,
-        "hash": "2a2be30705317ab0408626847b1642254c899b4fb0953330d83e4dde081a7414"
+        "hash": "d2184227c222d8074234561edd9e2ea5ccd3ae7d412bc9e656a17a8bc5be388a"
       },
       {
         "path": "offline.js",
@@ -24584,7 +24584,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 6127,
-        "hash": "f5239be0e20dca2eabcc880a663acbfab1eef7ae362547ede2adfba2f556f7df"
+        "hash": "a733ff3bc112ad4442c73eae2ab86c20b9336b670ca9d10102e1567bc2d69016"
       },
       {
         "path": "terraria.html",
@@ -24662,8 +24662,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 367275608,
-    "version": "8ff7bab18faa155f"
+    "bytes": 367275604,
+    "version": "1a320e04e59c7b29"
   },
   "backrooms": {
     "name": "The Backrooms",
