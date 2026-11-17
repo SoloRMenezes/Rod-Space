@@ -203,8 +203,22 @@ body[data-game="2048"] .board-2048 {box-shadow:none}
 body[data-game="typing"] .type-source {width:min(760px,94vw);max-height:112px;overflow:hidden;padding:13px 16px;margin:6px 0 10px;font-size:clamp(16px,2vw,20px);line-height:1.55;letter-spacing:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:none}
 body[data-game="typing"] .typing-input {width:min(760px,94vw);min-height:58px;max-height:64px;resize:none;padding:10px 12px;font-size:16px;background:var(--page);border:1px solid var(--line);border-radius:10px;box-shadow:none}
 body[data-game="wordle"] .wordle-native-input {position:fixed;left:0;bottom:0;width:1px;height:1px;padding:0;border:0;opacity:0;clip-path:inset(50%);font-size:16px}
+body[data-game="mines"] {--glow:#edc478;--glow-rgb:237,196,120;--accent:#edc478;--btn:#287a66;--surface:#203b35}
+body[data-game="mines"] .game-stage {max-width:1000px}
+body[data-game="mines"] .game-panel {max-width:900px}
+body[data-game="mines"] .mines-toolbar {width:min(100%,820px);justify-content:center;gap:8px;margin-bottom:14px}
+body[data-game="mines"] .mines-toolbar select,body[data-game="mines"] .mines-toolbar button {min-height:44px;padding:9px 12px;font-size:14px}
+body[data-game="mines"] .mines-stat {padding:8px 12px;font-size:13px;border-radius:6px}
+body[data-game="mines"] .mines-board {display:grid;gap:4px;width:max-content;max-width:min(100%,680px);padding:10px;background:#203b35;border:1px solid #ffffff30;border-radius:9px;overflow:auto;overscroll-behavior:contain;justify-content:start}
+body[data-game="mines"] .mine-cell {width:var(--mine-cell);min-width:var(--mine-cell);height:var(--mine-cell);padding:0;border:1px solid #fff8;border-radius:5px;background:#e8dfc7;color:#435b4e;box-shadow:0 2px 0 #0b1c1880;font-size:clamp(12px,2vw,18px);font-weight:800;touch-action:manipulation}
+body[data-game="mines"] .mine-cell:hover:not(:disabled) {background:#f5ecd6;filter:none}
+body[data-game="mines"] .mine-cell.revealed {background:#142b25;border-color:#ffffff20;color:#edc478;box-shadow:none}
+body[data-game="mines"] .mine-cell.flag {color:#a76b24}
+body[data-game="mines"] .mine-cell.mine {background:#a65050;border-color:#d78778;color:#fff}
+body[data-game="mines"] .message {margin-top:14px;color:#edc478}
 body[data-game="headsup"] .prompt {box-shadow:none;transform:none}
 body[data-game="uno"] .card-hand,body[data-game="ladders"] .ladder-grid {box-shadow:none}
 body[data-game="uno"] .uno-card {box-shadow:0 2px 5px #0003}
 .overlay-card,.overlay-card .poster,.overlay-card button {box-shadow:none}
 @media(max-width:640px) {body[data-game="typing"] .type-source {max-height:96px;font-size:15px} body[data-game="typing"] .typing-input {min-height:54px} body[data-game="2048"] .direction-pad {display:none} body[data-game="wordle"] .wordle-keyboard {display:none} body[data-game="wordle"] .wordle-board {margin-bottom:8px}}
+@media(max-width:640px) {body[data-game="mines"] .mines-toolbar {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:7px} body[data-game="mines"] .mines-toolbar select,body[data-game="mines"] .mines-toolbar button {width:100%;min-width:0} body[data-game="mines"] .mines-stat {text-align:center} body[data-game="mines"] .mines-board {max-width:calc(100vw - 28px);max-height:calc(100svh - 250px);padding:7px;gap:3px}}
