@@ -15,23 +15,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -40,8 +40,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -49,8 +49,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "f5e60ab279507375"
+    "bytes": 81922,
+    "version": "21ddbb28c2b971c9"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -68,23 +68,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -93,8 +93,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -102,8 +102,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "2a04e9984c53e6d3"
+    "bytes": 81922,
+    "version": "be102398fee72432"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -121,23 +121,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -146,8 +146,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -155,8 +155,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "c3a07f931bc60027"
+    "bytes": 81922,
+    "version": "29964470eb419a96"
   },
   "typing": {
     "name": "Fast Typing",
@@ -174,23 +174,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -199,8 +199,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -208,8 +208,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "5891fe21f0e7bb5e"
+    "bytes": 81922,
+    "version": "71967ca892455034"
   },
   "2048": {
     "name": "2048",
@@ -227,23 +227,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -252,8 +252,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -261,8 +261,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "c783ea0f9893592b"
+    "bytes": 81922,
+    "version": "5f61388ad22944f4"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -280,23 +280,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -305,8 +305,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -314,8 +314,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "455db2cf2aaac853"
+    "bytes": 81922,
+    "version": "fcd4dd9fbfe2838f"
   },
   "mines": {
     "name": "Minesweeper",
@@ -333,23 +333,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -358,8 +358,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -367,8 +367,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "d1656b84f3a327c9"
+    "bytes": 81922,
+    "version": "c6cad0a99614bf57"
   },
   "pong": {
     "name": "Pong",
@@ -386,23 +386,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -411,8 +411,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -420,8 +420,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "71a2b15a68aaf5a2"
+    "bytes": 81922,
+    "version": "d51dae8710728afa"
   },
   "snake": {
     "name": "Snake Arena",
@@ -439,23 +439,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -464,8 +464,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -473,8 +473,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "3321ce57736b48c9"
+    "bytes": 81922,
+    "version": "b8b3401c8fb99386"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -492,23 +492,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-party.js",
@@ -517,8 +517,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -526,8 +526,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 80173,
-    "version": "ee69b9942ea03561"
+    "bytes": 81922,
+    "version": "72552f1bff55f1f9"
   },
   "maths-book": {
     "name": "Bookshelf",
@@ -700,28 +700,28 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 44281,
-        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
+        "bytes": 49750,
+        "hash": "5454958d6f6e5420d59192946b0394d39a09acc8681ce17a7d4aaf648f24b60c"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "arcade-party.js",
@@ -730,8 +730,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade.css",
@@ -812,6 +812,11 @@ self.OFFLINE_CATALOG = {
         "path": "assets/models/skateboard-free-model.glb",
         "bytes": 35359456,
         "hash": "069071dde7b10e22810dc56e4844b3e7947fd7f05a8894361d7fbba4cc99974b"
+      },
+      {
+        "path": "assets/models/two-fingers-solidcraft-park.glb",
+        "bytes": 420112,
+        "hash": "0105eef217253fbb7898e37ad1086808718033cb02e19db7c09360a02c33d8d5"
       },
       {
         "path": "assets/models/web-weavers-r15.glb",
@@ -1235,8 +1240,28 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/app.js",
-        "bytes": 136791,
-        "hash": "5ac34674044c1ad9a06811f8cf21caaf627e047927ab3ae610d1f46dd3cf6f9e"
+        "bytes": 142572,
+        "hash": "43f3e014bffdc2fb341c4c8ed65682339b7b8884d0afc1e71476fac8c95c11c7"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/candy-castle.png",
+        "bytes": 800208,
+        "hash": "257f9897b836b53929c89c1aaa5b30c9485d3861d3376539a95938869008ea29"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/guild-hall.jpg",
+        "bytes": 131800,
+        "hash": "dcba293a3303da4c47f3dded58311558bf82aec71725153776957d59020146f3"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/night-market.jpg",
+        "bytes": 791740,
+        "hash": "d8130e1d5076f3d3f4ae1953d58b736373c0f62006f8292561e679219495d719"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/sun-temple.jpg",
+        "bytes": 140007,
+        "hash": "beb02f7c9cfdc32a384120f9901af6682bc2ccd3770550153983d5385ff9d469"
       },
       {
         "path": "card-wars/assets/card-wars-home.png",
@@ -5904,6 +5929,11 @@ self.OFFLINE_CATALOG = {
         "hash": "e79c5b47b58801ff63ce05e25a1f86fe650eb04e558672a6b4f0c09aafde538e"
       },
       {
+        "path": "card-wars/assets/store/collectors-pack-front-only.png",
+        "bytes": 90668,
+        "hash": "c21a23c329b678cad65e5fad94f660456be5af50e7956419647a296255914084"
+      },
+      {
         "path": "card-wars/assets/store/collectors-packs.png",
         "bytes": 597473,
         "hash": "8c228877cba9f5800eca4f056d24d9540d51853fc1ec9f17619a3ea52509ae07"
@@ -5924,9 +5954,19 @@ self.OFFLINE_CATALOG = {
         "hash": "f495ecd70c51c9e8b48a95b9c871e9694384da9258e14bc1b37e227da7dfbc76"
       },
       {
+        "path": "card-wars/assets/store/glory-pack-front-only.jpg",
+        "bytes": 587178,
+        "hash": "d79007c5a76c39b3d9ad6fd45f0c886ba3ea8c6685e19eb3b67e31ebdfb813b6"
+      },
+      {
         "path": "card-wars/assets/store/glory-packs.png",
         "bytes": 209327,
         "hash": "e42b7768eb2da84dcd5f6c0b0f82ddaa7584173d3f33af7022c677bb671cec55"
+      },
+      {
+        "path": "card-wars/assets/store/hero-pack-front-only.png",
+        "bytes": 215100,
+        "hash": "2f414d4b411743be2d23532b2a45243fa078aeea80e3d24ba0bf6f17c2e9667e"
       },
       {
         "path": "card-wars/assets/store/hero-pack.png",
@@ -5960,13 +6000,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/index.html",
-        "bytes": 30677,
-        "hash": "2b38865688e6961c96c917c6fc061a0f156a458453adca36ee089d4dfdeaaf86"
+        "bytes": 32667,
+        "hash": "538a2a739c341c2a31164ed44614d45927fcff6979eb776e4ca62526cafe64fc"
       },
       {
         "path": "card-wars/styles.css",
-        "bytes": 105059,
-        "hash": "cf08e1cd7c0b33b345fbe3279786b30d96fffac9fc357eea2c754a19b4c9d1da"
+        "bytes": 110882,
+        "hash": "e7fb998436e098bd0a1c4657ad0f056555b34a6e89cc0c40d624f0bbbe595e60"
       },
       {
         "path": "card-wars/three-board.js",
@@ -6029,44 +6069,79 @@ self.OFFLINE_CATALOG = {
         "hash": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35"
       },
       {
+        "path": "dt-book.html",
+        "bytes": 44295,
+        "hash": "70cc2dfece6a152f015e59e825e18989f567aed2e293e7e500cb9f0b788f1f49"
+      },
+      {
+        "path": "dt-ch1-reference.js",
+        "bytes": 8800,
+        "hash": "dcb6e5c18b83bbceaf101fdbd7990fb2eb66b951fbae615b0028fe1b5398cbb8"
+      },
+      {
+        "path": "dt-content.js",
+        "bytes": 12671,
+        "hash": "c97afadf92d3e3b39e92074946de1bd82a346cd5c91e336f4ade71b97f315d4c"
+      },
+      {
+        "path": "dt-theory-details.js",
+        "bytes": 17439,
+        "hash": "f35ea211b130848dc280464f48a3f4afb486e347029eb7b2d15c67a0fd175ccf"
+      },
+      {
+        "path": "dt-topics.js",
+        "bytes": 1459,
+        "hash": "80168a0351a50cd199f81febf13c8dec6cbbf9f0ef6915cabae79f3f5c728014"
+      },
+      {
         "path": "fidget-roulette.html",
         "bytes": 17591,
         "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 23383,
-        "hash": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02"
+        "bytes": 44768,
+        "hash": "24dbf6c038ff372117196072740ebd86a9cd07831a80cb8449a10595c53e7504"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 6846,
-        "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
+        "bytes": 15883,
+        "hash": "153d7c6bcd8fe054f198dbf80552329060248aaddfc87210ec9785acdbcb5932"
+      },
+      {
+        "path": "geometria-descritiva-caderno.html",
+        "bytes": 8562,
+        "hash": "83dfad081fc7f83a390e1d26249ae317d0826f61cd61afdc694707fb6fbec51b"
       },
       {
         "path": "geometria-descritiva-coordenadas.html",
-        "bytes": 37550,
-        "hash": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039"
+        "bytes": 37788,
+        "hash": "f7c6803733dd3dade180911a154a0eb696cd1a28f3019681e56751e544d2cdce"
       },
       {
         "path": "geometria-descritiva-epura.html",
-        "bytes": 36320,
-        "hash": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8"
+        "bytes": 36558,
+        "hash": "0a2c92ff20f35e6ec1a0f7fa5cc6aaf41d635a1b1b3d1e688f27c7737fa1f2d3"
       },
       {
         "path": "geometria-descritiva-exemplo.html",
-        "bytes": 37110,
-        "hash": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7"
+        "bytes": 37348,
+        "hash": "53dffd900a7423a11e46233e923ea890bfbc286ce35bd888649340e729a44119"
       },
       {
         "path": "geometria-descritiva-pratica.html",
-        "bytes": 37455,
-        "hash": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b"
+        "bytes": 37693,
+        "hash": "24b836ca4daada5020b84ce5145ddb11975d479130ed9c982313968cec39f59b"
+      },
+      {
+        "path": "geometria-descritiva-retas.html",
+        "bytes": 38993,
+        "hash": "54d417051864a5aa6e4fedbaa08b5afdcb68dda4e2a7cc19cf1fd480b4076343"
       },
       {
         "path": "geometria-descritiva.html",
-        "bytes": 38307,
-        "hash": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78"
+        "bytes": 38545,
+        "hash": "f514572ca56f636f6409869dea575dcde754262ba843d27375b2442fe2bb4a32"
       },
       {
         "path": "hood-brawlers.js",
@@ -6085,8 +6160,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 38578,
-        "hash": "debbdb3ba86850ce112ecbce1c19fc352bd236adb0cd07c853eb1319efb8532d"
+        "bytes": 38580,
+        "hash": "c231fd0617af753cba35b1746b04c4793d97149825dfc2071fc6f0cb5d940699"
       },
       {
         "path": "invincible-sandbox.html",
@@ -6105,8 +6180,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 62739,
-        "hash": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03"
+        "bytes": 63877,
+        "hash": "7e23abb8b5d5926a745d76bea227bd96b171021e8857f6bae724bcd967a2a4f9"
       },
       {
         "path": "maths-content.js",
@@ -6115,8 +6190,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-curriculum-ui.js",
-        "bytes": 12850,
-        "hash": "a7530e3e4f5228bd80a065e4756ce0f20b723975a975fff0128df89ddfdf44c7"
+        "bytes": 12928,
+        "hash": "932700e275493522493a398c2e4845421ea1d927d49fb08361b2592437af5f6e"
       },
       {
         "path": "maths-curriculum.js",
@@ -6195,8 +6270,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 771259,
-        "hash": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6"
+        "bytes": 771372,
+        "hash": "5b08fd2a1897f0e60fe7a934df6563c6c152025b84bb46775ca0e4ca69665d4a"
       },
       {
         "path": "maths-topic-exercises.js",
@@ -6235,23 +6310,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.css",
-        "bytes": 8086,
-        "hash": "9e13ee21248696ec7b80bf7c65da832b3045b3e91bcb35dbc1ea264e61ae76d2"
+        "bytes": 8829,
+        "hash": "6782dd8f8c5b01854ad6199f1d280e6ae202535cb0d12d95c1a6de3b346f04f9"
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 5149,
-        "hash": "4969839dde14f6122cf2129d39fc6ee64cc5b26c5da5c0c6e8f392d62529543c"
+        "bytes": 6272,
+        "hash": "60aa45bd4518f7c692edf92c9ad29e26710c459070c81fcb7c542504f8156e37"
       },
       {
         "path": "nicos_nextbots.js",
-        "bytes": 138986,
-        "hash": "4ae6c4d45e5e37b8900170209f746d6ba5b9f6248d9ba93b4ee9799dad99ce5c"
+        "bytes": 143590,
+        "hash": "70981eb45a4cccbf71428a3775ad9f2b2ad71d76b25e5a99b030a94e6a3e78aa"
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 923261,
-        "hash": "557e82344a01b5c853306e9ea59d2166fdac194b87a67744c818addfd348d92f"
+        "bytes": 934961,
+        "hash": "702fdd0fe079e07dc397361c591a9677c1cab21a40662b3672b4532652ce70e4"
       },
       {
         "path": "offline.js",
@@ -6295,8 +6370,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "party.html",
-        "bytes": 11620,
-        "hash": "6e5f0a4cb7ce38ffbe6343a922f6441773cb301fcac18b13a1856f1b602ffe4e"
+        "bytes": 11925,
+        "hash": "0ee2db3991c7e012f00689dc37386823faa6979667ab7080c818f1ec0dc99102"
       },
       {
         "path": "piano.html",
@@ -6325,18 +6400,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "relic_rush.css",
-        "bytes": 5962,
-        "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
+        "bytes": 6432,
+        "hash": "e6b42c4330cd7c26c00854b0d869aa75e4ae36ec2befea332a3aaa8448bb2d9f"
       },
       {
         "path": "relic_rush.html",
-        "bytes": 852,
-        "hash": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56"
+        "bytes": 882,
+        "hash": "b1855d9e3a356483fc50abe98f2b71f4b3cf9326a393d4f6fe4ab3154216ec6a"
       },
       {
         "path": "relic_rush.js",
-        "bytes": 116526,
-        "hash": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343"
+        "bytes": 137580,
+        "hash": "ecde15be61b1db3d2c5fd0b91ad4d3db7a1b0e2b02ad0a66f16f6ea1aaa7e010"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -6461,7 +6536,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 6127,
-        "hash": "0280ddf405aa16d0819f015b6f4aaff20fc9f39aded25ed7160ed9c6065de443"
+        "hash": "eb1c2f4a09be675794b9f594699d625682481e0dbc6d80c733a10ec1e9db862e"
       },
       {
         "path": "terraria.html",
@@ -6505,8 +6580,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 3410,
-        "hash": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7"
+        "bytes": 5597,
+        "hash": "4dc4a2b5b56d03c27168665dd67c1ae8e72cdb0ab4d5f4dd52fee4ce0322abcb"
       },
       {
         "path": "truth-or-dare.html",
@@ -6515,18 +6590,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "web_weavers.css",
-        "bytes": 15634,
-        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
+        "bytes": 17285,
+        "hash": "a079f0f09263f181051c3fb1cf7cc851ef2dee8ea2b61449c53944e0dd0faa7d"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 9566,
-        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
+        "bytes": 11408,
+        "hash": "34f577a419401326e8d07d0a3bb108c2c2efef57a018bd09adab908bd1db3117"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 221420,
-        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
+        "bytes": 226947,
+        "hash": "f5179120cbb0b8da3b66a319f3f4827d609ad151936fddf8b63cdf56212db60f"
       },
       {
         "path": "whos-more-likely.html",
@@ -6539,8 +6614,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363858147,
-    "version": "a0808f9e3f78ef48"
+    "bytes": 367272170,
+    "version": "79f35b4acbd95ff2"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -6891,28 +6966,28 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 44281,
-        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
+        "bytes": 49750,
+        "hash": "5454958d6f6e5420d59192946b0394d39a09acc8681ce17a7d4aaf648f24b60c"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "arcade-party.js",
@@ -6921,8 +6996,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade.css",
@@ -7003,6 +7078,11 @@ self.OFFLINE_CATALOG = {
         "path": "assets/models/skateboard-free-model.glb",
         "bytes": 35359456,
         "hash": "069071dde7b10e22810dc56e4844b3e7947fd7f05a8894361d7fbba4cc99974b"
+      },
+      {
+        "path": "assets/models/two-fingers-solidcraft-park.glb",
+        "bytes": 420112,
+        "hash": "0105eef217253fbb7898e37ad1086808718033cb02e19db7c09360a02c33d8d5"
       },
       {
         "path": "assets/models/web-weavers-r15.glb",
@@ -7426,8 +7506,28 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/app.js",
-        "bytes": 136791,
-        "hash": "5ac34674044c1ad9a06811f8cf21caaf627e047927ab3ae610d1f46dd3cf6f9e"
+        "bytes": 142572,
+        "hash": "43f3e014bffdc2fb341c4c8ed65682339b7b8884d0afc1e71476fac8c95c11c7"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/candy-castle.png",
+        "bytes": 800208,
+        "hash": "257f9897b836b53929c89c1aaa5b30c9485d3861d3376539a95938869008ea29"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/guild-hall.jpg",
+        "bytes": 131800,
+        "hash": "dcba293a3303da4c47f3dded58311558bf82aec71725153776957d59020146f3"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/night-market.jpg",
+        "bytes": 791740,
+        "hash": "d8130e1d5076f3d3f4ae1953d58b736373c0f62006f8292561e679219495d719"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/sun-temple.jpg",
+        "bytes": 140007,
+        "hash": "beb02f7c9cfdc32a384120f9901af6682bc2ccd3770550153983d5385ff9d469"
       },
       {
         "path": "card-wars/assets/card-wars-home.png",
@@ -12095,6 +12195,11 @@ self.OFFLINE_CATALOG = {
         "hash": "e79c5b47b58801ff63ce05e25a1f86fe650eb04e558672a6b4f0c09aafde538e"
       },
       {
+        "path": "card-wars/assets/store/collectors-pack-front-only.png",
+        "bytes": 90668,
+        "hash": "c21a23c329b678cad65e5fad94f660456be5af50e7956419647a296255914084"
+      },
+      {
         "path": "card-wars/assets/store/collectors-packs.png",
         "bytes": 597473,
         "hash": "8c228877cba9f5800eca4f056d24d9540d51853fc1ec9f17619a3ea52509ae07"
@@ -12115,9 +12220,19 @@ self.OFFLINE_CATALOG = {
         "hash": "f495ecd70c51c9e8b48a95b9c871e9694384da9258e14bc1b37e227da7dfbc76"
       },
       {
+        "path": "card-wars/assets/store/glory-pack-front-only.jpg",
+        "bytes": 587178,
+        "hash": "d79007c5a76c39b3d9ad6fd45f0c886ba3ea8c6685e19eb3b67e31ebdfb813b6"
+      },
+      {
         "path": "card-wars/assets/store/glory-packs.png",
         "bytes": 209327,
         "hash": "e42b7768eb2da84dcd5f6c0b0f82ddaa7584173d3f33af7022c677bb671cec55"
+      },
+      {
+        "path": "card-wars/assets/store/hero-pack-front-only.png",
+        "bytes": 215100,
+        "hash": "2f414d4b411743be2d23532b2a45243fa078aeea80e3d24ba0bf6f17c2e9667e"
       },
       {
         "path": "card-wars/assets/store/hero-pack.png",
@@ -12151,13 +12266,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/index.html",
-        "bytes": 30677,
-        "hash": "2b38865688e6961c96c917c6fc061a0f156a458453adca36ee089d4dfdeaaf86"
+        "bytes": 32667,
+        "hash": "538a2a739c341c2a31164ed44614d45927fcff6979eb776e4ca62526cafe64fc"
       },
       {
         "path": "card-wars/styles.css",
-        "bytes": 105059,
-        "hash": "cf08e1cd7c0b33b345fbe3279786b30d96fffac9fc357eea2c754a19b4c9d1da"
+        "bytes": 110882,
+        "hash": "e7fb998436e098bd0a1c4657ad0f056555b34a6e89cc0c40d624f0bbbe595e60"
       },
       {
         "path": "card-wars/three-board.js",
@@ -12220,44 +12335,79 @@ self.OFFLINE_CATALOG = {
         "hash": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35"
       },
       {
+        "path": "dt-book.html",
+        "bytes": 44295,
+        "hash": "70cc2dfece6a152f015e59e825e18989f567aed2e293e7e500cb9f0b788f1f49"
+      },
+      {
+        "path": "dt-ch1-reference.js",
+        "bytes": 8800,
+        "hash": "dcb6e5c18b83bbceaf101fdbd7990fb2eb66b951fbae615b0028fe1b5398cbb8"
+      },
+      {
+        "path": "dt-content.js",
+        "bytes": 12671,
+        "hash": "c97afadf92d3e3b39e92074946de1bd82a346cd5c91e336f4ade71b97f315d4c"
+      },
+      {
+        "path": "dt-theory-details.js",
+        "bytes": 17439,
+        "hash": "f35ea211b130848dc280464f48a3f4afb486e347029eb7b2d15c67a0fd175ccf"
+      },
+      {
+        "path": "dt-topics.js",
+        "bytes": 1459,
+        "hash": "80168a0351a50cd199f81febf13c8dec6cbbf9f0ef6915cabae79f3f5c728014"
+      },
+      {
         "path": "fidget-roulette.html",
         "bytes": 17591,
         "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 23383,
-        "hash": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02"
+        "bytes": 44768,
+        "hash": "24dbf6c038ff372117196072740ebd86a9cd07831a80cb8449a10595c53e7504"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 6846,
-        "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
+        "bytes": 15883,
+        "hash": "153d7c6bcd8fe054f198dbf80552329060248aaddfc87210ec9785acdbcb5932"
+      },
+      {
+        "path": "geometria-descritiva-caderno.html",
+        "bytes": 8562,
+        "hash": "83dfad081fc7f83a390e1d26249ae317d0826f61cd61afdc694707fb6fbec51b"
       },
       {
         "path": "geometria-descritiva-coordenadas.html",
-        "bytes": 37550,
-        "hash": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039"
+        "bytes": 37788,
+        "hash": "f7c6803733dd3dade180911a154a0eb696cd1a28f3019681e56751e544d2cdce"
       },
       {
         "path": "geometria-descritiva-epura.html",
-        "bytes": 36320,
-        "hash": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8"
+        "bytes": 36558,
+        "hash": "0a2c92ff20f35e6ec1a0f7fa5cc6aaf41d635a1b1b3d1e688f27c7737fa1f2d3"
       },
       {
         "path": "geometria-descritiva-exemplo.html",
-        "bytes": 37110,
-        "hash": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7"
+        "bytes": 37348,
+        "hash": "53dffd900a7423a11e46233e923ea890bfbc286ce35bd888649340e729a44119"
       },
       {
         "path": "geometria-descritiva-pratica.html",
-        "bytes": 37455,
-        "hash": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b"
+        "bytes": 37693,
+        "hash": "24b836ca4daada5020b84ce5145ddb11975d479130ed9c982313968cec39f59b"
+      },
+      {
+        "path": "geometria-descritiva-retas.html",
+        "bytes": 38993,
+        "hash": "54d417051864a5aa6e4fedbaa08b5afdcb68dda4e2a7cc19cf1fd480b4076343"
       },
       {
         "path": "geometria-descritiva.html",
-        "bytes": 38307,
-        "hash": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78"
+        "bytes": 38545,
+        "hash": "f514572ca56f636f6409869dea575dcde754262ba843d27375b2442fe2bb4a32"
       },
       {
         "path": "hood-brawlers.js",
@@ -12276,8 +12426,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 38578,
-        "hash": "debbdb3ba86850ce112ecbce1c19fc352bd236adb0cd07c853eb1319efb8532d"
+        "bytes": 38580,
+        "hash": "c231fd0617af753cba35b1746b04c4793d97149825dfc2071fc6f0cb5d940699"
       },
       {
         "path": "invincible-sandbox.html",
@@ -12296,8 +12446,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 62739,
-        "hash": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03"
+        "bytes": 63877,
+        "hash": "7e23abb8b5d5926a745d76bea227bd96b171021e8857f6bae724bcd967a2a4f9"
       },
       {
         "path": "maths-content.js",
@@ -12306,8 +12456,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-curriculum-ui.js",
-        "bytes": 12850,
-        "hash": "a7530e3e4f5228bd80a065e4756ce0f20b723975a975fff0128df89ddfdf44c7"
+        "bytes": 12928,
+        "hash": "932700e275493522493a398c2e4845421ea1d927d49fb08361b2592437af5f6e"
       },
       {
         "path": "maths-curriculum.js",
@@ -12386,8 +12536,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 771259,
-        "hash": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6"
+        "bytes": 771372,
+        "hash": "5b08fd2a1897f0e60fe7a934df6563c6c152025b84bb46775ca0e4ca69665d4a"
       },
       {
         "path": "maths-topic-exercises.js",
@@ -12426,23 +12576,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.css",
-        "bytes": 8086,
-        "hash": "9e13ee21248696ec7b80bf7c65da832b3045b3e91bcb35dbc1ea264e61ae76d2"
+        "bytes": 8829,
+        "hash": "6782dd8f8c5b01854ad6199f1d280e6ae202535cb0d12d95c1a6de3b346f04f9"
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 5149,
-        "hash": "4969839dde14f6122cf2129d39fc6ee64cc5b26c5da5c0c6e8f392d62529543c"
+        "bytes": 6272,
+        "hash": "60aa45bd4518f7c692edf92c9ad29e26710c459070c81fcb7c542504f8156e37"
       },
       {
         "path": "nicos_nextbots.js",
-        "bytes": 138986,
-        "hash": "4ae6c4d45e5e37b8900170209f746d6ba5b9f6248d9ba93b4ee9799dad99ce5c"
+        "bytes": 143590,
+        "hash": "70981eb45a4cccbf71428a3775ad9f2b2ad71d76b25e5a99b030a94e6a3e78aa"
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 923261,
-        "hash": "557e82344a01b5c853306e9ea59d2166fdac194b87a67744c818addfd348d92f"
+        "bytes": 934961,
+        "hash": "702fdd0fe079e07dc397361c591a9677c1cab21a40662b3672b4532652ce70e4"
       },
       {
         "path": "offline.js",
@@ -12486,8 +12636,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "party.html",
-        "bytes": 11620,
-        "hash": "6e5f0a4cb7ce38ffbe6343a922f6441773cb301fcac18b13a1856f1b602ffe4e"
+        "bytes": 11925,
+        "hash": "0ee2db3991c7e012f00689dc37386823faa6979667ab7080c818f1ec0dc99102"
       },
       {
         "path": "piano.html",
@@ -12516,18 +12666,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "relic_rush.css",
-        "bytes": 5962,
-        "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
+        "bytes": 6432,
+        "hash": "e6b42c4330cd7c26c00854b0d869aa75e4ae36ec2befea332a3aaa8448bb2d9f"
       },
       {
         "path": "relic_rush.html",
-        "bytes": 852,
-        "hash": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56"
+        "bytes": 882,
+        "hash": "b1855d9e3a356483fc50abe98f2b71f4b3cf9326a393d4f6fe4ab3154216ec6a"
       },
       {
         "path": "relic_rush.js",
-        "bytes": 116526,
-        "hash": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343"
+        "bytes": 137580,
+        "hash": "ecde15be61b1db3d2c5fd0b91ad4d3db7a1b0e2b02ad0a66f16f6ea1aaa7e010"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -12652,7 +12802,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 6127,
-        "hash": "0280ddf405aa16d0819f015b6f4aaff20fc9f39aded25ed7160ed9c6065de443"
+        "hash": "eb1c2f4a09be675794b9f594699d625682481e0dbc6d80c733a10ec1e9db862e"
       },
       {
         "path": "terraria.html",
@@ -12696,8 +12846,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 3410,
-        "hash": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7"
+        "bytes": 5597,
+        "hash": "4dc4a2b5b56d03c27168665dd67c1ae8e72cdb0ab4d5f4dd52fee4ce0322abcb"
       },
       {
         "path": "truth-or-dare.html",
@@ -12706,18 +12856,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "web_weavers.css",
-        "bytes": 15634,
-        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
+        "bytes": 17285,
+        "hash": "a079f0f09263f181051c3fb1cf7cc851ef2dee8ea2b61449c53944e0dd0faa7d"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 9566,
-        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
+        "bytes": 11408,
+        "hash": "34f577a419401326e8d07d0a3bb108c2c2efef57a018bd09adab908bd1db3117"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 221420,
-        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
+        "bytes": 226947,
+        "hash": "f5179120cbb0b8da3b66a319f3f4827d609ad151936fddf8b63cdf56212db60f"
       },
       {
         "path": "whos-more-likely.html",
@@ -12730,8 +12880,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363858147,
-    "version": "110b73f73baed7c6"
+    "bytes": 367272170,
+    "version": "4800f441a595e814"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -12920,8 +13070,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 44281,
-        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
+        "bytes": 49750,
+        "hash": "5454958d6f6e5420d59192946b0394d39a09acc8681ce17a7d4aaf648f24b60c"
       },
       {
         "path": "assets/vendor/tailwind.js",
@@ -12939,8 +13089,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 458361,
-    "version": "b4d1b6d7a2738b2b"
+    "bytes": 463830,
+    "version": "c943712de1da8b27"
   },
   "card-wars": {
     "name": "Card Wars",
@@ -12948,8 +13098,28 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "card-wars/app.js",
-        "bytes": 136791,
-        "hash": "5ac34674044c1ad9a06811f8cf21caaf627e047927ab3ae610d1f46dd3cf6f9e"
+        "bytes": 142572,
+        "hash": "43f3e014bffdc2fb341c4c8ed65682339b7b8884d0afc1e71476fac8c95c11c7"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/candy-castle.png",
+        "bytes": 800208,
+        "hash": "257f9897b836b53929c89c1aaa5b30c9485d3861d3376539a95938869008ea29"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/guild-hall.jpg",
+        "bytes": 131800,
+        "hash": "dcba293a3303da4c47f3dded58311558bf82aec71725153776957d59020146f3"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/night-market.jpg",
+        "bytes": 791740,
+        "hash": "d8130e1d5076f3d3f4ae1953d58b736373c0f62006f8292561e679219495d719"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/sun-temple.jpg",
+        "bytes": 140007,
+        "hash": "beb02f7c9cfdc32a384120f9901af6682bc2ccd3770550153983d5385ff9d469"
       },
       {
         "path": "card-wars/assets/card-wars-home.png",
@@ -17617,6 +17787,11 @@ self.OFFLINE_CATALOG = {
         "hash": "e79c5b47b58801ff63ce05e25a1f86fe650eb04e558672a6b4f0c09aafde538e"
       },
       {
+        "path": "card-wars/assets/store/collectors-pack-front-only.png",
+        "bytes": 90668,
+        "hash": "c21a23c329b678cad65e5fad94f660456be5af50e7956419647a296255914084"
+      },
+      {
         "path": "card-wars/assets/store/collectors-packs.png",
         "bytes": 597473,
         "hash": "8c228877cba9f5800eca4f056d24d9540d51853fc1ec9f17619a3ea52509ae07"
@@ -17637,9 +17812,19 @@ self.OFFLINE_CATALOG = {
         "hash": "f495ecd70c51c9e8b48a95b9c871e9694384da9258e14bc1b37e227da7dfbc76"
       },
       {
+        "path": "card-wars/assets/store/glory-pack-front-only.jpg",
+        "bytes": 587178,
+        "hash": "d79007c5a76c39b3d9ad6fd45f0c886ba3ea8c6685e19eb3b67e31ebdfb813b6"
+      },
+      {
         "path": "card-wars/assets/store/glory-packs.png",
         "bytes": 209327,
         "hash": "e42b7768eb2da84dcd5f6c0b0f82ddaa7584173d3f33af7022c677bb671cec55"
+      },
+      {
+        "path": "card-wars/assets/store/hero-pack-front-only.png",
+        "bytes": 215100,
+        "hash": "2f414d4b411743be2d23532b2a45243fa078aeea80e3d24ba0bf6f17c2e9667e"
       },
       {
         "path": "card-wars/assets/store/hero-pack.png",
@@ -17673,13 +17858,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/index.html",
-        "bytes": 30677,
-        "hash": "2b38865688e6961c96c917c6fc061a0f156a458453adca36ee089d4dfdeaaf86"
+        "bytes": 32667,
+        "hash": "538a2a739c341c2a31164ed44614d45927fcff6979eb776e4ca62526cafe64fc"
       },
       {
         "path": "card-wars/styles.css",
-        "bytes": 105059,
-        "hash": "cf08e1cd7c0b33b345fbe3279786b30d96fffac9fc357eea2c754a19b4c9d1da"
+        "bytes": 110882,
+        "hash": "e7fb998436e098bd0a1c4657ad0f056555b34a6e89cc0c40d624f0bbbe595e60"
       },
       {
         "path": "card-wars/three-board.js",
@@ -17697,8 +17882,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 165156026,
-    "version": "1e69db1f2e39376b"
+    "bytes": 167926321,
+    "version": "85a2e67824b15dba"
   },
   "truth-or-dare": {
     "name": "Truth or Dare",
@@ -17925,6 +18110,11 @@ self.OFFLINE_CATALOG = {
         "hash": "069071dde7b10e22810dc56e4844b3e7947fd7f05a8894361d7fbba4cc99974b"
       },
       {
+        "path": "assets/models/two-fingers-solidcraft-park.glb",
+        "bytes": 420112,
+        "hash": "0105eef217253fbb7898e37ad1086808718033cb02e19db7c09360a02c33d8d5"
+      },
+      {
         "path": "assets/vendor/three160/loaders/GLTFLoader.js",
         "bytes": 108535,
         "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
@@ -17941,13 +18131,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 23383,
-        "hash": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02"
+        "bytes": 44768,
+        "hash": "24dbf6c038ff372117196072740ebd86a9cd07831a80cb8449a10595c53e7504"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 6846,
-        "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
+        "bytes": 15883,
+        "hash": "153d7c6bcd8fe054f198dbf80552329060248aaddfc87210ec9785acdbcb5932"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -17955,8 +18145,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 36808453,
-    "version": "9ecf61cfc690714b"
+    "bytes": 37258987,
+    "version": "3f7c58b12689c340"
   },
   "solos-rng": {
     "name": "Solo's RNG",
@@ -18203,22 +18393,22 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "web_weavers.css",
-        "bytes": 15634,
-        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
+        "bytes": 17285,
+        "hash": "a079f0f09263f181051c3fb1cf7cc851ef2dee8ea2b61449c53944e0dd0faa7d"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 9566,
-        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
+        "bytes": 11408,
+        "hash": "34f577a419401326e8d07d0a3bb108c2c2efef57a018bd09adab908bd1db3117"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 221420,
-        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
+        "bytes": 226947,
+        "hash": "f5179120cbb0b8da3b66a319f3f4827d609ad151936fddf8b63cdf56212db60f"
       }
     ],
-    "bytes": 5914124,
-    "version": "b5847f49a176f462"
+    "bytes": 5923144,
+    "version": "c777b4cab841b87a"
   },
   "hood-brawlers": {
     "name": "Hood Brawlers",
@@ -18558,28 +18748,28 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 44281,
-        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
+        "bytes": 49750,
+        "hash": "5454958d6f6e5420d59192946b0394d39a09acc8681ce17a7d4aaf648f24b60c"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9516,
-        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
+        "bytes": 9092,
+        "hash": "85d5216f12bd4d567ead0df576b134daabfa1f718b5dc9971a80c16339153e0e"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2407,
-        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+        "bytes": 2398,
+        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 18826,
-        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+        "bytes": 20472,
+        "hash": "bc3224b33516c518807d0983f4cae1e39c7312cf29e8c0edf89864c879f6e8c9"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3553,
-        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
+        "bytes": 3671,
+        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
       },
       {
         "path": "arcade-party.js",
@@ -18588,8 +18778,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17324,
-        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
+        "bytes": 17742,
+        "hash": "92f9aad3539097adefe68474df699334bd4d9d29b468abd7bacad919c368d354"
       },
       {
         "path": "arcade.css",
@@ -18670,6 +18860,11 @@ self.OFFLINE_CATALOG = {
         "path": "assets/models/skateboard-free-model.glb",
         "bytes": 35359456,
         "hash": "069071dde7b10e22810dc56e4844b3e7947fd7f05a8894361d7fbba4cc99974b"
+      },
+      {
+        "path": "assets/models/two-fingers-solidcraft-park.glb",
+        "bytes": 420112,
+        "hash": "0105eef217253fbb7898e37ad1086808718033cb02e19db7c09360a02c33d8d5"
       },
       {
         "path": "assets/models/web-weavers-r15.glb",
@@ -19093,8 +19288,28 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/app.js",
-        "bytes": 136791,
-        "hash": "5ac34674044c1ad9a06811f8cf21caaf627e047927ab3ae610d1f46dd3cf6f9e"
+        "bytes": 142572,
+        "hash": "43f3e014bffdc2fb341c4c8ed65682339b7b8884d0afc1e71476fac8c95c11c7"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/candy-castle.png",
+        "bytes": 800208,
+        "hash": "257f9897b836b53929c89c1aaa5b30c9485d3861d3376539a95938869008ea29"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/guild-hall.jpg",
+        "bytes": 131800,
+        "hash": "dcba293a3303da4c47f3dded58311558bf82aec71725153776957d59020146f3"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/night-market.jpg",
+        "bytes": 791740,
+        "hash": "d8130e1d5076f3d3f4ae1953d58b736373c0f62006f8292561e679219495d719"
+      },
+      {
+        "path": "card-wars/assets/backgrounds/sun-temple.jpg",
+        "bytes": 140007,
+        "hash": "beb02f7c9cfdc32a384120f9901af6682bc2ccd3770550153983d5385ff9d469"
       },
       {
         "path": "card-wars/assets/card-wars-home.png",
@@ -23762,6 +23977,11 @@ self.OFFLINE_CATALOG = {
         "hash": "e79c5b47b58801ff63ce05e25a1f86fe650eb04e558672a6b4f0c09aafde538e"
       },
       {
+        "path": "card-wars/assets/store/collectors-pack-front-only.png",
+        "bytes": 90668,
+        "hash": "c21a23c329b678cad65e5fad94f660456be5af50e7956419647a296255914084"
+      },
+      {
         "path": "card-wars/assets/store/collectors-packs.png",
         "bytes": 597473,
         "hash": "8c228877cba9f5800eca4f056d24d9540d51853fc1ec9f17619a3ea52509ae07"
@@ -23782,9 +24002,19 @@ self.OFFLINE_CATALOG = {
         "hash": "f495ecd70c51c9e8b48a95b9c871e9694384da9258e14bc1b37e227da7dfbc76"
       },
       {
+        "path": "card-wars/assets/store/glory-pack-front-only.jpg",
+        "bytes": 587178,
+        "hash": "d79007c5a76c39b3d9ad6fd45f0c886ba3ea8c6685e19eb3b67e31ebdfb813b6"
+      },
+      {
         "path": "card-wars/assets/store/glory-packs.png",
         "bytes": 209327,
         "hash": "e42b7768eb2da84dcd5f6c0b0f82ddaa7584173d3f33af7022c677bb671cec55"
+      },
+      {
+        "path": "card-wars/assets/store/hero-pack-front-only.png",
+        "bytes": 215100,
+        "hash": "2f414d4b411743be2d23532b2a45243fa078aeea80e3d24ba0bf6f17c2e9667e"
       },
       {
         "path": "card-wars/assets/store/hero-pack.png",
@@ -23818,13 +24048,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "card-wars/index.html",
-        "bytes": 30677,
-        "hash": "2b38865688e6961c96c917c6fc061a0f156a458453adca36ee089d4dfdeaaf86"
+        "bytes": 32667,
+        "hash": "538a2a739c341c2a31164ed44614d45927fcff6979eb776e4ca62526cafe64fc"
       },
       {
         "path": "card-wars/styles.css",
-        "bytes": 105059,
-        "hash": "cf08e1cd7c0b33b345fbe3279786b30d96fffac9fc357eea2c754a19b4c9d1da"
+        "bytes": 110882,
+        "hash": "e7fb998436e098bd0a1c4657ad0f056555b34a6e89cc0c40d624f0bbbe595e60"
       },
       {
         "path": "card-wars/three-board.js",
@@ -23887,44 +24117,79 @@ self.OFFLINE_CATALOG = {
         "hash": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35"
       },
       {
+        "path": "dt-book.html",
+        "bytes": 44295,
+        "hash": "70cc2dfece6a152f015e59e825e18989f567aed2e293e7e500cb9f0b788f1f49"
+      },
+      {
+        "path": "dt-ch1-reference.js",
+        "bytes": 8800,
+        "hash": "dcb6e5c18b83bbceaf101fdbd7990fb2eb66b951fbae615b0028fe1b5398cbb8"
+      },
+      {
+        "path": "dt-content.js",
+        "bytes": 12671,
+        "hash": "c97afadf92d3e3b39e92074946de1bd82a346cd5c91e336f4ade71b97f315d4c"
+      },
+      {
+        "path": "dt-theory-details.js",
+        "bytes": 17439,
+        "hash": "f35ea211b130848dc280464f48a3f4afb486e347029eb7b2d15c67a0fd175ccf"
+      },
+      {
+        "path": "dt-topics.js",
+        "bytes": 1459,
+        "hash": "80168a0351a50cd199f81febf13c8dec6cbbf9f0ef6915cabae79f3f5c728014"
+      },
+      {
         "path": "fidget-roulette.html",
         "bytes": 17591,
         "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 23383,
-        "hash": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02"
+        "bytes": 44768,
+        "hash": "24dbf6c038ff372117196072740ebd86a9cd07831a80cb8449a10595c53e7504"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 6846,
-        "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
+        "bytes": 15883,
+        "hash": "153d7c6bcd8fe054f198dbf80552329060248aaddfc87210ec9785acdbcb5932"
+      },
+      {
+        "path": "geometria-descritiva-caderno.html",
+        "bytes": 8562,
+        "hash": "83dfad081fc7f83a390e1d26249ae317d0826f61cd61afdc694707fb6fbec51b"
       },
       {
         "path": "geometria-descritiva-coordenadas.html",
-        "bytes": 37550,
-        "hash": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039"
+        "bytes": 37788,
+        "hash": "f7c6803733dd3dade180911a154a0eb696cd1a28f3019681e56751e544d2cdce"
       },
       {
         "path": "geometria-descritiva-epura.html",
-        "bytes": 36320,
-        "hash": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8"
+        "bytes": 36558,
+        "hash": "0a2c92ff20f35e6ec1a0f7fa5cc6aaf41d635a1b1b3d1e688f27c7737fa1f2d3"
       },
       {
         "path": "geometria-descritiva-exemplo.html",
-        "bytes": 37110,
-        "hash": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7"
+        "bytes": 37348,
+        "hash": "53dffd900a7423a11e46233e923ea890bfbc286ce35bd888649340e729a44119"
       },
       {
         "path": "geometria-descritiva-pratica.html",
-        "bytes": 37455,
-        "hash": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b"
+        "bytes": 37693,
+        "hash": "24b836ca4daada5020b84ce5145ddb11975d479130ed9c982313968cec39f59b"
+      },
+      {
+        "path": "geometria-descritiva-retas.html",
+        "bytes": 38993,
+        "hash": "54d417051864a5aa6e4fedbaa08b5afdcb68dda4e2a7cc19cf1fd480b4076343"
       },
       {
         "path": "geometria-descritiva.html",
-        "bytes": 38307,
-        "hash": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78"
+        "bytes": 38545,
+        "hash": "f514572ca56f636f6409869dea575dcde754262ba843d27375b2442fe2bb4a32"
       },
       {
         "path": "hood-brawlers.js",
@@ -23943,8 +24208,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 38578,
-        "hash": "debbdb3ba86850ce112ecbce1c19fc352bd236adb0cd07c853eb1319efb8532d"
+        "bytes": 38580,
+        "hash": "c231fd0617af753cba35b1746b04c4793d97149825dfc2071fc6f0cb5d940699"
       },
       {
         "path": "invincible-sandbox.html",
@@ -23963,8 +24228,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-book.html",
-        "bytes": 62739,
-        "hash": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03"
+        "bytes": 63877,
+        "hash": "7e23abb8b5d5926a745d76bea227bd96b171021e8857f6bae724bcd967a2a4f9"
       },
       {
         "path": "maths-content.js",
@@ -23973,8 +24238,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-curriculum-ui.js",
-        "bytes": 12850,
-        "hash": "a7530e3e4f5228bd80a065e4756ce0f20b723975a975fff0128df89ddfdf44c7"
+        "bytes": 12928,
+        "hash": "932700e275493522493a398c2e4845421ea1d927d49fb08361b2592437af5f6e"
       },
       {
         "path": "maths-curriculum.js",
@@ -24053,8 +24318,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 771259,
-        "hash": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6"
+        "bytes": 771372,
+        "hash": "5b08fd2a1897f0e60fe7a934df6563c6c152025b84bb46775ca0e4ca69665d4a"
       },
       {
         "path": "maths-topic-exercises.js",
@@ -24093,23 +24358,23 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.css",
-        "bytes": 8086,
-        "hash": "9e13ee21248696ec7b80bf7c65da832b3045b3e91bcb35dbc1ea264e61ae76d2"
+        "bytes": 8829,
+        "hash": "6782dd8f8c5b01854ad6199f1d280e6ae202535cb0d12d95c1a6de3b346f04f9"
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 5149,
-        "hash": "4969839dde14f6122cf2129d39fc6ee64cc5b26c5da5c0c6e8f392d62529543c"
+        "bytes": 6272,
+        "hash": "60aa45bd4518f7c692edf92c9ad29e26710c459070c81fcb7c542504f8156e37"
       },
       {
         "path": "nicos_nextbots.js",
-        "bytes": 138986,
-        "hash": "4ae6c4d45e5e37b8900170209f746d6ba5b9f6248d9ba93b4ee9799dad99ce5c"
+        "bytes": 143590,
+        "hash": "70981eb45a4cccbf71428a3775ad9f2b2ad71d76b25e5a99b030a94e6a3e78aa"
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 923261,
-        "hash": "557e82344a01b5c853306e9ea59d2166fdac194b87a67744c818addfd348d92f"
+        "bytes": 934961,
+        "hash": "702fdd0fe079e07dc397361c591a9677c1cab21a40662b3672b4532652ce70e4"
       },
       {
         "path": "offline.js",
@@ -24153,8 +24418,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "party.html",
-        "bytes": 11620,
-        "hash": "6e5f0a4cb7ce38ffbe6343a922f6441773cb301fcac18b13a1856f1b602ffe4e"
+        "bytes": 11925,
+        "hash": "0ee2db3991c7e012f00689dc37386823faa6979667ab7080c818f1ec0dc99102"
       },
       {
         "path": "piano.html",
@@ -24183,18 +24448,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "relic_rush.css",
-        "bytes": 5962,
-        "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
+        "bytes": 6432,
+        "hash": "e6b42c4330cd7c26c00854b0d869aa75e4ae36ec2befea332a3aaa8448bb2d9f"
       },
       {
         "path": "relic_rush.html",
-        "bytes": 852,
-        "hash": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56"
+        "bytes": 882,
+        "hash": "b1855d9e3a356483fc50abe98f2b71f4b3cf9326a393d4f6fe4ab3154216ec6a"
       },
       {
         "path": "relic_rush.js",
-        "bytes": 116526,
-        "hash": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343"
+        "bytes": 137580,
+        "hash": "ecde15be61b1db3d2c5fd0b91ad4d3db7a1b0e2b02ad0a66f16f6ea1aaa7e010"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -24319,7 +24584,7 @@ self.OFFLINE_CATALOG = {
       {
         "path": "sw.js",
         "bytes": 6127,
-        "hash": "0280ddf405aa16d0819f015b6f4aaff20fc9f39aded25ed7160ed9c6065de443"
+        "hash": "eb1c2f4a09be675794b9f594699d625682481e0dbc6d80c733a10ec1e9db862e"
       },
       {
         "path": "terraria.html",
@@ -24363,8 +24628,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 3410,
-        "hash": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7"
+        "bytes": 5597,
+        "hash": "4dc4a2b5b56d03c27168665dd67c1ae8e72cdb0ab4d5f4dd52fee4ce0322abcb"
       },
       {
         "path": "truth-or-dare.html",
@@ -24373,18 +24638,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "web_weavers.css",
-        "bytes": 15634,
-        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
+        "bytes": 17285,
+        "hash": "a079f0f09263f181051c3fb1cf7cc851ef2dee8ea2b61449c53944e0dd0faa7d"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 9566,
-        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
+        "bytes": 11408,
+        "hash": "34f577a419401326e8d07d0a3bb108c2c2efef57a018bd09adab908bd1db3117"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 221420,
-        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
+        "bytes": 226947,
+        "hash": "f5179120cbb0b8da3b66a319f3f4827d609ad151936fddf8b63cdf56212db60f"
       },
       {
         "path": "whos-more-likely.html",
@@ -24397,8 +24662,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363858147,
-    "version": "0db4f36755eae377"
+    "bytes": 367272170,
+    "version": "92532f8eee24e4c7"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -24532,18 +24797,18 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "relic_rush.css",
-        "bytes": 5962,
-        "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
+        "bytes": 6432,
+        "hash": "e6b42c4330cd7c26c00854b0d869aa75e4ae36ec2befea332a3aaa8448bb2d9f"
       },
       {
         "path": "relic_rush.html",
-        "bytes": 852,
-        "hash": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56"
+        "bytes": 882,
+        "hash": "b1855d9e3a356483fc50abe98f2b71f4b3cf9326a393d4f6fe4ab3154216ec6a"
       },
       {
         "path": "relic_rush.js",
-        "bytes": 116526,
-        "hash": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343"
+        "bytes": 137580,
+        "hash": "ecde15be61b1db3d2c5fd0b91ad4d3db7a1b0e2b02ad0a66f16f6ea1aaa7e010"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -24551,8 +24816,8 @@ self.OFFLINE_CATALOG = {
         "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 680006,
-    "version": "b5dd42f701018813"
+    "bytes": 701560,
+    "version": "ec5467683a3e306b"
   },
   "slot-machine": {
     "name": "Slot Machine",

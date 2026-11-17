@@ -31,7 +31,7 @@ byId("introIcon").textContent=icon;
 byId("introCategory").textContent=mode==="party"?"LOCAL MULTIPLAYER":"SINGLEPLAYER";
 byId("introControls").textContent=help[id]||"Play the game.";
 byId("menuControls").textContent=help[id]||"Game controls.";
-byId("menuTitle").textContent=title;
+byId("menuTitle").textContent=title+" · MENU";
 const intro=byId("gameIntro"),menu=byId("gameMenu"),game=byId("game");
 function closeIntro(){
 intro.hidden=true;
@@ -53,7 +53,7 @@ event.preventDefault();
 setMenu(menu.hidden);
 });
 byId("menuParty").hidden=mode!=="party";
-byId("partyLink").hidden=mode==="party";
+byId("partyLink").hidden=mode!=="party";
 byId("fullscreenToggle").addEventListener("click",async()=>{
 if(document.fullscreenElement){try{await document.exitFullscreen()}catch{}}else{
 try{await document.documentElement.requestFullscreen()}catch{
@@ -61,6 +61,8 @@ document.body.classList.toggle("expanded-view");
 }
 }
 });
-intro.hidden=false;
-byId("playGame").focus();
+intro.hidden=mode!=="party";
+if(!intro.hidden)byId("playGame").focus();
+else if(id==="snake")closeIntro();
+else game.querySelector("textarea")?.focus();
 })();

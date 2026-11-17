@@ -19,11 +19,9 @@ ctx.fillStyle="#08091c";ctx.fillRect(0,0,W,H);
 ctx.fillStyle="#1e2147";for(let x=0;x<W;x+=42)ctx.fillRect(x,0,1,H);for(let y=0;y<H;y+=42)ctx.fillRect(0,y,W,1);
 ctx.fillStyle="#4c2e76";ctx.fillRect(0,0,W,4);ctx.fillRect(0,H-4,W,4);
 ctx.fillStyle="#6d4ba2";for(let y=9;y<H;y+=32)ctx.fillRect(W/2-2,y,4,15);
-ctx.shadowColor="#57dbff";ctx.shadowBlur=25;ctx.fillStyle="#68ddff";ctx.fillRect(20,p1-paddleH/2,paddleW,paddleH);
-ctx.shadowColor="#ff58ce";ctx.fillStyle="#ff7fdf";ctx.fillRect(W-32,p2-paddleH/2,paddleW,paddleH);
-ctx.shadowColor="#ffffff";ctx.shadowBlur=24;ctx.fillStyle="#f8fafc";
-for(let i=4;i>0;i--){ctx.globalAlpha=(5-i)*.045;ctx.beginPath();ctx.arc(ball.x-ball.vx*i*2.5,ball.y-ball.vy*i*2.5,9+i*1.1,0,Math.PI*2);ctx.fill()}
-ctx.globalAlpha=1;ctx.beginPath();ctx.arc(ball.x,ball.y,9,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0
+ctx.fillStyle="#68ddff";ctx.fillRect(20,p1-paddleH/2,paddleW,paddleH);
+ctx.fillStyle="#ff7fdf";ctx.fillRect(W-32,p2-paddleH/2,paddleW,paddleH);
+ctx.fillStyle="#f8fafc";ctx.beginPath();ctx.arc(ball.x,ball.y,9,0,Math.PI*2);ctx.fill()
 }
 function loop(t){const dt=Math.min(2.5,(t-(last||t))/16.67);last=t;if(!document.hidden)tick(dt);draw();request=requestAnimationFrame(loop)}
 document.addEventListener("keydown",e=>{if(["KeyW","KeyS","ArrowUp","ArrowDown"].includes(e.code)){e.preventDefault();keys[e.code]=true}});document.addEventListener("keyup",e=>{keys[e.code]=false});
@@ -47,11 +45,11 @@ function renderStats(){scoreEl.textContent="Score "+points;bestEl.textContent="B
 function draw(){
 ctx.fillStyle="#04160d";ctx.fillRect(0,0,W,H);
 ctx.fillStyle="#12321e";for(let x=0;x<W;x+=cell)ctx.fillRect(x,0,1,H);for(let y=0;y<H;y+=cell)ctx.fillRect(0,y,W,1);
-ctx.shadowColor="#fb9c43";ctx.shadowBlur=12;ctx.fillStyle="#ffa63e";
-food.forEach(f=>{ctx.beginPath();ctx.arc(f.x*cell+cell/2,f.y*cell+cell/2,5.6,0,Math.PI*2);ctx.fill()});ctx.shadowBlur=0;
-snakes.forEach(s=>{if(!s.alive)return;ctx.shadowColor=colors[s.index];ctx.shadowBlur=9;ctx.fillStyle=colors[s.index];
+ctx.fillStyle="#ffa63e";
+food.forEach(f=>{ctx.beginPath();ctx.arc(f.x*cell+cell/2,f.y*cell+cell/2,5.6,0,Math.PI*2);ctx.fill()});
+snakes.forEach(s=>{if(!s.alive)return;ctx.fillStyle=colors[s.index];
 s.body.forEach((seg,i)=>{ctx.globalAlpha=i===0?1:Math.max(.42,1-i*.027);ctx.fillRect(seg.x*cell+1,seg.y*cell+1,cell-2,cell-2)});
-ctx.globalAlpha=1;ctx.shadowBlur=0;const h=s.body[0];ctx.fillStyle="#0b2315";
+ctx.globalAlpha=1;const h=s.body[0];ctx.fillStyle="#0b2315";
 ctx.beginPath();ctx.arc(h.x*cell+5,h.y*cell+5,1.8,0,Math.PI*2);ctx.fill();
 ctx.beginPath();ctx.arc(h.x*cell+10,h.y*cell+5,1.8,0,Math.PI*2);ctx.fill()
 })

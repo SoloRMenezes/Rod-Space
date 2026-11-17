@@ -7,7 +7,7 @@ const catalog=[
 ["mines","Minesweeper","Clear hidden mines","💣","solo"],
 ["snake","Snake Arena","Outgrow rival snakes","🐍","solo"],
 ["combat","Turn-Based Combat","Defeat the challenger","⚔","solo"],
-["pong","Pong","Neon paddle showdown","🏓","party"],
+["pong","Pong","Paddle duel","🏓","party"],
 ["headsup","Heads Up","Guess under pressure","🎭","party"],
 ["uno","UNO-style Cards","Match coloured cards","🃏","party"],
 ["ladders","Snakes & Ladders","Race to victory","🎲","party"]
