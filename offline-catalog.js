@@ -65,7 +65,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "71f3d3f04cc9d06a"
+    "version": "8187ad79efdbd0a7"
   },
   "headsup": {
     "name": "Heads Up",
@@ -133,7 +133,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "73cef061cda380bd"
+    "version": "e90a574e987da746"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -201,7 +201,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "73c550a7e54f5736"
+    "version": "7f71a56670f055d7"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -269,7 +269,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "f64e0895b38d5de4"
+    "version": "e61768663f518446"
   },
   "typing": {
     "name": "Fast Typing",
@@ -337,7 +337,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "bd3743a73ea03517"
+    "version": "e1b8ef7615e697fd"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -405,7 +405,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "97781ae2c73cf896"
+    "version": "febed6c3166d691e"
   },
   "mines": {
     "name": "Minesweeper",
@@ -473,7 +473,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "25663bcfc833c656"
+    "version": "efb73d2adeb1a8e7"
   },
   "pong": {
     "name": "Pong",
@@ -541,7 +541,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "cce796700f6b335a"
+    "version": "2b09377e7d3bd0f5"
   },
   "snake": {
     "name": "Snake Arena",
@@ -609,7 +609,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "cceb09599637231e"
+    "version": "4daf37f0cefdf61d"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -677,7 +677,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 155971,
-    "version": "f2e6e809711fd733"
+    "version": "d527891db87bb52f"
   },
   "maths-book": {
     "name": "Bookshelf",

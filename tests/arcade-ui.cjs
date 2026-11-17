@@ -25,6 +25,7 @@ assert.equal(solo.nodes.gameTitle.textContent,"2048");
 assert.equal(solo.nodes.gameDescription.textContent,"Merge matching numbers");
 assert.doesNotMatch(require("node:fs").readFileSync(path.join(root,"arcade.html"),"utf8"),/id="gameLabel"|ROD SPACE \/ PARTY GAME/,"remove the redundant Rod Space party label from game screens");
 assert.equal(setup("uno").nodes.gameDescription.textContent,"","remove the redundant Bots or Phones game label");
+for(const page of ["index.html","party.html"])assert.doesNotMatch(require("node:fs").readFileSync(path.join(root,page),"utf8"),/Bots or phones/i,`remove Bots or phones from ${page}`);
 assert.equal(solo.nodes.game.children.length,1);
 assert.equal(solo.nodes.gameIntro.hidden,true,"solo game opens directly into play");
 assert.equal(solo.nodes.partyLink.hidden,true,"solo game hides Party navigation");
