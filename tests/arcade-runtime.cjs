@@ -1,7 +1,7 @@
 const fs=require("node:fs"),vm=require("node:vm"),path=require("node:path"),assert=require("node:assert/strict");
 const root=path.resolve(__dirname,"..");
 class FakeElement {
- constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(key,value){this[key]=value}};this.value="";this.textContent="";this.disabled=false;this.className="";}
+ constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(key,value){this[key]=value}};this.classList={toggle(){}};this.value="";this.textContent="";this.disabled=false;this.className="";}
  setAttribute(key,value){this.attributes[key]=value;}
  append(...nodes){this.children.push(...nodes);}
  replaceChildren(...nodes){this.children=[...nodes];}
@@ -33,4 +33,8 @@ const nativeWordleInput=wordleRoot.children.find(el=>el.className==="wordle-nati
 assert.ok(nativeWordleInput?.focused,"focus native input so mobile can open its keyboard");
 nativeWordleInput.value="A";nativeWordleInput.listeners.input();
 assert.equal(wordleRoot.children[2].children[0].textContent,"A","native mobile keyboard letters update the Wordle board");
+const combatRoot=new FakeElement("section");registered.combat(combatRoot);
+assert.equal(combatRoot.children.find(el=>el.className==="duel-scene").children.length,2,"combat uses two opposing battle positions");
+assert.equal(combatRoot.children.find(el=>el.className==="choice-row battle-actions").children.length,4,"combat keeps four turn actions");
+assert.ok(combatRoot.children.some(el=>el.className==="battle-dialogue"),"combat has a battle dialogue panel");
 console.log("PASS: All ten games initialise using DOM mocks without runtime exceptions.");

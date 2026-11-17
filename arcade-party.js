@@ -49,21 +49,25 @@ reset();
 });
 register("combat",function(root){
 let hp=100,mhp=100,enemy=120,maxEnemy=120,mana=20,guard=false,turn=0,ended=false;let logs=[];
-const bar=node("div",{class:"toolbar"}),stats=node("div"),actions=node("div",{class:"choice-row"}),log=node("div",{class:"mini-log",role:"log","aria-live":"polite"}),msg=node("p",{class:"message",role:"status"});
-bar.append(button("New battle",reset,"secondary"));
-const scene=node("div",{class:"duel-scene","aria-label":"Hero battling a monster"});
-const heroFigure=node("div",{class:"fighter hero","aria-hidden":"true"},"🧙"),versus=node("div",{class:"duel-versus","aria-hidden":"true"},"VS"),enemyFigure=node("div",{class:"fighter enemy","aria-hidden":"true"},"👹");
-scene.append(heroFigure,versus,enemyFigure);
-root.append(bar,scene,stats,actions,msg,log);
-function write(s){logs.unshift(s);logs=logs.slice(0,12)}
-function render(){stats.replaceChildren();const hpLabel=node("p",{},"Hero "+hp+"/"+mhp+" HP · "+mana+"/30 mana");const track=node("div",{class:"health-track"});track.append(node("span",{style:"width:"+Math.max(0,hp/mhp*100)+"%"}));const enemyLabel=node("p",{},"Enemy "+enemy+"/"+maxEnemy+" HP");const track2=node("div",{class:"health-track"});track2.append(node("span",{style:"width:"+Math.max(0,enemy/maxEnemy*100)+"%;background:#ef4444"}));stats.append(hpLabel,track,enemyLabel,track2);actions.replaceChildren();if(ended){actions.append(button("Fight again",reset))}else{[["Attack (+5 mana)",attack,0],["Power strike (10 mana)",power,10],["Heal (12 mana)",heal,12],["Guard (+7 mana)",defend,0]].forEach(([text,fn,cost])=>{const b=button(text,fn,cost?"secondary":undefined);b.disabled=mana<cost;actions.append(b)})}log.replaceChildren(...logs.map(s=>node("div",{},s)))}
+const bar=node("div",{class:"toolbar battle-toolbar"}),actions=node("div",{class:"choice-row battle-actions"}),log=node("div",{class:"battle-dialogue",role:"log","aria-live":"polite"}),msg=node("p",{class:"message",role:"status"});
+bar.append(node("span",{class:"battle-round"},"BATTLE"),button("New battle",reset,"secondary"));
+const scene=node("div",{class:"duel-scene","aria-label":"Turn-based battle"});
+const enemySide=node("div",{class:"battle-side enemy-side"}),heroSide=node("div",{class:"battle-side hero-side"});
+const enemyFigure=node("div",{class:"fighter enemy","aria-hidden":"true"},"👹"),heroFigure=node("div",{class:"fighter hero","aria-hidden":"true"},"🧙");
+const enemyStatus=node("div",{class:"battle-status enemy-status"}),heroStatus=node("div",{class:"battle-status hero-status"});
+const enemyLabel=node("div",{class:"battle-name"},"Cave Ogre · Lv. 8"),enemyHpLabel=node("span",{class:"battle-hp-value"}),enemyTrack=node("div",{class:"battle-hp-track"}),enemyFill=node("span",{class:"battle-hp-fill enemy-fill"});enemyTrack.append(enemyFill);enemyStatus.append(enemyLabel,enemyHpLabel,enemyTrack);
+const heroLabel=node("div",{class:"battle-name"},"Hero · Lv. 6"),heroHpLabel=node("span",{class:"battle-hp-value"}),heroTrack=node("div",{class:"battle-hp-track"}),heroFill=node("span",{class:"battle-hp-fill"}),manaLabel=node("span",{class:"battle-mana-value"}),manaTrack=node("div",{class:"battle-mana-track"}),manaFill=node("span",{class:"battle-mana-fill"});heroTrack.append(heroFill);manaTrack.append(manaFill);heroStatus.append(heroLabel,heroHpLabel,heroTrack,manaLabel,manaTrack);
+enemySide.append(enemyStatus,enemyFigure);heroSide.append(heroFigure,heroStatus);scene.append(enemySide,heroSide);
+root.append(bar,scene,log,actions,msg);
+function write(s){logs.unshift(s);logs=logs.slice(0,5)}
+function render(){enemyHpLabel.textContent=enemy+" / "+maxEnemy+" HP";enemyFill.style.width=Math.max(0,enemy/maxEnemy*100)+"%";heroHpLabel.textContent=hp+" / "+mhp+" HP";heroFill.style.width=Math.max(0,hp/mhp*100)+"%";manaLabel.textContent="MP  "+mana+" / 30";manaFill.style.width=Math.max(0,mana/30*100)+"%";heroStatus.classList.toggle("guard-ready",guard);actions.replaceChildren();if(ended){actions.append(button("Fight again",reset))}else{[["Attack","Restore 5 MP",attack,0],["Power strike","10 MP",power,10],["Heal","12 MP",heal,12],["Guard","Restore 7 MP",defend,0]].forEach(([text,hint,fn,cost])=>{const b=button("",fn,"battle-action");b.append(node("strong",{},text),node("small",{},hint));b.disabled=mana<cost;actions.append(b)})}log.replaceChildren(...logs.map(s=>node("div",{},s)))}
 function enemyAct(){if(ended)return;heroFigure.style.transform="translateX(-9px) scale(.95)";setTimeout(()=>{heroFigure.style.transform=""},240);if(Math.random()<.18&&enemy<100){const n=12+Math.floor(Math.random()*8);enemy=Math.min(maxEnemy,enemy+n);write("Enemy heals "+n+".")}else{let damage=10+Math.floor(Math.random()*12);if(guard){damage=Math.floor(damage*.35);guard=false}hp=Math.max(0,hp-damage);write("Enemy hits for "+damage+".")}if(hp<=0){ended=true;msg.textContent="Defeat. Try a different strategy."}render()}
 function attack(){if(ended)return;enemyFigure.style.transform="translateX(12px) scale(.93)";setTimeout(()=>{enemyFigure.style.transform=""},230);const damage=13+Math.floor(Math.random()*9);enemy=Math.max(0,enemy-damage);mana=Math.min(30,mana+5);write("You attack for "+damage+".");after()}
 function power(){if(ended||mana<10)return;mana-=10;const damage=27+Math.floor(Math.random()*14);enemy=Math.max(0,enemy-damage);write("Power strike deals "+damage+".");after()}
 function heal(){if(ended||mana<12)return;mana-=12;const gain=Math.min(mhp-hp,24+Math.floor(Math.random()*9));hp+=gain;write("You heal "+gain+" HP.");after()}
 function defend(){if(ended)return;guard=true;mana=Math.min(30,mana+7);write("You brace for the next attack.");after()}
 function after(){turn++;if(enemy<=0){ended=true;msg.textContent="Victory in "+turn+" turns! Best "+highScore("combat.wins",read("combat.wins",0)+1)+" wins.";store("combat.wins",read("combat.wins",0));render();return}enemyAct()}
-function reset(){hp=100;enemy=120;mana=20;turn=0;guard=false;ended=false;logs=["A new challenger approaches."];msg.textContent="Reduce enemy HP to zero before your own reaches zero.";render()}
+function reset(){hp=100;enemy=120;mana=20;turn=0;guard=false;ended=false;logs=["A wild Cave Ogre appeared! Choose your move."];msg.textContent="";render()}
 reset();
 });
 })();

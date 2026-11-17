@@ -222,3 +222,51 @@ body[data-game="uno"] .uno-card {box-shadow:0 2px 5px #0003}
 .overlay-card,.overlay-card .poster,.overlay-card button {box-shadow:none}
 @media(max-width:640px) {body[data-game="typing"] .type-source {max-height:96px;font-size:15px} body[data-game="typing"] .typing-input {min-height:54px} body[data-game="2048"] .direction-pad,body[data-game="snake"] .direction-pad {display:none} body[data-game="wordle"] .wordle-keyboard {display:none} body[data-game="wordle"] .wordle-board {margin-bottom:8px}}
 @media(max-width:640px) {body[data-game="mines"] .mines-toolbar {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:7px} body[data-game="mines"] .mines-toolbar select,body[data-game="mines"] .mines-toolbar button {width:100%;min-width:0} body[data-game="mines"] .mines-stat {text-align:center} body[data-game="mines"] .mines-board {max-width:calc(100vw - 28px);max-height:calc(100svh - 250px);padding:7px;gap:3px}}
+
+/* Turn-based battle layout inspired by classic creature-battle games. */
+body[data-game="combat"] {--glow:#edc478;--glow-rgb:237,196,120;--deep:#10201d;--mid:#1b332c;--surface:#203a31;--btn:#356d54}
+body[data-game="combat"] .game-heading h1 {font-size:clamp(30px,4vw,46px)}
+body[data-game="combat"] .game-panel {max-width:920px}
+body[data-game="combat"] .battle-toolbar {width:min(100%,880px);justify-content:space-between;margin:0 auto 10px}
+body[data-game="combat"] .battle-round {font-size:11px;font-weight:800;letter-spacing:.2em;color:#edc478}
+body[data-game="combat"] .battle-toolbar button {padding:8px 12px;font-size:13px}
+body[data-game="combat"] .duel-scene {position:relative;display:block;isolation:isolate;overflow:hidden;width:min(880px,100%);height:clamp(300px,42vw,390px);padding:0;margin:0 auto 12px;border:2px solid #7f9b7f;border-radius:10px;background:linear-gradient(#b9d8df 0%,#d8e7d8 58%,#9dbb8a 58%,#77996c 100%)}
+body[data-game="combat"] .duel-scene:before {content:"";position:absolute;left:0;right:0;top:58%;height:1px;background:#657f65}
+body[data-game="combat"] .battle-side {position:absolute;inset:0}
+body[data-game="combat"] .battle-side:before {content:"";position:absolute;width:38%;height:20%;border-radius:50%;background:#648653;box-shadow:inset 0 4px #829d68}
+body[data-game="combat"] .enemy-side:before {right:8%;top:40%}
+body[data-game="combat"] .hero-side:before {left:5%;bottom:7%;width:45%;height:22%}
+body[data-game="combat"] .fighter {position:absolute;z-index:1;display:grid;place-items:center;width:clamp(90px,15vw,150px);height:auto;aspect-ratio:1;font-size:clamp(70px,11vw,120px);filter:none;text-shadow:0 3px 0 #0002;transition:transform .22s steps(3)}
+body[data-game="combat"] .fighter.hero {left:14%;bottom:8%}
+body[data-game="combat"] .fighter.enemy {right:13%;top:18%}
+body[data-game="combat"] .battle-status {position:absolute;z-index:2;width:min(340px,53%);padding:12px 15px;border:2px solid #47564a;border-radius:8px;background:#f6f2dc;color:#263a31;box-shadow:0 3px 0 #354439;font-size:13px}
+body[data-game="combat"] .enemy-status {left:5%;top:8%}
+body[data-game="combat"] .hero-status {right:5%;bottom:8%}
+body[data-game="combat"] .battle-name {font-weight:900;font-size:15px;margin-bottom:6px}
+body[data-game="combat"] .battle-hp-value,body[data-game="combat"] .battle-mana-value {display:block;text-align:right;font-size:11px;font-weight:800;color:#526259;margin-bottom:4px}
+body[data-game="combat"] .battle-hp-track,body[data-game="combat"] .battle-mana-track {height:9px;overflow:hidden;border:1px solid #6b7869;border-radius:99px;background:#c9cbb9;margin:3px 0 1px}
+body[data-game="combat"] .battle-hp-fill,body[data-game="combat"] .battle-mana-fill {display:block;width:100%;height:100%;border-radius:inherit;background:#62ae55;transition:width .28s steps(5)}
+body[data-game="combat"] .battle-hp-fill.enemy-fill {background:#d6a737}
+body[data-game="combat"] .battle-mana-track {height:6px}
+body[data-game="combat"] .battle-mana-fill {background:#5299c9}
+body[data-game="combat"] .battle-dialogue {width:min(880px,100%);min-height:44px;padding:10px 14px;border:2px solid #738972;border-radius:8px;background:#203a31;color:#f4f1dc;font-size:14px;line-height:1.45}
+body[data-game="combat"] .battle-dialogue div+div {margin-top:3px;color:#becbbb;font-size:12px}
+body[data-game="combat"] .battle-actions {display:grid;width:min(880px,100%);grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px auto 0;padding:8px;border:2px solid #738972;border-radius:8px;background:#e3e2c9}
+body[data-game="combat"] .battle-action {display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px;padding:9px 14px;border:1px solid #6f826e;border-radius:6px;background:#f6f2dc;color:#283a30;box-shadow:0 2px 0 #758570;font-size:14px;text-align:left}
+body[data-game="combat"] .battle-action:hover:not(:disabled) {background:#fff9e7;filter:none;transform:translateY(-1px)}
+body[data-game="combat"] .battle-action small {color:#607064;font-size:11px;font-weight:600}
+body[data-game="combat"] .battle-action:disabled {opacity:.48}
+body[data-game="combat"] .message {color:#edc478}
+@media(max-width:640px) {
+  body[data-game="combat"] .game-stage {padding-left:12px;padding-right:12px}
+  body[data-game="combat"] .duel-scene {height:290px}
+  body[data-game="combat"] .battle-status {width:60%;padding:8px 10px}
+  body[data-game="combat"] .battle-name {font-size:13px}
+  body[data-game="combat"] .battle-hp-value,body[data-game="combat"] .battle-mana-value {font-size:10px}
+  body[data-game="combat"] .fighter {width:105px;font-size:82px}
+  body[data-game="combat"] .fighter.enemy {right:7%;top:30%}
+  body[data-game="combat"] .fighter.hero {left:5%;bottom:9%}
+  body[data-game="combat"] .enemy-side:before {right:4%;top:50%;width:46%}
+  body[data-game="combat"] .hero-side:before {left:1%;bottom:7%;width:50%}
+  body[data-game="combat"] .battle-action {min-height:58px;padding:8px 10px;align-items:flex-start;flex-direction:column;justify-content:center;gap:2px}
+}
