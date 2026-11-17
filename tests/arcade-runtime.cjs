@@ -49,8 +49,14 @@ assert.equal(combatRoot.children.find(el=>el.className==="duel-scene").children.
 assert.equal(combatRoot.children.find(el=>el.className==="choice-row battle-actions").children.length,4,"combat keeps four turn actions");
 assert.ok(combatRoot.children.some(el=>el.className==="battle-dialogue"),"combat has a battle dialogue panel");
 const unoRoot=new FakeElement("section");registered.uno(unoRoot);
-assert.equal(unoRoot.children[0].children[0].textContent,"Choose your game","UNO starts with solo or multiplayer choices");
-unoRoot.children[0].children[2].listeners.click();
+assert.deepEqual(unoRoot.children[0].children.map(button=>button.textContent),["Singleplayer","LAN","Multiplayer"],"UNO mode menu stays concise with the three requested choices");
+unoRoot.children[0].children[1].listeners.click();
+unoRoot.children[4].children.find(el=>el.textContent==="Draw a card").listeners.click();
+assert.equal(unoRoot.children[3].children.some(el=>el.className.split(" ").includes("uno-hand")),false,"LAN play hides the next hand until the device is passed");
+unoRoot.children[4].children.find(el=>el.textContent==="Ready Player 2").listeners.click();
+assert.ok(unoRoot.children[3].children.some(el=>el.className.split(" ").includes("uno-hand")),"LAN play reveals the active player's own hand after passing the device");
+unoRoot.children[2].children[0].listeners.click();
+unoRoot.children[0].children[0].listeners.click();
 assert.ok(unoRoot.children[3].children.some(el=>el.className.split(" ").includes("uno-hand")),"UNO solo mode deals cards directly against bots");
 assert.equal(unoRoot.children[3].children.find(el=>el.className==="uno-hand-label").textContent,"Your hand · 7 cards","UNO clearly labels the visible cards as the local player's own hand");
 const unoHand=unoRoot.children[3].children.find(el=>el.className.split(" ").includes("uno-hand"));
@@ -64,7 +70,7 @@ unoHand.listeners.pointerup({pointerId:9});
 assert.ok(!draggedCard.className.includes("card-held")&&!draggedCard.className.includes("card-dragging"),"UNO releases the held animation on drop");
 assert.notEqual(unoHand.children[0].getAttribute("data-card-id"),firstCardId,"UNO cards can be dragged into a different hand position");
 const unoLobbyRoot=new FakeElement("section");registered.uno(unoLobbyRoot);
-unoLobbyRoot.children[0].children[3].listeners.click();
+unoLobbyRoot.children[0].children[2].listeners.click();
 const playerCountControl=unoLobbyRoot.children[1].children[3],decreasePlayers=playerCountControl.children[0],playerCountDisplay=playerCountControl.children[1],increasePlayers=playerCountControl.children[2];
 assert.equal(playerCountControl.className,"uno-player-count-control","UNO room uses an arrow count control");
 assert.equal(decreasePlayers.getAttribute("aria-label"),"Decrease players");assert.equal(increasePlayers.getAttribute("aria-label"),"Increase players");
@@ -75,7 +81,7 @@ console.log("PASS: All ten games initialise using DOM mocks without runtime exce
 (async()=>{
  let hostOptions,hostEvents={},sent=[];let players=0;
  ctx.PartyRooms={createHost:async options=>{hostOptions=options;return{roomId:"room123",lan:{on(type,fn){hostEvents[type]=fn;return()=>{}},send(peer,type,payload){sent.push({peer,type,payload})}},setPlayerCount(value){players=value},stop:async()=>{}}}};
- const roomRoot=new FakeElement("section");registered.uno(roomRoot);roomRoot.children[0].children[3].listeners.click();
+ const roomRoot=new FakeElement("section");registered.uno(roomRoot);roomRoot.children[0].children[2].listeners.click();
  const roomCount=roomRoot.children[1].children[3];for(let i=0;i<14;i++)roomCount.children[2].listeners.click();await roomRoot.children[1].children[4].listeners.click();
  assert.equal(hostOptions.metadata.maxPlayers,16,"UNO room uses the selected player count");
  for(let i=1;i<=15;i++)assert.equal(await hostOptions.onConnectionRequest({id:"peer-"+i}),true,"UNO room reserves each of its 15 guest seats");

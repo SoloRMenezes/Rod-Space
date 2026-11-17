@@ -99,6 +99,11 @@ body[data-game="uno"] .uno-menu,body[data-game="uno"] .uno-lobby {width:min(560p
 body[data-game="uno"] .uno-menu h2,body[data-game="uno"] .uno-lobby h2 {margin:0 0 8px;font-size:clamp(24px,5vw,34px)}
 body[data-game="uno"] .uno-menu p,body[data-game="uno"] .uno-lobby p {color:var(--muted,#c4d0c7);line-height:1.5}
 body[data-game="uno"] .uno-menu button,body[data-game="uno"] .uno-lobby>button {display:block;width:min(360px,100%);min-height:50px;margin:12px auto}
+body[data-game="uno"] .uno-menu {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:min(820px,100%);margin:0 auto;padding:12px 0}
+body[data-game="uno"] .uno-menu button {width:100%;margin:0}
+body[data-game="uno"] .uno-pass-screen {display:grid;gap:8px;justify-items:center;width:min(480px,100%);margin:18px auto;padding:26px 18px;border:1px solid rgba(var(--glow-rgb),.35);background:#0b2118;border-radius:14px;text-align:center}
+body[data-game="uno"] .uno-pass-screen strong {font-size:clamp(22px,4vw,32px)}
+body[data-game="uno"] .uno-pass-screen span {color:var(--muted);font-size:14px}
 body[data-game="uno"] .uno-lobby input,body[data-game="uno"] .uno-lobby select {display:block;width:min(360px,100%);min-height:46px;margin:12px auto;padding:9px 12px;border:1px solid #657b6a;border-radius:6px;background:#f6f2dc;color:#263a31;font:inherit}
 body[data-game="uno"] .uno-player-count-control {display:flex;align-items:center;justify-content:center;gap:14px;width:max-content;margin:14px auto}
 body[data-game="uno"] .uno-player-count-arrow {display:grid;place-items:center;width:44px;min-height:44px;margin:0;padding:0}
@@ -141,6 +146,7 @@ body[data-game="combat"] .choice-row button {min-height:57px;font-size:clamp(13p
 .overlay-card a {background:#ffffff12;border:1px solid #ffffff3b;}
 .overlay-card button:hover,.overlay-card a:hover {filter:brightness(1.18)}
 @media(max-width:640px) {
+  body[data-game="uno"] .uno-menu {grid-template-columns:1fr;gap:8px}
   body[data-game="uno"] .uno-menu,body[data-game="uno"] .uno-lobby {padding:14px 4px}
   body[data-game="uno"] .uno-toolbar {justify-content:center}
   body[data-game="uno"] .uno-discard {gap:8px;min-height:80px}
