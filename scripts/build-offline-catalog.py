@@ -7,6 +7,9 @@ source=(root/'index.html').read_text().split('const PROJECTS_DATA = [')[1].split
 text_ext={'.html','.js','.css','.json'}
 asset_ext=text_ext|{'.png','.jpg','.jpeg','.webp','.svg','.gif','.mp3','.wav','.ogg','.mp4','.webm','.ttf','.woff','.woff2','.ico','.glb','.gltf','.bin'}
 def gather(page):
+ if page=='arcade.html':
+  # One small shared bundle, not a recursive crawl through linked catalog pages.
+  return ['arcade.html','arcade.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','rod-space-app-menu.js']
  found=set();todo=[root/page]
  if '/' in page:todo += [p for p in (root/page).parent.rglob('*') if p.is_file() and p.suffix.lower() in asset_ext]
  while todo:
@@ -33,9 +36,10 @@ def gather(page):
 result={}
 for block in source.split('},'):
  def field(k):
-  m=re.search(k+r': (?:BASE_URL \+ )?"([^"]+)"',block);return m[1] if m else ''
+  m=re.search(k+r'\s*:\s*(?:BASE_URL\s*\+\s*)?"([^"]+)"',block);return m[1] if m else ''
  id,name,page=[field(k) for k in ['id','name','url']]
  if not page:continue
+ page=urlsplit(page).path
  if (root/page).is_dir():page=page.rstrip('/')+'/index.html'
  if not (root/page).is_file():raise ValueError('Missing game: '+page)
  print("Collecting",page,flush=True)
@@ -45,7 +49,7 @@ for block in source.split('},'):
  result[id]['bytes']=sum(f['bytes'] for f in result[id]['files'])
  result[id]['version']=hashlib.sha256(json.dumps(result[id]).encode()).hexdigest()[:16]
 (root/'offline-catalog.js').write_text('self.OFFLINE_CATALOG = '+json.dumps(result,indent=2)+';\n')
-shell=['index.html','party.html','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js']
+shell=['index.html','party.html','arcade.html','arcade.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','site-theme.js','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js']
 version=hashlib.sha256(b''.join((root/f).read_bytes() for f in shell)).hexdigest()[:16]
 p=root/'sw.js';p.write_text(re.sub(r"const SHELL = '[^']+';", "const SHELL = 'rod-shell-"+version+"';",p.read_text()))
 print('Built downloads for',len(result),'projects')

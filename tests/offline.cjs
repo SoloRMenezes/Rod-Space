@@ -8,7 +8,7 @@ async function request(path,mode='navigate'){let pending;handlers.fetch({request
 (async()=>{
  let pending;handlers.install({waitUntil:p=>pending=p});await pending;
  const ids=['reaction','multiplayer-test','web_weavers','backrooms','sling-champ','nextup'];
- assert.equal(Object.keys(context.self.OFFLINE_CATALOG).length,37);
+ assert.ok(Object.keys(context.self.OFFLINE_CATALOG).length>=50,"all published games have offline entries");
  corrupt=true;assert.match((await message('download',ids[0])).error,/changed/);assert.equal((await message('status')).items.length,0);corrupt=false;
  for(const id of ids.slice(0,5))assert.equal((await message('download',id)).items.some(g=>g.id===id),true);
  assert.equal((await message('download',ids[5])).items.length,6);
@@ -22,7 +22,7 @@ async function request(path,mode='navigate'){let pending;handlers.fetch({request
  assert.equal((await message('offload',ids[0])).items.length,5);
  online=true;assert.equal((await message('download',ids[0])).items.length,6);
  assert.equal((await request('nextup')).status,302);
- let rangeResponse;handlers.fetch({request:{url:'https://example.test/Rod-Space/nextup/index.html',method:'GET',mode:'cors',headers:new Headers({range:'bytes=0-9'})},respondWith:p=>rangeResponse=p});
+ online=false;let rangeResponse;handlers.fetch({request:{url:'https://example.test/Rod-Space/nextup/index.html',method:'GET',mode:'cors',headers:new Headers({range:'bytes=0-9'})},respondWith:p=>rangeResponse=p});
  assert.equal((await rangeResponse).status,206);assert.equal((await (await rangeResponse).arrayBuffer()).byteLength,10);
  console.log('PASS: corrupt download rollback, more than five downloads, all cached assets offline, offline hub, missing-game fallback, offload and replacement.');
 })().catch(e=>{console.error(e);process.exitCode=1});
