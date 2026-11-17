@@ -36,6 +36,11 @@ const nativeWordleInput=wordleRoot.children.find(el=>el.className==="wordle-nati
 assert.ok(nativeWordleInput?.focused,"focus native input so mobile can open its keyboard");
 nativeWordleInput.value="A";nativeWordleInput.listeners.input();
 assert.equal(wordleRoot.children[2].children[0].textContent,"A","native mobile keyboard letters update the Wordle board");
+const pongRoot=new FakeElement("section");registered.pong(pongRoot);
+const pongToolbar=pongRoot.children.find(el=>el.className.split(" ").includes("pong-toolbar"));
+assert.ok(pongToolbar.children.some(el=>el.textContent==="Main menu"),"Pong has a direct route back to the main menu");
+assert.equal(pongToolbar.children.filter(el=>el.className==="stat").length,0,"Pong scores are drawn inside the court, not in toolbar pills");
+assert.ok(pongRoot.children.some(el=>el.className.includes("pong-court")),"Pong uses its dedicated green court");
 const combatRoot=new FakeElement("section");registered.combat(combatRoot);
 assert.equal(combatRoot.children[0].children[0].textContent,"Single Player","combat starts with the single-player option");
 assert.equal(combatRoot.children[0].children[1].textContent,"LAN Multiplayer","combat keeps its online multiplayer option");

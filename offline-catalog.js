@@ -491,13 +491,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35628,
-        "sha256": "98c24610edba045576c67ece3065a4c4c661486c98dd4c1a86ccbd52a0d13fe4"
+        "bytes": 37110,
+        "sha256": "db3eda1578a92bd9f7a42ed6f1c6e1968684c2f238792978870c602ee6ce4db4"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2422,
-        "sha256": "eb391447d0cdcf5d725c356bea3e0f727f2c7d3080a347affd875442d4c80e80"
+        "bytes": 2434,
+        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
       },
       {
         "path": "arcade-puzzles.js",
@@ -506,8 +506,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9099,
-        "sha256": "e3cce840cce72a2cee3c64116710c35cf923294c9aeb0a82f6e66c691904fec8"
+        "bytes": 9110,
+        "sha256": "fbd5c9e2b6be6a9372740c449a8dad1a1139b9e65db71b1e906e6f4f3513bdfa"
       },
       {
         "path": "arcade-party.js",
@@ -540,8 +540,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 159932,
-    "version": "f76eae7635e95f30"
+    "bytes": 161437,
+    "version": "33f414c36b08136e"
   },
   "snake": {
     "name": "Snake Arena",

@@ -26,7 +26,7 @@ body[data-game="wordle"] {--glow:#7cf0a3;--glow-rgb:53,205,137;--deep:#081e19;--
 body[data-game="mines"] {--glow:#85dfaa;--glow-rgb:73,212,127;--deep:#0b1917;--mid:#15352c;--surface:#1a3b34bb;--tile:#31534d;--btn:#23886d;}
 body[data-game="typing"] {--glow:#79c9ff;--glow-rgb:54,172,246;--deep:#0c1228;--mid:#1d2d54;--surface:#1c305bc4;--tile:#243c68;}
 body[data-game="snake"] {--glow:#82fba9;--glow-rgb:76,246,134;--deep:#04110e;--mid:#103b24;--surface:#113b2bcc;--tile:#224e36;--btn:#137e50;}
-body[data-game="pong"] {--glow:#ff6bd3;--glow-rgb:255,57,200;--deep:#080718;--mid:#271341;--surface:#321b4ed0;--tile:#39235a;--btn:#9f3298;}
+body[data-game="pong"] {--glow:#42cf4b;--glow-rgb:66,207,75;--deep:#06150a;--mid:#0b2411;--surface:#112d17;--tile:#17481f;--btn:#237a2c;}
 body[data-game="combat"] {--glow:#ffba68;--glow-rgb:255,147,51;--deep:#1a0b1e;--mid:#422046;--surface:#3a2542dd;--tile:#543357;--btn:#a75856;}
 body[data-game="uno"] {--glow:#ffd76a;--glow-rgb:255,189,60;--deep:#131d19;--mid:#184332;--surface:#25543fd3;--tile:#22664c;--btn:#228b5f;}
 body[data-game="headsup"] {--glow:#ffc06b;--glow-rgb:255,163,64;--deep:#29102b;--mid:#652f68;--surface:#653c68bf;--tile:#784f85;--btn:#ca6a54;}
@@ -238,6 +238,22 @@ body[data-game="mines"] .message {margin-top:14px;color:#edc478}
 body[data-game="headsup"] .prompt {box-shadow:none;transform:none}
 body[data-game="uno"] .card-hand,body[data-game="ladders"] .ladder-grid {box-shadow:none}
 body[data-game="uno"] .uno-card {box-shadow:0 2px 5px #0003}
+
+/* Pong is a simple, full-screen green-court game. */
+body[data-game="pong"] .game-heading {display:none}
+body[data-game="pong"] .game-stage {width:100%;max-width:none;height:calc(100svh - 66px);min-height:calc(100svh - 66px);padding:8px clamp(8px,2vw,28px) 12px}
+body[data-game="pong"] .game-panel {width:100%;max-width:none;flex:1;min-height:0;justify-content:flex-start;gap:0}
+body[data-game="pong"] .pong-toolbar {width:min(100%,1500px);flex:0 0 auto;margin:0 auto 8px;gap:10px}
+body[data-game="pong"] .pong-toolbar select {min-width:min(280px,100%);min-height:44px}
+body[data-game="pong"] .pong-court {display:block;width:min(100%,calc((100svh - 150px)*1.5));height:auto;max-width:none;max-height:calc(100svh - 150px);aspect-ratio:3/2;margin:0 auto;border:2px solid #267b31;border-radius:0;background:#06150a;box-shadow:none}
+body[data-game="pong"] .pong-sr-only {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:640px) {
+  body[data-game="pong"] .game-stage {height:calc(100svh - 58px);min-height:calc(100svh - 58px);padding:6px 6px 8px}
+  body[data-game="pong"] .pong-toolbar {gap:6px;margin-bottom:6px}
+  body[data-game="pong"] .pong-toolbar select {flex:1 1 100%;min-width:0}
+  body[data-game="pong"] .pong-toolbar button {flex:1 1 auto;min-height:40px;padding:8px}
+  body[data-game="pong"] .pong-court {width:min(100%,calc((100svh - 136px)*1.5));max-height:calc(100svh - 136px)}
+}
 /* UNO hand follows Card Wars: overlapping, lifted cards with drag-to-sort. */
 body[data-game="uno"] .uno-hand.card-hand {display:flex;flex-wrap:nowrap;align-items:flex-end;justify-content:center;gap:0;width:min(100%,980px);max-width:980px;min-height:194px;margin:18px auto;padding:34px 16px 14px;overflow-x:auto;overflow-y:visible;border:2px solid #344a40;border-radius:25px;background:#0d241b;box-shadow:none;scrollbar-width:thin;touch-action:pan-x}
 body[data-game="uno"] .uno-hand .uno-card {position:relative;display:block;flex:0 0 clamp(74px,8vw,98px);width:clamp(74px,8vw,98px);height:clamp(108px,12vw,138px);min-height:0;margin-left:clamp(-36px,-3.2vw,-24px);padding:0;overflow:visible;border:3px solid #f8f7ee;border-radius:13px;color:#fff;box-shadow:0 4px 0 #17221b,0 12px 18px #0005;text-shadow:none;transform:rotate(var(--fan-angle,0deg));transform-origin:50% 100%;transition:transform .16s ease,filter .16s ease,opacity .16s ease;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}

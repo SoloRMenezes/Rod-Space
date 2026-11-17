@@ -3,29 +3,28 @@
 const {register,node,button,highScore}=window.Arcade;
 function canvas(root,w,h,cls){const c=node("canvas",{class:"game-canvas"+(cls?" "+cls:""),width:String(w),height:String(h),"aria-label":"Game playfield"});root.append(c);return c}
 register("pong",function(root){
-const bar=node("div",{class:"toolbar"}),leftScore=node("span",{class:"stat"}),rightScore=node("span",{class:"stat"}),msg=node("p",{class:"message",role:"status"}),mode=node("select",{"aria-label":"Game mode"}),startBtn=button("Start game",start);
-mode.append(node("option",{value:"cpu"},"Vs computer"),node("option",{value:"two"},"Two players (same keyboard)"));bar.append(mode,startBtn,leftScore,rightScore);root.append(bar);const c=canvas(root,700,460),ctx=c.getContext("2d");root.append(msg);
-const W=c.width,H=c.height,paddleH=85,paddleW=12;
+const bar=node("div",{class:"toolbar pong-toolbar"}),msg=node("p",{class:"pong-sr-only",role:"status","aria-live":"polite"}),mode=node("select",{"aria-label":"Game mode"}),startBtn=button("Start game",start),homeBtn=button("Main menu",()=>{location.href="./"},"secondary");
+mode.append(node("option",{value:"cpu"},"Vs computer"),node("option",{value:"two"},"Two players (same keyboard)"));bar.append(mode,startBtn,homeBtn);root.append(bar);const c=canvas(root,960,640,"pong-court"),ctx=c.getContext("2d");c.setAttribute("aria-label","Pong court and score");root.append(msg);
+const W=c.width,H=c.height,paddleH=92,paddleW=14;
 let p1=H/2,p2=H/2,ball={x:W/2,y:H/2,vx:4,vy:2},a=0,b=0,active=false,request=0,last=0,keys={},pointer=null;
 function serve(dir){ball={x:W/2,y:H/2,vx:dir*(4+Math.random()),vy:(Math.random()*3+1)*(Math.random()<.5?-1:1)};p1=H/2;p2=H/2}
-function start(){a=0;b=0;serve(Math.random()<.5?-1:1);active=true;last=0;msg.textContent="First to 7 wins. Left: W/S. Right: ↑/↓ (or AI).";startBtn.textContent="Restart";updateScores()}
-function updateScores(){leftScore.textContent="Player 1: "+a;rightScore.textContent=(mode.value==="cpu"?"Computer: ":"Player 2: ")+b}
-function tick(dt){if(!active)return;const speed=6.4*dt;if(keys.KeyW)p1-=speed;if(keys.KeyS)p1+=speed;if(mode.value==="two"){if(keys.ArrowUp)p2-=speed;if(keys.ArrowDown)p2+=speed}else{p2+=Math.max(-3.8*dt,Math.min(3.8*dt,ball.y-p2))}if(pointer!==null)p1+=(pointer-p1)*Math.min(1,.25*dt);p1=Math.max(paddleH/2,Math.min(H-paddleH/2,p1));p2=Math.max(paddleH/2,Math.min(H-paddleH/2,p2));ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;if(ball.y<9){ball.y=9;ball.vy=Math.abs(ball.vy)}if(ball.y>H-9){ball.y=H-9;ball.vy=-Math.abs(ball.vy)}
-if(ball.vx<0&&ball.x<35&&ball.x>20&&Math.abs(ball.y-p1)<paddleH/2+8){ball.x=35;ball.vx=Math.min(10,Math.abs(ball.vx)*1.07);ball.vy+=(ball.y-p1)/27}
-if(ball.vx>0&&ball.x>W-35&&ball.x<W-20&&Math.abs(ball.y-p2)<paddleH/2+8){ball.x=W-35;ball.vx=-Math.min(10,Math.abs(ball.vx)*1.07);ball.vy+=(ball.y-p2)/27}
-if(ball.x<0||ball.x>W){if(ball.x<0)b++;else a++;updateScores();if(Math.max(a,b)>=7){active=false;msg.textContent=(a>b?"Player 1":mode.value==="cpu"?"Computer":"Player 2")+" wins!";if(a>b)window.RodSpaceAccounts?.recordWin("pong");return}serve(ball.x<0?1:-1)}}
+function start(){a=0;b=0;serve(Math.random()<.5?-1:1);active=true;last=0;startBtn.textContent="Restart";updateScores()}
+function updateScores(){msg.textContent="Player 1: "+a+". "+(mode.value==="cpu"?"Computer: ":"Player 2: ")+b+". First to 7 wins."}
+function tick(dt){if(!active)return;const speed=6.4*dt;if(keys.KeyW)p1-=speed;if(keys.KeyS)p1+=speed;if(mode.value==="two"){if(keys.ArrowUp)p2-=speed;if(keys.ArrowDown)p2+=speed}else{p2+=Math.max(-3.8*dt,Math.min(3.8*dt,ball.y-p2))}if(pointer!==null)p1+=(pointer-p1)*Math.min(1,.25*dt);p1=Math.max(paddleH/2,Math.min(H-paddleH/2,p1));p2=Math.max(paddleH/2,Math.min(H-paddleH/2,p2));ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;if(ball.y<11){ball.y=11;ball.vy=Math.abs(ball.vy)}if(ball.y>H-11){ball.y=H-11;ball.vy=-Math.abs(ball.vy)}
+if(ball.vx<0&&ball.x<39&&ball.x>23&&Math.abs(ball.y-p1)<paddleH/2+10){ball.x=39;ball.vx=Math.min(10,Math.abs(ball.vx)*1.07);ball.vy+=(ball.y-p1)/27}
+if(ball.vx>0&&ball.x>W-39&&ball.x<W-23&&Math.abs(ball.y-p2)<paddleH/2+10){ball.x=W-39;ball.vx=-Math.min(10,Math.abs(ball.vx)*1.07);ball.vy+=(ball.y-p2)/27}
+if(ball.x<0||ball.x>W){if(ball.x<0)b++;else a++;updateScores();if(Math.max(a,b)>=7){active=false;msg.textContent=(a>b?"Player 1":mode.value==="cpu"?"Computer":"Player 2")+" wins! Final score "+a+" to "+b+".";if(a>b)window.RodSpaceAccounts?.recordWin("pong");return}serve(ball.x<0?1:-1)}}
 function draw(){
-ctx.fillStyle="#08091c";ctx.fillRect(0,0,W,H);
-ctx.fillStyle="#1e2147";for(let x=0;x<W;x+=42)ctx.fillRect(x,0,1,H);for(let y=0;y<H;y+=42)ctx.fillRect(0,y,W,1);
-ctx.fillStyle="#4c2e76";ctx.fillRect(0,0,W,4);ctx.fillRect(0,H-4,W,4);
-ctx.fillStyle="#6d4ba2";for(let y=9;y<H;y+=32)ctx.fillRect(W/2-2,y,4,15);
-ctx.fillStyle="#68ddff";ctx.fillRect(20,p1-paddleH/2,paddleW,paddleH);
-ctx.fillStyle="#ff7fdf";ctx.fillRect(W-32,p2-paddleH/2,paddleW,paddleH);
-ctx.fillStyle="#f8fafc";ctx.beginPath();ctx.arc(ball.x,ball.y,9,0,Math.PI*2);ctx.fill()
+ctx.fillStyle="#06150a";ctx.fillRect(0,0,W,H);
+ctx.strokeStyle="#267b31";ctx.lineWidth=4;ctx.strokeRect(2,2,W-4,H-4);
+ctx.fillStyle="#17481f";ctx.font="700 112px monospace";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(String(a),W*.25,H*.5);ctx.fillText(String(b),W*.75,H*.5);
+ctx.fillStyle="#32943e";for(let y=20;y<H-20;y+=34)ctx.fillRect(W/2-2,y,4,17);
+ctx.fillStyle="#42cf4b";ctx.fillRect(24,p1-paddleH/2,paddleW,paddleH);ctx.fillRect(W-24-paddleW,p2-paddleH/2,paddleW,paddleH);
+ctx.beginPath();ctx.arc(ball.x,ball.y,10,0,Math.PI*2);ctx.fill()
 }
 function loop(t){const dt=Math.min(2.5,(t-(last||t))/16.67);last=t;if(!document.hidden)tick(dt);draw();request=requestAnimationFrame(loop)}
 document.addEventListener("keydown",e=>{if(["KeyW","KeyS","ArrowUp","ArrowDown"].includes(e.code)){e.preventDefault();keys[e.code]=true}});document.addEventListener("keyup",e=>{keys[e.code]=false});
-c.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"&&e.buttons===0&&mode.value==="two")return;const rect=c.getBoundingClientRect();pointer=(e.clientY-rect.top)*H/rect.height});c.addEventListener("pointerdown",e=>{const rect=c.getBoundingClientRect();pointer=(e.clientY-rect.top)*H/rect.height;c.setPointerCapture(e.pointerId)});c.addEventListener("pointerup",()=>{pointer=null});mode.onchange=()=>{active=false;updateScores();msg.textContent="Press Start game to play.";};updateScores();msg.textContent="Press Start game to play.";request=requestAnimationFrame(loop);
+c.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"&&e.buttons===0&&mode.value==="two")return;const rect=c.getBoundingClientRect();pointer=(e.clientY-rect.top)*H/rect.height});c.addEventListener("pointerdown",e=>{const rect=c.getBoundingClientRect();pointer=(e.clientY-rect.top)*H/rect.height;c.setPointerCapture(e.pointerId)});c.addEventListener("pointerup",()=>{pointer=null});mode.onchange=()=>{active=false;startBtn.textContent="Start game";updateScores()};updateScores();request=requestAnimationFrame(loop);
 });
 register("snake",function(root){
 const W=600,H=480,cell=15,C=W/cell,R=H/cell,colors=["#5eead4","#f472b6","#fbbf24","#a78bfa"],bar=node("div",{class:"toolbar"}),scoreEl=node("span",{class:"stat"}),bestEl=node("span",{class:"stat"}),status=node("p",{class:"message",role:"status"}),startBtn=button("Start / Restart",restart),pad=node("div",{class:"direction-pad"});
