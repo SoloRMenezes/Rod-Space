@@ -7,6 +7,8 @@
   const path = decodeURIComponent(location.pathname).replace(/\/$/, '') || '/';
   const hubs = new Set(['/', '/index.html', '/party.html']);
   if (hubs.has(path)) return;
+  // Arcade pages include their own in-game menu; avoid duplicate native overlays.
+  if (path === '/arcade.html') return;
   if (path === '/maths-book.html' || path === '/japanese-book.html') return;
 
   const passivePages = new Set([

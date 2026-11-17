@@ -1,16 +1,16 @@
 (function(){
 "use strict";
 const catalog=[
-["typing","Fast Typing","Typing challenge with speed and accuracy","⌨","solo"],
-["2048","2048","Slide and merge tiles to reach 2048","🔢","solo"],
-["wordle","Daily Wordle","A new five-letter word each day","🟩","solo"],
-["mines","Minesweeper","Clear the board without hitting mines","💣","solo"],
-["pong","Pong","Play against the computer or a friend","🏓","solo"],
-["snake","Snake Arena","Grow your snake against computer-controlled rivals","🐍","solo"],
-["headsup","Heads Up","Pass the device and guess the prompt","🎭","party"],
-["uno","UNO-style Cards","Pass-and-play colour-matching card game","🃏","party"],
-["ladders","Snakes & Ladders","Roll the dice and race to 100","🎲","party"],
-["combat","Turn-Based Combat","Fight monsters with abilities and strategy","⚔","solo"]
+["typing","Fast Typing","Type with precision","⌨","solo"],
+["2048","2048","Merge matching numbers","🔢","solo"],
+["wordle","Daily Wordle","Guess today's word","🟩","solo"],
+["mines","Minesweeper","Clear hidden mines","💣","solo"],
+["snake","Snake Arena","Outgrow rival snakes","🐍","solo"],
+["combat","Turn-Based Combat","Defeat the challenger","⚔","solo"],
+["pong","Pong","Neon paddle showdown","🏓","party"],
+["headsup","Heads Up","Guess under pressure","🎭","party"],
+["uno","UNO-style Cards","Match coloured cards","🃏","party"],
+["ladders","Snakes & Ladders","Race to victory","🎲","party"]
 ];
 const handlers={};
 function byId(id){return document.getElementById(id)}
@@ -23,12 +23,16 @@ function highScore(key,value){const prev=Number(read(key,0))||0;if(value>prev)st
 function register(id,callback){handlers[id]=callback}
 function mount(){
 const id=new URL(location.href).searchParams.get("game");
-const info=catalog.find(x=>x[0]===id);
-const title=byId("gameTitle"),desc=byId("gameDescription"),game=byId("game"),nav=byId("gameNav");
-nav.replaceChildren(...catalog.map(g=>{const a=node("a",{href:"arcade.html?game="+encodeURIComponent(g[0])},g[1]);if(g[0]===id)a.setAttribute("aria-current","page");return a}));
-if(!info){title.textContent="Arcade";desc.textContent="Choose a game to play. All games run in this browser.";const cards=node("div",{class:"grid-cards"});catalog.forEach(g=>{const a=node("a",{class:"game-link",href:"arcade.html?game="+g[0]});a.append(node("span",{class:"icon"},g[3]),node("strong",{},g[1]),node("small",{},g[2]));cards.append(a)});game.replaceChildren(cards);return}
-title.textContent=info[1];desc.textContent=info[2];document.title=info[1]+" — Rod Space";clear(game);
-try{if(handlers[id])handlers[id](game);else game.textContent="This game is not available."}catch(e){console.error(e);game.textContent="The game could not start. Reload to retry."}
+const info=catalog.find(game=>game[0]===id);
+if(!info){location.replace(new URL("./",location.href).href);return null}
+document.body.dataset.game=id;
+byId("gameTitle").textContent=info[1];
+byId("gameDescription").textContent=info[2];
+byId("gameLabel").textContent=info[4]==="party"?"ROD SPACE / PARTY GAME":"ROD SPACE / SOLO GAME";
+document.title=info[1]+" — Rod Space";
+const game=byId("game");clear(game);
+try{if(handlers[id])handlers[id](game);else game.textContent="This game is not available."}catch(e){console.error(e);game.textContent="Could not start. Reload to retry."}
+return info;
 }
 window.Arcade={catalog,register,mount,byId,node,button,clear,read,store,highScore};
 })();

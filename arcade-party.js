@@ -50,11 +50,15 @@ reset();
 register("combat",function(root){
 let hp=100,mhp=100,enemy=120,maxEnemy=120,mana=20,guard=false,turn=0,ended=false;let logs=[];
 const bar=node("div",{class:"toolbar"}),stats=node("div"),actions=node("div",{class:"choice-row"}),log=node("div",{class:"mini-log",role:"log","aria-live":"polite"}),msg=node("p",{class:"message",role:"status"});
-bar.append(button("New battle",reset,"secondary"));root.append(bar,stats,actions,msg,log);
+bar.append(button("New battle",reset,"secondary"));
+const scene=node("div",{class:"duel-scene","aria-label":"Hero battling a monster"});
+const heroFigure=node("div",{class:"fighter hero","aria-hidden":"true"},"🧙"),versus=node("div",{class:"duel-versus","aria-hidden":"true"},"VS"),enemyFigure=node("div",{class:"fighter enemy","aria-hidden":"true"},"👹");
+scene.append(heroFigure,versus,enemyFigure);
+root.append(bar,scene,stats,actions,msg,log);
 function write(s){logs.unshift(s);logs=logs.slice(0,12)}
 function render(){stats.replaceChildren();const hpLabel=node("p",{},"Hero "+hp+"/"+mhp+" HP · "+mana+"/30 mana");const track=node("div",{class:"health-track"});track.append(node("span",{style:"width:"+Math.max(0,hp/mhp*100)+"%"}));const enemyLabel=node("p",{},"Enemy "+enemy+"/"+maxEnemy+" HP");const track2=node("div",{class:"health-track"});track2.append(node("span",{style:"width:"+Math.max(0,enemy/maxEnemy*100)+"%;background:#ef4444"}));stats.append(hpLabel,track,enemyLabel,track2);actions.replaceChildren();if(ended){actions.append(button("Fight again",reset))}else{[["Attack (+5 mana)",attack,0],["Power strike (10 mana)",power,10],["Heal (12 mana)",heal,12],["Guard (+7 mana)",defend,0]].forEach(([text,fn,cost])=>{const b=button(text,fn,cost?"secondary":undefined);b.disabled=mana<cost;actions.append(b)})}log.replaceChildren(...logs.map(s=>node("div",{},s)))}
-function enemyAct(){if(ended)return;if(Math.random()<.18&&enemy<100){const n=12+Math.floor(Math.random()*8);enemy=Math.min(maxEnemy,enemy+n);write("Enemy heals "+n+".")}else{let damage=10+Math.floor(Math.random()*12);if(guard){damage=Math.floor(damage*.35);guard=false}hp=Math.max(0,hp-damage);write("Enemy hits for "+damage+".")}if(hp<=0){ended=true;msg.textContent="Defeat. Try a different strategy."}render()}
-function attack(){if(ended)return;const damage=13+Math.floor(Math.random()*9);enemy=Math.max(0,enemy-damage);mana=Math.min(30,mana+5);write("You attack for "+damage+".");after()}
+function enemyAct(){if(ended)return;heroFigure.style.transform="translateX(-9px) scale(.95)";setTimeout(()=>{heroFigure.style.transform=""},240);if(Math.random()<.18&&enemy<100){const n=12+Math.floor(Math.random()*8);enemy=Math.min(maxEnemy,enemy+n);write("Enemy heals "+n+".")}else{let damage=10+Math.floor(Math.random()*12);if(guard){damage=Math.floor(damage*.35);guard=false}hp=Math.max(0,hp-damage);write("Enemy hits for "+damage+".")}if(hp<=0){ended=true;msg.textContent="Defeat. Try a different strategy."}render()}
+function attack(){if(ended)return;enemyFigure.style.transform="translateX(12px) scale(.93)";setTimeout(()=>{enemyFigure.style.transform=""},230);const damage=13+Math.floor(Math.random()*9);enemy=Math.max(0,enemy-damage);mana=Math.min(30,mana+5);write("You attack for "+damage+".");after()}
 function power(){if(ended||mana<10)return;mana-=10;const damage=27+Math.floor(Math.random()*14);enemy=Math.max(0,enemy-damage);write("Power strike deals "+damage+".");after()}
 function heal(){if(ended||mana<12)return;mana-=12;const gain=Math.min(mhp-hp,24+Math.floor(Math.random()*9));hp+=gain;write("You heal "+gain+" HP.");after()}
 function defend(){if(ended)return;guard=true;mana=Math.min(30,mana+7);write("You brace for the next attack.");after()}

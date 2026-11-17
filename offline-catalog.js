@@ -5,8 +5,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -14,38 +14,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "6d54b9818d023a71"
+    "bytes": 80173,
+    "version": "f5e60ab279507375"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -53,8 +58,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -62,38 +67,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "6db290d11a95d5b3"
+    "bytes": 80173,
+    "version": "2a04e9984c53e6d3"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -101,8 +111,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -110,38 +120,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "3cc4e61af02feec1"
+    "bytes": 80173,
+    "version": "c3a07f931bc60027"
   },
   "typing": {
     "name": "Fast Typing",
@@ -149,8 +164,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -158,38 +173,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "8e3de272d46b5b67"
+    "bytes": 80173,
+    "version": "5891fe21f0e7bb5e"
   },
   "2048": {
     "name": "2048",
@@ -197,8 +217,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -206,38 +226,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "b841b32fa944ebb2"
+    "bytes": 80173,
+    "version": "c783ea0f9893592b"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -245,8 +270,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -254,38 +279,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "4aef41e4adc1de66"
+    "bytes": 80173,
+    "version": "455db2cf2aaac853"
   },
   "mines": {
     "name": "Minesweeper",
@@ -293,8 +323,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -302,38 +332,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "413c7540b412c5b0"
+    "bytes": 80173,
+    "version": "d1656b84f3a327c9"
   },
   "pong": {
     "name": "Pong",
@@ -341,8 +376,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -350,38 +385,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "23b2aaa4cc74109f"
+    "bytes": 80173,
+    "version": "71a2b15a68aaf5a2"
   },
   "snake": {
     "name": "Snake Arena",
@@ -389,8 +429,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -398,38 +438,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "db39df9e6c4f8a90"
+    "bytes": 80173,
+    "version": "3321ce57736b48c9"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -437,8 +482,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "arcade.css",
@@ -446,38 +491,43 @@ self.OFFLINE_CATALOG = {
         "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
+      },
+      {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 56011,
-    "version": "05d84bdae172080c"
+    "bytes": 80173,
+    "version": "ee69b9942ea03561"
   },
   "maths-book": {
     "name": "Bookshelf",
@@ -655,28 +705,33 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+      },
+      {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade.css",
@@ -685,8 +740,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "assets/chronos/era-0-pre-void.png",
@@ -6030,8 +6085,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 38932,
-        "hash": "ff87423b0e60513426b368257322fada25333b7b787bd6d62bbc2fe1ff10a648"
+        "bytes": 38578,
+        "hash": "debbdb3ba86850ce112ecbce1c19fc352bd236adb0cd07c853eb1319efb8532d"
       },
       {
         "path": "invincible-sandbox.html",
@@ -6195,8 +6250,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 905394,
-        "hash": "32330c2a11325c64bb927d5dc11aeae1d664b9a25c76a39be16b541b747ed09e"
+        "bytes": 923261,
+        "hash": "557e82344a01b5c853306e9ea59d2166fdac194b87a67744c818addfd348d92f"
       },
       {
         "path": "offline.js",
@@ -6240,8 +6295,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "party.html",
-        "bytes": 11523,
-        "hash": "b693b754091049c1c781c2451d3ae002c2f7dcf3a26ccc7e0d414a476ba552ef"
+        "bytes": 11620,
+        "hash": "6e5f0a4cb7ce38ffbe6343a922f6441773cb301fcac18b13a1856f1b602ffe4e"
       },
       {
         "path": "piano.html",
@@ -6285,8 +6340,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "shit-spiral.html",
@@ -6405,8 +6460,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sw.js",
-        "bytes": 6104,
-        "hash": "d3ee00467114bdb4d4bf35a2ce053088ab79f217ec022e77311bfa76030dc567"
+        "bytes": 6127,
+        "hash": "0280ddf405aa16d0819f015b6f4aaff20fc9f39aded25ed7160ed9c6065de443"
       },
       {
         "path": "terraria.html",
@@ -6484,8 +6539,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363816352,
-    "version": "be1b71a0336091f9"
+    "bytes": 363858147,
+    "version": "a0808f9e3f78ef48"
   },
   "terraria-prototype": {
     "name": "Terraria Prototype",
@@ -6503,8 +6558,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "terraria.html",
@@ -6512,8 +6567,8 @@ self.OFFLINE_CATALOG = {
         "hash": "76e090d6745a53fd10d1c956d4c6a906c17a8dd10d15baa65bb4be6c616a29c5"
       }
     ],
-    "bytes": 443007,
-    "version": "76f660601d661307"
+    "bytes": 443129,
+    "version": "b8cebb7d1d48c16e"
   },
   "double-take": {
     "name": "Double Take",
@@ -6526,12 +6581,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 62820,
-    "version": "c72d594bc89d9822"
+    "bytes": 62942,
+    "version": "0bc826b856706ee3"
   },
   "shit-spiral": {
     "name": "Shit Spiral",
@@ -6554,8 +6609,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "shit-spiral.html",
@@ -6563,8 +6618,8 @@ self.OFFLINE_CATALOG = {
         "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
       }
     ],
-    "bytes": 52015,
-    "version": "6c290a1ffd2f610e"
+    "bytes": 52137,
+    "version": "3ffd0f5f882186ee"
   },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
@@ -6617,12 +6672,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 1099156,
-    "version": "e0ea18e4127e13b6"
+    "bytes": 1099278,
+    "version": "f4ec54e64c147174"
   },
   "piano": {
     "name": "Virtual Piano",
@@ -6635,12 +6690,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 11942,
-    "version": "10298180373df713"
+    "bytes": 12064,
+    "version": "cb07d914d06c3b5f"
   },
   "counter": {
     "name": "Counter",
@@ -6658,12 +6713,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 458729,
-    "version": "7c196bee179fb287"
+    "bytes": 458851,
+    "version": "1acf0ebcbd784fbc"
   },
   "force-pad": {
     "name": "Force Pad",
@@ -6841,28 +6896,33 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+      },
+      {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade.css",
@@ -6871,8 +6931,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "assets/chronos/era-0-pre-void.png",
@@ -12216,8 +12276,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 38932,
-        "hash": "ff87423b0e60513426b368257322fada25333b7b787bd6d62bbc2fe1ff10a648"
+        "bytes": 38578,
+        "hash": "debbdb3ba86850ce112ecbce1c19fc352bd236adb0cd07c853eb1319efb8532d"
       },
       {
         "path": "invincible-sandbox.html",
@@ -12381,8 +12441,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 905394,
-        "hash": "32330c2a11325c64bb927d5dc11aeae1d664b9a25c76a39be16b541b747ed09e"
+        "bytes": 923261,
+        "hash": "557e82344a01b5c853306e9ea59d2166fdac194b87a67744c818addfd348d92f"
       },
       {
         "path": "offline.js",
@@ -12426,8 +12486,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "party.html",
-        "bytes": 11523,
-        "hash": "b693b754091049c1c781c2451d3ae002c2f7dcf3a26ccc7e0d414a476ba552ef"
+        "bytes": 11620,
+        "hash": "6e5f0a4cb7ce38ffbe6343a922f6441773cb301fcac18b13a1856f1b602ffe4e"
       },
       {
         "path": "piano.html",
@@ -12471,8 +12531,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "shit-spiral.html",
@@ -12591,8 +12651,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sw.js",
-        "bytes": 6104,
-        "hash": "d3ee00467114bdb4d4bf35a2ce053088ab79f217ec022e77311bfa76030dc567"
+        "bytes": 6127,
+        "hash": "0280ddf405aa16d0819f015b6f4aaff20fc9f39aded25ed7160ed9c6065de443"
       },
       {
         "path": "terraria.html",
@@ -12670,8 +12730,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363816352,
-    "version": "14d9395dcc6db8c3"
+    "bytes": 363858147,
+    "version": "110b73f73baed7c6"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -12689,8 +12749,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "would-you-rather.html",
@@ -12698,8 +12758,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 458736,
-    "version": "0f3aef5433309875"
+    "bytes": 458858,
+    "version": "1e5b7eb312463ab5"
   },
   "karaoke-night": {
     "name": "Karaoke Night",
@@ -12817,13 +12877,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "note": "Online song search and streaming need internet. Local content works offline.",
-    "bytes": 156368706,
-    "version": "b644e7ef2b8f5324"
+    "bytes": 156368828,
+    "version": "7cea0f96edac8465"
   },
   "nextup": {
     "name": "NextUp",
@@ -12846,13 +12906,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "note": "Online song search and streaming need internet. Local content works offline.",
-    "bytes": 88068,
-    "version": "398157095a2a0347"
+    "bytes": 88190,
+    "version": "d4bca9f2afdac81d"
   },
   "who-wants-to-be-a-millionaire": {
     "name": "Who Wants to be a Millionaire",
@@ -12875,12 +12935,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 458239,
-    "version": "89096a6ecd7a3ee8"
+    "bytes": 458361,
+    "version": "b4d1b6d7a2738b2b"
   },
   "card-wars": {
     "name": "Card Wars",
@@ -17633,12 +17693,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 165155904,
-    "version": "26746e6577db37ee"
+    "bytes": 165156026,
+    "version": "1e69db1f2e39376b"
   },
   "truth-or-dare": {
     "name": "Truth or Dare",
@@ -17651,8 +17711,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "truth-or-dare.html",
@@ -17660,8 +17720,8 @@ self.OFFLINE_CATALOG = {
         "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
       }
     ],
-    "bytes": 59352,
-    "version": "12c3e3f06b3d14cf"
+    "bytes": 59474,
+    "version": "507063d18080c1a0"
   },
   "whos-more-likely": {
     "name": "Who's More Likely To?",
@@ -17679,8 +17739,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "whos-more-likely.html",
@@ -17688,8 +17748,8 @@ self.OFFLINE_CATALOG = {
         "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
       }
     ],
-    "bytes": 462014,
-    "version": "e7045c1f949d6e9c"
+    "bytes": 462136,
+    "version": "753cfd97e9ac45e8"
   },
   "impostor": {
     "name": "Impostor",
@@ -17707,12 +17767,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 438472,
-    "version": "ddbde008e6c75e65"
+    "bytes": 438594,
+    "version": "932fb230219bfdb6"
   },
   "sidequests": {
     "name": "Side Quests",
@@ -17720,8 +17780,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "sidequests.html",
@@ -17729,8 +17789,8 @@ self.OFFLINE_CATALOG = {
         "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
       }
     ],
-    "bytes": 29003,
-    "version": "98cf63ab20651fd5"
+    "bytes": 29125,
+    "version": "88ddb06fbe533f5e"
   },
   "darts": {
     "name": "Darts",
@@ -17743,12 +17803,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 34804,
-    "version": "a81cf58b08109bf1"
+    "bytes": 34926,
+    "version": "0e941fdbf5bc2f40"
   },
   "tic-tac-toe": {
     "name": "Tic Tac Toe",
@@ -17756,8 +17816,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "tic-tac-toe.html",
@@ -17765,8 +17825,8 @@ self.OFFLINE_CATALOG = {
         "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
       }
     ],
-    "bytes": 14055,
-    "version": "ca0bff1392838b55"
+    "bytes": 14177,
+    "version": "d68906cb5ac4aed0"
   },
   "dots-boxes": {
     "name": "Dots & Boxes",
@@ -17779,12 +17839,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 17514,
-    "version": "8e48a64b189bd403"
+    "bytes": 17636,
+    "version": "808393cefbf7d833"
   },
   "theft": {
     "name": "Theft",
@@ -17792,8 +17852,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "theft.html",
@@ -17801,8 +17861,8 @@ self.OFFLINE_CATALOG = {
         "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
       }
     ],
-    "bytes": 26735,
-    "version": "7597bff8d8a3ef3a"
+    "bytes": 26857,
+    "version": "78dd36be96682b1e"
   },
   "cards-against": {
     "name": "Cards Against Boredom",
@@ -17825,12 +17885,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 470637,
-    "version": "ac63f8253a853134"
+    "bytes": 470759,
+    "version": "01746019de8e99e3"
   },
   "reaction": {
     "name": "Reaction Game",
@@ -17848,12 +17908,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 36226,
-    "version": "eb97582b4b546355"
+    "bytes": 36348,
+    "version": "debf83488e259bb0"
   },
   "two-fingers": {
     "name": "Two Fingers",
@@ -17891,12 +17951,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 36808331,
-    "version": "6bbd4ce1f6f7a70a"
+    "bytes": 36808453,
+    "version": "9ecf61cfc690714b"
   },
   "solos-rng": {
     "name": "Solo's RNG",
@@ -17979,8 +18039,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "solos_rng.html",
@@ -17988,8 +18048,8 @@ self.OFFLINE_CATALOG = {
         "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
       }
     ],
-    "bytes": 3313087,
-    "version": "ac147cf516f83623"
+    "bytes": 3313209,
+    "version": "4395ab4164224cae"
   },
   "blackjack": {
     "name": "Black Jack",
@@ -18007,12 +18067,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 433986,
-    "version": "6c070b590c95a55a"
+    "bytes": 434108,
+    "version": "2121a368742d51a2"
   },
   "3d-drift": {
     "name": "Tokyo Drift",
@@ -18095,12 +18155,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 3232656,
-    "version": "34d332a7eda772a1"
+    "bytes": 3232778,
+    "version": "bfa11e7031d1ae4c"
   },
   "web_weavers": {
     "name": "Web Weavers",
@@ -18138,8 +18198,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "web_weavers.css",
@@ -18157,8 +18217,8 @@ self.OFFLINE_CATALOG = {
         "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
       }
     ],
-    "bytes": 5914002,
-    "version": "9b369705c152c622"
+    "bytes": 5914124,
+    "version": "b5847f49a176f462"
   },
   "hood-brawlers": {
     "name": "Hood Brawlers",
@@ -18196,12 +18256,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 131842,
-    "version": "ef409063d4547f6e"
+    "bytes": 131964,
+    "version": "1bbcd7aee14151ce"
   },
   "planet-architect": {
     "name": "Planet Architect",
@@ -18249,12 +18309,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 8148375,
-    "version": "b346d43c9df7c94e"
+    "bytes": 8148497,
+    "version": "bca9f99f5729e756"
   },
   "orbit-boss": {
     "name": "Orbit Boss",
@@ -18277,12 +18337,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 28130,
-    "version": "bca7629df751d2f7"
+    "bytes": 28252,
+    "version": "c07c5c131e19ff31"
   },
   "pac-man-3d": {
     "name": "Pac-Man 3D",
@@ -18320,12 +18380,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 1357231,
-    "version": "a322aaa7e43dc17c"
+    "bytes": 1357353,
+    "version": "0eb3ff9b8b04c1b5"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",
@@ -18503,28 +18563,33 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 8699,
-        "hash": "b12747a88b2e9b2fc11cc15cd9b972fb728d336097ee83c0a8bd8f64b9b0475b"
+        "bytes": 9516,
+        "hash": "60b1eec25200878d2800870da28aeec111f8782cbfc1bdf3e35cceef0991e7a6"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2979,
-        "hash": "61bd642f2cf3c7b15391842e2678141a8e2e3f037602cb87d6a7837674648e87"
+        "bytes": 2407,
+        "hash": "82339850b55926c5ef157da18eedee744a4f06aa8d2ea27a824acaab215dbe02"
+      },
+      {
+        "path": "arcade-immersive.css",
+        "bytes": 18826,
+        "hash": "ad5183fed1785e7765a254ea6f89deaf9e528894ed5e425aa850fe3b57a6f8aa"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 561,
-        "hash": "e23b01a5deb6285e10bf187a7306edfdf16e9bf4b00cc55ba22c3e79f458a684"
+        "bytes": 3553,
+        "hash": "16cb3ceb075f3bf860da8902911d9416c11f1f2fb4a85ac8d2a2bb804f9110e9"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 11663,
-        "hash": "a34d55d0d0a52645f6a7ba05757787a0b51956892962cdfdc6f85a725a2a7cb5"
+        "bytes": 12244,
+        "hash": "95979936d884e251b3ed0d8d30cc646ae6d03dd86029e0f54eb706fd9013c0f1"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 17199,
-        "hash": "73c49b1c977ab6e22654c02c9242510ee6550462da238325ed401805d5c893a1"
+        "bytes": 17324,
+        "hash": "729ffed77924d643ddf708f232480d974033e7c71ac863807ba57cb301007b23"
       },
       {
         "path": "arcade.css",
@@ -18533,8 +18598,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade.html",
-        "bytes": 1769,
-        "hash": "4e707b801120c0efd4600cd670c9630bac6123688c7d35e7b4e0d1a2346c9afe"
+        "bytes": 3040,
+        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
       },
       {
         "path": "assets/chronos/era-0-pre-void.png",
@@ -23878,8 +23943,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "index.html",
-        "bytes": 38932,
-        "hash": "ff87423b0e60513426b368257322fada25333b7b787bd6d62bbc2fe1ff10a648"
+        "bytes": 38578,
+        "hash": "debbdb3ba86850ce112ecbce1c19fc352bd236adb0cd07c853eb1319efb8532d"
       },
       {
         "path": "invincible-sandbox.html",
@@ -24043,8 +24108,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 905394,
-        "hash": "32330c2a11325c64bb927d5dc11aeae1d664b9a25c76a39be16b541b747ed09e"
+        "bytes": 923261,
+        "hash": "557e82344a01b5c853306e9ea59d2166fdac194b87a67744c818addfd348d92f"
       },
       {
         "path": "offline.js",
@@ -24088,8 +24153,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "party.html",
-        "bytes": 11523,
-        "hash": "b693b754091049c1c781c2451d3ae002c2f7dcf3a26ccc7e0d414a476ba552ef"
+        "bytes": 11620,
+        "hash": "6e5f0a4cb7ce38ffbe6343a922f6441773cb301fcac18b13a1856f1b602ffe4e"
       },
       {
         "path": "piano.html",
@@ -24133,8 +24198,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "shit-spiral.html",
@@ -24253,8 +24318,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "sw.js",
-        "bytes": 6104,
-        "hash": "d3ee00467114bdb4d4bf35a2ce053088ab79f217ec022e77311bfa76030dc567"
+        "bytes": 6127,
+        "hash": "0280ddf405aa16d0819f015b6f4aaff20fc9f39aded25ed7160ed9c6065de443"
       },
       {
         "path": "terraria.html",
@@ -24332,8 +24397,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 363816352,
-    "version": "a4be66ce2656f0b9"
+    "bytes": 363858147,
+    "version": "0db4f36755eae377"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -24406,12 +24471,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 760941,
-    "version": "4c20b0d21915481a"
+    "bytes": 761063,
+    "version": "7772dda585a2f4b0"
   },
   "sling-champ": {
     "name": "Sling Champ",
@@ -24429,8 +24494,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "sling_champ.html",
@@ -24438,8 +24503,8 @@ self.OFFLINE_CATALOG = {
         "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
       }
     ],
-    "bytes": 149170,
-    "version": "4aad768294036ec8"
+    "bytes": 149292,
+    "version": "b613b3bc3e20294c"
   },
   "relic-rush": {
     "name": "Relic Rush",
@@ -24482,12 +24547,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 679884,
-    "version": "1522cdd67d4be30b"
+    "bytes": 680006,
+    "version": "b5dd42f701018813"
   },
   "slot-machine": {
     "name": "Slot Machine",
@@ -24495,8 +24560,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "slot-machine.html",
@@ -24509,8 +24574,8 @@ self.OFFLINE_CATALOG = {
         "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
       }
     ],
-    "bytes": 32727,
-    "version": "7aa2d7051e79a627"
+    "bytes": 32849,
+    "version": "dcbdbc0c00ca637b"
   },
   "fidget-roulette": {
     "name": "Fidget Roulette",
@@ -24523,12 +24588,12 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 22812,
-    "version": "43ea65ee98d8af0c"
+    "bytes": 22934,
+    "version": "65752df27279f833"
   },
   "tilt-maze": {
     "name": "Tilt Maze Runner",
@@ -24551,8 +24616,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "tilt_maze_runner.html",
@@ -24560,8 +24625,8 @@ self.OFFLINE_CATALOG = {
         "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
       }
     ],
-    "bytes": 1972476,
-    "version": "8fabca4b6edb92f6"
+    "bytes": 1972598,
+    "version": "57d5af8df82ac79b"
   },
   "multiplayer-test": {
     "name": "Parkour",
@@ -24609,11 +24674,11 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-app-menu.js",
-        "bytes": 5221,
-        "hash": "6bba8cf5fc7e06a18d4cd573395ad53caa31ea2a1f8784ae8fd30cdc7a948d2f"
+        "bytes": 5343,
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 4068391,
-    "version": "38acfeafd691d6ae"
+    "bytes": 4068513,
+    "version": "50c979aedf6205df"
   }
 };

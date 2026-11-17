@@ -1,0 +1,40 @@
+const fs=require("node:fs"),vm=require("node:vm"),assert=require("node:assert/strict"),path=require("node:path");
+const root=path.resolve(__dirname,"..");
+function setup(gameId){
+ const nodes={},listeners={};const el=id=>nodes[id]||=({id,textContent:"",hidden:true,dataset:{},listeners:{},children:[],style:{},setAttribute(name,val){this[name]=val},addEventListener(name,fn){this.listeners[name]=fn},focus(){},querySelectorAll(){return this.buttons||[]},querySelector(){return this.textarea||null},replaceChildren(...children){this.children=children}});
+ const ids=["gameTitle","gameDescription","gameLabel","game","introTitle","introDescription","introIcon","introCategory","introControls","menuControls","menuTitle","gameIntro","gameMenu","playGame","menuToggle","resumeGame","restartGame","menuParty","partyLink","themeToggle","fullscreenToggle"];
+ ids.forEach(el);
+ const document={body:{dataset:{}},documentElement:{dataset:{}},getElementById:el,addEventListener(name,fn){listeners[name]=fn}};
+ let redirect=null,reload=false;
+ const location={href:"https://example.test/Rod-Space/arcade.html"+(gameId?"?game="+gameId:""),replace(url){redirect=url},reload(){reload=true}};
+ const state=new Map();
+ const window={};
+ const context={window,document,location,URL,console,setInterval:()=>1,setTimeout:()=>1,clearInterval(){},requestAnimationFrame:()=>1,localStorage:{getItem:k=>state.get(k)||null,setItem:(k,v)=>state.set(k,v)},Date,Math,Array,Number,String,Set,Map,JSON};
+ vm.createContext(context);
+ vm.runInContext(fs.readFileSync(path.join(root,"arcade-core.js"),"utf8"),context);
+ if(gameId){context.window.Arcade.register(gameId,game=>{game.replaceChildren({name:"game mounted"})});}
+ if(gameId)vm.runInContext(fs.readFileSync(path.join(root,"arcade-init.js"),"utf8"),context);
+ else context.window.Arcade.mount();
+ return {nodes,document,listeners,location,get redirect(){return redirect},get reload(){return reload},context};
+}
+const blank=setup(null);
+assert.equal(blank.redirect,"https://example.test/Rod-Space/","arcade landing redirects home");
+const solo=setup("2048");
+assert.equal(solo.document.body.dataset.game,"2048");
+assert.equal(solo.nodes.gameTitle.textContent,"2048");
+assert.equal(solo.nodes.gameDescription.textContent,"Merge matching numbers");
+assert.equal(solo.nodes.game.children.length,1);
+assert.equal(solo.nodes.gameIntro.hidden,false,"game opens with its own splash screen");
+solo.nodes.playGame.listeners.click();
+assert.equal(solo.nodes.gameIntro.hidden,true,"Play starts game");
+solo.nodes.menuToggle.listeners.click();
+assert.equal(solo.nodes.gameMenu.hidden,false,"menu opens");
+solo.nodes.resumeGame.listeners.click();
+assert.equal(solo.nodes.gameMenu.hidden,true,"menu closes");
+const multi=setup("pong");
+assert.equal(multi.nodes.menuParty.hidden,false,"party route preserved");
+assert.equal(multi.nodes.partyLink.hidden,true,"avoid duplicate party navigation");
+const theme=setup("wordle");
+theme.nodes.themeToggle.listeners.click();
+assert.equal(theme.document.documentElement.dataset.theme,"light");
+console.log("PASS: No arcade landing; full-screen game routing, game menu, party separation, theme control");

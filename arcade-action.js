@@ -14,7 +14,17 @@ function tick(dt){if(!active)return;const speed=6.4*dt;if(keys.KeyW)p1-=speed;if
 if(ball.vx<0&&ball.x<35&&ball.x>20&&Math.abs(ball.y-p1)<paddleH/2+8){ball.x=35;ball.vx=Math.min(10,Math.abs(ball.vx)*1.07);ball.vy+=(ball.y-p1)/27}
 if(ball.vx>0&&ball.x>W-35&&ball.x<W-20&&Math.abs(ball.y-p2)<paddleH/2+8){ball.x=W-35;ball.vx=-Math.min(10,Math.abs(ball.vx)*1.07);ball.vy+=(ball.y-p2)/27}
 if(ball.x<0||ball.x>W){if(ball.x<0)b++;else a++;updateScores();if(Math.max(a,b)>=7){active=false;msg.textContent=(a>b?"Player 1":mode.value==="cpu"?"Computer":"Player 2")+" wins!";return}serve(ball.x<0?1:-1)}}
-function draw(){ctx.fillStyle="#090f1b";ctx.fillRect(0,0,W,H);ctx.fillStyle="#334155";for(let y=10;y<H;y+=30)ctx.fillRect(W/2-2,y,4,17);ctx.fillStyle="#60a5fa";ctx.fillRect(20,p1-paddleH/2,paddleW,paddleH);ctx.fillStyle="#e879f9";ctx.fillRect(W-32,p2-paddleH/2,paddleW,paddleH);ctx.fillStyle="#f8fafc";ctx.beginPath();ctx.arc(ball.x,ball.y,9,0,Math.PI*2);ctx.fill()}
+function draw(){
+ctx.fillStyle="#08091c";ctx.fillRect(0,0,W,H);
+ctx.fillStyle="#1e2147";for(let x=0;x<W;x+=42)ctx.fillRect(x,0,1,H);for(let y=0;y<H;y+=42)ctx.fillRect(0,y,W,1);
+ctx.fillStyle="#4c2e76";ctx.fillRect(0,0,W,4);ctx.fillRect(0,H-4,W,4);
+ctx.fillStyle="#6d4ba2";for(let y=9;y<H;y+=32)ctx.fillRect(W/2-2,y,4,15);
+ctx.shadowColor="#57dbff";ctx.shadowBlur=25;ctx.fillStyle="#68ddff";ctx.fillRect(20,p1-paddleH/2,paddleW,paddleH);
+ctx.shadowColor="#ff58ce";ctx.fillStyle="#ff7fdf";ctx.fillRect(W-32,p2-paddleH/2,paddleW,paddleH);
+ctx.shadowColor="#ffffff";ctx.shadowBlur=24;ctx.fillStyle="#f8fafc";
+for(let i=4;i>0;i--){ctx.globalAlpha=(5-i)*.045;ctx.beginPath();ctx.arc(ball.x-ball.vx*i*2.5,ball.y-ball.vy*i*2.5,9+i*1.1,0,Math.PI*2);ctx.fill()}
+ctx.globalAlpha=1;ctx.beginPath();ctx.arc(ball.x,ball.y,9,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0
+}
 function loop(t){const dt=Math.min(2.5,(t-(last||t))/16.67);last=t;if(!document.hidden)tick(dt);draw();request=requestAnimationFrame(loop)}
 document.addEventListener("keydown",e=>{if(["KeyW","KeyS","ArrowUp","ArrowDown"].includes(e.code)){e.preventDefault();keys[e.code]=true}});document.addEventListener("keyup",e=>{keys[e.code]=false});
 c.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"&&e.buttons===0&&mode.value==="two")return;const rect=c.getBoundingClientRect();pointer=(e.clientY-rect.top)*H/rect.height});c.addEventListener("pointerdown",e=>{const rect=c.getBoundingClientRect();pointer=(e.clientY-rect.top)*H/rect.height;c.setPointerCapture(e.pointerId)});c.addEventListener("pointerup",()=>{pointer=null});mode.onchange=()=>{active=false;updateScores();msg.textContent="Press Start game to play.";};updateScores();msg.textContent="Press Start game to play.";request=requestAnimationFrame(loop);
@@ -34,7 +44,18 @@ function blocked(p){return p.x<0||p.x>=C||p.y<0||p.y>=R||snakes.some(s=>s.body.s
 function botDirection(s){const head=s.body[0],foodTarget=closestFood(head);const choices=headings.filter(d=>!(d[0]===-s.dir[0]&&d[1]===-s.dir[1])).filter(d=>!blocked({x:head.x+d[0],y:head.y+d[1]}));if(!choices.length)return s.dir;choices.sort((a,b)=>{const aa=foodTarget?Math.abs(head.x+a[0]-foodTarget.x)+Math.abs(head.y+a[1]-foodTarget.y):0,bb=foodTarget?Math.abs(head.x+b[0]-foodTarget.x)+Math.abs(head.y+b[1]-foodTarget.y):0;return aa-bb});return Math.random()<.82?choices[0]:choices[Math.floor(Math.random()*choices.length)]}
 function step(){if(!running)return;snakes.forEach((s,idx)=>{if(!s.alive)return;const dir=idx===0?queued:botDirection(s);if(!(dir[0]===-s.dir[0]&&dir[1]===-s.dir[1]))s.dir=[...dir];const h=s.body[0],next={x:h.x+s.dir[0],y:h.y+s.dir[1]};if(blocked(next)){s.alive=false;if(idx===0){running=false;clearInterval(timer);status.textContent="Game over. Final score: "+points+". Press Restart.";highScore("snake.best",points)}return}const hit=food.findIndex(f=>f.x===next.x&&f.y===next.y);s.body.unshift(next);if(hit<0)s.body.pop();else{food.splice(hit,1);addFood();if(idx===0)points+=10}});if(running){for(let i=1;i<snakes.length;i++)if(!snakes[i].alive)snakes[i]=makeSnake(...(i%2?[C-7,8]:[6,R-7]),i%2?[-1,0]:[1,0],i)}renderStats();draw()}
 function renderStats(){scoreEl.textContent="Score "+points;bestEl.textContent="Best "+highScore("snake.best",points)}
-function draw(){ctx.fillStyle="#090f1b";ctx.fillRect(0,0,W,H);ctx.fillStyle="#334155";for(let x=0;x<W;x+=cell)ctx.fillRect(x,0,.5,H);for(let y=0;y<H;y+=cell)ctx.fillRect(0,y,W,.5);ctx.fillStyle="#f97316";food.forEach(f=>{ctx.beginPath();ctx.arc(f.x*cell+cell/2,f.y*cell+cell/2,5,0,Math.PI*2);ctx.fill()});snakes.forEach(s=>{if(!s.alive)return;ctx.fillStyle=colors[s.index];s.body.forEach((seg,i)=>{ctx.globalAlpha=i===0?1:Math.max(.5,1-i*.02);ctx.fillRect(seg.x*cell+1,seg.y*cell+1,cell-2,cell-2)});ctx.globalAlpha=1})}
+function draw(){
+ctx.fillStyle="#04160d";ctx.fillRect(0,0,W,H);
+ctx.fillStyle="#12321e";for(let x=0;x<W;x+=cell)ctx.fillRect(x,0,1,H);for(let y=0;y<H;y+=cell)ctx.fillRect(0,y,W,1);
+ctx.shadowColor="#fb9c43";ctx.shadowBlur=12;ctx.fillStyle="#ffa63e";
+food.forEach(f=>{ctx.beginPath();ctx.arc(f.x*cell+cell/2,f.y*cell+cell/2,5.6,0,Math.PI*2);ctx.fill()});ctx.shadowBlur=0;
+snakes.forEach(s=>{if(!s.alive)return;ctx.shadowColor=colors[s.index];ctx.shadowBlur=9;ctx.fillStyle=colors[s.index];
+s.body.forEach((seg,i)=>{ctx.globalAlpha=i===0?1:Math.max(.42,1-i*.027);ctx.fillRect(seg.x*cell+1,seg.y*cell+1,cell-2,cell-2)});
+ctx.globalAlpha=1;ctx.shadowBlur=0;const h=s.body[0];ctx.fillStyle="#0b2315";
+ctx.beginPath();ctx.arc(h.x*cell+5,h.y*cell+5,1.8,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.arc(h.x*cell+10,h.y*cell+5,1.8,0,Math.PI*2);ctx.fill()
+})
+}
 document.addEventListener("keydown",e=>{const map={ArrowUp:[0,-1],KeyW:[0,-1],ArrowDown:[0,1],KeyS:[0,1],ArrowLeft:[-1,0],KeyA:[-1,0],ArrowRight:[1,0],KeyD:[1,0]};if(map[e.code]){e.preventDefault();setDir(...map[e.code])}});
 [["↑",0,-1],["←",-1,0],["↓",0,1],["→",1,0]].forEach(([symbol,dx,dy])=>pad.append(button(symbol,()=>setDir(dx,dy),"secondary")));
 c.addEventListener("pointermove",e=>{if(!running||e.pointerType==="mouse"&&e.buttons===0)return;const r=c.getBoundingClientRect(),head=snakes[0].body[0],dx=(e.clientX-r.left)*W/r.width-head.x*cell,dy=(e.clientY-r.top)*H/r.height-head.y*cell;if(Math.abs(dx)>Math.abs(dy))setDir(Math.sign(dx),0);else setDir(0,Math.sign(dy))});

@@ -33,7 +33,7 @@ Not actively looking for contributors right now, but suggestions and feedback ar
 MIT License# Rod-Space
 
 ## Arcade games (November 2026)
-Open `arcade.html` or follow **Arcade** from the home page. Single-player games: Fast Typing, 2048, Daily Wordle, Minesweeper, Pong, Snake Arena (computer-controlled bots), Turn-Based Combat. Local one-device games: Heads Up, UNO-style Cards, Snakes & Ladders. Platformer and network multiplayer are planned, not yet implemented.
+Launch games directly from the Rod Space home catalog or **Party Space**; the plain `arcade.html` route returns home. Single-player games: Fast Typing, 2048, Daily Wordle, Minesweeper, Snake Arena (computer-controlled bots), Turn-Based Combat. Local one-device games: Pong, Heads Up, UNO-style Cards, Snakes & Ladders. Platformer and network multiplayer are planned, not yet implemented.
 
 The games use plain HTML/CSS/JavaScript with no remote dependencies. Records and preferences are stored locally in the browser (not a global leaderboard). Wordle uses a deterministic five-letter word tied to the visitor's **local calendar date**; its day number counts down to December 31 (day 0), and the yearly sequence changes on January 1. Local multiplayer games share a device; there is **no Socket.IO server** or public room-code matchmaking at this stage.
 
@@ -52,3 +52,6 @@ The native macOS application serves a bundled copy of this directory from `Rod S
 The website consists of static files suitable for GitHub Pages. Run `python3 scripts/build-offline-catalog.py` after changes to game assets to recalculate verified download hashes and update the service-worker shell version. The arcade shell is pre-cached for offline use. The download index and native bundle are separate; do not assume a GitHub push updates the installed Mac app automatically.
 
 The site has Open Graph and description metadata, a robots.txt file, keyboard controls and accessible labels. Optional analytics would require a configured service and user-consent decisions; none is enabled.
+
+### Full-screen game layouts
+Each game uses a dedicated immersive visual theme, in-game menu and restart controls. Solo games appear on Rod Space. All games with a local multiplayer mode, including Pong, are listed under Party Space. The arcade landing page and sidebar have been removed. Catalog descriptions are limited to three words.

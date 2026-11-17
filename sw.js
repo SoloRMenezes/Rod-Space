@@ -1,10 +1,10 @@
 importScripts('./offline-catalog.js?v=11');
-const SHELL = 'rod-shell-411d54cea9c32494';
+const SHELL = 'rod-shell-b429ac9d76e7a1d9';
 const PREFIX = 'rod-game-';
 const BASE = new URL('./', self.location.href);
 const absolute = p => new URL(p, BASE).href;
 const META = absolute('__offline_metadata__');
-const shellFiles = ['./','index.html','party.html','arcade.html','arcade.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','site-theme.js','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js'];
+const shellFiles = ['./','index.html','party.html','arcade.html','arcade.css','arcade-immersive.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','site-theme.js','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js'];
 self.addEventListener('install', e => e.waitUntil((async () => {
   const cache = await caches.open(SHELL);
   await cache.addAll(shellFiles.map(absolute));

@@ -64,7 +64,6 @@
 
         <div class="flex items-center gap-2 sm:gap-4">
           <button id="homeThemeToggle" type="button" class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300" aria-label="Toggle light and dark theme">☀ Light</button>
-          <a href="./arcade.html" class="group flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-500/10 px-3.5 py-1.5 font-mono text-xs font-medium text-blue-300 transition hover:bg-blue-500/20">Arcade</a>
           <a
             href="./party.html"
             class="group flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1.5 font-mono text-xs font-medium text-emerald-300 transition-colors hover:border-emerald-400/40 hover:text-white"
@@ -209,16 +208,16 @@
       });
       const BASE_URL = new URL("./", location.href).href;
       const PROJECTS_DATA = [
-        {id:"headsup",name:"Heads Up",description:"Guess prompts with friends",url:BASE_URL+"arcade.html?game=headsup",icon:"🎭",type:"party",pill:"Party",date:"2026-11-16"},
-        {id:"uno",name:"UNO-style Cards",description:"Pass-and-play colour matching",url:BASE_URL+"arcade.html?game=uno",icon:"🃏",type:"party",pill:"Party",date:"2026-11-16"},
-        {id:"ladders",name:"Snakes & Ladders",description:"Board game for two to four",url:BASE_URL+"arcade.html?game=ladders",icon:"🎲",type:"party",pill:"Party",date:"2026-11-16"},
-        {id:"typing",name:"Fast Typing",description:"Speed and accuracy challenge",url:BASE_URL+"arcade.html?game=typing",icon:"⌨",type:"solo",pill:"Game",date:"2026-11-16"},
-        {id:"2048",name:"2048",description:"Merge numbers to reach 2048",url:BASE_URL+"arcade.html?game=2048",icon:"🔢",type:"solo",pill:"Game",date:"2026-11-16"},
-        {id:"wordle",name:"Daily Wordle",description:"A new five-letter word each day",url:BASE_URL+"arcade.html?game=wordle",icon:"🟩",type:"solo",pill:"Game",date:"2026-11-16"},
-        {id:"mines",name:"Minesweeper",description:"Clear the field without hitting mines",url:BASE_URL+"arcade.html?game=mines",icon:"💣",type:"solo",pill:"Game",date:"2026-11-16"},
-        {id:"pong",name:"Pong",description:"Solo and local two-player modes",url:BASE_URL+"arcade.html?game=pong",icon:"🏓",type:"solo",pill:"Game",date:"2026-11-16"},
-        {id:"snake",name:"Snake Arena",description:"Compete against computer snakes",url:BASE_URL+"arcade.html?game=snake",icon:"🐍",type:"solo",pill:"Game",date:"2026-11-16"},
-        {id:"combat",name:"Turn-Based Combat",description:"Fight enemies using skills and strategy",url:BASE_URL+"arcade.html?game=combat",icon:"⚔",type:"solo",pill:"Game",date:"2026-11-16"},
+        {id:"headsup",name:"Heads Up",description:"Guess together fast",url:BASE_URL+"arcade.html?game=headsup",icon:"🎭",type:"party",pill:"Party",date:"2026-11-16"},
+        {id:"uno",name:"UNO-style Cards",description:"Match coloured cards",url:BASE_URL+"arcade.html?game=uno",icon:"🃏",type:"party",pill:"Party",date:"2026-11-16"},
+        {id:"ladders",name:"Snakes & Ladders",description:"Roll climb win",url:BASE_URL+"arcade.html?game=ladders",icon:"🎲",type:"party",pill:"Party",date:"2026-11-16"},
+        {id:"typing",name:"Fast Typing",description:"Typing speed challenge",url:BASE_URL+"arcade.html?game=typing",icon:"⌨",type:"solo",pill:"Game",date:"2026-11-16"},
+        {id:"2048",name:"2048",description:"Merge matching tiles",url:BASE_URL+"arcade.html?game=2048",icon:"🔢",type:"solo",pill:"Game",date:"2026-11-16"},
+        {id:"wordle",name:"Daily Wordle",description:"Daily word puzzle",url:BASE_URL+"arcade.html?game=wordle",icon:"🟩",type:"solo",pill:"Game",date:"2026-11-16"},
+        {id:"mines",name:"Minesweeper",description:"Clear hidden mines",url:BASE_URL+"arcade.html?game=mines",icon:"💣",type:"solo",pill:"Game",date:"2026-11-16"},
+        {id:"pong",name:"Pong",description:"Neon paddle duels",url:BASE_URL+"arcade.html?game=pong",icon:"🏓",type:"party",pill:"Game",date:"2026-11-16"},
+        {id:"snake",name:"Snake Arena",description:"Outgrow rival snakes",url:BASE_URL+"arcade.html?game=snake",icon:"🐍",type:"solo",pill:"Game",date:"2026-11-16"},
+        {id:"combat",name:"Turn-Based Combat",description:"Defeat the challenger",url:BASE_URL+"arcade.html?game=combat",icon:"⚔",type:"solo",pill:"Game",date:"2026-11-16"},
         {
           id: "maths-book",
           name: "Bookshelf",
@@ -455,7 +454,7 @@
         {
           id: "two-fingers",
           name: "Two Fingers",
-          description: "Fingerboard with two fingers",
+          description: "Two finger tricks",
           url: BASE_URL + "fingerboard.html",
           icon: "🛹",
           type: "solo",

@@ -4,23 +4,58 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d1117">
-<meta name="description" content="Play free browser games on Rod Space: 2048, Wordle, Minesweeper, Fast Typing, Pong, Snake Arena, Heads Up, UNO, Snakes and Ladders and turn-based combat.">
+<meta name="description" content="Play immersive Rod Space browser games. Fast Typing, 2048, Wordle, Minesweeper, Pong, Snake Arena, Heads Up, UNO-style cards, Snakes and Ladders, and turn-based combat.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Rod Space Arcade">
-<meta property="og:description" content="Free browser arcade games and local party games.">
-<title>Arcade — Rod Space</title>
+<meta property="og:title" content="Rod Space Games">
+<meta property="og:description" content="Play full-screen browser games.">
+<title>Rod Space — Game</title>
 <link rel="stylesheet" href="arcade.css">
+<link rel="stylesheet" href="arcade-immersive.css">
 </head>
-<body>
-<header class="site-header">
-<a href="./" class="back" aria-label="Back to Rod Space">← <span>ROD <b>SPACE</b></span></a>
-<nav aria-label="Arcade"><a href="arcade.html">All games</a><a href="party.html">Party Space</a></nav>
-<button id="themeToggle" type="button" class="secondary" aria-label="Toggle light or dark theme">☀ Theme</button>
+<body class="game-world">
+<header class="game-topbar">
+  <a href="./" class="brand" aria-label="Back to Rod Space"><span class="brand-mark">R</span><span>ROD <strong>SPACE</strong></span></a>
+  <div class="top-actions">
+    <a href="party.html" id="partyLink" title="Party Space">Party</a>
+    <button type="button" id="fullscreenToggle" aria-label="Expand game" title="Expand game">⛶</button>
+    <button type="button" id="themeToggle" aria-label="Toggle theme" title="Toggle theme">☼</button>
+    <button type="button" id="menuToggle" aria-label="Game menu" title="Game menu">☰</button>
+  </div>
 </header>
-<main class="container">
-<div class="hero"><p class="eyebrow">ROD SPACE / ARCADE</p><h1 id="gameTitle">Arcade</h1><p id="gameDescription">Play something.</p></div>
-<div class="layout"><section id="game" class="game-panel" aria-label="Game area"></section><aside class="side"><h2>Other games</h2><nav id="gameNav" aria-label="Other games"></nav><p class="aside-note">Local multiplayer uses one device. Online matchmaking is not available yet.</p></aside></div>
+<main class="game-stage">
+  <div class="game-heading">
+    <span id="gameLabel" class="game-label">ROD SPACE / GAME</span>
+    <h1 id="gameTitle">Rod Space</h1>
+    <p id="gameDescription" class="game-tagline"></p>
+  </div>
+  <section id="game" class="game-panel" aria-label="Game area"></section>
 </main>
+<div class="game-overlay" id="gameIntro" role="dialog" aria-modal="true" aria-labelledby="introTitle" hidden>
+  <section class="overlay-card">
+    <span id="introIcon" class="poster" aria-hidden="true">✦</span>
+    <span id="introCategory" class="eyebrow">ROD SPACE / GAME</span>
+    <h2 id="introTitle">GAME</h2>
+    <p id="introDescription"></p>
+    <div id="introControls" class="help-text"></div>
+    <div class="overlay-actions">
+      <button type="button" id="playGame">PLAY</button>
+      <a href="./" id="introBack">ROD SPACE</a>
+    </div>
+  </section>
+</div>
+<div class="game-overlay" id="gameMenu" role="dialog" aria-modal="true" aria-labelledby="menuTitle" hidden>
+  <section class="overlay-card">
+    <span class="eyebrow">ROD SPACE / GAME MENU</span>
+    <h2 id="menuTitle">PAUSED</h2>
+    <div id="menuControls" class="help-text"></div>
+    <div class="overlay-actions">
+      <button type="button" id="resumeGame">RESUME</button>
+      <button type="button" id="restartGame">RESTART</button>
+      <a href="./">ROD SPACE</a>
+      <a href="party.html" id="menuParty">PARTY SPACE</a>
+    </div>
+  </section>
+</div>
 <script src="arcade-core.js"></script>
 <script src="arcade-puzzles.js"></script>
 <script src="arcade-action.js"></script>
