@@ -6,7 +6,7 @@ const catalog=[
 ["wordle","Daily Wordle","Guess today's word","🟩","solo"],
 ["mines","Minesweeper","Clear hidden mines","💣","solo"],
 ["snake","Snake Arena","Outgrow rival snakes","🐍","solo"],
-["combat","Turn-Based Combat","Defeat the challenger","⚔","solo"],
+["combat","Turn-Based Combat","Choose battle mode","⚔","solo"],
 ["pong","Pong","Paddle duel","🏓","party"],
 ["headsup","Heads Up","Guess under pressure","🎭","party"],
 ["uno","UNO-style Cards","Match coloured cards","🃏","party"],

@@ -251,6 +251,14 @@ body[data-game="combat"] .battle-mana-track {height:6px}
 body[data-game="combat"] .battle-mana-fill {background:#5299c9}
 body[data-game="combat"] .battle-dialogue {width:min(880px,100%);min-height:44px;padding:10px 14px;border:2px solid #738972;border-radius:8px;background:#203a31;color:#f4f1dc;font-size:14px;line-height:1.45}
 body[data-game="combat"] .battle-dialogue div+div {margin-top:3px;color:#becbbb;font-size:12px}
+body[data-game="combat"] .combat-menu,body[data-game="combat"] .combat-lan {width:min(620px,100%);margin:0 auto;padding:20px 12px;text-align:center}
+body[data-game="combat"] .combat-menu h2,body[data-game="combat"] .combat-lan h2 {margin:0 0 8px;font-size:clamp(22px,4vw,32px)}
+body[data-game="combat"] .combat-menu p,body[data-game="combat"] .combat-lan p {color:var(--muted,#c4d0c7);line-height:1.5}
+body[data-game="combat"] .combat-menu button,body[data-game="combat"] .combat-lan button {display:block;width:min(360px,100%);min-height:52px;margin:12px auto}
+body[data-game="combat"] .combat-lan input {display:block;width:min(360px,100%);min-height:46px;margin:14px auto;padding:10px 12px;border:1px solid #657b6a;border-radius:6px;background:#f6f2dc;color:#263a31;font:inherit}
+body[data-game="combat"] .combat-rooms {display:grid;gap:8px}
+body[data-game="combat"] .combat-rooms button {margin:0 auto}
+body[data-game="combat"] .combat-toolbar button {min-height:38px}
 body[data-game="combat"] .battle-actions {display:grid;width:min(880px,100%);grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px auto 0;padding:8px;border:2px solid #738972;border-radius:8px;background:#e3e2c9}
 body[data-game="combat"] .battle-action {display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:54px;padding:9px 14px;border:1px solid #6f826e;border-radius:6px;background:#f6f2dc;color:#283a30;box-shadow:0 2px 0 #758570;font-size:14px;text-align:left}
 body[data-game="combat"] .battle-action:hover:not(:disabled) {background:#fff9e7;filter:none;transform:translateY(-1px)}
@@ -259,6 +267,9 @@ body[data-game="combat"] .battle-action:disabled {opacity:.48}
 body[data-game="combat"] .message {color:#edc478}
 @media(max-width:640px) {
   body[data-game="combat"] .game-stage {padding-left:12px;padding-right:12px}
+  body[data-game="combat"] .battle-toolbar {flex-wrap:wrap;gap:6px}
+  body[data-game="combat"] .battle-toolbar button {font-size:12px;padding:7px 9px}
+  body[data-game="combat"] .combat-menu,body[data-game="combat"] .combat-lan {padding:14px 4px}
   body[data-game="combat"] .duel-scene {height:290px}
   body[data-game="combat"] .battle-status {width:60%;padding:8px 10px}
   body[data-game="combat"] .battle-name {font-size:13px}

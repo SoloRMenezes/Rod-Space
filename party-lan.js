@@ -24,3 +24,4 @@ const PartyLan=(()=>{
  return{encode,decode,host,join};
 })();
 if(typeof module!=='undefined')module.exports=PartyLan;
+globalThis.PartyLan=PartyLan;

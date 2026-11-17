@@ -34,6 +34,8 @@ assert.ok(nativeWordleInput?.focused,"focus native input so mobile can open its 
 nativeWordleInput.value="A";nativeWordleInput.listeners.input();
 assert.equal(wordleRoot.children[2].children[0].textContent,"A","native mobile keyboard letters update the Wordle board");
 const combatRoot=new FakeElement("section");registered.combat(combatRoot);
+assert.equal(combatRoot.children[0].children[0].textContent,"Choose how to play","combat starts at a mode menu");
+combatRoot.children[0].children[2].listeners.click();
 assert.equal(combatRoot.children.find(el=>el.className==="duel-scene").children.length,2,"combat uses two opposing battle positions");
 assert.equal(combatRoot.children.find(el=>el.className==="choice-row battle-actions").children.length,4,"combat keeps four turn actions");
 assert.ok(combatRoot.children.some(el=>el.className==="battle-dialogue"),"combat has a battle dialogue panel");

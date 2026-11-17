@@ -11,7 +11,7 @@ const help={
 "mines":"Reveal safe squares. Right-click to flag suspected mines, or turn on Flag mode for touchscreens.",
 "snake":"Steer using arrow keys, WASD or swipes. Collect food, outgrow the rival snakes and avoid collisions.",
 "pong":"Move with W and S or drag the left paddle. In two-player mode, Player 2 uses the arrow keys. First to 7 wins.",
-"combat":"Attack for damage and mana. Spend mana on special strikes and healing. Guard to reduce the next hit.",
+"combat":"Choose solo to battle a bot, or host and join an online battle from two phones. Take turns using attacks, healing and guard.",
 "headsup":"Hold the screen facing your teammates. They describe the displayed word; press Correct or Pass.",
 "uno":"Pass the device between players. Match the active colour or the top value. Wild cards change colours.",
 "ladders":"Take turns rolling the die. Climb ladders, slide down snakes, and land exactly on square 100."
