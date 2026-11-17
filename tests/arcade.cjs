@@ -6,6 +6,9 @@ const root=path.resolve(__dirname,".."),get=name=>fs.readFileSync(path.join(root
 const files=["arcade.html","arcade.css","arcade-immersive.css","arcade-core.js","arcade-puzzles.js","arcade-action.js","arcade-party.js","arcade-init.js","site-theme.js"];
 for(const file of files)assert.ok(fs.existsSync(path.join(root,file)),file+" exists");
 const html=get("arcade.html"),index=get("index.html"),party=get("party.html");
+assert.match(get("arcade-puzzles.js"),/boardEl\.addEventListener\("touchstart"/,"2048 tracks touch swipes on the board");
+assert.match(get("arcade-puzzles.js"),/boardEl\.addEventListener\("touchend"/,"2048 turns swipes into moves");
+assert.match(get("arcade-immersive.css"),/body\[data-game="2048"\] \.direction-pad \{display:none\}/,"2048 arrow pad is hidden on mobile");
 for(const file of files.filter(x=>x.endsWith(".js")&&x!=="site-theme.js"))assert.ok(html.includes('src="'+file+'"'),file+" loaded");
 const expected=["typing","2048","wordle","mines","pong","snake","headsup","uno","ladders","combat"];
 const handlers={};

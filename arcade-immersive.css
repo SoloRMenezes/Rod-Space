@@ -206,4 +206,4 @@ body[data-game="headsup"] .prompt {box-shadow:none;transform:none}
 body[data-game="uno"] .card-hand,body[data-game="ladders"] .ladder-grid {box-shadow:none}
 body[data-game="uno"] .uno-card {box-shadow:0 2px 5px #0003}
 .overlay-card,.overlay-card .poster,.overlay-card button {box-shadow:none}
-@media(max-width:640px) {body[data-game="typing"] .type-source {max-height:96px;font-size:15px} body[data-game="typing"] .typing-input {min-height:54px}}
+@media(max-width:640px) {body[data-game="typing"] .type-source {max-height:96px;font-size:15px} body[data-game="typing"] .typing-input {min-height:54px} body[data-game="2048"] .direction-pad {display:none}}
