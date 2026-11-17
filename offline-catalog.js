@@ -45,8 +45,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -64,8 +64,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "f897d7f263ec443f"
+    "bytes": 156151,
+    "version": "dda976edc6181c8d"
   },
   "headsup": {
     "name": "Heads Up",
@@ -113,8 +113,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -132,8 +132,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "b8980be65357ac91"
+    "bytes": 156151,
+    "version": "102ee086a6f399be"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -181,8 +181,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -200,8 +200,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "a2f83230e74282ef"
+    "bytes": 156151,
+    "version": "b88928ba3bac9ddb"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -249,8 +249,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -268,8 +268,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "0d18344c744ca431"
+    "bytes": 156151,
+    "version": "bb33da289bc73ed7"
   },
   "typing": {
     "name": "Fast Typing",
@@ -317,8 +317,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -336,8 +336,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "ed6452cdc89b4b11"
+    "bytes": 156151,
+    "version": "d7821a9f30aaba53"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -385,8 +385,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -404,8 +404,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "ad21ba0cf4384ac7"
+    "bytes": 156151,
+    "version": "313e9db7d684000e"
   },
   "mines": {
     "name": "Minesweeper",
@@ -453,8 +453,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -472,8 +472,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "bd5221cc8ef592ac"
+    "bytes": 156151,
+    "version": "74731982c82656b6"
   },
   "pong": {
     "name": "Pong",
@@ -521,8 +521,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -540,8 +540,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "7a99ce7e60527119"
+    "bytes": 156151,
+    "version": "d97e6d0639edf613"
   },
   "snake": {
     "name": "Snake Arena",
@@ -589,8 +589,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -608,8 +608,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "b4276501dacbc0e9"
+    "bytes": 156151,
+    "version": "eca71c2c30ffde86"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -657,8 +657,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 22596,
-        "sha256": "7bac5906b7000ccf8bec81d3e84e301d17ca359d6d958861cfea136972c4baee"
+        "bytes": 24683,
+        "sha256": "d4a401d6a7b3ac3a833032f6d3d3c6f1a743350e8f908e87dce7e59815fbfdbc"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -676,8 +676,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 154064,
-    "version": "4f7c748d44a757a4"
+    "bytes": 156151,
+    "version": "da42b182ef15ece4"
   },
   "maths-book": {
     "name": "Bookshelf",

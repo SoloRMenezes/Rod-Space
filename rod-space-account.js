@@ -40,12 +40,17 @@
 
   function publish() {
     listeners.forEach(fn => fn({ ...state }));
-    const trigger = document.getElementById("rs-account-trigger");
-    if (trigger) trigger.textContent = state.user ? username() : "Account";
+    syncSettingsMenu();
     const chip = document.getElementById("rs-account-chip");
     if (chip) { chip.textContent = state.user ? `${username()} · ${state.profile?.gamesPlayed || 0} games played` : ""; chip.hidden = !state.user; }
   }
   function username() { return state.profile?.username || state.user?.displayName || state.user?.email?.split("@")[0] || "Player"; }
+  function syncSettingsMenu() {
+    const trigger = document.getElementById("rs-account-trigger");
+    if (trigger) trigger.textContent = "Settings";
+    const summary = document.getElementById("rs-settings-account-summary");
+    if (summary) summary.textContent = state.user ? `${username()} · Profile and game stats` : "Sign in or create an account";
+  }
   function messageFor(error) {
     const code = error?.code || "";
     const known = {
@@ -75,8 +80,15 @@
     if (modal) return modal;
     const style = element("style");
     style.textContent = `
+      .rs-settings{position:relative;display:inline-flex;align-items:center;z-index:40}
       .rs-account-trigger{border:1px solid #475569;border-radius:10px;padding:8px 12px;background:#111827;color:#e2e8f0;font:700 13px system-ui;cursor:pointer;white-space:nowrap}
-      .rs-account-trigger:hover{border-color:#60a5fa;color:#fff}
+      .rs-account-trigger:hover,.rs-account-trigger[aria-expanded="true"]{border-color:#60a5fa;color:#fff}
+      .rs-settings-menu{position:absolute;right:0;top:calc(100% + 8px);width:min(260px,calc(100vw - 28px));padding:8px;border:1px solid #334155;border-radius:12px;background:#111827;color:#e5e7eb;box-shadow:0 14px 36px #0008}
+      .rs-settings-menu[hidden]{display:none}
+      .rs-settings-title{margin:4px 8px 7px;color:#94a3b8;font:750 11px system-ui;letter-spacing:.12em;text-transform:uppercase}
+      .rs-settings-account{display:grid;width:100%;gap:4px;padding:10px;border:0;border-radius:8px;background:transparent;color:#f8fafc;text-align:left;font:750 14px system-ui;cursor:pointer}
+      .rs-settings-account:hover{background:#1f2937}
+      .rs-settings-account small{color:#94a3b8;font:500 12px/1.35 system-ui}
       .rs-account-chip{margin:0 auto 12px;color:var(--muted,#94a3b8);font:600 13px system-ui;text-align:center}
       .rs-account-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:#030712cc;backdrop-filter:blur(5px)}
       .rs-account-overlay[hidden]{display:none}
@@ -215,13 +227,26 @@
   }
 
   function mountControls() {
+    makeModal();
     const header = document.querySelector(".game-topbar, .topbar .shell");
     const homeActions = document.querySelector("header.sticky > div > div.flex.items-center.gap-2");
     const target = homeActions || header;
     if (target && !document.getElementById("rs-account-trigger")) {
-      const trigger = element("button", { id: "rs-account-trigger", class: "rs-account-trigger", type: "button" }, "Account");
-      trigger.onclick = () => { mode = "create"; makeModal().render(); modal.hidden = false; };
-      target.append(trigger);
+      const settings = element("div", { class: "rs-settings" });
+      const trigger = element("button", { id: "rs-account-trigger", class: "rs-account-trigger", type: "button", "aria-haspopup": "menu", "aria-expanded": "false" }, "Settings");
+      const menu = element("div", { id: "rs-settings-menu", class: "rs-settings-menu", role: "menu", hidden: "" });
+      const heading = element("p", { class: "rs-settings-title" }, "Settings");
+      const account = element("button", { class: "rs-settings-account", type: "button", role: "menuitem" }, "Account");
+      account.append(element("small", { id: "rs-settings-account-summary" }, "Sign in or create an account"));
+      menu.append(heading, account);
+      settings.append(trigger, menu);
+      target.append(settings);
+      const closeMenu = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); };
+      trigger.onclick = () => { menu.hidden = !menu.hidden; trigger.setAttribute("aria-expanded", String(!menu.hidden)); };
+      account.onclick = () => { closeMenu(); mode = "create"; makeModal().render(); modal.hidden = false; };
+      document.addEventListener("click", event => { if (!settings.contains(event.target)) closeMenu(); });
+      document.addEventListener("keydown", event => { if (event.key === "Escape" && !menu.hidden) { closeMenu(); trigger.focus(); } });
+      syncSettingsMenu();
     }
     if (document.body.dataset.game && !document.getElementById("rs-account-chip")) {
       const title = document.querySelector(".game-heading");
@@ -368,8 +393,6 @@
         }
         state.ready = true;
         publish();
-        const trigger = document.getElementById("rs-account-trigger");
-        if (trigger) trigger.textContent = state.user ? username() : "Account";
         const chip = document.getElementById("rs-account-chip");
         if (chip) { chip.textContent = state.user ? `${username()} · ${state.profile?.gamesPlayed || 0} games played` : ""; chip.hidden = !state.user; }
         if (modal && !modal.hidden) modal.render();
