@@ -13,7 +13,7 @@ function updateScores(){leftScore.textContent="Player 1: "+a;rightScore.textCont
 function tick(dt){if(!active)return;const speed=6.4*dt;if(keys.KeyW)p1-=speed;if(keys.KeyS)p1+=speed;if(mode.value==="two"){if(keys.ArrowUp)p2-=speed;if(keys.ArrowDown)p2+=speed}else{p2+=Math.max(-3.8*dt,Math.min(3.8*dt,ball.y-p2))}if(pointer!==null)p1+=(pointer-p1)*Math.min(1,.25*dt);p1=Math.max(paddleH/2,Math.min(H-paddleH/2,p1));p2=Math.max(paddleH/2,Math.min(H-paddleH/2,p2));ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;if(ball.y<9){ball.y=9;ball.vy=Math.abs(ball.vy)}if(ball.y>H-9){ball.y=H-9;ball.vy=-Math.abs(ball.vy)}
 if(ball.vx<0&&ball.x<35&&ball.x>20&&Math.abs(ball.y-p1)<paddleH/2+8){ball.x=35;ball.vx=Math.min(10,Math.abs(ball.vx)*1.07);ball.vy+=(ball.y-p1)/27}
 if(ball.vx>0&&ball.x>W-35&&ball.x<W-20&&Math.abs(ball.y-p2)<paddleH/2+8){ball.x=W-35;ball.vx=-Math.min(10,Math.abs(ball.vx)*1.07);ball.vy+=(ball.y-p2)/27}
-if(ball.x<0||ball.x>W){if(ball.x<0)b++;else a++;updateScores();if(Math.max(a,b)>=7){active=false;msg.textContent=(a>b?"Player 1":mode.value==="cpu"?"Computer":"Player 2")+" wins!";return}serve(ball.x<0?1:-1)}}
+if(ball.x<0||ball.x>W){if(ball.x<0)b++;else a++;updateScores();if(Math.max(a,b)>=7){active=false;msg.textContent=(a>b?"Player 1":mode.value==="cpu"?"Computer":"Player 2")+" wins!";if(a>b)window.RodSpaceAccounts?.recordWin("pong");return}serve(ball.x<0?1:-1)}}
 function draw(){
 ctx.fillStyle="#08091c";ctx.fillRect(0,0,W,H);
 ctx.fillStyle="#1e2147";for(let x=0;x<W;x+=42)ctx.fillRect(x,0,1,H);for(let y=0;y<H;y+=42)ctx.fillRect(0,y,W,1);

@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function validUsername(value) {
+      return value is string && value.matches('^[A-Za-z0-9_]{3,18}$');
+    }
+
+    function validProfile(data) {
+      return data.keys().hasOnly(['username', 'gamesPlayed', 'createdAt', 'updatedAt', 'lastPlayedAt'])
+        && data.keys().hasAll(['username', 'gamesPlayed', 'createdAt', 'updatedAt'])
+        && validUsername(data.username)
+        && data.gamesPlayed is int && data.gamesPlayed >= 0 && data.gamesPlayed <= 1000000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && (!('lastPlayedAt' in data) || data.lastPlayedAt is timestamp);
+    }
+
+    function validGameId(gameId) {
+      return gameId in ['typing', '2048', 'wordle', 'mines-9', 'mines-16', 'mines-30', 'snake', 'pong', 'headsup', 'uno', 'ladders', 'combat'];
+    }
+
+    function validGameStats(data, gameId) {
+      return data.keys().hasOnly(['gameId', 'gamesPlayed', 'bestScore', 'scoreLabel', 'bestTime', 'difficulty', 'wins', 'lastPlayedAt', 'updatedAt'])
+        && data.keys().hasAll(['gameId', 'gamesPlayed', 'updatedAt'])
+        && data.gameId == gameId && validGameId(gameId)
+        && data.gamesPlayed is int && data.gamesPlayed >= 0 && data.gamesPlayed <= 1000000
+        && data.updatedAt is timestamp
+        && (!('bestScore' in data) || (data.bestScore is number && data.bestScore >= 0 && data.bestScore <= 1000000000))
+        && (!('scoreLabel' in data) || (data.scoreLabel is string && data.scoreLabel.size() > 0 && data.scoreLabel.size() <= 24))
+        && (!('bestTime' in data) || (data.bestTime is number && data.bestTime >= 0 && data.bestTime <= 10000000))
+        && (!('difficulty' in data) || (data.difficulty is string && data.difficulty.size() > 0 && data.difficulty.size() <= 18))
+        && (!('wins' in data) || (data.wins is int && data.wins >= 0 && data.wins <= 1000000))
+        && (!('lastPlayedAt' in data) || data.lastPlayedAt is timestamp);
+    }
+
+    // Existing LAN/online room behavior. Anonymous Firebase users remain valid.
+    match /rooms/{roomId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.ownerUid == request.auth.uid;
+      match /peers/{peerId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    // Private profiles never contain an email address and are readable only by their owner.
+    match /profiles/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && validProfile(request.resource.data)
+        && request.resource.data.gamesPlayed == 0
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isOwner(userId)
+        && validProfile(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.gamesPlayed >= resource.data.gamesPlayed
+        && request.resource.data.gamesPlayed <= resource.data.gamesPlayed + 1;
+      allow delete: if false;
+
+      match /games/{gameId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId)
+          && validGameStats(request.resource.data, gameId)
+          && request.resource.data.gamesPlayed <= 1
+          && request.resource.data.updatedAt == request.time;
+        allow update: if isOwner(userId)
+          && validGameStats(request.resource.data, gameId)
+          && request.resource.data.gameId == resource.data.gameId
+          && request.resource.data.gamesPlayed >= resource.data.gamesPlayed
+          && request.resource.data.gamesPlayed <= resource.data.gamesPlayed + 1
+          && (!('wins' in request.resource.data) || request.resource.data.wins <= ((resource.data.wins is int) ? resource.data.wins + 1 : 1))
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+      }
+    }
+  }
+}

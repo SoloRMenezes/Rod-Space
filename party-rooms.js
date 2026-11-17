@@ -15,7 +15,8 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
-const signedIn=signInAnonymously(auth).then(result=>result.user);
+let anonymousSignIn=null;
+async function ensureUser(){await auth.authStateReady();if(auth.currentUser)return auth.currentUser;if(!anonymousSignIn)anonymousSignIn=signInAnonymously(auth).then(result=>result.user).finally(()=>{anonymousSignIn=null});return anonymousSignIn}
 const ROOM_LIFE=90_000;
 
 async function hash(value){
@@ -25,13 +26,13 @@ async function hash(value){
 }
 
 async function cleanOwnedRooms(game){
-  const user=await signedIn;
+  const user=await ensureUser();
   const snapshot=await getDocs(collection(db,'rooms'));
   await Promise.all(snapshot.docs.filter(item=>{const room=item.data();return room.game===game&&room.ownerUid===user.uid}).map(item=>deleteDoc(item.ref).catch(()=>{})));
 }
 
 async function watch(game,onRooms,onError=()=>{}){
-  await signedIn;
+  await ensureUser();
   return onSnapshot(collection(db,'rooms'),snapshot=>{
     const now=Date.now();
     const rooms=snapshot.docs.map(item=>({id:item.id,...item.data()})).filter(room=>room.game===game&&room.expiresAt>now).sort((a,b)=>b.updatedAt-a.updatedAt);
@@ -40,7 +41,7 @@ async function watch(game,onRooms,onError=()=>{}){
 }
 
 async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onStatus=()=>{},onConnectionRequest=async()=>true}){
-  const user=await signedIn;
+  const user=await ensureUser();
   // A reload can leave the previous advertisement alive until its timeout.
   // Remove this device's older rooms so it appears only once to the game host.
   await cleanOwnedRooms(game);
@@ -117,7 +118,7 @@ async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onSta
 }
 
 async function join(room,{name,pin='',onStatus=()=>{}}){
-  const user=await signedIn;
+  const user=await ensureUser();
   const supplied=room.locked?await hash(`${room.id}:${pin}`):'';
   if(room.locked&&supplied!==room.pinHash)throw Error('Wrong PIN');
   const roomRef=doc(db,'rooms',room.id);

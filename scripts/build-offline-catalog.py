@@ -9,7 +9,7 @@ asset_ext=text_ext|{'.png','.jpg','.jpeg','.webp','.svg','.gif','.mp3','.wav','.
 def gather(page):
  if page=='arcade.html':
   # One small shared bundle, not a recursive crawl through linked catalog pages.
-  return ['arcade.html','arcade.css','arcade-immersive.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','rod-space-app-menu.js']
+  return ['arcade.html','arcade.css','arcade-immersive.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','rod-space-account.js','rod-space-app-menu.js']
  found=set();todo=[root/page]
  if '/' in page:todo += [p for p in (root/page).parent.rglob('*') if p.is_file() and p.suffix.lower() in asset_ext]
  while todo:
@@ -44,12 +44,12 @@ for block in source.split('},'):
  if not (root/page).is_file():raise ValueError('Missing game: '+page)
  print("Collecting",page,flush=True)
  files=gather(page)
- result[id]={'name':name,'page':page,'files':[{'path':f,'bytes':(root/f).stat().st_size,'hash':hashlib.sha256((root/f).read_bytes()).hexdigest()} for f in files]}
+ result[id]={'name':name,'page':page,'files':[{'path':f,'bytes':(root/f).stat().st_size,'sha256':hashlib.sha256((root/f).read_bytes()).hexdigest()} for f in files]}
  if id in ('nextup','karaoke-night'):result[id]['note']='Online song search and streaming need internet. Local content works offline.'
  result[id]['bytes']=sum(f['bytes'] for f in result[id]['files'])
  result[id]['version']=hashlib.sha256(json.dumps(result[id]).encode()).hexdigest()[:16]
 (root/'offline-catalog.js').write_text('self.OFFLINE_CATALOG = '+json.dumps(result,indent=2)+';\n')
-shell=['index.html','party.html','arcade.html','arcade.css','arcade-immersive.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','site-theme.js','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js']
+shell=['index.html','party.html','arcade.html','arcade.css','arcade-immersive.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','rod-space-account.js','site-theme.js','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js']
 version=hashlib.sha256(b''.join((root/f).read_bytes() for f in shell)).hexdigest()[:16]
 p=root/'sw.js';p.write_text(re.sub(r"const SHELL = '[^']+';", "const SHELL = 'rod-shell-"+version+"';",p.read_text()))
 print('Built downloads for',len(result),'projects')

@@ -1,10 +1,10 @@
-importScripts('./offline-catalog.js?v=12');
-const SHELL = 'rod-shell-887284efb4fe8e69';
+importScripts('./offline-catalog.js?v=13');
+const SHELL = 'rod-shell-6085b07421593b1e';
 const PREFIX = 'rod-game-';
 const BASE = new URL('./', self.location.href);
 const absolute = p => new URL(p, BASE).href;
 const META = absolute('__offline_metadata__');
-const shellFiles = ['./','index.html','party.html','arcade.html','arcade.css','arcade-immersive.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','site-theme.js','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js'];
+const shellFiles = ['./','index.html','party.html','arcade.html','arcade.css','arcade-immersive.css','arcade-core.js','arcade-puzzles.js','arcade-action.js','arcade-party.js','arcade-init.js','rod-space-account.js','site-theme.js','offline.js','offline-catalog.js','assets/vendor/tailwind.js','assets/vendor/lucide.js'];
 self.addEventListener('install', e => e.waitUntil((async () => {
   const cache = await caches.open(SHELL);
   await cache.addAll(shellFiles.map(absolute));
@@ -52,7 +52,7 @@ self.addEventListener('message', e => {
               if(!response.ok) throw Error('Could not download '+file.path);
               const bytes=await response.clone().arrayBuffer();
               const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
-              if(hash!==file.hash) throw Error('The game has changed. Refresh Rod Space and try again.');
+              if(hash!==(file.sha256||file.hash)) throw Error('The game has changed. Refresh Rod Space and try again.');
               await cache.put(absolute(file.path),response);
               loaded+=bytes.byteLength; port.postMessage({progress:Math.round(loaded/game.bytes*100)});
             }

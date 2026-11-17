@@ -19,7 +19,7 @@ function button(label,func,cls){const b=node("button",cls?{class:cls}:null,label
 function clear(el){el.replaceChildren()}
 function store(key,value){try{localStorage.setItem("rodspace.arcade."+key,JSON.stringify(value))}catch{}}
 function read(key,fallback){try{const val=localStorage.getItem("rodspace.arcade."+key);return val===null?fallback:JSON.parse(val)}catch{return fallback}}
-function highScore(key,value){const prev=Number(read(key,0))||0;if(value>prev)store(key,value);return Math.max(prev,value)}
+function highScore(key,value){const prev=Number(read(key,0))||0;if(value>prev){store(key,value);window.RodSpaceAccounts?.recordHighScore(key,value)}return Math.max(prev,value)}
 function register(id,callback){handlers[id]=callback}
 function mount(){
 const id=new URL(location.href).searchParams.get("game");
@@ -30,6 +30,7 @@ byId("gameTitle").textContent=info[1];
 byId("gameDescription").textContent=info[2];
 byId("gameLabel").textContent=info[4]==="party"?"ROD SPACE / PARTY GAME":"ROD SPACE / SOLO GAME";
 document.title=info[1]+" — Rod Space";
+window.RodSpaceAccounts?.setActiveGame(id);
 const game=byId("game");clear(game);
 try{if(handlers[id])handlers[id](game);else game.textContent="This game is not available."}catch(e){console.error(e);game.textContent="Could not start. Reload to retry."}
 return info;
