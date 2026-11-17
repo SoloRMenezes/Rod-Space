@@ -1,6 +1,10 @@
 const fs=require("node:fs"),vm=require("node:vm"),path=require("node:path"),assert=require("node:assert/strict");
 const root=path.resolve(__dirname,"..");
 assert.match(fs.readFileSync(path.join(root,"arcade-immersive.css"),"utf8"),/\.game-panel\s+\[hidden\]\s*\{\s*display:\s*none\s*!important\s*\}/,"hidden game UI must stay hidden despite display rules on toolbars and panels");
+const arcadeCss=fs.readFileSync(path.join(root,"arcade-immersive.css"),"utf8");
+assert.match(arcadeCss,/body\[data-game="uno"\]\s*\{[^}]*--deep:#190809;[^}]*--btn:#c91f28;/,"UNO uses the requested red table theme");
+assert.match(arcadeCss,/body\[data-game="uno"\] \.uno-hand\.card-hand \{display:flex;flex-wrap:nowrap;[^}]*overflow:visible/,"UNO hand stays visible without a nested scrollbar");
+assert.match(arcadeCss,/body\[data-game="uno"\] \.game-heading\s*\{\s*display:\s*none/,"UNO hides its redundant page title");
 class FakeElement {
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(key,value){this[key]=value}};this.classList={toggle(){}};this.value="";this.textContent="";this.disabled=false;this.className="";}
  setAttribute(key,value){this.attributes[key]=value;}
@@ -49,17 +53,22 @@ assert.equal(combatRoot.children.find(el=>el.className==="duel-scene").children.
 assert.equal(combatRoot.children.find(el=>el.className==="choice-row battle-actions").children.length,4,"combat keeps four turn actions");
 assert.ok(combatRoot.children.some(el=>el.className==="battle-dialogue"),"combat has a battle dialogue panel");
 const unoRoot=new FakeElement("section");registered.uno(unoRoot);
+const unoTable=unoRoot.children.find(el=>el.className==="uno-table"),unoHandArea=unoRoot.children.find(el=>el.className==="uno-hand-area"),unoToolbar=unoRoot.children.find(el=>el.className.split(" ").includes("uno-toolbar")),unoControls=unoRoot.children.find(el=>el.className.split(" ").includes("uno-controls"));
 assert.deepEqual(unoRoot.children[0].children.map(button=>button.textContent),["Singleplayer","LAN","Multiplayer"],"UNO mode menu stays concise with the three requested choices");
 unoRoot.children[0].children[1].listeners.click();
-unoRoot.children[4].children.find(el=>el.textContent==="Draw a card").listeners.click();
-assert.equal(unoRoot.children[3].children.some(el=>el.className.split(" ").includes("uno-hand")),false,"LAN play hides the next hand until the device is passed");
-unoRoot.children[4].children.find(el=>el.textContent==="Ready Player 2").listeners.click();
-assert.ok(unoRoot.children[3].children.some(el=>el.className.split(" ").includes("uno-hand")),"LAN play reveals the active player's own hand after passing the device");
-unoRoot.children[2].children[0].listeners.click();
+unoTable.children[0].children.find(el=>el.className==="uno-draw-pile").listeners.click();
+assert.equal(unoHandArea.children.some(el=>el.className.split(" ").includes("uno-hand")),false,"LAN play hides the next hand until the device is passed");
+unoControls.children.find(el=>el.textContent==="Ready Player 2").listeners.click();
+assert.ok(unoHandArea.children.some(el=>el.className.split(" ").includes("uno-hand")),"LAN play reveals the active player's own hand after passing the device");
+unoToolbar.children[0].listeners.click();
 unoRoot.children[0].children[0].listeners.click();
-assert.ok(unoRoot.children[3].children.some(el=>el.className.split(" ").includes("uno-hand")),"UNO solo mode deals cards directly against bots");
-assert.equal(unoRoot.children[3].children.find(el=>el.className==="uno-hand-label").textContent,"Your hand · 7 cards","UNO clearly labels the visible cards as the local player's own hand");
-const unoHand=unoRoot.children[3].children.find(el=>el.className.split(" ").includes("uno-hand"));
+assert.ok(unoHandArea.children.some(el=>el.className.split(" ").includes("uno-hand")),"UNO solo mode deals cards directly against bots");
+assert.equal(unoToolbar.children.length,2,"UNO game controls only show Main menu and the current turn");
+assert.equal(unoToolbar.children[0].textContent,"Main menu");
+assert.match(unoToolbar.children[1].textContent,/turn/i,"UNO keeps the current turn visible");
+assert.ok(unoTable.children[0].children.some(el=>el.className.split(" ").includes("uno-draw-pile")),"UNO has a prominent face-down draw pile");
+assert.equal(unoTable.children.some(el=>el.textContent.includes("Colour:")),false,"UNO removes the separate current-colour label");
+const unoHand=unoHandArea.children.find(el=>el.className.split(" ").includes("uno-hand"));
 const draggedCard=unoHand.children[0],firstCardId=draggedCard.getAttribute("data-card-id");
 unoHand.children.forEach((card,index)=>{card.getBoundingClientRect=()=>({left:index*40,top:0,width:60,height:90})});
 draggedCard.listeners.pointerdown({button:0,pointerId:9,clientX:10,clientY:10});

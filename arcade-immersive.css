@@ -28,7 +28,7 @@ body[data-game="typing"] {--glow:#79c9ff;--glow-rgb:54,172,246;--deep:#0c1228;--
 body[data-game="snake"] {--glow:#82fba9;--glow-rgb:76,246,134;--deep:#04110e;--mid:#103b24;--surface:#113b2bcc;--tile:#224e36;--btn:#137e50;}
 body[data-game="pong"] {--glow:#42cf4b;--glow-rgb:66,207,75;--deep:#06150a;--mid:#0b2411;--surface:#112d17;--tile:#17481f;--btn:#237a2c;}
 body[data-game="combat"] {--glow:#ffba68;--glow-rgb:255,147,51;--deep:#1a0b1e;--mid:#422046;--surface:#3a2542dd;--tile:#543357;--btn:#a75856;}
-body[data-game="uno"] {--glow:#ffd76a;--glow-rgb:255,189,60;--deep:#131d19;--mid:#184332;--surface:#25543fd3;--tile:#22664c;--btn:#228b5f;}
+body[data-game="uno"] {--glow:#ff514e;--glow-rgb:255,81,78;--deep:#190809;--mid:#3a1114;--surface:#3d171b;--tile:#572024;--btn:#c91f28;}
 body[data-game="headsup"] {--glow:#ffc06b;--glow-rgb:255,163,64;--deep:#29102b;--mid:#652f68;--surface:#653c68bf;--tile:#784f85;--btn:#ca6a54;}
 body[data-game="ladders"] {--glow:#72e8fe;--glow-rgb:84,211,252;--deep:#0c1f29;--mid:#14516d;--surface:#255e70dd;--tile:#397489;--btn:#1986a8;}
 body.game-world:not([data-game=""])[data-theme="light"] {--text:#fff;--muted:#d5e2ee;}
@@ -261,7 +261,6 @@ body[data-game="pong"] .pong-sr-only {position:absolute;width:1px;height:1px;pad
   body[data-game="pong"] .pong-court {width:min(100%,calc((100svh - 136px)*1.5));max-height:calc(100svh - 136px)}
 }
 /* UNO hand follows Card Wars: overlapping, lifted cards with drag-to-sort. */
-body[data-game="uno"] .uno-hand.card-hand {display:flex;flex-wrap:nowrap;align-items:flex-end;justify-content:center;gap:0;width:min(100%,980px);max-width:980px;min-height:194px;margin:18px auto;padding:34px 16px 14px;overflow-x:auto;overflow-y:visible;border:2px solid #344a40;border-radius:25px;background:#0d241b;box-shadow:none;scrollbar-width:thin;touch-action:pan-x}
 body[data-game="uno"] .uno-hand .uno-card {position:relative;display:block;flex:0 0 clamp(74px,8vw,98px);width:clamp(74px,8vw,98px);height:clamp(108px,12vw,138px);min-height:0;margin-left:clamp(-36px,-3.2vw,-24px);padding:0;overflow:visible;border:3px solid #f8f7ee;border-radius:13px;color:#fff;box-shadow:0 4px 0 #17221b,0 12px 18px #0005;text-shadow:none;transform:rotate(var(--fan-angle,0deg));transform-origin:50% 100%;transition:transform .16s ease,filter .16s ease,opacity .16s ease;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 body[data-game="uno"] .uno-hand .uno-card:first-child {margin-left:0}
 body[data-game="uno"] .uno-hand .uno-card:hover:not(:disabled),body[data-game="uno"] .uno-hand .uno-card:focus-visible {z-index:30;transform:translateY(-22px) rotate(0) scale(1.06);filter:brightness(1.08);outline:2px solid #fff9;outline-offset:1px}
@@ -286,8 +285,6 @@ body[data-game="uno"] .uno-color-choice.blue {background:#2563eb}
 body[data-game="uno"] .uno-color-choice.green {background:#16a34a}
 body[data-game="uno"] .uno-color-choice.yellow {background:#ca8a04}
 @media(max-width:640px) {
-  body[data-game="uno"] .uno-hand.card-hand {justify-content:flex-start;min-height:139px;margin:12px auto;padding:27px 10px 11px;border-radius:18px}
-  body[data-game="uno"] .uno-hand .uno-card {flex-basis:62px;width:62px;height:90px;margin-left:-23px;border-width:2px;border-radius:10px}
   body[data-game="uno"] .uno-hand .uno-card:first-child {margin-left:0}
   body[data-game="uno"] .uno-card-face {font-size:38px}
   body[data-game="uno"] .uno-card.action-card .uno-card-face {font-size:34px}
@@ -355,4 +352,45 @@ body[data-game="combat"] .message {color:#edc478}
   body[data-game="combat"] .enemy-side:before {right:4%;top:50%;width:46%}
   body[data-game="combat"] .hero-side:before {left:1%;bottom:7%;width:50%}
   body[data-game="combat"] .battle-action {min-height:58px;padding:8px 10px;align-items:flex-start;flex-direction:column;justify-content:center;gap:2px}
+}
+
+/* UNO gets a compact red tabletop: deck and discard first, hand without a nested scroller. */
+body[data-game="uno"] .game-heading {display:none}
+body[data-game="uno"] .game-stage {width:100%;max-width:none;height:calc(100svh - 66px);min-height:0;padding:8px clamp(10px,2vw,28px);overflow:hidden}
+body[data-game="uno"] .game-panel {width:100%;max-width:1500px;height:100%;min-height:0;flex:1;justify-content:stretch;gap:0}
+body[data-game="uno"] .uno-table {display:grid;place-items:center;width:100%;max-width:none;min-height:0;flex:1;margin:0 auto}
+body[data-game="uno"] .uno-table-row {display:flex;align-items:center;justify-content:center;gap:clamp(28px,8vw,150px);width:100%}
+body[data-game="uno"] .uno-draw-pile {position:relative;isolation:isolate;display:grid;place-items:center;flex:none;width:clamp(110px,min(20vw,28vh),220px);aspect-ratio:.685;margin:0;padding:0;overflow:visible;border:4px solid #fff;background:#d71920;color:#ffd84f;border-radius:15px;box-shadow:0 7px 0 #650b10,0 16px 26px #0006;transform:rotate(-2deg);transition:transform .16s ease,filter .16s ease}
+body[data-game="uno"] .uno-draw-pile::before,body[data-game="uno"] .uno-draw-pile::after {content:"";position:absolute;z-index:-1;inset:0;border:4px solid #fff;border-radius:15px;background:#b9141b;box-shadow:0 5px 0 #650b10}
+body[data-game="uno"] .uno-draw-pile::before {transform:translate(-10px,7px) rotate(-6deg)}
+body[data-game="uno"] .uno-draw-pile::after {transform:translate(-5px,3px) rotate(-3deg)}
+body[data-game="uno"] .uno-draw-pile:hover:not(:disabled) {transform:translateY(-7px) rotate(0);filter:brightness(1.08)}
+body[data-game="uno"] .uno-draw-pile:disabled {opacity:.7}
+body[data-game="uno"] .uno-deck-back {display:grid;place-items:center;width:78%;height:49%;border:4px solid #fff;border-radius:50%;background:#20191c;color:#ffd84f;font-size:clamp(26px,4vw,48px);font-weight:1000;letter-spacing:-.08em;text-shadow:1px 2px #7b1216;transform:rotate(-18deg)}
+body[data-game="uno"] .uno-discard {display:grid;place-items:center;flex:none;width:clamp(110px,min(20vw,28vh),220px);aspect-ratio:.685;min-height:0;padding:0;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none}
+body[data-game="uno"] .uno-discard .uno-card {width:100%;height:100%;border-radius:15px;box-shadow:0 7px 0 #161316,0 16px 26px #0006}
+body[data-game="uno"] .uno-discard .uno-card-face {font-size:clamp(48px,7vw,88px)}
+body[data-game="uno"] .uno-toolbar {display:flex;align-items:center;justify-content:space-between;width:100%;flex:0 0 auto;margin:0 auto;gap:12px}
+body[data-game="uno"] .uno-toolbar button {min-height:42px}
+body[data-game="uno"] .uno-turn {padding:0;border:0;background:transparent;color:#fff;font-size:clamp(17px,2.2vw,24px);font-weight:850;letter-spacing:.01em}
+body[data-game="uno"] .uno-hand-area {width:100%;flex:0 0 auto;min-height:0;margin:0 auto}
+body[data-game="uno"] .uno-hand.card-hand {display:flex;flex-wrap:nowrap;align-items:flex-end;justify-content:center;gap:0;width:100%;max-width:none;min-height:0;margin:0 auto;padding:14px 18px 8px;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none;scrollbar-width:none;touch-action:pan-y}
+body[data-game="uno"] .uno-hand .uno-card {flex:0 0 var(--uno-card-width,80px);width:var(--uno-card-width,80px);height:calc(var(--uno-card-width,80px)*1.46);min-width:0;margin-left:var(--uno-card-overlap,-15px);padding:0;border:3px solid #fff;border-radius:13px;box-shadow:0 4px 0 #231719,0 12px 18px #0005}
+body[data-game="uno"] .uno-hand .uno-card:first-child {margin-left:0}
+body[data-game="uno"] .uno-card-face {font-size:clamp(22px,4vw,48px)}
+body[data-game="uno"] .uno-card.action-card .uno-card-face {font-size:clamp(22px,3.6vw,44px)}
+body[data-game="uno"] .uno-controls {min-height:0;flex:0 0 auto;margin:4px auto 0}
+body[data-game="uno"] .uno-controls:empty {display:none}
+body[data-game="uno"] .uno-pass-screen {margin:0 auto}
+@media(max-width:640px) {
+  body[data-game="uno"] .game-stage {height:calc(100svh - 58px);padding:6px 8px}
+  body[data-game="uno"] .uno-table-row {gap:clamp(30px,13vw,64px)}
+  body[data-game="uno"] .uno-draw-pile,body[data-game="uno"] .uno-discard {width:clamp(100px,min(30vw,24vh),160px)}
+  body[data-game="uno"] .uno-toolbar {gap:10px;margin:0}
+  body[data-game="uno"] .uno-toolbar button {padding:7px 10px}
+  body[data-game="uno"] .uno-turn {font-size:17px}
+  body[data-game="uno"] .uno-hand.card-hand {padding:10px 12px 4px}
+  body[data-game="uno"] .uno-hand .uno-card {border-width:2px;border-radius:10px}
+  body[data-game="uno"] .uno-card-corner {left:5px;top:4px;font-size:10px}
+  body[data-game="uno"] .uno-card-corner.corner-bottom {left:auto;top:auto;right:5px;bottom:4px}
 }
