@@ -3,7 +3,9 @@ const root=path.resolve(__dirname,"..");
 class FakeElement {
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(key,value){this[key]=value}};this.classList={toggle(){}};this.value="";this.textContent="";this.disabled=false;this.className="";}
  setAttribute(key,value){this.attributes[key]=value;}
+ getAttribute(key){return this.attributes[key]??null;}
  append(...nodes){this.children.push(...nodes);}
+ insertBefore(node,reference){const current=this.children.indexOf(node);if(current>=0)this.children.splice(current,1);const index=this.children.indexOf(reference);this.children.splice(index<0?this.children.length:index,0,node);}
  replaceChildren(...nodes){this.children=[...nodes];}
  addEventListener(name,fn){this.listeners[name]=fn;}
  focus(){this.focused=true}
@@ -42,7 +44,14 @@ assert.ok(combatRoot.children.some(el=>el.className==="battle-dialogue"),"combat
 const unoRoot=new FakeElement("section");registered.uno(unoRoot);
 assert.equal(unoRoot.children[0].children[0].textContent,"Choose your game","UNO starts with solo or multiplayer choices");
 unoRoot.children[0].children[2].listeners.click();
-assert.ok(unoRoot.children[3].children.some(el=>el.className==="card-hand"),"UNO solo mode deals cards directly against bots");
+assert.ok(unoRoot.children[3].children.some(el=>el.className.includes("uno-hand")),"UNO solo mode deals cards directly against bots");
+const unoHand=unoRoot.children[3].children.find(el=>el.className.includes("uno-hand"));
+const firstCardId=unoHand.children[0].getAttribute("data-card-id");
+unoHand.children.forEach((card,index)=>{card.getBoundingClientRect=()=>({left:index*40,top:0,width:60,height:90})});
+unoHand.children[0].listeners.pointerdown({button:0,pointerId:9,clientX:10,clientY:10});
+unoHand.listeners.pointermove({pointerId:9,clientX:210,clientY:10,preventDefault(){}});
+unoHand.listeners.pointerup({pointerId:9});
+assert.notEqual(unoHand.children[0].getAttribute("data-card-id"),firstCardId,"UNO cards can be dragged into a different hand position");
 const unoLobbyRoot=new FakeElement("section");registered.uno(unoLobbyRoot);
 unoLobbyRoot.children[0].children[3].listeners.click();
 assert.equal(unoLobbyRoot.children[1].children[3].children.length,3,"UNO room setup offers two to four players");

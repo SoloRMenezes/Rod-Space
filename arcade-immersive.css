@@ -238,6 +238,37 @@ body[data-game="mines"] .message {margin-top:14px;color:#edc478}
 body[data-game="headsup"] .prompt {box-shadow:none;transform:none}
 body[data-game="uno"] .card-hand,body[data-game="ladders"] .ladder-grid {box-shadow:none}
 body[data-game="uno"] .uno-card {box-shadow:0 2px 5px #0003}
+/* UNO hand follows Card Wars: overlapping, lifted cards with drag-to-sort. */
+body[data-game="uno"] .uno-hand.card-hand {display:flex;flex-wrap:nowrap;align-items:flex-end;justify-content:center;gap:0;width:min(100%,980px);max-width:980px;min-height:194px;margin:18px auto;padding:34px 16px 14px;overflow-x:auto;overflow-y:visible;border:2px solid #344a40;border-radius:25px;background:#0d241b;box-shadow:none;scrollbar-width:thin;touch-action:pan-x}
+body[data-game="uno"] .uno-hand .uno-card {position:relative;display:block;flex:0 0 clamp(74px,8vw,98px);width:clamp(74px,8vw,98px);height:clamp(108px,12vw,138px);min-height:0;margin-left:clamp(-36px,-3.2vw,-24px);padding:0;overflow:visible;border:3px solid #f8f7ee;border-radius:13px;color:#fff;box-shadow:0 4px 0 #17221b,0 12px 18px #0005;text-shadow:none;transform:rotate(var(--fan-angle,0deg));transform-origin:50% 100%;transition:transform .16s ease,filter .16s ease,opacity .16s ease;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+body[data-game="uno"] .uno-hand .uno-card:first-child {margin-left:0}
+body[data-game="uno"] .uno-hand .uno-card:hover:not(:disabled),body[data-game="uno"] .uno-hand .uno-card:focus-visible {z-index:30;transform:translateY(-22px) rotate(0) scale(1.06);filter:brightness(1.08);outline:2px solid #fff9;outline-offset:1px}
+body[data-game="uno"] .uno-hand .uno-card.unplayable {filter:brightness(.7) saturate(.72)}
+body[data-game="uno"] .uno-hand .uno-card.card-dragging {z-index:40;opacity:.34;transform:translateY(-12px) rotate(0) scale(1.04);cursor:grabbing}
+body[data-game="uno"] .uno-card-oval {position:absolute;inset:13% 8%;display:grid;place-items:center;border:2px solid #ffffffd9;border-radius:50%;background:#ffffff12;transform:rotate(-34deg)}
+body[data-game="uno"] .uno-card-face {display:grid;place-items:center;width:100%;height:100%;font-size:clamp(39px,5vw,58px);font-weight:1000;line-height:1;text-shadow:0 2px 2px #0005;transform:rotate(34deg)}
+body[data-game="uno"] .uno-card.action-card .uno-card-face {font-size:clamp(38px,4.6vw,52px)}
+body[data-game="uno"] .uno-card-corner {position:absolute;z-index:2;left:7px;top:5px;font-size:13px;font-weight:950;line-height:1;text-shadow:0 1px 2px #0007}
+body[data-game="uno"] .uno-card-corner.corner-bottom {left:auto;top:auto;right:7px;bottom:5px;transform:rotate(180deg)}
+body[data-game="uno"] .uno-card.wild {background:#23232a}
+body[data-game="uno"] .uno-card.wild .uno-card-oval {background:conic-gradient(#e53935 0 25%,#f2bd22 25% 50%,#26a85b 50% 75%,#2874dc 75%);border:2px solid white}
+body[data-game="uno"] .uno-discard .uno-card {position:relative;display:block;flex:none;width:72px;height:104px;min-height:0;padding:0;border-radius:12px}
+body[data-game="uno"] .uno-discard .uno-card-oval {inset:12% 7%}
+body[data-game="uno"] .uno-discard .uno-card-face {font-size:42px}
+body[data-game="uno"] .uno-color-choice {min-width:88px;min-height:48px;padding:10px 16px;border:2px solid #ffffffbd;border-radius:9px;color:white;font-weight:900;cursor:pointer}
+body[data-game="uno"] .uno-color-choice.red {background:#dc2626}
+body[data-game="uno"] .uno-color-choice.blue {background:#2563eb}
+body[data-game="uno"] .uno-color-choice.green {background:#16a34a}
+body[data-game="uno"] .uno-color-choice.yellow {background:#ca8a04}
+@media(max-width:640px) {
+  body[data-game="uno"] .uno-hand.card-hand {justify-content:flex-start;min-height:139px;margin:12px auto;padding:27px 10px 11px;border-radius:18px}
+  body[data-game="uno"] .uno-hand .uno-card {flex-basis:62px;width:62px;height:90px;margin-left:-23px;border-width:2px;border-radius:10px}
+  body[data-game="uno"] .uno-hand .uno-card:first-child {margin-left:0}
+  body[data-game="uno"] .uno-card-face {font-size:38px}
+  body[data-game="uno"] .uno-card.action-card .uno-card-face {font-size:34px}
+  body[data-game="uno"] .uno-card-corner {left:5px;top:4px;font-size:10px}
+  body[data-game="uno"] .uno-card-corner.corner-bottom {left:auto;top:auto;right:5px;bottom:4px}
+}
 .overlay-card,.overlay-card .poster,.overlay-card button {box-shadow:none}
 @media(max-width:640px) {body[data-game="typing"] .type-source {max-height:96px;font-size:15px} body[data-game="typing"] .typing-input {min-height:54px} body[data-game="2048"] .direction-pad,body[data-game="snake"] .direction-pad {display:none} body[data-game="wordle"] .wordle-keyboard {display:none} body[data-game="wordle"] .wordle-board {margin-bottom:8px}}
 @media(max-width:640px) {body[data-game="mines"] .mines-toolbar {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:7px} body[data-game="mines"] .mines-toolbar select,body[data-game="mines"] .mines-toolbar button {width:100%;min-width:0} body[data-game="mines"] .mines-stat {text-align:center} body[data-game="mines"] .mines-board {max-width:calc(100vw - 28px);max-height:calc(100svh - 250px);padding:7px;gap:3px}}
