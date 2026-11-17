@@ -26,6 +26,7 @@
   let playedUid = "";
   let modal;
   let mode = "create";
+  let modalView = "settings";
   let lastStatus = "";
   const pendingBest = new Map();
   const statsNames = {
@@ -48,8 +49,10 @@
   function syncSettingsMenu() {
     const trigger = document.getElementById("rs-account-trigger");
     if (trigger) trigger.textContent = "Settings";
+    const gameStats = document.getElementById("rs-settings-game-stats");
+    if (gameStats) gameStats.hidden = !activeGame;
     const summary = document.getElementById("rs-settings-account-summary");
-    if (summary) summary.textContent = state.user ? `${username()} · Profile and game stats` : "Sign in or create an account";
+    if (summary) summary.textContent = state.user ? `${username()} · Profile and account settings` : "Sign in or create an account";
   }
   function messageFor(error) {
     const code = error?.code || "";
@@ -137,7 +140,7 @@
   function renderStatsList(list) {
     const ul = element("ul", { class: "rs-account-stats" });
     if (!list.length) {
-      ul.append(element("li", {}, "Play a game while signed in to start your stats."));
+      ul.append(element("li", {}, "No stats recorded for this game yet."));
       return ul;
     }
     list.sort((a, b) => (statsNames[a.id] || a.id).localeCompare(statsNames[b.id] || b.id));
@@ -165,15 +168,22 @@
       return;
     }
     if (state.user) {
-      title.textContent = "Your account";
+      const showingGameStats = modalView === "stats" && Boolean(activeGame);
+      title.textContent = showingGameStats ? "In-game stats" : "Settings";
       const email = state.user.email || "";
-      const intro = element("p", { class: "rs-account-summary" }, `Signed in as ${username()}${email ? ` · ${email}` : ""}. Your game stats save to this account and appear on your other devices.`);
-      const listHolder = element("div");
+      const intro = element("p", { class: "rs-account-summary" }, showingGameStats
+        ? `${statsNames[activeGame] || activeGame} · Signed in as ${username()}.`
+        : `Signed in as ${username()}${email ? ` · ${email}` : ""}. Your game stats save to this account and appear on your other devices.`);
       const status = element("p", { class: "rs-account-status", role: "status" });
       const signOut = element("button", { class: "rs-account-secondary", type: "button" }, "Sign out");
       signOut.onclick = async () => { signOut.disabled = true; try { const { auth, authSdk } = await firebase; await authSdk.signOut(auth); modal.hidden = true; } catch (error) { setStatus(status, messageFor(error)); signOut.disabled = false; } };
-      body.append(intro, element("h3", { style: "font:750 14px system-ui;margin:18px 0 0;color:#fff" }, "Game stats"), listHolder, signOut, status);
-      loadStats(state.user.uid).then(list => listHolder.replaceChildren(renderStatsList(list))).catch(error => setStatus(status, messageFor(error)));
+      body.append(intro);
+      if (showingGameStats) {
+        const listHolder = element("div");
+        body.append(element("h3", { style: "font:750 14px system-ui;margin:18px 0 0;color:#fff" }, statsNames[activeGame] || activeGame), listHolder);
+        loadStats(state.user.uid).then(list => listHolder.replaceChildren(renderStatsList(list.filter(item => item.id === activeGame)))).catch(error => setStatus(status, messageFor(error)));
+      }
+      if (!showingGameStats) body.append(signOut, status);
       return;
     }
     const form = element("form", { class: "rs-account-form" });
@@ -235,15 +245,17 @@
       const settings = element("div", { class: "rs-settings" });
       const trigger = element("button", { id: "rs-account-trigger", class: "rs-account-trigger", type: "button", "aria-haspopup": "menu", "aria-expanded": "false" }, "Settings");
       const menu = element("div", { id: "rs-settings-menu", class: "rs-settings-menu", role: "menu", hidden: "" });
-      const heading = element("p", { class: "rs-settings-title" }, "Settings");
-      const account = element("button", { class: "rs-settings-account", type: "button", role: "menuitem" }, "Account");
-      account.append(element("small", { id: "rs-settings-account-summary" }, "Sign in or create an account"));
-      menu.append(heading, account);
+      const heading = element("p", { class: "rs-settings-title" }, "Rod Space");
+      const gameStats = element("button", { id: "rs-settings-game-stats", class: "rs-settings-account", type: "button", role: "menuitem", hidden: "" }, "In-game stats");
+      const settingsAction = element("button", { class: "rs-settings-account", type: "button", role: "menuitem" }, "Settings");
+      settingsAction.append(element("small", { id: "rs-settings-account-summary" }, "Sign in or create an account"));
+      menu.append(heading, gameStats, settingsAction);
       settings.append(trigger, menu);
       target.append(settings);
       const closeMenu = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); };
       trigger.onclick = () => { menu.hidden = !menu.hidden; trigger.setAttribute("aria-expanded", String(!menu.hidden)); };
-      account.onclick = () => { closeMenu(); mode = "create"; makeModal().render(); modal.hidden = false; };
+      gameStats.onclick = () => { closeMenu(); modalView = "stats"; makeModal().render(); modal.hidden = false; };
+      settingsAction.onclick = () => { closeMenu(); modalView = "settings"; mode = "create"; makeModal().render(); modal.hidden = false; };
       document.addEventListener("click", event => { if (!settings.contains(event.target)) closeMenu(); });
       document.addEventListener("keydown", event => { if (event.key === "Escape" && !menu.hidden) { closeMenu(); trigger.focus(); } });
       syncSettingsMenu();
@@ -362,7 +374,7 @@
     get profile() { return state.profile; },
     onChange(fn) { listeners.add(fn); fn({ ...state }); return () => listeners.delete(fn); },
     bindNameInput,
-    setActiveGame(gameId) { activeGame = gameId; if (state.user) recordPlay(gameId); },
+    setActiveGame(gameId) { activeGame = gameId || ""; syncSettingsMenu(); if (modal && !modal.hidden && modalView === "stats") modal.render(); if (state.user && activeGame) recordPlay(activeGame); },
     recordHighScore,
     recordWin
   };
