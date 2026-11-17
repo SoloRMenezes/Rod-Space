@@ -41,10 +41,6 @@ body.game-world:not([data-game=""])[data-theme="light"] {--text:#fff;--muted:#d5
 .game-topbar .brand {display:inline-flex;align-items:center;gap:10px;font-size:13px;letter-spacing:.12em;font-weight:900;color:#eaf2ff;white-space:nowrap}
 .brand-mark {display:grid;place-items:center;width:35px;height:35px;border-radius:10px;background:rgba(var(--glow-rgb),.16);border:1px solid rgba(var(--glow-rgb),.5);color:var(--glow);font-size:21px}
 .game-topbar .brand strong {color:var(--glow)}
-.game-topbar .top-actions {display:flex;align-items:center;gap:9px}
-.game-topbar .top-actions button,.game-topbar .top-actions a {display:grid;place-items:center;min-width:39px;min-height:39px;padding:8px 11px;line-height:1;font-weight:700;background:#0b152889;border:1px solid #ffffff30;color:#eaf2ff;border-radius:10px;font-size:18px;backdrop-filter:blur(5px)}
-.game-topbar .top-actions a {font-size:13px}
-.game-topbar .top-actions button:hover,.game-topbar .top-actions a:hover {border-color:var(--glow);background:rgba(var(--glow-rgb),.18)}
 .game-stage {min-height:calc(100svh - 66px);max-width:1450px;padding:clamp(16px,2.5vh,34px) clamp(12px,3vw,40px) 36px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;}
 .game-heading {width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;margin:0 auto clamp(12px,2vh,24px)}
 .game-label {font-size:10px;letter-spacing:.28em;color:var(--glow);font-weight:900;text-transform:uppercase;}
@@ -144,8 +140,6 @@ body[data-game="combat"] .choice-row button {min-height:57px;font-size:clamp(13p
   body[data-game="uno"] .card-hand {padding:12px;gap:6px}
   .game-topbar {min-height:58px;padding:10px 15px}
   .game-topbar .brand {font-size:11px}
-  .game-topbar .top-actions {gap:6px}
-  .game-topbar .top-actions button,.game-topbar .top-actions a {min-width:35px;min-height:35px;padding:7px;font-size:16px}
   .game-stage {min-height:calc(100svh - 58px);padding:17px 10px 28px}
   .game-heading {margin-bottom:14px}
   .game-panel .toolbar {max-width:100%;justify-content:center}
@@ -193,8 +187,6 @@ html[data-theme="light"] .game-panel .mini-log {background:#ffffffb5;color:#2439
 html[data-theme="light"] .game-panel .prompt {color:#23102a}
 html[data-theme="light"] .overlay-card {color:#fff}
 html[data-theme="light"] .overlay-card h2 {color:#fff}
-body.expanded-view .game-topbar {opacity:.18;transition:opacity .2s}
-body.expanded-view .game-topbar:hover,body.expanded-view .game-topbar:focus-within {opacity:1}
 @media(orientation:landscape) and (max-height:600px){
   .game-stage {padding-top:10px}
   .game-heading {margin-bottom:6px}

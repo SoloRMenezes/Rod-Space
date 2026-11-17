@@ -5,8 +5,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -15,13 +15,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -40,8 +40,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -59,8 +59,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "78809311616f74f1"
+    "bytes": 130674,
+    "version": "bc80b3a77539304e"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -68,8 +68,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -78,13 +78,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -103,8 +103,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -122,8 +122,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "33fd20c9195ccfbc"
+    "bytes": 130674,
+    "version": "2106f33ca680c756"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -131,8 +131,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -141,13 +141,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -166,8 +166,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -185,8 +185,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "affbf682924a7dc1"
+    "bytes": 130674,
+    "version": "353cfa0d72fa950f"
   },
   "typing": {
     "name": "Fast Typing",
@@ -194,8 +194,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -204,13 +204,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -229,8 +229,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -248,8 +248,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "209a4c1732c11325"
+    "bytes": 130674,
+    "version": "fdae532756548ae3"
   },
   "2048": {
     "name": "2048",
@@ -257,8 +257,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -267,13 +267,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -292,8 +292,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -311,8 +311,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "847eb56c943c5bbd"
+    "bytes": 130674,
+    "version": "111d870690e0248f"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -320,8 +320,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -330,13 +330,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -355,8 +355,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -374,8 +374,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "5f1a619e6a89a507"
+    "bytes": 130674,
+    "version": "212a30b0399f1342"
   },
   "mines": {
     "name": "Minesweeper",
@@ -383,8 +383,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -393,13 +393,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -418,8 +418,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -437,8 +437,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "af99b3b9129e9861"
+    "bytes": 130674,
+    "version": "a2d65bbe72eebb0e"
   },
   "pong": {
     "name": "Pong",
@@ -446,8 +446,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -456,13 +456,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -481,8 +481,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -500,8 +500,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "c363b9cb6cb204e2"
+    "bytes": 130674,
+    "version": "af139668be30b12c"
   },
   "snake": {
     "name": "Snake Arena",
@@ -509,8 +509,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -519,13 +519,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -544,8 +544,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -563,8 +563,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "62ed997092dc2a80"
+    "bytes": 130674,
+    "version": "752ac6ff048bdb7c"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -572,8 +572,8 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "sha256": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2068,
+        "sha256": "6421af982c4e261fcf0e29cd56ebaee0eea21b3abaefbee327d8f51e1d10bb06"
       },
       {
         "path": "arcade.css",
@@ -582,13 +582,13 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 35037,
-        "sha256": "8a99797b4e087fe578e38ef5609866f9ca833dbcec9495a2787ffa7413d8da8d"
+        "bytes": 34167,
+        "sha256": "6174e12fa8df1a3a82682229a1308524dcbb66c23e03f3c2f8c48dcc47e3b774"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2389,
-        "sha256": "5b17c16f67acca6059f212e5e744ae4961495ab345dbdc3c0d7004188f30e3ed"
+        "bytes": 2393,
+        "sha256": "ade686832da8cac5e5ef231236b8e2fea1bca4f3fe7cf5aa19ddf95ff845f07c"
       },
       {
         "path": "arcade-puzzles.js",
@@ -607,8 +607,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3748,
-        "sha256": "0aa30e58983a1b96316dd657f933e609a7519ac5f53f24b5754215a489fa333b"
+        "bytes": 2339,
+        "sha256": "74fea9bd0c4e7c6e24a853b79a0a8eeec014d5beb35a36c1a6274601c9af84f5"
       },
       {
         "path": "rod-space-app-menu.js",
@@ -626,8 +626,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "1d3dffb61e9d8c710a8c950c19228fbdbc9351b34be59d8be5e2d1abac86d8b3"
       }
     ],
-    "bytes": 133921,
-    "version": "4dc8b6f5dc482d13"
+    "bytes": 130674,
+    "version": "b3bad9ff7ce2e3fe"
   },
   "maths-book": {
     "name": "Bookshelf",
