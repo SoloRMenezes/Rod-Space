@@ -15,8 +15,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -35,8 +35,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -64,8 +64,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "8532ab895b0c96f4"
+    "bytes": 158680,
+    "version": "64bf5c39b98f3db0"
   },
   "headsup": {
     "name": "Heads Up",
@@ -83,8 +83,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -103,8 +103,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -132,8 +132,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "3821d0419e8bfe00"
+    "bytes": 158680,
+    "version": "9942c87f74f03b7a"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -151,8 +151,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -171,8 +171,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -200,8 +200,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "3b4edbe25ed6c310"
+    "bytes": 158680,
+    "version": "f16295da86e1149c"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -219,8 +219,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -239,8 +239,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -268,8 +268,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "e4edc3368d549558"
+    "bytes": 158680,
+    "version": "0ff29ef440811a86"
   },
   "typing": {
     "name": "Fast Typing",
@@ -287,8 +287,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -307,8 +307,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -336,8 +336,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "2a31c4a999491d4b"
+    "bytes": 158680,
+    "version": "df1d11834651c7d1"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -355,8 +355,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -375,8 +375,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -404,8 +404,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "1ce2866215a8920e"
+    "bytes": 158680,
+    "version": "8556597eca3853d3"
   },
   "mines": {
     "name": "Minesweeper",
@@ -423,8 +423,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -443,8 +443,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -472,8 +472,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "a86f27cdb1be4fba"
+    "bytes": 158680,
+    "version": "1bc093fe8ef121c4"
   },
   "pong": {
     "name": "Pong",
@@ -491,8 +491,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -511,8 +511,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -540,8 +540,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "79c09faafc704fd0"
+    "bytes": 158680,
+    "version": "f4db5bb77fe944fd"
   },
   "snake": {
     "name": "Snake Arena",
@@ -559,8 +559,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -579,8 +579,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -608,8 +608,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "92d484fe58e386ba"
+    "bytes": 158680,
+    "version": "b78808436510f6c9"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -627,8 +627,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 34924,
-        "sha256": "00f50cbe889e5a5a2e01439857bc6600f040d7a8c339f7e32f73063f6f8b3ad9"
+        "bytes": 35454,
+        "sha256": "42a89a81296289a46020e13fd77d7a4c62eb83e754c45f16f2aac2f9c6ce1335"
       },
       {
         "path": "arcade-core.js",
@@ -647,8 +647,8 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-party.js",
-        "bytes": 36437,
-        "sha256": "9bfd45475cae63d6891734a597b0f2380bcb1e0d2535edc11f84208507e09d0d"
+        "bytes": 36546,
+        "sha256": "3dfa2f81da2fe39c0131a9c42af1f87bd04ca7b370b33ca44b8b06fd06d64122"
       },
       {
         "path": "arcade-init.js",
@@ -676,8 +676,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 158041,
-    "version": "3c5870de33f88ad1"
+    "bytes": 158680,
+    "version": "e71ad9e78522d90c"
   },
   "maths-book": {
     "name": "Bookshelf",

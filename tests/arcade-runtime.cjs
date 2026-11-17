@@ -47,11 +47,14 @@ assert.equal(unoRoot.children[0].children[0].textContent,"Choose your game","UNO
 unoRoot.children[0].children[2].listeners.click();
 assert.ok(unoRoot.children[3].children.some(el=>el.className.includes("uno-hand")),"UNO solo mode deals cards directly against bots");
 const unoHand=unoRoot.children[3].children.find(el=>el.className.includes("uno-hand"));
-const firstCardId=unoHand.children[0].getAttribute("data-card-id");
+const draggedCard=unoHand.children[0],firstCardId=draggedCard.getAttribute("data-card-id");
 unoHand.children.forEach((card,index)=>{card.getBoundingClientRect=()=>({left:index*40,top:0,width:60,height:90})});
-unoHand.children[0].listeners.pointerdown({button:0,pointerId:9,clientX:10,clientY:10});
+draggedCard.listeners.pointerdown({button:0,pointerId:9,clientX:10,clientY:10});
+assert.ok(draggedCard.className.includes("card-held"),"UNO lifts and animates a card as soon as it is held");
 unoHand.listeners.pointermove({pointerId:9,clientX:210,clientY:10,preventDefault(){}});
+assert.ok(draggedCard.className.includes("card-dragging"),"UNO keeps the held animation during a drag");
 unoHand.listeners.pointerup({pointerId:9});
+assert.ok(!draggedCard.className.includes("card-held")&&!draggedCard.className.includes("card-dragging"),"UNO releases the held animation on drop");
 assert.notEqual(unoHand.children[0].getAttribute("data-card-id"),firstCardId,"UNO cards can be dragged into a different hand position");
 const unoLobbyRoot=new FakeElement("section");registered.uno(unoLobbyRoot);
 unoLobbyRoot.children[0].children[3].listeners.click();

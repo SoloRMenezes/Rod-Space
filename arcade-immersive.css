@@ -242,7 +242,10 @@ body[data-game="uno"] .uno-hand .uno-card {position:relative;display:block;flex:
 body[data-game="uno"] .uno-hand .uno-card:first-child {margin-left:0}
 body[data-game="uno"] .uno-hand .uno-card:hover:not(:disabled),body[data-game="uno"] .uno-hand .uno-card:focus-visible {z-index:30;transform:translateY(-22px) rotate(0) scale(1.06);filter:brightness(1.08);outline:2px solid #fff9;outline-offset:1px}
 body[data-game="uno"] .uno-hand .uno-card.unplayable {filter:brightness(.7) saturate(.72)}
-body[data-game="uno"] .uno-hand .uno-card.card-dragging {z-index:40;opacity:.34;transform:translateY(-12px) rotate(0) scale(1.04);cursor:grabbing}
+@keyframes uno-card-held {from{transform:translateY(-18px) rotate(0) scale(1.06)}to{transform:translateY(-28px) rotate(0) scale(1.12)}}
+body[data-game="uno"] .uno-hand .uno-card.card-held:not(:disabled) {z-index:35;filter:brightness(1.08);box-shadow:0 6px 0 #17221b,0 18px 30px #0007;animation:uno-card-held .24s ease-in-out infinite alternate;cursor:grabbing}
+body[data-game="uno"] .uno-hand .uno-card.card-dragging {z-index:40;opacity:1;transform:translateY(-26px) rotate(0) scale(1.1);cursor:grabbing}
+@media(prefers-reduced-motion:reduce){body[data-game="uno"] .uno-hand .uno-card.card-held:not(:disabled){animation:none;transform:translateY(-22px) rotate(0) scale(1.08)}}
 body[data-game="uno"] .uno-card-oval {position:absolute;inset:13% 8%;display:grid;place-items:center;border:2px solid #ffffffd9;border-radius:50%;background:#ffffff12;transform:rotate(-34deg)}
 body[data-game="uno"] .uno-card-face {display:grid;place-items:center;width:100%;height:100%;font-size:clamp(39px,5vw,58px);font-weight:1000;line-height:1;text-shadow:0 2px 2px #0005;transform:rotate(34deg)}
 body[data-game="uno"] .uno-card.action-card .uno-card-face {font-size:clamp(38px,4.6vw,52px)}
