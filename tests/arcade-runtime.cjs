@@ -45,8 +45,9 @@ assert.ok(combatRoot.children.some(el=>el.className==="battle-dialogue"),"combat
 const unoRoot=new FakeElement("section");registered.uno(unoRoot);
 assert.equal(unoRoot.children[0].children[0].textContent,"Choose your game","UNO starts with solo or multiplayer choices");
 unoRoot.children[0].children[2].listeners.click();
-assert.ok(unoRoot.children[3].children.some(el=>el.className.includes("uno-hand")),"UNO solo mode deals cards directly against bots");
-const unoHand=unoRoot.children[3].children.find(el=>el.className.includes("uno-hand"));
+assert.ok(unoRoot.children[3].children.some(el=>el.className.split(" ").includes("uno-hand")),"UNO solo mode deals cards directly against bots");
+assert.equal(unoRoot.children[3].children.find(el=>el.className==="uno-hand-label").textContent,"Your hand · 7 cards","UNO clearly labels the visible cards as the local player's own hand");
+const unoHand=unoRoot.children[3].children.find(el=>el.className.split(" ").includes("uno-hand"));
 const draggedCard=unoHand.children[0],firstCardId=draggedCard.getAttribute("data-card-id");
 unoHand.children.forEach((card,index)=>{card.getBoundingClientRect=()=>({left:index*40,top:0,width:60,height:90})});
 draggedCard.listeners.pointerdown({button:0,pointerId:9,clientX:10,clientY:10});
@@ -76,7 +77,7 @@ console.log("PASS: All ten games initialise using DOM mocks without runtime exce
  const peer={meta:{id:"peer-1",name:"Alex"}};hostOptions.onConnected(peer);
  hostEvents.message({peer,data:{type:"uno-hello",payload:{playerKey:"alex-key",name:"Alex"}}});
  let state=sent.filter(packet=>packet.type==="uno-state").at(-1).payload;
- assert.equal(state.seat,1,"UNO assigns the guest a seat");assert.equal(state.hand.length,7,"UNO sends the guest only their own hand");assert.equal(state.maxPlayers,16,"UNO state preserves the 16-player room size");assert.equal(state.counts.length,16,"UNO creates all 16 player seats");assert.ok(state.counts.every(count=>count===7),"UNO deals seven cards to all 16 players");assert.equal(state.deckCount,1,"large UNO rooms retain a card to draw after dealing");assert.equal(players,2,"UNO room count includes the host and guest");
+ assert.equal(state.seat,1,"UNO assigns the guest a seat");assert.equal(state.hand.length,7,"UNO sends the guest only their own hand");assert.equal(state.maxPlayers,16,"UNO state preserves the 16-player room size");assert.equal(state.counts.length,16,"UNO creates all 16 player seats");assert.ok(state.counts.every(count=>count===7),"UNO deals seven cards to all 16 players");assert.equal(state.deckCount,1,"large UNO rooms retain a card to draw after dealing");assert.equal(players,2,"UNO room count includes the host and guest");assert.ok(!("hands" in state),"UNO never sends the complete set of players' hands");assert.ok(state.players.every(player=>!("hand" in player)),"UNO player summaries never include card identities");assert.ok(state.counts.every(count=>typeof count==="number"),"UNO exposes only hand sizes for opponents");
  hostEvents.close(peer);assert.equal(players,1,"UNO marks a disconnected player as a bot seat");
  hostEvents.message({peer,data:{type:"uno-heartbeat",payload:{playerKey:"alex-key",name:"Alex"}}});
  state=sent.filter(packet=>packet.type==="uno-state").at(-1).payload;
