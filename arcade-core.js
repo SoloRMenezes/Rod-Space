@@ -9,7 +9,7 @@ const catalog=[
  ["combat","Turn-Based Combat","Choose battle mode","⚔","party"],
 ["pong","Pong","Paddle duel","🏓","party"],
 ["headsup","Heads Up","Guess under pressure","🎭","party"],
-["uno","UNO-style Cards","Bots or phones","🃏","party"],
+["uno","UNO-style Cards","","🃏","party"],
 ["ladders","Snakes & Ladders","Race to victory","🎲","party"]
 ];
 const handlers={};
@@ -28,7 +28,6 @@ if(!info){location.replace(new URL("./",location.href).href);return null}
 document.body.dataset.game=id;
 byId("gameTitle").textContent=info[1];
 byId("gameDescription").textContent=info[2];
-byId("gameLabel").textContent=info[4]==="party"?"ROD SPACE / PARTY GAME":"ROD SPACE / SOLO GAME";
 document.title=info[1]+" — Rod Space";
 window.RodSpaceAccounts?.setActiveGame(id);
 const game=byId("game");clear(game);
