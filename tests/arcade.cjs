@@ -20,8 +20,8 @@ vm.runInContext(get("arcade-puzzles.js"),context);
 vm.runInContext(get("arcade-action.js"),context);
 vm.runInContext(get("arcade-party.js"),context);
 for(const id of expected)assert.equal(typeof handlers[id],"function","game registered "+id);
-for(const id of ["typing","2048","wordle","mines","snake","combat"])assert.match(index,new RegExp('game='+id+'["]'),"home lists "+id);
-for(const id of ["pong","headsup","uno","ladders"])assert.ok(party.includes("game="+id),"party lists "+id);
+for(const id of ["typing","2048","wordle","mines"])assert.match(index,new RegExp('game='+id+'["]'),"home lists "+id);
+for(const id of ["pong","headsup","uno","ladders","snake","combat"])assert.ok(party.includes("game="+id),"party lists "+id);
 assert.doesNotMatch(html,/id="gameNav"|href="arcade.html">All games|class="grid-cards"/,"no arcade landing or sidebar");
 assert.match(html,/class="game-stage"/,"dedicated playfield");
 assert.match(html,/id="gameIntro"/,"game-specific intro menu");
@@ -30,6 +30,7 @@ const homeDescriptions=[...index.matchAll(/\bdescription:\s*["']([^"']+)["']/g)]
 const partyDescriptions=[...party.matchAll(/\bdesc:\s*["']([^"']+)["']/g)].map(m=>m[1]);
 for(const desc of [...homeDescriptions,...partyDescriptions]) assert.ok(desc.trim().split(/\s+/).length<=3,"three-word description: "+desc);
 assert.match(index,/id:"pong"[^}]*type:"party"/,"Pong is classified under Party Space");
+for(const id of ["snake","combat"])assert.match(index,new RegExp('id:"'+id+'"[^}]*type:"party"'),id+" is classified under Party Space");
 const {evaluate,daysRemaining,WORDS}=context.window.Arcade.wordle;
 assert.equal(daysRemaining(new Date(2026,10,16)),45);
 assert.equal(daysRemaining(new Date(2026,11,31)),0);
