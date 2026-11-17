@@ -96,6 +96,20 @@ body[data-game="headsup"] .prompt {background:linear-gradient(145deg,#f39849,#ed
 body[data-game="uno"] .card-hand {background:#09291d8a;border:2px solid #ffffff24;padding:18px;border-radius:24px;max-width:900px;min-height:132px;box-shadow:0 26px 70px #0003}
 body[data-game="uno"] .uno-card {border:4px solid #fff;box-shadow:0 12px 25px #0006;transform:rotate(-2deg);transition:transform .18s,filter .18s}
 body[data-game="uno"] .uno-card:hover:not(:disabled) {transform:translateY(-12px) rotate(0);filter:brightness(1.15)}
+body[data-game="uno"] .uno-menu,body[data-game="uno"] .uno-lobby {width:min(560px,100%);margin:0 auto;padding:20px 12px;text-align:center}
+body[data-game="uno"] .uno-menu h2,body[data-game="uno"] .uno-lobby h2 {margin:0 0 8px;font-size:clamp(24px,5vw,34px)}
+body[data-game="uno"] .uno-menu p,body[data-game="uno"] .uno-lobby p {color:var(--muted,#c4d0c7);line-height:1.5}
+body[data-game="uno"] .uno-menu button,body[data-game="uno"] .uno-lobby>button {display:block;width:min(360px,100%);min-height:50px;margin:12px auto}
+body[data-game="uno"] .uno-lobby input,body[data-game="uno"] .uno-lobby select {display:block;width:min(360px,100%);min-height:46px;margin:12px auto;padding:9px 12px;border:1px solid #657b6a;border-radius:6px;background:#f6f2dc;color:#263a31;font:inherit}
+body[data-game="uno"] .uno-rooms {display:grid;gap:8px;margin:14px auto}
+body[data-game="uno"] .uno-rooms button {width:min(420px,100%);min-height:46px;margin:auto}
+body[data-game="uno"] .uno-toolbar {width:min(100%,1000px);margin:0 auto 10px;gap:8px;flex-wrap:wrap}
+body[data-game="uno"] .uno-toolbar .stat:last-child {flex:1 1 100%;white-space:normal;text-align:center;line-height:1.5;font-size:12px}
+body[data-game="uno"] .uno-table {width:min(100%,1000px);margin:0 auto}
+body[data-game="uno"] .uno-discard {display:flex;align-items:center;justify-content:center;gap:14px;min-height:100px;padding:10px}
+body[data-game="uno"] .uno-discard .uno-card {flex:none}
+body[data-game="uno"] .uno-controls {display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+body[data-game="uno"] .uno-controls button:not(.uno-card) {min-height:46px;padding:10px 16px}
 body[data-game="ladders"] .ladder-grid {max-width:min(690px,100%);width:100%;box-shadow:0 25px 80px #0005;padding:6px;background:#112e3fcc;border:1px solid #72e8fe3f;border-radius:13px}
 body[data-game="ladders"] .ladder-cell {border-radius:5px;border:1px solid #ffffff13;font-weight:800;background:#ffffff12;color:#dffaff;padding:4px}
 body[data-game="ladders"] .ladder-cell.special {background:#2c9f9e;color:white}
@@ -123,6 +137,11 @@ body[data-game="combat"] .choice-row button {min-height:57px;font-size:clamp(13p
 .overlay-card a {background:#ffffff12;border:1px solid #ffffff3b;}
 .overlay-card button:hover,.overlay-card a:hover {filter:brightness(1.18)}
 @media(max-width:640px) {
+  body[data-game="uno"] .uno-menu,body[data-game="uno"] .uno-lobby {padding:14px 4px}
+  body[data-game="uno"] .uno-toolbar {justify-content:center}
+  body[data-game="uno"] .uno-discard {gap:8px;min-height:80px}
+  body[data-game="uno"] .uno-card {width:58px;height:84px;font-size:19px}
+  body[data-game="uno"] .card-hand {padding:12px;gap:6px}
   .game-topbar {min-height:58px;padding:10px 15px}
   .game-topbar .brand {font-size:11px}
   .game-topbar .top-actions {gap:6px}

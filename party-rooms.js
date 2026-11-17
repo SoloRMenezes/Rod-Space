@@ -72,10 +72,11 @@ async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onSta
     });
   };
   lan.send=(peer,type,payload)=>{const relay=relayPeers.get(peer?.meta?.id);if(relay)queueRelay(peer.meta.id,relay.ref,type,payload);else directSend(peer,type,payload)};
-  let stopped=false;
+  let stopped=false,playerCountOverride=null;
+  const currentPlayers=()=>playerCountOverride??(1+lan.guests.filter(guest=>guest.channel?.readyState==='open').length+relayPeers.size);
   const publish=()=>setDoc(roomRef,{game,name,...metadata,ownerUid:user.uid,locked:!!pin,pinHash,players:1,createdAt:serverTimestamp(),updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE});
   await publish();
-  const heartbeat=setInterval(()=>updateDoc(roomRef,{updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE,players:1+lan.guests.filter(guest=>guest.channel?.readyState==='open').length+relayPeers.size}).catch(()=>{}),25_000);
+  const heartbeat=setInterval(()=>updateDoc(roomRef,{updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE,players:currentPlayers()}).catch(()=>{}),25_000);
   const stopPeers=onSnapshot(collection(roomRef,'peers'),snapshot=>snapshot.docs.forEach(async item=>{
     const data=item.data();
     if(data.status==='requesting'&&!pending.has(item.id)){
@@ -106,12 +107,13 @@ async function createHost({game,name,pin='',metadata={},onConnected=()=>{},onSta
   lan.on('open',async guest=>{
     const peerId=guest.meta.id;
     if(peerId)updateDoc(doc(roomRef,'peers',peerId),{status:'connected'}).catch(()=>{});
-    updateDoc(roomRef,{players:1+lan.guests.filter(item=>item.channel?.readyState==='open').length+relayPeers.size,updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE}).catch(()=>{});
+    updateDoc(roomRef,{players:currentPlayers(),updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE}).catch(()=>{});
     onConnected(guest);
   });
   const stop=async()=>{if(stopped)return;stopped=true;clearInterval(heartbeat);stopPeers();lan.close();await deleteDoc(roomRef).catch(()=>{})};
   addEventListener('pagehide',()=>{if(!stopped)deleteDoc(roomRef).catch(()=>{})},{once:true});
-  return{roomId:roomRef.id,lan,stop};
+  const setPlayerCount=count=>{playerCountOverride=Math.max(1,Number(count)||1);updateDoc(roomRef,{players:playerCountOverride,updatedAt:Date.now(),expiresAt:Date.now()+ROOM_LIFE}).catch(()=>{})};
+  return{roomId:roomRef.id,lan,stop,setPlayerCount};
 }
 
 async function join(room,{name,pin='',onStatus=()=>{}}){

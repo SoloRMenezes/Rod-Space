@@ -13,7 +13,7 @@ const help={
 "pong":"Move with W and S or drag the left paddle. In two-player mode, Player 2 uses the arrow keys. First to 7 wins.",
 "combat":"Choose solo to battle a bot, or host and join an online battle from two phones. Take turns using attacks, healing and guard.",
 "headsup":"Hold the screen facing your teammates. They describe the displayed word; press Correct or Pass.",
-"uno":"Pass the device between players. Match the active colour or the top value. Wild cards change colours.",
+"uno":"Choose solo bot matches or multiplayer rooms for friends on other phones. Rooms support up to four players; bots take over disconnected seats.",
 "ladders":"Take turns rolling the die. Climb ladders, slide down snakes, and land exactly on square 100."
 };
 function setTheme(theme){
@@ -61,7 +61,7 @@ document.body.classList.toggle("expanded-view");
 }
 }
 });
-intro.hidden=mode!=="party";
+intro.hidden=mode!=="party"||id==="uno";
 if(!intro.hidden)byId("playGame").focus();
 else if(id==="snake")closeIntro();
 else game.querySelector("textarea")?.focus();

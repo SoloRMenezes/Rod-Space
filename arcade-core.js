@@ -9,7 +9,7 @@ const catalog=[
 ["combat","Turn-Based Combat","Choose battle mode","⚔","solo"],
 ["pong","Pong","Paddle duel","🏓","party"],
 ["headsup","Heads Up","Guess under pressure","🎭","party"],
-["uno","UNO-style Cards","Match coloured cards","🃏","party"],
+["uno","UNO-style Cards","Bots or phones","🃏","party"],
 ["ladders","Snakes & Ladders","Race to victory","🎲","party"]
 ];
 const handlers={};
