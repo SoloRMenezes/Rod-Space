@@ -11,7 +11,7 @@ const help={
 "snake":"Steer using arrow keys, WASD or swipes. Collect food, outgrow the rival snakes and avoid collisions.",
 "pong":"Move with W and S or drag the left paddle. In two-player mode, Player 2 uses the arrow keys. First to 7 wins.",
 "combat":"Choose solo to battle a bot, or host and join an online battle from two phones. Take turns using attacks, healing and guard.",
-"headsup":"Hold the screen facing your teammates. They describe the displayed word; press Correct or Pass.",
+"headsup":"Choose a category and round length first. Hold the phone facing your team; tilt down for correct and up to pass.",
 "uno":"Choose solo bot matches or multiplayer rooms for friends on other phones. Rooms support up to four players; bots take over disconnected seats.",
 "ladders":"Take turns rolling the die. Climb ladders, slide down snakes, and land exactly on square 100."
 };
@@ -23,7 +23,7 @@ byId("introControls").textContent=help[id]||"Play the game.";
 const intro=byId("gameIntro"),game=byId("game");
 function closeIntro(){
 intro.hidden=true;
-if(["pong","snake","headsup"].includes(id)){
+if(["pong","snake"].includes(id)){
 const start=[...game.querySelectorAll("button")].find(b=>/^(Start game|Start \/ Restart|Start new round|Start 60-second round)$/.test(b.textContent.trim()));
 start?.click();
 }

@@ -5,6 +5,8 @@ const arcadeCss=fs.readFileSync(path.join(root,"arcade-immersive.css"),"utf8");
 assert.match(arcadeCss,/body\[data-game="uno"\]\s*\{[^}]*--deep:#190809;[^}]*--btn:#c91f28;/,"UNO uses the requested red table theme");
 assert.match(arcadeCss,/body\[data-game="uno"\] \.uno-hand\.card-hand \{display:flex;flex-wrap:nowrap;[^}]*overflow:visible/,"UNO hand stays visible without a nested scrollbar");
 assert.match(arcadeCss,/body\[data-game="uno"\] \.game-heading\s*\{\s*display:\s*none/,"UNO hides its redundant page title");
+assert.match(arcadeCss,/body\[data-game="headsup"\] \.game-heading\s*\{\s*display:\s*none/,"Heads Up hides the title already shown in the top bar");
+assert.match(arcadeCss,/body\[data-game="headsup"\] \.prompt[^\{]*\{[^}]*background:#f1eee3;[^}]*color:#202326;/,"Heads Up uses a calm flat prompt instead of a bright gradient");
 class FakeElement {
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(key,value){this[key]=value}};this.classList={toggle(){}};this.value="";this.textContent="";this.disabled=false;this.className="";}
  setAttribute(key,value){this.attributes[key]=value;}
@@ -19,7 +21,7 @@ class FakeElement {
  }
 const games={};const memory=new Map();
 const document={createElement(tag){return new FakeElement(tag)},addEventListener(){},hidden:false};
-const ctx={document,console,performance:{now:()=>1234},localStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){},requestAnimationFrame:()=>1,window:{},location:{href:"http://127.0.0.1/arcade.html"},navigator:{},Date,Math,JSON,Number,String,Array,Object,Set,Map};
+const windowListeners={};const ctx={document,console,performance:{now:()=>1234},localStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){},requestAnimationFrame:()=>1,window:{addEventListener(name,fn){windowListeners[name]=fn}},location:{href:"http://127.0.0.1/arcade.html"},navigator:{},Date,Math,JSON,Number,String,Array,Object,Set,Map};
 vm.createContext(ctx);
 for(const source of ["arcade-core.js","arcade-puzzles.js","arcade-action.js","arcade-party.js"]){vm.runInContext(fs.readFileSync(path.join(root,source),"utf8"),ctx,{filename:source});}
 for(const game of ["typing","2048","wordle","mines","pong","snake","headsup","uno","ladders","combat"]){
@@ -52,6 +54,24 @@ combatRoot.children[0].children[0].listeners.click();
 assert.equal(combatRoot.children.find(el=>el.className==="duel-scene").children.length,2,"combat uses two opposing battle positions");
 assert.equal(combatRoot.children.find(el=>el.className==="choice-row battle-actions").children.length,4,"combat keeps four turn actions");
 assert.ok(combatRoot.children.some(el=>el.className==="battle-dialogue"),"combat has a battle dialogue panel");
+const headsupRoot=new FakeElement("section");registered.headsup(headsupRoot);
+const headsupSetup=headsupRoot.children.find(el=>el.className==="headsup-setup"),headsupToolbar=headsupRoot.children.find(el=>el.className.split(" ").includes("headsup-toolbar")),headsupPrompt=headsupRoot.children.find(el=>el.className==="prompt"),headsupActions=headsupRoot.children.find(el=>el.className.split(" ").includes("headsup-actions"));
+assert.ok(headsupSetup&&!headsupSetup.hidden,"Heads Up opens on setup instead of starting a round");
+assert.ok(headsupSetup.children.some(el=>el.children.some(child=>child.tagName==="SELECT"&&child.getAttribute("aria-label")==="Choose a category")),"Heads Up lets players choose a word category before play");
+assert.ok(headsupSetup.children.some(el=>el.children.some(child=>child.tagName==="SELECT"&&child.getAttribute("aria-label")==="Round length")),"Heads Up lets players choose round length before play");
+assert.equal(headsupToolbar.hidden,true,"Heads Up game HUD stays hidden until the round starts");
+const headsupStart=headsupSetup.children.find(el=>el.textContent==="Start round");
+assert.ok(headsupStart,"Heads Up has an explicit start-round step after setup");
+(async()=>{
+ await headsupStart.listeners.click();
+ assert.equal(headsupSetup.hidden,true,"starting a round closes setup");
+ assert.equal(headsupToolbar.hidden,false,"starting a round reveals the game HUD");
+ assert.equal(headsupActions.children.length,0,"Heads Up has no on-screen Correct or Pass controls during play");
+ assert.ok(windowListeners.deviceorientation,"Heads Up listens for phone tilt");
+ const firstWord=headsupPrompt.textContent;windowListeners.deviceorientation({beta:0});windowListeners.deviceorientation({beta:30});
+ assert.notEqual(headsupPrompt.textContent,firstWord,"tilting the phone advances the Heads Up word");
+ console.log("PASS: Heads Up uses a setup step, restrained styling, and tilt controls without gameplay buttons.");
+})();
 const unoRoot=new FakeElement("section");registered.uno(unoRoot);
 const unoTable=unoRoot.children.find(el=>el.className==="uno-table"),unoHandArea=unoRoot.children.find(el=>el.className==="uno-hand-area"),unoToolbar=unoRoot.children.find(el=>el.className.split(" ").includes("uno-toolbar")),unoControls=unoRoot.children.find(el=>el.className.split(" ").includes("uno-controls"));
 assert.deepEqual(unoRoot.children[0].children.map(button=>button.textContent),["Singleplayer","LAN","Multiplayer"],"UNO mode menu stays concise with the three requested choices");

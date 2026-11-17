@@ -29,7 +29,7 @@ body[data-game="snake"] {--glow:#82fba9;--glow-rgb:76,246,134;--deep:#04110e;--m
 body[data-game="pong"] {--glow:#42cf4b;--glow-rgb:66,207,75;--deep:#06150a;--mid:#0b2411;--surface:#112d17;--tile:#17481f;--btn:#237a2c;}
 body[data-game="combat"] {--glow:#ffba68;--glow-rgb:255,147,51;--deep:#1a0b1e;--mid:#422046;--surface:#3a2542dd;--tile:#543357;--btn:#a75856;}
 body[data-game="uno"] {--glow:#ff514e;--glow-rgb:255,81,78;--deep:#190809;--mid:#3a1114;--surface:#3d171b;--tile:#572024;--btn:#c91f28;}
-body[data-game="headsup"] {--glow:#ffc06b;--glow-rgb:255,163,64;--deep:#29102b;--mid:#652f68;--surface:#653c68bf;--tile:#784f85;--btn:#ca6a54;}
+body[data-game="headsup"] {--glow:#d6c7a1;--glow-rgb:214,199,161;--deep:#202326;--mid:#202326;--surface:#2b2f32;--tile:#33383c;--btn:#566c61;}
 body[data-game="ladders"] {--glow:#72e8fe;--glow-rgb:84,211,252;--deep:#0c1f29;--mid:#14516d;--surface:#255e70dd;--tile:#397489;--btn:#1986a8;}
 body.game-world:not([data-game=""])[data-theme="light"] {--text:#fff;--muted:#d5e2ee;}
 .game-topbar {
@@ -242,6 +242,29 @@ body[data-game="mines"] .mine-cell.flag {color:#a76b24}
 body[data-game="mines"] .mine-cell.mine {background:#a65050;border-color:#d78778;color:#fff}
 body[data-game="mines"] .message {margin-top:14px;color:#edc478}
 body[data-game="headsup"] .prompt {box-shadow:none;transform:none}
+
+/* Heads Up: calm setup, high contrast word, and motion-based play. */
+body[data-game="headsup"]::before {background:#202326}
+body[data-game="headsup"]::after {display:none}
+body[data-game="headsup"] .game-heading {display:none}
+body[data-game="headsup"] .game-panel {width:min(960px,100%);max-width:960px;gap:12px}
+body[data-game="headsup"] .headsup-setup {width:min(560px,100%);display:flex;flex-direction:column;gap:12px;padding:clamp(18px,4vw,32px);background:#2b2f32;border:1px solid #51575a;border-radius:8px;color:#f4f1e8}
+body[data-game="headsup"] .headsup-setup h2 {margin:0 0 4px;font-size:clamp(22px,3vw,28px);letter-spacing:-.02em}
+body[data-game="headsup"] .headsup-field {display:flex;flex-direction:column;gap:6px;color:#d2d3ce;font-size:14px;font-weight:650}
+body[data-game="headsup"] .headsup-setup select {width:100%;min-height:48px;padding:10px 12px;background:#202326;border:1px solid #656b6d;border-radius:5px;color:#f4f1e8;font-size:16px}
+body[data-game="headsup"] .headsup-instructions {margin:3px 0;color:#d2d3ce;font-size:15px;line-height:1.5}
+body[data-game="headsup"] .headsup-setup button {min-height:50px;border-radius:5px;font-size:17px;font-weight:700}
+body[data-game="headsup"] .headsup-toolbar {margin:0;gap:8px}
+body[data-game="headsup"] .headsup-toolbar .stat {background:#2b2f32;border:1px solid #51575a;border-radius:5px}
+body[data-game="headsup"] .prompt {width:min(900px,100%);min-width:0;min-height:min(40svh,420px);padding:20px;background:#f1eee3;border:0;border-radius:6px;display:grid;place-items:center;color:#202326;font-size:clamp(42px,8vw,96px);font-weight:800;line-height:1.08;letter-spacing:-.04em;text-align:center;text-shadow:none;box-shadow:none;transform:none}
+body[data-game="headsup"] .headsup-actions {display:none!important}
+body[data-game="headsup"] .message {color:#d2d3ce}
+@media(max-width:640px) {body[data-game="headsup"] .game-stage {padding:18px 12px} body[data-game="headsup"] .prompt {min-height:36svh;font-size:clamp(38px,11vw,68px)} body[data-game="headsup"] .headsup-toolbar .stat {padding:8px 12px}}
+body[data-game="headsup"] .overlay-card {background:#2b2f32;border:1px solid #51575a;border-radius:8px;box-shadow:none}
+body[data-game="headsup"] .overlay-card .poster {background:#394044;border:1px solid #656b6d;border-radius:8px;box-shadow:none}
+body[data-game="headsup"] .overlay-card .eyebrow {color:#d6c7a1}
+body[data-game="headsup"] .overlay-card .help-text {border-color:#51575a}
+body[data-game="headsup"] .overlay-card button {background:#566c61;border:1px solid #71877b;border-radius:5px;box-shadow:none}
 body[data-game="uno"] .card-hand,body[data-game="ladders"] .ladder-grid {box-shadow:none}
 body[data-game="uno"] .uno-card {box-shadow:0 2px 5px #0003}
 
