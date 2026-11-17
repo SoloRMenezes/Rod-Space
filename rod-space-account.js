@@ -28,6 +28,8 @@
   let mode = "create";
   let modalView = "settings";
   let lastStatus = "";
+  let passwordResetTicker = 0;
+  const passwordResetCooldownKey = "rodspace.password-reset-until";
   const pendingBest = new Map();
   const statsNames = {
     typing: "Fast Typing", "2048": "2048", wordle: "Daily Wordle", mines: "Minesweeper",
@@ -160,7 +162,27 @@
     target.textContent = text;
     target.dataset.kind = kind;
   }
+  function updatePasswordResetButton(reset, sending = false) {
+    let seconds = 0;
+    try { seconds = Math.max(0, Math.ceil((Number(localStorage.getItem(passwordResetCooldownKey)) - Date.now()) / 1000)); } catch {}
+    reset.disabled = sending || seconds > 0;
+    reset.textContent = sending ? "Sending reset email…" : seconds ? `Resend in ${seconds}s` : "Forgot password?";
+    reset.setAttribute("aria-label", seconds ? `You can send another reset email in ${seconds} seconds` : "Send a password reset email");
+    return seconds;
+  }
+  function startPasswordResetCountdown(reset) {
+    if (passwordResetTicker) clearInterval(passwordResetTicker);
+    const tick = () => {
+      if (!updatePasswordResetButton(reset)) {
+        clearInterval(passwordResetTicker);
+        passwordResetTicker = 0;
+      }
+    };
+    tick();
+    if (!passwordResetTicker && reset.disabled) passwordResetTicker = setInterval(tick, 250);
+  }
   function renderModal(body, title) {
+    if (passwordResetTicker) { clearInterval(passwordResetTicker); passwordResetTicker = 0; }
     body.replaceChildren();
     if (!state.ready) {
       title.textContent = "Rod Space account";
@@ -226,12 +248,24 @@
     };
     switchMode.onclick = () => { mode = mode === "create" ? "signin" : "create"; modal.render(); };
     reset.onclick = async () => {
-      if (!emailInput.value.trim()) { setStatus(status, "Enter your email first."); return; }
-      reset.disabled = true;
-      try { const { auth, authSdk } = await firebase; await authSdk.sendPasswordResetEmail(auth, emailInput.value.trim()); setStatus(status, "Password reset email sent.", "success"); }
-      catch (error) { setStatus(status, messageFor(error)); }
-      reset.disabled = false;
+      const email = emailInput.value.trim();
+      if (!email) { setStatus(status, "Enter your email first."); return; }
+      if (!emailInput.validity?.valid && emailInput.type === "email") { setStatus(status, "Enter a valid email address."); return; }
+      const remaining = updatePasswordResetButton(reset);
+      if (remaining) { setStatus(status, `You can request another reset email in ${remaining} seconds.`); return; }
+      try { localStorage.setItem(passwordResetCooldownKey, String(Date.now() + 60_000)); } catch {}
+      updatePasswordResetButton(reset, true);
+      startPasswordResetCountdown(reset);
+      setStatus(status, "Sending a secure reset link…", "success");
+      try {
+        const { auth, authSdk } = await firebase;
+        await authSdk.sendPasswordResetEmail(auth, email);
+        setStatus(status, "If an account matches that email, we sent a secure reset link. Check your inbox and spam folder.", "success");
+      } catch (error) { setStatus(status, messageFor(error)); }
+      updatePasswordResetButton(reset);
     };
+    updatePasswordResetButton(reset);
+    if (reset.disabled) startPasswordResetCountdown(reset);
     title.textContent = mode === "create" ? "Create your account" : "Sign in";
     body.append(form, links, status);
   }

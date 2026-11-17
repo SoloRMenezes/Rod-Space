@@ -7,6 +7,8 @@ assert.match(arcadeCss,/body\[data-game="uno"\] \.uno-hand\.card-hand \{display:
 assert.match(arcadeCss,/body\[data-game="uno"\] \.game-heading\s*\{\s*display:\s*none/,"UNO hides its redundant page title");
 assert.match(arcadeCss,/body\[data-game="headsup"\] \.game-heading\s*\{\s*display:\s*none/,"Heads Up hides the title already shown in the top bar");
 assert.match(arcadeCss,/body\[data-game="headsup"\] \.prompt[^\{]*\{[^}]*background:#f1eee3;[^}]*color:#202326;/,"Heads Up uses a calm flat prompt instead of a bright gradient");
+assert.match(arcadeCss,/body\[data-game="snake"\] \.game-heading\s*\{\s*display:\s*none/,"Snake uses its top bar title without a duplicate page heading");
+assert.match(arcadeCss,/body\[data-game="snake"\] \.snake-game-over[^\{]*\{[^}]*font-size:clamp\(32px,6vw,64px\)/,"Snake game-over state is presented at a large readable size");
 class FakeElement {
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(key,value){this[key]=value}};this.classList={toggle(){}};this.value="";this.textContent="";this.disabled=false;this.className="";}
  setAttribute(key,value){this.attributes[key]=value;}
@@ -19,9 +21,9 @@ class FakeElement {
  getBoundingClientRect(){return{left:0,top:0,width:600,height:480}}
  getContext(){return{fillRect(){},beginPath(){},arc(){},fill(){},stroke(){},moveTo(){},lineTo(){},fillText(){},clearRect(){},set fillStyle(v){},set globalAlpha(v){}};}
  }
-const games={};const memory=new Map();
-const document={createElement(tag){return new FakeElement(tag)},addEventListener(){},hidden:false};
-const windowListeners={};const ctx={document,console,performance:{now:()=>1234},localStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){},requestAnimationFrame:()=>1,window:{addEventListener(name,fn){windowListeners[name]=fn}},location:{href:"http://127.0.0.1/arcade.html"},navigator:{},Date,Math,JSON,Number,String,Array,Object,Set,Map};
+const games={};const memory=new Map(),documentListeners={};
+const document={createElement(tag){return new FakeElement(tag)},addEventListener(name,fn){documentListeners[name]=fn},hidden:false};
+const windowListeners={},intervalCallbacks=new Map();let intervalId=0;const ctx={document,console,performance:{now:()=>1234},localStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)},setInterval(fn){const id=++intervalId;intervalCallbacks.set(id,fn);return id},clearInterval(id){intervalCallbacks.delete(id)},setTimeout:()=>1,clearTimeout(){},requestAnimationFrame:()=>1,window:{addEventListener(name,fn){windowListeners[name]=fn}},location:{href:"http://127.0.0.1/arcade.html"},navigator:{},Date,Math,JSON,Number,String,Array,Object,Set,Map};
 vm.createContext(ctx);
 for(const source of ["arcade-core.js","arcade-puzzles.js","arcade-action.js","arcade-party.js"]){vm.runInContext(fs.readFileSync(path.join(root,source),"utf8"),ctx,{filename:source});}
 for(const game of ["typing","2048","wordle","mines","pong","snake","headsup","uno","ladders","combat"]){
@@ -54,6 +56,21 @@ combatRoot.children[0].children[0].listeners.click();
 assert.equal(combatRoot.children.find(el=>el.className==="duel-scene").children.length,2,"combat uses two opposing battle positions");
 assert.equal(combatRoot.children.find(el=>el.className==="choice-row battle-actions").children.length,4,"combat keeps four turn actions");
 assert.ok(combatRoot.children.some(el=>el.className==="battle-dialogue"),"combat has a battle dialogue panel");
+const snakeRoot=new FakeElement("section");registered.snake(snakeRoot);
+const snakeToolbar=snakeRoot.children.find(el=>el.className.split(" ").includes("snake-toolbar")),snakeBoard=snakeRoot.children.find(el=>el.className==="snake-board-wrap"),snakeCanvas=snakeBoard?.children.find(el=>el.tagName==="CANVAS"),snakeJoystick=snakeBoard?.children.find(el=>el.className==="snake-joystick");
+assert.equal(snakeCanvas?.getAttribute("width"),"1200","Snake arena uses a larger slither-style playfield");
+assert.ok(snakeToolbar?.children.some(el=>el.className==="stat"),"Snake score and best score stay in the top toolbar");
+assert.equal(snakeRoot.children.some(el=>el.className.split(" ").includes("direction-pad")),false,"Snake removes the arrow-button pad");
+assert.ok(snakeJoystick,"Snake has a floating joystick for touchscreens");
+assert.ok(snakeBoard.children.some(el=>el.className==="snake-game-over"),"Snake places a game-over overlay on the map");
+snakeToolbar.children.find(el=>el.textContent==="Start / Restart").listeners.click();
+snakeCanvas.listeners.pointerdown({pointerType:"touch",pointerId:7,clientX:120,clientY:180,preventDefault(){}});snakeCanvas.listeners.pointermove({pointerType:"touch",pointerId:7,clientX:120,clientY:120});
+assert.equal(snakeJoystick.style.left,"120px","touch joystick snaps to the initial finger position");
+assert.equal(snakeJoystick.style.top,"180px","touch joystick is positioned relative to the arena");
+const snakeTimer=[...intervalCallbacks.entries()].at(-1)[1],snakeKey=code=>documentListeners.keydown({code,preventDefault(){}});snakeKey("ArrowDown");snakeTimer();snakeKey("ArrowRight");snakeTimer();snakeKey("ArrowUp");snakeTimer();snakeKey("ArrowLeft");snakeTimer();
+assert.equal(snakeBoard.children.find(el=>el.className==="snake-game-over").hidden,true,"Snake can loop through its own body without dying");
+for(let i=0;i<70;i++)snakeTimer();
+assert.equal(snakeBoard.children.find(el=>el.className==="snake-game-over").hidden,false,"Snake displays a prominent game-over overlay after a crash");
 const headsupRoot=new FakeElement("section");registered.headsup(headsupRoot);
 const headsupSetup=headsupRoot.children.find(el=>el.className==="headsup-setup"),headsupToolbar=headsupRoot.children.find(el=>el.className.split(" ").includes("headsup-toolbar")),headsupPrompt=headsupRoot.children.find(el=>el.className==="prompt"),headsupActions=headsupRoot.children.find(el=>el.className.split(" ").includes("headsup-actions"));
 assert.ok(headsupSetup&&!headsupSetup.hidden,"Heads Up opens on setup instead of starting a round");
