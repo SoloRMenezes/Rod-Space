@@ -346,7 +346,7 @@
     if (!input) return;
     let lastApplied = "Player";
     const applyName = ({ user, profile }) => {
-      const name = profile?.username || user?.displayName;
+      const name = profile?.username || user?.displayName || user?.email?.split("@")[0];
       if (name && (!input.value || input.value === "Player" || input.value === lastApplied)) {
         input.value = name;
         lastApplied = name;
