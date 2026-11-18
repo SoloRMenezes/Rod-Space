@@ -499,9 +499,15 @@ body[data-game="uno"] .uno-draw-pile::after {transform:translate(-5px,3px) rotat
 body[data-game="uno"] .uno-draw-pile:hover:not(:disabled) {transform:translateY(-7px) rotate(0);filter:brightness(1.08)}
 body[data-game="uno"] .uno-draw-pile:disabled {opacity:.7}
 body[data-game="uno"] .uno-deck-back {display:grid;place-items:center;width:78%;height:49%;border:4px solid #fff;border-radius:50%;background:#20191c;color:#ffd84f;font-size:clamp(26px,4vw,48px);font-weight:1000;letter-spacing:-.08em;text-shadow:1px 2px #7b1216;transform:rotate(-18deg)}
-body[data-game="uno"] .uno-discard {display:grid;place-items:center;flex:none;width:clamp(110px,min(20vw,28vh),220px);aspect-ratio:.685;min-height:0;padding:0;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none}
-body[data-game="uno"] .uno-discard .uno-card {width:100%;height:100%;border-radius:15px;box-shadow:0 7px 0 #161316,0 16px 26px #0006}
-body[data-game="uno"] .uno-discard .uno-card {display:block!important;min-width:0;aspect-ratio:.685;transform:none!important;transform-origin:center;opacity:1!important;filter:none!important}
+body[data-game="uno"] .uno-discard {position:relative;display:grid;place-items:center;flex:none;width:clamp(110px,min(20vw,28vh),220px);aspect-ratio:.685;min-height:0;padding:0;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none}
+body[data-game="uno"] .uno-discard .uno-card {box-sizing:border-box;width:100%!important;height:100%!important;min-width:100%;min-height:100%;border-radius:15px;box-shadow:0 7px 0 #161316,0 16px 26px #0006}
+body[data-game="uno"] .uno-discard .uno-card {display:block!important;aspect-ratio:.685;transform:none!important;transform-origin:center;opacity:1!important;filter:none!important}
+body[data-game="uno"] .uno-active-color {position:absolute;z-index:3;top:-42px;left:50%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:32px;padding:4px 12px;border:1px solid #ffffff55;border-radius:999px;background:#21191b;color:#fff;font-size:clamp(13px,1.4vw,18px);font-weight:850;white-space:nowrap;transform:translateX(-50%);box-shadow:0 4px 12px #0005}
+body[data-game="uno"] .uno-active-color::before {content:"";width:12px;height:12px;flex:none;border-radius:50%;background:#aaa;box-shadow:0 0 0 2px #ffffff88}
+body[data-game="uno"] .uno-discard[data-active-color="red"] .uno-active-color::before {background:#e53935}
+body[data-game="uno"] .uno-discard[data-active-color="blue"] .uno-active-color::before {background:#2874dc}
+body[data-game="uno"] .uno-discard[data-active-color="green"] .uno-active-color::before {background:#26a85b}
+body[data-game="uno"] .uno-discard[data-active-color="yellow"] .uno-active-color::before {background:#f2bd22}
 body[data-game="uno"] .uno-discard .uno-card-face {font-size:clamp(48px,7vw,88px)}
 body[data-game="uno"] .uno-hand .uno-card.just-drawn {z-index:25;outline:3px solid #fff;outline-offset:3px;filter:brightness(1.18);transform:translateY(-16px) rotate(0)}
 body[data-game="uno"] .uno-turn {flex:1;min-width:0;text-align:center;line-height:1.3}
