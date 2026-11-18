@@ -6,66 +6,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "cf39d2c09b4fea95"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "headsup": {
     "name": "Heads Up",
@@ -74,66 +86,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "96aad9b23c3595a8"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -142,66 +166,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "71a51eea362d1369"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -210,66 +246,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "5534967bc8b0171d"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "typing": {
     "name": "Fast Typing",
@@ -278,66 +326,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "1fa331127dccc632"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -346,66 +406,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "677a74d06ad0c1ef"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "mines": {
     "name": "Minesweeper",
@@ -414,66 +486,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "e8ca8a697ee80b22"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "pong": {
     "name": "Pong",
@@ -482,66 +566,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "41ca24721b50cf30"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "snake": {
     "name": "Snake Arena",
@@ -550,66 +646,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "ee89b9f5e1f3c223"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -618,66 +726,78 @@ self.OFFLINE_CATALOG = {
       {
         "path": "arcade.html",
         "bytes": 2077,
-        "sha256": "e5226ce3963c6a611f5534515fc7f6aa789aef5cba62e0c434f191d468d2f830"
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 48240,
-        "sha256": "cf75cc724227296558c525b1fad8342cc343d113a347bc9a521e674e0f0810ea"
+        "bytes": 69332,
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2434,
-        "sha256": "1892b1f43b6870693250058bc785bdc0c4edb4aaf3767eba70a583ca98490789"
+        "bytes": 2552,
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18978,
-        "sha256": "c6f20b0d9db8bdd2966e82edba2bd2d0f541171160a976ae5cc788f23f6ecf7e"
+        "bytes": 22122,
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 11302,
-        "sha256": "d092fb7083e6c2272724ff033935c993443a5e5d515a7b78077f2b4b37525685"
+        "bytes": 16262,
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 39435,
-        "sha256": "360b6ebac5a03decf0015e155884955b9b92ee2848d94ca838081371fd4fb7da"
+        "bytes": 47952,
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 2390,
-        "sha256": "833942a7352ffc89658640209945421b64a7417cef93cd86654964f4dd5979eb"
+        "bytes": 2526,
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "rod-space-account.js",
-        "bytes": 27580,
-        "sha256": "feedd2cc46de9851eafe857c01067eb27147708b94326524889f5ef7c763b704"
+        "bytes": 30319,
+        "sha256": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0",
+        "hash": "9ae9cca18e288f262932d9eb5c9d115350f3142306d09b575d428cbf35460cf0"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "party-lan.js",
         "bytes": 3922,
-        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
         "bytes": 9856,
-        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 179477,
-    "version": "852b82b53a11db34"
+    "bytes": 220183,
+    "version": "d88b0fff6831ba91"
   },
   "maths-book": {
     "name": "Bookshelf",
@@ -686,37 +806,44 @@ self.OFFLINE_CATALOG = {
       {
         "path": "3d_drift_racer.config.js",
         "bytes": 225,
-        "hash": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b"
+        "hash": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b",
+        "sha256": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b"
       },
       {
         "path": "3d_drift_racer.css",
         "bytes": 4749,
-        "hash": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b"
+        "hash": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b",
+        "sha256": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b"
       },
       {
         "path": "3d_drift_racer.html",
         "bytes": 20728,
-        "hash": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6"
+        "hash": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6",
+        "sha256": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6"
       },
       {
         "path": "3d_drift_racer.js",
         "bytes": 126035,
-        "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
+        "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36",
+        "sha256": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
       },
       {
         "path": "Blackjack.html",
         "bytes": 21486,
-        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
+        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413",
+        "sha256": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
       },
       {
         "path": "DND.html",
         "bytes": 735,
-        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
+        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb",
+        "sha256": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
       },
       {
         "path": "DNDC.html",
         "bytes": 22362,
-        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
+        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5",
+        "sha256": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
       },
       {
         "path": "KaraokeApp/Videos/ABBA - Dancing Queen (Karaoke Version) - Sing King (1080p, h264).mp4",
@@ -834,64 +961,58 @@ self.OFFLINE_CATALOG = {
         "hash": "e8709b99d0ff62855b1ef7494848d2a43ffee9a22f03fb70d55e2392d122816e"
       },
       {
-        "path": "Terraria/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "Terraria/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "Terraria/index.html",
-        "bytes": 442,
-        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
-      },
-      {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 49750,
-        "hash": "5454958d6f6e5420d59192946b0394d39a09acc8681ce17a7d4aaf648f24b60c"
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0",
+        "sha256": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9049,
-        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
+        "bytes": 16262,
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2398,
-        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
+        "bytes": 2552,
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 27850,
-        "hash": "58bc4a48c386923637ffb26403578b0f79e3e7ba83e8199795892c10bb9a8fbe"
+        "bytes": 69332,
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3671,
-        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
+        "bytes": 2526,
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 13230,
-        "hash": "fcbfed73842d5fe9a1e24b6e38999292246db5506f5844af43c35f783629801b"
+        "bytes": 47952,
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18880,
-        "hash": "e0f3cdd5f8142d39d14a38c8e2ab96166109029e2fcd8df1546f71c8460ac4fd"
+        "bytes": 22122,
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2077,
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "assets/chronos/era-0-pre-void.png",
@@ -976,7 +1097,8 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/nextbot-chaser.png",
         "bytes": 258145,
-        "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
+        "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc",
+        "sha256": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
       },
       {
         "path": "assets/nextbots/aag.jpg",
@@ -1096,17 +1218,20 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/password-gate.js",
         "bytes": 5818,
-        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
+        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4",
+        "sha256": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
       },
       {
         "path": "assets/rod-space-home.css",
         "bytes": 899,
-        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
+        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5",
+        "sha256": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
       },
       {
         "path": "assets/rod-space-home.js",
         "bytes": 1248,
-        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
+        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b",
+        "sha256": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
       },
       {
         "path": "assets/solos-rng/azulejo-relic.png",
@@ -1196,197 +1321,236 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/GLTFLoader-r128.js",
         "bytes": 96550,
-        "hash": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6"
+        "hash": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6",
+        "sha256": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6"
       },
       {
         "path": "assets/vendor/lucide.js",
         "bytes": 644423,
-        "hash": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9"
+        "hash": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9",
+        "sha256": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9"
       },
       {
         "path": "assets/vendor/nextbot-brick.jpg",
         "bytes": 1090649,
-        "hash": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe"
+        "hash": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe",
+        "sha256": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe"
       },
       {
         "path": "assets/vendor/nextbot.png",
         "bytes": 19359,
-        "hash": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9"
+        "hash": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9",
+        "sha256": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9"
       },
       {
         "path": "assets/vendor/offline-146601f235c4.js",
         "bytes": 10751,
-        "hash": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+        "hash": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+        "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
       },
       {
         "path": "assets/vendor/offline-25023b521d77.js",
         "bytes": 603445,
-        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+        "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
       },
       {
         "path": "assets/vendor/offline-4047a043ad8e.js",
         "bytes": 80807,
-        "hash": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a"
+        "hash": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a",
+        "sha256": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a"
       },
       {
         "path": "assets/vendor/offline-4ad6e54ad218.js",
         "bytes": 19927,
-        "hash": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36"
+        "hash": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36",
+        "sha256": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36"
       },
       {
         "path": "assets/vendor/offline-5c05996c1630.js",
         "bytes": 131835,
-        "hash": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+        "hash": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+        "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
       },
       {
         "path": "assets/vendor/offline-6e390bcdb8ee.js",
         "bytes": 3141115,
-        "hash": "5f8ffa174aa2465f074c85b92421662168cd356eedebaedc3d16fd9d61fadb7c"
+        "hash": "5f8ffa174aa2465f074c85b92421662168cd356eedebaedc3d16fd9d61fadb7c",
+        "sha256": "5f8ffa174aa2465f074c85b92421662168cd356eedebaedc3d16fd9d61fadb7c"
       },
       {
         "path": "assets/vendor/offline-892b8e0a22ac.js",
         "bytes": 442433,
-        "hash": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a"
+        "hash": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a",
+        "sha256": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a"
       },
       {
         "path": "assets/vendor/offline-8eacf4588bcf.js",
         "bytes": 626868,
-        "hash": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd"
+        "hash": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd",
+        "sha256": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "assets/vendor/three-r128.min.js",
         "bytes": 603445,
-        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+        "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
       },
       {
         "path": "assets/vendor/three.core.min.js",
         "bytes": 385386,
-        "hash": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90"
+        "hash": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90",
+        "sha256": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90"
       },
       {
         "path": "assets/vendor/three.module.min.js",
         "bytes": 365552,
-        "hash": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6"
+        "hash": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6",
+        "sha256": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6"
       },
       {
         "path": "assets/vendor/three160/controls/PointerLockControls.js",
         "bytes": 3347,
-        "hash": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca"
+        "hash": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca",
+        "sha256": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca"
       },
       {
         "path": "assets/vendor/three160/loaders/GLTFLoader.js",
         "bytes": 108535,
-        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
+        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5",
+        "sha256": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
       },
       {
         "path": "assets/vendor/three160/three.module.js",
         "bytes": 1272971,
-        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
+        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2",
+        "sha256": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
       },
       {
         "path": "assets/vendor/three160/utils/BufferGeometryUtils.js",
         "bytes": 31919,
-        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
+        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c",
+        "sha256": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
       },
       {
         "path": "assets/vendor/tokyo-font-0.ttf",
         "bytes": 324820,
-        "hash": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba"
+        "hash": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba",
+        "sha256": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba"
       },
       {
         "path": "assets/vendor/tokyo-font-1.ttf",
         "bytes": 326468,
-        "hash": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c"
+        "hash": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c",
+        "sha256": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c"
       },
       {
         "path": "assets/vendor/tokyo-font-2.ttf",
         "bytes": 327260,
-        "hash": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a"
+        "hash": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a",
+        "sha256": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a"
       },
       {
         "path": "assets/vendor/tokyo-font-3.ttf",
         "bytes": 112172,
-        "hash": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3"
+        "hash": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3",
+        "sha256": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3"
       },
       {
         "path": "assets/vendor/tokyo-font-4.ttf",
         "bytes": 112092,
-        "hash": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a"
+        "hash": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a",
+        "sha256": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a"
       },
       {
         "path": "assets/vendor/tokyo-font-5.ttf",
         "bytes": 69308,
-        "hash": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85"
+        "hash": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85",
+        "sha256": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85"
       },
       {
         "path": "assets/vendor/tokyo-fonts.css",
         "bytes": 938,
-        "hash": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b"
+        "hash": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b",
+        "sha256": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b"
       },
       {
         "path": "assets/vendor/vue3.global.prod.js",
         "bytes": 170605,
-        "hash": "e0a2a0866a8de8887542e24f3c218aad3d907b88f30966068792ba992296dc9f"
+        "hash": "e0a2a0866a8de8887542e24f3c218aad3d907b88f30966068792ba992296dc9f",
+        "sha256": "e0a2a0866a8de8887542e24f3c218aad3d907b88f30966068792ba992296dc9f"
       },
       {
         "path": "backrooms-level1.html",
         "bytes": 28551,
-        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
+        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d",
+        "sha256": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
       },
       {
         "path": "backrooms-level10.html",
         "bytes": 18341,
-        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
+        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c",
+        "sha256": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
       },
       {
         "path": "backrooms-level2.html",
         "bytes": 22592,
-        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
+        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17",
+        "sha256": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
       },
       {
         "path": "backrooms-level7.html",
         "bytes": 18976,
-        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
+        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c",
+        "sha256": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
       },
       {
         "path": "backrooms-polish.css",
         "bytes": 9857,
-        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
+        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44",
+        "sha256": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
       },
       {
         "path": "backrooms-ui.js",
         "bytes": 3639,
-        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
+        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076",
+        "sha256": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
       },
       {
         "path": "backrooms-upgrade.css",
         "bytes": 4027,
-        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
+        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9",
+        "sha256": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
       },
       {
         "path": "backrooms-upgrade.js",
         "bytes": 12444,
-        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
+        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd",
+        "sha256": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
       },
       {
         "path": "backrooms.css",
         "bytes": 2841,
-        "hash": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5"
+        "hash": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5",
+        "sha256": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5"
       },
       {
         "path": "backrooms.html",
         "bytes": 2011,
-        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
+        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253",
+        "sha256": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
       },
       {
         "path": "backrooms.js",
         "bytes": 27538,
-        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
+        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1",
+        "sha256": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
       },
       {
         "path": "card-wars/app.js",
@@ -6166,57 +6330,68 @@ self.OFFLINE_CATALOG = {
       {
         "path": "cards-against-boredom.html",
         "bytes": 52319,
-        "hash": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125"
+        "hash": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125",
+        "sha256": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125"
       },
       {
         "path": "counter.html",
         "bytes": 11075,
-        "hash": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514"
+        "hash": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514",
+        "sha256": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514"
       },
       {
         "path": "darts.html",
         "bytes": 29583,
-        "hash": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec"
+        "hash": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec",
+        "sha256": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec"
       },
       {
         "path": "disaster-cards.js",
         "bytes": 21814,
-        "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
+        "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7",
+        "sha256": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
       },
       {
         "path": "disaster-game.js",
         "bytes": 11311,
-        "hash": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b"
+        "hash": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b",
+        "sha256": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b"
       },
       {
         "path": "disaster-lan.js",
         "bytes": 1630,
-        "hash": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a"
+        "hash": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a",
+        "sha256": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a"
       },
       {
         "path": "dnd-ai.html",
         "bytes": 11293,
-        "hash": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f"
+        "hash": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f",
+        "sha256": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f"
       },
       {
         "path": "dnd-game.js",
         "bytes": 16675,
-        "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
+        "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc",
+        "sha256": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
       },
       {
         "path": "dots&boxes.html",
         "bytes": 12293,
-        "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
+        "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e",
+        "sha256": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
       },
       {
         "path": "double-take.html",
         "bytes": 57599,
-        "hash": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc"
+        "hash": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc",
+        "sha256": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc"
       },
       {
         "path": "dream-grounds.html",
         "bytes": 79096,
-        "hash": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35"
+        "hash": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35",
+        "sha256": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35"
       },
       {
         "path": "dt-book.html",
@@ -6246,17 +6421,20 @@ self.OFFLINE_CATALOG = {
       {
         "path": "fidget-roulette.html",
         "bytes": 17591,
-        "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
+        "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2",
+        "sha256": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 44768,
-        "hash": "24dbf6c038ff372117196072740ebd86a9cd07831a80cb8449a10595c53e7504"
+        "bytes": 23383,
+        "hash": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02",
+        "sha256": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 15883,
-        "hash": "153d7c6bcd8fe054f198dbf80552329060248aaddfc87210ec9785acdbcb5932"
+        "bytes": 6846,
+        "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc",
+        "sha256": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
         "path": "geometria-descritiva-caderno.html",
@@ -6265,23 +6443,27 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "geometria-descritiva-coordenadas.html",
-        "bytes": 37788,
-        "hash": "f7c6803733dd3dade180911a154a0eb696cd1a28f3019681e56751e544d2cdce"
+        "bytes": 37550,
+        "hash": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039",
+        "sha256": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039"
       },
       {
         "path": "geometria-descritiva-epura.html",
-        "bytes": 36558,
-        "hash": "0a2c92ff20f35e6ec1a0f7fa5cc6aaf41d635a1b1b3d1e688f27c7737fa1f2d3"
+        "bytes": 36320,
+        "hash": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8",
+        "sha256": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8"
       },
       {
         "path": "geometria-descritiva-exemplo.html",
-        "bytes": 37348,
-        "hash": "53dffd900a7423a11e46233e923ea890bfbc286ce35bd888649340e729a44119"
+        "bytes": 37110,
+        "hash": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7",
+        "sha256": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7"
       },
       {
         "path": "geometria-descritiva-pratica.html",
-        "bytes": 37693,
-        "hash": "24b836ca4daada5020b84ce5145ddb11975d479130ed9c982313968cec39f59b"
+        "bytes": 37455,
+        "hash": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b",
+        "sha256": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b"
       },
       {
         "path": "geometria-descritiva-retas.html",
@@ -6290,158 +6472,189 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "geometria-descritiva.html",
-        "bytes": 38545,
-        "hash": "f514572ca56f636f6409869dea575dcde754262ba843d27375b2442fe2bb4a32"
+        "bytes": 38307,
+        "hash": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78",
+        "sha256": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78"
       },
       {
         "path": "hood-brawlers.js",
         "bytes": 47955,
-        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
+        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a",
+        "sha256": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
       },
       {
         "path": "hood_brawlers.html",
         "bytes": 63377,
-        "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
+        "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056",
+        "sha256": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
       },
       {
         "path": "impostor.html",
         "bytes": 25972,
-        "hash": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c"
+        "hash": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c",
+        "sha256": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c"
       },
       {
         "path": "index.html",
-        "bytes": 38580,
-        "hash": "c231fd0617af753cba35b1746b04c4793d97149825dfc2071fc6f0cb5d940699"
+        "bytes": 39216,
+        "hash": "30de426400e10bd6f95a882501b8d529a78188b9aa3c6bdda7ca81273d0803f8",
+        "sha256": "30de426400e10bd6f95a882501b8d529a78188b9aa3c6bdda7ca81273d0803f8"
       },
       {
         "path": "invincible-sandbox.html",
         "bytes": 23135,
-        "hash": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d"
+        "hash": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d",
+        "sha256": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d"
       },
       {
         "path": "japanese-book.html",
         "bytes": 27610,
-        "hash": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43"
+        "hash": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43",
+        "sha256": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43"
       },
       {
         "path": "jp_srs_cards.html",
         "bytes": 37649,
-        "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
+        "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d",
+        "sha256": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
       },
       {
         "path": "maths-book.html",
-        "bytes": 63877,
-        "hash": "7e23abb8b5d5926a745d76bea227bd96b171021e8857f6bae724bcd967a2a4f9"
+        "bytes": 62739,
+        "hash": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03",
+        "sha256": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03"
       },
       {
         "path": "maths-content.js",
         "bytes": 24633,
-        "hash": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401"
+        "hash": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401",
+        "sha256": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401"
       },
       {
         "path": "maths-curriculum-ui.js",
-        "bytes": 12928,
-        "hash": "932700e275493522493a398c2e4845421ea1d927d49fb08361b2592437af5f6e"
+        "bytes": 12850,
+        "hash": "a7530e3e4f5228bd80a065e4756ce0f20b723975a975fff0128df89ddfdf44c7",
+        "sha256": "a7530e3e4f5228bd80a065e4756ce0f20b723975a975fff0128df89ddfdf44c7"
       },
       {
         "path": "maths-curriculum.js",
         "bytes": 23293,
-        "hash": "783de4488d79010afcdae8669cd4febd88d505ab89f85e6c84bad16905a5ec4f"
+        "hash": "783de4488d79010afcdae8669cd4febd88d505ab89f85e6c84bad16905a5ec4f",
+        "sha256": "783de4488d79010afcdae8669cd4febd88d505ab89f85e6c84bad16905a5ec4f"
       },
       {
         "path": "maths-diagrams.js",
         "bytes": 4338,
-        "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
+        "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41",
+        "sha256": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
       },
       {
         "path": "maths-extra-exercises.js",
         "bytes": 17783,
-        "hash": "796d742c1b917d219a2bf393ffab0ce73b7947f1e62ff61ca56045991dd3904b"
+        "hash": "796d742c1b917d219a2bf393ffab0ce73b7947f1e62ff61ca56045991dd3904b",
+        "sha256": "796d742c1b917d219a2bf393ffab0ce73b7947f1e62ff61ca56045991dd3904b"
       },
       {
         "path": "maths-formatting.js",
-        "bytes": 6240,
-        "hash": "0ad73677ea64f61fd1ab72f777a1117ba6043afe519368a48304695d8da7ebf5"
+        "bytes": 7212,
+        "hash": "f5671fe11b4fa3de6de73eeec49a68950410df06b5d891b02aef0a55e9b03cb6",
+        "sha256": "f5671fe11b4fa3de6de73eeec49a68950410df06b5d891b02aef0a55e9b03cb6"
       },
       {
         "path": "maths-indices-working.js",
         "bytes": 8616,
-        "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
+        "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27",
+        "sha256": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
       },
       {
         "path": "maths-lessons-d1.js",
         "bytes": 15174,
-        "hash": "0ef9681c588a95557b0a7383128b9df58b27c681c088fd4e6f874a3a724aa793"
+        "hash": "0ef9681c588a95557b0a7383128b9df58b27c681c088fd4e6f874a3a724aa793",
+        "sha256": "0ef9681c588a95557b0a7383128b9df58b27c681c088fd4e6f874a3a724aa793"
       },
       {
         "path": "maths-lessons-p1.js",
         "bytes": 19555,
-        "hash": "60c8900ea2ee5d8d1abbd4a56913a89950936ff3354ced9b90978f410f60f0cf"
+        "hash": "60c8900ea2ee5d8d1abbd4a56913a89950936ff3354ced9b90978f410f60f0cf",
+        "sha256": "60c8900ea2ee5d8d1abbd4a56913a89950936ff3354ced9b90978f410f60f0cf"
       },
       {
         "path": "maths-lessons-p2.js",
         "bytes": 18160,
-        "hash": "f9c967872546f5f0a91e25cd95dd15c9719eadc32115cc478cf8ad9dcc2f7dca"
+        "hash": "f9c967872546f5f0a91e25cd95dd15c9719eadc32115cc478cf8ad9dcc2f7dca",
+        "sha256": "f9c967872546f5f0a91e25cd95dd15c9719eadc32115cc478cf8ad9dcc2f7dca"
       },
       {
         "path": "maths-lessons-p3.js",
         "bytes": 14284,
-        "hash": "deb1fb2e93cecb93609fa4a406a56d3763b556f478b17ab3f11d1fd8574c9a41"
+        "hash": "deb1fb2e93cecb93609fa4a406a56d3763b556f478b17ab3f11d1fd8574c9a41",
+        "sha256": "deb1fb2e93cecb93609fa4a406a56d3763b556f478b17ab3f11d1fd8574c9a41"
       },
       {
         "path": "maths-lessons-p4.js",
         "bytes": 12626,
-        "hash": "e2d712169ee9c629a95807e2f353dc56bd1e30319002597fd9b0ff70dc214d6e"
+        "hash": "e2d712169ee9c629a95807e2f353dc56bd1e30319002597fd9b0ff70dc214d6e",
+        "sha256": "e2d712169ee9c629a95807e2f353dc56bd1e30319002597fd9b0ff70dc214d6e"
       },
       {
         "path": "maths-lessons-s1.js",
         "bytes": 15883,
-        "hash": "d71bf895a1444793030e2a85a56bb37ad5c8a4b7027bb6bf70eb96e4e39f9aa6"
+        "hash": "d71bf895a1444793030e2a85a56bb37ad5c8a4b7027bb6bf70eb96e4e39f9aa6",
+        "sha256": "d71bf895a1444793030e2a85a56bb37ad5c8a4b7027bb6bf70eb96e4e39f9aa6"
       },
       {
         "path": "maths-mixed-exercises.js",
         "bytes": 1459,
-        "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
+        "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604",
+        "sha256": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
       },
       {
         "path": "maths-p1-additions-questions.js",
         "bytes": 13474,
-        "hash": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c"
+        "hash": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c",
+        "sha256": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c"
       },
       {
         "path": "maths-p1-additions.js",
         "bytes": 15127,
-        "hash": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f"
+        "hash": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f",
+        "sha256": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f"
       },
       {
         "path": "maths-question-bank.js",
         "bytes": 18208,
-        "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
+        "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161",
+        "sha256": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 771372,
-        "hash": "5b08fd2a1897f0e60fe7a934df6563c6c152025b84bb46775ca0e4ca69665d4a"
+        "bytes": 771259,
+        "hash": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6",
+        "sha256": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6"
       },
       {
         "path": "maths-topic-exercises.js",
         "bytes": 5017,
-        "hash": "b4d5eed63d06117b19561557e623ba700ff4c24e8148a026fdc5382a03131e7b"
+        "hash": "b4d5eed63d06117b19561557e623ba700ff4c24e8148a026fdc5382a03131e7b",
+        "sha256": "b4d5eed63d06117b19561557e623ba700ff4c24e8148a026fdc5382a03131e7b"
       },
       {
         "path": "mobile-gesture-guard.js",
         "bytes": 543,
-        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
+        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f",
+        "sha256": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "multiplayer.html",
         "bytes": 75653,
-        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
+        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4",
+        "sha256": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
       },
       {
         "path": "nextup/app.js",
@@ -6460,133 +6673,159 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.css",
-        "bytes": 8829,
-        "hash": "6782dd8f8c5b01854ad6199f1d280e6ae202535cb0d12d95c1a6de3b346f04f9"
+        "bytes": 8086,
+        "hash": "9e13ee21248696ec7b80bf7c65da832b3045b3e91bcb35dbc1ea264e61ae76d2",
+        "sha256": "9e13ee21248696ec7b80bf7c65da832b3045b3e91bcb35dbc1ea264e61ae76d2"
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 6272,
-        "hash": "60aa45bd4518f7c692edf92c9ad29e26710c459070c81fcb7c542504f8156e37"
+        "bytes": 5149,
+        "hash": "4969839dde14f6122cf2129d39fc6ee64cc5b26c5da5c0c6e8f392d62529543c",
+        "sha256": "4969839dde14f6122cf2129d39fc6ee64cc5b26c5da5c0c6e8f392d62529543c"
       },
       {
         "path": "nicos_nextbots.js",
-        "bytes": 143590,
-        "hash": "70981eb45a4cccbf71428a3775ad9f2b2ad71d76b25e5a99b030a94e6a3e78aa"
+        "bytes": 139358,
+        "hash": "b3455deda869742328c163ea1f0edc687f11cae265a535c3eb3e06cc7ef4a7b9",
+        "sha256": "b3455deda869742328c163ea1f0edc687f11cae265a535c3eb3e06cc7ef4a7b9"
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 934961,
-        "hash": "5a3f75b37da95462319a7366a910bd3d8b7bf2cffe75893636af4262aaf1a55d"
+        "bytes": 997597,
+        "hash": "03c234a65f26a1bbec06f0047d8af7222d23917fb389d6d79f72b7e0bce15c0f",
+        "sha256": "03c234a65f26a1bbec06f0047d8af7222d23917fb389d6d79f72b7e0bce15c0f"
       },
       {
         "path": "offline.js",
         "bytes": 8815,
-        "hash": "42dad3648725e57133e47e4aa5079ec42251bdc88cec1eede8b3e938b1f8e2dd"
+        "hash": "42dad3648725e57133e47e4aa5079ec42251bdc88cec1eede8b3e938b1f8e2dd",
+        "sha256": "42dad3648725e57133e47e4aa5079ec42251bdc88cec1eede8b3e938b1f8e2dd"
       },
       {
         "path": "orbit-boss.html",
         "bytes": 20908,
-        "hash": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608"
+        "hash": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608",
+        "sha256": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608"
       },
       {
         "path": "pac-man-3d.html",
         "bytes": 57150,
-        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
+        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e",
+        "sha256": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
       },
       {
         "path": "pacman-clean-hud.css",
         "bytes": 6720,
-        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
+        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6",
+        "sha256": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
       },
       {
         "path": "pacman-minimal-menu.css",
         "bytes": 2717,
-        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
+        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f",
+        "sha256": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
       },
       {
         "path": "pacman-polish.css",
         "bytes": 10994,
-        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
+        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78",
+        "sha256": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
       },
       {
         "path": "party-lan.js",
-        "bytes": 3892,
-        "hash": "a2f9e78e7b4985b1a63a192db6c729f7ff33d1c893b6ccdbd0c4c68d8085447c"
+        "bytes": 3922,
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
-        "bytes": 9396,
-        "hash": "78fb78150568c40e1f956746462a69d872cc6e99bd2eaf8fc0964af1c875ef93"
+        "bytes": 9856,
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       },
       {
         "path": "party.html",
-        "bytes": 11925,
-        "hash": "0ee2db3991c7e012f00689dc37386823faa6979667ab7080c818f1ec0dc99102"
+        "bytes": 12564,
+        "hash": "21a33200b386be08af21ffde5952c5d914406d242124a29da18289540ab87019",
+        "sha256": "21a33200b386be08af21ffde5952c5d914406d242124a29da18289540ab87019"
       },
       {
         "path": "piano.html",
         "bytes": 6721,
-        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
+        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4",
+        "sha256": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
       },
       {
         "path": "planet_architect.css",
         "bytes": 14158,
-        "hash": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b"
+        "hash": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b",
+        "sha256": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b"
       },
       {
         "path": "planet_architect.html",
         "bytes": 4384,
-        "hash": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526"
+        "hash": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526",
+        "sha256": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526"
       },
       {
         "path": "planet_architect.js",
         "bytes": 24512,
-        "hash": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35"
+        "hash": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35",
+        "sha256": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35"
       },
       {
         "path": "reaction.html",
         "bytes": 30462,
-        "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
+        "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee",
+        "sha256": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
       },
       {
         "path": "relic_rush.css",
-        "bytes": 6432,
-        "hash": "e6b42c4330cd7c26c00854b0d869aa75e4ae36ec2befea332a3aaa8448bb2d9f"
+        "bytes": 5962,
+        "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893",
+        "sha256": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
       },
       {
         "path": "relic_rush.html",
-        "bytes": 882,
-        "hash": "b1855d9e3a356483fc50abe98f2b71f4b3cf9326a393d4f6fe4ab3154216ec6a"
+        "bytes": 852,
+        "hash": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56",
+        "sha256": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56"
       },
       {
         "path": "relic_rush.js",
-        "bytes": 137580,
-        "hash": "ecde15be61b1db3d2c5fd0b91ad4d3db7a1b0e2b02ad0a66f16f6ea1aaa7e010"
+        "bytes": 116526,
+        "hash": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343",
+        "sha256": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "shit-spiral.html",
         "bytes": 12039,
-        "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
+        "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568",
+        "sha256": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
       },
       {
         "path": "sidequests.html",
         "bytes": 23782,
-        "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
+        "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb",
+        "sha256": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
       },
       {
         "path": "site-theme.js",
-        "bytes": 1308,
-        "hash": "498b4294b29bbc1822a7684c3ebb55f48fa7207203ba1373b0e2be85a8110839"
+        "bytes": 2169,
+        "hash": "639a6e79904ecf3df98100be9c24753b56cbbc89fa1103ef013aed2226168d37",
+        "sha256": "639a6e79904ecf3df98100be9c24753b56cbbc89fa1103ef013aed2226168d37"
       },
       {
         "path": "sling_champ.html",
         "bytes": 61684,
-        "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
+        "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623",
+        "sha256": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
       },
       {
         "path": "slot-icons/bar.png",
@@ -6671,129 +6910,96 @@ self.OFFLINE_CATALOG = {
       {
         "path": "slot-machine.html",
         "bytes": 18764,
-        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
+        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df",
+        "sha256": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
       },
       {
         "path": "slot-mobile.css",
         "bytes": 8742,
-        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
+        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326",
+        "sha256": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
       },
       {
         "path": "solos_rng.html",
         "bytes": 61991,
-        "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
+        "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d",
+        "sha256": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
       },
       {
         "path": "sw.js",
-        "bytes": 6127,
-        "hash": "a98a528bc1a79bd11d3dadc194aa3e955c4abfcd24b9fefb8d8a0a442ccd905e"
-      },
-      {
-        "path": "terraria.html",
-        "bytes": 29049,
-        "hash": "76e090d6745a53fd10d1c956d4c6a906c17a8dd10d15baa65bb4be6c616a29c5"
-      },
-      {
-        "path": "terraria/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "terraria/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "terraria/index.html",
-        "bytes": 442,
-        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
+        "bytes": 6165,
+        "hash": "3856fa6e44c9082151462cbe4a791e81da3015da7e9c02635be85f15a2b7523f",
+        "sha256": "3856fa6e44c9082151462cbe4a791e81da3015da7e9c02635be85f15a2b7523f"
       },
       {
         "path": "the-monthly-grind.html",
         "bytes": 21021,
-        "hash": "27d98f99e9c9c919afce4a2a2c8b1e3831e2ba2ae631c206617db16e3c218cc7"
+        "hash": "27d98f99e9c9c919afce4a2a2c8b1e3831e2ba2ae631c206617db16e3c218cc7",
+        "sha256": "27d98f99e9c9c919afce4a2a2c8b1e3831e2ba2ae631c206617db16e3c218cc7"
       },
       {
         "path": "theft.html",
         "bytes": 21514,
-        "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
+        "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73",
+        "sha256": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
       },
       {
         "path": "tic-tac-toe.html",
         "bytes": 8834,
-        "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
+        "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693",
+        "sha256": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
       },
       {
         "path": "tilt_maze_runner.html",
         "bytes": 25993,
-        "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
+        "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2",
+        "sha256": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 5597,
-        "hash": "4dc4a2b5b56d03c27168665dd67c1ae8e72cdb0ab4d5f4dd52fee4ce0322abcb"
+        "bytes": 3410,
+        "hash": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7",
+        "sha256": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7"
       },
       {
         "path": "truth-or-dare.html",
         "bytes": 48313,
-        "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
+        "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc",
+        "sha256": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
       },
       {
         "path": "web_weavers.css",
-        "bytes": 17285,
-        "hash": "a079f0f09263f181051c3fb1cf7cc851ef2dee8ea2b61449c53944e0dd0faa7d"
+        "bytes": 15634,
+        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2",
+        "sha256": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 11408,
-        "hash": "34f577a419401326e8d07d0a3bb108c2c2efef57a018bd09adab908bd1db3117"
+        "bytes": 9566,
+        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37",
+        "sha256": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 226947,
-        "hash": "f5179120cbb0b8da3b66a319f3f4827d609ad151936fddf8b63cdf56212db60f"
+        "bytes": 221420,
+        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b",
+        "sha256": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
       },
       {
         "path": "whos-more-likely.html",
         "bytes": 43696,
-        "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
+        "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c",
+        "sha256": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
       },
       {
         "path": "would-you-rather.html",
         "bytes": 40418,
-        "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
+        "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0",
+        "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 367281629,
-    "version": "e47c66f0f1f0c35c"
-  },
-  "terraria-prototype": {
-    "name": "Terraria Prototype",
-    "page": "terraria.html",
-    "files": [
-      {
-        "path": "assets/vendor/tailwind.js",
-        "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
-      },
-      {
-        "path": "mobile-landscape-resize.js",
-        "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
-      },
-      {
-        "path": "rod-space-app-menu.js",
-        "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
-      },
-      {
-        "path": "terraria.html",
-        "bytes": 29049,
-        "hash": "76e090d6745a53fd10d1c956d4c6a906c17a8dd10d15baa65bb4be6c616a29c5"
-      }
-    ],
-    "bytes": 443129,
-    "version": "b8cebb7d1d48c16e"
+    "bytes": 366658062,
+    "version": "c5af0d15db089d60"
   },
   "double-take": {
     "name": "Double Take",
@@ -6802,16 +7008,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "double-take.html",
         "bytes": 57599,
-        "hash": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc"
+        "hash": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc",
+        "sha256": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 62942,
-    "version": "0bc826b856706ee3"
+    "version": "8e3dc5e99470bab5"
   },
   "shit-spiral": {
     "name": "Shit Spiral",
@@ -6820,31 +7028,36 @@ self.OFFLINE_CATALOG = {
       {
         "path": "disaster-cards.js",
         "bytes": 21814,
-        "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
+        "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7",
+        "sha256": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
       },
       {
         "path": "disaster-game.js",
         "bytes": 11311,
-        "hash": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b"
+        "hash": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b",
+        "sha256": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b"
       },
       {
         "path": "disaster-lan.js",
         "bytes": 1630,
-        "hash": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a"
+        "hash": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a",
+        "sha256": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "shit-spiral.html",
         "bytes": 12039,
-        "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
+        "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568",
+        "sha256": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
       }
     ],
     "bytes": 52137,
-    "version": "3ffd0f5f882186ee"
+    "version": "40922f2b2cffb99b"
   },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
@@ -6853,12 +7066,14 @@ self.OFFLINE_CATALOG = {
       {
         "path": "DND.html",
         "bytes": 735,
-        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
+        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb",
+        "sha256": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
       },
       {
         "path": "DNDC.html",
         "bytes": 22362,
-        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
+        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5",
+        "sha256": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
       },
       {
         "path": "assets/dnd/backgrounds/ancient-ruins.webp",
@@ -6878,31 +7093,36 @@ self.OFFLINE_CATALOG = {
       {
         "path": "dnd-ai.html",
         "bytes": 11293,
-        "hash": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f"
+        "hash": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f",
+        "sha256": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f"
       },
       {
         "path": "dnd-game.js",
         "bytes": 16675,
-        "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
+        "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc",
+        "sha256": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
       },
       {
         "path": "party-lan.js",
-        "bytes": 3892,
-        "hash": "a2f9e78e7b4985b1a63a192db6c729f7ff33d1c893b6ccdbd0c4c68d8085447c"
+        "bytes": 3922,
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
-        "bytes": 9396,
-        "hash": "78fb78150568c40e1f956746462a69d872cc6e99bd2eaf8fc0964af1c875ef93"
+        "bytes": 9856,
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 1099278,
-    "version": "f4ec54e64c147174"
+    "bytes": 1099768,
+    "version": "6539949c9d41f24e"
   },
   "piano": {
     "name": "Virtual Piano",
@@ -6911,16 +7131,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "piano.html",
         "bytes": 6721,
-        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
+        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4",
+        "sha256": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 12064,
-    "version": "cb07d914d06c3b5f"
+    "version": "0bc179fa0ec68f31"
   },
   "counter": {
     "name": "Counter",
@@ -6929,21 +7151,24 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/offline-892b8e0a22ac.js",
         "bytes": 442433,
-        "hash": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a"
+        "hash": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a",
+        "sha256": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a"
       },
       {
         "path": "counter.html",
         "bytes": 11075,
-        "hash": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514"
+        "hash": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514",
+        "sha256": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 458851,
-    "version": "1acf0ebcbd784fbc"
+    "version": "731e81ebc01b1419"
   },
   "force-pad": {
     "name": "Force Pad",
@@ -6952,37 +7177,44 @@ self.OFFLINE_CATALOG = {
       {
         "path": "3d_drift_racer.config.js",
         "bytes": 225,
-        "hash": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b"
+        "hash": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b",
+        "sha256": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b"
       },
       {
         "path": "3d_drift_racer.css",
         "bytes": 4749,
-        "hash": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b"
+        "hash": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b",
+        "sha256": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b"
       },
       {
         "path": "3d_drift_racer.html",
         "bytes": 20728,
-        "hash": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6"
+        "hash": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6",
+        "sha256": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6"
       },
       {
         "path": "3d_drift_racer.js",
         "bytes": 126035,
-        "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
+        "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36",
+        "sha256": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
       },
       {
         "path": "Blackjack.html",
         "bytes": 21486,
-        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
+        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413",
+        "sha256": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
       },
       {
         "path": "DND.html",
         "bytes": 735,
-        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
+        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb",
+        "sha256": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
       },
       {
         "path": "DNDC.html",
         "bytes": 22362,
-        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
+        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5",
+        "sha256": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
       },
       {
         "path": "KaraokeApp/Videos/ABBA - Dancing Queen (Karaoke Version) - Sing King (1080p, h264).mp4",
@@ -7100,64 +7332,58 @@ self.OFFLINE_CATALOG = {
         "hash": "e8709b99d0ff62855b1ef7494848d2a43ffee9a22f03fb70d55e2392d122816e"
       },
       {
-        "path": "Terraria/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "Terraria/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "Terraria/index.html",
-        "bytes": 442,
-        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
-      },
-      {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 49750,
-        "hash": "5454958d6f6e5420d59192946b0394d39a09acc8681ce17a7d4aaf648f24b60c"
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0",
+        "sha256": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9049,
-        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
+        "bytes": 16262,
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2398,
-        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
+        "bytes": 2552,
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 27850,
-        "hash": "58bc4a48c386923637ffb26403578b0f79e3e7ba83e8199795892c10bb9a8fbe"
+        "bytes": 69332,
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3671,
-        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
+        "bytes": 2526,
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 13230,
-        "hash": "fcbfed73842d5fe9a1e24b6e38999292246db5506f5844af43c35f783629801b"
+        "bytes": 47952,
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18880,
-        "hash": "e0f3cdd5f8142d39d14a38c8e2ab96166109029e2fcd8df1546f71c8460ac4fd"
+        "bytes": 22122,
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2077,
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "assets/chronos/era-0-pre-void.png",
@@ -7242,7 +7468,8 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/nextbot-chaser.png",
         "bytes": 258145,
-        "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
+        "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc",
+        "sha256": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
       },
       {
         "path": "assets/nextbots/aag.jpg",
@@ -7362,17 +7589,20 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/password-gate.js",
         "bytes": 5818,
-        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
+        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4",
+        "sha256": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
       },
       {
         "path": "assets/rod-space-home.css",
         "bytes": 899,
-        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
+        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5",
+        "sha256": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
       },
       {
         "path": "assets/rod-space-home.js",
         "bytes": 1248,
-        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
+        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b",
+        "sha256": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
       },
       {
         "path": "assets/solos-rng/azulejo-relic.png",
@@ -7462,197 +7692,236 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/GLTFLoader-r128.js",
         "bytes": 96550,
-        "hash": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6"
+        "hash": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6",
+        "sha256": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6"
       },
       {
         "path": "assets/vendor/lucide.js",
         "bytes": 644423,
-        "hash": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9"
+        "hash": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9",
+        "sha256": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9"
       },
       {
         "path": "assets/vendor/nextbot-brick.jpg",
         "bytes": 1090649,
-        "hash": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe"
+        "hash": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe",
+        "sha256": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe"
       },
       {
         "path": "assets/vendor/nextbot.png",
         "bytes": 19359,
-        "hash": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9"
+        "hash": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9",
+        "sha256": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9"
       },
       {
         "path": "assets/vendor/offline-146601f235c4.js",
         "bytes": 10751,
-        "hash": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+        "hash": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+        "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
       },
       {
         "path": "assets/vendor/offline-25023b521d77.js",
         "bytes": 603445,
-        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+        "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
       },
       {
         "path": "assets/vendor/offline-4047a043ad8e.js",
         "bytes": 80807,
-        "hash": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a"
+        "hash": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a",
+        "sha256": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a"
       },
       {
         "path": "assets/vendor/offline-4ad6e54ad218.js",
         "bytes": 19927,
-        "hash": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36"
+        "hash": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36",
+        "sha256": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36"
       },
       {
         "path": "assets/vendor/offline-5c05996c1630.js",
         "bytes": 131835,
-        "hash": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+        "hash": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+        "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
       },
       {
         "path": "assets/vendor/offline-6e390bcdb8ee.js",
         "bytes": 3141115,
-        "hash": "5f8ffa174aa2465f074c85b92421662168cd356eedebaedc3d16fd9d61fadb7c"
+        "hash": "5f8ffa174aa2465f074c85b92421662168cd356eedebaedc3d16fd9d61fadb7c",
+        "sha256": "5f8ffa174aa2465f074c85b92421662168cd356eedebaedc3d16fd9d61fadb7c"
       },
       {
         "path": "assets/vendor/offline-892b8e0a22ac.js",
         "bytes": 442433,
-        "hash": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a"
+        "hash": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a",
+        "sha256": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a"
       },
       {
         "path": "assets/vendor/offline-8eacf4588bcf.js",
         "bytes": 626868,
-        "hash": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd"
+        "hash": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd",
+        "sha256": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "assets/vendor/three-r128.min.js",
         "bytes": 603445,
-        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+        "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
       },
       {
         "path": "assets/vendor/three.core.min.js",
         "bytes": 385386,
-        "hash": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90"
+        "hash": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90",
+        "sha256": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90"
       },
       {
         "path": "assets/vendor/three.module.min.js",
         "bytes": 365552,
-        "hash": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6"
+        "hash": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6",
+        "sha256": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6"
       },
       {
         "path": "assets/vendor/three160/controls/PointerLockControls.js",
         "bytes": 3347,
-        "hash": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca"
+        "hash": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca",
+        "sha256": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca"
       },
       {
         "path": "assets/vendor/three160/loaders/GLTFLoader.js",
         "bytes": 108535,
-        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
+        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5",
+        "sha256": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
       },
       {
         "path": "assets/vendor/three160/three.module.js",
         "bytes": 1272971,
-        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
+        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2",
+        "sha256": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
       },
       {
         "path": "assets/vendor/three160/utils/BufferGeometryUtils.js",
         "bytes": 31919,
-        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
+        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c",
+        "sha256": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
       },
       {
         "path": "assets/vendor/tokyo-font-0.ttf",
         "bytes": 324820,
-        "hash": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba"
+        "hash": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba",
+        "sha256": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba"
       },
       {
         "path": "assets/vendor/tokyo-font-1.ttf",
         "bytes": 326468,
-        "hash": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c"
+        "hash": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c",
+        "sha256": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c"
       },
       {
         "path": "assets/vendor/tokyo-font-2.ttf",
         "bytes": 327260,
-        "hash": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a"
+        "hash": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a",
+        "sha256": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a"
       },
       {
         "path": "assets/vendor/tokyo-font-3.ttf",
         "bytes": 112172,
-        "hash": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3"
+        "hash": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3",
+        "sha256": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3"
       },
       {
         "path": "assets/vendor/tokyo-font-4.ttf",
         "bytes": 112092,
-        "hash": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a"
+        "hash": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a",
+        "sha256": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a"
       },
       {
         "path": "assets/vendor/tokyo-font-5.ttf",
         "bytes": 69308,
-        "hash": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85"
+        "hash": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85",
+        "sha256": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85"
       },
       {
         "path": "assets/vendor/tokyo-fonts.css",
         "bytes": 938,
-        "hash": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b"
+        "hash": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b",
+        "sha256": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b"
       },
       {
         "path": "assets/vendor/vue3.global.prod.js",
         "bytes": 170605,
-        "hash": "e0a2a0866a8de8887542e24f3c218aad3d907b88f30966068792ba992296dc9f"
+        "hash": "e0a2a0866a8de8887542e24f3c218aad3d907b88f30966068792ba992296dc9f",
+        "sha256": "e0a2a0866a8de8887542e24f3c218aad3d907b88f30966068792ba992296dc9f"
       },
       {
         "path": "backrooms-level1.html",
         "bytes": 28551,
-        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
+        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d",
+        "sha256": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
       },
       {
         "path": "backrooms-level10.html",
         "bytes": 18341,
-        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
+        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c",
+        "sha256": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
       },
       {
         "path": "backrooms-level2.html",
         "bytes": 22592,
-        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
+        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17",
+        "sha256": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
       },
       {
         "path": "backrooms-level7.html",
         "bytes": 18976,
-        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
+        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c",
+        "sha256": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
       },
       {
         "path": "backrooms-polish.css",
         "bytes": 9857,
-        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
+        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44",
+        "sha256": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
       },
       {
         "path": "backrooms-ui.js",
         "bytes": 3639,
-        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
+        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076",
+        "sha256": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
       },
       {
         "path": "backrooms-upgrade.css",
         "bytes": 4027,
-        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
+        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9",
+        "sha256": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
       },
       {
         "path": "backrooms-upgrade.js",
         "bytes": 12444,
-        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
+        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd",
+        "sha256": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
       },
       {
         "path": "backrooms.css",
         "bytes": 2841,
-        "hash": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5"
+        "hash": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5",
+        "sha256": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5"
       },
       {
         "path": "backrooms.html",
         "bytes": 2011,
-        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
+        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253",
+        "sha256": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
       },
       {
         "path": "backrooms.js",
         "bytes": 27538,
-        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
+        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1",
+        "sha256": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
       },
       {
         "path": "card-wars/app.js",
@@ -12432,57 +12701,68 @@ self.OFFLINE_CATALOG = {
       {
         "path": "cards-against-boredom.html",
         "bytes": 52319,
-        "hash": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125"
+        "hash": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125",
+        "sha256": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125"
       },
       {
         "path": "counter.html",
         "bytes": 11075,
-        "hash": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514"
+        "hash": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514",
+        "sha256": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514"
       },
       {
         "path": "darts.html",
         "bytes": 29583,
-        "hash": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec"
+        "hash": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec",
+        "sha256": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec"
       },
       {
         "path": "disaster-cards.js",
         "bytes": 21814,
-        "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
+        "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7",
+        "sha256": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
       },
       {
         "path": "disaster-game.js",
         "bytes": 11311,
-        "hash": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b"
+        "hash": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b",
+        "sha256": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b"
       },
       {
         "path": "disaster-lan.js",
         "bytes": 1630,
-        "hash": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a"
+        "hash": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a",
+        "sha256": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a"
       },
       {
         "path": "dnd-ai.html",
         "bytes": 11293,
-        "hash": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f"
+        "hash": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f",
+        "sha256": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f"
       },
       {
         "path": "dnd-game.js",
         "bytes": 16675,
-        "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
+        "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc",
+        "sha256": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
       },
       {
         "path": "dots&boxes.html",
         "bytes": 12293,
-        "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
+        "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e",
+        "sha256": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
       },
       {
         "path": "double-take.html",
         "bytes": 57599,
-        "hash": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc"
+        "hash": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc",
+        "sha256": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc"
       },
       {
         "path": "dream-grounds.html",
         "bytes": 79096,
-        "hash": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35"
+        "hash": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35",
+        "sha256": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35"
       },
       {
         "path": "dt-book.html",
@@ -12512,17 +12792,20 @@ self.OFFLINE_CATALOG = {
       {
         "path": "fidget-roulette.html",
         "bytes": 17591,
-        "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
+        "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2",
+        "sha256": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 44768,
-        "hash": "24dbf6c038ff372117196072740ebd86a9cd07831a80cb8449a10595c53e7504"
+        "bytes": 23383,
+        "hash": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02",
+        "sha256": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 15883,
-        "hash": "153d7c6bcd8fe054f198dbf80552329060248aaddfc87210ec9785acdbcb5932"
+        "bytes": 6846,
+        "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc",
+        "sha256": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
         "path": "geometria-descritiva-caderno.html",
@@ -12531,23 +12814,27 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "geometria-descritiva-coordenadas.html",
-        "bytes": 37788,
-        "hash": "f7c6803733dd3dade180911a154a0eb696cd1a28f3019681e56751e544d2cdce"
+        "bytes": 37550,
+        "hash": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039",
+        "sha256": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039"
       },
       {
         "path": "geometria-descritiva-epura.html",
-        "bytes": 36558,
-        "hash": "0a2c92ff20f35e6ec1a0f7fa5cc6aaf41d635a1b1b3d1e688f27c7737fa1f2d3"
+        "bytes": 36320,
+        "hash": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8",
+        "sha256": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8"
       },
       {
         "path": "geometria-descritiva-exemplo.html",
-        "bytes": 37348,
-        "hash": "53dffd900a7423a11e46233e923ea890bfbc286ce35bd888649340e729a44119"
+        "bytes": 37110,
+        "hash": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7",
+        "sha256": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7"
       },
       {
         "path": "geometria-descritiva-pratica.html",
-        "bytes": 37693,
-        "hash": "24b836ca4daada5020b84ce5145ddb11975d479130ed9c982313968cec39f59b"
+        "bytes": 37455,
+        "hash": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b",
+        "sha256": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b"
       },
       {
         "path": "geometria-descritiva-retas.html",
@@ -12556,158 +12843,189 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "geometria-descritiva.html",
-        "bytes": 38545,
-        "hash": "f514572ca56f636f6409869dea575dcde754262ba843d27375b2442fe2bb4a32"
+        "bytes": 38307,
+        "hash": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78",
+        "sha256": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78"
       },
       {
         "path": "hood-brawlers.js",
         "bytes": 47955,
-        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
+        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a",
+        "sha256": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
       },
       {
         "path": "hood_brawlers.html",
         "bytes": 63377,
-        "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
+        "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056",
+        "sha256": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
       },
       {
         "path": "impostor.html",
         "bytes": 25972,
-        "hash": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c"
+        "hash": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c",
+        "sha256": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c"
       },
       {
         "path": "index.html",
-        "bytes": 38580,
-        "hash": "c231fd0617af753cba35b1746b04c4793d97149825dfc2071fc6f0cb5d940699"
+        "bytes": 39216,
+        "hash": "30de426400e10bd6f95a882501b8d529a78188b9aa3c6bdda7ca81273d0803f8",
+        "sha256": "30de426400e10bd6f95a882501b8d529a78188b9aa3c6bdda7ca81273d0803f8"
       },
       {
         "path": "invincible-sandbox.html",
         "bytes": 23135,
-        "hash": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d"
+        "hash": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d",
+        "sha256": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d"
       },
       {
         "path": "japanese-book.html",
         "bytes": 27610,
-        "hash": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43"
+        "hash": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43",
+        "sha256": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43"
       },
       {
         "path": "jp_srs_cards.html",
         "bytes": 37649,
-        "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
+        "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d",
+        "sha256": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
       },
       {
         "path": "maths-book.html",
-        "bytes": 63877,
-        "hash": "7e23abb8b5d5926a745d76bea227bd96b171021e8857f6bae724bcd967a2a4f9"
+        "bytes": 62739,
+        "hash": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03",
+        "sha256": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03"
       },
       {
         "path": "maths-content.js",
         "bytes": 24633,
-        "hash": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401"
+        "hash": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401",
+        "sha256": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401"
       },
       {
         "path": "maths-curriculum-ui.js",
-        "bytes": 12928,
-        "hash": "932700e275493522493a398c2e4845421ea1d927d49fb08361b2592437af5f6e"
+        "bytes": 12850,
+        "hash": "a7530e3e4f5228bd80a065e4756ce0f20b723975a975fff0128df89ddfdf44c7",
+        "sha256": "a7530e3e4f5228bd80a065e4756ce0f20b723975a975fff0128df89ddfdf44c7"
       },
       {
         "path": "maths-curriculum.js",
         "bytes": 23293,
-        "hash": "783de4488d79010afcdae8669cd4febd88d505ab89f85e6c84bad16905a5ec4f"
+        "hash": "783de4488d79010afcdae8669cd4febd88d505ab89f85e6c84bad16905a5ec4f",
+        "sha256": "783de4488d79010afcdae8669cd4febd88d505ab89f85e6c84bad16905a5ec4f"
       },
       {
         "path": "maths-diagrams.js",
         "bytes": 4338,
-        "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
+        "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41",
+        "sha256": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
       },
       {
         "path": "maths-extra-exercises.js",
         "bytes": 17783,
-        "hash": "796d742c1b917d219a2bf393ffab0ce73b7947f1e62ff61ca56045991dd3904b"
+        "hash": "796d742c1b917d219a2bf393ffab0ce73b7947f1e62ff61ca56045991dd3904b",
+        "sha256": "796d742c1b917d219a2bf393ffab0ce73b7947f1e62ff61ca56045991dd3904b"
       },
       {
         "path": "maths-formatting.js",
-        "bytes": 6240,
-        "hash": "0ad73677ea64f61fd1ab72f777a1117ba6043afe519368a48304695d8da7ebf5"
+        "bytes": 7212,
+        "hash": "f5671fe11b4fa3de6de73eeec49a68950410df06b5d891b02aef0a55e9b03cb6",
+        "sha256": "f5671fe11b4fa3de6de73eeec49a68950410df06b5d891b02aef0a55e9b03cb6"
       },
       {
         "path": "maths-indices-working.js",
         "bytes": 8616,
-        "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
+        "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27",
+        "sha256": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
       },
       {
         "path": "maths-lessons-d1.js",
         "bytes": 15174,
-        "hash": "0ef9681c588a95557b0a7383128b9df58b27c681c088fd4e6f874a3a724aa793"
+        "hash": "0ef9681c588a95557b0a7383128b9df58b27c681c088fd4e6f874a3a724aa793",
+        "sha256": "0ef9681c588a95557b0a7383128b9df58b27c681c088fd4e6f874a3a724aa793"
       },
       {
         "path": "maths-lessons-p1.js",
         "bytes": 19555,
-        "hash": "60c8900ea2ee5d8d1abbd4a56913a89950936ff3354ced9b90978f410f60f0cf"
+        "hash": "60c8900ea2ee5d8d1abbd4a56913a89950936ff3354ced9b90978f410f60f0cf",
+        "sha256": "60c8900ea2ee5d8d1abbd4a56913a89950936ff3354ced9b90978f410f60f0cf"
       },
       {
         "path": "maths-lessons-p2.js",
         "bytes": 18160,
-        "hash": "f9c967872546f5f0a91e25cd95dd15c9719eadc32115cc478cf8ad9dcc2f7dca"
+        "hash": "f9c967872546f5f0a91e25cd95dd15c9719eadc32115cc478cf8ad9dcc2f7dca",
+        "sha256": "f9c967872546f5f0a91e25cd95dd15c9719eadc32115cc478cf8ad9dcc2f7dca"
       },
       {
         "path": "maths-lessons-p3.js",
         "bytes": 14284,
-        "hash": "deb1fb2e93cecb93609fa4a406a56d3763b556f478b17ab3f11d1fd8574c9a41"
+        "hash": "deb1fb2e93cecb93609fa4a406a56d3763b556f478b17ab3f11d1fd8574c9a41",
+        "sha256": "deb1fb2e93cecb93609fa4a406a56d3763b556f478b17ab3f11d1fd8574c9a41"
       },
       {
         "path": "maths-lessons-p4.js",
         "bytes": 12626,
-        "hash": "e2d712169ee9c629a95807e2f353dc56bd1e30319002597fd9b0ff70dc214d6e"
+        "hash": "e2d712169ee9c629a95807e2f353dc56bd1e30319002597fd9b0ff70dc214d6e",
+        "sha256": "e2d712169ee9c629a95807e2f353dc56bd1e30319002597fd9b0ff70dc214d6e"
       },
       {
         "path": "maths-lessons-s1.js",
         "bytes": 15883,
-        "hash": "d71bf895a1444793030e2a85a56bb37ad5c8a4b7027bb6bf70eb96e4e39f9aa6"
+        "hash": "d71bf895a1444793030e2a85a56bb37ad5c8a4b7027bb6bf70eb96e4e39f9aa6",
+        "sha256": "d71bf895a1444793030e2a85a56bb37ad5c8a4b7027bb6bf70eb96e4e39f9aa6"
       },
       {
         "path": "maths-mixed-exercises.js",
         "bytes": 1459,
-        "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
+        "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604",
+        "sha256": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
       },
       {
         "path": "maths-p1-additions-questions.js",
         "bytes": 13474,
-        "hash": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c"
+        "hash": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c",
+        "sha256": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c"
       },
       {
         "path": "maths-p1-additions.js",
         "bytes": 15127,
-        "hash": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f"
+        "hash": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f",
+        "sha256": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f"
       },
       {
         "path": "maths-question-bank.js",
         "bytes": 18208,
-        "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
+        "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161",
+        "sha256": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 771372,
-        "hash": "5b08fd2a1897f0e60fe7a934df6563c6c152025b84bb46775ca0e4ca69665d4a"
+        "bytes": 771259,
+        "hash": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6",
+        "sha256": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6"
       },
       {
         "path": "maths-topic-exercises.js",
         "bytes": 5017,
-        "hash": "b4d5eed63d06117b19561557e623ba700ff4c24e8148a026fdc5382a03131e7b"
+        "hash": "b4d5eed63d06117b19561557e623ba700ff4c24e8148a026fdc5382a03131e7b",
+        "sha256": "b4d5eed63d06117b19561557e623ba700ff4c24e8148a026fdc5382a03131e7b"
       },
       {
         "path": "mobile-gesture-guard.js",
         "bytes": 543,
-        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
+        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f",
+        "sha256": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "multiplayer.html",
         "bytes": 75653,
-        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
+        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4",
+        "sha256": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
       },
       {
         "path": "nextup/app.js",
@@ -12726,133 +13044,159 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.css",
-        "bytes": 8829,
-        "hash": "6782dd8f8c5b01854ad6199f1d280e6ae202535cb0d12d95c1a6de3b346f04f9"
+        "bytes": 8086,
+        "hash": "9e13ee21248696ec7b80bf7c65da832b3045b3e91bcb35dbc1ea264e61ae76d2",
+        "sha256": "9e13ee21248696ec7b80bf7c65da832b3045b3e91bcb35dbc1ea264e61ae76d2"
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 6272,
-        "hash": "60aa45bd4518f7c692edf92c9ad29e26710c459070c81fcb7c542504f8156e37"
+        "bytes": 5149,
+        "hash": "4969839dde14f6122cf2129d39fc6ee64cc5b26c5da5c0c6e8f392d62529543c",
+        "sha256": "4969839dde14f6122cf2129d39fc6ee64cc5b26c5da5c0c6e8f392d62529543c"
       },
       {
         "path": "nicos_nextbots.js",
-        "bytes": 143590,
-        "hash": "70981eb45a4cccbf71428a3775ad9f2b2ad71d76b25e5a99b030a94e6a3e78aa"
+        "bytes": 139358,
+        "hash": "b3455deda869742328c163ea1f0edc687f11cae265a535c3eb3e06cc7ef4a7b9",
+        "sha256": "b3455deda869742328c163ea1f0edc687f11cae265a535c3eb3e06cc7ef4a7b9"
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 934961,
-        "hash": "5a3f75b37da95462319a7366a910bd3d8b7bf2cffe75893636af4262aaf1a55d"
+        "bytes": 997597,
+        "hash": "03c234a65f26a1bbec06f0047d8af7222d23917fb389d6d79f72b7e0bce15c0f",
+        "sha256": "03c234a65f26a1bbec06f0047d8af7222d23917fb389d6d79f72b7e0bce15c0f"
       },
       {
         "path": "offline.js",
         "bytes": 8815,
-        "hash": "42dad3648725e57133e47e4aa5079ec42251bdc88cec1eede8b3e938b1f8e2dd"
+        "hash": "42dad3648725e57133e47e4aa5079ec42251bdc88cec1eede8b3e938b1f8e2dd",
+        "sha256": "42dad3648725e57133e47e4aa5079ec42251bdc88cec1eede8b3e938b1f8e2dd"
       },
       {
         "path": "orbit-boss.html",
         "bytes": 20908,
-        "hash": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608"
+        "hash": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608",
+        "sha256": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608"
       },
       {
         "path": "pac-man-3d.html",
         "bytes": 57150,
-        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
+        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e",
+        "sha256": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
       },
       {
         "path": "pacman-clean-hud.css",
         "bytes": 6720,
-        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
+        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6",
+        "sha256": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
       },
       {
         "path": "pacman-minimal-menu.css",
         "bytes": 2717,
-        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
+        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f",
+        "sha256": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
       },
       {
         "path": "pacman-polish.css",
         "bytes": 10994,
-        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
+        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78",
+        "sha256": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
       },
       {
         "path": "party-lan.js",
-        "bytes": 3892,
-        "hash": "a2f9e78e7b4985b1a63a192db6c729f7ff33d1c893b6ccdbd0c4c68d8085447c"
+        "bytes": 3922,
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
-        "bytes": 9396,
-        "hash": "78fb78150568c40e1f956746462a69d872cc6e99bd2eaf8fc0964af1c875ef93"
+        "bytes": 9856,
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       },
       {
         "path": "party.html",
-        "bytes": 11925,
-        "hash": "0ee2db3991c7e012f00689dc37386823faa6979667ab7080c818f1ec0dc99102"
+        "bytes": 12564,
+        "hash": "21a33200b386be08af21ffde5952c5d914406d242124a29da18289540ab87019",
+        "sha256": "21a33200b386be08af21ffde5952c5d914406d242124a29da18289540ab87019"
       },
       {
         "path": "piano.html",
         "bytes": 6721,
-        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
+        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4",
+        "sha256": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
       },
       {
         "path": "planet_architect.css",
         "bytes": 14158,
-        "hash": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b"
+        "hash": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b",
+        "sha256": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b"
       },
       {
         "path": "planet_architect.html",
         "bytes": 4384,
-        "hash": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526"
+        "hash": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526",
+        "sha256": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526"
       },
       {
         "path": "planet_architect.js",
         "bytes": 24512,
-        "hash": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35"
+        "hash": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35",
+        "sha256": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35"
       },
       {
         "path": "reaction.html",
         "bytes": 30462,
-        "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
+        "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee",
+        "sha256": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
       },
       {
         "path": "relic_rush.css",
-        "bytes": 6432,
-        "hash": "e6b42c4330cd7c26c00854b0d869aa75e4ae36ec2befea332a3aaa8448bb2d9f"
+        "bytes": 5962,
+        "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893",
+        "sha256": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
       },
       {
         "path": "relic_rush.html",
-        "bytes": 882,
-        "hash": "b1855d9e3a356483fc50abe98f2b71f4b3cf9326a393d4f6fe4ab3154216ec6a"
+        "bytes": 852,
+        "hash": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56",
+        "sha256": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56"
       },
       {
         "path": "relic_rush.js",
-        "bytes": 137580,
-        "hash": "ecde15be61b1db3d2c5fd0b91ad4d3db7a1b0e2b02ad0a66f16f6ea1aaa7e010"
+        "bytes": 116526,
+        "hash": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343",
+        "sha256": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "shit-spiral.html",
         "bytes": 12039,
-        "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
+        "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568",
+        "sha256": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
       },
       {
         "path": "sidequests.html",
         "bytes": 23782,
-        "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
+        "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb",
+        "sha256": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
       },
       {
         "path": "site-theme.js",
-        "bytes": 1308,
-        "hash": "498b4294b29bbc1822a7684c3ebb55f48fa7207203ba1373b0e2be85a8110839"
+        "bytes": 2169,
+        "hash": "639a6e79904ecf3df98100be9c24753b56cbbc89fa1103ef013aed2226168d37",
+        "sha256": "639a6e79904ecf3df98100be9c24753b56cbbc89fa1103ef013aed2226168d37"
       },
       {
         "path": "sling_champ.html",
         "bytes": 61684,
-        "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
+        "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623",
+        "sha256": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
       },
       {
         "path": "slot-icons/bar.png",
@@ -12937,101 +13281,96 @@ self.OFFLINE_CATALOG = {
       {
         "path": "slot-machine.html",
         "bytes": 18764,
-        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
+        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df",
+        "sha256": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
       },
       {
         "path": "slot-mobile.css",
         "bytes": 8742,
-        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
+        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326",
+        "sha256": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
       },
       {
         "path": "solos_rng.html",
         "bytes": 61991,
-        "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
+        "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d",
+        "sha256": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
       },
       {
         "path": "sw.js",
-        "bytes": 6127,
-        "hash": "a98a528bc1a79bd11d3dadc194aa3e955c4abfcd24b9fefb8d8a0a442ccd905e"
-      },
-      {
-        "path": "terraria.html",
-        "bytes": 29049,
-        "hash": "76e090d6745a53fd10d1c956d4c6a906c17a8dd10d15baa65bb4be6c616a29c5"
-      },
-      {
-        "path": "terraria/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "terraria/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "terraria/index.html",
-        "bytes": 442,
-        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
+        "bytes": 6165,
+        "hash": "3856fa6e44c9082151462cbe4a791e81da3015da7e9c02635be85f15a2b7523f",
+        "sha256": "3856fa6e44c9082151462cbe4a791e81da3015da7e9c02635be85f15a2b7523f"
       },
       {
         "path": "the-monthly-grind.html",
         "bytes": 21021,
-        "hash": "27d98f99e9c9c919afce4a2a2c8b1e3831e2ba2ae631c206617db16e3c218cc7"
+        "hash": "27d98f99e9c9c919afce4a2a2c8b1e3831e2ba2ae631c206617db16e3c218cc7",
+        "sha256": "27d98f99e9c9c919afce4a2a2c8b1e3831e2ba2ae631c206617db16e3c218cc7"
       },
       {
         "path": "theft.html",
         "bytes": 21514,
-        "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
+        "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73",
+        "sha256": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
       },
       {
         "path": "tic-tac-toe.html",
         "bytes": 8834,
-        "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
+        "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693",
+        "sha256": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
       },
       {
         "path": "tilt_maze_runner.html",
         "bytes": 25993,
-        "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
+        "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2",
+        "sha256": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 5597,
-        "hash": "4dc4a2b5b56d03c27168665dd67c1ae8e72cdb0ab4d5f4dd52fee4ce0322abcb"
+        "bytes": 3410,
+        "hash": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7",
+        "sha256": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7"
       },
       {
         "path": "truth-or-dare.html",
         "bytes": 48313,
-        "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
+        "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc",
+        "sha256": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
       },
       {
         "path": "web_weavers.css",
-        "bytes": 17285,
-        "hash": "a079f0f09263f181051c3fb1cf7cc851ef2dee8ea2b61449c53944e0dd0faa7d"
+        "bytes": 15634,
+        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2",
+        "sha256": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 11408,
-        "hash": "34f577a419401326e8d07d0a3bb108c2c2efef57a018bd09adab908bd1db3117"
+        "bytes": 9566,
+        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37",
+        "sha256": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 226947,
-        "hash": "f5179120cbb0b8da3b66a319f3f4827d609ad151936fddf8b63cdf56212db60f"
+        "bytes": 221420,
+        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b",
+        "sha256": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
       },
       {
         "path": "whos-more-likely.html",
         "bytes": 43696,
-        "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
+        "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c",
+        "sha256": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
       },
       {
         "path": "would-you-rather.html",
         "bytes": 40418,
-        "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
+        "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0",
+        "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 367281629,
-    "version": "3dec56d5e5a1e652"
+    "bytes": 366658062,
+    "version": "c5af0d15db089d60"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -13040,26 +13379,30 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/password-gate.js",
         "bytes": 5818,
-        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
+        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4",
+        "sha256": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "would-you-rather.html",
         "bytes": 40418,
-        "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
+        "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0",
+        "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
     "bytes": 458858,
-    "version": "1e5b7eb312463ab5"
+    "version": "5c8bdff0d149c598"
   },
   "karaoke-night": {
     "name": "Karaoke Night",
@@ -13173,17 +13516,19 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "note": "Online song search and streaming need internet. Local content works offline.",
     "bytes": 156368828,
-    "version": "7cea0f96edac8465"
+    "version": "fec03dbdc6fe037c"
   },
   "nextup": {
     "name": "NextUp",
@@ -13207,12 +13552,13 @@ self.OFFLINE_CATALOG = {
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "note": "Online song search and streaming need internet. Local content works offline.",
     "bytes": 88190,
-    "version": "d4bca9f2afdac81d"
+    "version": "892edaa5e647eb80"
   },
   "who-wants-to-be-a-millionaire": {
     "name": "Who Wants to be a Millionaire",
@@ -13220,27 +13566,31 @@ self.OFFLINE_CATALOG = {
     "files": [
       {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 49750,
-        "hash": "5454958d6f6e5420d59192946b0394d39a09acc8681ce17a7d4aaf648f24b60c"
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0",
+        "sha256": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 463830,
-    "version": "c943712de1da8b27"
+    "bytes": 458361,
+    "version": "9f6d867d4cd6365e"
   },
   "card-wars": {
     "name": "Card Wars",
@@ -18024,16 +18374,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 167926321,
-    "version": "85a2e67824b15dba"
+    "version": "31261472da6b6540"
   },
   "truth-or-dare": {
     "name": "Truth or Dare",
@@ -18042,21 +18394,24 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/password-gate.js",
         "bytes": 5818,
-        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
+        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4",
+        "sha256": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "truth-or-dare.html",
         "bytes": 48313,
-        "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
+        "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc",
+        "sha256": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
       }
     ],
     "bytes": 59474,
-    "version": "507063d18080c1a0"
+    "version": "06ddd6db9222ef74"
   },
   "whos-more-likely": {
     "name": "Who's More Likely To?",
@@ -18065,26 +18420,30 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/password-gate.js",
         "bytes": 5818,
-        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
+        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4",
+        "sha256": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "whos-more-likely.html",
         "bytes": 43696,
-        "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
+        "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c",
+        "sha256": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
       }
     ],
     "bytes": 462136,
-    "version": "753cfd97e9ac45e8"
+    "version": "4f991c0dcd4d5c02"
   },
   "impostor": {
     "name": "Impostor",
@@ -18093,21 +18452,24 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "impostor.html",
         "bytes": 25972,
-        "hash": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c"
+        "hash": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c",
+        "sha256": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 438594,
-    "version": "932fb230219bfdb6"
+    "version": "dbeda74c70f1213b"
   },
   "sidequests": {
     "name": "Side Quests",
@@ -18116,16 +18478,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "sidequests.html",
         "bytes": 23782,
-        "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
+        "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb",
+        "sha256": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
       }
     ],
     "bytes": 29125,
-    "version": "88ddb06fbe533f5e"
+    "version": "35e6146d54eff2f0"
   },
   "darts": {
     "name": "Darts",
@@ -18134,16 +18498,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "darts.html",
         "bytes": 29583,
-        "hash": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec"
+        "hash": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec",
+        "sha256": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 34926,
-    "version": "0e941fdbf5bc2f40"
+    "version": "6c6016e2a1c8c704"
   },
   "tic-tac-toe": {
     "name": "Tic Tac Toe",
@@ -18152,16 +18518,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "tic-tac-toe.html",
         "bytes": 8834,
-        "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
+        "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693",
+        "sha256": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
       }
     ],
     "bytes": 14177,
-    "version": "d68906cb5ac4aed0"
+    "version": "816322554254b3f6"
   },
   "dots-boxes": {
     "name": "Dots & Boxes",
@@ -18170,16 +18538,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "dots&boxes.html",
         "bytes": 12293,
-        "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
+        "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e",
+        "sha256": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 17636,
-    "version": "808393cefbf7d833"
+    "version": "c05e0243b7ac0767"
   },
   "theft": {
     "name": "Theft",
@@ -18188,16 +18558,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "theft.html",
         "bytes": 21514,
-        "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
+        "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73",
+        "sha256": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
       }
     ],
     "bytes": 26857,
-    "version": "78dd36be96682b1e"
+    "version": "a3eefb89ee4a8613"
   },
   "cards-against": {
     "name": "Cards Against Boredom",
@@ -18206,26 +18578,30 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/password-gate.js",
         "bytes": 5818,
-        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
+        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4",
+        "sha256": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "cards-against-boredom.html",
         "bytes": 52319,
-        "hash": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125"
+        "hash": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125",
+        "sha256": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 470759,
-    "version": "01746019de8e99e3"
+    "version": "b95266c3d2dbd991"
   },
   "reaction": {
     "name": "Reaction Game",
@@ -18234,21 +18610,24 @@ self.OFFLINE_CATALOG = {
       {
         "path": "mobile-gesture-guard.js",
         "bytes": 543,
-        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
+        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f",
+        "sha256": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
       },
       {
         "path": "reaction.html",
         "bytes": 30462,
-        "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
+        "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee",
+        "sha256": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 36348,
-    "version": "debf83488e259bb0"
+    "version": "8e8d14c14977fd40"
   },
   "two-fingers": {
     "name": "Two Fingers",
@@ -18267,36 +18646,42 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/three160/loaders/GLTFLoader.js",
         "bytes": 108535,
-        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
+        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5",
+        "sha256": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
       },
       {
         "path": "assets/vendor/three160/three.module.js",
         "bytes": 1272971,
-        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
+        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2",
+        "sha256": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
       },
       {
         "path": "assets/vendor/three160/utils/BufferGeometryUtils.js",
         "bytes": 31919,
-        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
+        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c",
+        "sha256": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 44768,
-        "hash": "24dbf6c038ff372117196072740ebd86a9cd07831a80cb8449a10595c53e7504"
+        "bytes": 23383,
+        "hash": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02",
+        "sha256": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 15883,
-        "hash": "153d7c6bcd8fe054f198dbf80552329060248aaddfc87210ec9785acdbcb5932"
+        "bytes": 6846,
+        "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc",
+        "sha256": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 37258987,
-    "version": "3f7c58b12689c340"
+    "bytes": 37228565,
+    "version": "ee536f0370e4b55c"
   },
   "solos-rng": {
     "name": "Solo's RNG",
@@ -18380,16 +18765,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "solos_rng.html",
         "bytes": 61991,
-        "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
+        "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d",
+        "sha256": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
       }
     ],
     "bytes": 3313209,
-    "version": "4395ab4164224cae"
+    "version": "398ac0a76f88cd2a"
   },
   "blackjack": {
     "name": "Black Jack",
@@ -18398,21 +18785,24 @@ self.OFFLINE_CATALOG = {
       {
         "path": "Blackjack.html",
         "bytes": 21486,
-        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
+        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413",
+        "sha256": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 434108,
-    "version": "2121a368742d51a2"
+    "version": "97cfb7130eeb27ec"
   },
   "3d-drift": {
     "name": "Tokyo Drift",
@@ -18421,86 +18811,102 @@ self.OFFLINE_CATALOG = {
       {
         "path": "3d_drift_racer.config.js",
         "bytes": 225,
-        "hash": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b"
+        "hash": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b",
+        "sha256": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b"
       },
       {
         "path": "3d_drift_racer.css",
         "bytes": 4749,
-        "hash": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b"
+        "hash": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b",
+        "sha256": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b"
       },
       {
         "path": "3d_drift_racer.html",
         "bytes": 20728,
-        "hash": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6"
+        "hash": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6",
+        "sha256": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6"
       },
       {
         "path": "3d_drift_racer.js",
         "bytes": 126035,
-        "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
+        "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36",
+        "sha256": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
       },
       {
         "path": "assets/vendor/lucide.js",
         "bytes": 644423,
-        "hash": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9"
+        "hash": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9",
+        "sha256": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "assets/vendor/three.core.min.js",
         "bytes": 385386,
-        "hash": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90"
+        "hash": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90",
+        "sha256": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90"
       },
       {
         "path": "assets/vendor/three.module.min.js",
         "bytes": 365552,
-        "hash": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6"
+        "hash": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6",
+        "sha256": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6"
       },
       {
         "path": "assets/vendor/tokyo-font-0.ttf",
         "bytes": 324820,
-        "hash": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba"
+        "hash": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba",
+        "sha256": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba"
       },
       {
         "path": "assets/vendor/tokyo-font-1.ttf",
         "bytes": 326468,
-        "hash": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c"
+        "hash": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c",
+        "sha256": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c"
       },
       {
         "path": "assets/vendor/tokyo-font-2.ttf",
         "bytes": 327260,
-        "hash": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a"
+        "hash": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a",
+        "sha256": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a"
       },
       {
         "path": "assets/vendor/tokyo-font-3.ttf",
         "bytes": 112172,
-        "hash": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3"
+        "hash": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3",
+        "sha256": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3"
       },
       {
         "path": "assets/vendor/tokyo-font-4.ttf",
         "bytes": 112092,
-        "hash": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a"
+        "hash": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a",
+        "sha256": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a"
       },
       {
         "path": "assets/vendor/tokyo-font-5.ttf",
         "bytes": 69308,
-        "hash": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85"
+        "hash": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85",
+        "sha256": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85"
       },
       {
         "path": "assets/vendor/tokyo-fonts.css",
         "bytes": 938,
-        "hash": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b"
+        "hash": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b",
+        "sha256": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 3232778,
-    "version": "bfa11e7031d1ae4c"
+    "version": "2701c8a956af72a2"
   },
   "web_weavers": {
     "name": "Web Weavers",
@@ -18524,41 +18930,48 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/GLTFLoader-r128.js",
         "bytes": 96550,
-        "hash": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6"
+        "hash": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6",
+        "sha256": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6"
       },
       {
         "path": "assets/vendor/offline-25023b521d77.js",
         "bytes": 603445,
-        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+        "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "web_weavers.css",
-        "bytes": 17285,
-        "hash": "a079f0f09263f181051c3fb1cf7cc851ef2dee8ea2b61449c53944e0dd0faa7d"
+        "bytes": 15634,
+        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2",
+        "sha256": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 11408,
-        "hash": "34f577a419401326e8d07d0a3bb108c2c2efef57a018bd09adab908bd1db3117"
+        "bytes": 9566,
+        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37",
+        "sha256": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 226947,
-        "hash": "f5179120cbb0b8da3b66a319f3f4827d609ad151936fddf8b63cdf56212db60f"
+        "bytes": 221420,
+        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b",
+        "sha256": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
       }
     ],
-    "bytes": 5923144,
-    "version": "c777b4cab841b87a"
+    "bytes": 5914124,
+    "version": "b6ed732034c51469"
   },
   "hood-brawlers": {
     "name": "Hood Brawlers",
@@ -18567,41 +18980,48 @@ self.OFFLINE_CATALOG = {
       {
         "path": "hood-brawlers.js",
         "bytes": 47955,
-        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
+        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a",
+        "sha256": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
       },
       {
         "path": "hood_brawlers.html",
         "bytes": 63377,
-        "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
+        "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056",
+        "sha256": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
       },
       {
         "path": "mobile-gesture-guard.js",
         "bytes": 543,
-        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
+        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f",
+        "sha256": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "party-lan.js",
-        "bytes": 3892,
-        "hash": "a2f9e78e7b4985b1a63a192db6c729f7ff33d1c893b6ccdbd0c4c68d8085447c"
+        "bytes": 3922,
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
-        "bytes": 9396,
-        "hash": "78fb78150568c40e1f956746462a69d872cc6e99bd2eaf8fc0964af1c875ef93"
+        "bytes": 9856,
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 131964,
-    "version": "1bbcd7aee14151ce"
+    "bytes": 132454,
+    "version": "9af72511ebdd0988"
   },
   "planet-architect": {
     "name": "Planet Architect",
@@ -18635,26 +19055,30 @@ self.OFFLINE_CATALOG = {
       {
         "path": "planet_architect.css",
         "bytes": 14158,
-        "hash": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b"
+        "hash": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b",
+        "sha256": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b"
       },
       {
         "path": "planet_architect.html",
         "bytes": 4384,
-        "hash": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526"
+        "hash": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526",
+        "sha256": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526"
       },
       {
         "path": "planet_architect.js",
         "bytes": 24512,
-        "hash": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35"
+        "hash": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35",
+        "sha256": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 8148497,
-    "version": "bca9f99f5729e756"
+    "version": "d90af96230f3d61b"
   },
   "orbit-boss": {
     "name": "Orbit Boss",
@@ -18663,26 +19087,30 @@ self.OFFLINE_CATALOG = {
       {
         "path": "mobile-gesture-guard.js",
         "bytes": 543,
-        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
+        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f",
+        "sha256": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "orbit-boss.html",
         "bytes": 20908,
-        "hash": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608"
+        "hash": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608",
+        "sha256": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 28252,
-    "version": "c07c5c131e19ff31"
+    "version": "6c13f8ab3cd1f0cd"
   },
   "pac-man-3d": {
     "name": "Pac-Man 3D",
@@ -18691,41 +19119,48 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/three160/three.module.js",
         "bytes": 1272971,
-        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
+        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2",
+        "sha256": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "pac-man-3d.html",
         "bytes": 57150,
-        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
+        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e",
+        "sha256": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
       },
       {
         "path": "pacman-clean-hud.css",
         "bytes": 6720,
-        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
+        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6",
+        "sha256": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
       },
       {
         "path": "pacman-minimal-menu.css",
         "bytes": 2717,
-        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
+        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f",
+        "sha256": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
       },
       {
         "path": "pacman-polish.css",
         "bytes": 10994,
-        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
+        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78",
+        "sha256": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 1357353,
-    "version": "0eb3ff9b8b04c1b5"
+    "version": "ae198180afd51e2d"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",
@@ -18734,37 +19169,44 @@ self.OFFLINE_CATALOG = {
       {
         "path": "3d_drift_racer.config.js",
         "bytes": 225,
-        "hash": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b"
+        "hash": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b",
+        "sha256": "05f422b3d470cdfb7b6dd71cc53b1b26bfd0ccec753a08ffa8c01315451bbb0b"
       },
       {
         "path": "3d_drift_racer.css",
         "bytes": 4749,
-        "hash": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b"
+        "hash": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b",
+        "sha256": "90c46bb45768a3bb5483e777248893a3f4426b1a41ef44ee553348b44824c10b"
       },
       {
         "path": "3d_drift_racer.html",
         "bytes": 20728,
-        "hash": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6"
+        "hash": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6",
+        "sha256": "7244f78d096a2d6c44c941c3472549bd557864d9a7997c64b326ecc1551757c6"
       },
       {
         "path": "3d_drift_racer.js",
         "bytes": 126035,
-        "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
+        "hash": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36",
+        "sha256": "9151fa5b54d5e615b8beb34828a8d843eb8cdf84bef2398aff34f5cf839b7e36"
       },
       {
         "path": "Blackjack.html",
         "bytes": 21486,
-        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
+        "hash": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413",
+        "sha256": "49eea6f541c5f1f650ac4b0b60aaaa5d3ae0b69ece892a186d0c80939b3a5413"
       },
       {
         "path": "DND.html",
         "bytes": 735,
-        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
+        "hash": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb",
+        "sha256": "a8b6ea04614050358bbfac0e5dda4daa28d6750e2397ef99da00833427ebb8bb"
       },
       {
         "path": "DNDC.html",
         "bytes": 22362,
-        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
+        "hash": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5",
+        "sha256": "3ba7d2e91c481b1042a3ca230109e24a59ede8b7977e7a89acdfc40060e2a2a5"
       },
       {
         "path": "KaraokeApp/Videos/ABBA - Dancing Queen (Karaoke Version) - Sing King (1080p, h264).mp4",
@@ -18882,64 +19324,58 @@ self.OFFLINE_CATALOG = {
         "hash": "e8709b99d0ff62855b1ef7494848d2a43ffee9a22f03fb70d55e2392d122816e"
       },
       {
-        "path": "Terraria/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "Terraria/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "Terraria/index.html",
-        "bytes": 442,
-        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
-      },
-      {
         "path": "Who Wants to be a Millionaire.html",
-        "bytes": 49750,
-        "hash": "5454958d6f6e5420d59192946b0394d39a09acc8681ce17a7d4aaf648f24b60c"
+        "bytes": 44281,
+        "hash": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0",
+        "sha256": "7f49716d4d28ad6d9af3f182da8d5a44053e3d2f9a50a9674ff792d9068faca0"
       },
       {
         "path": "arcade-action.js",
-        "bytes": 9049,
-        "hash": "18c7add65e5555a59750d342e432989ced0f8c86ac152b472d8e7b8cf3533cb5"
+        "bytes": 16262,
+        "hash": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56",
+        "sha256": "d643a17a7a0349ca8cfa440ae35d8bdf35cd4df2cd9778430d04a5ff2e8a5c56"
       },
       {
         "path": "arcade-core.js",
-        "bytes": 2398,
-        "hash": "f440e5d35d2f05e1f328c60b9ae38f6e81bdc7049300ad803ac1c45ca274618d"
+        "bytes": 2552,
+        "hash": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427",
+        "sha256": "85819c112590a4f7021b3b280843e32cc6621849f5d3673250e5d3d12b99d427"
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 27850,
-        "hash": "58bc4a48c386923637ffb26403578b0f79e3e7ba83e8199795892c10bb9a8fbe"
+        "bytes": 69332,
+        "hash": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333",
+        "sha256": "b90ee2039231b5726ae9c8fc61144423c8ae7ce586cd2cde60ebeaec107a5333"
       },
       {
         "path": "arcade-init.js",
-        "bytes": 3671,
-        "hash": "bba8dcd92f984603face931100dd0e067e8f30b017c8a910248df0fe1c52875b"
+        "bytes": 2526,
+        "hash": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6",
+        "sha256": "7d056a5c6d0f70b3caf7471d21847849ae85c33af28a5e3106e30ab176324ab6"
       },
       {
         "path": "arcade-party.js",
-        "bytes": 13230,
-        "hash": "fcbfed73842d5fe9a1e24b6e38999292246db5506f5844af43c35f783629801b"
+        "bytes": 47952,
+        "hash": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e",
+        "sha256": "7f30fab9d2968a007cc396ea88ae6e9d4dbc29186cb6ad80d1ef0191ba2b672e"
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 18880,
-        "hash": "e0f3cdd5f8142d39d14a38c8e2ab96166109029e2fcd8df1546f71c8460ac4fd"
+        "bytes": 22122,
+        "hash": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f",
+        "sha256": "c72c035e7ace8526ddbb48be3206b5f39583bb417ea3e28c48ab30cfb49a2d9f"
       },
       {
         "path": "arcade.css",
         "bytes": 7920,
-        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
+        "hash": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022",
+        "sha256": "6c64a15da345a084de33a86f8c2b4bddad5b242bce021d8689d7677f8f320022"
       },
       {
         "path": "arcade.html",
-        "bytes": 3040,
-        "hash": "e0583a5f26f2ce2713efeb95a10b29aae39e635de679aed1a79f73aedc1ed658"
+        "bytes": 2077,
+        "hash": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286",
+        "sha256": "2d30e174ae406ce81831fe1a1b3de3a054d418fce721f044fa83c91f88253286"
       },
       {
         "path": "assets/chronos/era-0-pre-void.png",
@@ -19024,7 +19460,8 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/nextbot-chaser.png",
         "bytes": 258145,
-        "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
+        "hash": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc",
+        "sha256": "e4a3f6224fc8c944eb2f8d2d29025d57f7ec62c63322172d627c8fbda42ea5cc"
       },
       {
         "path": "assets/nextbots/aag.jpg",
@@ -19144,17 +19581,20 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/password-gate.js",
         "bytes": 5818,
-        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
+        "hash": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4",
+        "sha256": "91d32bea105a7dab1eac20fc445864ed15a551e640b4927fa085c0d0afd3b6b4"
       },
       {
         "path": "assets/rod-space-home.css",
         "bytes": 899,
-        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
+        "hash": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5",
+        "sha256": "e8f377db5ab68ce62fb9f6f81d45feca8e1d595f4e24d00a0bae188648f9ebd5"
       },
       {
         "path": "assets/rod-space-home.js",
         "bytes": 1248,
-        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
+        "hash": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b",
+        "sha256": "67db98bc312ea4c59183dee99db96e2d1212c1f18fe0486397c830d233721d6b"
       },
       {
         "path": "assets/solos-rng/azulejo-relic.png",
@@ -19244,197 +19684,236 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/GLTFLoader-r128.js",
         "bytes": 96550,
-        "hash": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6"
+        "hash": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6",
+        "sha256": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6"
       },
       {
         "path": "assets/vendor/lucide.js",
         "bytes": 644423,
-        "hash": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9"
+        "hash": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9",
+        "sha256": "2b9c11a7cce418499de8c3a563d8fc0b479c23f85cb96bf1f2e7dcb09c11a9b9"
       },
       {
         "path": "assets/vendor/nextbot-brick.jpg",
         "bytes": 1090649,
-        "hash": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe"
+        "hash": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe",
+        "sha256": "b49b0ab13aa4455cc7348cb4bfbbffcb344f2f81b17121eb1e57bcd3b387febe"
       },
       {
         "path": "assets/vendor/nextbot.png",
         "bytes": 19359,
-        "hash": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9"
+        "hash": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9",
+        "sha256": "db6e1fd4d7c302a1b621975ee3b1a3fc3887b59122f2df2d9e86838e8b98d7d9"
       },
       {
         "path": "assets/vendor/offline-146601f235c4.js",
         "bytes": 10751,
-        "hash": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+        "hash": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+        "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
       },
       {
         "path": "assets/vendor/offline-25023b521d77.js",
         "bytes": 603445,
-        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+        "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
       },
       {
         "path": "assets/vendor/offline-4047a043ad8e.js",
         "bytes": 80807,
-        "hash": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a"
+        "hash": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a",
+        "sha256": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a"
       },
       {
         "path": "assets/vendor/offline-4ad6e54ad218.js",
         "bytes": 19927,
-        "hash": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36"
+        "hash": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36",
+        "sha256": "c541ef06327885a8415bca8df6071e14189b4855336def4f36db54bde8484f36"
       },
       {
         "path": "assets/vendor/offline-5c05996c1630.js",
         "bytes": 131835,
-        "hash": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+        "hash": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+        "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
       },
       {
         "path": "assets/vendor/offline-6e390bcdb8ee.js",
         "bytes": 3141115,
-        "hash": "5f8ffa174aa2465f074c85b92421662168cd356eedebaedc3d16fd9d61fadb7c"
+        "hash": "5f8ffa174aa2465f074c85b92421662168cd356eedebaedc3d16fd9d61fadb7c",
+        "sha256": "5f8ffa174aa2465f074c85b92421662168cd356eedebaedc3d16fd9d61fadb7c"
       },
       {
         "path": "assets/vendor/offline-892b8e0a22ac.js",
         "bytes": 442433,
-        "hash": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a"
+        "hash": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a",
+        "sha256": "c3291ea757ff3da0fc45a41d3ff60d61da9b257314962c5cdded94ca0df05d7a"
       },
       {
         "path": "assets/vendor/offline-8eacf4588bcf.js",
         "bytes": 626868,
-        "hash": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd"
+        "hash": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd",
+        "sha256": "6fed418f30811684fe445340cec7187f3b3d27557ee3b557dcf1017eeeb7acbd"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "assets/vendor/three-r128.min.js",
         "bytes": 603445,
-        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+        "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
       },
       {
         "path": "assets/vendor/three.core.min.js",
         "bytes": 385386,
-        "hash": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90"
+        "hash": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90",
+        "sha256": "05b2609338c76cd65daf74f3ac515bc9a5045e1b3b33edc07d8c9bd55250fa90"
       },
       {
         "path": "assets/vendor/three.module.min.js",
         "bytes": 365552,
-        "hash": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6"
+        "hash": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6",
+        "sha256": "86bcee248b64f44bcfc23c331ae74619061957d59cab040171dcb6fb5900beb6"
       },
       {
         "path": "assets/vendor/three160/controls/PointerLockControls.js",
         "bytes": 3347,
-        "hash": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca"
+        "hash": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca",
+        "sha256": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca"
       },
       {
         "path": "assets/vendor/three160/loaders/GLTFLoader.js",
         "bytes": 108535,
-        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
+        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5",
+        "sha256": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
       },
       {
         "path": "assets/vendor/three160/three.module.js",
         "bytes": 1272971,
-        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
+        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2",
+        "sha256": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
       },
       {
         "path": "assets/vendor/three160/utils/BufferGeometryUtils.js",
         "bytes": 31919,
-        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
+        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c",
+        "sha256": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
       },
       {
         "path": "assets/vendor/tokyo-font-0.ttf",
         "bytes": 324820,
-        "hash": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba"
+        "hash": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba",
+        "sha256": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba"
       },
       {
         "path": "assets/vendor/tokyo-font-1.ttf",
         "bytes": 326468,
-        "hash": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c"
+        "hash": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c",
+        "sha256": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c"
       },
       {
         "path": "assets/vendor/tokyo-font-2.ttf",
         "bytes": 327260,
-        "hash": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a"
+        "hash": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a",
+        "sha256": "5b717029a2c4cfca2167e97be1157edb24151591e5ec96eb484745c392817a7a"
       },
       {
         "path": "assets/vendor/tokyo-font-3.ttf",
         "bytes": 112172,
-        "hash": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3"
+        "hash": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3",
+        "sha256": "44ce4a84f20d60f24539bd0cef11f79c29e38609e0f8adf18551c9794a5d9dc3"
       },
       {
         "path": "assets/vendor/tokyo-font-4.ttf",
         "bytes": 112092,
-        "hash": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a"
+        "hash": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a",
+        "sha256": "a1d92abc6b02a87faed23d98067ab1027e8e95242fd7c9978a072ea383b89d1a"
       },
       {
         "path": "assets/vendor/tokyo-font-5.ttf",
         "bytes": 69308,
-        "hash": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85"
+        "hash": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85",
+        "sha256": "3e756954468ff1cb302dae0414262e72f76a67d87bef3fa1f3226cd0fb9b2d85"
       },
       {
         "path": "assets/vendor/tokyo-fonts.css",
         "bytes": 938,
-        "hash": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b"
+        "hash": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b",
+        "sha256": "bd6a38688db2fec38dfa1a079580762d10e888cf29b10153769a7362806b6a4b"
       },
       {
         "path": "assets/vendor/vue3.global.prod.js",
         "bytes": 170605,
-        "hash": "e0a2a0866a8de8887542e24f3c218aad3d907b88f30966068792ba992296dc9f"
+        "hash": "e0a2a0866a8de8887542e24f3c218aad3d907b88f30966068792ba992296dc9f",
+        "sha256": "e0a2a0866a8de8887542e24f3c218aad3d907b88f30966068792ba992296dc9f"
       },
       {
         "path": "backrooms-level1.html",
         "bytes": 28551,
-        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
+        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d",
+        "sha256": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
       },
       {
         "path": "backrooms-level10.html",
         "bytes": 18341,
-        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
+        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c",
+        "sha256": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
       },
       {
         "path": "backrooms-level2.html",
         "bytes": 22592,
-        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
+        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17",
+        "sha256": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
       },
       {
         "path": "backrooms-level7.html",
         "bytes": 18976,
-        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
+        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c",
+        "sha256": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
       },
       {
         "path": "backrooms-polish.css",
         "bytes": 9857,
-        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
+        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44",
+        "sha256": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
       },
       {
         "path": "backrooms-ui.js",
         "bytes": 3639,
-        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
+        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076",
+        "sha256": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
       },
       {
         "path": "backrooms-upgrade.css",
         "bytes": 4027,
-        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
+        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9",
+        "sha256": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
       },
       {
         "path": "backrooms-upgrade.js",
         "bytes": 12444,
-        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
+        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd",
+        "sha256": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
       },
       {
         "path": "backrooms.css",
         "bytes": 2841,
-        "hash": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5"
+        "hash": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5",
+        "sha256": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5"
       },
       {
         "path": "backrooms.html",
         "bytes": 2011,
-        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
+        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253",
+        "sha256": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
       },
       {
         "path": "backrooms.js",
         "bytes": 27538,
-        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
+        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1",
+        "sha256": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
       },
       {
         "path": "card-wars/app.js",
@@ -24214,57 +24693,68 @@ self.OFFLINE_CATALOG = {
       {
         "path": "cards-against-boredom.html",
         "bytes": 52319,
-        "hash": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125"
+        "hash": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125",
+        "sha256": "571f149e37e1ff8fdd52aa8946664a6e64384448f846c2ac0f3219b35ec28125"
       },
       {
         "path": "counter.html",
         "bytes": 11075,
-        "hash": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514"
+        "hash": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514",
+        "sha256": "d8f2351a99224a93ed7734f1c759aba768201e31e75f826dc179b0a909c0f514"
       },
       {
         "path": "darts.html",
         "bytes": 29583,
-        "hash": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec"
+        "hash": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec",
+        "sha256": "708c30890c2b8847ad153e4234153c58bcec76673abba93c33c9d18cb0bc2dec"
       },
       {
         "path": "disaster-cards.js",
         "bytes": 21814,
-        "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
+        "hash": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7",
+        "sha256": "eb27a6a831cb144fa3c3aa22806192d7a23df6718d1186dab3fa20ce1143c7c7"
       },
       {
         "path": "disaster-game.js",
         "bytes": 11311,
-        "hash": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b"
+        "hash": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b",
+        "sha256": "fec6336b6994a2e5d1035ac94b2047c568ddc685637800e245e463ef6638de4b"
       },
       {
         "path": "disaster-lan.js",
         "bytes": 1630,
-        "hash": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a"
+        "hash": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a",
+        "sha256": "0207e19020631d9d5fb8a19801b71722071e826c164ac483789bfb9d965df48a"
       },
       {
         "path": "dnd-ai.html",
         "bytes": 11293,
-        "hash": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f"
+        "hash": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f",
+        "sha256": "51b7ab5c60444608952c8683cf4f3f54687e6e359dad9010d9beee4e168c8f8f"
       },
       {
         "path": "dnd-game.js",
         "bytes": 16675,
-        "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
+        "hash": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc",
+        "sha256": "220f2c02a828dff96213a937c0acd8e0e4d31472b655ef3726beb0084e0c75dc"
       },
       {
         "path": "dots&boxes.html",
         "bytes": 12293,
-        "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
+        "hash": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e",
+        "sha256": "eb4c5f7da023d97439fbb0e538ccabee48c8fda6521cc37076208a7639a1b97e"
       },
       {
         "path": "double-take.html",
         "bytes": 57599,
-        "hash": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc"
+        "hash": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc",
+        "sha256": "2740a36ffc18fe43827a9be59d211ac0b44e7edc1992d67fa68243001da269bc"
       },
       {
         "path": "dream-grounds.html",
         "bytes": 79096,
-        "hash": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35"
+        "hash": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35",
+        "sha256": "bbf23bc71501b738032818ead39e388da2f286fd16edb03d678e5cec11b2ac35"
       },
       {
         "path": "dt-book.html",
@@ -24294,17 +24784,20 @@ self.OFFLINE_CATALOG = {
       {
         "path": "fidget-roulette.html",
         "bytes": 17591,
-        "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
+        "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2",
+        "sha256": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
       },
       {
         "path": "fingerboard-3d.js",
-        "bytes": 44768,
-        "hash": "24dbf6c038ff372117196072740ebd86a9cd07831a80cb8449a10595c53e7504"
+        "bytes": 23383,
+        "hash": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02",
+        "sha256": "d5b2ae6b7872209d4032736c5885a0988a01ab0d6b02fbce193e94113a553f02"
       },
       {
         "path": "fingerboard.html",
-        "bytes": 15883,
-        "hash": "153d7c6bcd8fe054f198dbf80552329060248aaddfc87210ec9785acdbcb5932"
+        "bytes": 6846,
+        "hash": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc",
+        "sha256": "5558b66597348e8f87d60b96a8e8279c96350abe0017910b7afbf2b1f1242fbc"
       },
       {
         "path": "geometria-descritiva-caderno.html",
@@ -24313,23 +24806,27 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "geometria-descritiva-coordenadas.html",
-        "bytes": 37788,
-        "hash": "f7c6803733dd3dade180911a154a0eb696cd1a28f3019681e56751e544d2cdce"
+        "bytes": 37550,
+        "hash": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039",
+        "sha256": "88ebba2adae8669ee1fbbf25739278e51d00ed41e55802b2a8259c3528073039"
       },
       {
         "path": "geometria-descritiva-epura.html",
-        "bytes": 36558,
-        "hash": "0a2c92ff20f35e6ec1a0f7fa5cc6aaf41d635a1b1b3d1e688f27c7737fa1f2d3"
+        "bytes": 36320,
+        "hash": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8",
+        "sha256": "e2f6bd2f5a05b8f4c8040b8ad68c22fb29db63ec63396a05d09b5107b34bbfc8"
       },
       {
         "path": "geometria-descritiva-exemplo.html",
-        "bytes": 37348,
-        "hash": "53dffd900a7423a11e46233e923ea890bfbc286ce35bd888649340e729a44119"
+        "bytes": 37110,
+        "hash": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7",
+        "sha256": "7ab54e1255b0fd1a317d1cf538a0f18b278347dcadbb7bd0791d2f7eeeb609c7"
       },
       {
         "path": "geometria-descritiva-pratica.html",
-        "bytes": 37693,
-        "hash": "24b836ca4daada5020b84ce5145ddb11975d479130ed9c982313968cec39f59b"
+        "bytes": 37455,
+        "hash": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b",
+        "sha256": "4f616ce3ee6c17114063b83d9113c2c43f7d31ba3c487dfec9c62f44eda1118b"
       },
       {
         "path": "geometria-descritiva-retas.html",
@@ -24338,158 +24835,189 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "geometria-descritiva.html",
-        "bytes": 38545,
-        "hash": "f514572ca56f636f6409869dea575dcde754262ba843d27375b2442fe2bb4a32"
+        "bytes": 38307,
+        "hash": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78",
+        "sha256": "3509893dd800d5a5a41813007fb0a219c9110feb5d589c2c28e4df620aa08b78"
       },
       {
         "path": "hood-brawlers.js",
         "bytes": 47955,
-        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
+        "hash": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a",
+        "sha256": "0099700e8c293e980554e6c14a61819a5936b3b10e36f76667d115fc25cac48a"
       },
       {
         "path": "hood_brawlers.html",
         "bytes": 63377,
-        "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
+        "hash": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056",
+        "sha256": "b82cd789efc46d10c20a551b6022480c9e0c5223ac243c877c6e850f87662056"
       },
       {
         "path": "impostor.html",
         "bytes": 25972,
-        "hash": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c"
+        "hash": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c",
+        "sha256": "e7f820e462c3dd6831baab8e7364b3ba93e108c81a0171857f4bf2a039e73e6c"
       },
       {
         "path": "index.html",
-        "bytes": 38580,
-        "hash": "c231fd0617af753cba35b1746b04c4793d97149825dfc2071fc6f0cb5d940699"
+        "bytes": 39216,
+        "hash": "30de426400e10bd6f95a882501b8d529a78188b9aa3c6bdda7ca81273d0803f8",
+        "sha256": "30de426400e10bd6f95a882501b8d529a78188b9aa3c6bdda7ca81273d0803f8"
       },
       {
         "path": "invincible-sandbox.html",
         "bytes": 23135,
-        "hash": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d"
+        "hash": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d",
+        "sha256": "c0e5b639ec5a886c66f8a37c63d6d9dcf5b0370548059605b930406543c7127d"
       },
       {
         "path": "japanese-book.html",
         "bytes": 27610,
-        "hash": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43"
+        "hash": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43",
+        "sha256": "458cfedce29e50b996cf6aa2d5730525c69d5d43362fdab43df1ece4747d6d43"
       },
       {
         "path": "jp_srs_cards.html",
         "bytes": 37649,
-        "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
+        "hash": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d",
+        "sha256": "11f402873b81ee3d240a69a6092920b7bada29a7a354ca4a72ccc8b3b369d25d"
       },
       {
         "path": "maths-book.html",
-        "bytes": 63877,
-        "hash": "7e23abb8b5d5926a745d76bea227bd96b171021e8857f6bae724bcd967a2a4f9"
+        "bytes": 62739,
+        "hash": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03",
+        "sha256": "35b8e06798921b627e2b93da213457df249728ff9eb771ebe87bb48d7708ac03"
       },
       {
         "path": "maths-content.js",
         "bytes": 24633,
-        "hash": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401"
+        "hash": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401",
+        "sha256": "e80791162f416d1ca45064d7db14479cea934a455dbb59751633cbc349c6c401"
       },
       {
         "path": "maths-curriculum-ui.js",
-        "bytes": 12928,
-        "hash": "932700e275493522493a398c2e4845421ea1d927d49fb08361b2592437af5f6e"
+        "bytes": 12850,
+        "hash": "a7530e3e4f5228bd80a065e4756ce0f20b723975a975fff0128df89ddfdf44c7",
+        "sha256": "a7530e3e4f5228bd80a065e4756ce0f20b723975a975fff0128df89ddfdf44c7"
       },
       {
         "path": "maths-curriculum.js",
         "bytes": 23293,
-        "hash": "783de4488d79010afcdae8669cd4febd88d505ab89f85e6c84bad16905a5ec4f"
+        "hash": "783de4488d79010afcdae8669cd4febd88d505ab89f85e6c84bad16905a5ec4f",
+        "sha256": "783de4488d79010afcdae8669cd4febd88d505ab89f85e6c84bad16905a5ec4f"
       },
       {
         "path": "maths-diagrams.js",
         "bytes": 4338,
-        "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
+        "hash": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41",
+        "sha256": "aeaadeeb298c5908a2d9b3e2577f8fe8359252fa319b0bdea8c907d77d62ff41"
       },
       {
         "path": "maths-extra-exercises.js",
         "bytes": 17783,
-        "hash": "796d742c1b917d219a2bf393ffab0ce73b7947f1e62ff61ca56045991dd3904b"
+        "hash": "796d742c1b917d219a2bf393ffab0ce73b7947f1e62ff61ca56045991dd3904b",
+        "sha256": "796d742c1b917d219a2bf393ffab0ce73b7947f1e62ff61ca56045991dd3904b"
       },
       {
         "path": "maths-formatting.js",
-        "bytes": 6240,
-        "hash": "0ad73677ea64f61fd1ab72f777a1117ba6043afe519368a48304695d8da7ebf5"
+        "bytes": 7212,
+        "hash": "f5671fe11b4fa3de6de73eeec49a68950410df06b5d891b02aef0a55e9b03cb6",
+        "sha256": "f5671fe11b4fa3de6de73eeec49a68950410df06b5d891b02aef0a55e9b03cb6"
       },
       {
         "path": "maths-indices-working.js",
         "bytes": 8616,
-        "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
+        "hash": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27",
+        "sha256": "284ead706f7f441a9ef9aed4dae61eb3c94a7bcf5d4f9155f5e69dda11411b27"
       },
       {
         "path": "maths-lessons-d1.js",
         "bytes": 15174,
-        "hash": "0ef9681c588a95557b0a7383128b9df58b27c681c088fd4e6f874a3a724aa793"
+        "hash": "0ef9681c588a95557b0a7383128b9df58b27c681c088fd4e6f874a3a724aa793",
+        "sha256": "0ef9681c588a95557b0a7383128b9df58b27c681c088fd4e6f874a3a724aa793"
       },
       {
         "path": "maths-lessons-p1.js",
         "bytes": 19555,
-        "hash": "60c8900ea2ee5d8d1abbd4a56913a89950936ff3354ced9b90978f410f60f0cf"
+        "hash": "60c8900ea2ee5d8d1abbd4a56913a89950936ff3354ced9b90978f410f60f0cf",
+        "sha256": "60c8900ea2ee5d8d1abbd4a56913a89950936ff3354ced9b90978f410f60f0cf"
       },
       {
         "path": "maths-lessons-p2.js",
         "bytes": 18160,
-        "hash": "f9c967872546f5f0a91e25cd95dd15c9719eadc32115cc478cf8ad9dcc2f7dca"
+        "hash": "f9c967872546f5f0a91e25cd95dd15c9719eadc32115cc478cf8ad9dcc2f7dca",
+        "sha256": "f9c967872546f5f0a91e25cd95dd15c9719eadc32115cc478cf8ad9dcc2f7dca"
       },
       {
         "path": "maths-lessons-p3.js",
         "bytes": 14284,
-        "hash": "deb1fb2e93cecb93609fa4a406a56d3763b556f478b17ab3f11d1fd8574c9a41"
+        "hash": "deb1fb2e93cecb93609fa4a406a56d3763b556f478b17ab3f11d1fd8574c9a41",
+        "sha256": "deb1fb2e93cecb93609fa4a406a56d3763b556f478b17ab3f11d1fd8574c9a41"
       },
       {
         "path": "maths-lessons-p4.js",
         "bytes": 12626,
-        "hash": "e2d712169ee9c629a95807e2f353dc56bd1e30319002597fd9b0ff70dc214d6e"
+        "hash": "e2d712169ee9c629a95807e2f353dc56bd1e30319002597fd9b0ff70dc214d6e",
+        "sha256": "e2d712169ee9c629a95807e2f353dc56bd1e30319002597fd9b0ff70dc214d6e"
       },
       {
         "path": "maths-lessons-s1.js",
         "bytes": 15883,
-        "hash": "d71bf895a1444793030e2a85a56bb37ad5c8a4b7027bb6bf70eb96e4e39f9aa6"
+        "hash": "d71bf895a1444793030e2a85a56bb37ad5c8a4b7027bb6bf70eb96e4e39f9aa6",
+        "sha256": "d71bf895a1444793030e2a85a56bb37ad5c8a4b7027bb6bf70eb96e4e39f9aa6"
       },
       {
         "path": "maths-mixed-exercises.js",
         "bytes": 1459,
-        "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
+        "hash": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604",
+        "sha256": "dd0b201ef433ac0bb1cdec68f6e38a3f0b9d5c74a9dfb497ac62d041f77a4604"
       },
       {
         "path": "maths-p1-additions-questions.js",
         "bytes": 13474,
-        "hash": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c"
+        "hash": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c",
+        "sha256": "95b9a2e3c352150024fd661f9527914d2d54db76e8cb0ed3bb87e780cc82430c"
       },
       {
         "path": "maths-p1-additions.js",
         "bytes": 15127,
-        "hash": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f"
+        "hash": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f",
+        "sha256": "ec50b2d75cbe81ba36bc9a14303be0089259c214ddd870b32a799ec486a4ce8f"
       },
       {
         "path": "maths-question-bank.js",
         "bytes": 18208,
-        "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
+        "hash": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161",
+        "sha256": "28dcf6332a74ccf40a7461ee8278bcdff686c4a4212466b247aecbfd37c72161"
       },
       {
         "path": "maths-shelf-3d.js",
-        "bytes": 771372,
-        "hash": "5b08fd2a1897f0e60fe7a934df6563c6c152025b84bb46775ca0e4ca69665d4a"
+        "bytes": 771259,
+        "hash": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6",
+        "sha256": "c592ab04cb56e68f8dd9ff7540858078cc1eab21446ca147870e58ef94881bc6"
       },
       {
         "path": "maths-topic-exercises.js",
         "bytes": 5017,
-        "hash": "b4d5eed63d06117b19561557e623ba700ff4c24e8148a026fdc5382a03131e7b"
+        "hash": "b4d5eed63d06117b19561557e623ba700ff4c24e8148a026fdc5382a03131e7b",
+        "sha256": "b4d5eed63d06117b19561557e623ba700ff4c24e8148a026fdc5382a03131e7b"
       },
       {
         "path": "mobile-gesture-guard.js",
         "bytes": 543,
-        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
+        "hash": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f",
+        "sha256": "20b99da5b0b4bf91761ecc61397b265f4ccf0b75e5e52c4166f8aac7b345b09f"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "multiplayer.html",
         "bytes": 75653,
-        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
+        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4",
+        "sha256": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
       },
       {
         "path": "nextup/app.js",
@@ -24508,133 +25036,159 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "nicos_nextbots.css",
-        "bytes": 8829,
-        "hash": "6782dd8f8c5b01854ad6199f1d280e6ae202535cb0d12d95c1a6de3b346f04f9"
+        "bytes": 8086,
+        "hash": "9e13ee21248696ec7b80bf7c65da832b3045b3e91bcb35dbc1ea264e61ae76d2",
+        "sha256": "9e13ee21248696ec7b80bf7c65da832b3045b3e91bcb35dbc1ea264e61ae76d2"
       },
       {
         "path": "nicos_nextbots.html",
-        "bytes": 6272,
-        "hash": "60aa45bd4518f7c692edf92c9ad29e26710c459070c81fcb7c542504f8156e37"
+        "bytes": 5149,
+        "hash": "4969839dde14f6122cf2129d39fc6ee64cc5b26c5da5c0c6e8f392d62529543c",
+        "sha256": "4969839dde14f6122cf2129d39fc6ee64cc5b26c5da5c0c6e8f392d62529543c"
       },
       {
         "path": "nicos_nextbots.js",
-        "bytes": 143590,
-        "hash": "70981eb45a4cccbf71428a3775ad9f2b2ad71d76b25e5a99b030a94e6a3e78aa"
+        "bytes": 139358,
+        "hash": "b3455deda869742328c163ea1f0edc687f11cae265a535c3eb3e06cc7ef4a7b9",
+        "sha256": "b3455deda869742328c163ea1f0edc687f11cae265a535c3eb3e06cc7ef4a7b9"
       },
       {
         "path": "offline-catalog.js",
-        "bytes": 934961,
-        "hash": "5a3f75b37da95462319a7366a910bd3d8b7bf2cffe75893636af4262aaf1a55d"
+        "bytes": 997597,
+        "hash": "03c234a65f26a1bbec06f0047d8af7222d23917fb389d6d79f72b7e0bce15c0f",
+        "sha256": "03c234a65f26a1bbec06f0047d8af7222d23917fb389d6d79f72b7e0bce15c0f"
       },
       {
         "path": "offline.js",
         "bytes": 8815,
-        "hash": "42dad3648725e57133e47e4aa5079ec42251bdc88cec1eede8b3e938b1f8e2dd"
+        "hash": "42dad3648725e57133e47e4aa5079ec42251bdc88cec1eede8b3e938b1f8e2dd",
+        "sha256": "42dad3648725e57133e47e4aa5079ec42251bdc88cec1eede8b3e938b1f8e2dd"
       },
       {
         "path": "orbit-boss.html",
         "bytes": 20908,
-        "hash": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608"
+        "hash": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608",
+        "sha256": "dff550e37b838cc66576483d64171b7b7078d7f033112a34533dae280dff7608"
       },
       {
         "path": "pac-man-3d.html",
         "bytes": 57150,
-        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
+        "hash": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e",
+        "sha256": "94bb654672f873986e6b4ee1a8e78a2bb463a8af5da86b2b0353515d09dfc36e"
       },
       {
         "path": "pacman-clean-hud.css",
         "bytes": 6720,
-        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
+        "hash": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6",
+        "sha256": "c415bb6ddc702a98ecd6232d4fdafa6f054edeb764c2090fd0b148f74db9cde6"
       },
       {
         "path": "pacman-minimal-menu.css",
         "bytes": 2717,
-        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
+        "hash": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f",
+        "sha256": "0f4465898a3c118997bc68112c869697984cbc47effbd82809ff68eea66b3a4f"
       },
       {
         "path": "pacman-polish.css",
         "bytes": 10994,
-        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
+        "hash": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78",
+        "sha256": "150986e86639ce0c5665804d3b44110b3dada9e1ba0b9a490b30dd54f7b9ff78"
       },
       {
         "path": "party-lan.js",
-        "bytes": 3892,
-        "hash": "a2f9e78e7b4985b1a63a192db6c729f7ff33d1c893b6ccdbd0c4c68d8085447c"
+        "bytes": 3922,
+        "hash": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d",
+        "sha256": "89aceef3a7aed82931c786c0c7c67e5dde09ddbc708c6fb5257c9fb27732992d"
       },
       {
         "path": "party-rooms.js",
-        "bytes": 9396,
-        "hash": "78fb78150568c40e1f956746462a69d872cc6e99bd2eaf8fc0964af1c875ef93"
+        "bytes": 9856,
+        "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b",
+        "sha256": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       },
       {
         "path": "party.html",
-        "bytes": 11925,
-        "hash": "0ee2db3991c7e012f00689dc37386823faa6979667ab7080c818f1ec0dc99102"
+        "bytes": 12564,
+        "hash": "21a33200b386be08af21ffde5952c5d914406d242124a29da18289540ab87019",
+        "sha256": "21a33200b386be08af21ffde5952c5d914406d242124a29da18289540ab87019"
       },
       {
         "path": "piano.html",
         "bytes": 6721,
-        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
+        "hash": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4",
+        "sha256": "af44e77a42ef2036c24cd2fd06ba25a9564f8808f46885974469bba6494e7bb4"
       },
       {
         "path": "planet_architect.css",
         "bytes": 14158,
-        "hash": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b"
+        "hash": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b",
+        "sha256": "f529cad588cf19238167b2f4bfcaf49b81a4cd44aec9213f23361d71b11ee85b"
       },
       {
         "path": "planet_architect.html",
         "bytes": 4384,
-        "hash": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526"
+        "hash": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526",
+        "sha256": "211725d2ae49d73f848fb65d353371e821babe4f1b07616650b1614fa2cfa526"
       },
       {
         "path": "planet_architect.js",
         "bytes": 24512,
-        "hash": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35"
+        "hash": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35",
+        "sha256": "425ba3b549dde666b7c94c1f11095e46716649b2d45fcd0c4dda994b3de0dd35"
       },
       {
         "path": "reaction.html",
         "bytes": 30462,
-        "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
+        "hash": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee",
+        "sha256": "8403d4e7df6b6119270dec295078b6179ecdca6d2beaf8ad328dfe1825b105ee"
       },
       {
         "path": "relic_rush.css",
-        "bytes": 6432,
-        "hash": "e6b42c4330cd7c26c00854b0d869aa75e4ae36ec2befea332a3aaa8448bb2d9f"
+        "bytes": 5962,
+        "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893",
+        "sha256": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
       },
       {
         "path": "relic_rush.html",
-        "bytes": 882,
-        "hash": "b1855d9e3a356483fc50abe98f2b71f4b3cf9326a393d4f6fe4ab3154216ec6a"
+        "bytes": 852,
+        "hash": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56",
+        "sha256": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56"
       },
       {
         "path": "relic_rush.js",
-        "bytes": 137580,
-        "hash": "ecde15be61b1db3d2c5fd0b91ad4d3db7a1b0e2b02ad0a66f16f6ea1aaa7e010"
+        "bytes": 116526,
+        "hash": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343",
+        "sha256": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "shit-spiral.html",
         "bytes": 12039,
-        "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
+        "hash": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568",
+        "sha256": "34c80f482a8f6e4c0bb8d8df57df35e4ff4da14a93e57220ec0f6194c9562568"
       },
       {
         "path": "sidequests.html",
         "bytes": 23782,
-        "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
+        "hash": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb",
+        "sha256": "a969c5c2fcf1a6eb40c36975320a87d769dc7528a492b18fe249c4b31486cfcb"
       },
       {
         "path": "site-theme.js",
-        "bytes": 1308,
-        "hash": "498b4294b29bbc1822a7684c3ebb55f48fa7207203ba1373b0e2be85a8110839"
+        "bytes": 2169,
+        "hash": "639a6e79904ecf3df98100be9c24753b56cbbc89fa1103ef013aed2226168d37",
+        "sha256": "639a6e79904ecf3df98100be9c24753b56cbbc89fa1103ef013aed2226168d37"
       },
       {
         "path": "sling_champ.html",
         "bytes": 61684,
-        "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
+        "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623",
+        "sha256": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
       },
       {
         "path": "slot-icons/bar.png",
@@ -24719,101 +25273,96 @@ self.OFFLINE_CATALOG = {
       {
         "path": "slot-machine.html",
         "bytes": 18764,
-        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
+        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df",
+        "sha256": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
       },
       {
         "path": "slot-mobile.css",
         "bytes": 8742,
-        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
+        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326",
+        "sha256": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
       },
       {
         "path": "solos_rng.html",
         "bytes": 61991,
-        "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
+        "hash": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d",
+        "sha256": "4305f6a7753beac9fd0536f41fc4ff11aa783bbcdb89b97fba8c82fcadd2758d"
       },
       {
         "path": "sw.js",
-        "bytes": 6127,
-        "hash": "a98a528bc1a79bd11d3dadc194aa3e955c4abfcd24b9fefb8d8a0a442ccd905e"
-      },
-      {
-        "path": "terraria.html",
-        "bytes": 29049,
-        "hash": "76e090d6745a53fd10d1c956d4c6a906c17a8dd10d15baa65bb4be6c616a29c5"
-      },
-      {
-        "path": "terraria/assets/index-CIulLFM7.css",
-        "bytes": 38057,
-        "hash": "c6b0e9870ea007219c8e63715c8a8e1809523066c7ff71b2dca49feccf7027d7"
-      },
-      {
-        "path": "terraria/assets/index-CoIklmgF.js",
-        "bytes": 295614,
-        "hash": "4825bb313559052d94c8fee4d05658669889e5595ffe6bb3c5756b5d83d32ee8"
-      },
-      {
-        "path": "terraria/index.html",
-        "bytes": 442,
-        "hash": "d1761d58c8f244dc115e8ba3698a6a3b14b9099d962fd445dd0f57e5c13d24c7"
+        "bytes": 6165,
+        "hash": "3856fa6e44c9082151462cbe4a791e81da3015da7e9c02635be85f15a2b7523f",
+        "sha256": "3856fa6e44c9082151462cbe4a791e81da3015da7e9c02635be85f15a2b7523f"
       },
       {
         "path": "the-monthly-grind.html",
         "bytes": 21021,
-        "hash": "27d98f99e9c9c919afce4a2a2c8b1e3831e2ba2ae631c206617db16e3c218cc7"
+        "hash": "27d98f99e9c9c919afce4a2a2c8b1e3831e2ba2ae631c206617db16e3c218cc7",
+        "sha256": "27d98f99e9c9c919afce4a2a2c8b1e3831e2ba2ae631c206617db16e3c218cc7"
       },
       {
         "path": "theft.html",
         "bytes": 21514,
-        "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
+        "hash": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73",
+        "sha256": "84a579027bf690bb1217a66e255695d52c2998dc482987399b453623525e9a73"
       },
       {
         "path": "tic-tac-toe.html",
         "bytes": 8834,
-        "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
+        "hash": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693",
+        "sha256": "6fc33bd724d4cdd1b7f9c745c329dce424ed4dda812c36bddfbafcbfa254a693"
       },
       {
         "path": "tilt_maze_runner.html",
         "bytes": 25993,
-        "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
+        "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2",
+        "sha256": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
       },
       {
         "path": "trackpad-scale.html",
-        "bytes": 5597,
-        "hash": "4dc4a2b5b56d03c27168665dd67c1ae8e72cdb0ab4d5f4dd52fee4ce0322abcb"
+        "bytes": 3410,
+        "hash": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7",
+        "sha256": "06cf952898631cb6029672ad9d240c87ce35a43277c63b6b040928df97b0d7e7"
       },
       {
         "path": "truth-or-dare.html",
         "bytes": 48313,
-        "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
+        "hash": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc",
+        "sha256": "8864e1821d3c9913cbde14a4f6c9b38fe8a969ea58bb06daf185e8b6c60439fc"
       },
       {
         "path": "web_weavers.css",
-        "bytes": 17285,
-        "hash": "a079f0f09263f181051c3fb1cf7cc851ef2dee8ea2b61449c53944e0dd0faa7d"
+        "bytes": 15634,
+        "hash": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2",
+        "sha256": "847686cec043d0f6beb61f6213b95e8a7f0d94d5d5b0d7443af5cff631abadc2"
       },
       {
         "path": "web_weavers.html",
-        "bytes": 11408,
-        "hash": "34f577a419401326e8d07d0a3bb108c2c2efef57a018bd09adab908bd1db3117"
+        "bytes": 9566,
+        "hash": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37",
+        "sha256": "ecb4ee911123380eb491af18669e34446c3170aea78301cc0518a8e970e60f37"
       },
       {
         "path": "web_weavers.js",
-        "bytes": 226947,
-        "hash": "f5179120cbb0b8da3b66a319f3f4827d609ad151936fddf8b63cdf56212db60f"
+        "bytes": 221420,
+        "hash": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b",
+        "sha256": "b6d80d19e208d9ac86dedb89e0e1c08d66ea98afef04c19e571cc0fc28d8f33b"
       },
       {
         "path": "whos-more-likely.html",
         "bytes": 43696,
-        "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
+        "hash": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c",
+        "sha256": "4306c382f4273d9659ae5e2684ac8e2cd5618974e0d5cb1e679a69e83ddf648c"
       },
       {
         "path": "would-you-rather.html",
         "bytes": 40418,
-        "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
+        "hash": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0",
+        "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 367281629,
-    "version": "40ade48c645991e5"
+    "bytes": 366658062,
+    "version": "c5af0d15db089d60"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -24822,76 +25371,90 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/offline-25023b521d77.js",
         "bytes": 603445,
-        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
+        "hash": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+        "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2"
       },
       {
         "path": "backrooms-level1.html",
         "bytes": 28551,
-        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
+        "hash": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d",
+        "sha256": "9866e2ec17e59f5c4a4f7839c514756344797f9e83464bbb0b5c97e892bc734d"
       },
       {
         "path": "backrooms-level10.html",
         "bytes": 18341,
-        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
+        "hash": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c",
+        "sha256": "0bb18613cd5c5364058e99cba53208d2a32621d0f714ea7f708369628700079c"
       },
       {
         "path": "backrooms-level2.html",
         "bytes": 22592,
-        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
+        "hash": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17",
+        "sha256": "e5e01643d244496de9bb2346531e1974a2f4d2533996bf4c0c624f38f8a59d17"
       },
       {
         "path": "backrooms-level7.html",
         "bytes": 18976,
-        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
+        "hash": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c",
+        "sha256": "b4e381d2979d729f66d824bba8ca05526806e086a4aef84ebe539d611ca47f3c"
       },
       {
         "path": "backrooms-polish.css",
         "bytes": 9857,
-        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
+        "hash": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44",
+        "sha256": "e7a7be4b9a0655695e45fb05b34a493a7634a066519b7e4a022d98667e624b44"
       },
       {
         "path": "backrooms-ui.js",
         "bytes": 3639,
-        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
+        "hash": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076",
+        "sha256": "46e429c933374d0601b36c5dc5ac6fa64389cfe539b08c15b4f4d44711f48076"
       },
       {
         "path": "backrooms-upgrade.css",
         "bytes": 4027,
-        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
+        "hash": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9",
+        "sha256": "27f0d299856c36deec563ba49e2642d218b2b926f064096ff5513ac88bb3d6f9"
       },
       {
         "path": "backrooms-upgrade.js",
         "bytes": 12444,
-        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
+        "hash": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd",
+        "sha256": "64be1eb845e2290267e6d84bc028e2936f4d41141297da1c1aafbad62cadaddd"
       },
       {
         "path": "backrooms.css",
         "bytes": 2841,
-        "hash": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5"
+        "hash": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5",
+        "sha256": "b00cc1c81e4d3d2567b48acb761d29799537e697b2868a7b25a11b03f200b5b5"
       },
       {
         "path": "backrooms.html",
         "bytes": 2011,
-        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
+        "hash": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253",
+        "sha256": "47fc8424e4fce846d14cccabb160b86ee50e6be75052face48575bd738d10253"
       },
       {
         "path": "backrooms.js",
         "bytes": 27538,
-        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
+        "hash": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1",
+        "sha256": "a3e9a7475ba7a76101f401aabbc7e94b9bea87d48684bc0c41dc462120be9db1"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 761063,
-    "version": "7772dda585a2f4b0"
+    "version": "7eea339f49cb63df"
   },
   "sling-champ": {
     "name": "Sling Champ",
@@ -24900,26 +25463,30 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/offline-4047a043ad8e.js",
         "bytes": 80807,
-        "hash": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a"
+        "hash": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a",
+        "sha256": "bdf68e297d6c4ec85b8dd693b8781d99db0090449c9a3ba69948eede08c9275a"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "sling_champ.html",
         "bytes": 61684,
-        "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
+        "hash": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623",
+        "sha256": "f146630d0a1e4025f43e98c5acd7211543638dbf2f317ae3ec309fdc9bd6a623"
       }
     ],
     "bytes": 149292,
-    "version": "b613b3bc3e20294c"
+    "version": "38207337f44bfa73"
   },
   "relic-rush": {
     "name": "Relic Rush",
@@ -24928,46 +25495,54 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/offline-146601f235c4.js",
         "bytes": 10751,
-        "hash": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+        "hash": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+        "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
       },
       {
         "path": "assets/vendor/offline-5c05996c1630.js",
         "bytes": 131835,
-        "hash": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+        "hash": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+        "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
       },
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "relic_rush.css",
-        "bytes": 6432,
-        "hash": "e6b42c4330cd7c26c00854b0d869aa75e4ae36ec2befea332a3aaa8448bb2d9f"
+        "bytes": 5962,
+        "hash": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893",
+        "sha256": "0bde24ef98f760ee4eef5a4b8e68caacbca8991c02f4b7c6eed13bcfc2220893"
       },
       {
         "path": "relic_rush.html",
-        "bytes": 882,
-        "hash": "b1855d9e3a356483fc50abe98f2b71f4b3cf9326a393d4f6fe4ab3154216ec6a"
+        "bytes": 852,
+        "hash": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56",
+        "sha256": "6a3ca7e14579532eb45ab80e2eac60a8787fc722e36b16976ceec7ae3dba8d56"
       },
       {
         "path": "relic_rush.js",
-        "bytes": 137580,
-        "hash": "ecde15be61b1db3d2c5fd0b91ad4d3db7a1b0e2b02ad0a66f16f6ea1aaa7e010"
+        "bytes": 116526,
+        "hash": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343",
+        "sha256": "13d811b45ee26f2e07b215a274ec121bfaf30d7ce04b4673bcd0a06ec3afb343"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
-    "bytes": 701560,
-    "version": "ec5467683a3e306b"
+    "bytes": 680006,
+    "version": "a265a892cec22adf"
   },
   "slot-machine": {
     "name": "Slot Machine",
@@ -24976,21 +25551,24 @@ self.OFFLINE_CATALOG = {
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "slot-machine.html",
         "bytes": 18764,
-        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
+        "hash": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df",
+        "sha256": "9d5602f4f5834c03072f0263609e410d381ea47c22e09a1db441f897d22877df"
       },
       {
         "path": "slot-mobile.css",
         "bytes": 8742,
-        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
+        "hash": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326",
+        "sha256": "e8c0ae30ad2dde51117c0004373513652a188c98efae8c584229b07033565326"
       }
     ],
     "bytes": 32849,
-    "version": "dcbdbc0c00ca637b"
+    "version": "27136f0339e044df"
   },
   "fidget-roulette": {
     "name": "Fidget Roulette",
@@ -24999,16 +25577,18 @@ self.OFFLINE_CATALOG = {
       {
         "path": "fidget-roulette.html",
         "bytes": 17591,
-        "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
+        "hash": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2",
+        "sha256": "f66d1b72acfbaf1ad5030e660bad13f0cad2aecb84f9ea6a804ea56e641031e2"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 22934,
-    "version": "65752df27279f833"
+    "version": "777661cd0729bd3e"
   },
   "tilt-maze": {
     "name": "Tilt Maze Runner",
@@ -25027,21 +25607,24 @@ self.OFFLINE_CATALOG = {
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       },
       {
         "path": "tilt_maze_runner.html",
         "bytes": 25993,
-        "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
+        "hash": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2",
+        "sha256": "3e02c4728f32209b1adb4e0e8dbf4e36e9a7e3c00f29a933348951d9ab3b30f2"
       }
     ],
     "bytes": 1972598,
-    "version": "57d5af8df82ac79b"
+    "version": "726807b78519de4d"
   },
   "multiplayer-test": {
     "name": "Parkour",
@@ -25055,45 +25638,53 @@ self.OFFLINE_CATALOG = {
       {
         "path": "assets/vendor/tailwind.js",
         "bytes": 407279,
-        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
+        "hash": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15",
+        "sha256": "176e894661aa9cdc9a5cba6c720044cbbf7b8bd80d1c9a142a7c24b1b6c50d15"
       },
       {
         "path": "assets/vendor/three160/controls/PointerLockControls.js",
         "bytes": 3347,
-        "hash": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca"
+        "hash": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca",
+        "sha256": "b6ac6e2331d02fc877c49727c879b3f78e974dc56f43f2fcb89b03230e1f52ca"
       },
       {
         "path": "assets/vendor/three160/loaders/GLTFLoader.js",
         "bytes": 108535,
-        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
+        "hash": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5",
+        "sha256": "0fec32c41d0cd912f38ccfcd87b003f83e984c22ed3ac54aaa73d91cc1a418a5"
       },
       {
         "path": "assets/vendor/three160/three.module.js",
         "bytes": 1272971,
-        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
+        "hash": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2",
+        "sha256": "505fa5d00047c76ecfc8947c67c82922508b263e76f9b25e64948130e783b0a2"
       },
       {
         "path": "assets/vendor/three160/utils/BufferGeometryUtils.js",
         "bytes": 31919,
-        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
+        "hash": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c",
+        "sha256": "6f7a59439dd3f4399b25e9214aef65e5969422ed467083f406272b9b1fcef48c"
       },
       {
         "path": "mobile-landscape-resize.js",
         "bytes": 1458,
-        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
+        "hash": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da",
+        "sha256": "7a9f051a6797298970d417706e2dfe0d53daf9c58f6baee6aa648b3f7b7d39da"
       },
       {
         "path": "multiplayer.html",
         "bytes": 75653,
-        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
+        "hash": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4",
+        "sha256": "e67401e9f7903db0d67e442ddd84f10258ef9d1396140aeb019a8038ba9987f4"
       },
       {
         "path": "rod-space-app-menu.js",
         "bytes": 5343,
-        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
+        "hash": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295",
+        "sha256": "248ca98dd47b6492698dca0dfff605b68ffe3c3705be6729b6d20b671054e295"
       }
     ],
     "bytes": 4068513,
-    "version": "50c979aedf6205df"
+    "version": "b8c1694f9097d9f5"
   }
 };

@@ -14,9 +14,11 @@
     import("https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js"),
     import("https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js"),
     import("https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js")
-  ]).then(([appSdk, authSdk, dbSdk]) => {
+  ]).then(async ([appSdk, authSdk, dbSdk]) => {
     const app = appSdk.getApps().length ? appSdk.getApp() : appSdk.initializeApp(firebaseConfig);
     const auth = authSdk.getAuth(app);
+    // Keep account sessions across page reloads and browser restarts.
+    await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
     const db = dbSdk.getFirestore(app);
     return { auth, db, authSdk, dbSdk };
   });
@@ -31,6 +33,9 @@
   let passwordResetTicker = 0;
   const passwordResetCooldownKey = "rodspace.password-reset-until";
   const pendingBest = new Map();
+  const pendingProgress = new Map();
+  let resolveReady;
+  const ready = new Promise(resolve => { resolveReady = resolve; });
   const statsNames = {
     typing: "Fast Typing", "2048": "2048", wordle: "Daily Wordle", mines: "Minesweeper",
     snake: "Snake Arena", pong: "Pong", headsup: "Heads Up", uno: "UNO-style Cards",
@@ -324,6 +329,52 @@
     });
   }
 
+  async function syncArcadeProgress(uid) {
+    const { db, dbSdk } = await firebase;
+    const saves = await dbSdk.getDocs(dbSdk.collection(db, "profiles", uid, "saves"));
+    const remoteByKey = new Map(saves.docs.map(item => [item.id, item.data()]));
+    const localKeys = [];
+    try {
+      for (let index = 0; index < localStorage.length; index++) {
+        const key = localStorage.key(index);
+        if (key?.startsWith("rodspace.arcade.") && !key.startsWith("rodspace.arcade.sync.")) localKeys.push(key.slice("rodspace.arcade.".length));
+      }
+    } catch {}
+    for (const key of new Set([...localKeys, ...remoteByKey.keys()])) {
+      if (!/^[a-zA-Z0-9._-]{1,100}$/.test(key) || key.startsWith("sync.")) continue;
+      const remote = remoteByKey.get(key);
+      const localRaw = localStorage.getItem("rodspace.arcade." + key);
+      const localTime = Number(localStorage.getItem("rodspace.arcade.sync." + key)) || 0;
+      const remoteTime = remote?.updatedAt?.toMillis?.() || 0;
+      if (localRaw !== null && (!remote || localTime > remoteTime)) {
+        try { await writeProgress(uid, key, JSON.parse(localRaw)); } catch {}
+      } else if (remote) {
+        try {
+          localStorage.setItem("rodspace.arcade." + key, remote.value);
+          localStorage.setItem("rodspace.arcade.sync." + key, String(remoteTime || Date.now()));
+        } catch {}
+      }
+    }
+  }
+
+  async function writeProgress(uid, key, value) {
+    const { db, dbSdk } = await firebase;
+    const encoded = JSON.stringify(value);
+    if (encoded.length > 20000) return;
+    await dbSdk.setDoc(dbSdk.doc(db, "profiles", uid, "saves", key), { value: encoded, updatedAt: dbSdk.serverTimestamp() });
+  }
+
+  function saveProgress(key, value) {
+    if (!state.user || state.user.isAnonymous || !/^[a-zA-Z0-9._-]{1,100}$/.test(String(key))) return;
+    const uid = state.user.uid, id = String(key), pendingKey = uid + ":" + id;
+    clearTimeout(pendingProgress.get(pendingKey)?.timer);
+    const entry = { value, timer: setTimeout(() => {
+      pendingProgress.delete(pendingKey);
+      writeProgress(uid, id, value).catch(error => console.warn("Rod Space game progress could not be saved.", error));
+    }, 500) };
+    pendingProgress.set(pendingKey, entry);
+  }
+
   const recordedWins = new Set();
   async function recordWin(gameId) {
     if (!state.user || state.user.isAnonymous || !gameId) return;
@@ -390,10 +441,11 @@
   }
   function bindNameInput(input) {
     if (!input) return;
-    let lastApplied = "Player";
+    let lastApplied = input.value || "Player";
+    const initialValue = input.value;
     const applyName = ({ user, profile }) => {
       const name = profile?.username || user?.displayName || user?.email?.split("@")[0];
-      if (name && (!input.value || input.value === "Player" || input.value === lastApplied)) {
+      if (name && (!input.value || input.value === "Player" || input.value === lastApplied || input.value === initialValue)) {
         input.value = name;
         lastApplied = name;
       }
@@ -406,8 +458,10 @@
     get username() { return username(); },
     get user() { return state.user; },
     get profile() { return state.profile; },
+    ready,
     onChange(fn) { listeners.add(fn); fn({ ...state }); return () => listeners.delete(fn); },
     bindNameInput,
+    saveProgress,
     setActiveGame(gameId) { activeGame = gameId || ""; syncSettingsMenu(); if (modal && !modal.hidden && modalView === "stats") modal.render(); if (state.user && activeGame) recordPlay(activeGame); },
     recordHighScore,
     recordWin
@@ -433,15 +487,17 @@
             if (state.profile) {
               const list = await loadStats(state.user.uid);
               syncLocalStats(list);
+              await syncArcadeProgress(state.user.uid);
               if (activeGame && (userChanged || playedUid !== state.user.uid + ":" + activeGame)) recordPlay(activeGame);
             }
           } catch (error) { state.error = messageFor(error); }
         }
         state.ready = true;
+        resolveReady();
         publish();
         const chip = document.getElementById("rs-account-chip");
         if (chip) { chip.textContent = state.user ? `${username()} · ${state.profile?.gamesPlayed || 0} games played` : ""; chip.hidden = !state.user; }
         if (modal && !modal.hidden) modal.render();
       });
-  }).catch(error => { state.ready = true; state.error = messageFor(error); publish(); });
+  }).catch(error => { state.ready = true; state.error = messageFor(error); resolveReady(); publish(); });
 })();

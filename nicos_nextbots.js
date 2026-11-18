@@ -1697,8 +1697,8 @@ for (let b = 0; b < botSpawns.length; b++) {
         }
 
         function lobbyStatus(message){document.getElementById('lobby-status').textContent=message||'';}
-        function playerName(){return document.getElementById('player-name').value.trim()||'Player';}
-        async function openHostRoom(button){try{button.disabled=true;lobbyStatus('Opening LAN lobby…');roomSession=await PartyRooms.createHost({game:LAN_GAME_KEY,name:playerName(),metadata:{map:MAP_ID},onStatus:lobbyStatus});sessionStorage.setItem('nicos-session-role','host');netRole='host';wireHostRoom(roomSession);enterWaitingRoom();
+        function playerName(){return document.getElementById('player-name').value.trim();}
+        async function openHostRoom(button){if(!playerName()){lobbyStatus('Enter a username, or sign in to use your Rod Space account name.');document.getElementById('player-name').focus();return}try{button.disabled=true;lobbyStatus('Opening LAN lobby…');roomSession=await PartyRooms.createHost({game:LAN_GAME_KEY,name:playerName(),metadata:{map:MAP_ID},onStatus:lobbyStatus});sessionStorage.setItem('nicos-session-role','host');netRole='host';wireHostRoom(roomSession);enterWaitingRoom();
                 if(sessionStorage.getItem('nicos-auto-start')==='1'||sessionStorage.getItem('nicos-session-playing')==='1'){
                     sessionStorage.removeItem('nicos-auto-start');
                     roomSession.lan.broadcast('start',{});
@@ -1735,6 +1735,7 @@ for (let b = 0; b < botSpawns.length; b++) {
             location.reload();
         }
         async function joinRoom(room,button){
+            if(!playerName()){lobbyStatus('Enter a username, or sign in to use your Rod Space account name.');document.getElementById('player-name').focus();return}
             if(room.map&&room.map!==MAP_ID){sessionStorage.setItem('nicos-pending-room',room.id);const url=new URL(location.href);url.searchParams.set('map',room.map);location.href=url;return}
             try{button.disabled=true;lobbyStatus('Connecting to the LAN game…');roomSession=await PartyRooms.join(room,{name:playerName(),onStatus:lobbyStatus});sessionStorage.setItem('nicos-session-role','guest');netRole='guest';localPeerId=roomSession.client.meta?.peerId||roomSession.peerRef?.id||null;remotePlayers.get(localPeerId)?.mesh.removeFromParent();remotePlayers.delete(localPeerId);wireGuestRoom(roomSession);sessionStorage.removeItem('nicos-pending-room');enterWaitingRoom()}catch(error){joiningLAN=false;lobbyStatus(error.message);button.disabled=false}
         }
@@ -1764,8 +1765,8 @@ for (let b = 0; b < botSpawns.length; b++) {
             window.addEventListener('keyup', handleKeyUp);
             window.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('pointerlockchange', updateLockStatus);
-            const savedName=localStorage.getItem('nicos-player-name');if(savedName)document.getElementById('player-name').value=savedName;
-            document.getElementById('player-name').addEventListener('input',event=>localStorage.setItem('nicos-player-name',event.target.value));
+            const playerNameField=document.getElementById('player-name'),savedName=localStorage.getItem('nicos-player-name');if(savedName)playerNameField.value=savedName;window.RodSpaceAccounts?.bindNameInput(playerNameField);
+            playerNameField.addEventListener('input',event=>localStorage.setItem('nicos-player-name',event.target.value));
             renderKeybinds();
             const menuSensitivity=document.getElementById('menu-sens-slider');menuSensitivity.value=player.sensitivity;menuSensitivity.oninput=event=>{player.sensitivity=parseFloat(event.target.value);sensSlider.value=event.target.value;sensValDisplay.textContent=player.sensitivity.toFixed(1);localStorage.setItem('sensitivity',player.sensitivity)};
             const restoredPanel=sessionStorage.getItem('nicos-menu-panel');if(restoredPanel){sessionStorage.removeItem('nicos-menu-panel');showMenuPanel(restoredPanel)}

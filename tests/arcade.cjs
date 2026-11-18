@@ -26,6 +26,7 @@ assert.doesNotMatch(party,/id:'pong'|id:"pong"/,"Pong appears in the main catalo
 assert.doesNotMatch(html,/id="gameNav"|href="arcade.html">All games|class="grid-cards"/,"no arcade landing or sidebar");
 assert.match(html,/class="game-stage"/,"dedicated playfield");
 assert.match(html,/id="gameIntro"/,"game-specific intro menu");
+assert.match(get("arcade-init.js"),/intro\.hidden=.*id==="ladders"/,"Snakes & Ladders uses its own player setup rather than the shared auto-start intro");
 assert.doesNotMatch(index,/<a href="\.\/arcade\.html"[^>]*>Arcade<\/a>/,"no standalone arcade link");
 const homeDescriptions=[...index.matchAll(/\bdescription:\s*["']([^"']+)["']/g)].map(m=>m[1]);
 const partyDescriptions=[...party.matchAll(/\bdesc:\s*["']([^"']+)["']/g)].map(m=>m[1]);

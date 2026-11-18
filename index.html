@@ -49,36 +49,35 @@
 
     <!-- Sleek Header Panel -->
     <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-[#0d1117]/90 backdrop-blur-md">
-      <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-md shadow-black/40">
+      <div class="mx-auto flex min-h-16 max-w-7xl items-center justify-between px-3 sm:px-6">
+        <div class="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-md shadow-black/40 sm:h-10 sm:w-10">
             <span class="text-lg font-bold text-white tracking-wider">R</span>
           </div>
-          <div>
-            <h1 class="font-display text-lg font-bold tracking-tight text-white">
+          <div class="min-w-0">
+            <h1 class="whitespace-nowrap font-display text-base font-bold tracking-tight text-white sm:text-lg">
               ROD <span class="text-blue-500">SPACE</span>
             </h1>
-            <p class="text-[9px] text-slate-500 font-mono tracking-widest uppercase">Active Archive Hub</p>
+            <p class="hidden text-[9px] text-slate-500 font-mono tracking-widest uppercase sm:block">Active Archive Hub</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 sm:gap-4">
-          <button id="homeThemeToggle" type="button" class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300" aria-label="Toggle light and dark theme">☀ Light</button>
+        <div class="flex shrink-0 items-center gap-2 sm:gap-3">
           <a
             href="./party.html"
-            class="group flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1.5 font-mono text-xs font-medium text-emerald-300 transition-colors hover:border-emerald-400/40 hover:text-white"
+            class="group flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-2 font-mono text-[11px] font-medium text-emerald-300 transition-colors hover:border-emerald-400/40 hover:text-white sm:px-3.5 sm:py-1.5 sm:text-xs"
           >
-            <span>Party Space</span>
+            <span class="sm:hidden">Party</span><span class="hidden sm:inline">Party Space</span>
           </a>
-          <a
-            href="https://github.com/SoloRMenezes/Rod-Space/tree/main"
-            target="_blank"
-            rel="noreferrer"
-            class="group flex items-center gap-1.5 rounded-lg border border-slate-800 bg-[#161b22] px-3.5 py-1.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:border-slate-700 hover:text-white"
-          >
-            <span>GitHub</span>
-            <i data-lucide="external-link" class="h-3.5 w-3.5 text-slate-500 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"></i>
-          </a>
+          <div class="relative">
+            <button id="homeSettingsToggle" type="button" class="flex items-center gap-2 rounded-lg border border-slate-700 bg-[#161b22] px-3 py-2 text-xs font-semibold text-slate-200 hover:border-slate-500 sm:px-3.5" aria-haspopup="menu" aria-expanded="false" aria-controls="homeSettingsMenu">
+              <i data-lucide="settings-2" class="h-4 w-4" aria-hidden="true"></i><span>Settings</span>
+            </button>
+            <div id="homeSettingsMenu" class="absolute right-0 top-full z-50 mt-2 hidden w-52 rounded-xl border border-slate-700 bg-[#161b22] p-2 shadow-2xl" role="menu" aria-label="Site settings">
+              <button id="homeThemeToggle" type="button" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-200 hover:bg-slate-700/60" role="menuitem" aria-label="Toggle light and dark theme"><i data-lucide="sun-moon" class="h-4 w-4" aria-hidden="true"></i><span>☀ Light</span></button>
+              <a href="https://github.com/SoloRMenezes/Rod-Space/tree/main" target="_blank" rel="noreferrer" class="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-700/60" role="menuitem"><span>GitHub</span><i data-lucide="external-link" class="h-4 w-4 text-slate-500" aria-hidden="true"></i></a>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -191,7 +190,7 @@
       </div>
     </footer>
 
-    <script src="rod-space-account.js?v=2"></script>
+    <script src="rod-space-account.js?v=3"></script>
     <script src="offline-catalog.js?v=17"></script>
     <script src="offline.js?v=4"></script>
     <!-- Single file data & rendering engine -->
@@ -216,7 +215,7 @@
         {id:"2048",name:"2048",description:"Merge matching tiles",url:BASE_URL+"arcade.html?game=2048",icon:"🔢",type:"solo",pill:"Game",date:"2026-11-16"},
         {id:"wordle",name:"Daily Wordle",description:"Daily word puzzle",url:BASE_URL+"arcade.html?game=wordle",icon:"🟩",type:"solo",pill:"Game",date:"2026-11-16"},
         {id:"mines",name:"Minesweeper",description:"Clear hidden mines",url:BASE_URL+"arcade.html?game=mines",icon:"💣",type:"solo",pill:"Game",date:"2026-11-16"},
-        {id:"pong",name:"Pong",description:"Classic green-court Pong",url:BASE_URL+"arcade.html?game=pong",icon:"🏓",type:"solo",pill:"Game",date:"2026-11-17"},
+        {id:"pong",name:"Pong",description:"Classic green-court Pong",url:BASE_URL+"arcade.html?game=pong",icon:"🏓",type:"party",pill:"Party",date:"2026-11-17"},
         {id:"snake",name:"Snake Arena",description:"Outgrow rival snakes",url:BASE_URL+"arcade.html?game=snake",icon:"🐍",type:"party",pill:"Party",date:"2026-11-16"},
         {id:"combat",name:"Turn-Based Combat",description:"Choose battle mode",url:BASE_URL+"arcade.html?game=combat",icon:"⚔",type:"party",pill:"Party",date:"2026-11-16"},
         {
@@ -229,16 +228,6 @@
           pill: "Study",
           date: "2026-10-18",
           featured: true
-        },
-        {
-          id: "terraria-prototype",
-          name: "Terraria Prototype",
-          description: "Experimental block adventure",
-          url: BASE_URL + "terraria.html",
-          icon: "⛏️",
-          type: "prototype",
-          pill: "Prototype",
-          date: "2026-10-08"
         },
         {
           id: "double-take",
@@ -452,6 +441,7 @@
           pill: "Game",
           date: "2026-01-22"
         },
+        // Native app only: keep Two Fingers out of the website catalogue.
         {
           id: "two-fingers",
           name: "Two Fingers",
@@ -459,6 +449,7 @@
           url: BASE_URL + "fingerboard.html",
           icon: "🛹",
           type: "solo",
+          appOnly: true,
           pill: "Game",
           date: "2026-10-13"
         },

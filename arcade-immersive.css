@@ -1,13 +1,20 @@
 
 /* Rod Space full-screen game worlds. Every game owns a distinct palette and backdrop. */
 html { scroll-behavior:smooth; }
+html:has(body.game-world) {height:100%;overflow:hidden;overscroll-behavior:none}
 body.game-world {
   --glow:#69b7ff; --glow-rgb:105,183,255; --deep:#070e22; --mid:#162b52;
   --page:transparent; --panel:transparent; --surface:#142443cc; --tile:#183058;
   --line:#ffffff24; --text:#f8fbff; --muted:#b0c1dc; --accent:var(--glow);
   --btn:#2563eb; --board-ink:#edf4ff;
-  position:relative; min-height:100svh; overflow-x:hidden; overflow-y:auto;
+  position:relative; height:100vh; height:100dvh; min-height:0; overflow:hidden; overscroll-behavior:none;
   color:var(--text); background:var(--deep);
+}
+body.game-world:not([data-game]) {visibility:hidden}
+body.game-world .game-stage {height:calc(100dvh - 66px);min-height:0;overflow:hidden}
+@media(max-width:640px) {
+  body.game-world .game-topbar {height:58px;min-height:0}
+  body.game-world .game-stage {height:calc(100dvh - 58px)}
 }
 body.game-world::before {
   content:"";position:fixed;z-index:-2;inset:0;
@@ -23,6 +30,7 @@ body.game-world::after {
 }
 body[data-game="2048"] {--glow:#ffcd84;--glow-rgb:255,173,76;--deep:#231919;--mid:#493023;--surface:#49392cc7;--tile:#563f36;--btn:#bb713b;}
 body[data-game="wordle"] {--glow:#7cf0a3;--glow-rgb:53,205,137;--deep:#081e19;--mid:#0d3b32;--surface:#163e32c9;--tile:#27483e;--btn:#13865a;}
+body[data-game="wordle"] .game-heading {display:none}
 body[data-game="mines"] {--glow:#85dfaa;--glow-rgb:73,212,127;--deep:#0b1917;--mid:#15352c;--surface:#1a3b34bb;--tile:#31534d;--btn:#23886d;}
 body[data-game="typing"] {--glow:#79c9ff;--glow-rgb:54,172,246;--deep:#0c1228;--mid:#1d2d54;--surface:#1c305bc4;--tile:#243c68;}
 body[data-game="snake"] {--glow:#82fba9;--glow-rgb:76,246,134;--deep:#04110e;--mid:#103b24;--surface:#113b2bcc;--tile:#224e36;--btn:#137e50;}
@@ -43,8 +51,8 @@ body.game-world:not([data-game=""])[data-theme="light"] {--text:#fff;--muted:#d5
 .brand-mark {display:grid;place-items:center;width:35px;height:35px;border-radius:10px;background:rgba(var(--glow-rgb),.16);border:1px solid rgba(var(--glow-rgb),.5);color:var(--glow);font-size:21px}
 .game-topbar .brand strong {color:var(--glow)}
 .game-topbar .rs-account-trigger {margin-left:auto}
-.game-stage {min-height:calc(100svh - 66px);max-width:1450px;padding:clamp(16px,2.5vh,34px) clamp(12px,3vw,40px) 36px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;}
-.game-heading {width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;margin:0 auto clamp(12px,2vh,24px)}
+.game-stage {height:calc(100vh - 66px);height:calc(100dvh - 66px);min-height:0;max-width:1450px;padding:clamp(12px,2.5vh,24px) clamp(12px,3vw,40px) 12px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow:hidden}
+.game-heading {display:none}
 .game-label {font-size:10px;letter-spacing:.28em;color:var(--glow);font-weight:900;text-transform:uppercase;}
 .game-heading h1 {font-size:clamp(29px,4.3vw,55px);font-weight:1000;letter-spacing:-.055em;line-height:1.06;text-transform:uppercase;margin:4px 0 2px;color:#fff;text-shadow:0 5px 38px rgba(var(--glow-rgb),.34)}
 .game-tagline {font-size:13px;letter-spacing:.1em;font-weight:700;text-transform:uppercase;color:var(--muted);margin:0;}
@@ -72,14 +80,28 @@ body[data-game="2048"] .direction-pad {margin:8px auto 0}
 .game-panel .direction-pad button {min-height:38px;padding:7px}
 body[data-game="typing"] .type-source {width:min(960px,95vw);font-size:clamp(21px,2.4vw,30px);line-height:1.9;letter-spacing:.035em;padding:clamp(18px,3vw,40px);background:#08162bb9;border:1px solid #4a87bd5b;border-radius:18px;box-shadow:0 25px 70px #0003;max-height:34svh;overflow:auto}
 body[data-game="typing"] .typing-input {width:min(960px,95vw);min-height:105px;max-height:28svh;resize:none;background:#020b1bad;color:#f2f8ff;font-size:19px;border:2px solid rgba(var(--glow-rgb),.55);border-radius:17px;padding:17px;box-shadow:0 0 35px rgba(var(--glow-rgb),.12)}
+body[data-game="wordle"] {--wordle-key-width:clamp(48px,10vw,62px)}
 body[data-game="wordle"] .wordle-board {gap:7px;grid-template-columns:repeat(5,minmax(48px,min(10vw,74px)));margin-bottom:15px}
 body[data-game="wordle"] .wordle-board .tile {font-size:clamp(22px,4vw,34px);border:2px solid #95cdb840;background:#071b16}
+body[data-game="wordle"] .game-panel .message:empty {display:none}
 body[data-game="wordle"] .wordle-board .tile.correct {background:#16a34a;border-color:#77e9a0}
 body[data-game="wordle"] .wordle-board .tile.present {background:#c49026;border-color:#fbe17c}
 body[data-game="wordle"] .wordle-board .tile.absent {background:#3b625b;border-color:#789087}
-body[data-game="wordle"] .wordle-keyboard {max-width:720px;display:flex;flex-direction:column;gap:4px}
+@keyframes wordle-pop {0%{transform:scale(1)}45%{transform:scale(1.14)}100%{transform:scale(1)}}
+@keyframes wordle-flip {0%{transform:rotateX(0);filter:brightness(1)}48%{transform:rotateX(90deg);filter:brightness(.75)}100%{transform:rotateX(0);filter:brightness(1)}}
+@keyframes wordle-shake {0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+@keyframes wordle-win {0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+body[data-game="wordle"] .wordle-board .tile.wordle-pop {animation:wordle-pop 130ms ease-out}
+body[data-game="wordle"] .wordle-board.wordle-revealing .tile {backface-visibility:hidden;animation:wordle-flip 440ms ease-in-out both}
+body[data-game="wordle"] .wordle-board.wordle-shake {animation:wordle-shake 320ms ease-in-out}
+body[data-game="wordle"] .wordle-board.wordle-win .tile.correct {animation:wordle-win 420ms ease-in-out both}
+body[data-game="wordle"] .wordle-board.wordle-win .tile.correct:nth-child(5n+2) {animation-delay:70ms}
+body[data-game="wordle"] .wordle-board.wordle-win .tile.correct:nth-child(5n+3) {animation-delay:140ms}
+body[data-game="wordle"] .wordle-board.wordle-win .tile.correct:nth-child(5n+4) {animation-delay:210ms}
+body[data-game="wordle"] .wordle-board.wordle-win .tile.correct:nth-child(5n+5) {animation-delay:280ms}
+body[data-game="wordle"] .wordle-keyboard {width:min(100%,660px);max-width:660px;display:flex;flex-direction:column;gap:4px}
 body[data-game="wordle"] .wordle-keyboard .choice-row {display:flex;justify-content:center;flex-wrap:nowrap;gap:5px;margin:0}
-body[data-game="wordle"] .wordle-keyboard button {flex:0 1 53px;min-width:0;min-height:47px;padding:8px 3px;font-size:clamp(12px,2.1vw,17px);background:#1a4139;border:1px solid #ffffff25;color:white;box-shadow:none}
+body[data-game="wordle"] .wordle-keyboard button {flex:0 1 var(--wordle-key-width);min-width:0;min-height:clamp(54px,7vw,74px);padding:10px 5px;font-size:clamp(15px,2.3vw,19px);background:#1a4139;border:1px solid #ffffff25;color:white;box-shadow:none}
 body[data-game="wordle"] .wordle-keyboard button.correct {background:#16a34a}
 body[data-game="wordle"] .wordle-keyboard button.present {background:#c49026}
 body[data-game="wordle"] .wordle-keyboard button.absent {background:#3b625b}
@@ -97,10 +119,12 @@ body[data-game="uno"] .uno-card {border:4px solid #fff;box-shadow:0 12px 25px #0
 body[data-game="uno"] .uno-card:hover:not(:disabled) {transform:translateY(-12px) rotate(0);filter:brightness(1.15)}
 body[data-game="uno"] .uno-menu,body[data-game="uno"] .uno-lobby {width:min(560px,100%);margin:0 auto;padding:20px 12px;text-align:center}
 body[data-game="uno"] .uno-menu h2,body[data-game="uno"] .uno-lobby h2 {margin:0 0 8px;font-size:clamp(24px,5vw,34px)}
+body[data-game="uno"] .uno-menu-title {grid-column:1/-1;margin:0 0 16px;color:#fff;font-size:clamp(42px,8vw,86px);font-weight:1000;line-height:.95;letter-spacing:-.055em;text-align:center}
 body[data-game="uno"] .uno-menu p,body[data-game="uno"] .uno-lobby p {color:var(--muted,#c4d0c7);line-height:1.5}
 body[data-game="uno"] .uno-menu button,body[data-game="uno"] .uno-lobby>button {display:block;width:min(360px,100%);min-height:50px;margin:12px auto}
-body[data-game="uno"] .uno-menu {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:min(820px,100%);margin:0 auto;padding:12px 0}
-body[data-game="uno"] .uno-menu button {width:100%;margin:0}
+body[data-game="uno"] .uno-menu {display:grid;grid-template-columns:minmax(0,430px);justify-content:center;gap:12px;width:min(820px,100%);margin:0 auto;padding:12px 0}
+body[data-game="uno"] .uno-menu button {width:100%;min-height:64px;margin:0;font-size:clamp(18px,2.5vw,24px);font-weight:850}
+body[data-game="uno"].uno-in-game .game-heading {display:none}
 body[data-game="uno"] .uno-pass-screen {display:grid;gap:8px;justify-items:center;width:min(480px,100%);margin:18px auto;padding:26px 18px;border:1px solid rgba(var(--glow-rgb),.35);background:#0b2118;border-radius:14px;text-align:center}
 body[data-game="uno"] .uno-pass-screen strong {font-size:clamp(22px,4vw,32px)}
 body[data-game="uno"] .uno-pass-screen span {color:var(--muted);font-size:14px}
@@ -159,16 +183,16 @@ body[data-game="combat"] .choice-row button {min-height:57px;font-size:clamp(13p
   .game-panel .toolbar {max-width:100%;justify-content:center}
   .game-panel .stat {padding:8px 10px;font-size:12px}
   body[data-game="2048"] .board-2048 {gap:6px;padding:7px;min-width:0;width:min(calc(100vw - 24px),470px)}
-  body[data-game="wordle"] .wordle-board {grid-template-columns:repeat(5,minmax(44px,min(15vw,64px)))}
-  body[data-game="wordle"] .wordle-keyboard button {min-height:45px}
+  body[data-game="wordle"] {--wordle-key-width:clamp(30px,10vw,44px)}
+  body[data-game="wordle"] .wordle-keyboard button {min-height:54px}
   .game-panel .game-canvas {max-height:calc(100svh - 205px);width:min(100%,calc((100svh - 205px)*1.5))}
   body[data-game="combat"] .duel-scene {padding:0 4px 12px}
   body[data-game="combat"] .fighter {font-size:clamp(55px,15vw,95px)}
 }
 @media(max-width:400px) {
   .game-heading h1 {font-size:29px}
-  body[data-game="wordle"] .wordle-board {grid-template-columns:repeat(5,44px);gap:4px}
-  body[data-game="wordle"] .wordle-keyboard button {min-height:40px;padding:6px 0}
+  body[data-game="wordle"] {--wordle-key-width:clamp(28px,10vw,40px)}
+  body[data-game="wordle"] .wordle-keyboard button {min-height:50px;padding:7px 0}
   body[data-game="2048"] .board-2048 {width:min(100%,calc(100svh - 235px))}
 }
 @media(prefers-reduced-motion:reduce) {*{animation:none!important;transition:none!important}}
@@ -224,23 +248,51 @@ body.game-world::after {display:none}
 .game-panel button:not(.mine-cell):not(.uno-card):hover:not(:disabled) {filter:brightness(1.1);transform:none}
 .game-panel .tile {box-shadow:none}
 .game-panel .game-canvas,body[data-game="pong"] .game-canvas {box-shadow:none}
-body[data-game="2048"] .board-2048 {box-shadow:none}
+body[data-game="2048"] .board-2048 {width:min(500px,calc(100vw - 42px),calc(100dvh - 180px));min-width:0;max-width:none;box-shadow:none}
+body[data-game="2048"] .direction-pad {display:none}
 body[data-game="typing"] .type-source {width:min(760px,94vw);max-height:112px;overflow:hidden;padding:13px 16px;margin:6px 0 10px;font-size:clamp(16px,2vw,20px);line-height:1.55;letter-spacing:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:none}
 body[data-game="typing"] .typing-input {width:min(760px,94vw);min-height:58px;max-height:64px;resize:none;padding:10px 12px;font-size:16px;background:var(--page);border:1px solid var(--line);border-radius:10px;box-shadow:none}
 body[data-game="wordle"] .wordle-native-input {position:fixed;left:0;bottom:0;width:1px;height:1px;padding:0;border:0;opacity:0;clip-path:inset(50%);font-size:16px}
-body[data-game="mines"] {--glow:#edc478;--glow-rgb:237,196,120;--accent:#edc478;--btn:#287a66;--surface:#203b35}
-body[data-game="mines"] .game-stage {max-width:1000px}
-body[data-game="mines"] .game-panel {max-width:900px}
-body[data-game="mines"] .mines-toolbar {width:min(100%,820px);justify-content:center;gap:8px;margin-bottom:14px}
-body[data-game="mines"] .mines-toolbar select,body[data-game="mines"] .mines-toolbar button {min-height:44px;padding:9px 12px;font-size:14px}
-body[data-game="mines"] .mines-stat {padding:8px 12px;font-size:13px;border-radius:6px}
-body[data-game="mines"] .mines-board {display:grid;gap:4px;width:max-content;max-width:min(100%,680px);padding:10px;background:#203b35;border:1px solid #ffffff30;border-radius:9px;overflow:auto;overscroll-behavior:contain;justify-content:start}
-body[data-game="mines"] .mine-cell {width:var(--mine-cell);min-width:var(--mine-cell);height:var(--mine-cell);padding:0;border:1px solid #fff8;border-radius:5px;background:#e8dfc7;color:#435b4e;box-shadow:0 2px 0 #0b1c1880;font-size:clamp(12px,2vw,18px);font-weight:800;touch-action:manipulation}
-body[data-game="mines"] .mine-cell:hover:not(:disabled) {background:#f5ecd6;filter:none}
-body[data-game="mines"] .mine-cell.revealed {background:#142b25;border-color:#ffffff20;color:#edc478;box-shadow:none}
-body[data-game="mines"] .mine-cell.flag {color:#a76b24}
-body[data-game="mines"] .mine-cell.mine {background:#a65050;border-color:#d78778;color:#fff}
-body[data-game="mines"] .message {margin-top:14px;color:#edc478}
+body[data-game="mines"] {--glow:#315b9d;--glow-rgb:75,112,173;--accent:#111;--btn:#c0c0c0;--surface:#c0c0c0;--text:#111;--muted:#333}
+body[data-game="mines"] .game-stage {max-width:none;padding:12px 8px 8px}
+body[data-game="mines"] .game-heading {display:none}
+body[data-game="mines"] .game-panel {width:100%;max-width:1600px}
+body[data-game="mines"] .mines-menu,body[data-game="mines"] .mines-toolbar,body[data-game="mines"] .mines-board {background:#c0c0c0;color:#111;border:3px outset #eee;border-radius:0;box-shadow:none}
+body[data-game="mines"] .mines-menu {display:flex;width:min(430px,100%);flex-direction:column;align-items:stretch;gap:14px;margin:8vh auto;padding:22px}
+body[data-game="mines"] .mines-menu h2 {margin:0;text-align:center;font-size:28px;font-weight:800;letter-spacing:-.03em;color:#111}
+body[data-game="mines"] .mines-menu p {margin:0;text-align:center;color:#333;font-size:15px}
+body[data-game="mines"] .mines-menu select {height:48px;padding:6px 10px;background:#eee;color:#111;border:2px inset #888;border-radius:0;font-size:16px}
+body[data-game="mines"] .game-panel .mines-menu button,body[data-game="mines"] .game-panel .mines-toolbar button {min-height:42px;padding:7px 12px;border:2px outset #eee;border-radius:0;background:#c0c0c0;color:#111;box-shadow:none;font-size:15px;font-weight:700}
+body[data-game="mines"] .game-panel .mines-menu button:active,body[data-game="mines"] .game-panel .mines-toolbar button:active {border-style:inset;transform:none}
+body[data-game="mines"] .game-panel .mines-menu button:hover:not(:disabled),body[data-game="mines"] .game-panel .mines-toolbar button:hover:not(:disabled) {background:#c0c0c0;filter:none;transform:none}
+body[data-game="mines"] .game-panel .mines-toolbar button.secondary {background:#c0c0c0;color:#111}
+body[data-game="mines"] .mines-game {width:max-content;max-width:100%;margin:0 auto;padding:8px;background:#c0c0c0;border:3px outset #eee}
+body[data-game="mines"] .mines-toolbar {display:grid;width:100%;grid-template-columns:1fr auto 1fr auto auto;align-items:center;gap:10px;margin:0 0 8px;padding:7px;border:3px inset #888}
+body[data-game="mines"] .mines-counter {display:grid;min-width:68px;height:39px;place-items:center;padding:2px 6px;border:2px inset #888;background:#170c0c;color:#ff2424;font:900 27px/1 "Courier New",monospace;font-variant-numeric:tabular-nums;letter-spacing:1px}
+body[data-game="mines"] .mines-face-button {width:43px;height:43px;padding:0!important;font-size:25px!important;line-height:1}
+body[data-game="mines"] .mines-time {justify-self:end}
+body[data-game="mines"] .mines-menu-button {min-width:66px}
+body[data-game="mines"] .mines-toolbar button[aria-pressed="true"] {border-style:inset;background:#aaa}
+body[data-game="mines"] .mines-board {display:grid;gap:0;width:max-content;max-width:calc(100vw - 16px);max-height:calc(100dvh - 145px);padding:5px;border:3px inset #888;overflow:hidden;overscroll-behavior:none;justify-content:start}
+body[data-game="mines"] .mine-cell {position:relative;width:var(--mine-cell);min-width:var(--mine-cell);height:var(--mine-cell);padding:0;border:2px outset #eee;border-radius:0;background:#c0c0c0;color:#111;box-shadow:none;font-size:clamp(12px,2vw,24px);font-weight:900;touch-action:manipulation}
+body[data-game="mines"] .mine-cell:hover:not(:disabled) {background:#d0d0d0;filter:none}
+body[data-game="mines"] .mine-cell.revealed {border:1px solid #888;background:#c0c0c0;color:#111;box-shadow:none}
+body[data-game="mines"] .mine-cell.number-1 {color:#0000ff}
+body[data-game="mines"] .mine-cell.number-2 {color:#008000}
+body[data-game="mines"] .mine-cell.number-3 {color:#ff0000}
+body[data-game="mines"] .mine-cell.number-4 {color:#000080}
+body[data-game="mines"] .mine-cell.number-5 {color:#800000}
+body[data-game="mines"] .mine-cell.number-6 {color:#008080}
+body[data-game="mines"] .mine-cell.number-7 {color:#111}
+body[data-game="mines"] .mine-cell.number-8 {color:#666}
+body[data-game="mines"] .mine-cell.flag {color:#d00000;font-size:clamp(18px,2.6vw,34px);background:#c8d8ed}
+body[data-game="mines"] .mine-cell.selected {z-index:2;outline:4px solid #087cff;outline-offset:-5px;box-shadow:inset 0 0 0 3px #fff!important}
+body[data-game="mines"] .mine-cell:focus-visible {z-index:3;outline:4px solid #087cff;outline-offset:-5px;box-shadow:inset 0 0 0 3px #fff!important}
+body[data-game="mines"] .mine-cell.mine {border:1px solid #888;background:#ff3838;color:#111}
+body[data-game="mines"] .message {margin:8px 2px 0;color:#111;font-size:13px}
+body[data-game="mines"] .message.mines-result {min-height:30px;margin-top:10px;padding:9px 14px;font-size:clamp(18px,2vw,24px);font-weight:800;letter-spacing:.01em;border:2px solid #333;background:#eee}
+body[data-game="mines"] .message.mines-won {color:#075b28;background:#d6f5dc;border-color:#19843a}
+body[data-game="mines"] .message.mines-lost {color:#8b1010;background:#ffe0df;border-color:#b82020}
 body[data-game="headsup"] .prompt {box-shadow:none;transform:none}
 
 /* Heads Up: calm setup, high contrast word, and motion-based play. */
@@ -301,7 +353,7 @@ body[data-game="snake"] .snake-joystick.active .snake-joystick-knob {background:
  body[data-game="snake"] .snake-toolbar button {min-height:32px;padding:5px 10px}
  body[data-game="snake"] .snake-board-wrap {width:min(100%,calc((100svh - 116px)*1.5));max-height:calc(100svh - 116px)}
 }
-body[data-game="uno"] .card-hand,body[data-game="ladders"] .ladder-grid {box-shadow:none}
+body[data-game="uno"] .card-hand {box-shadow:none}
 body[data-game="uno"] .uno-card {box-shadow:0 2px 5px #0003}
 
 /* Pong is a simple, full-screen green-court game. */
@@ -320,7 +372,8 @@ body[data-game="pong"] .pong-sr-only {position:absolute;width:1px;height:1px;pad
   body[data-game="pong"] .pong-court {width:min(100%,calc((100svh - 136px)*1.5));max-height:calc(100svh - 136px)}
 }
 /* UNO hand follows Card Wars: overlapping, lifted cards with drag-to-sort. */
-body[data-game="uno"] .uno-hand .uno-card {position:relative;display:block;flex:0 0 clamp(74px,8vw,98px);width:clamp(74px,8vw,98px);height:clamp(108px,12vw,138px);min-height:0;margin-left:clamp(-36px,-3.2vw,-24px);padding:0;overflow:visible;border:3px solid #f8f7ee;border-radius:13px;color:#fff;box-shadow:0 4px 0 #17221b,0 12px 18px #0005;text-shadow:none;transform:rotate(var(--fan-angle,0deg));transform-origin:50% 100%;transition:transform .16s ease,filter .16s ease,opacity .16s ease;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+body[data-game="uno"] .uno-hand {flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+body[data-game="uno"] .uno-hand .uno-card {position:relative;display:block;flex:0 0 clamp(74px,8vw,98px);width:clamp(74px,8vw,98px);height:clamp(108px,12vw,138px);min-height:0;margin-left:clamp(-36px,-3.2vw,-24px);padding:0;overflow:hidden;border:3px solid #f8f7ee;border-radius:13px;color:#fff;box-shadow:0 4px 0 #17221b,0 12px 18px #0005;text-shadow:none;transform:rotate(var(--fan-angle,0deg));transform-origin:50% 100%;transition:transform .16s ease,filter .16s ease,opacity .16s ease;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 body[data-game="uno"] .uno-hand .uno-card:first-child {margin-left:0}
 body[data-game="uno"] .uno-hand .uno-card:hover:not(:disabled),body[data-game="uno"] .uno-hand .uno-card:focus-visible {z-index:30;transform:translateY(-22px) rotate(0) scale(1.06);filter:brightness(1.08);outline:2px solid #fff9;outline-offset:1px}
 body[data-game="uno"] .uno-hand .uno-card.unplayable {filter:brightness(.7) saturate(.72)}
@@ -328,7 +381,7 @@ body[data-game="uno"] .uno-hand .uno-card.unplayable {filter:brightness(.7) satu
 body[data-game="uno"] .uno-hand .uno-card.card-held:not(:disabled) {z-index:35;filter:brightness(1.08);box-shadow:0 6px 0 #17221b,0 18px 30px #0007;animation:uno-card-held .24s ease-in-out infinite alternate;cursor:grabbing}
 body[data-game="uno"] .uno-hand .uno-card.card-dragging {z-index:40;opacity:1;transform:translateY(-26px) rotate(0) scale(1.1);cursor:grabbing}
 @media(prefers-reduced-motion:reduce){body[data-game="uno"] .uno-hand .uno-card.card-held:not(:disabled){animation:none;transform:translateY(-22px) rotate(0) scale(1.08)}}
-body[data-game="uno"] .uno-card-oval {position:absolute;inset:13% 8%;display:grid;place-items:center;border:2px solid #ffffffd9;border-radius:50%;background:#ffffff12;transform:rotate(-34deg)}
+body[data-game="uno"] .uno-card-oval {position:absolute;inset:16% 12%;display:grid;place-items:center;border:2px solid #ffffffd9;border-radius:50%;background:#ffffff12;transform:rotate(-28deg)}
 body[data-game="uno"] .uno-card-face {display:grid;place-items:center;width:100%;height:100%;font-size:clamp(39px,5vw,58px);font-weight:1000;line-height:1;text-shadow:0 2px 2px #0005;transform:rotate(34deg)}
 body[data-game="uno"] .uno-card.action-card .uno-card-face {font-size:clamp(38px,4.6vw,52px)}
 body[data-game="uno"] .uno-card-corner {position:absolute;z-index:2;left:7px;top:5px;font-size:13px;font-weight:950;line-height:1;text-shadow:0 1px 2px #0007}
@@ -351,8 +404,8 @@ body[data-game="uno"] .uno-color-choice.yellow {background:#ca8a04}
   body[data-game="uno"] .uno-card-corner.corner-bottom {left:auto;top:auto;right:5px;bottom:4px}
 }
 .overlay-card,.overlay-card .poster,.overlay-card button {box-shadow:none}
-@media(max-width:640px) {body[data-game="typing"] .type-source {max-height:96px;font-size:15px} body[data-game="typing"] .typing-input {min-height:54px} body[data-game="2048"] .direction-pad,body[data-game="snake"] .direction-pad {display:none} body[data-game="wordle"] .wordle-keyboard {display:none} body[data-game="wordle"] .wordle-board {margin-bottom:8px}}
-@media(max-width:640px) {body[data-game="mines"] .mines-toolbar {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:7px} body[data-game="mines"] .mines-toolbar select,body[data-game="mines"] .mines-toolbar button {width:100%;min-width:0} body[data-game="mines"] .mines-stat {text-align:center} body[data-game="mines"] .mines-board {max-width:calc(100vw - 28px);max-height:calc(100svh - 250px);padding:7px;gap:3px}}
+@media(max-width:640px) {body[data-game="typing"] .type-source {max-height:96px;font-size:15px} body[data-game="typing"] .typing-input {min-height:54px} body[data-game="2048"] .direction-pad,body[data-game="snake"] .direction-pad {display:none} body[data-game="wordle"] .wordle-board {margin-bottom:8px}}
+@media(max-width:640px) {body[data-game="mines"] .game-stage {padding:8px 5px} body[data-game="mines"] .mines-menu {margin:8vh auto;padding:16px} body[data-game="mines"] .mines-game {padding:5px} body[data-game="mines"] .mines-toolbar {grid-template-columns:1fr auto 1fr;gap:5px;padding:5px;margin-bottom:5px} body[data-game="mines"] .mines-counter {min-width:54px;height:34px;font-size:22px} body[data-game="mines"] .mines-face-button {width:38px;height:38px} body[data-game="mines"] .game-panel .mines-toolbar button {min-width:0;padding:5px 7px;font-size:13px} body[data-game="mines"] .mines-toolbar .mines-counter:first-child {justify-self:start} body[data-game="mines"] .mines-time {justify-self:end} body[data-game="mines"] .mines-toolbar .secondary {grid-column:1/3} body[data-game="mines"] .mines-menu-button {grid-column:3;grid-row:2} body[data-game="mines"] .mines-board {max-width:calc(100vw - 12px);max-height:calc(100svh - 145px);padding:4px} body[data-game="mines"] .message.mines-result {font-size:18px}}
 
 /* Turn-based battle layout inspired by classic creature-battle games. */
 body[data-game="combat"] {--glow:#edc478;--glow-rgb:237,196,120;--deep:#10201d;--mid:#1b332c;--surface:#203a31;--btn:#356d54}
@@ -396,11 +449,22 @@ body[data-game="combat"] .battle-action:hover:not(:disabled) {background:#fff9e7
 body[data-game="combat"] .battle-action small {color:#607064;font-size:11px;font-weight:600}
 body[data-game="combat"] .battle-action:disabled {opacity:.48}
 body[data-game="combat"] .message {color:#edc478}
+body[data-game="pong"] .pong-mode-menu,body[data-game="pong"] .pong-online-lobby {width:min(520px,100%);margin:0 auto;padding:20px 14px;text-align:center}
+body[data-game="pong"] .pong-mode-menu h2,body[data-game="pong"] .pong-online-lobby h2 {margin:0 0 8px;font-size:clamp(22px,4vw,32px)}
+body[data-game="pong"] .pong-mode-menu p,body[data-game="pong"] .pong-online-lobby p {color:var(--muted,#c4d0c7);line-height:1.5}
+body[data-game="pong"] .pong-mode-menu button,body[data-game="pong"] .pong-online-lobby button {display:block;width:min(360px,100%);min-height:52px;margin:12px auto}
+body[data-game="pong"] .pong-online-lobby input {display:block;width:min(360px,100%);min-height:46px;margin:14px auto;padding:10px 12px;border:1px solid #657b6a;border-radius:6px;background:#f6f2dc;color:#263a31;font:inherit}
+body[data-game="pong"] .pong-rooms {display:grid;gap:8px}
+body[data-game="pong"] .pong-rooms button {margin:0 auto}
+body[data-game="pong"] .pong-toolbar {justify-content:center}
+body[data-game="pong"] .pong-score {flex:1 1 100%;text-align:center}
 @media(max-width:640px) {
   body[data-game="combat"] .game-stage {padding-left:12px;padding-right:12px}
   body[data-game="combat"] .battle-toolbar {flex-wrap:wrap;gap:6px}
   body[data-game="combat"] .battle-toolbar button {font-size:12px;padding:7px 9px}
   body[data-game="combat"] .combat-menu,body[data-game="combat"] .combat-lan {padding:14px 4px}
+  body[data-game="pong"] .pong-mode-menu,body[data-game="pong"] .pong-online-lobby {padding:14px 4px}
+  body[data-game="pong"] .pong-toolbar {flex-wrap:wrap}
   body[data-game="combat"] .duel-scene {height:290px}
   body[data-game="combat"] .battle-status {width:60%;padding:8px 10px}
   body[data-game="combat"] .battle-name {font-size:13px}
@@ -428,7 +492,10 @@ body[data-game="uno"] .uno-draw-pile:disabled {opacity:.7}
 body[data-game="uno"] .uno-deck-back {display:grid;place-items:center;width:78%;height:49%;border:4px solid #fff;border-radius:50%;background:#20191c;color:#ffd84f;font-size:clamp(26px,4vw,48px);font-weight:1000;letter-spacing:-.08em;text-shadow:1px 2px #7b1216;transform:rotate(-18deg)}
 body[data-game="uno"] .uno-discard {display:grid;place-items:center;flex:none;width:clamp(110px,min(20vw,28vh),220px);aspect-ratio:.685;min-height:0;padding:0;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none}
 body[data-game="uno"] .uno-discard .uno-card {width:100%;height:100%;border-radius:15px;box-shadow:0 7px 0 #161316,0 16px 26px #0006}
+body[data-game="uno"] .uno-discard .uno-card {display:block!important;min-width:0;aspect-ratio:.685;transform:none!important;transform-origin:center;opacity:1!important;filter:none!important}
 body[data-game="uno"] .uno-discard .uno-card-face {font-size:clamp(48px,7vw,88px)}
+body[data-game="uno"] .uno-hand .uno-card.just-drawn {z-index:25;outline:3px solid #fff;outline-offset:3px;filter:brightness(1.18);transform:translateY(-16px) rotate(0)}
+body[data-game="uno"] .uno-turn {flex:1;min-width:0;text-align:center;line-height:1.3}
 body[data-game="uno"] .uno-toolbar {display:flex;align-items:center;justify-content:space-between;width:100%;flex:0 0 auto;margin:0 auto;gap:12px}
 body[data-game="uno"] .uno-toolbar button {min-height:42px}
 body[data-game="uno"] .uno-turn {padding:0;border:0;background:transparent;color:#fff;font-size:clamp(17px,2.2vw,24px);font-weight:850;letter-spacing:.01em}
@@ -452,4 +519,92 @@ body[data-game="uno"] .uno-pass-screen {margin:0 auto}
   body[data-game="uno"] .uno-hand .uno-card {border-width:2px;border-radius:10px}
   body[data-game="uno"] .uno-card-corner {left:5px;top:4px;font-size:10px}
   body[data-game="uno"] .uno-card-corner.corner-bottom {left:auto;top:auto;right:5px;bottom:4px}
+}
+
+/* Snakes & Ladders is a bright tabletop board game, not another neon arcade screen. */
+body[data-game="ladders"] {--glow:#e3b95e;--glow-rgb:227,185,94;--deep:#17221b;--mid:#243b2a;--surface:#2f4b34;--tile:#efe4c8;--btn:#b97837;--text:#f6eedb;--muted:#d9cfb7}
+body[data-game="ladders"]::before {background:radial-gradient(ellipse 60% 60% at 50% 50%,#34543a 0%,#1a2b20 65%,#131d18 100%)}
+body[data-game="ladders"]::after {opacity:.06;background-size:24px 24px;mask-image:none}
+body[data-game="ladders"] .game-heading {display:none}
+body[data-game="ladders"] .game-stage {height:calc(100svh - 66px);min-height:0;max-width:none;padding:7px clamp(8px,1.4vw,20px) 10px;overflow:hidden}
+body[data-game="ladders"] .game-panel {width:100%;max-width:none;min-height:0;height:100%;flex:1;gap:4px;justify-content:flex-start}
+body[data-game="ladders"] .ladders-setup {width:min(480px,100%);margin:auto;padding:clamp(22px,5vw,44px);display:grid;justify-items:center;gap:14px;text-align:center;background:#f2e8d3;color:#243528;border:6px solid #8a592c;border-radius:18px;box-shadow:0 14px 0 #50381e,0 26px 60px #0007}
+body[data-game="ladders"] .ladders-setup[hidden],body[data-game="ladders"] .ladders-toolbar[hidden],body[data-game="ladders"] .ladders-board[hidden],body[data-game="ladders"] .ladders-die[hidden] {display:none!important}
+body[data-game="ladders"] .ladders-kicker {font-size:12px;letter-spacing:.18em;font-weight:900;color:#9b5d2b}
+body[data-game="ladders"] .ladders-setup h2 {margin:0;font-size:clamp(28px,5vw,42px);line-height:1.05;color:#263b2c}
+body[data-game="ladders"] .ladders-setup p {margin:0;color:#4e5f4d;font-size:16px}
+body[data-game="ladders"] .ladders-setup select,body[data-game="ladders"] .ladders-toolbar select {font:700 15px system-ui,sans-serif;color:#25362a;background:#fffaf0;border:2px solid #b89966;border-radius:8px;padding:10px 14px;min-height:44px}
+body[data-game="ladders"] .ladders-setup button {width:min(300px,100%);min-height:50px;background:#4b8a53;border:2px solid #346d3d;border-radius:8px;font-weight:900}
+body[data-game="ladders"] .ladders-toolbar {width:min(100%,980px);min-height:42px;display:flex;align-items:center;justify-content:center;gap:clamp(5px,1.3vw,16px);margin:0 auto 2px;flex:none}
+body[data-game="ladders"] .ladders-toolbar select {padding:6px 9px;min-height:38px;font-size:13px}
+body[data-game="ladders"] .ladders-toolbar button {min-height:38px;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:800;background:#a76632;border:1px solid #dbac68}
+body[data-game="ladders"] .ladders-toolbar button.secondary {background:#26392b;border-color:#687b58;color:#f5edda}
+body[data-game="ladders"] .ladders-turn {padding:8px 12px;border-radius:8px;background:#294631;border:1px solid #688357;color:#e7dfc7;font-size:13px;font-weight:800;transition:box-shadow .25s,color .25s}
+body[data-game="ladders"] .ladders-turn.active {color:#fff6d9;box-shadow:0 0 0 2px var(--active-colour),0 0 22px color-mix(in srgb,var(--active-colour),transparent 35%)}
+body[data-game="ladders"] .ladders-turn::before {content:"";display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;background:var(--active-colour);border:1px solid #fff6d9;vertical-align:0px}
+body[data-game="ladders"] .ladders-board {position:relative;width:min(100%,min(860px,calc(100svh - 210px)));height:auto;aspect-ratio:1;flex:none;overflow:hidden;border:8px solid #80552f;border-radius:15px;background:#d9c59c;box-shadow:0 8px 0 #50381e,0 18px 38px #0006}
+body[data-game="ladders"] .ladders-cells {position:absolute;inset:0;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-rows:repeat(10,minmax(0,1fr));gap:1px;background:#9c7b4f;padding:3px}
+body[data-game="ladders"] .ladders-cell {position:relative;min-width:0;min-height:0;background:#f0e6ce;color:#3a4636;padding:3px;font-size:clamp(8px,1.15vw,14px);font-weight:800}
+body[data-game="ladders"] .ladders-cell:nth-child(4n+2),body[data-game="ladders"] .ladders-cell:nth-child(4n+3) {background:#d9e0bd}
+body[data-game="ladders"] .ladders-cell.ladder-start {background:#f4d889}
+body[data-game="ladders"] .ladders-cell.snake-start {background:#e7b89e}
+body[data-game="ladders"] .ladders-number {position:relative;z-index:1}
+body[data-game="ladders"] .ladders-art,body[data-game="ladders"] .ladders-token-layer {position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+body[data-game="ladders"] .ladders-art {z-index:2;overflow:visible}
+body[data-game="ladders"] .ladders-token-layer {z-index:3;pointer-events:none}
+body[data-game="ladders"] .illustrated-ladder line {stroke:#895a2e;stroke-width:7;stroke-linecap:round}
+body[data-game="ladders"] .illustrated-ladder .ladder-rung {stroke:#d8a85e;stroke-width:4}
+body[data-game="ladders"] .illustrated-snake .snake-shadow {fill:none;stroke:#342b23;stroke-width:25;stroke-linecap:round;opacity:.32}
+body[data-game="ladders"] .illustrated-snake .snake-body {fill:none;stroke:#41834e;stroke-width:19;stroke-linecap:round;stroke-dasharray:2 3}
+body[data-game="ladders"] .illustrated-snake:nth-of-type(2n) .snake-body {stroke:#b96547}
+body[data-game="ladders"] .illustrated-snake:nth-of-type(3n) .snake-body {stroke:#587da0}
+body[data-game="ladders"] .snake-head {fill:#e6b85d;stroke:#43543c;stroke-width:3}
+body[data-game="ladders"] .snake-eye {fill:#243528}
+body[data-game="ladders"] .snake-tongue {fill:none;stroke:#bf4740;stroke-width:3;stroke-linecap:round}
+body[data-game="ladders"] .ladders-token {position:absolute;z-index:1;left:0;top:0;width:clamp(11px,2.4vw,24px);height:clamp(11px,2.4vw,24px);display:grid;place-items:center;border-radius:50%;font-size:clamp(9px,1.35vw,15px);font-weight:900;color:#fff;border:2px solid #fff6d9;background:var(--piece-colour);box-shadow:0 2px 5px #34241699;transform:translate(-50%,-50%);transition:left .09s linear,top .09s linear,transform .2s}
+body[data-game="ladders"] .ladders-token.climbing {z-index:2;transition:left .72s ease-in-out,top .72s ease-in-out,transform .72s ease-in-out;transform:translate(-50%,-50%) scale(1.25);animation:ladder-climb .45s ease-in-out infinite alternate}
+body[data-game="ladders"] .ladders-token.sliding {z-index:2;transition:left .46s cubic-bezier(.5,0,.8,.2),top .46s cubic-bezier(.5,0,.8,.2),transform .46s ease-in;animation:snake-slide .32s ease-in-out infinite alternate}
+@keyframes ladder-climb {to{transform:translate(-50%,-50%) translateY(-5px) scale(1.15)}}
+@keyframes snake-slide {to{transform:translate(-50%,-50%) translateX(4px) rotate(12deg)}}
+body[data-game="ladders"] .ladders-die {width:70px;height:70px;flex:none;margin:0 auto 4px;padding:0;border:0!important;border-radius:13px!important;background:transparent!important;box-shadow:none!important;perspective:250px;display:grid;place-items:center;cursor:pointer;touch-action:manipulation;filter:drop-shadow(0 4px 4px #0005)}
+body[data-game="ladders"] .ladders-die:disabled {cursor:default;filter:drop-shadow(0 2px 2px #0003)}
+body[data-game="ladders"] .ladders-cube {position:relative;display:block;width:48px;height:48px;transform-style:preserve-3d;transform:rotateX(-12deg) rotateY(-20deg);transition:transform .2s}
+body[data-game="ladders"] .ladders-cube[data-result="1"] {transform:rotateX(0) rotateY(0)}body[data-game="ladders"] .ladders-cube[data-result="2"] {transform:rotateX(0) rotateY(-90deg)}body[data-game="ladders"] .ladders-cube[data-result="3"] {transform:rotateX(-90deg) rotateY(0)}body[data-game="ladders"] .ladders-cube[data-result="4"] {transform:rotateX(90deg) rotateY(0)}body[data-game="ladders"] .ladders-cube[data-result="5"] {transform:rotateX(0) rotateY(90deg)}body[data-game="ladders"] .ladders-cube[data-result="6"] {transform:rotateX(0) rotateY(180deg)}
+body[data-game="ladders"] .ladders-cube.rolling {animation:die-roll .48s cubic-bezier(.18,.72,.25,1)}
+@keyframes die-roll {0%{transform:rotateX(-12deg) rotateY(-20deg) rotateZ(0)}55%{transform:rotateX(420deg) rotateY(560deg) rotateZ(150deg) scale(1.12)}100%{transform:rotateX(708deg) rotateY(700deg) rotateZ(360deg)}}
+body[data-game="ladders"] .ladders-die-face {position:absolute;inset:0;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:7px;border-radius:9px;background:#fff8e8;border:1px solid #d6c5a5;backface-visibility:hidden;box-shadow:inset 0 0 0 1px #fff,0 2px 2px #604b2d66}
+body[data-game="ladders"] .ladders-die-face i {width:7px;height:7px;border-radius:50%;background:#344235;align-self:center;justify-self:center}
+body[data-game="ladders"] .ladders-die-face.face-1 i:nth-child(1) {grid-area:2/2}body[data-game="ladders"] .ladders-die-face.face-2 i:nth-child(1) {grid-area:1/1}body[data-game="ladders"] .ladders-die-face.face-2 i:nth-child(2) {grid-area:3/3}
+body[data-game="ladders"] .ladders-die-face.face-3 i:nth-child(1) {grid-area:1/1}body[data-game="ladders"] .ladders-die-face.face-3 i:nth-child(2) {grid-area:3/3}body[data-game="ladders"] .ladders-die-face.face-3 i:nth-child(3) {grid-area:2/2}
+body[data-game="ladders"] .ladders-die-face.face-4 i:nth-child(1) {grid-area:1/1}body[data-game="ladders"] .ladders-die-face.face-4 i:nth-child(2) {grid-area:1/3}body[data-game="ladders"] .ladders-die-face.face-4 i:nth-child(3) {grid-area:3/1}body[data-game="ladders"] .ladders-die-face.face-4 i:nth-child(4) {grid-area:3/3}
+body[data-game="ladders"] .ladders-die-face.face-5 i:nth-child(1) {grid-area:1/1}body[data-game="ladders"] .ladders-die-face.face-5 i:nth-child(2) {grid-area:1/3}body[data-game="ladders"] .ladders-die-face.face-5 i:nth-child(3) {grid-area:2/2}body[data-game="ladders"] .ladders-die-face.face-5 i:nth-child(4) {grid-area:3/1}body[data-game="ladders"] .ladders-die-face.face-5 i:nth-child(5) {grid-area:3/3}
+body[data-game="ladders"] .ladders-die-face.face-6 i:nth-child(1) {grid-area:1/1}body[data-game="ladders"] .ladders-die-face.face-6 i:nth-child(2) {grid-area:1/3}body[data-game="ladders"] .ladders-die-face.face-6 i:nth-child(3) {grid-area:2/1}body[data-game="ladders"] .ladders-die-face.face-6 i:nth-child(4) {grid-area:2/3}body[data-game="ladders"] .ladders-die-face.face-6 i:nth-child(5) {grid-area:3/1}body[data-game="ladders"] .ladders-die-face.face-6 i:nth-child(6) {grid-area:3/3}
+body[data-game="ladders"] .ladders-die-face.face-1 i:nth-child(n+2),body[data-game="ladders"] .ladders-die-face.face-2 i:nth-child(n+3),body[data-game="ladders"] .ladders-die-face.face-3 i:nth-child(n+4),body[data-game="ladders"] .ladders-die-face.face-4 i:nth-child(n+5),body[data-game="ladders"] .ladders-die-face.face-5 i:nth-child(n+6) {display:none}
+body[data-game="ladders"] .ladders-die-face.face-1 {transform:translateZ(24px)}body[data-game="ladders"] .ladders-die-face.face-6 {transform:rotateY(180deg) translateZ(24px)}
+body[data-game="ladders"] .ladders-die-face.face-2 {transform:rotateY(90deg) translateZ(24px)}body[data-game="ladders"] .ladders-die-face.face-5 {transform:rotateY(-90deg) translateZ(24px)}
+body[data-game="ladders"] .ladders-die-face.face-3 {transform:rotateX(90deg) translateZ(24px)}body[data-game="ladders"] .ladders-die-face.face-4 {transform:rotateX(-90deg) translateZ(24px)}
+@media(max-width:640px) {
+ body[data-game="ladders"] .game-topbar {min-height:50px;padding:6px 10px}
+ body[data-game="ladders"] .game-stage {height:calc(100svh - 50px);padding:5px 5px 7px}
+ body[data-game="ladders"] .ladders-toolbar {gap:4px;margin-bottom:0}
+ body[data-game="ladders"] .ladders-toolbar select {font-size:11px;padding:4px 5px;min-height:34px;max-width:94px}
+ body[data-game="ladders"] .ladders-toolbar button {font-size:11px;padding:5px 7px;min-height:34px}
+ body[data-game="ladders"] .ladders-turn {font-size:11px;padding:7px 6px}
+ body[data-game="ladders"] .ladders-board {width:min(100%,calc(100svh - 174px));border-width:5px}
+ body[data-game="ladders"] .ladders-die {width:58px;height:58px;margin-bottom:1px}
+ body[data-game="ladders"] .ladders-cube {width:42px;height:42px}
+ body[data-game="ladders"] .ladders-die-face {padding:6px}
+ body[data-game="ladders"] .ladders-die-face.face-1 {transform:translateZ(21px)}body[data-game="ladders"] .ladders-die-face.face-6 {transform:rotateY(180deg) translateZ(21px)}
+ body[data-game="ladders"] .ladders-die-face.face-2 {transform:rotateY(90deg) translateZ(21px)}body[data-game="ladders"] .ladders-die-face.face-5 {transform:rotateY(-90deg) translateZ(21px)}
+ body[data-game="ladders"] .ladders-die-face.face-3 {transform:rotateX(90deg) translateZ(21px)}body[data-game="ladders"] .ladders-die-face.face-4 {transform:rotateX(-90deg) translateZ(21px)}
+ body[data-game="ladders"] .ladders-token {width:clamp(10px,2.8vw,18px);height:clamp(10px,2.8vw,18px);font-size:clamp(9px,1.8vw,14px)}
+}
+@media(max-width:400px) {
+ body[data-game="ladders"] .game-brand-title {font-size:10px}
+ body[data-game="ladders"] .ladders-board {width:min(100%,calc(100svh - 165px))}
+ body[data-game="ladders"] .ladders-cell {padding:1px;font-size:8px}
+}
+@media(prefers-reduced-motion:reduce) {
+ body[data-game="ladders"] .ladders-cube.rolling {animation:none;transform:rotateX(-12deg) rotateY(-20deg)}
+ body[data-game="ladders"] .ladders-token.climbing,body[data-game="ladders"] .ladders-token.sliding {animation:none}
 }

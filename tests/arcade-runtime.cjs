@@ -23,7 +23,7 @@ class FakeElement {
  }
 const games={};const memory=new Map(),documentListeners={};
 const document={createElement(tag){return new FakeElement(tag)},addEventListener(name,fn){documentListeners[name]=fn},hidden:false};
-const windowListeners={},intervalCallbacks=new Map();let intervalId=0;const ctx={document,console,performance:{now:()=>1234},localStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)},setInterval(fn){const id=++intervalId;intervalCallbacks.set(id,fn);return id},clearInterval(id){intervalCallbacks.delete(id)},setTimeout:()=>1,clearTimeout(){},requestAnimationFrame:()=>1,window:{addEventListener(name,fn){windowListeners[name]=fn}},location:{href:"http://127.0.0.1/arcade.html"},navigator:{},Date,Math,JSON,Number,String,Array,Object,Set,Map};
+const windowListeners={},intervalCallbacks=new Map(),timeoutCallbacks=[];let intervalId=0,prefersReducedMotion=false;const ctx={document,console,performance:{now:()=>1234},localStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)},setInterval(fn){const id=++intervalId;intervalCallbacks.set(id,fn);return id},clearInterval(id){intervalCallbacks.delete(id)},setTimeout(fn,delay){timeoutCallbacks.push({fn,delay});return timeoutCallbacks.length},clearTimeout(){},requestAnimationFrame:()=>1,window:{addEventListener(name,fn){windowListeners[name]=fn},matchMedia(){return{matches:prefersReducedMotion}}},location:{href:"http://127.0.0.1/arcade.html"},navigator:{},Date,Math,JSON,Number,String,Array,Object,Set,Map};
 vm.createContext(ctx);
 for(const source of ["arcade-core.js","arcade-puzzles.js","arcade-action.js","arcade-party.js"]){vm.runInContext(fs.readFileSync(path.join(root,source),"utf8"),ctx,{filename:source});}
 for(const game of ["typing","2048","wordle","mines","pong","snake","headsup","uno","ladders","combat"]){
@@ -123,6 +123,48 @@ assert.equal(decreasePlayers.getAttribute("aria-label"),"Decrease players");asse
 assert.equal(playerCountDisplay.textContent,"2");assert.equal(decreasePlayers.disabled,true,"player count cannot go below two");
 for(let i=0;i<14;i++)increasePlayers.listeners.click();assert.equal(playerCountDisplay.textContent,"16");assert.equal(increasePlayers.disabled,true,"player count cannot go above sixteen");increasePlayers.listeners.click();assert.equal(playerCountDisplay.textContent,"16");
 for(let i=0;i<14;i++)decreasePlayers.listeners.click();assert.equal(playerCountDisplay.textContent,"2");decreasePlayers.listeners.click();assert.equal(playerCountDisplay.textContent,"2");
+timeoutCallbacks.length=0;const laddersRoot=new FakeElement("section");registered.ladders(laddersRoot);
+const laddersSetup=laddersRoot.children.find(el=>el.className==="ladders-setup");
+assert.ok(laddersSetup,"Snakes & Ladders opens on a dedicated setup screen");
+const laddersCount=laddersSetup.children.find(el=>el.tagName==="SELECT");
+assert.deepEqual(laddersCount.children.map(option=>option.textContent),["2 players","3 players","4 players"],"Snakes & Ladders supports two through four players before starting");
+const laddersStart=laddersSetup.children.find(el=>el.textContent==="Start game");assert.ok(laddersStart,"players explicitly start a new match");
+laddersCount.value="4";laddersStart.listeners.click();
+const laddersToolbar=laddersRoot.children.find(el=>el.className==="ladders-toolbar"),laddersBoard=laddersRoot.children.find(el=>el.className==="ladders-board");
+assert.ok(laddersToolbar&&laddersBoard,"live match has its own compact toolbar and board");
+assert.ok(laddersToolbar.children.some(el=>el.textContent==="Main menu"),"Main menu returns to game setup");
+assert.equal(laddersBoard.children.find(el=>el.className==="ladders-token-layer").children.length,4,"selected four-player game renders four player pieces");
+assert.equal(laddersBoard.children.find(el=>el.className==="ladders-cells").children.length,100,"illustrated board preserves all 100 squares");
+const laddersCells=laddersBoard.children.find(el=>el.className==="ladders-cells");assert.equal(laddersCells.getAttribute("aria-rowcount"),"10");assert.equal(laddersCells.getAttribute("aria-colcount"),"10");
+assert.equal(laddersCells.children.find(el=>el.getAttribute("aria-label")==="Square 3. Ladder to 22")!==undefined,true,"screen readers hear the ladder destination");
+assert.ok(laddersBoard.children.some(el=>el.className==="ladders-art"),"board includes illustrated snakes and ladders");
+const laddersDie=laddersRoot.children.find(el=>el.className==="ladders-die");assert.ok(laddersDie,"a visible 3D die replaces the text roll button");
+assert.ok(laddersDie.getAttribute("aria-label")?.includes("Roll"),"die can be rolled accessibly");
+assert.equal(laddersDie.textContent,"","die result is shown on the cube rather than a visible roll label");
+assert.match(arcadeCss,/\.ladders-cube\[data-result="6"\]\s*\{transform:/,"the cube rotates to show the rolled face");
+const laddersCube=laddersDie.children[0];assert.equal(laddersCube.children.length,6,"the 3D die has six pip faces");
+const flushLaddersMotion=()=>{let guard=0;while(timeoutCallbacks.length&&guard++<500)timeoutCallbacks.shift().fn();assert.ok(guard<500,"piece and die animation timers settle")};
+const rollLadders=(face,expectedDelay)=>{const originalRandom=Math.random;Math.random=()=>((face-1)/6);laddersDie.listeners.click();assert.equal(laddersDie.disabled,true,"the die is locked while its roll animates");if(expectedDelay!==undefined)assert.equal(timeoutCallbacks[0]?.delay,expectedDelay,"reduced-motion mode skips hidden animation waits");flushLaddersMotion();Math.random=originalRandom};
+const originalRandom=Math.random;Math.random=()=>0;laddersDie.listeners.click();const staleCallbacks=timeoutCallbacks.length;laddersToolbar.children.find(el=>el.textContent==="Main menu").listeners.click();laddersCount.value="4";laddersStart.listeners.click();flushLaddersMotion();Math.random=originalRandom;
+assert.equal(staleCallbacks,1,"rolling schedules a movement that can be invalidated");assert.equal(laddersBoard.children.find(el=>el.className==="ladders-token-layer").children[0].getAttribute("data-square"),"1","starting a fresh game cancels stale movement from the previous match");
+for(const face of [2,1,1,1,6,1,1,1,3])rollLadders(face);
+assert.equal(laddersBoard.children.find(el=>el.className==="ladders-token-layer").children[0].getAttribute("data-square"),"24","landing on a snake animates the piece down to its tail");
+laddersToolbar.children.find(el=>el.textContent==="Main menu").listeners.click();
+assert.equal(laddersSetup.hidden,false,"Main menu returns to the game's own setup");
+assert.equal(laddersRoot.children.find(el=>el.className==="game-intro"),undefined,"Snakes & Ladders uses its own setup instead of the generic intro");
+laddersCount.value="2";laddersStart.listeners.click();
+for(const face of [2,1,6,1,4,1,6,1,5])rollLadders(face);
+const laddersTokens=laddersBoard.children.find(el=>el.className==="ladders-token-layer");
+assert.equal(laddersTokens.children[0].getAttribute("data-square"),"99","piece animates through ladder climbs and reaches square 99");
+rollLadders(1);rollLadders(2);
+assert.equal(laddersTokens.children[0].getAttribute("data-square"),"99","overshooting from 99 with a 2 bounces back to square 99");
+rollLadders(1);rollLadders(1);
+assert.equal(laddersTokens.children[0].getAttribute("data-square"),"100","an exact roll reaches square 100 and wins");
+assert.match(laddersToolbar.children.find(el=>el.className.includes("ladders-turn")).textContent,/wins/i,"winning state is shown in the turn indicator");
+laddersToolbar.children.find(el=>el.tagName==="SELECT").value="3";laddersToolbar.children.find(el=>el.tagName==="SELECT").listeners.change();laddersToolbar.children.find(el=>el.textContent==="New game").listeners.click();
+assert.equal(laddersTokens.children.length,3,"New game applies a changed player count");
+prefersReducedMotion=true;rollLadders(2,0);prefersReducedMotion=false;
+assert.equal(laddersTokens.children[0].getAttribute("data-square"),"22","reduced-motion users still resolve ladder movement without long invisible waits");
 console.log("PASS: All ten games initialise using DOM mocks without runtime exceptions.");
 (async()=>{
  let hostOptions,hostEvents={},sent=[];let players=0;

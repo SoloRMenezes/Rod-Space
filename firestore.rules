@@ -82,6 +82,18 @@ service cloud.firestore {
           && request.resource.data.updatedAt == request.time;
         allow delete: if false;
       }
+
+      match /saves/{saveId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && saveId.matches('^[A-Za-z0-9._-]{1,100}$')
+          && request.resource.data.keys().hasOnly(['value', 'updatedAt'])
+          && request.resource.data.keys().hasAll(['value', 'updatedAt'])
+          && request.resource.data.value is string
+          && request.resource.data.value.size() <= 20000
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+      }
     }
   }
 }

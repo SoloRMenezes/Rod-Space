@@ -9,7 +9,13 @@ function exponents(value){
 }
 function math(value,{trusted=false}={}){
  const input=String(value??'');
- return exponents(trusted?input:escape(input));
+ const safe=trusted?input:escape(input);
+ // Render common written divisions as real stacked fractions. Keep the
+ // source strings readable/editable, while improving formulas across books,
+ // worked examples and revealed exercise working.
+ const fractions=safe.replace(/(\([^()]*\)|[A-Za-z0-9⁰¹²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉]+)\/(\([^()]*\)|sin\s+[A-Z]|[A-Za-z0-9⁰¹²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉]+)/g,
+  '<span class="bookshelf-frac"><span>$1</span><span>$2</span></span>');
+ return exponents(fractions);
 }
 function formulaRows(value){
  return String(value||'').split(/;\s*/).map(v=>v.trim()).filter(Boolean)
@@ -61,6 +67,7 @@ window.bookshelfFormulaRows=formulaRows;
 window.bookshelfWorkedSteps=stepsMarkup;
 window.bookshelfPolishLegacy=function(root){
  for(const block of root.querySelectorAll('.formula:not(.bookshelf-formula-stack)')){
+  block.innerHTML=math(block.innerHTML,{trusted:true});
   const source=block.innerHTML;
   if(!/(?:&nbsp;|\u00a0){2,}/i.test(source))continue;
   const rows=source.split(/(?:&nbsp;|\u00a0){2,}/i).map(row=>row.trim()).filter(Boolean);
@@ -74,6 +81,10 @@ styles.textContent=[
  '.maths-lesson-formula,.bookshelf-formula-stack{display:grid!important;grid-template-columns:minmax(0,1fr);gap:0!important;font-style:normal!important;font-weight:500!important;letter-spacing:normal!important}',
  '.bookshelf-math-row{display:block;min-width:0;width:100%;padding:10px 0;font:500 clamp(17px,1.7vw,22px)/1.65 "Cambria Math","STIX Two Math",Georgia,serif;letter-spacing:.01em;overflow-wrap:anywhere;word-break:normal}',
  '.bookshelf-math-row + .bookshelf-math-row{border-top:1px solid #bccde6}',
+ '.bookshelf-frac{display:inline-flex;vertical-align:middle;flex-direction:column;align-items:stretch;text-align:center;line-height:1.12;margin:0 .12em;white-space:nowrap}',
+ '.bookshelf-frac>span:first-child{padding:0 .16em .08em;border-bottom:1px solid currentColor}',
+ '.bookshelf-frac>span:last-child{padding:.08em .16em 0}',
+ '.bookshelf-frac sup{font-size:.68em;vertical-align:super;line-height:0}',
  '.bookshelf-math-row sup,.bookshelf-working-steps sup,.bookshelf-step-stack sup{font-size:.68em;vertical-align:super;line-height:0}',
  '.bookshelf-working-steps,.bookshelf-step-stack{list-style:none;counter-reset:bookshelfsteps;padding:0;margin:12px 0 0!important;max-width:100%}',
  '.bookshelf-working-steps li,.bookshelf-step-stack li{counter-increment:bookshelfsteps;display:grid!important;grid-template-columns:27px minmax(0,1fr);align-items:start;gap:12px;margin:0!important;padding:12px 0!important;line-height:1.65!important;border-bottom:1px solid #b69c6e30;min-width:0}',

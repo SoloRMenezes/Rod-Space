@@ -7,7 +7,7 @@ const catalog=[
 ["mines","Minesweeper","Clear hidden mines","💣","solo"],
  ["snake","Snake Arena","Outgrow rival snakes","🐍","party"],
  ["combat","Turn-Based Combat","Choose battle mode","⚔","party"],
-["pong","Pong","Classic green-court Pong","🏓","solo"],
+["pong","Pong","Classic green-court Pong","🏓","party"],
 ["headsup","Heads Up","Guess under pressure","🎭","party"],
 ["uno","UNO-style Cards","","🃏","party"],
 ["ladders","Snakes & Ladders","Race to victory","🎲","party"]
@@ -17,7 +17,7 @@ function byId(id){return document.getElementById(id)}
 function node(tag,attrs,text){const el=document.createElement(tag);Object.entries(attrs||{}).forEach(([k,v])=>{if(k==="class")el.className=v;else if(k==="html")el.innerHTML=v;else if(k==="text")el.textContent=v;else el.setAttribute(k,v)});if(text!==undefined)el.textContent=text;return el}
 function button(label,func,cls){const b=node("button",cls?{class:cls}:null,label);b.type="button";b.addEventListener("click",func);return b}
 function clear(el){el.replaceChildren()}
-function store(key,value){try{localStorage.setItem("rodspace.arcade."+key,JSON.stringify(value))}catch{}}
+function store(key,value){try{localStorage.setItem("rodspace.arcade."+key,JSON.stringify(value));localStorage.setItem("rodspace.arcade.sync."+key,String(Date.now()))}catch{}window.RodSpaceAccounts?.saveProgress(key,value)}
 function read(key,fallback){try{const val=localStorage.getItem("rodspace.arcade."+key);return val===null?fallback:JSON.parse(val)}catch{return fallback}}
 function highScore(key,value){const prev=Number(read(key,0))||0;if(value>prev){store(key,value);window.RodSpaceAccounts?.recordHighScore(key,value)}return Math.max(prev,value)}
 function register(id,callback){handlers[id]=callback}
