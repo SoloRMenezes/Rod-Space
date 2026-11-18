@@ -197,6 +197,15 @@ body[data-game="combat"] .choice-row button {min-height:57px;font-size:clamp(13p
 }
 @media(prefers-reduced-motion:reduce) {*{animation:none!important;transition:none!important}}
 
+/* 2048 keeps the tiles crisp and restarts directly from the board after a loss. */
+body[data-game="2048"] .board-2048 {position:relative;width:min(620px,calc(100vw - 24px),calc(100dvh - 190px));min-width:0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+body[data-game="2048"] .board-2048 .tile {user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;font-size:clamp(22px,4.6vw,56px)}
+body[data-game="2048"] .board-2048-over {position:absolute;z-index:3;inset:0;display:grid;align-content:center;justify-items:center;gap:14px;padding:12px;background:#231919d9;color:#fff6e9;text-align:center;cursor:pointer}
+body[data-game="2048"] .board-2048-over strong {font-size:clamp(38px,10vw,90px);font-weight:950;letter-spacing:.055em;line-height:1;text-shadow:0 5px 22px #0008}
+body[data-game="2048"] .board-2048-over span {font-size:clamp(15px,3vw,22px);font-weight:650;color:#f2d8bd}
+body[data-game="2048"] .board-2048-over[hidden] {display:none!important}
+@media(max-width:640px) {body[data-game="2048"] .board-2048 {width:min(calc(100vw - 24px),620px,calc(100dvh - 190px))}}
+
 
 /* Light mode keeps the game identity while offering a bright, readable playfield. */
 html[data-theme="light"] body.game-world {
