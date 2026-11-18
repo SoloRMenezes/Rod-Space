@@ -385,6 +385,7 @@ body[data-game="uno"] .uno-hand {flex-wrap:nowrap;overflow-x:auto;overscroll-beh
 body[data-game="uno"] .uno-hand .uno-card {position:relative;display:block;flex:0 0 clamp(74px,8vw,98px);width:clamp(74px,8vw,98px);height:clamp(108px,12vw,138px);min-height:0;margin-left:clamp(-36px,-3.2vw,-24px);padding:0;overflow:hidden;border:3px solid #f8f7ee;border-radius:13px;color:#fff;box-shadow:0 4px 0 #17221b,0 12px 18px #0005;text-shadow:none;transform:rotate(var(--fan-angle,0deg));transform-origin:50% 100%;transition:transform .16s ease,filter .16s ease,opacity .16s ease;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 body[data-game="uno"] .uno-hand .uno-card:first-child {margin-left:0}
 body[data-game="uno"] .uno-hand .uno-card:hover:not(:disabled),body[data-game="uno"] .uno-hand .uno-card:focus-visible {z-index:30;transform:translateY(-22px) rotate(0) scale(1.06);filter:brightness(1.08);outline:2px solid #fff9;outline-offset:1px}
+body[data-game="uno"] .uno-hand .uno-card.playable {border-color:#ffe17a;box-shadow:0 4px 0 #231719,0 0 0 2px #ffd54a99,0 8px 20px #ffd54a33,0 12px 18px #0005;filter:brightness(1.08)}
 body[data-game="uno"] .uno-hand .uno-card.unplayable {filter:brightness(.7) saturate(.72)}
 @keyframes uno-card-held {from{transform:translateY(-18px) rotate(0) scale(1.06)}to{transform:translateY(-28px) rotate(0) scale(1.12)}}
 body[data-game="uno"] .uno-hand .uno-card.card-held:not(:disabled) {z-index:35;filter:brightness(1.08);box-shadow:0 6px 0 #17221b,0 18px 30px #0007;animation:uno-card-held .24s ease-in-out infinite alternate;cursor:grabbing}
@@ -490,8 +491,19 @@ body[data-game="pong"] .pong-score {flex:1 1 100%;text-align:center}
 body[data-game="uno"] .game-heading {display:none}
 body[data-game="uno"] .game-stage {width:100%;max-width:none;height:calc(100svh - 66px);min-height:0;padding:8px clamp(10px,2vw,28px);overflow:hidden}
 body[data-game="uno"] .game-panel {width:100%;max-width:1500px;height:100%;min-height:0;flex:1;justify-content:stretch;gap:0}
-body[data-game="uno"] .uno-table {display:grid;place-items:center;width:100%;max-width:none;min-height:0;flex:1;margin:0 auto}
-body[data-game="uno"] .uno-table-row {display:flex;align-items:center;justify-content:center;gap:clamp(28px,8vw,150px);width:100%}
+body[data-game="uno"] .uno-table {position:relative;isolation:isolate;display:grid;place-items:center;width:100%;max-width:none;min-height:0;flex:1;margin:0 auto;overflow:visible}
+body[data-game="uno"] .uno-table::before {content:"";position:absolute;z-index:-1;left:50%;top:50%;width:min(86%,1200px);height:min(86%,680px);border:2px solid #9a454452;border-radius:50%;background:radial-gradient(ellipse at 50% 38%,#40191b 0%,#281012 62%,#1c0b0d 100%);box-shadow:inset 0 16px 38px #100607aa,0 28px 42px #0005;transform:translate(-50%,-50%) perspective(900px) rotateX(17deg)}
+body[data-game="uno"] .uno-opponents {position:absolute;inset:3% 2%;z-index:1;pointer-events:none}
+body[data-game="uno"] .uno-opponent {position:absolute;display:grid;justify-items:center;gap:2px;min-width:58px;max-width:clamp(68px,10vw,126px);transform:translate(-50%,-50%);text-align:center}
+body[data-game="uno"] .uno-opponent-cards {display:flex;align-items:center;justify-content:center;height:clamp(40px,6vw,70px);padding:0 8px}
+body[data-game="uno"] .uno-opponent-card {position:relative;display:block;flex:none;width:clamp(26px,3.5vw,46px);aspect-ratio:.685;margin-left:clamp(-14px,-1vw,-7px);border:2px solid #f8e9e8;border-radius:6px;background:repeating-linear-gradient(135deg,#ab1821 0 5px,#c92832 5px 10px);box-shadow:0 3px 0 #5a1117,0 5px 10px #0006;transform:rotate(var(--back-angle)) translateY(2px)}
+body[data-game="uno"] .uno-opponent-card:first-child {margin-left:0}
+body[data-game="uno"] .uno-opponent-card::after {content:"R";position:absolute;inset:20% 12%;display:grid;place-items:center;border:1px solid #f5d2d0;border-radius:50%;background:#321216;color:#f7cf59;font-size:clamp(10px,1.2vw,16px);font-weight:1000;font-style:italic}
+body[data-game="uno"] .uno-opponent-label {display:flex;align-items:center;justify-content:center;gap:6px;max-width:100%;padding:3px 8px;border:1px solid #ffffff35;border-radius:999px;background:#1e1012e8;color:#fff;font-size:clamp(10px,1.1vw,15px);line-height:1.2;white-space:nowrap;box-shadow:0 3px 10px #0005}
+body[data-game="uno"] .uno-opponent-name {max-width:90px;overflow:hidden;text-overflow:ellipsis}
+body[data-game="uno"] .uno-opponent-count {color:#ffd36b;font-weight:950}
+body[data-game="uno"] .uno-opponent.is-active .uno-opponent-label {border-color:#ffd36b;background:#432025;color:#fff;box-shadow:0 0 0 2px #ffd36b44,0 4px 16px #0007}
+body[data-game="uno"] .uno-table-row {position:relative;z-index:2;display:flex;align-items:center;justify-content:center;gap:clamp(28px,8vw,150px);width:100%}
 body[data-game="uno"] .uno-draw-pile {position:relative;isolation:isolate;display:grid;place-items:center;flex:none;width:clamp(110px,min(20vw,28vh),220px);aspect-ratio:.685;margin:0;padding:0;overflow:visible;border:4px solid #fff;background:#d71920;color:#ffd84f;border-radius:15px;box-shadow:0 7px 0 #650b10,0 16px 26px #0006;transform:rotate(-2deg);transition:transform .16s ease,filter .16s ease}
 body[data-game="uno"] .uno-draw-pile::before,body[data-game="uno"] .uno-draw-pile::after {content:"";position:absolute;z-index:-1;inset:0;border:4px solid #fff;border-radius:15px;background:#b9141b;box-shadow:0 5px 0 #650b10}
 body[data-game="uno"] .uno-draw-pile::before {transform:translate(-10px,7px) rotate(-6deg)}
@@ -502,12 +514,10 @@ body[data-game="uno"] .uno-deck-back {display:grid;place-items:center;width:78%;
 body[data-game="uno"] .uno-discard {position:relative;display:grid;place-items:center;flex:none;width:clamp(110px,min(20vw,28vh),220px);aspect-ratio:.685;min-height:0;padding:0;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none}
 body[data-game="uno"] .uno-discard .uno-card {box-sizing:border-box;width:100%!important;height:100%!important;min-width:100%;min-height:100%;border-radius:15px;box-shadow:0 7px 0 #161316,0 16px 26px #0006}
 body[data-game="uno"] .uno-discard .uno-card {display:block!important;aspect-ratio:.685;transform:none!important;transform-origin:center;opacity:1!important;filter:none!important}
-body[data-game="uno"] .uno-active-color {position:absolute;z-index:3;top:-42px;left:50%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:32px;padding:4px 12px;border:1px solid #ffffff55;border-radius:999px;background:#21191b;color:#fff;font-size:clamp(13px,1.4vw,18px);font-weight:850;white-space:nowrap;transform:translateX(-50%);box-shadow:0 4px 12px #0005}
-body[data-game="uno"] .uno-active-color::before {content:"";width:12px;height:12px;flex:none;border-radius:50%;background:#aaa;box-shadow:0 0 0 2px #ffffff88}
-body[data-game="uno"] .uno-discard[data-active-color="red"] .uno-active-color::before {background:#e53935}
-body[data-game="uno"] .uno-discard[data-active-color="blue"] .uno-active-color::before {background:#2874dc}
-body[data-game="uno"] .uno-discard[data-active-color="green"] .uno-active-color::before {background:#26a85b}
-body[data-game="uno"] .uno-discard[data-active-color="yellow"] .uno-active-color::before {background:#f2bd22}
+body[data-game="uno"] .uno-discard .uno-card.wild[data-active-color="red"] {background:#e53935}
+body[data-game="uno"] .uno-discard .uno-card.wild[data-active-color="blue"] {background:#2874dc}
+body[data-game="uno"] .uno-discard .uno-card.wild[data-active-color="green"] {background:#26a85b}
+body[data-game="uno"] .uno-discard .uno-card.wild[data-active-color="yellow"] {background:#d39b00}
 body[data-game="uno"] .uno-discard .uno-card-face {font-size:clamp(48px,7vw,88px)}
 body[data-game="uno"] .uno-hand .uno-card.just-drawn {z-index:25;outline:3px solid #fff;outline-offset:3px;filter:brightness(1.18);transform:translateY(-16px) rotate(0)}
 body[data-game="uno"] .uno-turn {flex:1;min-width:0;text-align:center;line-height:1.3}
