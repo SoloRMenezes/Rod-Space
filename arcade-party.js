@@ -74,7 +74,7 @@ function resetRound(){hands=Array.from({length:maxPlayers},()=>[]);deck=buildDec
 function setupMatch(kind,count,name){mode=kind;maxPlayers=count;seats=Array.from({length:count},(_,i)=>({name:i===0?name:kind==="local"?"Player "+(i+1):"Bot "+(i+1),playerKey:i===0?playerKey():null,peerId:null,connected:kind==="local"||i===0,bot:(kind==="solo"||kind==="host")&&i!==0}));localSeat=0;localTurnRevealed=true;lastLocalTurn=0;resetRound()}
 function startSolo(){roomName=nameInput.value.trim()||"Player";setupMatch("solo",2,roomName)}
 function startLan(){roomName=nameInput.value.trim()||"Player";setupMatch("local",2,roomName)}
-function legal(card){const top=pile[pile.length-1];return card.color==="wild"||card.color===activeColor||card.value===top.value}
+function legal(card){const top=pile[pile.length-1],isSpecial=value=>!/^[0-9]$/.test(value);if(!top)return true;if(isSpecial(card.value)&&isSpecial(top.value))return false;return card.color==="wild"||card.color===activeColor||card.value===top.value}
 function nextSeat(seat,steps=1){return((seat+direction*steps)%maxPlayers+maxPlayers)%maxPlayers}
 function addLog(text){log=text;lastAction=text}
 function finishTurnAfterCard(seat,card){if(!hands[seat].length){winner=seat;phase="over";addLog(seats[seat].name+" wins the match!");if(seat===localSeat)window.RodSpaceAccounts?.recordWin("uno");return}
