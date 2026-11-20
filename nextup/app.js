@@ -1,6 +1,8 @@
 const STORAGE_KEY = "karaoke-app-v2-state";
 const ROUTE_STORAGE_KEY = `${STORAGE_KEY}-route`;
 const RESTORABLE_ROUTES = new Set(["addSong", "queue", "ready", "player"]);
+const youtubeAvailability = window.NextUpYouTubeAvailability.createYouTubeAvailabilityCache();
+const viewerCountry = window.NextUpYouTubeAvailability.getViewerCountry(navigator.language);
 
 const defaultState = {
   version: 1,
@@ -637,22 +639,27 @@ function mountProjectorPlayer(song) {
 }
 
 function createYouTubePlayer(elementId, song, onEnded) {
+  const playerVars = {
+    autoplay: 1,
+    controls: 1,
+    playsinline: 1,
+    rel: 0
+  };
+  if (/^https?:$/.test(window.location.protocol)) playerVars.origin = window.location.origin;
   return new YT.Player(elementId, {
     width: "100%",
     height: "100%",
     videoId: song.videoId,
-    playerVars: {
-      autoplay: 1,
-      controls: 1,
-      playsinline: 1,
-      rel: 0
-    },
+    playerVars,
     events: {
       onReady: (event) => event.target.playVideo(),
       onStateChange: (event) => {
         if (event.data === YT.PlayerState.ENDED && state.activeSession?.currentSongId) onEnded();
       },
-      onError: () => toast("YouTube could not play this video here. Try opening or replacing it.")
+      onError: (event) => {
+        youtubeAvailability.recordPlaybackFailure(song.videoId, event.data);
+        toast("YouTube could not play this video here. It will be hidden from future searches.");
+      }
     }
   });
 }
@@ -1360,7 +1367,8 @@ async function runSongSearch(query, container, onSelect) {
     const response = await fetch(endpoint);
     const data = await response.json();
     if (!response.ok) throw new Error(data.error?.message || "YouTube search failed.");
-    const results = (data.items || []).filter((item) => item.id?.videoId);
+    const candidates = (data.items || []).filter((item) => item.id?.videoId);
+    const results = await filterPlayableSearchResults(candidates, apiKey);
     container.innerHTML = "";
     if (!results.length) {
       container.append(emptyInline("No videos found."));
@@ -1384,25 +1392,55 @@ async function runSongSearch(query, container, onSelect) {
 async function checkYouTubeEmbeddable(videoId) {
   const apiKey = state.settings.youtubeApiKey?.trim();
   if (!apiKey || !videoId) return { ok: true };
+  if (youtubeAvailability.isKnownUnplayable(videoId)) {
+    return { ok: false, message: "That video cannot play inside NextUp. Pick another result or use Watch on YouTube." };
+  }
   try {
-    const endpoint = new URL("https://www.googleapis.com/youtube/v3/videos");
-    endpoint.search = new URLSearchParams({
-      key: apiKey,
-      part: "status",
-      id: videoId
-    }).toString();
-    const response = await fetch(endpoint);
-    const data = await response.json();
-    if (!response.ok) return { ok: true };
-    const video = data.items?.[0];
-    if (!video) return { ok: false, message: "YouTube could not find that video." };
-    if (video.status?.embeddable === false) {
+    await fetchYouTubeAvailability([videoId], apiKey);
+    if (youtubeAvailability.isKnownUnplayable(videoId)) {
       return { ok: false, message: "That video cannot play inside NextUp. Pick another result or use Watch on YouTube." };
     }
   } catch {
     return { ok: true };
   }
   return { ok: true };
+}
+
+async function filterPlayableSearchResults(results, apiKey) {
+  const visible = results.filter((item) => !youtubeAvailability.isKnownUnplayable(item.id.videoId));
+  const uncheckedIds = visible
+    .map((item) => item.id.videoId)
+    .filter((videoId) => !youtubeAvailability.get(videoId));
+  if (uncheckedIds.length) {
+    try {
+      await fetchYouTubeAvailability(uncheckedIds, apiKey);
+    } catch {
+      // Search remains useful if the low-cost metadata request is temporarily unavailable.
+    }
+  }
+  return visible.filter((item) => !youtubeAvailability.isKnownUnplayable(item.id.videoId));
+}
+
+async function fetchYouTubeAvailability(videoIds, apiKey) {
+  const endpoint = new URL("https://www.googleapis.com/youtube/v3/videos");
+  endpoint.search = new URLSearchParams({
+    key: apiKey,
+    part: "status,contentDetails",
+    id: videoIds.join(",")
+  }).toString();
+  const response = await fetch(endpoint);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error?.message || "YouTube availability check failed.");
+
+  const returnedIds = new Set();
+  (data.items || []).forEach((video) => {
+    returnedIds.add(video.id);
+    const result = window.NextUpYouTubeAvailability.isVideoMetadataPlayable(video, viewerCountry);
+    youtubeAvailability.recordMetadata(video.id, result);
+  });
+  videoIds.forEach((videoId) => {
+    if (!returnedIds.has(videoId)) youtubeAvailability.recordNotFound(videoId);
+  });
 }
 
 async function fetchYouTubeTitle(url, videoId) {
