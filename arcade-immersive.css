@@ -283,9 +283,9 @@ body[data-game="mines"] .mines-time {justify-self:end}
 body[data-game="mines"] .mines-menu-button {min-width:66px}
 body[data-game="mines"] .mines-toolbar button[aria-pressed="true"] {border-style:inset;background:#aaa}
 body[data-game="mines"] .mines-board {display:grid;gap:0;width:max-content;max-width:calc(100vw - 16px);max-height:calc(100dvh - 145px);padding:5px;border:3px inset #888;overflow:hidden;overscroll-behavior:none;justify-content:start}
-body[data-game="mines"] .mine-cell {position:relative;width:var(--mine-cell);min-width:var(--mine-cell);height:var(--mine-cell);padding:0;border:2px outset #eee;border-radius:0;background:#c0c0c0;color:#111;box-shadow:none;font-size:clamp(12px,2vw,24px);font-weight:900;touch-action:manipulation}
+body[data-game="mines"] .mine-cell {position:relative;width:var(--mine-cell);min-width:var(--mine-cell);height:var(--mine-cell);padding:0;border:2px outset #eee;border-radius:0;background:#a8a8a8;color:#111;box-shadow:none;font-size:clamp(12px,2vw,24px);font-weight:900;touch-action:manipulation}
 body[data-game="mines"] .mine-cell:hover:not(:disabled) {background:#d0d0d0;filter:none}
-body[data-game="mines"] .mine-cell.revealed {border:1px solid #888;background:#c0c0c0;color:#111;box-shadow:none}
+body[data-game="mines"] .mine-cell.revealed {border:1px solid #777;background:#e2e2e2;color:#111;box-shadow:none}
 body[data-game="mines"] .mine-cell.number-1 {color:#0000ff}
 body[data-game="mines"] .mine-cell.number-2 {color:#008000}
 body[data-game="mines"] .mine-cell.number-3 {color:#ff0000}
