@@ -657,11 +657,30 @@ function createYouTubePlayer(elementId, song, onEnded) {
         if (event.data === YT.PlayerState.ENDED && state.activeSession?.currentSongId) onEnded();
       },
       onError: (event) => {
-        youtubeAvailability.recordPlaybackFailure(song.videoId, event.data);
-        toast("YouTube could not play this video here. It will be hidden from future searches.");
+        handleYouTubePlaybackError(song, event.data);
       }
     }
   });
+}
+
+function handleYouTubePlaybackError(song, errorCode) {
+  youtubeAvailability.recordPlaybackFailure(song.videoId, errorCode);
+  if (!youtubeAvailability.isKnownUnplayable(song.videoId)) {
+    toast("YouTube could not play this video here. Try again or open it on YouTube.");
+    return;
+  }
+
+  window.NextUpYouTubeAvailability.removeUnplayableVideoFromActiveState(state, song.videoId);
+  ytPlayer?.destroy?.();
+  ytPlayer = null;
+  saveState();
+  toast("Unavailable video removed.");
+
+  if (route.name === "projector") {
+    render();
+    return;
+  }
+  replaceRoute(nextSong() ? "ready" : "addSong");
 }
 
 function completeProjectorSong(songId) {

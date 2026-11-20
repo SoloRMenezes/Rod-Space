@@ -36,6 +36,20 @@
     return { playable: true, reason: "metadata-eligible" };
   }
 
+  function removeUnplayableVideoFromActiveState(state, videoId) {
+    if (!state || !videoId) return;
+    const session = state.activeSession;
+    if (session) {
+      const removedIds = new Set(
+        (session.queue || []).filter((song) => song.videoId === videoId).map((song) => song.id)
+      );
+      session.queue = (session.queue || []).filter((song) => song.videoId !== videoId);
+      session.completedIds = (session.completedIds || []).filter((songId) => !removedIds.has(songId));
+      if (removedIds.has(session.currentSongId)) session.currentSongId = null;
+    }
+    state.recentSongs = (state.recentSongs || []).filter((song) => song.videoId !== videoId);
+  }
+
   function createYouTubeAvailabilityCache({ storage, now = Date.now } = {}) {
     const backingStore = storage || (typeof localStorage !== "undefined" ? localStorage : null);
 
@@ -100,5 +114,10 @@
     };
   }
 
-  return { createYouTubeAvailabilityCache, getViewerCountry, isVideoMetadataPlayable };
+  return {
+    createYouTubeAvailabilityCache,
+    getViewerCountry,
+    isVideoMetadataPlayable,
+    removeUnplayableVideoFromActiveState
+  };
 });
