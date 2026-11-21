@@ -547,8 +547,8 @@ body[data-game="uno"] .uno-pass-screen {margin:0 auto}
 }
 
 /* Snakes & Ladders is a bright tabletop board game, not another neon arcade screen. */
-body[data-game="ladders"] {--glow:#e3b95e;--glow-rgb:227,185,94;--deep:#17221b;--mid:#243b2a;--surface:#2f4b34;--tile:#efe4c8;--btn:#b97837;--text:#f6eedb;--muted:#d9cfb7}
-body[data-game="ladders"]::before {background:radial-gradient(ellipse 60% 60% at 50% 50%,#34543a 0%,#1a2b20 65%,#131d18 100%)}
+body[data-game="ladders"] {--glow:#e5b965;--glow-rgb:229,185,101;--deep:#17212b;--mid:#263746;--surface:#304556;--tile:#d8e3e8;--btn:#9a713e;--text:#f2eee4;--muted:#c2d0d5}
+body[data-game="ladders"]::before {background:radial-gradient(ellipse 60% 60% at 50% 50%,#355063 0%,#1d2d39 65%,#141d25 100%)}
 body[data-game="ladders"]::after {opacity:.06;background-size:24px 24px;mask-image:none}
 body[data-game="ladders"] .game-heading {display:none}
 body[data-game="ladders"] .game-stage {height:calc(100svh - 66px);min-height:0;max-width:none;padding:7px clamp(8px,1.4vw,20px) 10px;overflow:hidden}
@@ -567,26 +567,24 @@ body[data-game="ladders"] .ladders-toolbar button.secondary {background:#26392b;
 body[data-game="ladders"] .ladders-turn {padding:8px 12px;border-radius:8px;background:#294631;border:1px solid #688357;color:#e7dfc7;font-size:13px;font-weight:800;transition:box-shadow .25s,color .25s}
 body[data-game="ladders"] .ladders-turn.active {color:#fff6d9;box-shadow:0 0 0 2px var(--active-colour),0 0 22px color-mix(in srgb,var(--active-colour),transparent 35%)}
 body[data-game="ladders"] .ladders-turn::before {content:"";display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;background:var(--active-colour);border:1px solid #fff6d9;vertical-align:0px}
-body[data-game="ladders"] .ladders-board {position:relative;width:min(100%,min(860px,calc(100svh - 210px)));height:auto;aspect-ratio:1;flex:none;overflow:hidden;border:8px solid #80552f;border-radius:15px;background:#d9c59c;box-shadow:0 8px 0 #50381e,0 18px 38px #0006}
-body[data-game="ladders"] .ladders-cells {position:absolute;inset:0;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-rows:repeat(10,minmax(0,1fr));gap:1px;background:#9c7b4f;padding:3px}
-body[data-game="ladders"] .ladders-cell {position:relative;min-width:0;min-height:0;background:#f0e6ce;color:#3a4636;padding:3px;font-size:clamp(8px,1.15vw,14px);font-weight:800}
-body[data-game="ladders"] .ladders-cell:nth-child(4n+2),body[data-game="ladders"] .ladders-cell:nth-child(4n+3) {background:#d9e0bd}
-body[data-game="ladders"] .ladders-cell.ladder-start {background:#f4d889}
-body[data-game="ladders"] .ladders-cell.snake-start {background:#e7b89e}
-body[data-game="ladders"] .ladders-number {position:relative;z-index:1}
+body[data-game="ladders"] .ladders-board {position:relative;width:min(100%,min(860px,calc(100svh - 210px)));height:auto;aspect-ratio:1;flex:none;overflow:hidden;border:8px solid #374957;border-radius:15px;background:#344a59;box-shadow:0 8px 0 #202e38,0 18px 38px #0006}
+body[data-game="ladders"] .ladders-cells {position:absolute;inset:0;z-index:1;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-rows:repeat(10,minmax(0,1fr));gap:1px;background:#425968;padding:3px}
+body[data-game="ladders"] .ladders-cell {position:relative;z-index:1;min-width:0;min-height:0;display:flex;flex-wrap:wrap;align-content:flex-start;align-items:flex-start;gap:2px;background:#526979;color:#f2eee4;padding:3px;font-size:clamp(8px,1.15vw,14px);font-weight:800}
+body[data-game="ladders"] .ladders-cell:nth-child(4n+2),body[data-game="ladders"] .ladders-cell:nth-child(4n+3) {background:#637c8a}
+body[data-game="ladders"] .ladders-cell.ladder-start {background:#687e89}
+body[data-game="ladders"] .ladders-cell.snake-start {background:#687e89}
+body[data-game="ladders"] .ladders-number {position:relative;z-index:1;text-shadow:0 1px 2px #17212b}
 body[data-game="ladders"] .ladders-art,body[data-game="ladders"] .ladders-token-layer {position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-body[data-game="ladders"] .ladders-art {z-index:2;overflow:visible}
+body[data-game="ladders"] .ladders-art {z-index:3;overflow:visible}
 body[data-game="ladders"] .ladders-token-layer {z-index:3;pointer-events:none}
-body[data-game="ladders"] .illustrated-ladder line {stroke:#895a2e;stroke-width:7;stroke-linecap:round}
-body[data-game="ladders"] .illustrated-ladder .ladder-rung {stroke:#d8a85e;stroke-width:4}
-body[data-game="ladders"] .illustrated-snake .snake-shadow {fill:none;stroke:#342b23;stroke-width:25;stroke-linecap:round;opacity:.32}
-body[data-game="ladders"] .illustrated-snake .snake-body {fill:none;stroke:#41834e;stroke-width:19;stroke-linecap:round;stroke-dasharray:2 3}
-body[data-game="ladders"] .illustrated-snake:nth-of-type(2n) .snake-body {stroke:#b96547}
-body[data-game="ladders"] .illustrated-snake:nth-of-type(3n) .snake-body {stroke:#587da0}
-body[data-game="ladders"] .snake-head {fill:#e6b85d;stroke:#43543c;stroke-width:3}
-body[data-game="ladders"] .snake-eye {fill:#243528}
-body[data-game="ladders"] .snake-tongue {fill:none;stroke:#bf4740;stroke-width:3;stroke-linecap:round}
-body[data-game="ladders"] .ladders-token {position:absolute;z-index:1;left:0;top:0;width:clamp(11px,2.4vw,24px);height:clamp(11px,2.4vw,24px);display:grid;place-items:center;border-radius:50%;font-size:clamp(9px,1.35vw,15px);font-weight:900;color:#fff;border:2px solid #fff6d9;background:var(--piece-colour);box-shadow:0 2px 5px #34241699;transform:translate(-50%,-50%);transition:left .09s linear,top .09s linear,transform .2s}
+body[data-game="ladders"] .illustrated-ladder line {stroke:#b99664;stroke-width:10;stroke-linecap:round;filter:drop-shadow(0 2px 2px #17212b99)}
+body[data-game="ladders"] .illustrated-ladder .ladder-rung {stroke:#e4c995;stroke-width:6}
+body[data-game="ladders"] .illustrated-snake .snake-shadow {fill:none;stroke:#17212b;stroke-width:29;stroke-linecap:round;opacity:.75}
+body[data-game="ladders"] .illustrated-snake .snake-body {fill:none;stroke:#a9b88e;stroke-width:21;stroke-linecap:round;stroke-linejoin:round}
+body[data-game="ladders"] .snake-head {fill:#a9b88e;stroke:#17212b;stroke-width:4}
+body[data-game="ladders"] .snake-eye {fill:#17212b}
+body[data-game="ladders"] .snake-tongue {fill:none;stroke:#eee7d8;stroke-width:3;stroke-linecap:round}
+body[data-game="ladders"] .ladders-token {position:absolute;z-index:1;left:0;top:0;width:clamp(19px,2.8vw,28px);height:clamp(19px,2.8vw,28px);display:grid;place-items:center;border-radius:50%;font-size:clamp(12px,1.7vw,18px);font-weight:900;color:#fff;border:2px solid #fff6d9;background:var(--piece-colour);box-shadow:0 2px 5px #17212b;transform:translate(-50%,-50%);transition:left .09s linear,top .09s linear,transform .2s}
 body[data-game="ladders"] .ladders-token.climbing {z-index:2;transition:left .72s ease-in-out,top .72s ease-in-out,transform .72s ease-in-out;transform:translate(-50%,-50%) scale(1.25);animation:ladder-climb .45s ease-in-out infinite alternate}
 body[data-game="ladders"] .ladders-token.sliding {z-index:2;transition:left .46s cubic-bezier(.5,0,.8,.2),top .46s cubic-bezier(.5,0,.8,.2),transform .46s ease-in;animation:snake-slide .32s ease-in-out infinite alternate}
 @keyframes ladder-climb {to{transform:translate(-50%,-50%) translateY(-5px) scale(1.15)}}

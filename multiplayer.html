@@ -795,6 +795,10 @@
 
         // Desktop Pointer Lock
         const controls = new PointerLockControls(cameraRig, document.body);
+        const nativeMouseHandler=window.webkit?.messageHandlers?.rodSpaceControls;
+        const hasNativeMouse=Boolean(window.__rodSpaceMacApp&&nativeMouseHandler);
+        let nativeShiftLock=false;
+        window.__rodSpaceNativeMouse={move(dx,dy){if(!nativeShiftLock||!playing||homeOpen||isMenuOpen)return;cameraRig.rotation.order='YXZ';cameraRig.rotation.y-=dx*.003*GameState.preferences.sensitivity;cameraRig.rotation.x=THREE.MathUtils.clamp(cameraRig.rotation.x-dy*.003*GameState.preferences.sensitivity,-1.2,1.2)}};
         
         let playing=false, dragging=false, homeOpen=false, hasRun=false, cursorMode=false;
         const homeScreen=document.getElementById('home-screen');
@@ -822,10 +826,12 @@
             dragging=false;cursorMode=false;
             GameState.preferences.shiftlock=enabled;
             if(!enabled) {
+                if(hasNativeMouse){nativeShiftLock=false;nativeMouseHandler.postMessage({type:'mouseLock',enabled:false});}
                 if(controls.isLocked) controls.unlock();
                 syncSettingsToUI();syncLockIndicator();return;
             }
             if(!playing||homeOpen||isMenuOpen||isTouchDevice) {syncSettingsToUI();return;}
+            if(hasNativeMouse){nativeShiftLock=true;nativeMouseHandler.postMessage({type:'mouseLock',enabled:true});syncSettingsToUI();syncLockIndicator();return;}
             try {await document.body.requestPointerLock();}
             catch {
                 if(request!==lockRequest) return;
@@ -849,12 +855,18 @@
             cameraRig.rotation.x=THREE.MathUtils.clamp(cameraRig.rotation.x-e.movementY*.003*GameState.preferences.sensitivity,-1.2,1.2);
         });
         controls.addEventListener('lock',()=>{
-            GameState.preferences.shiftlock=true;dragging=false;syncSettingsToUI();syncLockIndicator();
+            if(!hasNativeMouse)GameState.preferences.shiftlock=true;dragging=false;syncSettingsToUI();syncLockIndicator();
         });
         controls.addEventListener('unlock',()=>{
             // Releasing Shift lock returns to drag mode, never to the home screen.
-            if(!homeOpen&&!isMenuOpen) GameState.preferences.shiftlock=false;
+            if(!hasNativeMouse&&!homeOpen&&!isMenuOpen) GameState.preferences.shiftlock=false;
             dragging=false;syncSettingsToUI();syncLockIndicator();
+        });
+        document.addEventListener('pointerlockchange',()=>{
+            if(hasNativeMouse)return;
+            const locked=document.pointerLockElement===canvas;
+            if(locked){controls.isLocked=true;controls.dispatchEvent({type:'lock'});return;}
+            if(controls.isLocked){controls.isLocked=false;controls.dispatchEvent({type:'unlock'});}
         });
 
         // Keyboard
