@@ -18,7 +18,7 @@ const context={document,console:{warn(){}},location:{hostname:"localhost"},local
  setTimeout,clearTimeout,setInterval(fn){const id=++nextInterval;intervals.set(id,fn);return id},clearInterval(id){intervals.delete(id)},Promise,Map,Set,Date,Math,Number,String,Object,Array,JSON,
  import:undefined};
 vm.createContext(context);
-const appSdk={getApps:()=>[],initializeApp:()=>({})},authSdk={getAuth:()=>({}),onAuthStateChanged:(_auth,callback)=>callback(null),sendPasswordResetEmail:async(_auth,email)=>resetCalls.push(email)},dbSdk={getFirestore:()=>({})};
+const appSdk={getApps:()=>[],initializeApp:()=>({})},authSdk={getAuth:()=>({}),setPersistence:async()=>{},onAuthStateChanged:(_auth,callback)=>callback(null),sendPasswordResetEmail:async(_auth,email)=>resetCalls.push(email)},dbSdk={getFirestore:()=>({})};
 vm.runInContext(fs.readFileSync(path.join(__dirname,"..","rod-space-account.js"),"utf8"),context,{filename:"rod-space-account.js",importModuleDynamically:async specifier=>{
  const exports=specifier.includes("firebase-app")?appSdk:specifier.includes("firebase-auth")?authSdk:dbSdk;
  const module=new vm.SyntheticModule(Object.keys(exports),function(){for(const [name,value] of Object.entries(exports))this.setExport(name,value)},{context});

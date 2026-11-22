@@ -277,10 +277,22 @@
 
   function mountControls() {
     makeModal();
+    const homeMenu = document.getElementById("homeSettingsMenu");
+    const homeAccount = document.getElementById("homeAccountAction");
     const header = document.querySelector(".game-topbar, .topbar .shell");
     const homeActions = document.querySelector("header.sticky > div > div.flex.items-center.gap-2");
     const target = homeActions || header;
-    if (target && !document.getElementById("rs-account-trigger")) {
+    if (homeMenu && homeAccount) {
+      homeAccount.onclick = () => {
+        homeMenu.classList.add("hidden");
+        document.getElementById("homeSettingsToggle")?.setAttribute("aria-expanded", "false");
+        modalView = "settings";
+        mode = "signin";
+        makeModal().render();
+        modal.hidden = false;
+      };
+      syncSettingsMenu();
+    } else if (target && !document.getElementById("rs-account-trigger")) {
       const settings = element("div", { class: "rs-settings" });
       const trigger = element("button", { id: "rs-account-trigger", class: "rs-account-trigger", type: "button", "aria-haspopup": "menu", "aria-expanded": "false" }, "Settings");
       const menu = element("div", { id: "rs-settings-menu", class: "rs-settings-menu", role: "menu", hidden: "" });
