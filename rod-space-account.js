@@ -226,7 +226,7 @@
     };
     const run = async (button, operation) => {
       if (accountBusy) return;
-      accountBusy = true; button.disabled = true; setStatus(status, "Saving…", "success");
+      accountBusy = true; button.disabled = true; button.parentElement?.append(status); setStatus(status, "Saving…", "success");
       try { const { auth } = await firebase; assertUser(auth); const text = await operation(); if (refreshAfterAction) lastStatus = text; else setStatus(status, text, "success"); }
       catch (error) { setStatus(status, messageFor(error)); }
       finally { accountBusy = false; button.disabled = false; currentPassword.value = ""; if (refreshAfterAction) modal.render(); }
@@ -291,6 +291,7 @@
       if (accountBusy || google) return;
       if (globalThis.__rodSpaceMacApp) {
         globalThis.open(`https://solormenezes.github.io/Rod-Space/#account=connect-google&uid=${encodeURIComponent(user.uid)}`, "_blank", "noopener,noreferrer");
+        connect.parentElement?.append(status);
         setStatus(status, "Continue in your browser using this same Rod Space account. Connect Google there, then return and choose Refresh account.", "success"); return;
       }
       if (expectedGoogleUid && expectedGoogleUid !== user.uid) { setStatus(status, "Sign in with the same account as the Mac app first."); return; }
