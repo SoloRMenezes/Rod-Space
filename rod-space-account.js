@@ -30,6 +30,12 @@
   let mode = "create";
   let modalView = "settings";
   let lastStatus = "";
+  let accountBusy = false;
+  let authRevision = 0;
+  const googleRequest = /^#account=connect-google&uid=([^&]+)$/.exec(globalThis.location?.hash || "");
+  let expectedGoogleUid = "";
+  try { expectedGoogleUid = googleRequest ? decodeURIComponent(googleRequest[1]) : ""; } catch {}
+  if (expectedGoogleUid) mode = "signin";
   let passwordResetTicker = 0;
   const passwordResetCooldownKey = "rodspace.password-reset-until";
   const pendingBest = new Map();
@@ -59,7 +65,7 @@
     const gameStats = document.getElementById("rs-settings-game-stats");
     if (gameStats) gameStats.hidden = !activeGame;
     const summary = document.getElementById("rs-settings-account-summary");
-    if (summary) summary.textContent = state.user ? `${username()} · Profile and account settings` : "Sign in or create an account";
+    if (summary) summary.textContent = state.user ? `Account: ${username()}` : "Account: Sign in";
   }
   function messageFor(error) {
     const code = error?.code || "";
@@ -69,7 +75,14 @@
       "auth/weak-password": "Use a password with at least 6 characters.",
       "auth/invalid-credential": "Email or password is incorrect.",
       "auth/too-many-requests": "Too many attempts. Wait a bit and try again.",
-      "auth/operation-not-allowed": "Email accounts are not enabled yet. Try again later.",
+      "auth/operation-not-allowed": "This sign-in method is not enabled yet. Google connection needs to be enabled in Rod Space's account service.",
+      "auth/credential-already-in-use": "That Google account is already connected to another Rod Space account. Your account and saves were not changed.",
+      "auth/provider-already-linked": "Google is already connected to this account.",
+      "auth/user-mismatch": "Confirm the same account you are currently signed in to.",
+      "auth/requires-recent-login": "Confirm your identity again before changing account security.",
+      "auth/popup-blocked": "Allow popups for Rod Space, then try again.",
+      "auth/popup-closed-by-user": "Google confirmation was cancelled. You can try again.",
+      "auth/unverified-email": "Verify your current email before changing it.",
       "auth/unauthorized-domain": "This Rod Space address is not yet enabled for accounts.",
       "permission-denied": "Could not save account data. Please try again."
     };
@@ -111,6 +124,13 @@
       .rs-account-form input{min-width:0;border:1px solid #475569;border-radius:9px;padding:11px 12px;background:#0b1220;color:#fff;font:15px system-ui}
       .rs-account-primary,.rs-account-secondary{border:1px solid #4770a8;border-radius:9px;padding:11px 13px;background:#1d4ed8;color:white;font:750 14px system-ui;cursor:pointer}
       .rs-account-secondary{background:#1f2937;border-color:#475569;color:#e2e8f0}
+      .rs-account-section{margin-top:20px;padding-top:16px;border-top:1px solid #334155}
+      .rs-account-section h3{margin:0 0 8px;font:750 15px system-ui;color:#f8fafc}
+      .rs-account-body>.rs-account-status:empty{display:none}
+      .rs-account-note{margin:7px 0;color:#94a3b8;font:13px/1.5 system-ui;overflow-wrap:anywhere}
+      .rs-account-form button:disabled{opacity:.6;cursor:wait}
+      .rs-account-actions{display:grid;gap:10px;margin-top:18px}
+      .rs-account-dialog button:focus-visible,.rs-account-dialog input:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
       .rs-account-links{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:14px}
       .rs-account-link{border:0;padding:3px 0;background:none;color:#93c5fd;font:650 13px system-ui;cursor:pointer}
       .rs-account-status{min-height:20px;margin:12px 0 0;color:#fca5a5;font:13px/1.4 system-ui}
@@ -166,6 +186,138 @@
   function setStatus(target, text, kind = "error") {
     target.textContent = text;
     target.dataset.kind = kind;
+    if (text) target.scrollIntoView?.({ block: "nearest" });
+  }
+
+  async function refreshAccount() {
+    const { auth, authSdk, db, dbSdk } = await firebase;
+    const user = auth.currentUser;
+    if (!user || user.isAnonymous || accountBusy) return;
+    await authSdk.reload(user);
+    const profile = await dbSdk.getDoc(dbSdk.doc(db, "profiles", user.uid));
+    if (auth.currentUser?.uid !== user.uid) return;
+    state.user = auth.currentUser;
+    if (profile.exists()) state.profile = profile.data();
+    publish();
+    if (modal && !modal.hidden) modal.render();
+  }
+
+  function renderAccountSettings(body, title) {
+    title.textContent = "Account settings";
+    const user = state.user;
+    const hasPassword = user.providerData?.some(item => item.providerId === "password");
+    const google = user.providerData?.find(item => item.providerId === "google.com");
+    let googleIdentityConfirmedAt = 0;
+    const status = element("p", { class: "rs-account-status", role: "status" });
+    let refreshAfterAction = false;
+    const currentPassword = element("input", { name: "current-password", type: "password", autocomplete: "current-password", placeholder: "Current Rod Space password" });
+    const assertUser = auth => { if (auth.currentUser?.uid !== user.uid) throw new Error("Your account changed. Reopen Settings and try again."); };
+    const confirmIdentity = async () => {
+      const { auth, authSdk } = await firebase;
+      assertUser(auth);
+      if (hasPassword) {
+        if (!currentPassword.value) throw new Error("Enter your current password under Security first.");
+        await authSdk.reauthenticateWithCredential(user, authSdk.EmailAuthProvider.credential(user.email, currentPassword.value));
+      } else {
+        if (globalThis.__rodSpaceMacApp) throw new Error("Confirm this Google account on the Rod Space website to change its security settings.");
+        await authSdk.reauthenticateWithPopup(user, new authSdk.GoogleAuthProvider());
+      }
+      assertUser(auth);
+    };
+    const run = async (button, operation) => {
+      if (accountBusy) return;
+      accountBusy = true; button.disabled = true; setStatus(status, "Saving…", "success");
+      try { const { auth } = await firebase; assertUser(auth); const text = await operation(); if (refreshAfterAction) lastStatus = text; else setStatus(status, text, "success"); }
+      catch (error) { setStatus(status, messageFor(error)); }
+      finally { accountBusy = false; button.disabled = false; currentPassword.value = ""; if (refreshAfterAction) modal.render(); }
+    };
+    const form = (label, name, inputType, value, action, handler) => {
+      const section = element("form", { class: "rs-account-form", "aria-label": label });
+      const fieldName = label.replace(/^Change /, "");
+      const field = element("label", {}, fieldName[0].toUpperCase() + fieldName.slice(1));
+      const input = element("input", { name, type: inputType, required: "", autocomplete: inputType === "email" ? "email" : "nickname" });
+      input.value = value;
+      const button = element("button", { class: "rs-account-secondary", type: "submit" }, action);
+      field.append(input); section.append(field, button);
+      section.onsubmit = async event => { event.preventDefault(); await run(button, () => handler(input)); };
+      return section;
+    };
+    const profile = element("section", { class: "rs-account-section" });
+    profile.append(element("h3", {}, "Profile"), form("Change username", "account-username", "text", username(), "Save username", async input => {
+      const name = input.value.trim();
+      if (!/^[A-Za-z0-9_]{3,18}$/.test(name)) throw new Error("Username must be 3–18 letters, numbers or underscores.");
+      const { auth, authSdk, db, dbSdk } = await firebase; assertUser(auth);
+      await dbSdk.updateDoc(dbSdk.doc(db, "profiles", user.uid), { username: name, updatedAt: dbSdk.serverTimestamp() });
+      assertUser(auth); state.profile = { ...state.profile, username: name }; publish();
+      try { await authSdk.updateProfile(user, { displayName: name }); } catch (error) { console.warn("Account display name could not be updated.", error.code); }
+      refreshAfterAction = true;
+      return "Username saved.";
+    }));
+    const security = element("section", { class: "rs-account-section" });
+    security.append(element("h3", {}, "Security"));
+    if (hasPassword) { const proof = element("div", { class: "rs-account-form" }); const field = element("label", {}, "Current password"); field.append(currentPassword); proof.append(field); security.append(proof, element("p", { class: "rs-account-note" }, "Confirm your password before changing email, password or Google connection.")); }
+    else security.append(element("p", { class: "rs-account-note" }, "Google will ask you to confirm your identity for security changes."));
+    security.append(form("Change email", "account-email", "email", user.email || "", "Verify new email", async input => {
+      const email = input.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
+      if (email.toLowerCase() === user.email?.toLowerCase()) throw new Error("Enter a different email address.");
+      await confirmIdentity(); const { authSdk } = await firebase;
+      await authSdk.verifyBeforeUpdateEmail(user, email);
+      return "Verification sent to your new email. Open the link, then refresh this account. Your current email stays active until verified.";
+    }));
+    const passwordForm = element("form", { class: "rs-account-form", "aria-label": "Change password" });
+    const password = element("input", { name: "new-password", type: "password", autocomplete: "new-password", minlength: "8", required: "" });
+    const confirmation = element("input", { name: "confirm-password", type: "password", autocomplete: "new-password", minlength: "8", required: "" });
+    for (const [label, input] of [["New password", password], ["Confirm new password", confirmation]]) { const field = element("label", {}, label); field.append(input); passwordForm.append(field); }
+    const passwordButton = element("button", { class: "rs-account-secondary", type: "submit" }, hasPassword ? "Change password" : "Add password");
+    passwordForm.append(passwordButton);
+    passwordForm.onsubmit = async event => { event.preventDefault(); await run(passwordButton, async () => {
+      if (password.value.length < 8) throw new Error("Use a password with at least 8 characters.");
+      if (password.value !== confirmation.value) throw new Error("The new passwords do not match.");
+      await confirmIdentity(); const { authSdk } = await firebase;
+      if (hasPassword) await authSdk.updatePassword(user, password.value);
+      else await authSdk.linkWithCredential(user, authSdk.EmailAuthProvider.credential(user.email, password.value));
+      refreshAfterAction = true;
+      password.value = ""; confirmation.value = "";
+      return "Password saved. Your account, scores and saves are unchanged.";
+    }); password.value = ""; confirmation.value = ""; };
+    security.append(passwordForm);
+    const connections = element("section", { class: "rs-account-section" });
+    const connect = element("button", { class: "rs-account-secondary", type: "button" }, google ? "Google connected" : "Connect Google");
+    connect.disabled = Boolean(google);
+    connections.append(element("h3", {}, "Connected accounts"), element("p", { class: "rs-account-note" }, google ? google.email || "Google is connected to this Rod Space account." : "Connect Google to this same account. Your profile, scores and saves stay together."), connect);
+    if (expectedGoogleUid && expectedGoogleUid !== user.uid) connections.append(element("p", { class: "rs-account-status" }, "This is a different account from the Mac app. Sign out and sign in with the same Rod Space account before connecting Google."));
+    connect.onclick = async () => {
+      if (accountBusy || google) return;
+      if (globalThis.__rodSpaceMacApp) {
+        globalThis.open(`https://solormenezes.github.io/Rod-Space/#account=connect-google&uid=${encodeURIComponent(user.uid)}`, "_blank", "noopener,noreferrer");
+        setStatus(status, "Continue in your browser using this same Rod Space account. Connect Google there, then return and choose Refresh account.", "success"); return;
+      }
+      if (expectedGoogleUid && expectedGoogleUid !== user.uid) { setStatus(status, "Sign in with the same account as the Mac app first."); return; }
+      if (Date.now() - googleIdentityConfirmedAt > 60_000) {
+        await run(connect, async () => { await confirmIdentity(); googleIdentityConfirmedAt = Date.now(); connect.textContent = "Choose Google account"; return "Identity confirmed. Click Choose Google account to open Google."; });
+        return;
+      }
+      await run(connect, async () => {
+        if (expectedGoogleUid && expectedGoogleUid !== user.uid) throw new Error("Sign in with the same account as the Mac app first.");
+        // Open on a fresh click, not after a network reauthentication request (Safari blocks that popup).
+        const { auth, authSdk } = await firebase; assertUser(auth);
+        const provider = new authSdk.GoogleAuthProvider(); provider.setCustomParameters({ prompt: "select_account" });
+        await authSdk.linkWithPopup(user, provider); assertUser(auth); state.user = auth.currentUser; publish();
+        connect.textContent = "Google connected";
+        refreshAfterAction = true;
+        return "Google connected to this account. Your profile and saves are unchanged.";
+      });
+      if (state.user?.providerData?.some(item => item.providerId === "google.com")) connect.disabled = true;
+    };
+    const actions = element("div", { class: "rs-account-actions" });
+    const refresh = element("button", { class: "rs-account-link", type: "button" }, "Refresh account");
+    refresh.onclick = async () => { if (accountBusy) return; refresh.disabled = true; try { await refreshAccount(); } catch (error) { setStatus(status, messageFor(error)); refresh.disabled = false; } };
+    const signOut = element("button", { class: "rs-account-secondary", type: "button" }, "Sign out");
+    signOut.onclick = async () => { if (accountBusy) return; await run(signOut, async () => { const { auth, authSdk } = await firebase; await authSdk.signOut(auth); modal.hidden = true; return "Signed out."; }); };
+    actions.append(refresh, signOut);
+    body.append(element("p", { class: "rs-account-note" }, `Account: ${username()}`), status, profile, security, connections, actions);
+    if (lastStatus) { setStatus(status, lastStatus, "success"); lastStatus = ""; }
   }
   function updatePasswordResetButton(reset, sending = false) {
     let seconds = 0;
@@ -196,6 +348,7 @@
     }
     if (state.user) {
       const showingGameStats = modalView === "stats" && Boolean(activeGame);
+      if (!showingGameStats) { renderAccountSettings(body, title); return; }
       title.textContent = showingGameStats ? "In-game stats" : "Settings";
       const email = state.user.email || "";
       const intro = element("p", { class: "rs-account-summary" }, showingGameStats
@@ -214,6 +367,7 @@
       return;
     }
     const form = element("form", { class: "rs-account-form" });
+    if (expectedGoogleUid) body.append(element("p", { class: "rs-account-note" }, "Sign in with the same Rod Space account as your Mac app, then connect Google below."));
     const usernameWrap = element("label", { class: "rs-account-username-field" }, "Username");
     const usernameInput = element("input", { name: "username", type: "text", minlength: "3", maxlength: "18", pattern: "[A-Za-z0-9_]+", autocomplete: "nickname", placeholder: "e.g. RodPlayer" });
     usernameWrap.append(usernameInput);
@@ -483,7 +637,9 @@
   mountControls();
   firebase.then(({ auth, authSdk, db, dbSdk }) => {
       authSdk.onAuthStateChanged(auth, async user => {
+        const revision = ++authRevision;
         const userChanged = state.user?.uid !== user?.uid;
+        if (!userChanged && state.profile) { state.user = user; publish(); if (!accountBusy && modal && !modal.hidden) modal.render(); return; }
         if (userChanged) playedUid = "";
         state.user = user && !user.isAnonymous ? user : null;
         state.profile = null;
@@ -491,6 +647,7 @@
         if (state.user) {
           try {
             const snapshot = await dbSdk.getDoc(dbSdk.doc(db, "profiles", state.user.uid));
+            if (revision !== authRevision) return;
             if (snapshot.exists()) state.profile = snapshot.data();
             else if (state.user.displayName) {
               state.profile = { username: state.user.displayName, gamesPlayed: 0 };
@@ -504,12 +661,14 @@
             }
           } catch (error) { state.error = messageFor(error); }
         }
+        if (revision !== authRevision) return;
         state.ready = true;
         resolveReady();
         publish();
         const chip = document.getElementById("rs-account-chip");
         if (chip) { chip.textContent = state.user ? `${username()} · ${state.profile?.gamesPlayed || 0} games played` : ""; chip.hidden = !state.user; }
-        if (modal && !modal.hidden) modal.render();
+        if (expectedGoogleUid) modal.hidden = false;
+        if (!accountBusy && modal && !modal.hidden) modal.render();
       });
   }).catch(error => { state.ready = true; state.error = messageFor(error); resolveReady(); publish(); });
 })();
