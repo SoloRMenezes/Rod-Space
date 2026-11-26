@@ -2,7 +2,7 @@ const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("n
 const root=path.resolve(__dirname,".."),memory=new Map(),registered={},documentListeners={},intervals=new Map(),lineWidths=[],scales=[],translations=[];let intervalId=0,clock=1000;
 const snakeSource=fs.readFileSync(path.join(root,"arcade-action.js"),"utf8");
 assert.match(snakeSource,/Math\.max\(-3\.6\*dt,Math\.min\(3\.6\*dt,angleDelta\(/,"Snake turning speed is increased while remaining frame-rate scaled");
-assert.match(snakeSource,/if\(distance\(a,b\)<a\.radius\+b\.radius\)\{a\.alive=false;b\.alive=false;/,"head-to-head collisions kill both snakes");
+assert.match(snakeSource,/if\(distance\(a,b\)<a\.radius\+b\.radius\)\{a\.alive=false;a\.respawnAt=now\+1400;b\.alive=false;b\.respawnAt=now\+1400;/,"head-to-head collisions kill both snakes before they can respawn");
 assert.match(snakeSource,/collidesWithSnake\(s,s\.index\)/,"snake heads collide with other snakes' body segments");
 class FakeElement{
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(k,v){this[k]=v}};this.classList={toggle(){},add(){},remove(){},contains(){return false}};this.value="";this.textContent="";this.className="";this.hidden=false}
