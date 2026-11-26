@@ -640,3 +640,12 @@ body[data-game="2048"] .game-stage {touch-action:none;overscroll-behavior:none}
 body[data-game="combat"] .combat-character-label {display:grid;gap:8px;width:min(360px,100%);margin:0 auto 16px;text-align:left;font-weight:800;color:var(--text)}
 body[data-game="combat"] .combat-character-label select {width:100%;min-height:48px;padding:8px 12px;border:1px solid #657b6a;border-radius:7px;background:#f6f2dc;color:#263a31;font:inherit}
 body[data-game="combat"] .combat-character-label span {font-size:13px;font-weight:500;color:var(--muted,#c4d0c7)}
+
+@media (min-width:641px) and (max-height:950px) {
+  body[data-game="wordle"] .game-stage {padding-top:6px;padding-bottom:6px}
+  body[data-game="wordle"] .game-panel .toolbar {margin-bottom:8px}
+  body[data-game="wordle"] .game-panel .stat {padding:8px 12px}
+  body[data-game="wordle"] .wordle-board {gap:clamp(3px,.65vh,6px);grid-template-columns:repeat(5,minmax(40px,min(7.2vh,64px)));margin-bottom:clamp(5px,1vh,10px)}
+  body[data-game="wordle"] .wordle-keyboard button {min-height:clamp(42px,6vh,58px);padding:5px 4px}
+  body[data-game="wordle"] .game-panel .message {margin:5px 0;min-height:18px}
+}

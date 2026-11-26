@@ -1,6 +1,8 @@
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.resolve(__dirname,".."),memory=new Map(),registered={},documentListeners={},intervals=new Map(),lineWidths=[],scales=[],translations=[];let intervalId=0,clock=1000;
 const snakeSource=fs.readFileSync(path.join(root,"arcade-action.js"),"utf8");
+const immersiveCss=fs.readFileSync(path.join(root,"arcade-immersive.css"),"utf8");
+assert.match(immersiveCss,/@media\s*\(min-width:\s*641px\)\s*and\s*\(max-height:\s*950px\)[\s\S]*?body\[data-game="wordle"\] \.wordle-keyboard button \{min-height:clamp\(42px,6vh,58px\)/,"Daily Wordle compresses on short laptop screens so the keyboard remains visible");
 assert.match(snakeSource,/turnRate=Math\.min\(i===0\?3\.6:5\.6,speed\/\(s\.radius\*2\)\),turn=Math\.max\(-turnRate\*dt,Math\.min\(turnRate\*dt,angleDelta\(/,"turn radius cannot be smaller than the snake's full body thickness");
 assert.match(snakeSource,/if\(distance\(a,b\)<a\.radius\+b\.radius\)\{killSnake\(a,now\+1400\);killSnake\(b,now\+1400\);/,"head-to-head collisions kill both snakes before they can respawn");
 assert.match(snakeSource,/collidesWithSnake\(s,s\.index\)/,"snake heads collide with other snakes' body segments");
