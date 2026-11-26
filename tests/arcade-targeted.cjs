@@ -1,7 +1,7 @@
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.resolve(__dirname,".."),memory=new Map(),registered={},documentListeners={},intervals=new Map(),lineWidths=[],scales=[],translations=[];let intervalId=0,clock=1000;
 const snakeSource=fs.readFileSync(path.join(root,"arcade-action.js"),"utf8");
-assert.match(snakeSource,/turnRate=i===0\?3\.6:5\.6,turn=Math\.max\(-turnRate\*dt,Math\.min\(turnRate\*dt,angleDelta\(/,"player and AI turning speeds remain frame-rate scaled, with tighter AI turns");
+assert.match(snakeSource,/turnRate=Math\.min\(i===0\?3\.6:5\.6,speed\/\(s\.radius\*2\)\),turn=Math\.max\(-turnRate\*dt,Math\.min\(turnRate\*dt,angleDelta\(/,"turn radius cannot be smaller than the snake's full body thickness");
 assert.match(snakeSource,/if\(distance\(a,b\)<a\.radius\+b\.radius\)\{killSnake\(a,now\+1400\);killSnake\(b,now\+1400\);/,"head-to-head collisions kill both snakes before they can respawn");
 assert.match(snakeSource,/collidesWithSnake\(s,s\.index\)/,"snake heads collide with other snakes' body segments");
 assert.match(snakeSource,/s\.eatenFood\.push\(\{\.\.\.orb\}\)/,"snakes keep track of each food orb they eat");
