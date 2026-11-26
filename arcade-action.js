@@ -33,7 +33,7 @@ bar.append(scoreEl,bestEl,startBtn,homeBtn);root.append(bar);const board=node("d
 let snakes=[],food=[],running=false,points=0,timer=0,targetAngle=0,stickPointer=null,stickOrigin=null,spawnProtection=0,camera={x:WORLD/2,y:WORLD/2,zoom:.9},lastFrame=0;
 const random=(min,max)=>min+Math.random()*(max-min),distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),angleDelta=(from,to)=>Math.atan2(Math.sin(to-from),Math.cos(to-from));
 function makeSnake(x,y,angle,index,length){const radius=snakeRadius(length),body=[];for(let d=0;d<length;d+=9)body.push({x:x-Math.cos(angle)*d,y:y-Math.sin(angle)*d});return{x,y,angle,targetAngle:angle,index,length,radius,body,alive:true,speed:index===0?190:random(145,180),score:0,eatenFood:[]}}
-function snakeRadius(length){return Math.min(17,8+Math.sqrt(Math.max(0,length-260))*.25)}
+function snakeRadius(length){return Math.min(21,8+Math.sqrt(Math.max(0,length-260))*.32)}
 function randomFood(){return{x:random(120,WORLD-120),y:random(120,WORLD-120),value:random(45,85),size:random(4,7),color:colors[Math.floor(Math.random()*colors.length)]}}
 function addFood(count=1){for(let i=0;i<count;i++)food.push(randomFood())}
 function spawnSnakes(){const sizes=[260,340,450,580,720,880,1080,1300];snakes=[makeSnake(WORLD/2,WORLD/2,random(-Math.PI,Math.PI),0,330)];for(let i=0;i<sizes.length;i++){const angle=random(-Math.PI,Math.PI),orbit=random(520,680),x=WORLD/2+Math.cos(angle)*orbit,y=WORLD/2+Math.sin(angle)*orbit;snakes.push(makeSnake(x,y,random(-Math.PI,Math.PI),i+1,sizes[i]))}}

@@ -7,7 +7,7 @@ assert.match(snakeSource,/collidesWithSnake\(s,s\.index\)/,"snake heads collide 
 assert.match(snakeSource,/s\.eatenFood\.push\(\{\.\.\.orb\}\)/,"snakes keep track of each food orb they eat");
 assert.match(snakeSource,/function killSnake\(s,respawnAt=0\).*food\.push\(\{\.\.\.eaten\[i\]/,"all eaten food is dropped at the snake's body on death");
 assert.match(snakeSource,/orbit=random\(700,1700\)/,"AI snakes respawn at varied positions around the player");
-assert.match(snakeSource,/function snakeRadius\(length\)\{return Math\.min\(17,/,"snake thickness is capped to keep large snakes maneuverable");
+assert.match(snakeSource,/function snakeRadius\(length\)\{return Math\.min\(21,8\+Math\.sqrt\(Math\.max\(0,length-260\)\)\*\.32\)\}/,"snake growth keeps its original thickness");
 assert.match(snakeSource,/function botSpeed\(s,target\)\{return target&&distance\(s,target\)<s\.radius\+target\.size\+110\?Math\.max\(72,s\.speed\*\.58\):s\.speed\}/,"AI snakes slow down as they close in on food");
 class FakeElement{
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(k,v){this[k]=v}};this.classList={toggle(){},add(){},remove(){},contains(){return false}};this.value="";this.textContent="";this.className="";this.hidden=false}
