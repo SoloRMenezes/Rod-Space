@@ -35,9 +35,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -76,8 +76,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "63fef7e32d88b247"
+    "bytes": 287046,
+    "version": "f42e8f7ea3df6d28"
   },
   "headsup": {
     "name": "Heads Up",
@@ -115,9 +115,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -156,8 +156,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "e32cdbb0463a64c9"
+    "bytes": 287046,
+    "version": "8be9ce2acc7da6c4"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -195,9 +195,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -236,8 +236,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "cb0fe4a0047b7ec8"
+    "bytes": 287046,
+    "version": "cb18ef25eba78928"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -275,9 +275,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -316,8 +316,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "a8db8a1ab1a97a97"
+    "bytes": 287046,
+    "version": "c94c5f575c601a2e"
   },
   "typing": {
     "name": "Fast Typing",
@@ -355,9 +355,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -396,8 +396,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "dfb7b862305e8931"
+    "bytes": 287046,
+    "version": "9a1ecea557b010a2"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -435,9 +435,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -476,8 +476,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "759423a00185def0"
+    "bytes": 287046,
+    "version": "4e44c51fff8bd3c2"
   },
   "mines": {
     "name": "Minesweeper",
@@ -515,9 +515,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -556,8 +556,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "4c91503903da534d"
+    "bytes": 287046,
+    "version": "b347b533e18437ce"
   },
   "pong": {
     "name": "Pong",
@@ -595,9 +595,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -636,8 +636,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "be4a507acbd05712"
+    "bytes": 287046,
+    "version": "9674720e6b2125ba"
   },
   "snake": {
     "name": "Snake Arena",
@@ -675,9 +675,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -716,8 +716,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "809f71105d9cf124"
+    "bytes": 287046,
+    "version": "a7b191ada2be99a7"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -755,9 +755,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-party.js",
@@ -796,8 +796,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 286285,
-    "version": "a074a0921cc64fd2"
+    "bytes": 287046,
+    "version": "c59314ac13a21b06"
   },
   "maths-book": {
     "name": "Bookshelf",
@@ -968,9 +968,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-core.js",
@@ -6998,8 +6998,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 366724998,
-    "version": "3758f3828dda82b8"
+    "bytes": 366725759,
+    "version": "00433f02b6ff2179"
   },
   "double-take": {
     "name": "Double Take",
@@ -7019,7 +7019,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 63060,
-    "version": "01928a0b3a009056"
+    "version": "b827d0b13505d057"
   },
   "shit-spiral": {
     "name": "Shit Spiral",
@@ -7057,7 +7057,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 52255,
-    "version": "e98cd7ea26820533"
+    "version": "ae9fc70bd66fa687"
   },
   "dungeons-and-dragons": {
     "name": "Dungeons And Dragons",
@@ -7122,7 +7122,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 1099886,
-    "version": "b58cc29a3cedc2ca"
+    "version": "31ffac8b0e3364ad"
   },
   "piano": {
     "name": "Virtual Piano",
@@ -7142,7 +7142,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 12182,
-    "version": "5a10479bf98b9e29"
+    "version": "001011bfbfa33931"
   },
   "counter": {
     "name": "Counter",
@@ -7168,7 +7168,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 458969,
-    "version": "a75b9b66e49bdf19"
+    "version": "55402abe5bba6251"
   },
   "force-pad": {
     "name": "Force Pad",
@@ -7339,9 +7339,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-core.js",
@@ -13369,8 +13369,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 366724998,
-    "version": "b429c46748adf311"
+    "bytes": 366725759,
+    "version": "1d416d0dea5d5e11"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -13402,7 +13402,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 458976,
-    "version": "6e4968b57eaf239e"
+    "version": "9b87da37b84d3b25"
   },
   "karaoke-night": {
     "name": "Karaoke Night",
@@ -13528,7 +13528,7 @@ self.OFFLINE_CATALOG = {
     ],
     "note": "Online song search and streaming need internet. Local content works offline.",
     "bytes": 156368946,
-    "version": "1cff26cce878f03a"
+    "version": "377ed425308fec4a"
   },
   "nextup": {
     "name": "NextUp",
@@ -13558,7 +13558,7 @@ self.OFFLINE_CATALOG = {
     ],
     "note": "Online song search and streaming need internet. Local content works offline.",
     "bytes": 88308,
-    "version": "ea471e1d9d887dd5"
+    "version": "1d50564ab4877378"
   },
   "who-wants-to-be-a-millionaire": {
     "name": "Who Wants to be a Millionaire",
@@ -13590,7 +13590,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 458479,
-    "version": "77a2fdd3f3230a8d"
+    "version": "7268dd580e80f6c1"
   },
   "card-wars": {
     "name": "Card Wars",
@@ -18385,7 +18385,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 167926439,
-    "version": "3244076d6c1b9701"
+    "version": "c8f7177d1f65febc"
   },
   "truth-or-dare": {
     "name": "Truth or Dare",
@@ -18411,7 +18411,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 59592,
-    "version": "fb9d2a93258cfa52"
+    "version": "c63403e77e91f411"
   },
   "whos-more-likely": {
     "name": "Who's More Likely To?",
@@ -18443,7 +18443,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 462254,
-    "version": "04443fa37f059a21"
+    "version": "b1776615db7d13bd"
   },
   "impostor": {
     "name": "Impostor",
@@ -18469,7 +18469,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 438712,
-    "version": "5c4f1e23dbb18d7e"
+    "version": "994c24a5e592d496"
   },
   "sidequests": {
     "name": "Side Quests",
@@ -18489,7 +18489,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 29243,
-    "version": "8e88a30151049813"
+    "version": "29e1688e2c80b635"
   },
   "darts": {
     "name": "Darts",
@@ -18509,7 +18509,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 35044,
-    "version": "eb88d7d59898a2f6"
+    "version": "ccf842810f20ef8a"
   },
   "tic-tac-toe": {
     "name": "Tic Tac Toe",
@@ -18529,7 +18529,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 14295,
-    "version": "6fc9f6322c075f94"
+    "version": "3fe2e99d0a288aa3"
   },
   "dots-boxes": {
     "name": "Dots & Boxes",
@@ -18549,7 +18549,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 17754,
-    "version": "94a0ac4c731ce3d2"
+    "version": "00c2b2beeb767ad9"
   },
   "theft": {
     "name": "Theft",
@@ -18569,7 +18569,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 26975,
-    "version": "680a507c07918a8c"
+    "version": "41a184a4fa685497"
   },
   "cards-against": {
     "name": "Cards Against Boredom",
@@ -18601,7 +18601,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 470877,
-    "version": "4d06f5a86c16771d"
+    "version": "e2374116f18d525e"
   },
   "reaction": {
     "name": "Reaction Game",
@@ -18627,7 +18627,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 36466,
-    "version": "ee79ff4880146dc7"
+    "version": "02cd00ca6ab7cff3"
   },
   "two-fingers": {
     "name": "Two Fingers",
@@ -18681,7 +18681,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 37228683,
-    "version": "0bb8b291c6c12b39"
+    "version": "ec7c51b9d1882ada"
   },
   "solos-rng": {
     "name": "Solo's RNG",
@@ -18776,7 +18776,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 3313327,
-    "version": "511291ed56d2794e"
+    "version": "ce951d5105b6d729"
   },
   "blackjack": {
     "name": "Black Jack",
@@ -18802,7 +18802,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 434226,
-    "version": "f4ccaa39a6026771"
+    "version": "dbdfbcdf31dafecb"
   },
   "3d-drift": {
     "name": "Tokyo Drift",
@@ -18906,7 +18906,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 3232896,
-    "version": "0cc034fd61d36d5d"
+    "version": "e028cb066578fc59"
   },
   "web_weavers": {
     "name": "Web Weavers",
@@ -18971,7 +18971,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 5914242,
-    "version": "1daecc1095005b5b"
+    "version": "30b23b454539df82"
   },
   "hood-brawlers": {
     "name": "Hood Brawlers",
@@ -19021,7 +19021,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 132572,
-    "version": "852edc21b6096353"
+    "version": "c5db202147f04719"
   },
   "planet-architect": {
     "name": "Planet Architect",
@@ -19078,7 +19078,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 8148615,
-    "version": "60092bc0df17d951"
+    "version": "bac6422a29ffee17"
   },
   "orbit-boss": {
     "name": "Orbit Boss",
@@ -19110,7 +19110,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 28370,
-    "version": "ffae887d2f22e5a1"
+    "version": "8ce05efa54f42e77"
   },
   "pac-man-3d": {
     "name": "Pac-Man 3D",
@@ -19160,7 +19160,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 1357471,
-    "version": "879945ecf1633695"
+    "version": "06e3c7db62d87142"
   },
   "nicos-nextbots": {
     "name": "Nico's Nextbots",
@@ -19331,9 +19331,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-action.js",
-        "bytes": 19067,
-        "hash": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d",
-        "sha256": "147c19e08b48640c26a17a9449f470a771308f3661b1c803083a0712c0721b8d"
+        "bytes": 19828,
+        "hash": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695",
+        "sha256": "29adef7f2f3d2479d2ac0929e1b10aa3686699a4f92deed1b08fa00002f42695"
       },
       {
         "path": "arcade-core.js",
@@ -25361,8 +25361,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 366724998,
-    "version": "d9c5161bfa2184f6"
+    "bytes": 366725759,
+    "version": "0914c00d26d59180"
   },
   "backrooms": {
     "name": "The Backrooms",
@@ -25454,7 +25454,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 761181,
-    "version": "509e9e9e095f5b52"
+    "version": "463eb07ee6fdf519"
   },
   "sling-champ": {
     "name": "Sling Champ",
@@ -25486,7 +25486,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 149410,
-    "version": "e6c740dad15a7ef4"
+    "version": "f6a7d0934d5abefb"
   },
   "relic-rush": {
     "name": "Relic Rush",
@@ -25542,7 +25542,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 680124,
-    "version": "62b635f90a744364"
+    "version": "4a6f5ac61611e2f8"
   },
   "slot-machine": {
     "name": "Slot Machine",
@@ -25568,7 +25568,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 32967,
-    "version": "0b3a05149377e913"
+    "version": "64916f10850d303e"
   },
   "fidget-roulette": {
     "name": "Fidget Roulette",
@@ -25588,7 +25588,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 23052,
-    "version": "b6804f3fb2e42fc8"
+    "version": "a72dfeaea4ad1c71"
   },
   "tilt-maze": {
     "name": "Tilt Maze Runner",
@@ -25624,7 +25624,7 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 1972716,
-    "version": "e48c6ff53b8adee6"
+    "version": "99118afea8423662"
   },
   "multiplayer-test": {
     "name": "Parkour",
@@ -25685,6 +25685,6 @@ self.OFFLINE_CATALOG = {
       }
     ],
     "bytes": 4068631,
-    "version": "c9e0df95ff1bb8f8"
+    "version": "b72afba4ba2101e1"
   }
 };
