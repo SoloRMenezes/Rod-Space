@@ -1,5 +1,9 @@
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.resolve(__dirname,".."),memory=new Map(),registered={},documentListeners={},intervals=new Map(),lineWidths=[],scales=[],translations=[];let intervalId=0,clock=1000;
+const snakeSource=fs.readFileSync(path.join(root,"arcade-action.js"),"utf8");
+assert.match(snakeSource,/Math\.max\(-3\.6\*dt,Math\.min\(3\.6\*dt,angleDelta\(/,"Snake turning speed is increased while remaining frame-rate scaled");
+assert.match(snakeSource,/if\(distance\(a,b\)<a\.radius\+b\.radius\)\{a\.alive=false;b\.alive=false;/,"head-to-head collisions kill both snakes");
+assert.match(snakeSource,/collidesWithSnake\(s,s\.index\)/,"snake heads collide with other snakes' body segments");
 class FakeElement{
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(k,v){this[k]=v}};this.classList={toggle(){},add(){},remove(){},contains(){return false}};this.value="";this.textContent="";this.className="";this.hidden=false}
  setAttribute(k,v){this.attributes[k]=v}getAttribute(k){return this.attributes[k]??null}append(...x){this.children.push(...x)}replaceChildren(...x){this.children=[...x]}addEventListener(k,fn){this.listeners[k]=fn}focus(){}getBoundingClientRect(){return{left:0,top:0,width:600,height:480}}setPointerCapture(){}

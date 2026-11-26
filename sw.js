@@ -1,5 +1,5 @@
 importScripts('./offline-catalog.js?v=20');
-const SHELL = 'rod-shell-274babc59591054b';
+const SHELL = 'rod-shell-f238817b86702164';
 const PREFIX = 'rod-game-';
 const BASE = new URL('./', self.location.href);
 const absolute = p => new URL(p, BASE).href;
