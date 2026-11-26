@@ -1,12 +1,14 @@
 const assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const root=path.resolve(__dirname,".."),memory=new Map(),registered={},documentListeners={},intervals=new Map(),lineWidths=[],scales=[],translations=[];let intervalId=0,clock=1000;
 const snakeSource=fs.readFileSync(path.join(root,"arcade-action.js"),"utf8");
-assert.match(snakeSource,/Math\.max\(-3\.6\*dt,Math\.min\(3\.6\*dt,angleDelta\(/,"Snake turning speed is increased while remaining frame-rate scaled");
+assert.match(snakeSource,/turnRate=i===0\?3\.6:5\.6,turn=Math\.max\(-turnRate\*dt,Math\.min\(turnRate\*dt,angleDelta\(/,"player and AI turning speeds remain frame-rate scaled, with tighter AI turns");
 assert.match(snakeSource,/if\(distance\(a,b\)<a\.radius\+b\.radius\)\{killSnake\(a,now\+1400\);killSnake\(b,now\+1400\);/,"head-to-head collisions kill both snakes before they can respawn");
 assert.match(snakeSource,/collidesWithSnake\(s,s\.index\)/,"snake heads collide with other snakes' body segments");
 assert.match(snakeSource,/s\.eatenFood\.push\(\{\.\.\.orb\}\)/,"snakes keep track of each food orb they eat");
 assert.match(snakeSource,/function killSnake\(s,respawnAt=0\).*food\.push\(\{\.\.\.eaten\[i\]/,"all eaten food is dropped at the snake's body on death");
 assert.match(snakeSource,/orbit=random\(700,1700\)/,"AI snakes respawn at varied positions around the player");
+assert.match(snakeSource,/function snakeRadius\(length\)\{return Math\.min\(17,/,"snake thickness is capped to keep large snakes maneuverable");
+assert.match(snakeSource,/function botSpeed\(s,target\)\{return target&&distance\(s,target\)<s\.radius\+target\.size\+110\?Math\.max\(72,s\.speed\*\.58\):s\.speed\}/,"AI snakes slow down as they close in on food");
 class FakeElement{
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.attributes={};this.style={setProperty(k,v){this[k]=v}};this.classList={toggle(){},add(){},remove(){},contains(){return false}};this.value="";this.textContent="";this.className="";this.hidden=false}
  setAttribute(k,v){this.attributes[k]=v}getAttribute(k){return this.attributes[k]??null}append(...x){this.children.push(...x)}replaceChildren(...x){this.children=[...x]}addEventListener(k,fn){this.listeners[k]=fn}focus(){}getBoundingClientRect(){return{left:0,top:0,width:600,height:480}}setPointerCapture(){}
