@@ -10,6 +10,7 @@ assert.match(get("arcade-puzzles.js"),/document\.addEventListener\("pointerdown"
 assert.match(get("arcade-puzzles.js"),/name:"Giant",size:36,mines:85/,"Minesweeper reduces mine density on the largest board");
 assert.match(get("arcade-party.js"),/Choose your character[\s\S]*combat\.character/,"combat lets the player choose and save a character");
 assert.match(get("arcade-immersive.css"),/ladders-art \{z-index:4[\s\S]*stroke:#48c77a/,"Snakes & Ladders art is layered visibly above the board");
+assert.match(get("arcade-party.js"),/createElementNS\("http:\/\/www\.w3\.org\/2000\/svg","svg"\)/,"Snakes & Ladders uses a renderable SVG namespace root");
 assert.match(get("arcade-immersive.css"),/body\[data-game="2048"\] \.direction-pad,body\[data-game="snake"\] \.direction-pad \{display:none\}/,"direction pads are hidden on mobile for 2048 and Snake");
 assert.match(get("arcade-action.js"),/c\.addEventListener\("pointerdown"/,"Snake joystick starts at the first touch position");
 assert.match(get("arcade-action.js"),/c\.addEventListener\("pointerup"/,"Snake joystick resets when touch ends");
