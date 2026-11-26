@@ -23,8 +23,12 @@ function highScore(key,value){const prev=Number(read(key,0))||0;if(value>prev){s
 function register(id,callback){handlers[id]=callback}
 function mount(){
 const id=new URL(location.href).searchParams.get("game");
+const returnHref=new URL(location.href).searchParams.get("from")==="party"?"party.html":"./";
 const info=catalog.find(game=>game[0]===id);
 if(!info){location.replace(new URL("./",location.href).href);return null}
+window.Arcade.returnHref=returnHref;
+document.querySelectorAll('a[href="./"]').forEach(link=>{link.href=returnHref;link.setAttribute("aria-label",returnHref==="party.html"?"Back to Party Space":"Back to Rod Space")});
+const introBack=byId("introBack");if(introBack&&returnHref==="party.html")introBack.textContent="PARTY SPACE";
 document.body.dataset.game=id;
 byId("gameTitle").textContent=info[1];
 byId("gameBrandTitle").textContent=info[1];

@@ -2,6 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      history.scrollRestoration = "manual";
+      addEventListener("pageshow", () => requestAnimationFrame(() => scrollTo(0, 0)));
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rod Space - Games & Experiments</title>
     <meta name="description" content="Play free browser games, discover Rod Space projects and enjoy multiplayer party games, puzzles and arcade challenges.">

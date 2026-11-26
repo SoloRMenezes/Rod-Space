@@ -574,18 +574,18 @@ body[data-game="ladders"] .ladders-turn::before {content:"";display:inline-block
 body[data-game="ladders"] .ladders-board {position:relative;width:min(100%,min(860px,calc(100svh - 210px)));height:auto;aspect-ratio:1;flex:none;overflow:hidden;border:8px solid #374957;border-radius:15px;background:#344a59;box-shadow:0 8px 0 #202e38,0 18px 38px #0006}
 body[data-game="ladders"] .ladders-cells {position:absolute;inset:0;z-index:1;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));grid-template-rows:repeat(10,minmax(0,1fr));gap:1px;background:#425968;padding:3px}
 body[data-game="ladders"] .ladders-cell {position:relative;z-index:1;min-width:0;min-height:0;display:flex;flex-wrap:wrap;align-content:flex-start;align-items:flex-start;gap:2px;background:#526979;color:#f2eee4;padding:3px;font-size:clamp(8px,1.15vw,14px);font-weight:800}
-body[data-game="ladders"] .ladders-cell:nth-child(4n+2),body[data-game="ladders"] .ladders-cell:nth-child(4n+3) {background:#637c8a}
-body[data-game="ladders"] .ladders-cell.ladder-start {background:#687e89}
-body[data-game="ladders"] .ladders-cell.snake-start {background:#687e89}
+body[data-game="ladders"] .ladders-cell:nth-child(20n+1),body[data-game="ladders"] .ladders-cell:nth-child(20n+3),body[data-game="ladders"] .ladders-cell:nth-child(20n+5),body[data-game="ladders"] .ladders-cell:nth-child(20n+7),body[data-game="ladders"] .ladders-cell:nth-child(20n+9),body[data-game="ladders"] .ladders-cell:nth-child(20n+12),body[data-game="ladders"] .ladders-cell:nth-child(20n+14),body[data-game="ladders"] .ladders-cell:nth-child(20n+16),body[data-game="ladders"] .ladders-cell:nth-child(20n+18),body[data-game="ladders"] .ladders-cell:nth-child(20n+20) {background:#7895a1}
+body[data-game="ladders"] .ladders-cell.ladder-start {box-shadow:inset 0 0 0 3px #efc868}
+body[data-game="ladders"] .ladders-cell.snake-start {box-shadow:inset 0 0 0 3px #e78b62}
 body[data-game="ladders"] .ladders-number {position:relative;z-index:1;text-shadow:0 1px 2px #17212b}
 body[data-game="ladders"] .ladders-art,body[data-game="ladders"] .ladders-token-layer {position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-body[data-game="ladders"] .ladders-art {z-index:3;overflow:visible}
+body[data-game="ladders"] .ladders-art {z-index:4;overflow:visible;display:block!important;visibility:visible!important;opacity:1}
 body[data-game="ladders"] .ladders-token-layer {z-index:3;pointer-events:none}
-body[data-game="ladders"] .illustrated-ladder line {stroke:#b99664;stroke-width:10;stroke-linecap:round;filter:drop-shadow(0 2px 2px #17212b99)}
-body[data-game="ladders"] .illustrated-ladder .ladder-rung {stroke:#e4c995;stroke-width:6}
-body[data-game="ladders"] .illustrated-snake .snake-shadow {fill:none;stroke:#17212b;stroke-width:29;stroke-linecap:round;opacity:.75}
-body[data-game="ladders"] .illustrated-snake .snake-body {fill:none;stroke:#a9b88e;stroke-width:21;stroke-linecap:round;stroke-linejoin:round}
-body[data-game="ladders"] .snake-head {fill:#a9b88e;stroke:#17212b;stroke-width:4}
+body[data-game="ladders"] .illustrated-ladder line {stroke:#f5c85b;stroke-width:14;stroke-linecap:round;filter:drop-shadow(0 2px 2px #101820)}
+body[data-game="ladders"] .illustrated-ladder .ladder-rung {stroke:#fff0b5;stroke-width:8}
+body[data-game="ladders"] .illustrated-snake .snake-shadow {fill:none;stroke:#17212b;stroke-width:34;stroke-linecap:round;opacity:1}
+body[data-game="ladders"] .illustrated-snake .snake-body {fill:none;stroke:#48c77a;stroke-width:25;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 1px #fff8)}
+body[data-game="ladders"] .snake-head {fill:#ffca57;stroke:#17212b;stroke-width:5}
 body[data-game="ladders"] .snake-eye {fill:#17212b}
 body[data-game="ladders"] .snake-tongue {fill:none;stroke:#eee7d8;stroke-width:3;stroke-linecap:round}
 body[data-game="ladders"] .ladders-token {position:absolute;z-index:1;left:0;top:0;width:clamp(19px,2.8vw,28px);height:clamp(19px,2.8vw,28px);display:grid;place-items:center;border-radius:50%;font-size:clamp(12px,1.7vw,18px);font-weight:900;color:#fff;border:2px solid #fff6d9;background:var(--piece-colour);box-shadow:0 2px 5px #17212b;transform:translate(-50%,-50%);transition:left .09s linear,top .09s linear,transform .2s}
@@ -635,3 +635,8 @@ body[data-game="ladders"] .ladders-die-face.face-3 {transform:rotateX(90deg) tra
  body[data-game="ladders"] .ladders-cube.rolling {animation:none;transform:rotateX(-12deg) rotateY(-20deg)}
  body[data-game="ladders"] .ladders-token.climbing,body[data-game="ladders"] .ladders-token.sliding {animation:none}
 }
+
+body[data-game="2048"] .game-stage {touch-action:none;overscroll-behavior:none}
+body[data-game="combat"] .combat-character-label {display:grid;gap:8px;width:min(360px,100%);margin:0 auto 16px;text-align:left;font-weight:800;color:var(--text)}
+body[data-game="combat"] .combat-character-label select {width:100%;min-height:48px;padding:8px 12px;border:1px solid #657b6a;border-radius:7px;background:#f6f2dc;color:#263a31;font:inherit}
+body[data-game="combat"] .combat-character-label span {font-size:13px;font-weight:500;color:var(--muted,#c4d0c7)}

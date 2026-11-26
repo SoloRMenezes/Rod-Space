@@ -5,6 +5,7 @@
   if (window.top !== window || document.querySelector('#rodspace-app-menu-root')) return;
 
   const path = decodeURIComponent(location.pathname).replace(/\/$/, '') || '/';
+  const returnPath = new URL(location.href).searchParams.get('from') === 'party' ? '/party.html' : '/';
   const hubs = new Set(['/', '/index.html', '/party.html']);
   if (hubs.has(path)) return;
   // Arcade pages include their own in-game menu; avoid duplicate native overlays.
@@ -70,7 +71,7 @@
 
   const trigger = root.querySelector('#rodspace-app-menu-trigger');
   if (passive) {
-    trigger.addEventListener('click', () => { location.href = '/'; });
+    trigger.addEventListener('click', () => { location.href = returnPath; });
     return;
   }
 
@@ -91,7 +92,7 @@
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (action === 'resume') setOpen(false);
     if (action === 'restart') location.reload();
-    if (action === 'home') location.href = '/';
+    if (action === 'home') location.href = returnPath;
     if (event.target === backdrop) setOpen(false);
   });
 })();
