@@ -1,5 +1,6 @@
 import * as THREE from './assets/vendor/three160/three.module.js';
 import { GLTFLoader } from './assets/vendor/three160/loaders/GLTFLoader.js';
+import { releaseTrick, arrowReleaseTrick, airTrickForArrow } from './fingerboard-controls.mjs';
 
 const $ = selector => document.querySelector(selector);
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -7,8 +8,8 @@ const TAU = Math.PI * 2;
 const wrap = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xeeeadc);
-scene.fog = new THREE.Fog(0xeeeadc, 38, 78);
+scene.background = new THREE.Color(0x64736d);
+scene.fog = new THREE.Fog(0x64736d, 48, 100);
 
 const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.1, 180);
 camera.position.set(0, 4.8, 21.8);
@@ -33,57 +34,51 @@ sun.shadow.camera.top = 24;
 sun.shadow.camera.bottom = -8;
 scene.add(sun);
 
-function concreteTexture() {
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 256;
-  const c = canvas.getContext('2d');
-  c.fillStyle = '#b7b3a7';
-  c.fillRect(0, 0, 256, 256);
-  for (let i = 0; i < 1500; i++) {
-    const shade = 145 + Math.random() * 70;
-    c.fillStyle = `rgba(${shade},${shade},${shade - 5},${Math.random() * .11})`;
-    c.fillRect(Math.random() * 256, Math.random() * 256, Math.random() * 2 + .4, Math.random() * 2 + .4);
-  }
-  c.strokeStyle = 'rgba(40,40,35,.16)';
-  c.lineWidth = 2;
-  c.beginPath();
-  c.moveTo(0, 128); c.lineTo(256, 128); c.moveTo(128, 0); c.lineTo(128, 256); c.stroke();
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(9, 12);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
-}
-
-const floorMaterial = new THREE.MeshStandardMaterial({ map: concreteTexture(), roughness: .94, metalness: .02 });
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 44), floorMaterial);
-floor.rotation.x = -Math.PI / 2;
-floor.position.set(0, 0, 0);
-floor.receiveShadow = true;
-scene.add(floor);
-
-const sideMaterial = new THREE.MeshStandardMaterial({ color: 0x393936, roughness: .88 });
-for (const x of [-15.2, 15.2]) {
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(.4, 2.4, 44), sideMaterial);
-  wall.position.set(x, 1.2, 0);
-  wall.receiveShadow = wall.castShadow = true;
-  scene.add(wall);
-}
-
-for (const z of [-22.2, 22.2]) {
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(30.8, 2.4, .4), sideMaterial);
-  wall.position.set(0, 1.2, z); wall.receiveShadow = wall.castShadow = true; scene.add(wall);
-}
-
-// Warehouse frame and roof beams make the park read as one contained map.
-const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x555650, roughness: .55, metalness: .45 });
-for (const x of [-14.7, 14.7]) for (const z of [-21.7, -7.3, 7.3, 21.7]) {
-  const post = new THREE.Mesh(new THREE.BoxGeometry(.22, 6.5, .22), frameMaterial);
-  post.position.set(x, 3.25, z); post.castShadow = true; scene.add(post);
-}
-for (const z of [-21.7, -7.3, 7.3, 21.7]) {
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(30, .22, .28), frameMaterial);
-  beam.position.set(0, 6.45, z); beam.castShadow = true; scene.add(beam);
+const parkOptions = [
+  { id: 'dartford', name: 'Dartford Central', file: './assets/models/fingerboard-parks/dartford.glb', rotate: false },
+  { id: 'gravesend', name: 'Gravesend', file: './assets/models/fingerboard-parks/gravesend.glb', rotate: true },
+  { id: 'finsbury', name: 'Finsbury Park', file: './assets/models/fingerboard-parks/finsbury.glb', rotate: true }
+];
+let selectedPark = localStorage.twoFingersPark || 'dartford';
+const parkGroup = new THREE.Group();
+scene.add(parkGroup);
+let parkBaseY = 0, activeParkPlacement = null, surfaceCheckTimer = 0;
+const parkRaycaster = new THREE.Raycaster();
+const loader = new GLTFLoader();
+const parkGround = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), new THREE.MeshStandardMaterial({ color: 0x68736a, roughness: 1 }));
+parkGround.rotation.x = -Math.PI / 2; parkGround.position.y = -.45; parkGround.receiveShadow = true; scene.add(parkGround);
+function loadPark(id) {
+  const park = parkOptions.find(item => item.id === id) || parkOptions[0];
+  selectedPark = park.id; localStorage.twoFingersPark = park.id;
+  $('#park-label').textContent = park.name;
+  $('#park-picker')?.querySelectorAll('.park').forEach(button => button.classList.toggle('active', button.dataset.park === park.id));
+  while (parkGroup.children.length) parkGroup.remove(parkGroup.children[0]);
+  loader.load(park.file, gltf => {
+    if (selectedPark !== park.id) return;
+    const model = gltf.scene;
+    const oriented = new THREE.Group();
+    oriented.rotation.y = park.rotate ? Math.PI / 2 : 0;
+    oriented.add(model);
+    const bounds = new THREE.Box3().setFromObject(oriented);
+    const center = bounds.getCenter(new THREE.Vector3());
+    const dimensions = bounds.getSize(new THREE.Vector3());
+    const span = Math.max(dimensions.x, dimensions.z);
+    const scale = 39 / span;
+    const placement = new THREE.Group();
+    const verticalScale = Math.min(scale, 4.8 / Math.max(dimensions.y, .001));
+    placement.scale.set(scale, verticalScale, scale);
+    placement.position.set(-center.x * scale, -bounds.min.y * verticalScale - .62, -center.z * scale);
+    placement.add(oriented);
+    model.traverse(child => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
+    parkGroup.add(placement);
+    activeParkPlacement = placement;
+    placement.updateMatrixWorld(true);
+    parkRaycaster.set(new THREE.Vector3(0, 40, 8.5), new THREE.Vector3(0, -1, 0));
+    const groundHit = parkRaycaster.intersectObject(placement, true)[0];
+    parkBaseY = groundHit ? groundHit.point.y : 0;
+    if (!state.air) state.y = parkBaseY + .34;
+    $('#park-label').textContent = park.name;
+  }, event => { if (event.total) $('#park-label').textContent = `${park.name} · ${Math.round(event.loaded / event.total * 100)}%`; }, error => { $('#park-label').textContent = `${park.name} · unavailable`; console.error(`Could not load ${park.name}.`, error); });
 }
 
 function makeBoard() {
@@ -151,83 +146,10 @@ new GLTFLoader().load(
 );
 
 const state = {
-  x: 0, y: .34, z: 17, vy: 0, pitch: 0, roll: 0, yaw: 0,
+  x: 0, y: .34, z: 8.5, vy: 0, pitch: 0, roll: 0, yaw: 0,
   pitchV: 0, rollV: 0, yawV: 0, air: false, flipTurns: 0,
   popTime: 0, popName: 'OLLIE', grinding: false, grindTime: 0
 };
-
-const obstacles = [];
-const obstacleGroup = new THREE.Group();
-scene.add(obstacleGroup);
-const materials = {
-  red: new THREE.MeshStandardMaterial({ color: 0xff4b35, roughness: .58 }),
-  acid: new THREE.MeshStandardMaterial({ color: 0xd8ff38, roughness: .54 }),
-  dark: new THREE.MeshStandardMaterial({ color: 0x1a1a19, roughness: .8 }),
-  steel: new THREE.MeshStandardMaterial({ color: 0xc2c3bd, roughness: .26, metalness: .82 }),
-  concrete: new THREE.MeshStandardMaterial({ color: 0x8e8c84, roughness: .92 })
-};
-
-function addBox(parent, size, position, material, rotation = null) {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), material);
-  mesh.position.set(...position);
-  if (rotation) mesh.rotation.set(...rotation);
-  mesh.castShadow = mesh.receiveShadow = true;
-  parent.add(mesh);
-  return mesh;
-}
-
-function createObstacle(type, z, forcedX = null) {
-  const root = new THREE.Group();
-  root.position.z = z;
-  let x = 0, width = 2.6, height = .7, length = 5;
-  if (type === 'rail') {
-    x = forcedX ?? (Math.random() - .5) * 3.4;
-    const rail = new THREE.Mesh(new THREE.CylinderGeometry(.055, .055, 4.8, 10), materials.steel);
-    rail.rotation.x = Math.PI / 2; rail.position.set(x, .72, 0); rail.castShadow = true; root.add(rail);
-    for (const dz of [-1.9, 1.9]) {
-      const leg = new THREE.Mesh(new THREE.CylinderGeometry(.045, .045, .72, 8), materials.steel);
-      leg.position.set(x, .36, dz); root.add(leg);
-    }
-    width = .5; height = .72;
-  } else if (type === 'ledge') {
-    x = forcedX ?? (Math.random() < .5 ? -2.3 : 2.3);
-    addBox(root, [3, .68, 4.4], [x, .34, 0], materials.concrete);
-    addBox(root, [3.05, .08, 4.45], [x, .72, 0], materials.acid);
-    width = 3; height = .76; length = 4.4;
-  } else if (type === 'cone') {
-    x = forcedX ?? (Math.random() - .5) * 4.2;
-    const cone = new THREE.Mesh(new THREE.ConeGeometry(.36, 1.25, 16), materials.red);
-    cone.position.set(x, .63, 0); cone.castShadow = true; root.add(cone);
-    addBox(root, [.85, .08, .85], [x, .04, 0], materials.dark);
-    width = .8; height = 1.25; length = 1;
-  } else if (type === 'gap') {
-    addBox(root, [20, .025, 4.8], [0, .015, 0], materials.dark);
-    for (const side of [-2.38, 2.38]) addBox(root, [20, .06, .08], [0, .05, side], materials.red);
-    width = 20; height = -4; length = 4.8;
-  } else {
-    x = forcedX ?? (Math.random() - .5) * 3;
-    const ramp = addBox(root, [3.3, .25, 4], [x, .4, 0], materials.concrete, [-.18, 0, 0]);
-    ramp.geometry.translate(0, 0, 0);
-    width = 3.3; height = .75; length = 4;
-  }
-  obstacleGroup.add(root);
-  obstacles.push({ type, root, x, width, height, length, hit: false, scored: false });
-}
-
-function populate() {
-  while (obstacleGroup.children.length) obstacleGroup.remove(obstacleGroup.children[0]);
-  obstacles.length = 0;
-  createObstacle('rail', 10, -3.2);
-  createObstacle('ledge', 7, 5.3);
-  createObstacle('ramp', 2, -5.8);
-  createObstacle('rail', -1.5, 2.8);
-  createObstacle('cone', -5, -1.6);
-  createObstacle('ledge', -8.5, -5.5);
-  createObstacle('ramp', -13, 3.8);
-  createObstacle('rail', -16, 0);
-  // Two small gap strips create jump lines without turning the map into a corridor.
-  createObstacle('gap', -11, 0);
-}
 
 const particles = [];
 function burst(color = 0xd8ff38, amount = 15) {
@@ -264,10 +186,10 @@ function showTrick(name, points, bank = true) {
 }
 
 function reset() {
-  Object.assign(state, { x: 0, y: .34, z: 17, vy: 0, pitch: 0, roll: 0, yaw: 0, pitchV: 0, rollV: 0, yawV: 0, air: false, flipTurns: 0, popTime: 0, popName: 'OLLIE', grinding: false, grindTime: 0 });
+  Object.assign(state, { x: 0, y: parkBaseY + .34, z: 8.5, vy: 0, pitch: 0, roll: 0, yaw: 0, pitchV: 0, rollV: 0, yawV: 0, air: false, flipTurns: 0, popTime: 0, popName: 'OLLIE', grinding: false, grindTime: 0 });
   arrowReleases = [];
   contactReleases = [];
-  score = elapsed = 0; speed = 5.4; populate();
+  score = elapsed = 0; speed = 5.4;
   $('#score').textContent = '0';
 }
 
@@ -293,14 +215,13 @@ function pop(name = 'OLLIE', power = 7.4) {
   tone(150, .06, 'square', .055); burst(0xff4b35, 9);
 }
 
-function land(surface = .34, obstacle = null) {
+function land(surface = parkBaseY + .34) {
   const pitch = Math.abs(wrap(state.pitch)), roll = Math.abs(wrap(state.roll));
   if (state.flipTurns && (pitch > .43 || roll > .4)) { finish(); return; }
   state.y = surface; state.vy = state.pitchV = state.rollV = state.yawV = 0;
   state.pitch = state.roll = 0; state.air = false;
   let name = elapsed - state.popTime > .55 ? `BIG ${state.popName}` : state.popName;
   let points = state.flipTurns ? 520 : Math.round((elapsed - state.popTime) * 240);
-  if (obstacle?.type === 'rail') { name = '50–50 GRIND'; points += 600; state.grinding = true; state.grindTime = .7; }
   score += points; showTrick(name, points); burst(state.flipTurns ? 0xd8ff38 : 0x3274ff, 17);
 }
 
@@ -309,14 +230,11 @@ const nativeTrackpadIDs = new Set();
 let backId = null, frontId = null;
 let contactReleases = [];
 function assignPointers() {
-  const list = [...pointers.values()].sort((a, b) => a.y - b.y);
-  if (list.length === 1 && (list[0].role === 'back' || list[0].role === 'front')) {
-    backId = list[0].role === 'back' ? list[0].id : null;
-    frontId = list[0].role === 'front' ? list[0].id : null;
-    return;
-  }
-  frontId = list[0]?.id ?? null; backId = list.at(-1)?.id ?? null;
-  list.forEach(p => p.role = p.id === backId ? 'back' : p.id === frontId ? 'front' : 'extra');
+  const list = [...pointers.values()];
+  if (list.length !== 2 || list.some(pointer => pointer.role === 'front' || pointer.role === 'back')) return;
+  list.sort((a, b) => a.y - b.y);
+  frontId = list[0].id; backId = list[1].id;
+  list[0].role = 'front'; list[1].role = 'back';
 }
 function contactDown(id, x, y, source = 'screen') {
   pointers.set(id, { id, x, y, sx: x, sy: y, time: performance.now(), role: 'extra', source });
@@ -331,13 +249,15 @@ function contactUp(id) {
   if (!lifted) return;
   const now = performance.now();
   if (lifted.role === 'front' || lifted.role === 'back') {
-    contactReleases = contactReleases.filter(input => now - input.time < 650);
-    contactReleases.push({ role: lifted.role, time: now });
-    const sequence = contactReleases.slice(-2).map(input => input.role).join(',');
-    if (sequence === 'front,back') { pop('OLLIE'); contactReleases = []; }
-    if (sequence === 'back,front') { pop('NOLLIE'); contactReleases = []; }
+    const result = releaseTrick(contactReleases, lifted.role, now);
+    contactReleases = result.sequence;
+    if (result.trick) pop(result.trick);
   }
-  pointers.delete(id); assignPointers();
+  pointers.delete(id);
+  if (id === frontId) frontId = null;
+  if (id === backId) backId = null;
+  if (!pointers.size) { frontId = backId = null; }
+  assignPointers();
 }
 function pointerDown(event) {
   if (event.pointerType === 'mouse') return;
@@ -396,7 +316,9 @@ let arrowReleases = [];
 addEventListener('keydown', event => {
   keys.add(event.code);
   if (!running && ['Enter', 'Space'].includes(event.code)) start();
-  if (event.code === 'ArrowUp' || event.code === 'ArrowDown') event.preventDefault();
+  if (event.code.startsWith('Arrow')) event.preventDefault();
+  const airTrick = airTrickForArrow(event.code, state.air, state.flipTurns > 0);
+  if (airTrick) { state.rollV = airTrick === 'KICKFLIP' ? -19 : 19; state.flipTurns = 1; showTrick(airTrick, 0, false); }
   if (event.code === 'Escape') togglePause();
 });
 addEventListener('keyup', event => {
@@ -405,27 +327,13 @@ addEventListener('keyup', event => {
   event.preventDefault();
   const now = performance.now();
   const direction = event.code === 'ArrowUp' ? 'UP' : 'DOWN';
-  arrowReleases = arrowReleases.filter(input => now - input.time < 700);
-  arrowReleases.push({ direction, time: now });
-  const sequence = arrowReleases.slice(-2).map(input => input.direction).join(',');
-  if (sequence === 'UP,DOWN') { pop('OLLIE'); arrowReleases = []; }
-  if (sequence === 'DOWN,UP') { pop('NOLLIE'); arrowReleases = []; }
+  const result = arrowReleaseTrick(arrowReleases, direction, now);
+  arrowReleases = result.sequence;
+  if (result.trick) pop(result.trick);
 });
 
 function nearbySurface() {
-  let surface = .34, object = null;
-  for (const obstacle of obstacles) {
-    const dz = Math.abs(obstacle.root.position.z - state.z);
-    const inLength = dz < obstacle.length * .5 + .45;
-    const inWidth = Math.abs(state.x - obstacle.x) < obstacle.width * .5;
-    if (!inLength || !inWidth) continue;
-    object = obstacle;
-    if (obstacle.type === 'gap') surface = -5;
-    else if (obstacle.type === 'ledge') surface = obstacle.height + .31;
-    else if (obstacle.type === 'rail' && Math.abs(state.x - obstacle.x) < .26) surface = obstacle.height + .28;
-    else if (obstacle.type === 'ramp') surface = .72;
-  }
-  return { surface, object };
+  return parkBaseY + .34;
 }
 
 function update(dt) {
@@ -445,37 +353,36 @@ function update(dt) {
       : Math.sign(offset) * Math.min(1, (Math.abs(offset) - deadZone) / (.5 - deadZone));
     state.yaw = wrap(state.yaw - steering * 2.15 * dt);
   }
+  surfaceCheckTimer -= dt;
+  if (surfaceCheckTimer <= 0 && activeParkPlacement) {
+    surfaceCheckTimer = .08;
+    parkRaycaster.set(new THREE.Vector3(state.x, 40, state.z), new THREE.Vector3(0, -1, 0));
+    const hit = parkRaycaster.intersectObject(activeParkPlacement, true)[0];
+    if (hit) parkBaseY = hit.point.y;
+  }
   elapsed += dt; speed = 5.4; if (driving) score += dt * 9;
   trickTimer -= dt; if (trickTimer < 0) $('#trick').classList.remove('show');
 
-  // The board moves through one persistent park; the obstacles do not scroll past it.
+  // The board moves through the selected scanned park.
   if (driving) {
     state.x -= Math.sin(state.yaw) * speed * dt * direction;
     state.z -= Math.cos(state.yaw) * speed * dt * direction;
   }
   if (Math.abs(state.x) > 14.3 || Math.abs(state.z) > 21.3) finish();
 
-  if (state.grinding) {
-    state.grindTime -= dt; score += dt * 260; state.y = .99; state.roll = state.pitch = 0;
-    if (state.grindTime <= 0) { state.grinding = false; state.air = true; state.vy = 1.5; }
-  } else {
-    if (state.air) {
-      state.vy -= 15.8 * dt; state.y += state.vy * dt;
-      state.pitch += state.pitchV * dt; state.roll += state.rollV * dt; state.yaw += state.yawV * dt;
-      state.pitchV *= Math.pow(.987, dt * 60); state.rollV *= Math.pow(.992, dt * 60); state.yawV *= Math.pow(.985, dt * 60);
-      if (pointers.size < 2) { state.pitchV -= wrap(state.pitch) * dt * 3.2; state.rollV -= wrap(state.roll) * dt * .75; }
-      if (Math.abs(state.roll) >= TAU && !state.flipTurns) { state.flipTurns = 1; showTrick(state.roll > 0 ? 'HEEFLIP' : 'KICKFLIP', 0, false); }
-    }
-    const { surface, object } = nearbySurface();
-    if (state.air && state.vy <= 0 && state.y <= surface) land(surface, object);
-    if (!state.air) {
-      state.y = surface;
-      const brakingOnTail = pointers.size === 1 && [...pointers.values()][0]?.role === 'back';
-      state.pitch += ((brakingOnTail ? .24 : 0) - state.pitch) * Math.min(1, dt * 11);
-    }
-    if (surface < -1 && !state.air) finish();
-    if (object?.type === 'cone' && Math.abs(object.root.position.z - state.z) < .72 && state.y < 1.25) finish();
-    if (object?.type === 'ledge' && Math.abs(object.root.position.z - state.z) < object.length * .45 && state.y < object.height && !state.air) finish();
+  if (state.air) {
+    state.vy -= 15.8 * dt; state.y += state.vy * dt;
+    state.pitch += state.pitchV * dt; state.roll += state.rollV * dt; state.yaw += state.yawV * dt;
+    state.pitchV *= Math.pow(.987, dt * 60); state.rollV *= Math.pow(.992, dt * 60); state.yawV *= Math.pow(.985, dt * 60);
+    if (pointers.size < 2) { state.pitchV -= wrap(state.pitch) * dt * 3.2; state.rollV -= wrap(state.roll) * dt * .75; }
+    if (Math.abs(state.roll) >= TAU && !state.flipTurns) { state.flipTurns = 1; showTrick(state.roll > 0 ? 'HEELFLIP' : 'KICKFLIP', 0, false); }
+  }
+  const surface = nearbySurface();
+  if (state.air && state.vy <= 0 && state.y <= surface) land(surface);
+  if (!state.air) {
+    state.y = surface;
+    const brakingOnTail = pointers.size === 1 && [...pointers.values()][0]?.role === 'back';
+    state.pitch += ((brakingOnTail ? .24 : 0) - state.pitch) * Math.min(1, dt * 11);
   }
 
   state.yaw = wrap(state.yaw);
@@ -484,7 +391,7 @@ function update(dt) {
   boardMesh.rotation.set(state.pitch, state.yaw, state.roll);
   // Equal vertical and horizontal offsets make the follow camera roughly 45 degrees down.
   const cameraOffset = new THREE.Vector3(0, 4.8, 4.8).applyAxisAngle(new THREE.Vector3(0, 1, 0), state.yaw);
-  const desiredCamera = new THREE.Vector3(state.x, 0, state.z).add(cameraOffset);
+  const desiredCamera = new THREE.Vector3(state.x, state.y, state.z).add(cameraOffset);
   camera.position.lerp(desiredCamera, Math.min(1, dt * 4.5));
   camera.lookAt(state.x - Math.sin(state.yaw) * 2.2, state.y + .2, state.z - Math.cos(state.yaw) * 2.2);
   $('#score').textContent = Math.floor(score).toLocaleString();
@@ -511,10 +418,21 @@ $('#again').addEventListener('click', start);
 $('#pause').addEventListener('click', togglePause);
 $('#resume').addEventListener('click', togglePause);
 $('#sound').addEventListener('click', () => { soundOn = !soundOn; $('#sound').textContent = soundOn ? '♪' : '×'; });
+$('#ollie').addEventListener('click', () => pop('OLLIE'));
+$('#nollie').addEventListener('click', () => pop('NOLLIE'));
+$('#flip').addEventListener('click', () => {
+  if (!state.air || state.flipTurns) return;
+  state.rollV = -19; state.flipTurns = 1; showTrick('KICKFLIP', 0, false);
+});
+$('#park-picker').innerHTML = parkOptions.map(park => `<button class="park${park.id === selectedPark ? ' active' : ''}" data-park="${park.id}"><strong>${park.name}</strong><small>Photogrammetry park · artfletch</small></button>`).join('');
+$('#park-picker').addEventListener('click', event => {
+  const button = event.target.closest('[data-park]');
+  if (button) loadPark(button.dataset.park);
+});
+loadPark(selectedPark);
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
 });
 
-populate();
 boardMesh.position.set(state.x, state.y, state.z);
 requestAnimationFrame(animate);
