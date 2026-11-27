@@ -15,23 +15,25 @@ const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.1, 18
 camera.position.set(0, 4.8, 21.8);
 camera.lookAt(0, 0, 2);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
 renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.enabled = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+function resizeViewport() {
+  camera.aspect = innerWidth / innerHeight;
+  camera.fov = 48;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
+}
+resizeViewport();
 document.body.prepend(renderer.domElement);
 
 scene.add(new THREE.HemisphereLight(0xffffff, 0x625f54, 2.15));
 const sun = new THREE.DirectionalLight(0xffffff, 3.2);
 sun.position.set(-8, 15, 10);
-sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
-sun.shadow.camera.left = -18;
-sun.shadow.camera.right = 18;
-sun.shadow.camera.top = 24;
-sun.shadow.camera.bottom = -8;
+sun.castShadow = false;
 scene.add(sun);
 
 const parkOptions = [
@@ -40,6 +42,7 @@ const parkOptions = [
   { id: 'finsbury', name: 'Finsbury Park', file: './assets/models/fingerboard-parks/finsbury.glb', rotate: true }
 ];
 let selectedPark = localStorage.twoFingersPark || 'dartford';
+let parkReady = false;
 const parkGroup = new THREE.Group();
 scene.add(parkGroup);
 let parkBaseY = 0, activeParkPlacement = null, surfaceCheckTimer = 0;
@@ -50,6 +53,9 @@ parkGround.rotation.x = -Math.PI / 2; parkGround.position.y = -.45; parkGround.r
 function loadPark(id) {
   const park = parkOptions.find(item => item.id === id) || parkOptions[0];
   selectedPark = park.id; localStorage.twoFingersPark = park.id;
+  parkReady = false;
+  const startButton = $('#start');
+  if (startButton) { startButton.disabled = true; startButton.textContent = `Loading ${park.name}…`; }
   $('#park-label').textContent = park.name;
   $('#park-picker')?.querySelectorAll('.park').forEach(button => button.classList.toggle('active', button.dataset.park === park.id));
   while (parkGroup.children.length) parkGroup.remove(parkGroup.children[0]);
@@ -72,13 +78,15 @@ function loadPark(id) {
     model.traverse(child => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
     parkGroup.add(placement);
     activeParkPlacement = placement;
+    parkReady = true;
+    if (startButton) { startButton.disabled = false; startButton.textContent = 'Start skating ↗'; }
     placement.updateMatrixWorld(true);
     parkRaycaster.set(new THREE.Vector3(0, 40, 8.5), new THREE.Vector3(0, -1, 0));
     const groundHit = parkRaycaster.intersectObject(placement, true)[0];
     parkBaseY = groundHit ? groundHit.point.y : 0;
     if (!state.air) state.y = parkBaseY + .34;
     $('#park-label').textContent = park.name;
-  }, event => { if (event.total) $('#park-label').textContent = `${park.name} · ${Math.round(event.loaded / event.total * 100)}%`; }, error => { $('#park-label').textContent = `${park.name} · unavailable`; console.error(`Could not load ${park.name}.`, error); });
+  }, event => { if (event.total) { const percent = Math.round(event.loaded / event.total * 100); $('#park-label').textContent = `${park.name} · ${percent}%`; if (startButton) startButton.textContent = `Loading park · ${percent}%`; } }, error => { $('#park-label').textContent = `${park.name} · unavailable`; if (startButton) { startButton.disabled = false; startButton.textContent = 'Retry park load'; } console.error(`Could not load ${park.name}.`, error); });
 }
 
 function makeBoard() {
@@ -194,6 +202,7 @@ function reset() {
 }
 
 function start() {
+  if (!parkReady) { loadPark(selectedPark); return; }
   reset(); running = true; paused = false;
   $('#intro').classList.add('hidden'); $('#gameover').classList.add('hidden'); $('#paused').classList.add('hidden');
 }
@@ -430,9 +439,7 @@ $('#park-picker').addEventListener('click', event => {
   if (button) loadPark(button.dataset.park);
 });
 loadPark(selectedPark);
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-});
+addEventListener('resize', resizeViewport);
 
 boardMesh.position.set(state.x, state.y, state.z);
 requestAnimationFrame(animate);
