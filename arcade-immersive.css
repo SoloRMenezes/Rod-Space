@@ -16,6 +16,7 @@ body.game-world .game-stage {height:calc(100dvh - 66px);min-height:0;overflow:hi
   body.game-world .game-topbar {height:58px;min-height:0}
   body.game-world .game-stage {height:calc(100dvh - 58px)}
 }
+
 body.game-world::before {
   content:"";position:fixed;z-index:-2;inset:0;
   background:
@@ -731,4 +732,36 @@ body[data-game="wordle"] .wordle-keyboard button {flex-basis:clamp(42px,7vw,86px
  body[data-game="wordle"] .wordle-keyboard {width:100%}
  body[data-game="wordle"] .wordle-keyboard .choice-row {gap:2px}
  body[data-game="wordle"] .wordle-keyboard button {flex-basis:clamp(25px,8.7vw,48px);min-height:clamp(38px,6.1vh,58px);padding:4px 2px;font-size:clamp(12px,3.7vw,17px)}
+}
+
+/* Keep each game's live HUD in the same compact row as its title and Settings. */
+body.game-world .game-topbar {gap:clamp(6px,1vw,16px);overflow:hidden}
+body.game-world .game-topbar .brand {order:0;flex:0 1 auto;width:auto;max-width:min(28vw,360px);margin:0}
+body.game-world .game-topbar .game-header-toolbar {
+  order:1;display:flex;align-items:center;justify-content:flex-end;gap:6px;
+  width:auto;max-width:none;min-width:0;flex:0 1 auto;margin:0;padding:0;
+  flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none
+}
+body.game-world .game-topbar .game-header-toolbar::-webkit-scrollbar {display:none}
+body.game-world .game-topbar .game-header-toolbar[hidden] {display:none}
+body.game-world .game-topbar .game-header-toolbar .stat {flex:0 0 auto;padding:7px 10px;font-size:12px;white-space:nowrap}
+body.game-world .game-topbar .game-header-toolbar button {flex:0 0 auto;min-height:32px;padding:6px 10px;font-size:12px;white-space:nowrap}
+body.game-world .game-topbar .game-header-toolbar select {flex:0 0 auto;min-height:32px;padding:5px 8px;font-size:12px;white-space:nowrap}
+body.game-world .game-topbar .game-header-toolbar .sr-only,
+body.game-world .game-topbar .game-header-toolbar .pong-sr-only,
+body.game-world .game-topbar .game-header-toolbar .snake-sr-only {position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+body.game-world .game-topbar .rs-settings {order:2;flex:0 0 auto;margin-left:auto}
+body.game-world .game-topbar .rs-account-trigger {margin-left:0}
+body[data-game="typing"] .game-topbar .typing-toolbar {display:flex;gap:5px}
+body[data-game="typing"] .game-topbar .typing-toolbar select,
+body[data-game="typing"] .game-topbar .typing-toolbar>button {min-width:0;padding:5px 8px}
+@media(max-width:640px) {
+  body.game-world .game-topbar {gap:5px;padding-left:7px;padding-right:7px}
+  body.game-world .game-topbar .brand {max-width:30vw;gap:5px;font-size:10px;letter-spacing:.08em}
+  body.game-world .game-topbar .brand-mark {width:27px;height:27px;font-size:17px}
+  body.game-world .game-topbar .game-header-toolbar {gap:3px}
+  body.game-world .game-topbar .game-header-toolbar .stat {padding:5px 6px;font-size:10px}
+  body.game-world .game-topbar .game-header-toolbar button,
+  body.game-world .game-topbar .game-header-toolbar select {min-height:28px;padding:4px 6px;font-size:10px}
+  body.game-world .game-topbar .rs-account-trigger {padding:5px 7px;font-size:10px}
 }

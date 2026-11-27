@@ -21,6 +21,13 @@ function store(key,value){try{localStorage.setItem("rodspace.arcade."+key,JSON.s
 function read(key,fallback){try{const val=localStorage.getItem("rodspace.arcade."+key);return val===null?fallback:JSON.parse(val)}catch{return fallback}}
 function highScore(key,value){const prev=Number(read(key,0))||0;if(value>prev){store(key,value);window.RodSpaceAccounts?.recordHighScore(key,value)}return Math.max(prev,value)}
 function register(id,callback){handlers[id]=callback}
+function moveGameToolbarToHeader(game){
+const header=document.querySelector(".game-topbar");
+const toolbar=game.querySelector(":scope > .toolbar, :scope > .ladders-toolbar");
+if(!header||!toolbar)return;
+toolbar.classList.add("game-header-toolbar");
+header.append(toolbar);
+}
 function mount(){
 const id=new URL(location.href).searchParams.get("game");
 const returnHref=new URL(location.href).searchParams.get("from")==="party"?"party.html":"./";
@@ -36,7 +43,7 @@ byId("gameDescription").textContent=info[2];
 document.title=info[1]+" — Rod Space";
 window.RodSpaceAccounts?.setActiveGame(id);
 const game=byId("game");clear(game);
-try{if(handlers[id])handlers[id](game);else game.textContent="This game is not available."}catch(e){console.error(e);game.textContent="Could not start. Reload to retry."}
+try{if(handlers[id]){handlers[id](game);moveGameToolbarToHeader(game)}else game.textContent="This game is not available."}catch(e){console.error(e);game.textContent="Could not start. Reload to retry."}
 return info;
 }
 window.Arcade={catalog,register,mount,byId,node,button,clear,read,store,highScore};
