@@ -677,3 +677,58 @@ body[data-game="typing"] .game-panel .message {margin-top:12px;color:#b8c9e4}
 /* Untried Wordle letters are lighter than used, absent letters. */
 body[data-game="wordle"] .game-panel .wordle-keyboard button.unused-key {background:#567168;color:#fff;border-color:#a8b8b1}
 body[data-game="wordle"] .game-panel .wordle-keyboard button.absent {background:#263b35;color:#a4b1ac;border-color:#43534d}
+
+
+/* Compact shell and roomier play areas for the core games. */
+body.game-world .game-topbar {height:44px;min-height:44px;padding:4px 14px}
+body.game-world .game-topbar .brand {max-width:100%;font-size:12px}
+body.game-world .brand-mark {width:30px;height:30px}
+body.game-world .game-stage {width:100%;max-width:none;height:calc(100dvh - 44px);padding:4px 8px 6px}
+body.game-world .game-panel {width:100%;max-width:none;min-height:0;flex:1;justify-content:flex-start;gap:6px}
+body.game-world .game-panel>.toolbar {width:100%;flex:0 0 auto;justify-content:center;gap:7px;margin:0 auto 4px}
+body[data-game="snake"] .game-stage,body[data-game="pong"] .game-stage,body[data-game="ladders"] .game-stage {height:calc(100dvh - 44px);min-height:0}
+body[data-game="snake"] .snake-toolbar {max-width:none;justify-content:center}
+body[data-game="snake"] .snake-board-wrap {width:min(100%,calc((100dvh - 94px)*1.5));max-height:calc(100dvh - 94px)}
+body[data-game="snake"] .snake-mode-menu,body[data-game="snake"] .snake-online-lobby {width:min(480px,100%);margin:auto;padding:clamp(16px,3vw,26px);text-align:center;background:#103126;border:1px solid #3a8a5a;border-radius:14px}
+body[data-game="snake"] .snake-mode-menu h2,body[data-game="snake"] .snake-online-lobby h2 {margin:0 0 12px}
+body[data-game="snake"] .snake-mode-menu button,body[data-game="snake"] .snake-online-lobby button {display:block;width:min(340px,100%);min-height:44px;margin:8px auto}
+body[data-game="snake"] .snake-online-lobby input {display:block;width:min(340px,100%);min-height:42px;margin:10px auto;padding:9px 12px;border:1px solid #658574;border-radius:7px;background:#f6f2dc;color:#263a31}
+body[data-game="snake"] .snake-rooms {display:grid;gap:6px}
+body[data-game="pong"] .game-canvas {width:min(100%,calc((100dvh - 92px)*1.5));max-width:none;max-height:calc(100dvh - 92px);margin:0 auto}
+body[data-game="ladders"] .game-stage {padding:3px 6px 6px}
+body[data-game="ladders"] .ladders-toolbar {width:100%;max-width:none;min-height:36px;margin:0 auto;gap:7px}
+body[data-game="ladders"] .ladders-board {width:min(100%,calc(100dvh - 100px));max-height:calc(100dvh - 100px)}
+body[data-game="ladders"] .ladders-die {width:48px;height:48px;margin:0}
+body[data-game="headsup"] .game-panel {gap:4px}
+body[data-game="headsup"] .headsup-toolbar {margin:0 auto 4px}
+body[data-game="headsup"] .prompt {width:100%;min-width:0;min-height:calc(100dvh - 174px);flex:1;margin:0;padding:16px;font-size:clamp(44px,9vw,140px)}
+body[data-game="headsup"] .headsup-actions {margin:3px 0 0}
+body[data-game="combat"] .game-panel {gap:6px}
+body[data-game="combat"] .duel-scene {width:100%;max-width:none;height:clamp(260px,48dvh,680px)}
+body[data-game="combat"] .battle-actions {width:100%;max-width:none;margin:0}
+body[data-game="2048"] .game-panel {justify-content:flex-start}
+body[data-game="2048"] .board-2048 {width:min(82vw,calc(100dvh - 154px),min(1000px,82dvh));min-width:0;padding:clamp(7px,1.2vw,16px);gap:clamp(5px,.8vw,12px)}
+body[data-game="2048"] .game-panel>.toolbar {margin-bottom:2px}
+body[data-game="2048"] .game-panel .direction-pad {display:none}
+body[data-game="wordle"] .game-panel {gap:3px}
+body[data-game="wordle"] .game-panel>.toolbar {margin-bottom:2px}
+body[data-game="wordle"] .wordle-board {grid-template-columns:repeat(5,min(10vh,90px));gap:clamp(3px,.7vh,8px);margin-bottom:4px}
+body[data-game="wordle"] .wordle-board .tile {font-size:clamp(25px,6vh,48px)}
+body[data-game="wordle"] .wordle-keyboard {width:min(90vw,1000px);max-width:none;gap:clamp(3px,.4vw,7px)}
+body[data-game="wordle"] .wordle-keyboard .choice-row {gap:clamp(3px,.4vw,7px)}
+body[data-game="wordle"] .wordle-keyboard button {flex-basis:clamp(42px,7vw,86px);min-height:clamp(42px,7.2vh,78px);font-size:clamp(15px,2.4vw,22px)}
+#introBack {display:none!important}
+@media(max-width:640px) {
+ body.game-world .game-topbar {height:40px;min-height:40px;padding:3px 8px}
+ body.game-world .game-stage {height:calc(100dvh - 40px);padding:3px 5px 5px}
+ body[data-game="snake"] .snake-board-wrap {width:min(100%,calc((100dvh - 82px)*.625));max-height:calc(100dvh - 82px)}
+ body[data-game="ladders"] .game-stage {height:calc(100dvh - 40px);padding:3px}
+ body[data-game="ladders"] .ladders-toolbar {gap:3px;flex-wrap:nowrap}
+ body[data-game="ladders"] .ladders-board {width:min(100%,calc(100dvh - 118px));max-height:calc(100dvh - 118px);border-width:4px}
+ body[data-game="headsup"] .prompt {min-height:calc(100dvh - 166px)}
+ body[data-game="2048"] .board-2048 {width:min(94vw,calc(100dvh - 145px),94dvh)}
+ body[data-game="wordle"] .wordle-board {grid-template-columns:repeat(5,min(15vw,8.4vh));gap:3px}
+ body[data-game="wordle"] .wordle-keyboard {width:100%}
+ body[data-game="wordle"] .wordle-keyboard .choice-row {gap:2px}
+ body[data-game="wordle"] .wordle-keyboard button {flex-basis:clamp(25px,8.7vw,48px);min-height:clamp(38px,6.1vh,58px);padding:4px 2px;font-size:clamp(12px,3.7vw,17px)}
+}

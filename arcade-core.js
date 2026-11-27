@@ -6,7 +6,7 @@ const catalog=[
 ["wordle","Daily Wordle","Guess today's word","🟩","solo"],
 ["mines","Minesweeper","Clear hidden mines","💣","solo"],
  ["snake","Snake Arena","Outgrow rival snakes","🐍","party"],
- ["combat","Turn-Based Combat","Choose battle mode","⚔","party"],
+ ["combat","Monster Duel","Choose battle mode","⚔","party"],
 ["pong","Pong","Classic green-court Pong","🏓","party"],
 ["headsup","Heads Up","Guess under pressure","🎭","party"],
 ["uno","UNO-style Cards","","🃏","party"],
@@ -28,7 +28,7 @@ const info=catalog.find(game=>game[0]===id);
 if(!info){location.replace(new URL("./",location.href).href);return null}
 window.Arcade.returnHref=returnHref;
 document.querySelectorAll('a[href="./"]').forEach(link=>{link.href=returnHref;link.setAttribute("aria-label",returnHref==="party.html"?"Back to Party Space":"Back to Rod Space")});
-const introBack=byId("introBack");if(introBack&&returnHref==="party.html")introBack.textContent="PARTY SPACE";
+
 document.body.dataset.game=id;
 byId("gameTitle").textContent=info[1];
 byId("gameBrandTitle").textContent=info[1];

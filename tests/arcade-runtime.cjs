@@ -19,10 +19,10 @@ class FakeElement {
  addEventListener(name,fn){this.listeners[name]=fn;}
  focus(){this.focused=true}
  getBoundingClientRect(){return{left:0,top:0,width:600,height:480}}
- getContext(){return{fillRect(){},beginPath(){},arc(){},fill(){},stroke(){},moveTo(){},lineTo(){},fillText(){},clearRect(){},set fillStyle(v){},set globalAlpha(v){}};}
+ getContext(){return{fillRect(){},beginPath(){},arc(){},fill(){},stroke(){},moveTo(){},lineTo(){},fillText(){},clearRect(){},save(){},restore(){},rect(){},clip(){},translate(){},scale(){},strokeRect(){},set fillStyle(v){},set globalAlpha(v){}};}
  }
 const games={};const memory=new Map(),documentListeners={};
-const document={createElement(tag){return new FakeElement(tag)},addEventListener(name,fn){documentListeners[name]=fn},hidden:false};
+const document={createElement(tag){return new FakeElement(tag)},createElementNS(ns,tag){return new FakeElement(tag)},addEventListener(name,fn){documentListeners[name]=fn},hidden:false};
 const windowListeners={},intervalCallbacks=new Map(),timeoutCallbacks=[];let intervalId=0,prefersReducedMotion=false;const ctx={document,console,performance:{now:()=>1234},localStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)},setInterval(fn){const id=++intervalId;intervalCallbacks.set(id,fn);return id},clearInterval(id){intervalCallbacks.delete(id)},setTimeout(fn,delay){timeoutCallbacks.push({fn,delay});return timeoutCallbacks.length},clearTimeout(){},requestAnimationFrame:()=>1,window:{addEventListener(name,fn){windowListeners[name]=fn},matchMedia(){return{matches:prefersReducedMotion}}},location:{href:"http://127.0.0.1/arcade.html"},navigator:{},Date,Math,JSON,Number,String,Array,Object,Set,Map};
 vm.createContext(ctx);
 for(const source of ["arcade-core.js","arcade-puzzles.js","arcade-action.js","arcade-party.js"]){vm.runInContext(fs.readFileSync(path.join(root,source),"utf8"),ctx,{filename:source});}
@@ -63,7 +63,7 @@ assert.ok(snakeToolbar?.children.some(el=>el.className==="stat"),"Snake score an
 assert.equal(snakeRoot.children.some(el=>el.className.split(" ").includes("direction-pad")),false,"Snake removes the arrow-button pad");
 assert.ok(snakeJoystick,"Snake has a floating joystick for touchscreens");
 assert.ok(snakeBoard.children.some(el=>el.className==="snake-game-over"),"Snake places a game-over overlay on the map");
-snakeToolbar.children.find(el=>el.textContent==="Start / Restart").listeners.click();
+snakeToolbar.children.find(el=>el.textContent==="Restart").listeners.click();
 snakeCanvas.listeners.pointerdown({pointerType:"touch",pointerId:7,clientX:120,clientY:180,preventDefault(){}});snakeCanvas.listeners.pointermove({pointerType:"touch",pointerId:7,clientX:120,clientY:120});
 assert.equal(snakeJoystick.style.left,"120px","touch joystick snaps to the initial finger position");
 assert.equal(snakeJoystick.style.top,"180px","touch joystick is positioned relative to the arena");
