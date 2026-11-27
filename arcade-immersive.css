@@ -649,3 +649,31 @@ body[data-game="combat"] .combat-character-label span {font-size:13px;font-weigh
   body[data-game="wordle"] .wordle-keyboard button {min-height:clamp(42px,6vh,58px);padding:5px 4px}
   body[data-game="wordle"] .game-panel .message {margin:5px 0;min-height:18px}
 }
+
+/* Fast Typing: clearer stats and a comfortable reading surface. */
+body[data-game="typing"] .typing-toolbar {width:min(980px,96vw);display:grid;grid-template-columns:auto auto repeat(4,minmax(112px,1fr));gap:10px;margin:0 auto clamp(18px,3vh,30px)}
+body[data-game="typing"] .typing-toolbar select {min-width:142px;padding:10px 13px;border-color:#52729d;background:#111d35;color:#f5f8ff;font-weight:700}
+body[data-game="typing"] .typing-toolbar > button {min-width:112px;padding:10px 18px;background:#2864d8!important;font-weight:800}
+body[data-game="typing"] .typing-stat {display:grid;align-content:center;gap:4px;min-width:0;min-height:62px;padding:9px 13px!important;border-color:#ffffff18;background:#111c32!important;text-align:left}
+body[data-game="typing"] .typing-stat-label {overflow:hidden;color:#9eacc4;font-size:10px;font-weight:800;letter-spacing:.1em;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
+body[data-game="typing"] .typing-stat-value {overflow:hidden;color:#f5f8ff;font-size:19px;font-weight:850;font-variant-numeric:tabular-nums;text-overflow:ellipsis;white-space:nowrap}
+body[data-game="typing"] .type-source {width:min(920px,94vw);max-height:180px;margin:0 auto 12px;padding:24px 28px;border:1px solid #7ea4d84a;border-left:4px solid #62b6ff;border-radius:14px;background:#142341;color:#f0f4fc;font-size:clamp(19px,2vw,25px);line-height:1.75;letter-spacing:.005em;box-shadow:0 12px 35px #02081755}
+body[data-game="typing"] .type-source .correct {color:#7fe3ae}
+body[data-game="typing"] .type-source .incorrect {color:#ff9b9b;text-decoration:underline;text-decoration-color:#ff7272;text-underline-offset:5px}
+body[data-game="typing"] .typing-input {width:min(920px,94vw);min-height:86px;max-height:140px;padding:18px 20px;border:1px solid #405577;border-radius:14px;background:#0a1325;color:#fff;font-size:18px;line-height:1.55;transition:border-color .16s,box-shadow .16s}
+body[data-game="typing"] .typing-input:focus {outline:none;border-color:#62b6ff;box-shadow:0 0 0 3px #62b6ff35}
+body[data-game="typing"] .typing-input::placeholder {color:#91a0b9}
+body[data-game="typing"] .game-panel .message {margin-top:12px;color:#b8c9e4}
+@media(max-width:820px) {
+  body[data-game="typing"] .typing-toolbar {grid-template-columns:repeat(4,minmax(0,1fr));width:min(680px,96vw);gap:7px;margin-bottom:18px}
+  body[data-game="typing"] .typing-toolbar select {grid-column:span 2;min-width:0}
+  body[data-game="typing"] .typing-toolbar > button {grid-column:span 2;min-width:0}
+  body[data-game="typing"] .typing-stat {min-height:56px;padding:8px 10px!important}
+  body[data-game="typing"] .typing-stat-value {font-size:17px}
+  body[data-game="typing"] .type-source {padding:17px 18px;font-size:clamp(16px,4vw,21px);line-height:1.65}
+  body[data-game="typing"] .typing-input {min-height:72px;padding:14px 16px}
+}
+
+/* Untried Wordle letters are lighter than used, absent letters. */
+body[data-game="wordle"] .game-panel .wordle-keyboard button.unused-key {background:#567168;color:#fff;border-color:#a8b8b1}
+body[data-game="wordle"] .game-panel .wordle-keyboard button.absent {background:#263b35;color:#a4b1ac;border-color:#43534d}

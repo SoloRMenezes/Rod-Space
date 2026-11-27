@@ -17,9 +17,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -29,9 +29,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -76,8 +76,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "eeb2ff94968b6a2c"
+    "bytes": 291756,
+    "version": "323f5a2143201eb2"
   },
   "headsup": {
     "name": "Heads Up",
@@ -97,9 +97,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -109,9 +109,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -156,8 +156,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "1e4bdc41e138db3c"
+    "bytes": 291756,
+    "version": "631689b1bab6e4ff"
   },
   "uno": {
     "name": "UNO-style Cards",
@@ -177,9 +177,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -189,9 +189,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -236,8 +236,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "fd3fc84d3272414c"
+    "bytes": 291756,
+    "version": "3f501f1da111130c"
   },
   "ladders": {
     "name": "Snakes & Ladders",
@@ -257,9 +257,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -269,9 +269,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -316,8 +316,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "0f2e6d8f52847592"
+    "bytes": 291756,
+    "version": "c06ceb5352645f77"
   },
   "typing": {
     "name": "Fast Typing",
@@ -337,9 +337,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -349,9 +349,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -396,8 +396,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "59bd45ec8c9df820"
+    "bytes": 291756,
+    "version": "12242a0f6a3bd7be"
   },
   "wordle": {
     "name": "Daily Wordle",
@@ -417,9 +417,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -429,9 +429,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -476,8 +476,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "564399a94f61e102"
+    "bytes": 291756,
+    "version": "ad81e041ca417789"
   },
   "mines": {
     "name": "Minesweeper",
@@ -497,9 +497,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -509,9 +509,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -556,8 +556,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "42e313db8bcc6f5a"
+    "bytes": 291756,
+    "version": "219efa5f3ee0468e"
   },
   "pong": {
     "name": "Pong",
@@ -577,9 +577,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -589,9 +589,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -636,8 +636,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "516914bb02b50407"
+    "bytes": 291756,
+    "version": "e5082165ab9fab2b"
   },
   "snake": {
     "name": "Snake Arena",
@@ -657,9 +657,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -669,9 +669,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -716,8 +716,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "dda60cde78f94d3a"
+    "bytes": 291756,
+    "version": "a60945670baf8de0"
   },
   "combat": {
     "name": "Turn-Based Combat",
@@ -737,9 +737,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-core.js",
@@ -749,9 +749,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade-action.js",
@@ -796,8 +796,8 @@ self.OFFLINE_CATALOG = {
         "hash": "c614bbd83b5971d7bd534ef98231bd60fc6dde46af699067be9a7ca5765c3f4b"
       }
     ],
-    "bytes": 288406,
-    "version": "fa8f3a4596c66ba7"
+    "bytes": 291756,
+    "version": "79e7bd38d192bd5d"
   },
   "maths-book": {
     "name": "Bookshelf",
@@ -980,9 +980,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-init.js",
@@ -998,9 +998,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade.css",
@@ -6998,8 +6998,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 366727119,
-    "version": "5c8996a1177b5232"
+    "bytes": 366730469,
+    "version": "ddc83a82f07cb2e8"
   },
   "double-take": {
     "name": "Double Take",
@@ -7351,9 +7351,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-init.js",
@@ -7369,9 +7369,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade.css",
@@ -13369,8 +13369,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 366727119,
-    "version": "2b8a37c98ff6ad82"
+    "bytes": 366730469,
+    "version": "4a8dc0618b1dca85"
   },
   "would-you-rather": {
     "name": "Would You Rather",
@@ -19343,9 +19343,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-immersive.css",
-        "bytes": 75658,
-        "hash": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e",
-        "sha256": "7bc38420487b92f925f4adef4cf62c584436e457b182353a49bcdc980999c74e"
+        "bytes": 78824,
+        "hash": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7",
+        "sha256": "18171adb95c0121a9bc94fbb30bdecb2ed899ef7d09641876c8035071d3898f7"
       },
       {
         "path": "arcade-init.js",
@@ -19361,9 +19361,9 @@ self.OFFLINE_CATALOG = {
       },
       {
         "path": "arcade-puzzles.js",
-        "bytes": 74523,
-        "hash": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19",
-        "sha256": "1195426e84d6e21f7a0e7dd5ec013b1b5521624218f5219e4604f62cf1850e19"
+        "bytes": 74707,
+        "hash": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3",
+        "sha256": "70e13d14ded29b34ab9981afbefc9406304ae8cd972772f3de969fa4efd371e3"
       },
       {
         "path": "arcade.css",
@@ -25361,8 +25361,8 @@ self.OFFLINE_CATALOG = {
         "sha256": "e6644bbffe82d9b6fd3d87e09a6bbe159abaa39566f201ef3f7d6ce6261ae1d0"
       }
     ],
-    "bytes": 366727119,
-    "version": "ed119bae38996f1b"
+    "bytes": 366730469,
+    "version": "4ae43531f1fa7c11"
   },
   "backrooms": {
     "name": "The Backrooms",
