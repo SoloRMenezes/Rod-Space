@@ -20,16 +20,13 @@ export function airTrickForArrow(code, airborne, alreadyFlipped) {
 }
 
 export function mouseYawDelta(deltaX, viewportWidth) {
-  return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * 0.9 : 0;
+  return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * 2 : 0;
+}
+
+export function mousePointerDelta(event, pointerLocked, lastX) {
+  return pointerLocked ? event.movementX : event.clientX - lastX;
 }
 
 export function shouldDrive(mousePressed, touchDriving, keyboardDirection) {
   return !mousePressed && (touchDriving || keyboardDirection !== 0);
-}
-
-export function cycleParkId(parkIds, selectedId, direction) {
-  if (!parkIds.length) return null;
-  const selectedIndex = parkIds.indexOf(selectedId);
-  const index = selectedIndex < 0 ? 0 : (selectedIndex + Math.sign(direction) + parkIds.length) % parkIds.length;
-  return parkIds[index];
 }

@@ -25,18 +25,15 @@ function airTrickForArrow(code, airborne, alreadyFlipped) {
 }
 
 function mouseYawDelta(deltaX, viewportWidth) {
-  return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * .9 : 0;
+  return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * 2 : 0;
+}
+
+function mousePointerDelta(event, pointerLocked, lastX) {
+  return pointerLocked ? event.movementX : event.clientX - lastX;
 }
 
 function shouldDrive(mousePressed, touchDriving, keyboardDirection) {
   return !mousePressed && (touchDriving || keyboardDirection !== 0);
-}
-
-function cycleParkId(parkIds, selectedId, direction) {
-  if (!parkIds.length) return null;
-  const selectedIndex = parkIds.indexOf(selectedId);
-  const index = selectedIndex < 0 ? 0 : (selectedIndex + Math.sign(direction) + parkIds.length) % parkIds.length;
-  return parkIds[index];
 }
 
 const $ = selector => document.querySelector(selector);
@@ -73,58 +70,171 @@ sun.position.set(-8, 15, 10);
 sun.castShadow = false;
 scene.add(sun);
 
-const parkOptions = [
-  { id: 'dartford', name: 'Dartford Central', file: './assets/models/fingerboard-parks/dartford.glb', rotate: false },
-  { id: 'gravesend', name: 'Gravesend', file: './assets/models/fingerboard-parks/gravesend.glb', rotate: true },
-  { id: 'finsbury', name: 'Finsbury Park', file: './assets/models/fingerboard-parks/finsbury.glb', rotate: true }
+const parkModules = [
+  { id: 'dartford', name: 'Dartford Central', file: './assets/models/fingerboard-parks/dartford.glb', rotate: false, position: [0, 0] },
+  { id: 'finsbury', name: 'Finsbury Park', file: './assets/models/fingerboard-parks/finsbury.glb', rotate: true, position: [0, -86] },
+  { id: 'gravesend', name: 'Gravesend', file: './assets/models/fingerboard-parks/gravesend.glb', rotate: true, position: [80, -86] }
 ];
-let selectedPark = localStorage.twoFingersPark || 'dartford';
+const parkSpan = 54;
+const parkPaths = [
+  [[0, -26], [2, -34], [2, -50], [0, -59]],
+  [[8, -86], [24, -80], [43, -80], [61, -86]]
+];
 let parkReady = false;
 const parkGroup = new THREE.Group();
 scene.add(parkGroup);
+const parkDecor = new THREE.Group();
+scene.add(parkDecor);
 let parkBaseY = 0, activeParkPlacement = null, surfaceCheckTimer = 0;
+let worldLoadToken = 0;
+let worldBounds = { minX: -32, maxX: 112, minZ: -126, maxZ: 40 };
 const parkRaycaster = new THREE.Raycaster();
 const loader = new GLTFLoader();
-const parkGround = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), new THREE.MeshStandardMaterial({ color: 0x68736a, roughness: 1 }));
-parkGround.rotation.x = -Math.PI / 2; parkGround.position.y = -.45; parkGround.receiveShadow = true; scene.add(parkGround);
-function loadPark(id) {
-  const park = parkOptions.find(item => item.id === id) || parkOptions[0];
-  selectedPark = park.id; localStorage.twoFingersPark = park.id;
+function makeGrassTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 128;
+  const context = canvas.getContext('2d');
+  context.fillStyle = '#657853'; context.fillRect(0, 0, 128, 128);
+  let seed = 1234567;
+  const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+  for (let i = 0; i < 1800; i++) {
+    const shade = Math.round(83 + random() * 48);
+    context.fillStyle = `rgba(${shade - 18},${shade},${shade - 30},${.12 + random() * .2})`;
+    const x = random() * 128, y = random() * 128;
+    context.fillRect(x, y, .5 + random() * 2.5, .5 + random() * 2.5);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(36, 34);
+  return texture;
+}
+
+function makeRollingGround() {
+  const geometry = new THREE.PlaneGeometry(280, 270, 84, 81);
+  const positions = geometry.attributes.position;
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i) + 36;
+    const z = -positions.getY(i) - 43;
+    const nearPark = parkModules.some(park => Math.max(Math.abs(x - park.position[0]), Math.abs(z - park.position[1])) < parkSpan * .58);
+    const relief = nearPark ? 0 : (Math.sin(x * .045) * Math.cos(z * .052) + Math.sin((x + z) * .031) * .45) * .5;
+    positions.setZ(i, relief);
+  }
+  geometry.rotateX(-Math.PI / 2);
+  geometry.computeVertexNormals();
+  const ground = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ map: makeGrassTexture(), color: 0xffffff, roughness: 1 }));
+  ground.position.set(36, -1.2, -43);
+  ground.receiveShadow = true;
+  return ground;
+}
+
+function makePathRibbon(points, width = 8) {
+  const curve = new THREE.CatmullRomCurve3(points.map(([x, z]) => new THREE.Vector3(x, 0, z)), false, 'centripetal');
+  const segments = 72;
+  const vertices = [];
+  const uvs = [];
+  const indices = [];
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments;
+    const point = curve.getPoint(t);
+    const tangent = curve.getTangent(t).normalize();
+    const sideX = tangent.z * width * .5;
+    const sideZ = -tangent.x * width * .5;
+    vertices.push(point.x + sideX, -.55, point.z + sideZ, point.x - sideX, -.55, point.z - sideZ);
+    uvs.push(t * 5, 0, t * 5, 1);
+    if (i < segments) {
+      const a = i * 2, b = a + 1, c = a + 2, d = a + 3;
+      indices.push(a, b, c, b, d, c);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0xaaa99b, roughness: 1, side: THREE.DoubleSide }));
+}
+
+function makeTree() {
+  const tree = new THREE.Group();
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.12, .2, 1.8, 7), new THREE.MeshStandardMaterial({ color: 0x624936, roughness: 1 }));
+  trunk.position.y = .9;
+  tree.add(trunk);
+  for (const [y, radius, height, color] of [[1.65, 1.1, 1.8, 0x49694b], [2.55, .82, 1.55, 0x5d8054], [3.25, .54, 1.1, 0x739163]]) {
+    const crown = new THREE.Mesh(new THREE.ConeGeometry(radius, height, 7), new THREE.MeshStandardMaterial({ color, roughness: 1 }));
+    crown.position.y = y;
+    tree.add(crown);
+  }
+  return tree;
+}
+
+function addParkDecor() {
+  parkDecor.clear();
+  const placements = [
+    [-10, -33], [10, -37], [-11, -45], [11, -52], [-10, -55],
+    [20, -76], [32, -75], [45, -76], [54, -75], [20, -94], [33, -95], [47, -94], [56, -95]
+  ];
+  for (const [x, z] of placements) {
+    const tree = makeTree();
+    tree.position.set(x, -.82, z);
+    parkDecor.add(tree);
+  }
+}
+
+async function loadWorld() {
   parkReady = false;
+  const token = ++worldLoadToken;
   const startButton = $('#start');
-  if (startButton) { startButton.disabled = true; startButton.textContent = `Loading ${park.name}…`; }
-  $('#park-name').textContent = park.name;
-  $('#park-label').textContent = park.name;
-  while (parkGroup.children.length) parkGroup.remove(parkGroup.children[0]);
-  loader.load(park.file, gltf => {
-    if (selectedPark !== park.id) return;
-    const model = gltf.scene;
-    const oriented = new THREE.Group();
-    oriented.rotation.y = park.rotate ? Math.PI / 2 : 0;
-    oriented.add(model);
-    const bounds = new THREE.Box3().setFromObject(oriented);
-    const center = bounds.getCenter(new THREE.Vector3());
-    const dimensions = bounds.getSize(new THREE.Vector3());
-    const span = Math.max(dimensions.x, dimensions.z);
-    const scale = 39 / span;
-    const placement = new THREE.Group();
-    const verticalScale = Math.min(scale, 4.8 / Math.max(dimensions.y, .001));
-    placement.scale.set(scale, verticalScale, scale);
-    placement.position.set(-center.x * scale, -bounds.min.y * verticalScale - .62, -center.z * scale);
-    placement.add(oriented);
-    model.traverse(child => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
-    parkGroup.add(placement);
-    activeParkPlacement = placement;
+  if (startButton) { startButton.disabled = true; startButton.textContent = 'Loading parks…'; }
+  $('#park-name').textContent = 'Three parks connected';
+  $('#park-label').textContent = 'Connected park';
+  parkGroup.clear(); parkDecor.clear();
+  try {
+    const models = await Promise.all(parkModules.map(park => loader.loadAsync(park.file)));
+    if (token !== worldLoadToken) return;
+    const worldBox = new THREE.Box3();
+    models.forEach((gltf, index) => {
+      const park = parkModules[index];
+      const model = gltf.scene;
+      const oriented = new THREE.Group();
+      oriented.rotation.y = park.rotate ? Math.PI / 2 : 0;
+      oriented.add(model);
+      const bounds = new THREE.Box3().setFromObject(oriented);
+      const center = bounds.getCenter(new THREE.Vector3());
+      const dimensions = bounds.getSize(new THREE.Vector3());
+      const scale = parkSpan / Math.max(dimensions.x, dimensions.z);
+      const verticalScale = Math.min(scale, 6.4 / Math.max(dimensions.y, .001));
+      const placement = new THREE.Group();
+      placement.scale.set(scale, verticalScale, scale);
+      placement.position.set(park.position[0] - center.x * scale, -bounds.min.y * verticalScale - .62, park.position[1] - center.z * scale);
+      placement.add(oriented);
+      model.traverse(child => { if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; } });
+      parkGroup.add(placement);
+      parkGroup.updateMatrixWorld(true);
+      worldBox.expandByObject(placement);
+    });
+    for (const points of parkPaths) {
+      const path = makePathRibbon(points);
+      parkGroup.add(path);
+      worldBox.expandByObject(path);
+    }
+    parkGroup.add(makeRollingGround());
+    worldBounds = { minX: worldBox.min.x - 12, maxX: worldBox.max.x + 12, minZ: worldBox.min.z - 12, maxZ: worldBox.max.z + 12 };
+    addParkDecor();
+    activeParkPlacement = parkGroup;
+    parkGroup.updateMatrixWorld(true);
     parkReady = true;
     if (startButton) { startButton.disabled = false; startButton.textContent = 'Start skating ↗'; }
-    placement.updateMatrixWorld(true);
     parkRaycaster.set(new THREE.Vector3(0, 40, 8.5), new THREE.Vector3(0, -1, 0));
-    const groundHit = parkRaycaster.intersectObject(placement, true)[0];
+    const groundHit = parkRaycaster.intersectObject(parkGroup, true)[0];
     parkBaseY = groundHit ? groundHit.point.y : 0;
     if (!state.air) state.y = parkBaseY + .34;
-    $('#park-name').textContent = park.name;
-    $('#park-label').textContent = park.name;
-  }, event => { if (event.total) { const percent = Math.round(event.loaded / event.total * 100); $('#park-name').textContent = `${park.name} · ${percent}%`; if (startButton) startButton.textContent = `Loading · ${percent}%`; } }, error => { $('#park-name').textContent = `${park.name} · unavailable`; if (startButton) { startButton.disabled = false; startButton.textContent = 'Retry map'; } console.error(`Could not load ${park.name}.`, error); });
+  } catch (error) {
+    if (token !== worldLoadToken) return;
+    $('#park-name').textContent = 'Park unavailable';
+    if (startButton) { startButton.disabled = false; startButton.textContent = 'Retry parks'; }
+    console.error('Could not load the connected skatepark.', error);
+  }
 }
 
 function makeBoard() {
@@ -240,7 +350,7 @@ function reset() {
 }
 
 function start() {
-  if (!parkReady) { loadPark(selectedPark); return; }
+  if (!parkReady) { loadWorld(); return; }
   reset(); running = true; paused = false;
   $('#intro').classList.add('hidden'); $('#gameover').classList.add('hidden'); $('#paused').classList.add('hidden');
 }
@@ -314,6 +424,10 @@ function pointerDown(event) {
     mousePressed = true;
     mouseLastX = event.clientX;
     renderer.domElement.setPointerCapture?.(event.pointerId);
+    try {
+      const lockRequest = renderer.domElement.requestPointerLock?.();
+      lockRequest?.catch?.(() => {});
+    } catch {}
     return;
   }
   event.preventDefault();
@@ -324,8 +438,10 @@ function pointerMove(event) {
   if (event.pointerType === 'mouse') {
     if (mouseLastX === null) return;
     event.preventDefault();
-    state.yaw = wrap(state.yaw + mouseYawDelta(event.clientX - mouseLastX, innerWidth));
-    mouseLastX = event.clientX;
+    const pointerLocked = document.pointerLockElement === renderer.domElement;
+    const deltaX = mousePointerDelta(event, pointerLocked, mouseLastX);
+    state.yaw = wrap(state.yaw + mouseYawDelta(deltaX, innerWidth));
+    if (!pointerLocked) mouseLastX = event.clientX;
     return;
   }
   event.preventDefault();
@@ -343,6 +459,12 @@ renderer.domElement.addEventListener('pointerdown', pointerDown, { passive: fals
 renderer.domElement.addEventListener('pointermove', pointerMove, { passive: false });
 renderer.domElement.addEventListener('pointerup', pointerUp, { passive: false });
 renderer.domElement.addEventListener('pointercancel', pointerUp, { passive: false });
+document.addEventListener('pointerlockchange', () => {
+  if (!document.pointerLockElement && mousePressed) {
+    mousePressed = false;
+    mouseLastX = null;
+  }
+});
 
 let nativeTrackpadReady = false;
 window.__rodSpaceNativeTrackpad = {
@@ -384,7 +506,13 @@ addEventListener('keydown', event => {
   if (event.code.startsWith('Arrow')) event.preventDefault();
   const airTrick = airTrickForArrow(event.code, state.air, state.flipTurns > 0);
   if (airTrick) { state.rollV = airTrick === 'KICKFLIP' ? -19 : 19; state.flipTurns = 1; showTrick(airTrick, 0, false); }
-  if (event.code === 'Escape') togglePause();
+  if (event.code === 'Escape') {
+    if (document.pointerLockElement === renderer.domElement) {
+      mousePressed = false;
+      mouseLastX = null;
+      document.exitPointerLock?.();
+    } else togglePause();
+  }
 });
 addEventListener('keyup', event => {
   keys.delete(event.code);
@@ -434,7 +562,7 @@ function update(dt) {
     state.x -= Math.sin(state.yaw) * speed * dt * direction;
     state.z -= Math.cos(state.yaw) * speed * dt * direction;
   }
-  if (Math.abs(state.x) > 14.3 || Math.abs(state.z) > 21.3) finish();
+  if (state.x < worldBounds.minX || state.x > worldBounds.maxX || state.z < worldBounds.minZ || state.z > worldBounds.maxZ) finish();
 
   if (state.air) {
     state.vy -= 15.8 * dt; state.y += state.vy * dt;
@@ -479,8 +607,6 @@ function togglePause() {
 }
 $('#start').addEventListener('click', start);
 $('#again').addEventListener('click', start);
-$('#previous-park').addEventListener('click', () => loadPark(cycleParkId(parkOptions.map(park => park.id), selectedPark, -1)));
-$('#next-park').addEventListener('click', () => loadPark(cycleParkId(parkOptions.map(park => park.id), selectedPark, 1)));
 $('#pause').addEventListener('click', togglePause);
 $('#resume').addEventListener('click', togglePause);
 $('#sound').addEventListener('click', () => { soundOn = !soundOn; $('#sound').textContent = soundOn ? '♪' : '×'; });
@@ -490,7 +616,7 @@ $('#flip').addEventListener('click', () => {
   if (!state.air || state.flipTurns) return;
   state.rollV = -19; state.flipTurns = 1; showTrick('KICKFLIP', 0, false);
 });
-loadPark(selectedPark);
+loadWorld();
 addEventListener('resize', resizeViewport);
 
 boardMesh.position.set(state.x, state.y, state.z);

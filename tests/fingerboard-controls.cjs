@@ -8,9 +8,9 @@ test('the app entry keeps tricks inline so the native server can load it', () =>
   assert.match(gameEntry, /function releaseTrick\(/);
   assert.match(gameEntry, /function arrowReleaseTrick\(/);
   assert.match(gameEntry, /function airTrickForArrow\(/);
-  assert.match(gameEntry, /function cycleParkId\(/);
-  assert.match(gameEntry, /#previous-park/);
-  assert.match(gameEntry, /#next-park/);
+  assert.match(gameEntry, /async function loadWorld\(/);
+  assert.match(gameEntry, /Promise\.all\(parkModules\.map/);
+  assert.doesNotMatch(gameEntry, /loadPark\(|cycleParkId\(|previous-park|next-park/);
 });
 
 let controls;
@@ -58,6 +58,12 @@ test('horizontal mouse drags steer in opposite directions and scale with viewpor
   assert.ok(controls.mouseYawDelta(-120, 1200) > 0);
   assert.equal(controls.mouseYawDelta(120, 1200), controls.mouseYawDelta(60, 600));
   assert.equal(controls.mouseYawDelta(120, 0), 0);
+  assert.equal(controls.mouseYawDelta(120, 1200), -Math.PI * 2 * .1);
+});
+
+test('locked mouse steering uses movement delta while the cursor stays fixed', () => {
+  assert.equal(controls.mousePointerDelta({ movementX: 32, clientX: 640 }, true, 600), 32);
+  assert.equal(controls.mousePointerDelta({ movementX: 0, clientX: 640 }, false, 600), 40);
 });
 
 test('holding the mouse brake stops keyboard and touch movement', () => {
@@ -66,12 +72,4 @@ test('holding the mouse brake stops keyboard and touch movement', () => {
   assert.equal(controls.shouldDrive(false, true, 0), true);
   assert.equal(controls.shouldDrive(false, false, -1), true);
   assert.equal(controls.shouldDrive(false, false, 0), false);
-});
-
-test('map arrows cycle in either direction and wrap at both ends', () => {
-  const maps = ['dartford', 'gravesend', 'finsbury'];
-  assert.equal(controls.cycleParkId(maps, 'dartford', -1), 'finsbury');
-  assert.equal(controls.cycleParkId(maps, 'dartford', 1), 'gravesend');
-  assert.equal(controls.cycleParkId(maps, 'finsbury', 1), 'dartford');
-  assert.equal(controls.cycleParkId(maps, 'unknown', 1), 'dartford');
 });
