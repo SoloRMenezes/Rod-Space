@@ -64,7 +64,7 @@ function press(ch){if(state.finished||state.guesses.length>=6||board.classList.c
 nativeInput.addEventListener("input",()=>{const value=nativeInput.value;nativeInput.value="";for(const ch of value)press(ch)});
 nativeInput.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key==="Backspace"){event.preventDefault();press(event.key);nativeInput.value=""}});
 document.addEventListener("keydown",e=>{if(e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA/.test(e.target.tagName))return;if(e.key==="Enter"||e.key==="Backspace"||/^[a-z]$/i.test(e.key)){e.preventDefault();press(e.key)}});
-if(state.finished)msg.textContent=nextWordCountdown();else msg.textContent="";window.setInterval(()=>{if(state.finished)msg.textContent=nextWordCountdown()},1000);render();
+if(state.finished)msg.textContent=nextWordCountdown();else msg.textContent="";setInterval(()=>{if(state.finished)msg.textContent=nextWordCountdown()},1000);render();
 });
 // Minesweeper
 register("mines",function(root){

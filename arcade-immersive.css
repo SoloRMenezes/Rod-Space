@@ -737,6 +737,8 @@ body[data-game="wordle"] .wordle-keyboard button {flex-basis:clamp(42px,7vw,86px
 /* Keep each game's live HUD in the same compact row as its title and Settings. */
 body.game-world .game-topbar {gap:clamp(6px,1vw,16px);overflow:hidden}
 body.game-world .game-topbar .brand {order:0;flex:0 1 auto;width:auto;max-width:min(28vw,360px);margin:0}
+body.game-world .game-topbar .brand {color:inherit;text-decoration:none;cursor:pointer}
+body.game-world .game-topbar .brand:focus-visible {outline:2px solid var(--glow);outline-offset:4px;border-radius:5px}
 body.game-world .game-topbar .game-header-toolbar {
   order:1;display:flex;align-items:center;justify-content:flex-end;gap:6px;
   width:auto;max-width:none;min-width:0;flex:0 1 auto;margin:0;padding:0;

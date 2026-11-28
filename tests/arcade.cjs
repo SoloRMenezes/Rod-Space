@@ -6,6 +6,7 @@ const root=path.resolve(__dirname,".."),get=name=>fs.readFileSync(path.join(root
 const files=["arcade.html","arcade.css","arcade-immersive.css","arcade-core.js","arcade-puzzles.js","arcade-action.js","arcade-party.js","arcade-init.js","site-theme.js"];
 for(const file of files)assert.ok(fs.existsSync(path.join(root,file)),file+" exists");
 const html=get("arcade.html"),index=get("index.html"),party=get("party.html");
+assert.match(html,/<a class="brand" href="\.\/" aria-label="Back to Rod Space" title="Back to Rod Space">[\s\S]*id="gameBrandTitle"/,"game header brand is a visible return link on every shared arcade game page");
 assert.match(get("arcade-puzzles.js"),/document\.addEventListener\("pointerdown"[\s\S]*e\.pointerType!=="touch"[\s\S]*document\.addEventListener\("pointerup"/,"2048 tracks phone swipes across the screen");
 assert.match(get("arcade-puzzles.js"),/name:"Giant",size:36,mines:85/,"Minesweeper reduces mine density on the largest board");
 assert.match(get("arcade-party.js"),/Choose your character[\s\S]*combat\.character/,"combat lets the player choose and save a character");
@@ -28,6 +29,7 @@ for(const id of ["headsup","uno","ladders","snake","combat"])assert.ok(party.inc
 assert.match(party,/id:'pong'[^}]*game=pong&from=party/,"Pong launched from Party Space remembers its return destination");
 assert.match(party,/game=snake&from=party/,"Snake Arena launched from Party Space remembers its return destination");
 assert.match(get("arcade-core.js"),/searchParams\.get\("from"\)===?"party"/,"Arcade shell restores the Party Space return link");
+assert.match(get("arcade-core.js"),/link\.setAttribute\("aria-label",label\);link\.title=label/,"return link label and tooltip stay matched to its destination");
 assert.match(index,/history\.scrollRestoration\s*=\s*"manual"[\s\S]*pageshow[\s\S]*scrollTo\(0,\s*0\)/,"homepage always returns at the top");
 assert.doesNotMatch(html,/id="gameNav"|href="arcade.html">All games|class="grid-cards"/,"no arcade landing or sidebar");
 assert.match(html,/class="game-stage"/,"dedicated playfield");

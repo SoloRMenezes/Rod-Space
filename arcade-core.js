@@ -34,7 +34,7 @@ const returnHref=new URL(location.href).searchParams.get("from")==="party"?"part
 const info=catalog.find(game=>game[0]===id);
 if(!info){location.replace(new URL("./",location.href).href);return null}
 window.Arcade.returnHref=returnHref;
-document.querySelectorAll('a[href="./"]').forEach(link=>{link.href=returnHref;link.setAttribute("aria-label",returnHref==="party.html"?"Back to Party Space":"Back to Rod Space")});
+document.querySelectorAll('a[href="./"]').forEach(link=>{const label=returnHref==="party.html"?"Back to Party Space":"Back to Rod Space";link.href=returnHref;link.setAttribute("aria-label",label);link.title=label});
 
 document.body.dataset.game=id;
 byId("gameTitle").textContent=info[1];
