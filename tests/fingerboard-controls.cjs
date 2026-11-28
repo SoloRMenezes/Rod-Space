@@ -1,5 +1,14 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const gameEntry = fs.readFileSync(require('node:path').join(__dirname, '..', 'fingerboard-3d.js'), 'utf8');
+
+test('the app entry keeps tricks inline so the native server can load it', () => {
+  assert.doesNotMatch(gameEntry, /from ['"][^'"]+\.mjs['"]/);
+  assert.match(gameEntry, /function releaseTrick\(/);
+  assert.match(gameEntry, /function arrowReleaseTrick\(/);
+  assert.match(gameEntry, /function airTrickForArrow\(/);
+});
 
 let controls;
 test.before(async () => {

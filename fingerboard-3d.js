@@ -1,6 +1,28 @@
 import * as THREE from './assets/vendor/three160/three.module.js';
 import { GLTFLoader } from './assets/vendor/three160/loaders/GLTFLoader.js';
-import { releaseTrick, arrowReleaseTrick, airTrickForArrow } from './fingerboard-controls.mjs';
+
+// Keep trick helpers inline: the native app server serves .mjs as binary, so
+// WebKit rejects an imported .mjs module before the park picker can initialize.
+function releaseTrick(sequence, role, time, windowMs = 1000) {
+  const recent = sequence.filter(item => time - item.time <= windowMs);
+  recent.push({ role, time });
+  const pair = recent.slice(-2).map(item => item.role).join(',');
+  const trick = pair === 'front,back' ? 'OLLIE' : pair === 'back,front' ? 'NOLLIE' : null;
+  return { trick, sequence: trick ? [] : recent.slice(-1) };
+}
+
+function arrowReleaseTrick(sequence, direction, time, windowMs = 1000) {
+  const recent = sequence.filter(item => time - item.time <= windowMs);
+  recent.push({ direction, time });
+  const pair = recent.slice(-2).map(item => item.direction).join(',');
+  const trick = pair === 'UP,DOWN' ? 'OLLIE' : pair === 'DOWN,UP' ? 'NOLLIE' : null;
+  return { trick, sequence: trick ? [] : recent.slice(-1) };
+}
+
+function airTrickForArrow(code, airborne, alreadyFlipped) {
+  if (!airborne || alreadyFlipped) return null;
+  return code === 'ArrowLeft' ? 'KICKFLIP' : code === 'ArrowRight' ? 'HEELFLIP' : null;
+}
 
 const $ = selector => document.querySelector(selector);
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -398,11 +420,13 @@ function update(dt) {
   boardMesh.position.set(state.x, state.y, state.z);
   boardMesh.rotation.order = 'YXZ';
   boardMesh.rotation.set(state.pitch, state.yaw, state.roll);
-  // Equal vertical and horizontal offsets make the follow camera roughly 45 degrees down.
-  const cameraOffset = new THREE.Vector3(0, 4.8, 4.8).applyAxisAngle(new THREE.Vector3(0, 1, 0), state.yaw);
+  // Keep enough of the park in view for the board to read against its obstacles,
+  // including on a tall phone viewport.
+  const followDistance = 9.2 + Math.max(0, .85 - camera.aspect) * 4;
+  const cameraOffset = new THREE.Vector3(0, followDistance * .78, followDistance * .78).applyAxisAngle(new THREE.Vector3(0, 1, 0), state.yaw);
   const desiredCamera = new THREE.Vector3(state.x, state.y, state.z).add(cameraOffset);
   camera.position.lerp(desiredCamera, Math.min(1, dt * 4.5));
-  camera.lookAt(state.x - Math.sin(state.yaw) * 2.2, state.y + .2, state.z - Math.cos(state.yaw) * 2.2);
+  camera.lookAt(state.x - Math.sin(state.yaw) * 4, state.y + .2, state.z - Math.cos(state.yaw) * 4);
   $('#score').textContent = Math.floor(score).toLocaleString();
 }
 
