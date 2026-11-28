@@ -24,6 +24,14 @@ function airTrickForArrow(code, airborne, alreadyFlipped) {
   return code === 'ArrowLeft' ? 'KICKFLIP' : code === 'ArrowRight' ? 'HEELFLIP' : null;
 }
 
+function mouseYawDelta(deltaX, viewportWidth) {
+  return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * .9 : 0;
+}
+
+function shouldDrive(mousePressed, touchDriving, keyboardDirection) {
+  return !mousePressed && (touchDriving || keyboardDirection !== 0);
+}
+
 const $ = selector => document.querySelector(selector);
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const TAU = Math.PI * 2;
@@ -260,6 +268,7 @@ const pointers = new Map();
 const nativeTrackpadIDs = new Set();
 let backId = null, frontId = null;
 let contactReleases = [];
+let mousePressed = false, mouseLastX = null;
 function assignPointers() {
   const list = [...pointers.values()];
   if (list.length !== 2 || list.some(pointer => pointer.role === 'front' || pointer.role === 'back')) return;
@@ -291,18 +300,35 @@ function contactUp(id) {
   assignPointers();
 }
 function pointerDown(event) {
-  if (event.pointerType === 'mouse') return;
+  if (event.pointerType === 'mouse') {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    mousePressed = true;
+    mouseLastX = event.clientX;
+    renderer.domElement.setPointerCapture?.(event.pointerId);
+    return;
+  }
   event.preventDefault();
   contactDown(event.pointerId, event.clientX, event.clientY);
   renderer.domElement.setPointerCapture?.(event.pointerId);
 }
 function pointerMove(event) {
-  if (event.pointerType === 'mouse') return;
+  if (event.pointerType === 'mouse') {
+    if (mouseLastX === null) return;
+    event.preventDefault();
+    state.yaw = wrap(state.yaw + mouseYawDelta(event.clientX - mouseLastX, innerWidth));
+    mouseLastX = event.clientX;
+    return;
+  }
   event.preventDefault();
   contactMove(event.pointerId, event.clientX, event.clientY);
 }
 function pointerUp(event) {
-  if (event.pointerType === 'mouse') return;
+  if (event.pointerType === 'mouse') {
+    mousePressed = false;
+    mouseLastX = null;
+    return;
+  }
   contactUp(event.pointerId);
 }
 renderer.domElement.addEventListener('pointerdown', pointerDown, { passive: false });
@@ -370,7 +396,8 @@ function nearbySurface() {
 function update(dt) {
   const keyboardDirection = keys.has('KeyW') && keys.has('KeyS') ? 1 : 0;
   const touchDriving = pointers.size >= 2;
-  const driving = touchDriving || keyboardDirection !== 0;
+  const brakingOnTail = mousePressed || (pointers.size === 1 && [...pointers.values()][0]?.role === 'back');
+  const driving = shouldDrive(brakingOnTail, touchDriving, keyboardDirection);
   const direction = touchDriving ? 1 : keyboardDirection;
   if (keys.has('KeyA')) state.yaw = wrap(state.yaw + 2.15 * dt);
   if (keys.has('KeyD')) state.yaw = wrap(state.yaw - 2.15 * dt);
@@ -412,7 +439,6 @@ function update(dt) {
   if (state.air && state.vy <= 0 && state.y <= surface) land(surface);
   if (!state.air) {
     state.y = surface;
-    const brakingOnTail = pointers.size === 1 && [...pointers.values()][0]?.role === 'back';
     state.pitch += ((brakingOnTail ? .24 : 0) - state.pitch) * Math.min(1, dt * 11);
   }
 
@@ -420,13 +446,10 @@ function update(dt) {
   boardMesh.position.set(state.x, state.y, state.z);
   boardMesh.rotation.order = 'YXZ';
   boardMesh.rotation.set(state.pitch, state.yaw, state.roll);
-  // Keep enough of the park in view for the board to read against its obstacles,
-  // including on a tall phone viewport.
-  const followDistance = 9.2 + Math.max(0, .85 - camera.aspect) * 4;
-  const cameraOffset = new THREE.Vector3(0, followDistance * .78, followDistance * .78).applyAxisAngle(new THREE.Vector3(0, 1, 0), state.yaw);
+  const cameraOffset = new THREE.Vector3(0, 4.8, 4.8).applyAxisAngle(new THREE.Vector3(0, 1, 0), state.yaw);
   const desiredCamera = new THREE.Vector3(state.x, state.y, state.z).add(cameraOffset);
   camera.position.lerp(desiredCamera, Math.min(1, dt * 4.5));
-  camera.lookAt(state.x - Math.sin(state.yaw) * 4, state.y + .2, state.z - Math.cos(state.yaw) * 4);
+  camera.lookAt(state.x - Math.sin(state.yaw) * 2.2, state.y + .2, state.z - Math.cos(state.yaw) * 2.2);
   $('#score').textContent = Math.floor(score).toLocaleString();
 }
 

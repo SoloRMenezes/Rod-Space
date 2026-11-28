@@ -18,3 +18,11 @@ export function airTrickForArrow(code, airborne, alreadyFlipped) {
   if (!airborne || alreadyFlipped) return null;
   return code === 'ArrowLeft' ? 'KICKFLIP' : code === 'ArrowRight' ? 'HEELFLIP' : null;
 }
+
+export function mouseYawDelta(deltaX, viewportWidth) {
+  return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * 0.9 : 0;
+}
+
+export function shouldDrive(mousePressed, touchDriving, keyboardDirection) {
+  return !mousePressed && (touchDriving || keyboardDirection !== 0);
+}

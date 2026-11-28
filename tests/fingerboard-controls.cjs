@@ -49,3 +49,18 @@ test('left and right arrows trigger one flip only while airborne', () => {
   assert.equal(controls.airTrickForArrow('ArrowLeft', true, false), 'KICKFLIP');
   assert.equal(controls.airTrickForArrow('ArrowRight', true, false), 'HEELFLIP');
 });
+
+test('horizontal mouse drags steer in opposite directions and scale with viewport width', () => {
+  assert.ok(controls.mouseYawDelta(120, 1200) < 0);
+  assert.ok(controls.mouseYawDelta(-120, 1200) > 0);
+  assert.equal(controls.mouseYawDelta(120, 1200), controls.mouseYawDelta(60, 600));
+  assert.equal(controls.mouseYawDelta(120, 0), 0);
+});
+
+test('holding the mouse brake stops keyboard and touch movement', () => {
+  assert.equal(controls.shouldDrive(true, true, 1), false);
+  assert.equal(controls.shouldDrive(true, false, 1), false);
+  assert.equal(controls.shouldDrive(false, true, 0), true);
+  assert.equal(controls.shouldDrive(false, false, -1), true);
+  assert.equal(controls.shouldDrive(false, false, 0), false);
+});
