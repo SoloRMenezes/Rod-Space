@@ -32,6 +32,13 @@ function shouldDrive(mousePressed, touchDriving, keyboardDirection) {
   return !mousePressed && (touchDriving || keyboardDirection !== 0);
 }
 
+function cycleParkId(parkIds, selectedId, direction) {
+  if (!parkIds.length) return null;
+  const selectedIndex = parkIds.indexOf(selectedId);
+  const index = selectedIndex < 0 ? 0 : (selectedIndex + Math.sign(direction) + parkIds.length) % parkIds.length;
+  return parkIds[index];
+}
+
 const $ = selector => document.querySelector(selector);
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const TAU = Math.PI * 2;
@@ -86,8 +93,8 @@ function loadPark(id) {
   parkReady = false;
   const startButton = $('#start');
   if (startButton) { startButton.disabled = true; startButton.textContent = `Loading ${park.name}…`; }
+  $('#park-name').textContent = park.name;
   $('#park-label').textContent = park.name;
-  $('#park-picker')?.querySelectorAll('.park').forEach(button => button.classList.toggle('active', button.dataset.park === park.id));
   while (parkGroup.children.length) parkGroup.remove(parkGroup.children[0]);
   loader.load(park.file, gltf => {
     if (selectedPark !== park.id) return;
@@ -115,8 +122,9 @@ function loadPark(id) {
     const groundHit = parkRaycaster.intersectObject(placement, true)[0];
     parkBaseY = groundHit ? groundHit.point.y : 0;
     if (!state.air) state.y = parkBaseY + .34;
+    $('#park-name').textContent = park.name;
     $('#park-label').textContent = park.name;
-  }, event => { if (event.total) { const percent = Math.round(event.loaded / event.total * 100); $('#park-label').textContent = `${park.name} · ${percent}%`; if (startButton) startButton.textContent = `Loading park · ${percent}%`; } }, error => { $('#park-label').textContent = `${park.name} · unavailable`; if (startButton) { startButton.disabled = false; startButton.textContent = 'Retry park load'; } console.error(`Could not load ${park.name}.`, error); });
+  }, event => { if (event.total) { const percent = Math.round(event.loaded / event.total * 100); $('#park-name').textContent = `${park.name} · ${percent}%`; if (startButton) startButton.textContent = `Loading · ${percent}%`; } }, error => { $('#park-name').textContent = `${park.name} · unavailable`; if (startButton) { startButton.disabled = false; startButton.textContent = 'Retry map'; } console.error(`Could not load ${park.name}.`, error); });
 }
 
 function makeBoard() {
@@ -471,6 +479,8 @@ function togglePause() {
 }
 $('#start').addEventListener('click', start);
 $('#again').addEventListener('click', start);
+$('#previous-park').addEventListener('click', () => loadPark(cycleParkId(parkOptions.map(park => park.id), selectedPark, -1)));
+$('#next-park').addEventListener('click', () => loadPark(cycleParkId(parkOptions.map(park => park.id), selectedPark, 1)));
 $('#pause').addEventListener('click', togglePause);
 $('#resume').addEventListener('click', togglePause);
 $('#sound').addEventListener('click', () => { soundOn = !soundOn; $('#sound').textContent = soundOn ? '♪' : '×'; });
@@ -479,11 +489,6 @@ $('#nollie').addEventListener('click', () => pop('NOLLIE'));
 $('#flip').addEventListener('click', () => {
   if (!state.air || state.flipTurns) return;
   state.rollV = -19; state.flipTurns = 1; showTrick('KICKFLIP', 0, false);
-});
-$('#park-picker').innerHTML = parkOptions.map(park => `<button class="park${park.id === selectedPark ? ' active' : ''}" data-park="${park.id}"><strong>${park.name}</strong><small>Photogrammetry park · artfletch</small></button>`).join('');
-$('#park-picker').addEventListener('click', event => {
-  const button = event.target.closest('[data-park]');
-  if (button) loadPark(button.dataset.park);
 });
 loadPark(selectedPark);
 addEventListener('resize', resizeViewport);

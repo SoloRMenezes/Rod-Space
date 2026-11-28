@@ -8,6 +8,9 @@ test('the app entry keeps tricks inline so the native server can load it', () =>
   assert.match(gameEntry, /function releaseTrick\(/);
   assert.match(gameEntry, /function arrowReleaseTrick\(/);
   assert.match(gameEntry, /function airTrickForArrow\(/);
+  assert.match(gameEntry, /function cycleParkId\(/);
+  assert.match(gameEntry, /#previous-park/);
+  assert.match(gameEntry, /#next-park/);
 });
 
 let controls;
@@ -63,4 +66,12 @@ test('holding the mouse brake stops keyboard and touch movement', () => {
   assert.equal(controls.shouldDrive(false, true, 0), true);
   assert.equal(controls.shouldDrive(false, false, -1), true);
   assert.equal(controls.shouldDrive(false, false, 0), false);
+});
+
+test('map arrows cycle in either direction and wrap at both ends', () => {
+  const maps = ['dartford', 'gravesend', 'finsbury'];
+  assert.equal(controls.cycleParkId(maps, 'dartford', -1), 'finsbury');
+  assert.equal(controls.cycleParkId(maps, 'dartford', 1), 'gravesend');
+  assert.equal(controls.cycleParkId(maps, 'finsbury', 1), 'dartford');
+  assert.equal(controls.cycleParkId(maps, 'unknown', 1), 'dartford');
 });

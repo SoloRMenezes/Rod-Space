@@ -26,3 +26,10 @@ export function mouseYawDelta(deltaX, viewportWidth) {
 export function shouldDrive(mousePressed, touchDriving, keyboardDirection) {
   return !mousePressed && (touchDriving || keyboardDirection !== 0);
 }
+
+export function cycleParkId(parkIds, selectedId, direction) {
+  if (!parkIds.length) return null;
+  const selectedIndex = parkIds.indexOf(selectedId);
+  const index = selectedIndex < 0 ? 0 : (selectedIndex + Math.sign(direction) + parkIds.length) % parkIds.length;
+  return parkIds[index];
+}
