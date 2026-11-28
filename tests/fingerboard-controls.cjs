@@ -12,6 +12,8 @@ test('the app entry keeps tricks inline so the native server can load it', () =>
   assert.match(gameEntry, /async function loadWorld\(/);
   assert.match(gameEntry, /Promise\.all\(parkModules\.map/);
   assert.doesNotMatch(gameEntry, /loadPark\(|cycleParkId\(|previous-park|next-park/);
+  assert.match(gameEntry, /window\.webkit\?\.messageHandlers\?\.rodSpaceControls/);
+  assert.match(gameEntry, /window\.__rodSpaceNativeMouse\s*=/);
   assert.doesNotMatch(gameEntry, /\$\('#(?:ollie|nollie|flip)'\)/);
   assert.doesNotMatch(gamePage, /class="controls"|id="(?:ollie|nollie|flip)"/);
   assert.match(gameEntry, /contactUp\(event\.pointerId\)/);
@@ -66,11 +68,11 @@ test('horizontal finger flicks trigger flips only while airborne and above the s
 });
 
 test('horizontal mouse drags steer in opposite directions and scale with viewport width', () => {
-  assert.ok(controls.mouseYawDelta(120, 1200) < 0);
-  assert.ok(controls.mouseYawDelta(-120, 1200) > 0);
+  assert.ok(controls.mouseYawDelta(120, 1200) > 0);
+  assert.ok(controls.mouseYawDelta(-120, 1200) < 0);
   assert.equal(controls.mouseYawDelta(120, 1200), controls.mouseYawDelta(60, 600));
   assert.equal(controls.mouseYawDelta(120, 0), 0);
-  assert.equal(controls.mouseYawDelta(120, 1200), -Math.PI * 2 * .1);
+  assert.equal(controls.mouseYawDelta(120, 1200), Math.PI * 2 * .1);
 });
 
 test('locked mouse steering uses movement delta while the cursor stays fixed', () => {

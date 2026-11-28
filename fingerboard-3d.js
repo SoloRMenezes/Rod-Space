@@ -30,7 +30,7 @@ function airTrickForFlick(deltaX, threshold, airborne, alreadyFlipped) {
 }
 
 function mouseYawDelta(deltaX, viewportWidth) {
-  return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * 2 : 0;
+  return viewportWidth > 0 ? (deltaX / viewportWidth) * Math.PI * 2 : 0;
 }
 
 function mousePointerDelta(event, pointerLocked, lastX) {
@@ -392,6 +392,20 @@ const nativeTrackpadIDs = new Set();
 let backId = null, frontId = null;
 let contactReleases = [];
 let mousePressed = false, mouseLastX = null;
+let mouseWasPointerLocked = false, nativeMouseLocked = false;
+const nativeMouseHandler = window.webkit?.messageHandlers?.rodSpaceControls;
+const hasNativeMouse = Boolean(window.__rodSpaceMacApp && nativeMouseHandler);
+function setNativeMouseLock(enabled) {
+  if (!hasNativeMouse || nativeMouseLocked === enabled) return;
+  nativeMouseLocked = enabled;
+  nativeMouseHandler.postMessage({ type: 'mouseLock', enabled });
+}
+window.__rodSpaceNativeMouse = {
+  move(deltaX) {
+    if (!nativeMouseLocked || !mousePressed) return;
+    state.yaw = wrap(state.yaw + mouseYawDelta(deltaX, innerWidth));
+  }
+};
 function assignPointers() {
   const list = [...pointers.values()];
   if (list.length !== 2 || list.some(pointer => pointer.role === 'front' || pointer.role === 'back')) return;
@@ -428,7 +442,10 @@ function pointerDown(event) {
     event.preventDefault();
     mousePressed = true;
     mouseLastX = event.clientX;
-    renderer.domElement.setPointerCapture?.(event.pointerId);
+    if (hasNativeMouse) {
+      setNativeMouseLock(true);
+      return;
+    }
     try {
       const lockRequest = renderer.domElement.requestPointerLock?.();
       lockRequest?.catch?.(() => {});
@@ -443,6 +460,7 @@ function pointerMove(event) {
   if (event.pointerType === 'mouse') {
     if (mouseLastX === null) return;
     event.preventDefault();
+    if (nativeMouseLocked) return;
     const pointerLocked = document.pointerLockElement === renderer.domElement;
     const deltaX = mousePointerDelta(event, pointerLocked, mouseLastX);
     state.yaw = wrap(state.yaw + mouseYawDelta(deltaX, innerWidth));
@@ -461,6 +479,8 @@ function pointerUp(event) {
   if (event.pointerType === 'mouse') {
     mousePressed = false;
     mouseLastX = null;
+    setNativeMouseLock(false);
+    if (document.pointerLockElement === renderer.domElement) document.exitPointerLock?.();
     return;
   }
   contactUp(event.pointerId);
@@ -470,10 +490,18 @@ renderer.domElement.addEventListener('pointermove', pointerMove, { passive: fals
 renderer.domElement.addEventListener('pointerup', pointerUp, { passive: false });
 renderer.domElement.addEventListener('pointercancel', pointerUp, { passive: false });
 document.addEventListener('pointerlockchange', () => {
-  if (!document.pointerLockElement && mousePressed) {
+  if (document.pointerLockElement === renderer.domElement) {
+    mouseWasPointerLocked = true;
+  } else if (mouseWasPointerLocked && mousePressed) {
+    mouseWasPointerLocked = false;
     mousePressed = false;
     mouseLastX = null;
   }
+});
+addEventListener('blur', () => {
+  mousePressed = false;
+  mouseLastX = null;
+  setNativeMouseLock(false);
 });
 
 let nativeTrackpadReady = false;
@@ -517,7 +545,11 @@ addEventListener('keydown', event => {
   const airTrick = airTrickForArrow(event.code, state.air, state.flipTurns > 0);
   if (airTrick) { state.rollV = airTrick === 'KICKFLIP' ? -19 : 19; state.flipTurns = 1; showTrick(airTrick, 0, false); }
   if (event.code === 'Escape') {
-    if (document.pointerLockElement === renderer.domElement) {
+    if (nativeMouseLocked) {
+      mousePressed = false;
+      mouseLastX = null;
+      setNativeMouseLock(false);
+    } else if (document.pointerLockElement === renderer.domElement) {
       mousePressed = false;
       mouseLastX = null;
       document.exitPointerLock?.();

@@ -25,7 +25,7 @@ export function airTrickForFlick(deltaX, threshold, airborne, alreadyFlipped) {
 }
 
 export function mouseYawDelta(deltaX, viewportWidth) {
-  return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * 2 : 0;
+  return viewportWidth > 0 ? (deltaX / viewportWidth) * Math.PI * 2 : 0;
 }
 
 export function mousePointerDelta(event, pointerLocked, lastX) {
