@@ -50,6 +50,7 @@ assert.equal(WORDS.filter(w=>w.length!==5).length,0,"answer list must contain on
 assert.ok(new Set(WORDS).size >= 366,"enough distinct words for the full year");
 assert.ok(VALID_GUESSES.size>8000,"Wordle validates against a substantial five-letter English dictionary");
 assert.ok(VALID_GUESSES.has("CRANE")&&!VALID_GUESSES.has("ZZZZZ"),"Wordle accepts dictionary guesses and rejects invented words");
+assert.ok(["FEATS","MEALS","PRAYS","TRIES","WALKS"].every(word=>VALID_GUESSES.has(word)),"Wordle accepts common plurals and verb forms missing from the headword dictionary");
 const nextYear=Array.from({length:365},(_,day)=>WORDS[(day*173+2027*37)%WORDS.length]);
 assert.equal(new Set(nextYear).size,365,"one unique answer per day of a non-leap year");
 assert.equal(JSON.stringify([...evaluate("ALLEY","APPLE")]),JSON.stringify(["correct","present","absent","present","absent"]),"duplicate-letter feedback");
