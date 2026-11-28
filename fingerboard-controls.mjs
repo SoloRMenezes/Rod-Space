@@ -19,6 +19,11 @@ export function airTrickForArrow(code, airborne, alreadyFlipped) {
   return code === 'ArrowLeft' ? 'KICKFLIP' : code === 'ArrowRight' ? 'HEELFLIP' : null;
 }
 
+export function airTrickForFlick(deltaX, threshold, airborne, alreadyFlipped) {
+  if (!airborne || alreadyFlipped || Math.abs(deltaX) < threshold) return null;
+  return deltaX < 0 ? 'KICKFLIP' : 'HEELFLIP';
+}
+
 export function mouseYawDelta(deltaX, viewportWidth) {
   return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * 2 : 0;
 }

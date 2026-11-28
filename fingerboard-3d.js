@@ -24,6 +24,11 @@ function airTrickForArrow(code, airborne, alreadyFlipped) {
   return code === 'ArrowLeft' ? 'KICKFLIP' : code === 'ArrowRight' ? 'HEELFLIP' : null;
 }
 
+function airTrickForFlick(deltaX, threshold, airborne, alreadyFlipped) {
+  if (!airborne || alreadyFlipped || Math.abs(deltaX) < threshold) return null;
+  return deltaX < 0 ? 'KICKFLIP' : 'HEELFLIP';
+}
+
 function mouseYawDelta(deltaX, viewportWidth) {
   return viewportWidth > 0 ? -(deltaX / viewportWidth) * Math.PI * 2 : 0;
 }
@@ -445,6 +450,11 @@ function pointerMove(event) {
     return;
   }
   event.preventDefault();
+  const pointer = pointers.get(event.pointerId);
+  if (pointer && pointers.size === 1 && state.air) {
+    const trick = airTrickForFlick(event.clientX - pointer.sx, Math.max(28, innerWidth * .035), true, state.flipTurns > 0);
+    if (trick) { state.rollV = trick === 'KICKFLIP' ? -19 : 19; state.flipTurns = 1; showTrick(trick, 0, false); }
+  }
   contactMove(event.pointerId, event.clientX, event.clientY);
 }
 function pointerUp(event) {
@@ -610,12 +620,6 @@ $('#again').addEventListener('click', start);
 $('#pause').addEventListener('click', togglePause);
 $('#resume').addEventListener('click', togglePause);
 $('#sound').addEventListener('click', () => { soundOn = !soundOn; $('#sound').textContent = soundOn ? '♪' : '×'; });
-$('#ollie').addEventListener('click', () => pop('OLLIE'));
-$('#nollie').addEventListener('click', () => pop('NOLLIE'));
-$('#flip').addEventListener('click', () => {
-  if (!state.air || state.flipTurns) return;
-  state.rollV = -19; state.flipTurns = 1; showTrick('KICKFLIP', 0, false);
-});
 loadWorld();
 addEventListener('resize', resizeViewport);
 

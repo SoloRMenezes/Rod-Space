@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const gameEntry = fs.readFileSync(require('node:path').join(__dirname, '..', 'fingerboard-3d.js'), 'utf8');
+const gamePage = fs.readFileSync(require('node:path').join(__dirname, '..', 'fingerboard.html'), 'utf8');
 
 test('the app entry keeps tricks inline so the native server can load it', () => {
   assert.doesNotMatch(gameEntry, /from ['"][^'"]+\.mjs['"]/);
@@ -11,6 +12,9 @@ test('the app entry keeps tricks inline so the native server can load it', () =>
   assert.match(gameEntry, /async function loadWorld\(/);
   assert.match(gameEntry, /Promise\.all\(parkModules\.map/);
   assert.doesNotMatch(gameEntry, /loadPark\(|cycleParkId\(|previous-park|next-park/);
+  assert.doesNotMatch(gameEntry, /\$\('#(?:ollie|nollie|flip)'\)/);
+  assert.doesNotMatch(gamePage, /class="controls"|id="(?:ollie|nollie|flip)"/);
+  assert.match(gameEntry, /contactUp\(event\.pointerId\)/);
 });
 
 let controls;
@@ -51,6 +55,14 @@ test('left and right arrows trigger one flip only while airborne', () => {
   assert.equal(controls.airTrickForArrow('ArrowRight', true, true), null);
   assert.equal(controls.airTrickForArrow('ArrowLeft', true, false), 'KICKFLIP');
   assert.equal(controls.airTrickForArrow('ArrowRight', true, false), 'HEELFLIP');
+});
+
+test('horizontal finger flicks trigger flips only while airborne and above the swipe threshold', () => {
+  assert.equal(controls.airTrickForFlick(-40, 36, true, false), 'KICKFLIP');
+  assert.equal(controls.airTrickForFlick(40, 36, true, false), 'HEELFLIP');
+  assert.equal(controls.airTrickForFlick(20, 36, true, false), null);
+  assert.equal(controls.airTrickForFlick(-40, 36, false, false), null);
+  assert.equal(controls.airTrickForFlick(-40, 36, true, true), null);
 });
 
 test('horizontal mouse drags steer in opposite directions and scale with viewport width', () => {
